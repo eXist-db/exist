@@ -89,6 +89,6 @@ public class TwoParamFunctions extends BasicFunction {
             throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
         }
 
-        return new DoubleValue(calcValue);
+        return new DoubleValue(this, calcValue);
     }
 }

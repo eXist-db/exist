@@ -72,7 +72,7 @@ public class EchoFunction extends BasicFunction {
 		ValueSequence result = new ValueSequence();
 		for (SequenceIterator i = args[0].iterate(); i.hasNext();) {
 			String str = i.nextItem().getStringValue();
-			result.add(new StringValue("echo: " + str));
+			result.add(new StringValue(this, "echo: " + str));
 		}
 		return result;
 	}

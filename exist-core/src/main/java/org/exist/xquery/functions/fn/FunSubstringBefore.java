@@ -131,7 +131,7 @@ public class FunSubstringBefore extends CollatingFunction {
             if (p == Constants.STRING_NOT_FOUND)
                 {result = StringValue.EMPTY_STRING;}
             else
-                {result = new StringValue(value.substring(0, p));}        			
+                {result = new StringValue(this, value.substring(0, p));}
         }
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}

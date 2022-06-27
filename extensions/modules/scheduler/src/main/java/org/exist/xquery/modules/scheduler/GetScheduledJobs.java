@@ -138,14 +138,14 @@ public class GetScheduledJobs extends BasicFunction
                         xmlBuf.append(scheduledJob.getTriggerState());
                         xmlBuf.append("</state>");
                         xmlBuf.append("<start>");
-                        xmlBuf.append(new DateTimeValue(scheduledJob.getStartTime()));
+                        xmlBuf.append(new DateTimeValue(this, scheduledJob.getStartTime()));
                         xmlBuf.append("</start>");
                         xmlBuf.append("<end>");
 
                         Date endTime = scheduledJob.getEndTime();
 
                         if (endTime != null) {
-                            xmlBuf.append(new DateTimeValue(endTime));
+                            xmlBuf.append(new DateTimeValue(this, endTime));
                         }
 
                         xmlBuf.append("</end>");
@@ -154,7 +154,7 @@ public class GetScheduledJobs extends BasicFunction
                         Date previousTime = scheduledJob.getPreviousFireTime();
 
                         if (previousTime != null) {
-                            xmlBuf.append(new DateTimeValue(scheduledJob.getPreviousFireTime()));
+                            xmlBuf.append(new DateTimeValue(this, scheduledJob.getPreviousFireTime()));
                         }
 
                         xmlBuf.append("</previous>");
@@ -163,7 +163,7 @@ public class GetScheduledJobs extends BasicFunction
                         Date nextTime = scheduledJob.getNextFireTime();
 
                         if (nextTime != null) {
-                            xmlBuf.append(new DateTimeValue());
+                            xmlBuf.append(new DateTimeValue(this));
                         }
 
                         xmlBuf.append("</next>");
@@ -172,7 +172,7 @@ public class GetScheduledJobs extends BasicFunction
                         Date finalTime = scheduledJob.getFinalFireTime();
 
                         if ((endTime != null) && (finalTime != null)) {
-                            xmlBuf.append(new DateTimeValue());
+                            xmlBuf.append(new DateTimeValue(this));
                         }
 
                         xmlBuf.append("</final>");

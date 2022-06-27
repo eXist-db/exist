@@ -118,14 +118,14 @@ public class VariableImpl implements Variable {
                 else {actualCardinality = Cardinality.EXACTLY_ONE;}
             	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
         		if (!getSequenceType().getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
-    				{throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
+    				{throw new XPathException((Expression) null, "XPTY0004: Invalid cardinality for variable $" + getQName() +
     						". Expected " +
     						getSequenceType().getCardinality().getHumanDescription() +
     						", got " + actualCardinality.getHumanDescription());}
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(getSequenceType().getPrimaryType(), Type.NODE)) {
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException((Expression) null, "XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
         						", got " +Type.getTypeName(getValue().getItemType()));}
@@ -133,7 +133,7 @@ public class VariableImpl implements Variable {
         		} else {
         			//Same as above : we probably may factorize 
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException((Expression) null, "XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
         						", got " +Type.getTypeName(getValue().getItemType()));}
@@ -255,8 +255,8 @@ public class VariableImpl implements Variable {
 				}
 			}
 
-        	throw new XPathException(
-        			Messages.getMessage(Error.VAR_TYPE_MISMATCH,
+        	throw new XPathException((Expression) null,
+					Messages.getMessage(Error.VAR_TYPE_MISMATCH,
 							toString(),
 							type.toString(),
 							valueType.toString()

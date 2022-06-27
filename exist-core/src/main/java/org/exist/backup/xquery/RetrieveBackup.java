@@ -56,7 +56,7 @@ public class RetrieveBackup extends BasicFunction
     public Sequence eval(final Sequence[] args, final Sequence contextSequence ) throws XPathException
     {
         if(!context.getEffectiveUser().hasDbaRole()) {
-            throw new XPathException("You must be a DBA to retrieve a backup");
+            throw new XPathException((Expression) null, "You must be a DBA to retrieve a backup");
         }
 
         final String exportDir = args[0].getStringValue();

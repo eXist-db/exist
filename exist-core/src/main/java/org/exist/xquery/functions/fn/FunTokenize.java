@@ -135,11 +135,11 @@ public class FunTokenize extends FunMatches {
                     result = new ValueSequence();
 
                     for (final String token : tokens) {
-                        result.add(new StringValue(token));
+                        result.add(new StringValue(this, token));
                     }
 
                 } catch (final PatternSyntaxException e) {
-                    throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
+                    throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
                 }
             }
         }

@@ -141,7 +141,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                 }
                 if (EPSG4326_geometry == null) {
                     logger.error("Unable to get a geometry from the node");
-                    throw new XPathException("Unable to get a geometry from the node");
+                    throw new XPathException(this, "Unable to get a geometry from the node");
                 }
                 int spatialOp = SpatialOperator.UNKNOWN;
                 if (isCalledAs("equals"))
@@ -165,7 +165,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                 hasUsedIndex = true;
             } catch (SpatialIndexException e) {
                 logger.error(e.getMessage(), e);
-                throw new XPathException(e);
+                throw new XPathException(this, e);
             }
         }
         return result;

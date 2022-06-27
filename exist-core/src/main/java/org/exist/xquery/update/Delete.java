@@ -99,7 +99,7 @@ public class Delete extends Modification {
             } else {
                 prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
             }
-            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
             if(!inSeq.isEmpty()) {

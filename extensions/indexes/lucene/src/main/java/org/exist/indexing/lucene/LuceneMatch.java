@@ -26,6 +26,7 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.lucene.LuceneModule;
 import org.exist.xquery.value.*;
@@ -165,25 +166,25 @@ public class LuceneMatch extends Match {
         public AtomicValue getValue(int type) throws XPathException {
             switch(type) {
                 case Type.TIME:
-                    return new TimeValue(value);
+                    return new TimeValue(null, value);
                 case Type.DATE_TIME:
-                    return new DateTimeValue(value);
+                    return new DateTimeValue(null, value);
                 case Type.DATE:
-                    return new DateValue(value);
+                    return new DateValue(null, value);
                 case Type.FLOAT:
-                    return new FloatValue(value);
+                    return new FloatValue(null, value);
                 case Type.DOUBLE:
-                    return new DoubleValue(value);
+                    return new DoubleValue(null, value);
                 case Type.DECIMAL:
-                    return new DecimalValue(value);
+                    return new DecimalValue(null, value);
                 case Type.INTEGER:
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    return new IntegerValue(value);
+                    return new IntegerValue(null, value);
                 default:
-                    return new StringValue(value);
+                    return new StringValue(null, value);
             }
         }
     }
@@ -204,33 +205,33 @@ public class LuceneMatch extends Match {
                     final GregorianCalendar gregorianCalendar = new GregorianCalendar();
                     gregorianCalendar.setTime(time);
                     final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
-                    return new TimeValue(calendar);
+                    return new TimeValue(null, calendar);
                 case Type.DATE_TIME:
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
                 case Type.DATE:
                     final long dl = value.longValue();
                     final int year = (int)(dl >> 16) & 0xFFFF;
                     final int month = (int)(dl >> 8) & 0xFF;
                     final int day = (int)(dl & 0xFF);
-                    final DateValue date = new DateValue();
+                    final DateValue date = new DateValue(null);
                     date.calendar.setYear(year);
                     date.calendar.setMonth(month);
                     date.calendar.setDay(day);
                     return date;
                 case Type.FLOAT:
-                    return new FloatValue(value.floatValue());
+                    return new FloatValue(null, value.floatValue());
                 case Type.DOUBLE:
-                    return new DoubleValue(value.floatValue());
+                    return new DoubleValue(null, value.floatValue());
                 case Type.DECIMAL:
-                    return new DecimalValue(value.doubleValue());
+                    return new DecimalValue(null, value.doubleValue());
                 case Type.INTEGER:
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    return new IntegerValue(value.longValue());
+                    return new IntegerValue(null, value.longValue());
                 default:
-                    return new StringValue(value.toString());
+                    return new StringValue(null, value.toString());
             }
         }
     }

@@ -54,6 +54,6 @@ public class GetMethod extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new StringValue(request.getMethod());
+		return new StringValue(this, request.getMethod());
 	}
 }

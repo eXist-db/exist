@@ -85,7 +85,7 @@ public class FunSerialize extends BasicFunction {
             }
 
             xqSerializer.serialize(seq);
-            return new StringValue(writer.toString());
+            return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
         }
@@ -158,7 +158,7 @@ public class FunSerialize extends BasicFunction {
                 else
                     // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
                     // casting it to an xs:string and copy the string representation to the new sequence;"
-                    {temp.add(new StringValue(next.getStringValue()));}
+                    {temp.add(new StringValue(callingExpr, next.getStringValue()));}
             }
         }
 

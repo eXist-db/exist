@@ -310,28 +310,28 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 	private void declareExternalVariables(final XQueryContext context, final TriggerPhase phase, final TriggerEvent event, final XmldbURI src, final XmldbURI dst, final boolean isCollection) throws XPathException {
 		//declare external variables
-		context.declareVariable(bindingPrefix + "type", new StringValue(phase.legacyPhaseName()));
-		context.declareVariable(bindingPrefix + "event", new StringValue(event.legacyEventName()));
+		context.declareVariable(bindingPrefix + "type", new StringValue(null, phase.legacyPhaseName()));
+		context.declareVariable(bindingPrefix + "event", new StringValue(null, event.legacyEventName()));
 		if (isCollection) {
-			context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src));
+			context.declareVariable(bindingPrefix + "collection", new AnyURIValue(null, src));
 		} else {
-			context.declareVariable(bindingPrefix + "collection", new AnyURIValue(src.removeLastSegment()));
+			context.declareVariable(bindingPrefix + "collection", new AnyURIValue(null, src.removeLastSegment()));
 		}
-		context.declareVariable(bindingPrefix + "uri", new AnyURIValue(src));
+		context.declareVariable(bindingPrefix + "uri", new AnyURIValue(null, src));
 		if (dst == null) {
 			context.declareVariable(bindingPrefix + "new-uri", Sequence.EMPTY_SEQUENCE);
 		} else {
-			context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(dst));
+			context.declareVariable(bindingPrefix + "new-uri", new AnyURIValue(null, dst));
 		}
 
 		// For backward compatibility
-		context.declareVariable(bindingPrefix + "eventType", new StringValue(phase.legacyPhaseName()));
-		context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(event.legacyEventName()));
+		context.declareVariable(bindingPrefix + "eventType", new StringValue(null, phase.legacyPhaseName()));
+		context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(null, event.legacyEventName()));
 		if (isCollection) {
-			context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src));
+			context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(null, src));
 		} else {
-			context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(src.removeLastSegment()));
-			context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(src));
+			context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(null, src.removeLastSegment()));
+			context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(null, src));
 		}
 
 		//declare user defined parameters as external variables
@@ -340,7 +340,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				final String varName = (String) o;
 				final String varValue = userDefinedVariables.getProperty(varName);
 
-				context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+				context.declareVariable(bindingPrefix + varName, new StringValue(null, varValue));
 			}
 		}
 	}
@@ -369,7 +369,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 					final String varName = (String) o;
 					final String varValue = userDefinedVariables.getProperty(varName);
 
-					context.declareVariable(bindingPrefix + varName, new StringValue(varValue));
+					context.declareVariable(bindingPrefix + varName, new StringValue(null, varValue));
 				}
 			}
         	
@@ -427,15 +427,15 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 			final List<Expression> args = new ArrayList<>(nParams);
 			if (phase == TriggerPhase.BEFORE) {
-				args.add(new LiteralValue(context, new AnyURIValue(src)));
+				args.add(new LiteralValue(context, new AnyURIValue(null, src)));
 				if (dst != null) {
-					args.add(new LiteralValue(context, new AnyURIValue(dst)));
+					args.add(new LiteralValue(context, new AnyURIValue(null, dst)));
 				}
 			} else {
 				if (dst != null) {
-					args.add(new LiteralValue(context, new AnyURIValue(dst)));
+					args.add(new LiteralValue(context, new AnyURIValue(null, dst)));
 				}
-				args.add(new LiteralValue(context, new AnyURIValue(src)));
+				args.add(new LiteralValue(context, new AnyURIValue(null, src)));
 			}
 
 			service.execute(broker, compiledQuery, Tuple(functionName, args, Optional.empty()), null, null, true);

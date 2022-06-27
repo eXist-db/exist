@@ -116,11 +116,11 @@ public class FunCompare extends CollatingFunction {
             final Collator collator = getCollator(contextSequence, contextItem, 3);		
             final int comparison = Collations.compare(collator, seq1.getStringValue(), seq2.getStringValue());
             if (comparison == Constants.EQUAL) 
-                {result = new IntegerValue(Constants.EQUAL);}
+                {result = new IntegerValue(this, Constants.EQUAL);}
             else if (comparison < 0)
-                {result = new IntegerValue(Constants.INFERIOR);}
+                {result = new IntegerValue(this, Constants.INFERIOR);}
             else 
-                {result = new IntegerValue(Constants.SUPERIOR);}
+                {result = new IntegerValue(this, Constants.SUPERIOR);}
         }
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}

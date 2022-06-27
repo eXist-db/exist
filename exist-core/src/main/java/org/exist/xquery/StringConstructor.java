@@ -68,7 +68,7 @@ public class StringConstructor extends AbstractExpression {
         for (final StringConstructorPart p: content) {
             out.append(p.eval(contextSequence));
         }
-        return new StringValue(out.toString());
+        return new StringValue(this, out.toString());
     }
 
     @Override

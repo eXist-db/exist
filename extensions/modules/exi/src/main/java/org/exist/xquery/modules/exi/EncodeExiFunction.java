@@ -108,7 +108,7 @@ public class EncodeExiFunction extends BasicFunction {
 			exiSerializer.startDocument();
 	        inputNode.toSAX(context.getBroker(), exiSerializer, new Properties());
 	        exiSerializer.endDocument();
-	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+	        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
 		}
 		catch(IOException ioex) {
 			// TODO - test!

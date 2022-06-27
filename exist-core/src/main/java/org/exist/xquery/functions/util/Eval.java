@@ -411,7 +411,7 @@ public class Eval extends BasicFunction {
 
                         xqSerializer.serialize(seq);
 
-                        return new StringValue(writer.toString());
+                        return new StringValue(this, writer.toString());
 
                     } catch (final IOException | SAXException e) {
                         throw new XPathException(this, FnModule.SENR0001, e.getMessage());
@@ -476,7 +476,7 @@ public class Eval extends BasicFunction {
             for (int i = 0; i < sequence.getItemCount(); i++) {
                 //if (sequence.itemAt(i) instanceof StringValue) {
                 if (Type.subTypeOf(sequence.itemAt(i).getType(), Type.STRING)) {
-                    newSeq.add(new StringValue(((StringValue) sequence.itemAt(i)).getStringValue(true)));
+                    newSeq.add(new StringValue(this, ((StringValue) sequence.itemAt(i)).getStringValue(true)));
                     hasSupplements = true;
                 } else {
                     newSeq.add(sequence.itemAt(i));
@@ -608,7 +608,7 @@ public class Eval extends BasicFunction {
             } else if (child.getNodeType() == Node.ELEMENT_NODE && "current-dateTime".equals(child.getLocalName())) {
                 final Element elem = (Element) child;
                 //TODO : error check
-                final DateTimeValue dtv = new DateTimeValue(elem.getAttribute("value"));
+                final DateTimeValue dtv = new DateTimeValue(this, elem.getAttribute("value"));
                 innerContext.setCalendar(dtv.calendar);
             } else if (child.getNodeType() == Node.ELEMENT_NODE && "implicit-timezone".equals(child.getLocalName())) {
                 final Element elem = (Element) child;

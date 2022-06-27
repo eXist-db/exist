@@ -336,7 +336,7 @@ public class RegistryFunctions extends BasicFunction {
     private Sequence serializeInvalidQueries(final Set<String> invalidQueries) throws XPathException {
         final Sequence result = new ValueSequence();
         for(final String invalidQuery : invalidQueries) {
-            result.add(new StringValue(invalidQuery));
+            result.add(new StringValue(this, invalidQuery));
         }
         return result;
     }

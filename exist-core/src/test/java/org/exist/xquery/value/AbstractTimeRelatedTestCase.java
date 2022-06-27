@@ -62,7 +62,7 @@ public abstract class AbstractTimeRelatedTestCase {
     }
 
     protected DayTimeDurationValue getLocalTimezoneDuration() throws XPathException {
-        return new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
+        return new DayTimeDurationValue(null, TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
     }
 
     protected String getLocalTimezoneOffset() throws XPathException {

@@ -79,16 +79,16 @@ public class UUID extends BasicFunction {
         // Check input parameters
         if (args.length == 0) {
             final String uuid = UUIDGenerator.getUUIDversion4();
-            result.add(new StringValue(uuid));
+            result.add(new StringValue(this, uuid));
 
         } else if (args.length == 1) {
             final String parameter = args[0].getStringValue();
             final String uuid = UUIDGenerator.getUUIDversion3(parameter);
-            result.add(new StringValue(uuid));
+            result.add(new StringValue(this, uuid));
 
         } else {
             logger.error("Not a supported number of parameters");
-            throw new XPathException("Not a supported number of parameters");
+            throw new XPathException(this, "Not a supported number of parameters");
         }
 
         return result;

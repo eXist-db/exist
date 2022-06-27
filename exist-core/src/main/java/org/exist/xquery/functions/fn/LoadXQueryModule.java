@@ -93,14 +93,14 @@ public class LoadXQueryModule extends BasicFunction {
                             "function invocation.")
     );
 
-    public final static StringValue OPTIONS_LOCATION_HINTS = new StringValue("location-hints");
-    public final static StringValue OPTIONS_XQUERY_VERSION = new StringValue("xquery-version");
-    public final static StringValue OPTIONS_VARIABLES = new StringValue("variables");
-    public final static StringValue OPTIONS_CONTEXT_ITEM = new StringValue("context-item");
-    public final static StringValue OPTIONS_VENDOR = new StringValue("vendor-options");
+    public final static StringValue OPTIONS_LOCATION_HINTS = new StringValue(null, "location-hints");
+    public final static StringValue OPTIONS_XQUERY_VERSION = new StringValue(null, "xquery-version");
+    public final static StringValue OPTIONS_VARIABLES = new StringValue(null, "variables");
+    public final static StringValue OPTIONS_CONTEXT_ITEM = new StringValue(null, "context-item");
+    public final static StringValue OPTIONS_VENDOR = new StringValue(null, "vendor-options");
 
-    public final static StringValue RESULT_FUNCTIONS = new StringValue("functions");
-    public final static StringValue RESULT_VARIABLES = new StringValue("variables");
+    public final static StringValue RESULT_FUNCTIONS = new StringValue(null, "functions");
+    public final static StringValue RESULT_VARIABLES = new StringValue(null, "variables");
 
     public LoadXQueryModule(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -114,7 +114,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
         AnyURIValue[] locationHints = null;
         String xqVersion = getXQueryVersion(context.getXQueryVersion());
-        AbstractMapType externalVars = new MapType(context);
+        AbstractMapType externalVars = new MapType(null, context);
         Sequence contextItem = Sequence.EMPTY_SEQUENCE;
 
         // evaluate options
@@ -170,7 +170,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
 
         if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
-            throw new XPathException(ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
+            throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
                     getXQueryVersion(tempContext.getXQueryVersion()));
         }
 
@@ -191,11 +191,11 @@ public class LoadXQueryModule extends BasicFunction {
         }
 
         final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
-                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(context, functions.mapValues((k, v) -> (Sequence)new MapType(context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
-                new Maps.Entry<>(RESULT_VARIABLES, new MapType(context, variables.forked(), Type.QNAME))
+                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(null, context, functions.mapValues((k, v) -> (Sequence)new MapType(null, context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
+                new Maps.Entry<>(RESULT_VARIABLES, new MapType(null, context, variables.forked(), Type.QNAME))
         ));
 
-        return new MapType(context, result, Type.STRING);
+        return new MapType(null, context, result, Type.STRING);
     }
 
     private void getModuleVariables(final Module module, final IMap<AtomicValue, Sequence> variables) throws XPathException {
@@ -203,7 +203,7 @@ public class LoadXQueryModule extends BasicFunction {
             final QName name = i.next();
             try {
                 final Variable var = module.resolveVariable(name);
-                variables.put(new QNameValue(context, name), var.getValue());
+                variables.put(new QNameValue(null, context, name), var.getValue());
             } catch (final XPathException e) {
                 throw new XPathException(this, ErrorCodes.FOQM0005, "Incorrect type for external variable " + name);
             }
@@ -216,13 +216,13 @@ public class LoadXQueryModule extends BasicFunction {
         for (final SequenceIterator i = functionSeq.iterate(); i.hasNext(); ) {
             final FunctionReference ref = (FunctionReference) i.nextItem();
             final FunctionSignature signature = ref.getSignature();
-            final QNameValue qn = new QNameValue(context, signature.getName());
+            final QNameValue qn = new QNameValue(null, context, signature.getName());
             IMap<AtomicValue, Sequence> entry = functions.get(qn, null);
             if (entry == null) {
                 entry = newLinearMap(null);
                 functions.put(qn, entry);
             }
-            entry.put(new IntegerValue(signature.getArgumentCount()), ref);
+            entry.put(new IntegerValue(null, signature.getArgumentCount()), ref);
         }
     }
 
@@ -265,7 +265,7 @@ public class LoadXQueryModule extends BasicFunction {
                     fn.setArguments(args);
                     final InternalFunctionCall call = new InternalFunctionCall(fn);
                     final FunctionCall ref = FunctionFactory.wrap(tempContext, call);
-                    resultSeq.addAll(new FunctionReference(ref));
+                    resultSeq.addAll(new FunctionReference(null, ref));
                 } else {
                     final UserDefinedFunction func = ((ExternalModule) module).getFunction(signature.getName(), signature.getArgumentCount(), tempContext);
                     // could be null if private function
@@ -273,7 +273,7 @@ public class LoadXQueryModule extends BasicFunction {
                         // create function reference
                         final FunctionCall funcCall = new FunctionCall(tempContext, func);
                         funcCall.setLocation(parent.getLine(), parent.getColumn());
-                        resultSeq.add(new FunctionReference(funcCall));
+                        resultSeq.add(new FunctionReference(null, funcCall));
                     }
                 }
             }

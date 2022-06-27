@@ -153,7 +153,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             processMonitor.queryStarted(xqueryContext.getWatchDog());
             
             //create a function call
-            try (final FunctionReference fnRef = new FunctionReference(new FunctionCall(xqueryContext, fn))) {
+            try (final FunctionReference fnRef = new FunctionReference(null, new FunctionCall(xqueryContext, fn))) {
 
                 //convert the arguments
                 final org.exist.xquery.value.Sequence[] fnArgs = convertToExistFunctionArguments(xqueryContext, fn, arguments);
@@ -336,9 +336,9 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             //some of the abstract code in EXQuery needs to be able to instantiate types.
             //Consider a factory or java.util.ServiceLoader pattern
             if(typedValue instanceof org.exquery.xdm.type.StringTypedValue) {
-                value = new StringValue(((org.exquery.xdm.type.StringTypedValue)typedValue).getValue());
+                value = new StringValue(null, ((org.exquery.xdm.type.StringTypedValue)typedValue).getValue());
             } else if(typedValue instanceof org.exquery.xdm.type.Base64BinaryTypedValue) {
-                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue());
+                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue(), null);
             } else {
                 value = (Item)typedValue.getValue();
             }

@@ -95,9 +95,9 @@ public class RangeIndexUpdateTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction();) {
 
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Chair"), 1);
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Table892.25"), 1);
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Cabinet1525.00"), 1);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Chair"), 1);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Table892.25"), 1);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Cabinet1525.00"), 1);
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -119,8 +119,8 @@ public class RangeIndexUpdateTest {
             proc.reset();
             assertEquals(1, mods);
 
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Chair"), 0);
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wardrobe"), 1);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Chair"), 0);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Wardrobe"), 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -134,8 +134,8 @@ public class RangeIndexUpdateTest {
             proc.reset();
             assertEquals(1, mods);
 
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wardrobe"), 0);
-            checkIndex(broker, docs, ITEM_QNAME, new StringValue("Wheelchair"), 1);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Wardrobe"), 0);
+            checkIndex(broker, docs, ITEM_QNAME, new StringValue(null, "Wheelchair"), 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -149,7 +149,7 @@ public class RangeIndexUpdateTest {
             proc.reset();
             assertEquals(1, mods);
 
-            checkIndex(broker, docs, null, new StringValue("abc"), 1);
+            checkIndex(broker, docs, null, new StringValue(null, "abc"), 1);
 
             transact.commit(transaction);
         }

@@ -43,9 +43,9 @@ public class NumericOpPromotionTest {
     @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"decimal", new DecimalValue(VALUE)},
-                {"double", new DoubleValue(VALUE)},
-                {"float", new FloatValue((float) VALUE)}
+                {"decimal", new DecimalValue(null, VALUE)},
+                {"double", new DoubleValue(null, VALUE)},
+                {"float", new FloatValue(null, (float) VALUE)}
         });
     }
 
@@ -56,7 +56,7 @@ public class NumericOpPromotionTest {
     public ComputableValue operand;
 
 	private static final double VALUE = 1.5;
-	private static final IntegerValue ZERO = new IntegerValue(0), ONE = new IntegerValue(1);
+	private static final IntegerValue ZERO = new IntegerValue(null, 0), ONE = new IntegerValue(null, 1);
 
     @Test
 	public void integerDiv() throws XPathException {

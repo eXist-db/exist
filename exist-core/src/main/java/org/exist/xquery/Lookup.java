@@ -45,12 +45,12 @@ public class Lookup extends AbstractExpression {
 
     public Lookup(XQueryContext context, Expression ctxExpr, String keyString) {
         this(context, ctxExpr);
-        this.keys = new StringValue(keyString);
+        this.keys = new StringValue(ctxExpr, keyString);
     }
 
     public Lookup(XQueryContext context, Expression ctxExpr, int position) {
         this(context, ctxExpr);
-        this.keys = new IntegerValue(position);
+        this.keys = new IntegerValue(ctxExpr, position);
     }
 
     public Lookup(XQueryContext context, Expression ctxExpr, Expression keyExpression) {

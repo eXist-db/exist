@@ -83,7 +83,7 @@ public abstract class AbstractTestRunner extends Runner {
                 }
 
                 // setup misc. context
-                context.setBaseURI(new AnyURIValue("/db"));
+                context.setBaseURI(new AnyURIValue(null, "/db"));
                 if(query instanceof FileSource) {
                     final Path queryPath = Paths.get(((FileSource) query).getPath().toAbsolutePath().toString());
                     if(Files.isDirectory(queryPath)) {

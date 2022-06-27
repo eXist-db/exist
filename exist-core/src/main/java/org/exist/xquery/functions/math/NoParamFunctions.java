@@ -67,7 +67,7 @@ public class NoParamFunctions extends BasicFunction {
         Sequence result;
         final String functionName = getSignature().getName().getLocalPart();
         if(PI.equals(functionName)) {
-            result=new DoubleValue(Math.PI);
+            result=new DoubleValue(this, Math.PI);
             
         } else {
             throw new XPathException(this, "Function "+functionName+" not found.");

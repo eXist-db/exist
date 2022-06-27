@@ -130,7 +130,7 @@ public class HighlightMatches extends BasicFunction {
 
         public void match(Receiver receiver, String matchingText, NodeProxy node) throws XPathException, SAXException {
             Sequence params[] = {
-                    new StringValue(matchingText),
+                    new StringValue(null, matchingText),
                     node,
                     Sequence.EMPTY_SEQUENCE
             };

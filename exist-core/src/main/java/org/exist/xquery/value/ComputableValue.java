@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import com.ibm.icu.text.Collator;
@@ -29,6 +30,10 @@ import com.ibm.icu.text.Collator;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public abstract class ComputableValue extends AtomicValue {
+
+    protected ComputableValue(final Expression expression) {
+        super(expression);
+    }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getStringValue()

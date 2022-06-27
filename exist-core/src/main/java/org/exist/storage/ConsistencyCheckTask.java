@@ -41,6 +41,7 @@ import org.exist.management.TaskStatus;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -262,7 +263,7 @@ public class ConsistencyCheckTask implements SystemTask {
         @Override
         public void startDocument(final String name, final int current, final int count) throws TerminatedException {
             if (!monitor.proceed()) {
-                throw new TerminatedException("consistency check terminated");
+                throw new TerminatedException((Expression) null, "consistency check terminated");
             }
             if ((current % 1000 == 0) || (current == count)) {
                 log.write("  DOCUMENT: ");
@@ -277,7 +278,7 @@ public class ConsistencyCheckTask implements SystemTask {
         @Override
         public void startCollection(final String path) throws TerminatedException {
             if (!monitor.proceed()) {
-                throw new TerminatedException("consistency check terminated");
+                throw new TerminatedException((Expression) null, "consistency check terminated");
             }
             if (errorFound) {
                 log.write("----------------------------------------------\n");

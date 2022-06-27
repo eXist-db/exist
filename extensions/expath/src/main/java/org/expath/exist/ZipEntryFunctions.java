@@ -185,7 +185,7 @@ public class ZipEntryFunctions extends BasicFunction {
     }
 
     private BinaryValue extractBinaryEntry(final ZipInputStream zis) throws XPathException {
-        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), zis);
+        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), zis, this);
     }
 
     private StringValue extractStringEntry(final ZipInputStream zis) throws XPathException, IOException {
@@ -197,7 +197,7 @@ public class ZipEntryFunctions extends BasicFunction {
                 builder.append(buf, 0, read);
             }
         }
-        return new StringValue(builder.toString());
+        return new StringValue(this, builder.toString());
     }
 
     private org.exist.dom.memtree.DocumentImpl extractHtmlEntry(final ZipInputStream zis) throws XPathException {

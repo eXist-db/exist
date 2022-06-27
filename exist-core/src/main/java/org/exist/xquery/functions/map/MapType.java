@@ -86,28 +86,28 @@ public class MapType extends AbstractMapType {
         return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
     }
 
-    public MapType(final XQueryContext context) {
-        this(context,null);
+    public MapType(final Expression expression, final XQueryContext context) {
+        this(expression, context,null);
     }
 
-    public MapType(final XQueryContext context, @Nullable final Collator collator) {
-        super(context);
+    public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator) {
+        super(expression, context);
         // if there's no collation, we'll use a hash map for better performance
         this.map = newMap(collator);
     }
 
-    public MapType(final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
-        super(context);
+    public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
+        super(expression, context);
         this.map = newMap(collator).put(key, value);
         this.keyType = key.getType();
     }
 
-    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
-        this(context, collator, keyValues.iterator());
+    public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
+        this(expression, context, collator, keyValues.iterator());
     }
 
-    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
-        super(context);
+    public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
+        super(expression, context);
 
         // bulk put
         final IMap<AtomicValue, Sequence> map = newMap(collator).linear();
@@ -117,8 +117,8 @@ public class MapType extends AbstractMapType {
         setKeyType(map);
     }
 
-    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
-        super(context);
+    public MapType(final Expression expression, final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
+        super(expression, context);
 
         if (other.isLinear()) {
             throw new IllegalArgumentException("Map must be immutable, but linear Map was provided");
@@ -181,7 +181,7 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(context, newMap.forked(), prevType);
+        return new MapType(getExpression(), context, newMap.forked(), prevType);
     }
 
     public void add(final AtomicValue key, final Sequence value) {
@@ -203,7 +203,7 @@ public class MapType extends AbstractMapType {
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
-        return new MapType(this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
+        return new MapType(getExpression(), this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
     }
 
     @Override
@@ -257,7 +257,7 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(context, newMap.forked(), keyType);
+        return new MapType(getExpression(), context, newMap.forked(), keyType);
     }
 
     @Override

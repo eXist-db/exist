@@ -146,7 +146,7 @@ public class Facets extends BasicFunction {
                 throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
             }
         }
-        return new MapType(context, map.forked(), Type.STRING);
+        return new MapType(this, context, map.forked(), Type.STRING);
     }
 
     private void addFacetsToMap(final IMap<AtomicValue, Sequence> map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
@@ -162,13 +162,13 @@ public class Facets extends BasicFunction {
             for (int i = 0; i < result.labelValues.length; i++) {
                 final String label = result.labelValues[i].label;
                 final Number value = result.labelValues[i].value;
-                final AtomicValue key = new StringValue(label);
+                final AtomicValue key = new StringValue(this, label);
 
                 map.update(key, v -> {
                     if (v == null) {
-                        return new IntegerValue(value.longValue());
+                        return new IntegerValue(this, value.longValue());
                     } else {
-                        return new IntegerValue(value.longValue() + ((IntegerValue)v).getLong());
+                        return new IntegerValue(this, value.longValue() + ((IntegerValue)v).getLong());
                     }
                 });
             }

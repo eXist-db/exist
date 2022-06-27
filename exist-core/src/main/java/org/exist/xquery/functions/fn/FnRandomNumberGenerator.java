@@ -94,23 +94,23 @@ public class FnRandomNumberGenerator extends BasicFunction {
         random = random.copy();
 
         final IMap<AtomicValue, Sequence> result = newLinearMap(null);
-        result.put(new StringValue("number"), new DoubleValue(random.nextDouble()));
-        result.put(new StringValue("next"), nextFunction(context, random));
-        result.put(new StringValue("permute"), permuteFunction(context, random));
+        result.put(new StringValue(null, "number"), new DoubleValue(null, random.nextDouble()));
+        result.put(new StringValue(null, "next"), nextFunction(context, random));
+        result.put(new StringValue(null, "permute"), permuteFunction(context, random));
 
-        return new MapType(context, result.forked(), Type.STRING);
+        return new MapType(null, context, result.forked(), Type.STRING);
     }
 
     private static FunctionReference nextFunction(final XQueryContext context, final XORShiftRandom random) {
         final NextFunction nextFunction = new NextFunction(context, random);
         final FunctionCall nextFunctionCall = new FunctionCall(context, nextFunction);
-        return new FunctionReference(nextFunctionCall);
+        return new FunctionReference(null, nextFunctionCall);
     }
 
     private static FunctionReference permuteFunction(final XQueryContext context, final XORShiftRandom random) {
         final PermuteFunction permuteFunction = new PermuteFunction(context, random);
         final FunctionCall permuteFunctionCall = new FunctionCall(context, permuteFunction);
-        return new FunctionReference(permuteFunctionCall);
+        return new FunctionReference(null, permuteFunctionCall);
     }
 
     private static class NextFunction extends UserDefinedFunction {

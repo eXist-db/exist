@@ -57,7 +57,7 @@ public class AtomicToString extends AbstractExpression {
         final ValueSequence result = new ValueSequence();
         for (final SequenceIterator i = seq.iterate(); i.hasNext();) {
             next = i.nextItem();
-            result.add(new StringValue(next.getStringValue()));
+            result.add(new StringValue(this, next.getStringValue()));
         }
         return result;
     }

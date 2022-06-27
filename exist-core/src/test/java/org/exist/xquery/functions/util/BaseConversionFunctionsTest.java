@@ -45,7 +45,7 @@ public class BaseConversionFunctionsTest {
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_INT_TO_OCTAL);
        Sequence args[] = {
-           new IntegerValue(511)
+           new IntegerValue(null, 511)
        };
        
        final Sequence result = baseConversionFunctions.eval(args, null);
@@ -60,7 +60,7 @@ public class BaseConversionFunctionsTest {
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_OCTAL_TO_INT);
        Sequence args[] = {
-           new StringValue("0777")
+           new StringValue(null, "0777")
        };
        
        final Sequence result = baseConversionFunctions.eval(args, null);

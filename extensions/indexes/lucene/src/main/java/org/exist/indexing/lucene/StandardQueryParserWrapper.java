@@ -26,6 +26,7 @@ import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 import org.apache.lucene.search.Query;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 /**
@@ -54,7 +55,7 @@ public class StandardQueryParserWrapper extends QueryParserWrapper {
         try {
             return parser.parse(query, field);
         } catch (QueryNodeException e) {
-            throw new XPathException("Syntax error in Lucene query string: " + e.getMessage());
+            throw new XPathException((Expression) null, "Syntax error in Lucene query string: " + e.getMessage());
         }
     }
 }

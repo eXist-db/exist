@@ -88,7 +88,7 @@ public class EXistResult implements Result {
         }
         // END TEMP
 
-        result.add(new StringValue(builder.toString()));
+        result.add(new StringValue(null, builder.toString()));
     }
 
     @Override
@@ -99,7 +99,7 @@ public class EXistResult implements Result {
             final Path tempFile = temporaryFileManager.getTemporaryFile();
             Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file)));
+            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file), null));
         } catch(final XPathException | IOException xpe) {
             throw new HttpClientException("Unable to add binary value to result:" + xpe.getMessage(), xpe);
         } finally {

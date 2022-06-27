@@ -66,9 +66,9 @@ public class GetURI extends StrictRequestFunction {
 			throws XPathException {
 		final Object attr = request.getAttribute(XQueryURLRewrite.RQ_ATTR_REQUEST_URI);
 		if (attr == null || isCalledAs("get-effective-uri")) {
-			return new AnyURIValue(request.getRequestURI());
+			return new AnyURIValue(this, request.getRequestURI());
 		} else {
-			return new AnyURIValue(attr.toString());
+			return new AnyURIValue(this, attr.toString());
 		}
 	}
 }

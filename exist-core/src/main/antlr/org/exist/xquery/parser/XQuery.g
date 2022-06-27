@@ -1097,7 +1097,7 @@ pragma throws XPathException
     exception catch [RecognitionException e]
     {
         lexer.wsExplicit = false;
-        throw new XPathException(ErrorCodes.XPST0003, "Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
+        throw new XPathException(pragma_AST, ErrorCodes.XPST0003, "Parse error: " + e.getMessage() + " at line: " + e.getLine() + " column: " + e.getColumn());
     }
 	;
 

@@ -92,7 +92,7 @@ public class FileReadUnicode extends BasicFunction {
 		}
 
 		final String inputPath = args[0].getStringValue();
-        final Path file = FileModuleHelper.getFile(inputPath);
+        final Path file = FileModuleHelper.getFile(inputPath, this);
 
 		final Charset encoding;
 		if(args.length == 2) {
@@ -110,7 +110,7 @@ public class FileReadUnicode extends BasicFunction {
 				sw.write( buf, 0, len) ;
 			}
 
-			return new StringValue(sw.toString());
+			return new StringValue(this, sw.toString());
 		} catch(final IOException e) {
 			throw new XPathException(this, e);
 		}

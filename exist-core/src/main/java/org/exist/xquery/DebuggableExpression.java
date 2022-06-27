@@ -162,7 +162,7 @@ public class DebuggableExpression implements Expression, RewritableExpression {
 
     @Override
     public void remove(Expression oldExpr) throws XPathException {
-        throw new XPathException("Method remove is not supported");
+        throw new XPathException(this, "Method remove is not supported");
     }
 
     @Override

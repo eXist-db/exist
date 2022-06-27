@@ -139,7 +139,7 @@ public class SerializeToFile extends BasicFunction {
 
             //check the file output path
             final String inputPath = args[1].getStringValue();
-            final Path file = FileModuleHelper.getFile(inputPath);
+            final Path file = FileModuleHelper.getFile(inputPath, this);
 
             if(Files.isDirectory(file)) {
                 logger.debug("Cannot serialize file. Output file is a directory: {}", file.toAbsolutePath().toString());

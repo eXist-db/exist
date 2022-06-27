@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -36,16 +37,16 @@ public class GMonthValue extends AbstractDateTimeValue {
 
     protected boolean addTrailingZ = false;
 
-    public GMonthValue() throws XPathException {
-        super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    public GMonthValue(final Expression expression) throws XPathException {
+        super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
-    public GMonthValue(XMLGregorianCalendar calendar) throws XPathException {
-        super(stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    public GMonthValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
+        super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
     }
 
-    public GMonthValue(String timeValue) throws XPathException {
-        super(fixTimezone(timeValue));
+    public GMonthValue(final Expression expression, String timeValue) throws XPathException {
+        super(expression, fixTimezone(timeValue));
         timeValue = timeValue.trim();
         if (timeValue.endsWith("Z")) {
             addTrailingZ = true;
@@ -64,7 +65,7 @@ public class GMonthValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException("xs:gMonth instance must not have year, month or day fields set");
+            throw new XPathException(getExpression(), "xs:gMonth instance must not have year, month or day fields set");
         }
     }
 
@@ -104,11 +105,11 @@ public class GMonthValue extends AbstractDateTimeValue {
             case Type.ITEM:
                 return this;
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:gMonth to "
                                 + Type.getTypeName(requiredType));
         }
@@ -116,7 +117,7 @@ public class GMonthValue extends AbstractDateTimeValue {
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal)
             throws XPathException {
-        return new GMonthValue(cal);
+        return new GMonthValue(getExpression(), cal);
     }
 
     public int getType() {
@@ -137,7 +138,7 @@ public class GMonthValue extends AbstractDateTimeValue {
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        throw new XPathException("Subtraction is not supported on values of type " +
+        throw new XPathException(getExpression(), "Subtraction is not supported on values of type " +
                 Type.getTypeName(getType()));
     }
 
@@ -169,7 +170,7 @@ public class GMonthValue extends AbstractDateTimeValue {
             }
             return r;
         }
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "Type error: cannot compare " + Type.getTypeName(getType()) + " to "
                         + Type.getTypeName(other.getType()));
     }

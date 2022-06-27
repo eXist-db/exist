@@ -76,7 +76,7 @@ public class GetRequestAttribute extends StrictRequestFunction {
 
 			final ValueSequence names = new ValueSequence();
 			while (attributeNames.hasMoreElements()) {
-				names.add(new StringValue(attributeNames.nextElement()));
+				names.add(new StringValue(this, attributeNames.nextElement()));
 			}
 			return names;
 		}

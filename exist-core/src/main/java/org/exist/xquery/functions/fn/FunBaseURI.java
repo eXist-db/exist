@@ -155,11 +155,11 @@ public class FunBaseURI extends BasicFunction {
                     // when xml:base is not an absolute URL and there is a contextURI
                     // join them
                     final URI newURI = contextBaseURI.toURI().resolve(nodeBaseURI);
-                    result = new AnyURIValue(newURI);
+                    result = new AnyURIValue(this, newURI);
 
                 } else {
                     // just take xml:base value
-                    result = new AnyURIValue(nbURI);
+                    result = new AnyURIValue(this, nbURI);
                 }
 
             } else if (hasContextBaseURI) {

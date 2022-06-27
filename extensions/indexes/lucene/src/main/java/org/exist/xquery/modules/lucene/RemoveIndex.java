@@ -29,11 +29,7 @@ import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -70,7 +66,7 @@ public class RemoveIndex extends BasicFunction {
         try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
             // Verify the document actually exists
             if (lockedDoc == null) {
-                throw new XPathException("Document " + path + " does not exist.");
+                throw new XPathException((Expression) null, "Document " + path + " does not exist.");
             }
 
             // Retrieve Lucene
@@ -83,7 +79,7 @@ public class RemoveIndex extends BasicFunction {
             index.flush();
 
         } catch (Exception ex) { // PermissionDeniedException
-            throw new XPathException(ex);
+            throw new XPathException((Expression) null, ex);
         }
 
         // Return nothing [status would be nice]

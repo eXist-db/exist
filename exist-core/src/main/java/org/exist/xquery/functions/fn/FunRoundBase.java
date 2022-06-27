@@ -21,10 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.math.RoundingMode;
@@ -69,11 +66,11 @@ abstract class FunRoundBase extends BasicFunction {
             final Item precisionItem = args[1].itemAt(0);
             if (precisionItem instanceof IntegerValue) {
                 final IntegerValue precision = (IntegerValue) precisionItem;
-                return convertValue(precision, value, roundingMode);
+                return convertValue(precision, value, roundingMode, this);
             }
         }
 
-        return convertValue(IntegerValue.ZERO, value, roundingMode);
+        return convertValue(IntegerValue.ZERO, value, roundingMode, this);
     }
 
     /**
@@ -85,7 +82,7 @@ abstract class FunRoundBase extends BasicFunction {
      * @return rounded value in decimal converted back to the input type
      * @throws XPathException if a conversion goes wrong (it shouldn't)
      */
-    private static Sequence convertValue(final IntegerValue precision, final NumericValue value, final RoundingMode roundingMode) throws XPathException {
+    private static Sequence convertValue(final IntegerValue precision, final NumericValue value, final RoundingMode roundingMode, final Expression expression) throws XPathException {
 
         if (value.isInfinite() || value.isNaN()) {
             return value;
@@ -93,7 +90,7 @@ abstract class FunRoundBase extends BasicFunction {
 
         final DecimalValue decimal = (DecimalValue)value.convertTo(Type.DECIMAL);
         // (AP) This is as much precision as we can need, and prevents overflows scaling BigInteger
-        final IntegerValue usePrecision = truncatePrecision(decimal, precision);
+        final IntegerValue usePrecision = truncatePrecision(decimal, precision, expression);
         final DecimalValue rounded = (DecimalValue) Objects.requireNonNull(decimal).round(usePrecision, roundingMode);
 
         if (value.isNegative() && rounded.isZero()) {
@@ -102,9 +99,9 @@ abstract class FunRoundBase extends BasicFunction {
             //DecimalValue(s) are not necessarily normalized, but the 0-test will work..
             switch (value.getType()) {
                 case Type.DOUBLE:
-                    return new DoubleValue(-0.0d);
+                    return new DoubleValue(expression, -0.0d);
                 case Type.FLOAT:
-                    return new FloatValue(-0.0f);
+                    return new FloatValue(expression, -0.0f);
                 default:
                     break;
             }
@@ -113,9 +110,9 @@ abstract class FunRoundBase extends BasicFunction {
         return rounded.convertTo(value.getType());
     }
 
-    private static IntegerValue truncatePrecision(final DecimalValue decimal, final IntegerValue precision) throws XPathException {
+    private static IntegerValue truncatePrecision(final DecimalValue decimal, final IntegerValue precision, final Expression expression) throws XPathException {
 
-        final IntegerValue decimalPrecision = new IntegerValue(decimal.getValue().precision());
+        final IntegerValue decimalPrecision = new IntegerValue(expression, decimal.getValue().precision());
         if (decimalPrecision.compareTo(precision) < 0) {
             return decimalPrecision;
         }

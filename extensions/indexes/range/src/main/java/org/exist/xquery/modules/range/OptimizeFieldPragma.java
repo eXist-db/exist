@@ -197,9 +197,9 @@ public class OptimizeFieldPragma extends Pragma {
                                 args.add(arg1);
                             }
                             // field is added to the sequence in first parameter
-                            arg0.add(new LiteralValue(context, new StringValue(field.getName())));
+                            arg0.add(new LiteralValue(context, new StringValue(null, field.getName())));
                             // operator
-                            arg1.add(new LiteralValue(context, new StringValue(RangeQueryRewriter.getOperator(innerExpr).toString())));
+                            arg1.add(new LiteralValue(context, new StringValue(null, RangeQueryRewriter.getOperator(innerExpr).toString())));
                             // append right hand expression as additional parameter
                             args.add(getKeyArg(innerExpr));
 

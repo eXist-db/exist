@@ -48,12 +48,12 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException((Expression) null, "Internal error: adding to an immutable sequence");
     }
 
     @Override
     public void addAll(final Sequence other) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException((Expression) null, "Internal error: adding to an immutable sequence");
     }
 
     public int getItemType() {
@@ -86,7 +86,7 @@ public class RangeSequence extends AbstractSequence {
         @Override
         public Item nextItem() {
             if (current <= end) {
-                return new IntegerValue(current++);
+                return new IntegerValue(null, current++);
             } else {
                 return null;
             }
@@ -122,7 +122,7 @@ public class RangeSequence extends AbstractSequence {
         @Override
         public Item nextItem() {
             if (current >= start) {
-                return new IntegerValue(current--);
+                return new IntegerValue(null, current--);
             } else {
                 return null;
             }
@@ -189,20 +189,20 @@ public class RangeSequence extends AbstractSequence {
     @Override
     public Item itemAt(final int pos) {
         if (pos < getItemCountLong()) {
-            return new IntegerValue(start.getLong() + pos);
+            return new IntegerValue(null, start.getLong() + pos);
         }
         return null;
     }
 
     @Override
     public NodeSet toNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                 " a node set. Item type is xs:integer");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                 " a memory node set. Item type is xs:integer");
     }
 

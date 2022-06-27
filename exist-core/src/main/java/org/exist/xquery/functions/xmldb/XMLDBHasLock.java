@@ -26,10 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xmldb.UserManagementService;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -85,13 +82,14 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 
 		try {
 			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			final Resource res = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString()));
+			final Expression expression = this;
+			final Resource res = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].getStringValue()).toXmldbURI().toString()));
 			if (res != null) {
 				final String lockUser = ums.hasUserLock(res);
 				if (lockUser != null && isCalledAs("clear-lock")) {
 					ums.unlockResource(res);
 				}
-                return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);
+                return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, lockUser);
 			} else {
 				logger.error("Unable to locate resource {}", args[1].getStringValue());
 			    throw new XPathException(this, "Unable to locate resource " + args[1].getStringValue());

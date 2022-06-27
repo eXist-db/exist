@@ -25,16 +25,18 @@ import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 public class BooleanValue extends AtomicValue {
 
-    public final static BooleanValue TRUE = new BooleanValue(true);
-    public final static BooleanValue FALSE = new BooleanValue(false);
+    public final static BooleanValue TRUE = new BooleanValue(null, true);
+    public final static BooleanValue FALSE = new BooleanValue(null, false);
 
     private final boolean value;
 
-    public BooleanValue(boolean bool) {
+    public BooleanValue(final Expression expression, boolean bool) {
+        super(expression);
         value = bool;
     }
 
@@ -74,19 +76,19 @@ public class BooleanValue extends AtomicValue {
                 return this;
             case Type.NUMBER:
             case Type.INTEGER:
-                return new IntegerValue(value ? 1 : 0);
+                return new IntegerValue(getExpression(), value ? 1 : 0);
             case Type.DECIMAL:
-                return new DecimalValue(value ? 1 : 0);
+                return new DecimalValue(getExpression(), value ? 1 : 0);
             case Type.FLOAT:
-                return new FloatValue(value ? 1 : 0);
+                return new FloatValue(getExpression(), value ? 1 : 0);
             case Type.DOUBLE:
-                return new DoubleValue(value ? 1 : 0);
+                return new DoubleValue(getExpression(), value ? 1 : 0);
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.XPTY0004,
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
         }
     }
@@ -109,10 +111,10 @@ public class BooleanValue extends AtomicValue {
                 case GTEQ:
                     return value == otherVal || value && (!otherVal);
                 default:
-                    throw new XPathException("Type error: cannot apply this operator to a boolean value");
+                    throw new XPathException(getExpression(), "Type error: cannot apply this operator to a boolean value");
             }
         }
-        throw new XPathException(ErrorCodes.XPTY0004,
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                 "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(other.getType()));
     }
 
@@ -146,7 +148,7 @@ public class BooleanValue extends AtomicValue {
             boolean otherValue = ((BooleanValue) other).value;
             return value && (!otherValue) ? this : other;
         } else {
-            throw new XPathException(
+            throw new XPathException(getExpression(), 
                     "Invalid argument to aggregate function: expected boolean, got: "
                             + Type.getTypeName(other.getType()));
         }
@@ -157,7 +159,7 @@ public class BooleanValue extends AtomicValue {
             final boolean otherValue = ((BooleanValue) other).value;
             return (!value) && otherValue ? this : other;
         } else {
-            throw new XPathException(
+            throw new XPathException(getExpression(), 
                     "Invalid argument to aggregate function: expected boolean, got: "
                             + Type.getTypeName(other.getType()));
         }
@@ -197,7 +199,7 @@ public class BooleanValue extends AtomicValue {
             return (T) v.value;
         }
 
-        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
+        throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) +
                 " to Java object of type " + target.getName());
     }
 

@@ -26,10 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistResource;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -70,9 +67,10 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 	@Override
 	protected Sequence evalWithCollection(final Collection collection, final Sequence[] args,
 			final Sequence contextSequence) throws XPathException {
+		final Expression expression = this;
         try {
-			final Resource resource = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString()));
-			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);
+			final Resource resource = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].getStringValue()).toXmldbURI().toString()));
+			return new IntegerValue(this, ((EXistResource)resource).getContentLength(), Type.LONG);
 		} catch (final XMLDBException e) {
 			logger.error("Failed to retrieve size: {}", e.getMessage());
 			throw new XPathException(this, "Failed to retrieve size: " + e.getMessage(), e);

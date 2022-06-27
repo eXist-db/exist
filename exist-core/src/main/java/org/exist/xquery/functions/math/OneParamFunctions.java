@@ -181,7 +181,7 @@ public class OneParamFunctions extends BasicFunction {
             } else {
                 throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
             }
-            return new DoubleValue(calcValue);
+            return new DoubleValue(this, calcValue);
         }
 
     }

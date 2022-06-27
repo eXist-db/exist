@@ -129,9 +129,9 @@ public class ParseCQL extends BasicFunction {
 		    ret = (DocumentImpl) adapter.getDocument();
 
       		} else if (output.equals(OutputTypeString)) {
-		    ret = new StringValue(query_cql.toString());
+		    ret = new StringValue(this, query_cql.toString());
       		} else {
-		    ret = new StringValue(query_cql.toCQL());
+		    ret = new StringValue(this, query_cql.toCQL());
       		}
       		return ret;
       	  }

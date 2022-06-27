@@ -31,9 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
@@ -43,7 +41,6 @@ import static org.junit.Assert.*;
 
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalXMLResource;
-import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 
 import org.xml.sax.InputSource;
@@ -194,7 +191,7 @@ public class DocTest {
 
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
             context.addDynamicallyAvailableDocument(baseUri + docRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();
@@ -250,7 +247,7 @@ public class DocTest {
 
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
             context.addDynamicallyAvailableDocument(baseUri + docRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();
@@ -277,7 +274,7 @@ public class DocTest {
             }
             return Left(saxAdapter.getDocument());
         } catch (final ParserConfigurationException | SAXException | IOException e) {
-            throw new XPathException("Unable to parse document", e);
+            throw new XPathException((Expression) null, "Unable to parse document", e);
         }
     }
 }

@@ -103,7 +103,7 @@ public class CookieFunctions extends AbstractRequestModuleFunction {
                 result = Sequence.EMPTY_SEQUENCE;
             }
         } else {
-            result = new StringValue(cookieValue);
+            result = new StringValue(this, cookieValue);
         }
         
         return result;

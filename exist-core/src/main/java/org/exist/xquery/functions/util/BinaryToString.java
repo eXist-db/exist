@@ -115,7 +115,7 @@ public class BinaryToString extends BasicFunction {
     protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
         try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             binary.streamBinaryTo(os);
-            return new StringValue(os.toString(encoding));
+            return new StringValue(this, os.toString(encoding));
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe);
         }
@@ -123,7 +123,7 @@ public class BinaryToString extends BasicFunction {
 
     protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
         try {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)), this);
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(this, "Unsupported encoding: " + encoding);
         }

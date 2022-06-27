@@ -86,7 +86,7 @@ public class HeaderFunctions extends AbstractRequestModuleFunction {
         if(isCalledAs(qnHeaderNames.getLocalPart())) {
             result = new ValueSequence();
             for(final String parameterName : request.getHeaderNames()) {
-                result.add(new StringValue(parameterName));
+                result.add(new StringValue(this, parameterName));
             }
         } else if(isCalledAs(qnHeader.getLocalPart())) {
             final String headerName = args[0].getStringValue();
@@ -116,7 +116,7 @@ public class HeaderFunctions extends AbstractRequestModuleFunction {
                 result = Sequence.EMPTY_SEQUENCE;
             }
         } else {
-            result = new StringValue(headerValue);
+            result = new StringValue(this, headerValue);
         }
         
         return result;

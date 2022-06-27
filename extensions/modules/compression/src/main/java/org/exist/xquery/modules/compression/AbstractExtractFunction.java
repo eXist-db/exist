@@ -78,21 +78,21 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
         //get the entry-filter function and check its types
         if(!(args[1].itemAt(0) instanceof FunctionReference))
-            throw new XPathException("No entry-filter function provided.");
+            throw new XPathException(this, "No entry-filter function provided.");
         entryFilterFunction = (FunctionReference)args[1].itemAt(0);
         FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
         if(entryFilterFunctionSig.getArgumentCount() < 3)
-            throw new XPathException("entry-filter function must take at least 3 arguments.");
+            throw new XPathException(this, "entry-filter function must take at least 3 arguments.");
 
         filterParam = args[2];
 
         //get the entry-data function and check its types
         if(!(args[3].itemAt(0) instanceof FunctionReference))
-            throw new XPathException("No entry-data function provided.");
+            throw new XPathException(this, "No entry-data function provided.");
         entryDataFunction = (FunctionReference)args[3].itemAt(0);
         FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
         if(entryDataFunctionSig.getArgumentCount() < 3)
-            throw new XPathException("entry-data function must take at least 3 arguments");
+            throw new XPathException(this, "entry-data function must take at least 3 arguments");
 
         storeParam = args[4];
 
@@ -148,8 +148,8 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
         //call the entry-filter function
         Sequence filterParams[] = new Sequence[3];
-        filterParams[0] = new StringValue(name);
-        filterParams[1] = new StringValue(dataType);
+        filterParams[0] = new StringValue(this, name);
+        filterParams[1] = new StringValue(this, dataType);
         filterParams[2] = filterParam;
         Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
 
@@ -170,7 +170,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                 String path = entryDataFunctionResult.itemAt(0).getStringValue();
 
-                Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue("/db").toXmldbURI());
+                Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI());
 
                 if (isDirectory) {
 
@@ -231,7 +231,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 } catch (SAXException saxe) {
                     if (entryData.length > 0) {
                         try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
-                            uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis);
+                            uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis, this);
                         }
                     }
                 }

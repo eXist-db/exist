@@ -233,7 +233,7 @@ public class FunctionFactory {
         if (params.size() == 3) {
             op.setCollation((Expression) params.get(2));
         } else {
-            op.setCollation(new StringValue("?strength=identical"));
+            op.setCollation(new StringValue(null, "?strength=identical"));
         }
         return op;
     }

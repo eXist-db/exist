@@ -101,6 +101,6 @@ public class XMLDBXUpdate extends XMLDBAbstractCollectionManipulator
 		}
 		
 		context.getRootExpression().resetState(false);
-		return new IntegerValue(modifications);
+		return new IntegerValue(this, modifications);
 	}
 }

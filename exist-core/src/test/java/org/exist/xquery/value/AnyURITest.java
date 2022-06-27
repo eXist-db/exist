@@ -39,7 +39,7 @@ public class AnyURITest {
 	@Test
     public void fullyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME;
-        AnyURIValue anyUri = new AnyURIValue(escaped);
+        AnyURIValue anyUri = new AnyURIValue(null, escaped);
         assertEquals(anyUri.toXmldbURI(),TestConstants.SPECIAL_URI);
     }
 
@@ -47,7 +47,7 @@ public class AnyURITest {
     public void fullyEscapedStringToURI() throws XPathException {
         URI uri = TestConstants.SPECIAL_URI.getXmldbURI();
         String escaped = TestConstants.SPECIAL_NAME;
-        AnyURIValue anyUri = new AnyURIValue(escaped);
+        AnyURIValue anyUri = new AnyURIValue(null, escaped);
         assertEquals(anyUri.toURI(),uri);
     }
 
@@ -58,7 +58,7 @@ public class AnyURITest {
     @Test
     public void partiallyEscapedStringToXmldbURI() throws XPathException {
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
-        AnyURIValue anyUri = new AnyURIValue(escaped);
+        AnyURIValue anyUri = new AnyURIValue(null, escaped);
         assertEquals(anyUri.toXmldbURI(), TestConstants.SPECIAL_URI);
     }
 
@@ -66,7 +66,7 @@ public class AnyURITest {
     public void partiallyEscapedStringToURI() throws XPathException {
         URI uri = TestConstants.SPECIAL_URI.getXmldbURI();
         String escaped = TestConstants.SPECIAL_NAME.replaceAll("%20"," ").replaceAll("%C3%A0","\u00E0");
-        AnyURIValue anyUri = new AnyURIValue(escaped);
+        AnyURIValue anyUri = new AnyURIValue(null, escaped);
         assertEquals(anyUri.toURI(),uri);
     }
 }

@@ -91,11 +91,11 @@ public class MarshallerTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             ValueSequence values = new ValueSequence(3);
-            values.add(new StringValue("foo"));
-            values.add(new IntegerValue(2000, Type.INTEGER));
-            values.add(new IntegerValue(1000, Type.LONG));
-            values.add(new BooleanValue(false));
-            values.add(new DoubleValue(1000.1));
+            values.add(new StringValue(null, "foo"));
+            values.add(new IntegerValue(null, 2000, Type.INTEGER));
+            values.add(new IntegerValue(null, 1000, Type.LONG));
+            values.add(new BooleanValue(null, false));
+            values.add(new DoubleValue(null, 1000.1));
 
             StringWriter writer = new StringWriter();
             SAXSerializer serializer = new SAXSerializer(writer, new Properties());

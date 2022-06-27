@@ -279,7 +279,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean equals(final NodeValue other) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException((Expression) null, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(otherNode.doc.getDocId() != doc.getDocId()) {
@@ -291,7 +291,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean before(final NodeValue other, final boolean isPreceding) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException((Expression) null, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(doc.getDocId() != otherNode.doc.getDocId()) {
@@ -304,7 +304,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean after(final NodeValue other, final boolean isFollowing) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException((Expression) null, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(doc.getDocId() != otherNode.doc.getDocId()) {
@@ -676,12 +676,12 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        return UntypedAtomicValue.convertTo(getNodeValue(), requiredType);
+        return UntypedAtomicValue.convertTo(getNodeValue(), requiredType, null);
     }
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        return new UntypedAtomicValue(getNodeValue());
+        return new UntypedAtomicValue(null, getNodeValue());
     }
 
     @Override
@@ -756,7 +756,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         } else if(target.isAssignableFrom(Node.class) || target == Object.class) {
             return (T) getNode();
         } else {
-            final StringValue v = new StringValue(getStringValue());
+            final StringValue v = new StringValue(null, getStringValue());
             return v.toJavaObject(target);
         }
     }

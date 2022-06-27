@@ -88,12 +88,12 @@ public class IndexKeys extends BasicFunction {
             final Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
             for (int j = 0; j < len; j++) {
-                params[0] = new StringValue(occur[j].getTerm().toString());
-                data.add(new IntegerValue(occur[j].getOccurrences(),
+                params[0] = new StringValue(this, occur[j].getTerm().toString());
+                data.add(new IntegerValue(this, occur[j].getOccurrences(),
                         Type.UNSIGNED_INT));
-                data.add(new IntegerValue(occur[j].getDocuments(),
+                data.add(new IntegerValue(this, occur[j].getDocuments(),
                         Type.UNSIGNED_INT));
-                data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+                data.add(new IntegerValue(this, j + 1, Type.UNSIGNED_INT));
                 params[1] = data;
 
                 result.addAll(ref.evalFunction(Sequence.EMPTY_SEQUENCE, null, params));

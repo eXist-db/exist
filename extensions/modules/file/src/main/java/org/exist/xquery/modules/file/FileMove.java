@@ -86,10 +86,10 @@ public class FileMove extends BasicFunction {
 		Sequence moved 	= BooleanValue.FALSE;
 
 		final String inputPath1 = args[0].getStringValue();
-        final Path src = FileModuleHelper.getFile(inputPath1);
+        final Path src = FileModuleHelper.getFile(inputPath1, this);
 
 		final String inputPath2 = args[1].getStringValue();
-        final Path dest = FileModuleHelper.getFile(inputPath2);
+        final Path dest = FileModuleHelper.getFile(inputPath2, this);
 
 		try {
 			Files.move(src, dest);

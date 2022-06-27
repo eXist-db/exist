@@ -128,7 +128,7 @@ public class ParsingFunctions extends BasicFunction {
                 logger.debug("Error while parsing XML: {}", e.getMessage(), e);
             } catch (final IOException e) {
                 throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
-                        new StringValue(xml), e);
+                        new StringValue(this, xml), e);
             } finally {
                 if (xr != null) {
                     parserPool.returnXMLReader(xr);

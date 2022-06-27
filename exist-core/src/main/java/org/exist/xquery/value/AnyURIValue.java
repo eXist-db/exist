@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.fn.FunEscapeURI;
 
@@ -39,7 +40,7 @@ import java.util.BitSet;
  */
 public class    AnyURIValue extends AtomicValue {
 
-    public static final AnyURIValue EMPTY_URI = new AnyURIValue();
+    public static final AnyURIValue EMPTY_URI = new AnyURIValue(null);
     static final int caseDiff = ('a' - 'A');
     static BitSet needEncoding;
 
@@ -91,19 +92,23 @@ public class    AnyURIValue extends AtomicValue {
     private final String uri;
     //TODO: save escaped(URI) version?
 
-    AnyURIValue() {
+    AnyURIValue(final Expression expression) {
+        super(expression);
         this.uri = "";
     }
 
-    public AnyURIValue(URI uri) {
+    public AnyURIValue(final Expression expression, URI uri) {
+        super(expression);
         this.uri = uri.toString();
     }
 
-    public AnyURIValue(XmldbURI uri) {
+    public AnyURIValue(final Expression expression, XmldbURI uri) {
+        super(expression);
         this.uri = uri.toString();
     }
 
-    public AnyURIValue(String s) throws XPathException {
+    public AnyURIValue(final Expression expression, String s) throws XPathException {
+        super(expression);
         final String wsTrimString = normalizeEscaped(StringValue.trimWhitespace(s));
         final String escapedString = escape(wsTrimString);
         try {
@@ -112,7 +117,7 @@ public class    AnyURIValue extends AtomicValue {
             try {
                 XmldbURI.xmldbUriFor(escapedString);
             } catch (final URISyntaxException ex) {
-                throw new XPathException(
+                throw new XPathException(getExpression(), 
                         "Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
             }
         }
@@ -257,11 +262,11 @@ public class    AnyURIValue extends AtomicValue {
             case Type.ANY_URI:
                 return this;
             case Type.STRING:
-                return new StringValue(uri);
+                return new StringValue(getExpression(), uri);
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:anyURI to "
                                 + Type.getTypeName(requiredType));
         }
@@ -286,7 +291,7 @@ public class    AnyURIValue extends AtomicValue {
                 case LTEQ:
                     return cmp <= 0;
                 default:
-                    throw new XPathException(ErrorCodes.XPTY0004,
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                             "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
             }
         } else {
@@ -298,7 +303,7 @@ public class    AnyURIValue extends AtomicValue {
             } catch (XPathException ex) {
 
                 if (ex.getErrorCode() == ErrorCodes.FORG0001) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
                 }
                 throw ex;
             }
@@ -323,14 +328,14 @@ public class    AnyURIValue extends AtomicValue {
      * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
      */
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("max is not supported for values of type xs:anyURI");
+        throw new XPathException(getExpression(), "max is not supported for values of type xs:anyURI");
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
      */
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("min is not supported for values of type xs:anyURI");
+        throw new XPathException(getExpression(), "min is not supported for values of type xs:anyURI");
     }
 
     /* (non-Javadoc)
@@ -373,7 +378,7 @@ public class    AnyURIValue extends AtomicValue {
             try {
                 return (T) new URL(uri);
             } catch (final MalformedURLException e) {
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "failed to convert " + uri + " into a Java URL: " + e.getMessage(),
                         e);
             }
@@ -383,7 +388,7 @@ public class    AnyURIValue extends AtomicValue {
             return (T) uri;
         }
 
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "
@@ -394,7 +399,7 @@ public class    AnyURIValue extends AtomicValue {
         try {
             return XmldbURI.xmldbUriFor(uri, false);
         } catch (final URISyntaxException e) {
-            throw new XPathException(ErrorCodes.FORG0001,
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                     "failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
                     e);
         }
@@ -404,7 +409,7 @@ public class    AnyURIValue extends AtomicValue {
         try {
             return new URI(escape(uri));
         } catch (final URISyntaxException e) {
-            throw new XPathException(ErrorCodes.FORG0001,
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                     "failed to convert " + uri + " into an URI: " + e.getMessage(),
                     e);
         }

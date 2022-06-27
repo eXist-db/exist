@@ -168,7 +168,7 @@ public class XQueryDeclareContextItemTest {
         final XQuery xquery = pool.getXQueryService();
 
         try(final DBBroker broker = pool.getBroker()) {
-            final Sequence result = xquery.execute(broker, query, new IntegerValue(3));
+            final Sequence result = xquery.execute(broker, query, new IntegerValue(null, 3));
             assertEquals(1, result.getItemCount());
             assertEquals(7, (int)result.itemAt(0).toJavaObject(int.class));
         }
@@ -202,7 +202,7 @@ public class XQueryDeclareContextItemTest {
         final XQuery xquery = pool.getXQueryService();
 
         try(final DBBroker broker = pool.getBroker()) {
-            final Sequence result = xquery.execute(broker, query, new IntegerValue(20));
+            final Sequence result = xquery.execute(broker, query, new IntegerValue(null, 20));
             assertEquals(1, result.getItemCount());
             assertEquals(24, (int)result.itemAt(0).toJavaObject(int.class));
         }

@@ -91,7 +91,7 @@ public class IndexType extends BasicFunction {
 	        if (nodes.getIndexType() == Type.ANY_TYPE)
 	        	{result = Sequence.EMPTY_SEQUENCE;}
 	        else
-	        	{result = new StringValue(Type.getTypeName(nodes.getIndexType()));}  
+	        	{result = new StringValue(this, Type.getTypeName(nodes.getIndexType()));}
     	}
     	//TODO : consider modularized indexes. We should thus return a * sequence...
     	

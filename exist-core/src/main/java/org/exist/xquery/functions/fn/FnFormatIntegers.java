@@ -95,6 +95,6 @@ public class FnFormatIntegers extends BasicFunction {
         }
         languages.add(context.getDefaultLanguage());
 
-        return new StringValue(picture.formatInteger(bigInteger, languages));
+        return new StringValue(this, picture.formatInteger(bigInteger, languages));
     }
 }

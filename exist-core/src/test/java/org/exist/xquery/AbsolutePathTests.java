@@ -126,7 +126,7 @@ public class AbsolutePathTests extends XQueryCompilationTest {
 
     @Test
     public void topLevelAbsolutePath() throws EXistException, PermissionDeniedException {
-        final Sequence expected = new IntegerValue(1);
+        final Sequence expected = new IntegerValue(null, 1);
 
         final String query = "count(//*)";
         final Either<XPathException, Sequence> actual = executeQuery(query);

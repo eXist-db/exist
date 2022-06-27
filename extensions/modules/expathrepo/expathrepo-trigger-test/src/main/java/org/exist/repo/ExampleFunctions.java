@@ -78,7 +78,7 @@ public class ExampleFunctions extends BasicFunction {
         switch (getName().getLocalPart()) {
 
             case FS_HELLO_WORLD_NAME:
-                return sayHello(Optional.of(new StringValue("World")));
+                return sayHello(Optional.of(new StringValue(this, "World")));
 
             case FS_SAY_HELLO_NAME:
                 final Optional<StringValue> name = args[0].isEmpty() ? Optional.empty() : Optional.of((StringValue)args[0].itemAt(0));
@@ -126,6 +126,6 @@ public class ExampleFunctions extends BasicFunction {
      */
     private IntegerValue add(final IntegerValue a, final IntegerValue b) throws XPathException {
         final int result = a.getInt() + b.getInt();
-        return new IntegerValue(result);
+        return new IntegerValue(this, result);
     }
 }

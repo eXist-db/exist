@@ -47,7 +47,7 @@ public class PermissionsFunctionModeConversionTest {
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
        Sequence args[] = {
-           new StringValue("rwxr-x---")
+           new StringValue(null, "rwxr-x---")
        };
        
        final Sequence result = permissionsFunctions.eval(args, null);
@@ -62,7 +62,7 @@ public class PermissionsFunctionModeConversionTest {
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
        Sequence args[] = {
-           new StringValue("invalid")
+           new StringValue(null, "invalid")
        };
        
        permissionsFunctions.eval(args, null);
@@ -74,7 +74,7 @@ public class PermissionsFunctionModeConversionTest {
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_OCTAL_TO_MODE);
        Sequence args[] = {
-           new StringValue("0750")
+           new StringValue(null, "0750")
        };
        
        final Sequence result = permissionsFunctions.eval(args, null);

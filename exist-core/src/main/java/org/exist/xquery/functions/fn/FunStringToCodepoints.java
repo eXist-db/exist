@@ -24,15 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.apache.xerces.util.XMLChar;
 import org.exist.dom.QName;
 import org.exist.util.XMLCharUtil;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
@@ -69,7 +61,7 @@ public class FunStringToCodepoints extends BasicFunction {
         if (args[0].isEmpty())
 			{result =  Sequence.EMPTY_SEQUENCE;}
         else {
-    		result = getCodePoints(args[0].getStringValue());
+    		result = getCodePoints(this, args[0].getStringValue());
         }
         
         if (context.getProfiler().isEnabled()) 
@@ -84,7 +76,7 @@ public class FunStringToCodepoints extends BasicFunction {
      * @param s a <code>String</code> value
      * @return a <code>ValueSequence</code> value
      */
-    public static ValueSequence getCodePoints(final String s) {
+    public static ValueSequence getCodePoints(final Expression expression, final String s) {
         final ValueSequence codepoints = new ValueSequence();
         char ch;
         IntegerValue next;
@@ -92,9 +84,9 @@ public class FunStringToCodepoints extends BasicFunction {
             ch = s.charAt(i);
             if (XMLCharUtil.isSurrogate(ch)) {
                 final int supp = XMLChar.supplemental(ch, s.charAt(++i));
-                next = new IntegerValue(supp);
+                next = new IntegerValue(expression, supp);
             } else {
-                next = new IntegerValue((int) ch);
+                next = new IntegerValue(expression, (int) ch);
             }
             codepoints.add(next);
         }

@@ -24,6 +24,7 @@ package org.exist.xquery.functions.integer;
 
 import com.ibm.icu.text.RuleBasedNumberFormat;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
@@ -67,7 +68,7 @@ public abstract class IntegerPicture {
             formatModifier = new FormatModifier(pictureFormat.substring(splitPosition + 1));
         }
         if (primaryFormatToken.isEmpty()) {
-            throw new XPathException(ErrorCodes.FODF1310, "Invalid (empty) primary format token in integer format token: " + primaryFormatToken);
+            throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Invalid (empty) primary format token in integer format token: " + primaryFormatToken);
         }
 
         // type 1 matcher (some digits)
@@ -79,7 +80,7 @@ public abstract class IntegerPicture {
         // incorrect type 1 matcher (and not anything else)
         final Matcher invalidDigitMatcher = IntegerPicture.invalidDigitPattern.matcher(primaryFormatToken);
         if (invalidDigitMatcher.find()) {
-            throw new XPathException(ErrorCodes.FODF1310, "Invalid primary format token is not a valid decimal digital pattern: " + primaryFormatToken);
+            throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Invalid primary format token is not a valid decimal digital pattern: " + primaryFormatToken);
         }
 
         // specifically defined format token rules 2-8
@@ -138,7 +139,7 @@ public abstract class IntegerPicture {
             }
         }
         assert languageILE != null;
-        throw new XPathException(ErrorCodes.FODF1310, languageILE.getMessage());
+        throw new XPathException((Expression) null, ErrorCodes.FODF1310, languageILE.getMessage());
     }
 
     public final String formatInteger(final BigInteger bigInteger, final List<String> languages) throws XPathException {

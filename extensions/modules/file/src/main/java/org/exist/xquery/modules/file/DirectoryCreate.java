@@ -94,7 +94,7 @@ public class DirectoryCreate extends BasicFunction {
         Sequence created = BooleanValue.FALSE;
         
         final String inputPath = args[0].itemAt(0).getStringValue();
-        final Path file =  FileModuleHelper.getFile(inputPath);
+        final Path file =  FileModuleHelper.getFile(inputPath, this);
 
         try {
             if (isCalledAs("mkdir") && Files.notExists(file)) {

@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
 import io.lacuna.bifurcan.Maps;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -47,8 +48,8 @@ public class SingleKeyMapType extends AbstractMapType {
     private Sequence value;
     private @Nullable Collator collator;
 
-    public SingleKeyMapType(final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
-        super(context);
+    public SingleKeyMapType(final Expression expression, final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
+        super(expression, context);
         this.key = key;
         this.value = value;
         this.collator = collator;
@@ -69,7 +70,7 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public AbstractMapType merge(final Iterable<AbstractMapType> others) {
-        final MapType map = new MapType(context, collator, key, value);
+        final MapType map = new MapType(getExpression(), context, collator, key, value);
         return map.merge(others);
     }
 
@@ -86,7 +87,7 @@ public class SingleKeyMapType extends AbstractMapType {
             keyType = MIXED_KEY_TYPES;
         }
 
-        return new MapType(context, map.forked(), keyType);
+        return new MapType(getExpression(), context, map.forked(), keyType);
     }
 
     @Override
@@ -109,12 +110,12 @@ public class SingleKeyMapType extends AbstractMapType {
         for (final AtomicValue key: keysAtomicValues) {
             if (keysEqual(collator, key, this.key)) {
                 // single key map, and we matched on our key... return an empty map!
-                return new MapType(context);
+                return new MapType(getExpression(), context);
             }
         }
 
         // nothing to remove, return a copy
-        return new SingleKeyMapType(context, collator, key, value);
+        return new SingleKeyMapType(getExpression(), context, collator, key, value);
     }
 
     @Override

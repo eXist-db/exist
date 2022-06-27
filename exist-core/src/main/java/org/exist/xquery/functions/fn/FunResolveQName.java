@@ -135,7 +135,7 @@ public class FunResolveQName extends BasicFunction {
                     final String localPart = QName.extractLocalName(qnameString);
                     final QName qn = new QName(localPart, uri, prefix);
 
-                    final QNameValue result = new QNameValue(context, qn);
+                    final QNameValue result = new QNameValue(this, context, qn);
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().end(this, "", result);
                     }

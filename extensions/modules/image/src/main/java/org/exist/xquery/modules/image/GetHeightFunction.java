@@ -116,7 +116,7 @@ public class GetHeightFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         } else {
             //return the Height of the image
-            return new IntegerValue(iHeight);
+            return new IntegerValue(this, iHeight);
         }
     }
 }

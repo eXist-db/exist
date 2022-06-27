@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
@@ -77,27 +78,26 @@ public class XPathUtil {
         } else if (obj instanceof Sequence) {
             return (Sequence) obj;
         } else if (obj instanceof String) {
-            final StringValue v = new StringValue((String) obj);
+            final StringValue v = new StringValue(null, (String) obj);
             return (expandChars ? v.expand() : v);
         } else if (obj instanceof Boolean) {
             return BooleanValue.valueOf(((Boolean) obj));
         } else if (obj instanceof Float) {
-            return new FloatValue(((Float) obj));
+            return new FloatValue(null, ((Float) obj));
         } else if (obj instanceof Double) {
-            return new DoubleValue(((Double) obj));
+            return new DoubleValue(null, ((Double) obj));
         } else if (obj instanceof Short) {
-            return new IntegerValue(((Short) obj), Type.SHORT);
+            return new IntegerValue(null, ((Short) obj), Type.SHORT);
         } else if (obj instanceof Integer) {
-            return new IntegerValue(((Integer) obj), Type.INT);
+            return new IntegerValue(null, ((Integer) obj), Type.INT);
         } else if (obj instanceof Long) {
-            return new IntegerValue(((Long) obj), Type.LONG);
+            return new IntegerValue(null, ((Long) obj), Type.LONG);
         } else if (obj instanceof BigInteger) {
-             return new IntegerValue((BigInteger) obj);
+             return new IntegerValue(null, (BigInteger) obj);
         } else if (obj instanceof BigDecimal) {
-            return new DecimalValue((BigDecimal) obj);
+            return new DecimalValue(null, (BigDecimal) obj);
         } else if (obj instanceof byte[]) {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj));
-
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj), null);
         } else if (obj instanceof ResourceSet) {
             final Sequence seq = new AVLTreeNodeSet();
             try {
@@ -106,7 +106,7 @@ public class XPathUtil {
                     seq.add(getNode(broker, (XMLResource) it.nextResource()));
                 }
             } catch (final XMLDBException xe) {
-                throw new XPathException("Failed to convert ResourceSet to node: " + xe.getMessage());
+                throw new XPathException((Expression) null, "Failed to convert ResourceSet to node: " + xe.getMessage());
             }
             return seq;
 
@@ -128,7 +128,7 @@ public class XPathUtil {
                     return builder.getDocument().getNode(1);
                 }
             } catch (final SAXException e) {
-                throw new XPathException(
+                throw new XPathException((Expression) null,
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
@@ -171,7 +171,7 @@ public class XPathUtil {
                 }
                 return seq;
             } catch (final SAXException e) {
-                throw new XPathException(
+                throw new XPathException((Expression) null,
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
@@ -196,7 +196,7 @@ public class XPathUtil {
             return seq;
 
         } else {
-            return new JavaObjectValue(obj);
+            return new JavaObjectValue(null, obj);
         }
     }
 
@@ -235,7 +235,7 @@ public class XPathUtil {
             try {
                 return lres.getNode();
             } catch (final XMLDBException xe) {
-                throw new XPathException("Failed to convert LocalXMLResource to node: " + xe.getMessage());
+                throw new XPathException((Expression) null, "Failed to convert LocalXMLResource to node: " + xe.getMessage());
             }
         }
 
@@ -243,11 +243,11 @@ public class XPathUtil {
         try {
             document = broker.getCollection(XmldbURI.xmldbUriFor(xres.getParentCollection().getName())).getDocument(broker, XmldbURI.xmldbUriFor(xres.getDocumentId()));
         } catch (final URISyntaxException xe) {
-            throw new XPathException(xe);
+            throw new XPathException((Expression) null, xe);
         } catch (final XMLDBException xe) {
-            throw new XPathException("Failed to get document for RemoteXMLResource: " + xe.getMessage());
+            throw new XPathException((Expression) null, "Failed to get document for RemoteXMLResource: " + xe.getMessage());
         } catch (final PermissionDeniedException pde) {
-            throw new XPathException("Failed to get document: " + pde.getMessage());
+            throw new XPathException((Expression) null, "Failed to get document: " + pde.getMessage());
         }
         final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromString(((RemoteXMLResource) xres).getNodeId());
         return new NodeProxy(document, nodeId);

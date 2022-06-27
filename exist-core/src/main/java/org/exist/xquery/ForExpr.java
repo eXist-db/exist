@@ -90,7 +90,7 @@ public class ForExpr extends BindingExpression {
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
             returnExpr.analyze(newContextInfo);
         } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix");
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix");
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
@@ -164,7 +164,7 @@ public class ForExpr extends BindingExpression {
                 }
             }
 
-            final IntegerValue atVal = new IntegerValue(1);
+            final IntegerValue atVal = new IntegerValue(this, 1);
             if (positionalVariable != null) {
                 at.setValue(atVal);
             }
@@ -188,7 +188,7 @@ public class ForExpr extends BindingExpression {
                 }
             }
         } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + positionalVariable);
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + positionalVariable);
         } finally {
             // restore the local variable stack 
             context.popLocalVariables(mark, resultSequence);
@@ -235,7 +235,7 @@ public class ForExpr extends BindingExpression {
         context.proceed(this);
         context.setContextSequencePosition(p, in);
         if (positionalVariable != null) {
-            at.setValue(new IntegerValue(p + 1));
+            at.setValue(new IntegerValue(this, p + 1));
         }
         final Sequence contextSequence = contextItem.toSequence();
         // set variable value to current item

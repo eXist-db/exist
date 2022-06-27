@@ -105,7 +105,7 @@ public class FunStringJoin extends BasicFunction {
 			out.append(next.getStringValue());
 			gotOne = true;
 		}
-		final Sequence result = new StringValue(out.toString());
+		final Sequence result = new StringValue(this, out.toString());
         
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

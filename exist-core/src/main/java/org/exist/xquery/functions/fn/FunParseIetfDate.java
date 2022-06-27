@@ -75,9 +75,9 @@ public class FunParseIetfDate extends BasicFunction {
         final Parser p = new Parser(value.trim());
 
         try {
-            return new DateTimeValue(p.parse());
+            return new DateTimeValue(this, p.parse());
         } catch (final IllegalArgumentException i) {
-            throw new XPathException(ErrorCodes.FORG0010, "Invalid Date time " + value, i);
+            throw new XPathException(this, ErrorCodes.FORG0010, "Invalid Date time " + value, i);
         }
     }
 

@@ -210,7 +210,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     targetSRS = args[1].itemAt(0).getStringValue().trim();
                     geometry = indexWorker.transformGeometry(geometry, sourceSRS, targetSRS);
@@ -225,11 +225,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         geometry = wktReader.read(wkt);
                     } catch (ParseException e) {
                         logger.error(e.getMessage());
-                        throw new XPathException(e);
+                        throw new XPathException(this, e);
                     }
                     if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     targetSRS = args[1].itemAt(0).getStringValue().trim();
                 }
@@ -251,7 +251,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry == null) { 
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
 
                     double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
@@ -270,7 +270,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         default:
                         {
                             logger.error("Invalid line end style");
-                            throw new XPathException("Invalid line end style");
+                            throw new XPathException(this, "Invalid line end style");
                         }
                     }
                     geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);
@@ -293,7 +293,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     geometry = geometry.getEnvelope();
                 }
@@ -315,7 +315,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry == null) { 
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     geometry = geometry.convexHull();
                 }
@@ -337,7 +337,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     geometry = geometry.getBoundary();
                 }
@@ -377,16 +377,16 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     if (geometry1 == null) {
                         logger.error("Unable to get a geometry from the first node");
-                        throw new XPathException("Unable to get a geometry from the first node");
+                        throw new XPathException(this, "Unable to get a geometry from the first node");
                     }
                     if (geometry2 == null) {
                         logger.error("Unable to get a geometry from the second node");
-                        throw new XPathException("Unable to get a geometry from the second node");
+                        throw new XPathException(this, "Unable to get a geometry from the second node");
                     }
                     if (srsName1 == null)
-                        throw new XPathException("Unable to get a SRS for the first geometry");
+                        throw new XPathException(this, "Unable to get a SRS for the first geometry");
                     if (srsName2 == null)
-                        throw new XPathException("Unable to get a SRS for the second geometry");
+                        throw new XPathException(this, "Unable to get a SRS for the second geometry");
 
                     //Transform the second geometry in the SRS of the first one if necessary
                     if (!srsName1.equalsIgnoreCase(srsName2)) {
@@ -411,7 +411,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
                 if (gmlPrefix == null) {
                     logger.error("namespace is not defined:" + SpatialModule.PREFIX);
-                    throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");
+                    throw new XPathException(this, "'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");
                 }
 
                 context.pushDocumentContext();
@@ -425,7 +425,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             }
         } catch (SpatialIndexException e) {
             logger.error(e.getMessage());
-            throw new XPathException(e);
+            throw new XPathException(this, e);
         }
         return result;
     }

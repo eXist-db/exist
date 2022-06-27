@@ -234,23 +234,23 @@ public class FunGetDateComponent extends BasicFunction {
 			final Sequence arg = args[0];
 			final AbstractDateTimeValue date = (AbstractDateTimeValue) arg.itemAt(0);
 			if (isCalledAs("day-from-dateTime") || isCalledAs("day-from-date")) {
-				result = new IntegerValue(date.getPart(DateValue.DAY), Type.INTEGER);
+				result = new IntegerValue(this, date.getPart(DateValue.DAY), Type.INTEGER);
 			} else if (isCalledAs("month-from-dateTime") || isCalledAs("month-from-date")) {
-				result = new IntegerValue(date.getPart(DateValue.MONTH),
+				result = new IntegerValue(this, date.getPart(DateValue.MONTH),
 						Type.INTEGER);
 			} else if (isCalledAs("year-from-dateTime") || isCalledAs("year-from-date")) {
-				result = new IntegerValue(date.getPart(DateValue.YEAR),
+				result = new IntegerValue(this, date.getPart(DateValue.YEAR),
 						Type.INTEGER);
 			} else if (isCalledAs("hours-from-dateTime") || isCalledAs("hours-from-time")) {
-				result = new IntegerValue(date.getPart(DateValue.HOUR),
+				result = new IntegerValue(this, date.getPart(DateValue.HOUR),
 						Type.INTEGER);
 			} else if (isCalledAs("minutes-from-dateTime") || isCalledAs("minutes-from-time")) {
-				result = new IntegerValue(date.getPart(DateValue.MINUTE),
+				result = new IntegerValue(this, date.getPart(DateValue.MINUTE),
 						Type.INTEGER);
 			} else if (isCalledAs("seconds-from-dateTime") || isCalledAs("seconds-from-time")) {
-				result = new IntegerValue(date.calendar.getSecond()).convertTo(Type.DECIMAL);
+				result = new IntegerValue(this, date.calendar.getSecond()).convertTo(Type.DECIMAL);
 				if (date.calendar.getFractionalSecond() != null)						
-					{result = ((DecimalValue)result).plus(new DecimalValue(date.calendar.getFractionalSecond()));}			
+					{result = ((DecimalValue)result).plus(new DecimalValue(this, date.calendar.getFractionalSecond()));}
 			} else if (isCalledAs("timezone-from-dateTime") || isCalledAs("timezone-from-date") || isCalledAs("timezone-from-time")) {
 				result = date.getTimezone();
 			} else {

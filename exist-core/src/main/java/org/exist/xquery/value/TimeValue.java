@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -35,22 +36,22 @@ import java.util.GregorianCalendar;
  */
 public class TimeValue extends AbstractDateTimeValue {
 
-    public TimeValue() throws XPathException {
-        super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    public TimeValue(final Expression expression) throws XPathException {
+        super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
-    public TimeValue(XMLGregorianCalendar calendar) throws XPathException {
-        super(stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    public TimeValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
+        super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
     }
 
-    public TimeValue(String timeValue) throws XPathException {
-        super(timeValue);
+    public TimeValue(final Expression expression, String timeValue) throws XPathException {
+        super(expression, timeValue);
         try {
             if (calendar.getXMLSchemaType() != DatatypeConstants.TIME) {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException("xs:time instance must not have year, month or day fields set");
+            throw new XPathException(expression, "xs:time instance must not have year, month or day fields set");
         }
     }
 
@@ -63,7 +64,7 @@ public class TimeValue extends AbstractDateTimeValue {
     }
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException {
-        return new TimeValue(cal);
+        return new TimeValue(getExpression(), cal);
     }
 
     protected QName getXMLSchemaType() {
@@ -83,11 +84,11 @@ public class TimeValue extends AbstractDateTimeValue {
 //		case Type.DATE_TIME :
 //			xs:time -> xs:dateTime conversion not defined in Funcs&Ops 17.1.5
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:time to "
                                 + Type.getTypeName(requiredType));
         }
@@ -96,11 +97,11 @@ public class TimeValue extends AbstractDateTimeValue {
     public ComputableValue minus(ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.TIME:
-                return new DayTimeDurationValue(getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
+                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
             case Type.DAY_TIME_DURATION:
                 return ((DayTimeDurationValue) other).negate().plus(this);
             default:
-                throw new XPathException(
+                throw new XPathException(getExpression(),
                         "Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }
@@ -110,7 +111,7 @@ public class TimeValue extends AbstractDateTimeValue {
         if (other.getType() == Type.DAY_TIME_DURATION) {
             return other.plus(this);
         }
-        throw new XPathException(
+        throw new XPathException(getExpression(),
                 "Operand to plus should be of type xdt:dayTimeDuration; got: "
                         + Type.getTypeName(other.getType()));
     }

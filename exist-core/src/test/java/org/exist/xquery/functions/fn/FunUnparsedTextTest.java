@@ -90,7 +90,7 @@ public class FunUnparsedTextTest {
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
             context.addDynamicallyAvailableTextResource(baseUri + textRelativeUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();
@@ -137,7 +137,7 @@ public class FunUnparsedTextTest {
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
             context.addDynamicallyAvailableTextResource(baseUri + textRelativeUri, UTF_8, (broker2, transaction, uri, charset) -> new InputStreamReader(new ByteArrayInputStream(text.getBytes(UTF_8)), charset));
 
             final XQuery xqueryService = pool.getXQueryService();

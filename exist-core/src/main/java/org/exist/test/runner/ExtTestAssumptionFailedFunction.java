@@ -75,7 +75,7 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
     }
 
     public AssumptionViolatedException assumptionMapAsAssumptionViolationException(final MapType assumptionMap) throws XPathException {
-        final Sequence seqName = assumptionMap.get(new StringValue("name"));
+        final Sequence seqName = assumptionMap.get(new StringValue(this, "name"));
         final String name;
         if(seqName != null && !seqName.isEmpty()) {
             name = seqName.itemAt(0).getStringValue();
@@ -83,7 +83,7 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
             name = "";
         }
 
-        final Sequence seqValue = assumptionMap.get(new StringValue("value"));
+        final Sequence seqValue = assumptionMap.get(new StringValue(this, "value"));
         final String value;
         if(seqValue != null && !seqValue.isEmpty()) {
             value = seqValue.itemAt(0).getStringValue();

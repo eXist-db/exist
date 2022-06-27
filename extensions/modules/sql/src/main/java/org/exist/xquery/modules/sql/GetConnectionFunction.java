@@ -129,7 +129,7 @@ public class GetConnectionFunction extends BasicFunction {
         }
 
         // store the Connection and return the uid handle of the Connection
-        return new IntegerValue(SQLModule.storeConnection(context, connection), Type.LONG);
+        return new IntegerValue(this, SQLModule.storeConnection(context, connection), Type.LONG);
     }
 
     private Connection getConnection(final Sequence[] args) throws XPathException {

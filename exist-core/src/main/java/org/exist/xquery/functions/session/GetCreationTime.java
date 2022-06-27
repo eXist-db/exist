@@ -61,6 +61,6 @@ public class GetCreationTime extends SessionFunction {
 
         final Date creationTime = withValidSession(session.get(), SessionWrapper::getCreationTime).map(Date::new)
                 .orElseGet(() -> new Date(0));
-        return new DateTimeValue(creationTime);
+        return new DateTimeValue(this, creationTime);
     }
 }

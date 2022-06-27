@@ -175,7 +175,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
                         //binary data
                         try {
 
-                            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);
+                            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is, null);
                             if (binaryValue != null) {
                                 result = new SequenceImpl<>(new BinaryTypedValue(binaryValue));
                             }
@@ -297,6 +297,6 @@ class RestXqServiceImpl extends AbstractRestXqService {
             bos.write(is);
             s = new String(bos.toByteArray(), encoding);
         }
-        return new StringValue(s);
+        return new StringValue(null, s);
     }
 }

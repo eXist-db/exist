@@ -66,7 +66,7 @@ public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 		try {
 			final String[] collections = collection.listResources();
 			for (String s : collections) {
-				result.add(new StringValue(s));
+				result.add(new StringValue(this, s));
 			}
 			return result;
 		} catch (final XMLDBException e) {

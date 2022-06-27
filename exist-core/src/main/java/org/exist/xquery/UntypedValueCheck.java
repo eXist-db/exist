@@ -107,7 +107,7 @@ public class UntypedValueCheck extends AbstractExpression {
                     return item;
                 }
                 if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER) {
-                    throw new XPathException(ErrorCodes.FORG0001,
+                    throw new XPathException(this, ErrorCodes.FORG0001,
                             "cannot convert '"
                                     + Type.getTypeName(item.getType())
                                     + " ("

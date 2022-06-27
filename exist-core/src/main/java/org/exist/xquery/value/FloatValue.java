@@ -26,6 +26,7 @@ import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.value.FloatingPointConverter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -40,18 +41,20 @@ public class FloatValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^24, 
     // and e is an integer between -149 and 104, inclusive.
     // In addition also -INF, +INF and NaN.
-    public final static FloatValue NaN = new FloatValue(Float.NaN);
-    public final static FloatValue POSITIVE_INFINITY = new FloatValue(Float.POSITIVE_INFINITY);
-    public final static FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
-    public final static FloatValue ZERO = new FloatValue(0.0E0f);
+    public final static FloatValue NaN = new FloatValue(null, Float.NaN);
+    public final static FloatValue POSITIVE_INFINITY = new FloatValue(null, Float.POSITIVE_INFINITY);
+    public final static FloatValue NEGATIVE_INFINITY = new FloatValue(null, Float.NEGATIVE_INFINITY);
+    public final static FloatValue ZERO = new FloatValue(null, 0.0E0f);
 
     final float value;
 
-    public FloatValue(float value) {
+    public FloatValue(final Expression expression, float value) {
+        super(expression);
         this.value = value;
     }
 
-    public FloatValue(String stringValue) throws XPathException {
+    public FloatValue(final Expression expression, String stringValue) throws XPathException {
+        super(expression);
         try {
             if ("INF".equals(stringValue)) {
                 value = Float.POSITIVE_INFINITY;
@@ -63,7 +66,7 @@ public class FloatValue extends NumericValue {
                 value = Float.parseFloat(stringValue);
             }
         } catch (final NumberFormatException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "cannot construct "
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct "
                     + Type.getTypeName(this.getItemType())
                     + " from \""
                     + getStringValue()
@@ -156,7 +159,7 @@ public class FloatValue extends NumericValue {
         if (isInfinite()) {
             return false;
         }
-        return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
+        return new DecimalValue(getExpression(), new BigDecimal(value)).hasFractionalPart();
     }
 
     /* (non-Javadoc)
@@ -170,11 +173,11 @@ public class FloatValue extends NumericValue {
             case Type.FLOAT:
                 return this;
             case Type.DOUBLE:
-                return new DoubleValue(value);
+                return new DoubleValue(getExpression(), value);
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.DECIMAL:
-                return new DecimalValue(value);
+                return new DecimalValue(getExpression(), value);
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
             case Type.NEGATIVE_INTEGER:
@@ -189,9 +192,9 @@ public class FloatValue extends NumericValue {
             case Type.UNSIGNED_BYTE:
             case Type.POSITIVE_INTEGER:
                 if (!(Float.isInfinite(value) || Float.isNaN(value))) {
-                    return new IntegerValue((long) value, requiredType);
+                    return new IntegerValue(getExpression(), (long) value, requiredType);
                 } else {
-                    throw new XPathException(ErrorCodes.FOCA0002, "cannot convert ' xs:float(\""
+                    throw new XPathException(getExpression(), ErrorCodes.FOCA0002, "cannot convert ' xs:float(\""
                             + getStringValue()
                             + "\")' to "
                             + Type.getTypeName(requiredType));
@@ -201,9 +204,9 @@ public class FloatValue extends NumericValue {
                         ? BooleanValue.FALSE
                         : BooleanValue.TRUE;
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001, "cannot cast '"
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '"
                         + Type.getTypeName(this.getItemType())
                         + "(\""
                         + getStringValue()
@@ -216,21 +219,21 @@ public class FloatValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#negate()
      */
     public NumericValue negate() throws XPathException {
-        return new FloatValue(-value);
+        return new FloatValue(getExpression(), -value);
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#ceiling()
      */
     public NumericValue ceiling() throws XPathException {
-        return new FloatValue((float) Math.ceil(value));
+        return new FloatValue(getExpression(), (float) Math.ceil(value));
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#floor()
      */
     public NumericValue floor() throws XPathException {
-        return new FloatValue((float) Math.floor(value));
+        return new FloatValue(getExpression(), (float) Math.floor(value));
     }
 
     /* (non-Javadoc)
@@ -243,11 +246,11 @@ public class FloatValue extends NumericValue {
         }
 
         if (value >= -0.5 && value < 0.0) {
-            return new DoubleValue(-0.0);
+            return new DoubleValue(getExpression(), -0.0);
         }
 
         if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE) {
-            return new FloatValue((float) Math.round(value));
+            return new FloatValue(getExpression(), (float) Math.round(value));
         }
 
         //too big return original value unchanged
@@ -280,7 +283,7 @@ public class FloatValue extends NumericValue {
     @Override
     public ComputableValue minus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(value - ((FloatValue) other).value);
+            return new FloatValue(getExpression(), value - ((FloatValue) other).value);
         } else if (other.getType() == Type.DOUBLE) {
             // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
             return ((DoubleValue) convertTo(Type.DOUBLE)).minus(other);
@@ -292,7 +295,7 @@ public class FloatValue extends NumericValue {
     @Override
     public ComputableValue plus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(value + ((FloatValue) other).value);
+            return new FloatValue(getExpression(), value + ((FloatValue) other).value);
         } else if (other.getType() == Type.DOUBLE) {
             // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
             return ((DoubleValue) convertTo(Type.DOUBLE)).plus(other);
@@ -305,7 +308,7 @@ public class FloatValue extends NumericValue {
     public ComputableValue mult(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.FLOAT:
-                return new FloatValue(value * ((FloatValue) other).value);
+                return new FloatValue(getExpression(), value * ((FloatValue) other).value);
             case Type.DOUBLE:
                 // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
                 return ((DoubleValue) convertTo(Type.DOUBLE)).mult(other);
@@ -356,7 +359,7 @@ public class FloatValue extends NumericValue {
             }
         }
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(value / ((FloatValue) other).value);
+            return new FloatValue(getExpression(), value / ((FloatValue) other).value);
         } else {
             return div((ComputableValue) other.convertTo(getType()));
         }
@@ -371,14 +374,14 @@ public class FloatValue extends NumericValue {
             return idiv((FloatValue) other.convertTo(Type.FLOAT));
         } else {
             final ComputableValue result = div(other);
-            return new IntegerValue(((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
+            return new IntegerValue(getExpression(), ((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
         }
     }
 
     @Override
     public NumericValue mod(final NumericValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(value % ((FloatValue) other).value);
+            return new FloatValue(getExpression(), value % ((FloatValue) other).value);
         } else if (other.getType() == Type.DOUBLE) {
             // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
             return ((DoubleValue) convertTo(Type.DOUBLE)).mod(other);
@@ -391,7 +394,7 @@ public class FloatValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#abs()
      */
     public NumericValue abs() throws XPathException {
-        return new FloatValue(Math.abs(value));
+        return new FloatValue(getExpression(), Math.abs(value));
     }
 
     /* (non-Javadoc)
@@ -399,7 +402,7 @@ public class FloatValue extends NumericValue {
      */
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(Math.max(value, ((FloatValue) other).value));
+            return new FloatValue(getExpression(), Math.max(value, ((FloatValue) other).value));
         } else {
             return convertTo(other.getType()).max(collator, other);
         }
@@ -407,7 +410,7 @@ public class FloatValue extends NumericValue {
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.FLOAT)) {
-            return new FloatValue(Math.min(value, ((FloatValue) other).value));
+            return new FloatValue(getExpression(), Math.min(value, ((FloatValue) other).value));
         } else {
             return convertTo(other.getType()).min(collator, other);
         }
@@ -479,7 +482,7 @@ public class FloatValue extends NumericValue {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         }
 
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "

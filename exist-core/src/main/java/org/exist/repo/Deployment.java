@@ -387,7 +387,7 @@ public class Deployment {
                     // no target means: package does not need to be deployed into database
                     // however, we need to preserve a copy for backup purposes
                     final Optional<Package> pkg = getPackage(pkgName, repo);
-		            pkg.orElseThrow(() -> new XPathException("expath repository is not available so the package was not stored."));
+		            pkg.orElseThrow(() -> new XPathException((Expression) null, "expath repository is not available so the package was not stored."));
                     final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
@@ -603,7 +603,7 @@ public class Deployment {
     private void storeRepoXML(final DBBroker broker, final Txn transaction, final DocumentImpl repoXML, final XmldbURI targetCollection, final Optional<RequestedPerms> requestedPerms)
             throws PackageException, XPathException {
         // Store repo.xml
-        final DateTimeValue time = new DateTimeValue(new Date());
+        final DateTimeValue time = new DateTimeValue(null, new Date());
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         final UpdatingDocumentReceiver receiver = new UpdatingDocumentReceiver(builder, time.getStringValue());

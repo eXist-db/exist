@@ -32,21 +32,21 @@ public class IntTest {
     
     @Test(expected=XPathException.class)
     public void testOver() throws XPathException {
-        new IntegerValue("2147483648", Type.INT);
+        new IntegerValue(null, "2147483648", Type.INT);
     }
     
     @Test
     public void testPositiveLimit() throws XPathException {
-        new IntegerValue("2147483647", Type.INT);
+        new IntegerValue(null, "2147483647", Type.INT);
     }
     
     @Test
     public void testNegativeLimit() throws XPathException {
-        new IntegerValue("-2147483648", Type.INT);
+        new IntegerValue(null, "-2147483648", Type.INT);
     }
     
     @Test(expected=XPathException.class)
     public void testUnder() throws XPathException {
-        new IntegerValue("-2147483649", Type.INT);
+        new IntegerValue(null, "-2147483649", Type.INT);
     }   
 }

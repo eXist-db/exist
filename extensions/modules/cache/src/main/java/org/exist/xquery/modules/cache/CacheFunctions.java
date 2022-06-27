@@ -245,7 +245,7 @@ public class CacheFunctions extends BasicFunction {
     }
 
     private CacheConfig extractCacheConfig(final MapType configMap) throws XPathException {
-        final Sequence permsSeq = configMap.get(new StringValue("permissions"));
+        final Sequence permsSeq = configMap.get(new StringValue(this, "permissions"));
 
         final Optional<CacheConfig.Permissions> permissions;
         if(permsSeq != null && permsSeq.getItemCount() > 0) {
@@ -259,7 +259,7 @@ public class CacheFunctions extends BasicFunction {
             permissions = Optional.empty();
         }
 
-        final Sequence maximumSizeSeq = configMap.get(new StringValue("maximumSize"));
+        final Sequence maximumSizeSeq = configMap.get(new StringValue(this, "maximumSize"));
         final Optional<Long> maximumSize;
         if(maximumSizeSeq != null && maximumSizeSeq.getItemCount() == 1) {
             final long l = maximumSizeSeq.itemAt(0).toJavaObject(Long.class);
@@ -268,7 +268,7 @@ public class CacheFunctions extends BasicFunction {
             maximumSize = Optional.empty();
         }
 
-        final Sequence expireAfterAccessSeq = configMap.get(new StringValue("expireAfterAccess"));
+        final Sequence expireAfterAccessSeq = configMap.get(new StringValue(this, "expireAfterAccess"));
         final Optional<Long> expireAfterAccess;
         if(expireAfterAccessSeq != null && expireAfterAccessSeq.getItemCount() == 1) {
             final long l = expireAfterAccessSeq.itemAt(0).toJavaObject(Long.class);
@@ -281,7 +281,7 @@ public class CacheFunctions extends BasicFunction {
     }
 
     private Optional<String> getStringValue(final String key, final AbstractMapType map) {
-        return Optional.ofNullable(map.get(new StringValue(key))).filter(v -> !v.isEmpty()).flatMap(v -> Optional.ofNullable(((StringValue)v).getStringValue()));
+        return Optional.ofNullable(map.get(new StringValue(this, key))).filter(v -> !v.isEmpty()).flatMap(v -> Optional.ofNullable(((StringValue)v).getStringValue()));
     }
 
     private boolean createCache(final String cacheName, final CacheConfig config) {
@@ -306,7 +306,7 @@ public class CacheFunctions extends BasicFunction {
     private Sequence cacheNames() throws XPathException {
         final Sequence result = new ValueSequence();
         for(final String cacheName : CacheModule.caches.keySet()) {
-            result.add(new StringValue(cacheName));
+            result.add(new StringValue(this, cacheName));
         }
         return result;
     }

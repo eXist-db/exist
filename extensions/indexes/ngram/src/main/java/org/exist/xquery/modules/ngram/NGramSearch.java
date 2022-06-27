@@ -309,7 +309,7 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     private EvaluatableExpression parseQuery(final String query) throws XPathException {
-        List<String> queryTokens = tokenizeQuery(query);
+        List<String> queryTokens = tokenizeQuery(query, this);
 
         LOG.trace("Tokenized query: {}", queryTokens);
 
@@ -367,7 +367,7 @@ public class NGramSearch extends Function implements Optimizable {
                                 throw new XPathException(this,
                                         ErrorCodes.FTDY0020,
                                         "query string violates wildcard qualifier syntax",
-                                        new StringValue(query),
+                                        new StringValue(this, query),
                                         nfe
                                 );
                             }
@@ -397,7 +397,7 @@ public class NGramSearch extends Function implements Optimizable {
         return s.replaceAll("\\\\(.)", "$1");
     }
 
-    private static List<String> tokenizeQuery(final String query) throws XPathException {
+    private static List<String> tokenizeQuery(final String query, final Expression expression) throws XPathException {
         List<String> result = new ArrayList<>();
 
         StringBuilder token = new StringBuilder();
@@ -410,7 +410,7 @@ public class NGramSearch extends Function implements Optimizable {
                     token.append(query.substring(i, i + 2));
                     i++;
                 } else {
-                    throw new XPathException(ErrorCodes.FTDY0020, "Query string is terminated by an unescaped backslash");
+                    throw new XPathException(expression, ErrorCodes.FTDY0020, "Query string is terminated by an unescaped backslash");
                 }
             } else {
                 if (currentChar == '.') {
@@ -426,11 +426,11 @@ public class NGramSearch extends Function implements Optimizable {
                         if (peek == '{') {
                             wildcardEnd = query.indexOf('}', i + 2);
                             if (wildcardEnd == -1)
-                                throw new XPathException(
+                                throw new XPathException(expression,
                                     "err:FTDY0020: query string violates wildcard syntax: Unmatched qualifier start { in query string; marked by <-- HERE in \""
                                         + query.substring(0, i + 2) + " <-- HERE " + query.substring(i + 2) + "\"");
                             if (!query.substring(i + 1, wildcardEnd + 1).matches(INTERVAL_QUALIFIER_PATTERN))
-                                throw new XPathException(
+                                throw new XPathException(expression,
                                     "err:FTDY0020: query string violates wildcard qualifier syntax;  marked by <-- HERE in \""
                                         + query.substring(0, wildcardEnd + 1) + " <-- HERE "
                                         + query.substring(wildcardEnd + 1) + "\"");
@@ -443,7 +443,7 @@ public class NGramSearch extends Function implements Optimizable {
                         int characterClassEnd = query.indexOf(']', i + 2); // Character classses can not be empty, thus
                         // start search for end at i+2
                         if (characterClassEnd == -1)
-                            throw new XPathException(
+                            throw new XPathException(expression,
                                 "err:FTDY0020: query string violates wildcard syntax: Unmatched [ in query string; marked by <-- HERE in \""
                                     + query.substring(0, i + 1) + " <-- HERE " + query.substring(i + 1) + "\"");
                         if (token.length() > 0) {

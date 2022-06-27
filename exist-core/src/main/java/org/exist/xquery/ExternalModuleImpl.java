@@ -118,7 +118,7 @@ public class ExternalModuleImpl implements ExternalModule {
         if (fn == null)
         	{return null;}
         if (callerContext != getContext() && fn.getSignature().isPrivate()) {
-        	throw new XPathException(ErrorCodes.XPST0017, "Calling a private function from outside its module");
+        	throw new XPathException(fn, ErrorCodes.XPST0017, "Calling a private function from outside its module");
         }
         return fn;
     }

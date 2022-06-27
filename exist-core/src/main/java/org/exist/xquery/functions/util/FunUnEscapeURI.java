@@ -67,7 +67,7 @@ public class FunUnEscapeURI extends BasicFunction {
 	{
 		try
 		{
-			return new StringValue(URLDecoder.decode(args[0].getStringValue(), args[1].getStringValue()));
+			return new StringValue(this, URLDecoder.decode(args[0].getStringValue(), args[1].getStringValue()));
 		}
 		catch(final java.io.UnsupportedEncodingException e)
 		{

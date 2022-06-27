@@ -147,7 +147,7 @@ public class MetadataFunctions extends BasicFunction {
             u = new URI(uri);
             return exifToolWebExtract(u);
         } catch (URISyntaxException ex) {
-            throw new XPathException("URI syntax error" + ex.getMessage(), ex);
+            throw new XPathException(this, "URI syntax error" + ex.getMessage(), ex);
         }
        
     }

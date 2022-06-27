@@ -126,7 +126,7 @@ public class ZipFileFunctions extends BasicFunction {
 
     private Sequence updateZip(XmldbURI uri, String[] paths, BinaryValue[] binaries) throws XPathException {
         if (paths.length != binaries.length) {
-            throw new XPathException("Different number of paths (" + paths.length + ") and binaries (" + binaries.length + ")");
+            throw new XPathException(this, "Different number of paths (" + paths.length + ") and binaries (" + binaries.length + ")");
         }
 
         ZipFileSource zipFileSource =  new ZipFileFromDb(uri);
@@ -176,14 +176,14 @@ public class ZipFileFunctions extends BasicFunction {
             zos.close();
             zis.close();
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
 
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            throw new XPathException("IO Exception in zip:update");
+            throw new XPathException(this, "IO Exception in zip:update");
         } catch (PermissionDeniedException e) {
             logger.error(e.getMessage(), e);
-            throw new XPathException("Permission denied to read the source zip");
+            throw new XPathException(this, "Permission denied to read the source zip");
         }
     }
 
@@ -219,10 +219,10 @@ public class ZipFileFunctions extends BasicFunction {
                 }
             } catch (PermissionDeniedException pde) {
                 logger.error(pde.getMessage(), pde);
-                throw new XPathException("Permission denied to read the source zip");
+                throw new XPathException(this, "Permission denied to read the source zip");
             } catch (IOException ioe) {
                 logger.error(ioe.getMessage(), ioe);
-                throw new XPathException("IO exception while reading the source zip");
+                throw new XPathException(this, "IO exception while reading the source zip");
             }
 
             builder.endElement();

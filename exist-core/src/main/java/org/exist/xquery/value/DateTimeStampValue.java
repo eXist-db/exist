@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.XMLConstants;
@@ -34,19 +35,19 @@ public class DateTimeStampValue extends DateTimeValue {
 
     private static final QName XML_SCHEMA_TYPE = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "dateTimeStamp");
 
-    public DateTimeStampValue(final XMLGregorianCalendar calendar) throws XPathException {
-        super(calendar);
+    public DateTimeStampValue(final Expression expression, final XMLGregorianCalendar calendar) throws XPathException {
+        super(expression, calendar);
         checkValidTimezone();
     }
 
-    public DateTimeStampValue(final String dateTime) throws XPathException {
-        super(dateTime);
+    public DateTimeStampValue(final Expression expression, final String dateTime) throws XPathException {
+        super(expression, dateTime);
         checkValidTimezone();
     }
 
     private void checkValidTimezone() throws XPathException {
         if(calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-            throw new XPathException(ErrorCodes.ERROR, "Unable to create xs:dateTimeStamp, timezone missing.");
+            throw new XPathException(getExpression(), ErrorCodes.ERROR, "Unable to create xs:dateTimeStamp, timezone missing.");
         }
     }
 
@@ -56,7 +57,7 @@ public class DateTimeStampValue extends DateTimeValue {
             case Type.DATE_TIME_STAMP:
                 return this;
             case Type.DATE_TIME:
-                return new DateTimeValue(calendar);
+                return new DateTimeValue(getExpression(), calendar);
             default: return
                     super.convertTo(requiredType);
         }
@@ -64,7 +65,7 @@ public class DateTimeStampValue extends DateTimeValue {
 
     @Override
     protected AbstractDateTimeValue createSameKind(final XMLGregorianCalendar cal) throws XPathException {
-        return new DateTimeStampValue(cal);
+        return new DateTimeStampValue(getExpression(), cal);
     }
 
     @Override

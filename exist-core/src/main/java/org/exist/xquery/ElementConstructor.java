@@ -61,7 +61,7 @@ public class ElementConstructor extends NodeConstructor {
 	
 	public ElementConstructor(final XQueryContext context, final String qname) {
 		super(context);
-		this.qnameExpr = new LiteralValue(context, new StringValue(qname));
+		this.qnameExpr = new LiteralValue(context, new StringValue(this, qname));
 	}
 	
 	public void setContent(final PathExpr path) {
@@ -95,7 +95,7 @@ public class ElementConstructor extends NodeConstructor {
                 try {
                     addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
                 } catch (final QName.IllegalQNameException e) {
-                    throw new XPathException(ErrorCodes.XPST0081, "Invalid qname " + attr.getQName());
+                    throw new XPathException(this, ErrorCodes.XPST0081, "Invalid qname " + attr.getQName());
                 }
             }
         } else  if(attributes == null) {

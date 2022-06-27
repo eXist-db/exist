@@ -24,6 +24,7 @@ package org.exist.xquery.modules.persistentlogin;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.DurationValue;
@@ -82,7 +83,7 @@ public class PersistentLogin {
      * @throws XPathException if a query error occurs
      */
     public LoginDetails register(String user, String password, DurationValue timeToLive) throws XPathException {
-        DateTimeValue now = new DateTimeValue(new Date());
+        DateTimeValue now = new DateTimeValue(null, new Date());
         DateTimeValue expires = (DateTimeValue) now.plus(timeToLive);
         LoginDetails login = new LoginDetails(user, password, timeToLive, expires.getTimeInMillis());
         seriesMap.put(login.getSeries(), login);
@@ -119,7 +120,7 @@ public class PersistentLogin {
         if (!data.checkAndUpdateToken(tokens[1])) {
             LOG.debug("Out-of-sequence request or cookie theft attack. Deleting session.");
             seriesMap.remove(tokens[0]);
-            throw new XPathException("Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
+            throw new XPathException((Expression) null, "Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
                     "Session is deleted for security reasons.");
         }
     }

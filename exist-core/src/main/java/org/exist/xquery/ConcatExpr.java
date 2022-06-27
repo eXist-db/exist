@@ -70,7 +70,7 @@ public class ConcatExpr extends PathExpr {
                 concat.append(item.getStringValue());
             }
 		}
-		final StringValue result = new StringValue(concat.toString());
+		final StringValue result = new StringValue(this, concat.toString());
 		
 		if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}

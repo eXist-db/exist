@@ -180,7 +180,7 @@ public class FunId extends Function {
 	}
 
 	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(this, id, Type.ID));
 		NodeProxy p;
 		for (final NodeProxy n : attribs) {
 			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);

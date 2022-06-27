@@ -98,7 +98,7 @@ public class XQuery {
             return compile(context, source);
         } catch(final IOException ioe) {
             //should not happen because expression is a String
-            throw new XPathException(ioe.getMessage());
+            throw new XPathException((Expression) null, ioe.getMessage());
         }
     }
 
@@ -179,7 +179,7 @@ public class XQuery {
         try(final Reader reader = source.getReader()) {
             return compile(context, reader, xpointer);
         } catch(final UnsupportedEncodingException e) {
-            throw new XPathException(ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
+            throw new XPathException((Expression) null, ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
         }
     }
 
@@ -227,12 +227,12 @@ public class XQuery {
             
             if(parser.foundErrors()) {
             	LOG.debug(parser.getErrorMessage());
-            	throw new StaticXQueryException(parser.getErrorMessage());
+            	throw new StaticXQueryException((Expression) null, parser.getErrorMessage());
             }
 
             final AST ast = parser.getAST();
             if (ast == null) {
-                throw new XPathException("Unknown XQuery parser error: the parser returned an empty syntax tree.");
+                throw new XPathException((Expression) null, "Unknown XQuery parser error: the parser returned an empty syntax tree.");
             }
             
 //            LOG.debug("Generated AST: " + ast.toStringTree());
@@ -296,7 +296,7 @@ public class XQuery {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Error compiling query: {}", e.getMessage(), e);
                 }
-                throw new StaticXQueryException(e.getMessage(), e);
+                throw new StaticXQueryException((Expression) null, e.getMessage(), e);
             }
             
         }
@@ -419,7 +419,7 @@ public class XQuery {
                 final Sequence result;
                 if (expression instanceof LibraryModuleRoot) {
                     if (functionCall == null) {
-                        throw new XPathException(ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
+                        throw new XPathException((Expression) null, ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
                     }
 
                     final QName functionName = functionCall._1;
@@ -428,7 +428,7 @@ public class XQuery {
                     final UserDefinedFunction function = context.resolveFunction(functionName, functionArity);
                     if (function == null) {
                         final ErrorCodes.ErrorCode errorCode = functionCall._3.orElse(ErrorCodes.EXXQDY0006);
-                        throw new XPathException(errorCode, "No such function: " + functionName.getStringValue() + "#" + functionArity);
+                        throw new XPathException((Expression) null, errorCode, "No such function: " + functionName.getStringValue() + "#" + functionArity);
                     }
 
                     call = new FunctionCall(context, function);

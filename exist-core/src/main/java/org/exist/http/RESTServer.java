@@ -311,7 +311,7 @@ public class RESTServer {
                 namespaces = nsExtractor.getNamespaces();
             }
         } catch (final SAXException e) {
-            final XPathException x = new XPathException(e.toString());
+            final XPathException x = new XPathException((Expression) null, e.toString());
             writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), query, path, x);
         }
 
@@ -421,9 +421,9 @@ public class RESTServer {
                             return;
                         } catch (final LockException le) {
                             if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
                             } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
                             }
                         }
 
@@ -1339,7 +1339,7 @@ public class RESTServer {
             }
 
             context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-            context.setBaseURI(new AnyURIValue(pathUri.toString()));
+            context.setBaseURI(new AnyURIValue(null, pathUri.toString()));
 
             declareNamespaces(context, namespaces);
             declareVariables(context, variables, request, response);
@@ -1483,7 +1483,7 @@ public class RESTServer {
             try {
                 sequence = value == null ? Sequence.EMPTY_SEQUENCE : Marshaller.demarshall(value);
             } catch (final XMLStreamException xe) {
-                throw new XPathException(xe.toString());
+                throw new XPathException((Expression) null, xe.toString());
             }
 
             // now declare variable
@@ -1972,7 +1972,7 @@ public class RESTServer {
             // add an attribute for the creation date as an xs:dateTime
             try {
                 final DateTimeValue dtCreated =
-                        new DateTimeValue(new Date(collection.getCreated()));
+                        new DateTimeValue(null, new Date(collection.getCreated()));
                 attrs.addAttribute("", "created", "created", "CDATA",
                         dtCreated.getStringValue());
             } catch (final XPathException e) {
@@ -1998,7 +1998,7 @@ public class RESTServer {
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(new Date(childCollection.getCreated()));
+                                new DateTimeValue(null, new Date(childCollection.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
                     } catch (final XPathException e) {
                         // fallback to long value
@@ -2022,7 +2022,7 @@ public class RESTServer {
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(new Date(doc.getCreated()));
+                                new DateTimeValue(null, new Date(doc.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA",
                                 dtCreated.getStringValue());
                     } catch (final XPathException e) {
@@ -2034,7 +2034,7 @@ public class RESTServer {
                     // add an attribute for the last modified date as an
                     // xs:dateTime
                     try {
-                        final DateTimeValue dtLastModified = new DateTimeValue(
+                        final DateTimeValue dtLastModified = new DateTimeValue(null,
                                 new Date(doc.getLastModified()));
                         attrs.addAttribute("", "last-modified",
                                 "last-modified", "CDATA", dtLastModified.getStringValue());

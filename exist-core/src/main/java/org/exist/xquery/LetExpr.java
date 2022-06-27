@@ -62,7 +62,7 @@ public class LetExpr extends BindingExpression {
 
             returnExpr.analyze(contextInfo);
         } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);

@@ -86,7 +86,7 @@ public class FunLast extends Function {
         else if (inSequence.isEmpty())
         	{result = Sequence.EMPTY_SEQUENCE;}
         else
-        	{result = new IntegerValue(inSequence.getItemCount());}
+        	{result = new IntegerValue(this, inSequence.getItemCount());}
         
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

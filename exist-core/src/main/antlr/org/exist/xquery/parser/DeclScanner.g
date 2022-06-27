@@ -22,6 +22,7 @@
 header {
 	package org.exist.xquery.parser;
 	
+	import org.exist.xquery.Expression;
 	import org.exist.xquery.XPathException;
 }
 
@@ -86,6 +87,6 @@ versionDecl throws XPathException
 		}
 	)?
 	{
-		throw new XPathException("Processing stopped");
+		throw new XPathException((Expression) null, "Processing stopped");
 	}
 	;

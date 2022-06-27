@@ -362,20 +362,20 @@ public interface Sequence {
         if (uris == null || uris.length == 0 || (uris.length == 1 && uris[0] == null)) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        return ValueSequence.of(FunctionE.<XmldbURI, Item, XPathException>lift(thing -> new StringValue(thing.toString())), uris);
+        return ValueSequence.of(FunctionE.<XmldbURI, Item, XPathException>lift(thing -> new StringValue(null, thing.toString())), uris);
     }
 
     static Sequence of(@Nullable final Integer... ints) throws XPathException {
         if (ints == null || ints.length == 0 || (ints.length == 1 && ints[0] == null)) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        return ValueSequence.of(thing -> new IntegerValue(thing, Type.INT), ints);
+        return ValueSequence.of(thing -> new IntegerValue(null, thing, Type.INT), ints);
     }
 
     static Sequence of(@Nullable final BigInteger... bigIntegers) throws XPathException {
         if (bigIntegers == null || bigIntegers.length == 0 || (bigIntegers.length == 1 && bigIntegers[0] == null)) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        return ValueSequence.of(thing -> new IntegerValue(thing.toString(), Type.INTEGER), bigIntegers);
+        return ValueSequence.of(thing -> new IntegerValue(null, thing.toString(), Type.INTEGER), bigIntegers);
     }
 }

@@ -62,7 +62,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        return new StringValue(getData());
+        return new StringValue(null, getData());
     }
 
     @Override

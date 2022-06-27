@@ -133,7 +133,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
             } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalPart())) {
                 result = getAllGroupMetadataKeys();
             } else {
-                throw new XPathException("Unknown function");
+                throw new XPathException(this, "Unknown function");
             }
         } else {
             final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
@@ -141,16 +141,16 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
             final Principal principal;
             if(isCalledAs(qnGetAccountMetadataKeys.getLocalPart()) || isCalledAs(qnGetAccountMetadata.getLocalPart())) {
                 if(!currentUser.hasDbaRole() && !currentUser.getUsername().equals(strPrincipal)) {
-                    throw new XPathException("You must be a DBA to retrieve metadata about other users, otherwise you may only retrieve metadata about yourself.");
+                    throw new XPathException(this, "You must be a DBA to retrieve metadata about other users, otherwise you may only retrieve metadata about yourself.");
                 }
                 principal = securityManager.getAccount(strPrincipal);
             } else if(isCalledAs(qnGetGroupMetadataKeys.getLocalPart()) || isCalledAs(qnGetGroupMetadata.getLocalPart())) {
                 if(!currentUser.hasDbaRole() && !currentUser.hasGroup(strPrincipal)) {
-                    throw new XPathException("You must be a DBA to retrieve metadata about other groups, otherwise you may only retrieve metadata about groups you are a member of.");
+                    throw new XPathException(this, "You must be a DBA to retrieve metadata about other groups, otherwise you may only retrieve metadata about groups you are a member of.");
                 }
                 principal = securityManager.getGroup(strPrincipal);
             } else {
-                throw new XPathException("Unknown function");
+                throw new XPathException(this, "Unknown function");
             }
 
             if(principal == null) {
@@ -162,7 +162,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
                     final String metadataAttributeNamespace = args[1].getStringValue();
                     result = getPrincipalMetadata(principal, metadataAttributeNamespace);
                 } else {
-                    throw new XPathException("Unknown function");
+                    throw new XPathException(this, "Unknown function");
                 }
             }
         }
@@ -173,10 +173,10 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
     private Sequence getAllAccountMetadataKeys() throws XPathException {
         final ValueSequence result = new ValueSequence();
         for(final AXSchemaType axSchemaType : AXSchemaType.values()) {
-            result.add(new AnyURIValue(axSchemaType.getNamespace()));
+            result.add(new AnyURIValue(this, axSchemaType.getNamespace()));
         }
         for(final EXistSchemaType exSchemaType : EXistSchemaType.values()) {
-            result.add(new AnyURIValue(exSchemaType.getNamespace()));
+            result.add(new AnyURIValue(this, exSchemaType.getNamespace()));
         }
         return result;
     }
@@ -184,7 +184,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
     private Sequence getAllGroupMetadataKeys() throws XPathException {
         final ValueSequence result = new ValueSequence();   
         for(final SchemaType GROUP_METADATA_KEY : GROUP_METADATA_KEYS) {
-            result.add(new AnyURIValue(GROUP_METADATA_KEY.getNamespace()));
+            result.add(new AnyURIValue(this, GROUP_METADATA_KEY.getNamespace()));
         }
         return result;
     }
@@ -205,7 +205,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         if(metadataValue == null || metadataValue.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         } else {
-            return new StringValue(metadataValue);
+            return new StringValue(this, metadataValue);
         }
     }
 
@@ -214,7 +214,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         final Set<SchemaType> metadataKeys = principal.getMetadataKeys();
         final Sequence seq = new ValueSequence(metadataKeys.size());
         for(final SchemaType schemaType : metadataKeys) {
-            seq.add(new AnyURIValue(schemaType.getNamespace()));
+            seq.add(new AnyURIValue(this, schemaType.getNamespace()));
         }
         return seq;
     }

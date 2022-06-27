@@ -383,7 +383,7 @@ public class MessageFunctions extends BasicFunction {
 
         BinaryValue binary = null;
         try {
-            binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), part.getInputStream());
+            binary = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), part.getInputStream(), this);
             builder.characters(binary.getStringValue());
         } finally {
             // free resources

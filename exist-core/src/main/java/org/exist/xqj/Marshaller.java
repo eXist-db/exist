@@ -24,6 +24,7 @@ package org.exist.xqj;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.*;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NameTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
@@ -193,7 +194,7 @@ public class Marshaller {
                             if (Type.subTypeOf(type, Type.NODE))
                                 {item = streamToDOM(type, parser);}
                             else
-                                {item = new StringValue(parser.getElementText()).convertTo(type);}
+                                {item = new StringValue(null, parser.getElementText()).convertTo(type);}
                             result.add(item);
                         }
                     }
@@ -233,7 +234,7 @@ public class Marshaller {
                             n.copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
-                            throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);
+                            throw new XPathException((Expression) null, "Error while demarshalling node: " + e.getMessage(), e);
                         }
                         item = (Item) receiver.getDocument();
                     }
@@ -247,7 +248,7 @@ public class Marshaller {
                         data.append(txt.getNodeValue());
                         txt = txt.getNextSibling();
                     }
-                    item = new StringValue(data.toString()).convertTo(type);
+                    item = new StringValue(null, data.toString()).convertTo(type);
                 }
                 result.add(item);
             }

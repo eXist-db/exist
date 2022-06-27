@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -462,7 +463,7 @@ public class Type {
     public static int getType(final String name) throws XPathException {
         final int code = typeCodes.getInt(name);
         if (code == NO_SUCH_VALUE) {
-            throw new XPathException("Type: " + name + " is not defined");
+            throw new XPathException((Expression) null, "Type: " + name + " is not defined");
         }
         return code;
     }

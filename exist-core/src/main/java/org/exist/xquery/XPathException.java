@@ -47,16 +47,6 @@ public class XPathException extends Exception implements XPathErrorProvider {
     private Source source = null;
 
     /**
-     * @param message the error message
-     * @deprecated Use a constructor with errorCode
-     */
-    @Deprecated
-    public XPathException(String message) {
-        super();
-        this.message = message;
-    }
-
-    /**
      * @param line line number the error appeared in
      * @param column column the error appeared in
      * @param message the error message
@@ -95,18 +85,22 @@ public class XPathException extends Exception implements XPathErrorProvider {
     public XPathException(Expression expr, String message) {
         super();
         this.message = message;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
     
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
         super();
         this.errorCode = errorCode;
         this.message = errorDesc;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal) {
@@ -114,18 +108,22 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.errorCode = errorCode;
         this.message = errorDesc;
         this.errorVal = errorVal;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
     public XPathException(Expression expr, ErrorCode errorCode, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
         this.message = cause.getMessage();
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
     /**
@@ -155,27 +153,21 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      * @param cause the cause throwable
-     * @deprecated Use a constructor with errorCode
-     */
-    @Deprecated
-    public XPathException(final Throwable cause) {
-        super(cause);
-        if(cause instanceof XPathErrorProvider) {
-            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
-        }
-    }
-
-    /**
-     * @param cause the cause throwable
      * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(final String message, final Throwable cause) {
+    public XPathException(final Expression expr, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
         if(cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
+
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
         }
     }
 
@@ -189,51 +181,12 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
-    /**
-     * @param expr expression causing the error
-     * @param message error message
-     * @param cause the cause throwable
-     * @deprecated Use a constructor with errorCode
-     */
-    @Deprecated
-    public XPathException(final Expression expr, final String message, final Throwable cause) {
-        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, message, null, cause);
-    }
-
-    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
-        this(expr.getLine(), expr.getColumn(), errorDesc, cause);
-        this.errorCode = errorCode;
+    public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+        this(expr, errorCode, errorDesc, cause);
         this.errorVal = errorVal;
     }
     
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
-        this(errorCode, errorDesc);
-        this.errorVal = errorVal;
-    }
-
-    /**
-     *  Constructor.
-     * 
-     * @param errorCode Xquery errorcode
-     * @param errorDesc Error code. When Null the ErrorCode text will be used.
-     * 
-     */
-    public XPathException(ErrorCode errorCode, String errorDesc) {
-        this.errorCode = errorCode;
-
-        if(errorDesc == null){
-            this.message = errorCode.toString();
-        } else {
-            this.message = errorDesc;
-        }
-    }
-    
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
-        this(errorCode, errorDesc, cause);
-        this.errorVal = errorVal;
-    }
-    
-    public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
+    public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
 
@@ -241,6 +194,12 @@ public class XPathException extends Exception implements XPathErrorProvider {
             this.message = errorCode.toString();
         } else {
             this.message = errorDesc;
+        }
+
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
         }
     }
 

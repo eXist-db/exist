@@ -56,6 +56,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
@@ -215,7 +216,7 @@ public class SystemExport {
             properties.setProperty(BackupDescriptor.INCREMENTAL_PROP_NAME, incremental ? "yes" : "no");
 
             try {
-                properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(new Date()).getStringValue());
+                properties.setProperty(BackupDescriptor.DATE_PROP_NAME, new DateTimeValue(null, new Date()).getStringValue());
             } catch (final XPathException e) {
             }
 
@@ -375,7 +376,7 @@ public class SystemExport {
 //        }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw (new TerminatedException((Expression) null, "system export terminated by db"));
         }
 
 //        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
@@ -399,7 +400,7 @@ public class SystemExport {
             attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
             Backup.writeUnixStylePermissionAttributes(attr, perm);
             try {
-                attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue(new Date(current.getCreated())).getStringValue());
+                attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", new DateTimeValue(null, new Date(current.getCreated())).getStringValue());
             } catch (final XPathException e) {
                 e.printStackTrace();
             }
@@ -484,7 +485,7 @@ public class SystemExport {
         }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw new TerminatedException((Expression) null, "system export terminated by db");
         }
         final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getLastModified());
 
@@ -538,8 +539,8 @@ public class SystemExport {
         // main document info and could thus be damaged
 
         try {
-            final String created = new DateTimeValue(new Date(doc.getCreated())).getStringValue();
-            final String modified = new DateTimeValue(new Date(doc.getLastModified())).getStringValue();
+            final String created = new DateTimeValue(null, new Date(doc.getCreated())).getStringValue();
+            final String modified = new DateTimeValue(null, new Date(doc.getLastModified())).getStringValue();
             attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", created);
             attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", modified);
         } catch (final XPathException e) {

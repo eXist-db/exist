@@ -745,7 +745,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return token;
         } catch (IOException e) {
-            throw new XPathException("Error analyzing the query string: " + e.getMessage(), e);
+            throw new XPathException((Expression) null, "Error analyzing the query string: " + e.getMessage(), e);
         }
     }
 

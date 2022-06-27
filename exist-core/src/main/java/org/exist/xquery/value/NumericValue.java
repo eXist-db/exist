@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -32,6 +33,10 @@ import java.math.RoundingMode;
 import java.util.function.IntSupplier;
 
 public abstract class NumericValue extends ComputableValue {
+
+    protected NumericValue(final Expression expression) {
+        super(expression);
+    }
 
     public double getDouble() throws XPathException {
         return ((DoubleValue) convertTo(Type.DOUBLE)).getValue();
@@ -83,7 +88,7 @@ public abstract class NumericValue extends ComputableValue {
 
             final IntSupplier comparison = createComparisonWith((NumericValue) other);
             if (comparison == null) {
-                throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
             }
 
             switch (operator) {
@@ -100,11 +105,11 @@ public abstract class NumericValue extends ComputableValue {
                 case LTEQ:
                     return comparison.getAsInt() <= 0;
                 default:
-                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
             }
         }
 
-        throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare operands: " +
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot compare operands: " +
                 Type.getTypeName(getType()) + " and " +
                 Type.getTypeName(other.getType()));
     }
@@ -136,12 +141,12 @@ public abstract class NumericValue extends ComputableValue {
 
             final IntSupplier comparison = createComparisonWith((NumericValue) other);
             if (comparison == null) {
-                throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
             }
 
             return comparison.getAsInt();
         } else {
-            throw new XPathException(ErrorCodes.XPTY0004, "cannot compare numeric value to non-numeric value");
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot compare numeric value to non-numeric value");
         }
     }
 

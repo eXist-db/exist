@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.internal.node.NodeInputStream;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -82,7 +83,7 @@ public class EXIUtils {
                 return new NodeInputStream(context.getBroker().getBrokerPool(), withSerializerFn, node);
             default:
                 LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
-                throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
+                throw new XPathException((Expression) null, "wrong item type " + Type.getTypeName(item.getType()));
         }
     }
 

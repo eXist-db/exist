@@ -124,7 +124,7 @@ public class FindGroupFunction extends BasicFunction {
         
         if(isCalledAs(qnGetUserPrimaryGroup.getLocalPart())) {
             final String username = args[0].getStringValue();
-            result = new StringValue(securityManager.getAccount(username).getPrimaryGroup());
+            result = new StringValue(this, securityManager.getAccount(username).getPrimaryGroup());
         } else if(isCalledAs(qnGroupExists.getLocalPart())) {
             final String groupName = args[0].getStringValue();
             result = BooleanValue.valueOf(securityManager.hasGroup(groupName));
@@ -156,7 +156,7 @@ public class FindGroupFunction extends BasicFunction {
 
             result = new ValueSequence();
             for(final String groupName : groupNames) {
-                result.add(new StringValue(groupName));
+                result.add(new StringValue(this, groupName));
             }
         }
         return result;

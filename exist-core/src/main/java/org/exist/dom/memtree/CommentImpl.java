@@ -44,7 +44,7 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
     }
 
     public AtomicValue atomize() throws XPathException {
-        return new StringValue(getData());
+        return new StringValue(null, getData());
     }
 
     @Override

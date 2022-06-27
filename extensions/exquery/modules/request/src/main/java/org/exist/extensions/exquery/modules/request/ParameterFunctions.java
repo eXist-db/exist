@@ -87,7 +87,7 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
         if(isCalledAs(qnParameterNames.getLocalPart())) {
             result = new ValueSequence();
             for(final String parameterName : request.getParameterNames()) {
-                result.add(new StringValue(parameterName));
+                result.add(new StringValue(this, parameterName));
             }
         } else if(isCalledAs(qnParameter.getLocalPart())) {
             final String paramName = args[0].getStringValue();
@@ -120,10 +120,10 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
             result = new ValueSequence();
             if(queryParamValues instanceof List) {
                 for(final Object value : (List)queryParamValues) {
-                    result.add(new StringValue(value.toString()));
+                    result.add(new StringValue(this, value.toString()));
                 }
             } else {
-                result.add(new StringValue(queryParamValues.toString()));
+                result.add(new StringValue(this, queryParamValues.toString()));
             }
         }
         

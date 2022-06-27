@@ -78,7 +78,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public void add(final Item item) throws XPathException {
         if(!Type.subTypeOf(item.getType(), Type.NODE)) {
-            throw new XPathException("item has wrong type");
+            throw new XPathException((Expression) null, "item has wrong type");
         }
         add((NodeProxy) item);
     }
@@ -106,7 +106,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public void addAll(final Sequence other) throws XPathException {
         if(!other.isEmpty() && !Type.subTypeOf(other.getItemType(), Type.NODE)) {
-            throw new XPathException("sequence argument is not a node sequence");
+            throw new XPathException((Expression) null, "sequence argument is not a node sequence");
         }
         if(Type.subTypeOf(other.getItemType(), Type.NODE)) {
             addAll((NodeSet) other);

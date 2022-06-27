@@ -33,7 +33,7 @@ public class DoubleValueTest {
     @Test
     public void convertToInteger() throws XPathException {
         final double value = -2147483649d;
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         final IntegerValue integerValue = (IntegerValue)doubleValue.convertTo(Type.INTEGER);
 
@@ -44,7 +44,7 @@ public class DoubleValueTest {
     @Test
     public void getInt() throws XPathException {
         final double value = -2147483649d;
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         assertEquals(2147483647, doubleValue.getInt());
     }
@@ -52,7 +52,7 @@ public class DoubleValueTest {
     @Test
     public void getLong() throws XPathException {
         final double value = -2147483649d;
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         assertEquals(-2147483649l, doubleValue.getLong());
     }
@@ -60,7 +60,7 @@ public class DoubleValueTest {
     @Test(expected=XPathException.class)
     public void toJavaObject_int_lowerBound() throws XPathException {
         final double value = -2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         doubleValue.toJavaObject(int.class);
 
@@ -70,7 +70,7 @@ public class DoubleValueTest {
     @Test(expected=XPathException.class)
     public void toJavaObject_int_upperBound() throws XPathException {
         final double value = 2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         doubleValue.toJavaObject(int.class);
 
@@ -80,7 +80,7 @@ public class DoubleValueTest {
     @Test
     public void toJavaObject_int() throws XPathException {
         final double value = -2147483648d;
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         final int i = doubleValue.toJavaObject(int.class);
 
@@ -91,7 +91,7 @@ public class DoubleValueTest {
     @Test
     public void toJavaObject_long() throws XPathException {
         final double value = -2147483649d;
-        final DoubleValue doubleValue = new DoubleValue(value);
+        final DoubleValue doubleValue = new DoubleValue(null, value);
 
         final long l = doubleValue.toJavaObject(long.class);
 

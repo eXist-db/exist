@@ -64,7 +64,7 @@ public class FunDefaultCollation extends BasicFunction {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT SEQUENCE", contextSequence);}
         }
-        final Sequence result = new StringValue(context.getDefaultCollation());
+        final Sequence result = new StringValue(this, context.getDefaultCollation());
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
         return result;

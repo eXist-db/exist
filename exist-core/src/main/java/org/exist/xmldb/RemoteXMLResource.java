@@ -192,7 +192,7 @@ public class RemoteXMLResource
     @Override
     public Object getContent() throws XMLDBException {
         if (content != null) {
-            return new StringValue(content).getStringValue(true);
+            return new StringValue(null, content).getStringValue(true);
         }
         final Object res = super.getContent();
         if (res != null) {

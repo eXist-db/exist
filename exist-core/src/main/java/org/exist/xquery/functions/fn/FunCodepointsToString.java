@@ -100,7 +100,7 @@ public class FunCodepointsToString extends BasicFunction {
                     buf.append(XMLChar.lowSurrogate((int)next));
                 }
             }
-            result = new StringValue(buf.toString());
+            result = new StringValue(this, buf.toString());
         }
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}

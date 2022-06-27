@@ -29,10 +29,7 @@ import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Module;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
@@ -119,7 +116,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             uri = new URI(namespace);
         }
         catch (final URISyntaxException ex) {
-            throw new XPathException(ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
+            throw new XPathException((Expression) null, ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
         }
         for (final Packages pp : myParent.listPackages()) {
             final Package pkg = pp.latest();
@@ -145,17 +142,17 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             final Module module = instantiateModule(clazz);
             final String ns = module.getNamespaceURI();
             if (!ns.equals(namespace)) {
-                throw new XPathException("The namespace in the Java module " +
+                throw new XPathException((Expression) null, "The namespace in the Java module " +
                     "does not match the namespace in the package descriptor: " +
                     namespace + " - " + ns);
             }
             return ctxt.loadBuiltInModule(namespace, name);
         } catch (final ClassNotFoundException ex) {
-            throw new XPathException("Cannot find module class from EXPath repository: " + name, ex);
+            throw new XPathException((Expression) null, "Cannot find module class from EXPath repository: " + name, ex);
         } catch (final ClassCastException ex) {
-            throw new XPathException("The class configured in EXPath repository is not a Module: " + name, ex);
+            throw new XPathException((Expression) null, "The class configured in EXPath repository is not a Module: " + name, ex);
         } catch (final IllegalArgumentException ex) {
-            throw new XPathException("Illegal argument passed to the module ctor", ex);
+            throw new XPathException((Expression) null, "Illegal argument passed to the module ctor", ex);
         }
     }
 
@@ -186,7 +183,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             // need to log here, otherwise details are swallowed by XQueryTreeParser
             LOG.error(e.getMessage(), e);
 
-            throw new XPathException(msg, e);
+            throw new XPathException((Expression) null, msg, e);
         }
     }
 
@@ -205,7 +202,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         try {
             uri = new URI(namespace);
         } catch (final URISyntaxException ex) {
-            throw new XPathException(ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
+            throw new XPathException((Expression) null, ErrorCodes.XQST0046, "Invalid URI: " + namespace, ex);
         }
         for (final Packages pp : myParent.listPackages()) {
             final Package pkg = pp.latest();
@@ -227,9 +224,9 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                     return Paths.get(new URI(sysid));
                 }
             } catch (final URISyntaxException ex) {
-                throw new XPathException(ErrorCodes.XQST0046, "Error parsing the URI of the query library: " + sysid, ex);
+                throw new XPathException((Expression) null, ErrorCodes.XQST0046, "Error parsing the URI of the query library: " + sysid, ex);
             } catch (final PackageException ex) {
-                throw new XPathException(ErrorCodes.XQST0059, "Error resolving the query library: " + namespace, ex);
+                throw new XPathException((Expression) null, ErrorCodes.XQST0059, "Error resolving the query library: " + namespace, ex);
             } finally {
                 if (src != null && src instanceof StreamSource) {
                     final StreamSource streamSource = ((StreamSource)src);

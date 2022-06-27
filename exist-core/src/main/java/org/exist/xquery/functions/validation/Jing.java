@@ -175,7 +175,7 @@ public class Jing extends BasicFunction  {
         // Create response
         if (isCalledAs("jing")) {
             final Sequence result = new ValueSequence();
-            result.add(new BooleanValue(report.isValid()));
+            result.add(new BooleanValue(this, report.isValid()));
             return result;
 
         } else  /* isCalledAs("jing-report") */{

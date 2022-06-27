@@ -97,7 +97,7 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 		if (namespace == null)
             {result = Sequence.EMPTY_SEQUENCE;}            
         else
-            {result = new AnyURIValue(namespace);}
+            {result = new AnyURIValue(this, namespace);}
             
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

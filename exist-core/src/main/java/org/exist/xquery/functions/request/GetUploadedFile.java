@@ -78,7 +78,7 @@ public class GetUploadedFile extends StrictRequestFunction {
 
         final ValueSequence result = new ValueSequence();
         for (final Path file : files) {
-            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file));
+            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), file, this));
         }
 
         return result;

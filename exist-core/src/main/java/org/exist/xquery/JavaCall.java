@@ -226,7 +226,7 @@ public class JavaCall extends Function {
 		if (bestMethod instanceof Constructor<?>) {
 			try {
 				final Object object = ((Constructor<?>) bestMethod).newInstance(params);
-                result = new JavaObjectValue(object);
+                result = new JavaObjectValue(this, object);
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to constructor "

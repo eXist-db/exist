@@ -67,7 +67,7 @@ public class FunXmlToJson extends BasicFunction {
         final Sequence result;
         final Sequence seq = (getArgumentCount() > 0) ? args[0] : Sequence.EMPTY_SEQUENCE;
         //TODO: implement handling of options
-        final MapType options = (getArgumentCount() > 1) ? (MapType) args[1].itemAt(0) : new MapType(context);
+        final MapType options = (getArgumentCount() > 1) ? (MapType) args[1].itemAt(0) : new MapType(this, context);
 
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -75,13 +75,13 @@ public class FunXmlToJson extends BasicFunction {
             result = new ValueSequence();
             final Item item = seq.itemAt(0);
             if (item.getType() != Type.DOCUMENT && item.getType() != Type.ELEMENT) {
-                throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
+                throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
             }
             final NodeValue nodeValue = (NodeValue) item;
             final StringWriter stringWriter = new StringWriter();
             nodeValueToJson(nodeValue, stringWriter);
             final String jsonString = stringWriter.toString();
-            result.add(new StringValue(jsonString));
+            result.add(new StringValue(this, jsonString));
         }
         return result;
     }
@@ -138,7 +138,7 @@ public class FunXmlToJson extends BasicFunction {
                             } else if (mapkeyArrayList.lastIndexOf(elementKeyValue) > mapkeyArrayList.lastIndexOf(stackSeparator)) {
                                 //key found, before separator, error double key use in same map
                                 logger.error("fn:xml-to-json(): FOJS0006: Invalid XML representation of JSON. Found map with double key use. Offending key in double quotes: \"{}\"", elementKeyValue);
-                                throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found map with double key use. Offending key in error logs.");
+                                throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found map with double key use. Offending key in error logs.");
                             }
                         }
                         switch (reader.getLocalName()) {
@@ -174,7 +174,7 @@ public class FunXmlToJson extends BasicFunction {
                                 break;
                             case "null":
                                 if (tempStringBuilder.length() != 0) {
-                                    throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found non-empty XML null element.");
+                                    throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found non-empty XML null element.");
                                 }
                                 jsonGenerator.writeNull();
                                 break;
@@ -183,7 +183,7 @@ public class FunXmlToJson extends BasicFunction {
                                     final BigDecimal tempDouble = new BigDecimal(tempString);
                                     jsonGenerator.writeNumber(tempDouble);
                                 } catch (NumberFormatException ex){
-                                    throw new XPathException(ErrorCodes.FOJS0006, "Cannot convert '" + tempString + "' to a number.");
+                                    throw new XPathException(this, ErrorCodes.FOJS0006, "Cannot convert '" + tempString + "' to a number.");
                                 }
                                 break;
                             case "string":
@@ -197,22 +197,22 @@ public class FunXmlToJson extends BasicFunction {
                                 }
                                 break;
                             default:
-                                throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
+                                throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
                         }
                     default:
                         break;
                 }
             }
         } catch (JsonGenerationException e) {
-            throw new XPathException(ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
+            throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON.");
         } catch (XMLStreamException | IOException e) {
-            throw new XPathException(ErrorCodes.FOER0000, e.getMessage(), e);
+            throw new XPathException(this, ErrorCodes.FOER0000, e.getMessage(), e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (XMLStreamException e) {
-                    throw new XPathException(ErrorCodes.FOER0000, "XMLStreamException", e);
+                    throw new XPathException(this, ErrorCodes.FOER0000, "XMLStreamException", e);
                 }
             }
         }
@@ -240,7 +240,7 @@ public class FunXmlToJson extends BasicFunction {
             }
         } catch (JsonParseException e) {
             logger.error("fn:xml-to-json(): FOJS0007: Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in double quotes : \"{}\"", escapedJsonString);
-            throw new XPathException(ErrorCodes.FOJS0007, "Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in error logs.");
+            throw new XPathException(this, ErrorCodes.FOJS0007, "Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in error logs.");
         }
         unescapedJsonString = unescapedJsonStringBuilder.toString();
         return unescapedJsonString;

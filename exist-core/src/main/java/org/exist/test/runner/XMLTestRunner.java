@@ -193,12 +193,12 @@ public class XMLTestRunner extends AbstractTestRunner {
                 context -> new Tuple2<>("id", Sequence.EMPTY_SEQUENCE),
 
                 // set callback functions for notifying junit!
-                context -> new Tuple2<>("test-ignored-function", new FunctionReference(new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-started-function", new FunctionReference(new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-failure-function", new FunctionReference(new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-error-function", new FunctionReference(new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), notifier)))),
-                context -> new Tuple2<>("test-finished-function", new FunctionReference(new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
+                context -> new Tuple2<>("test-ignored-function", new FunctionReference(null, new FunctionCall(context, new ExtTestIgnoredFunction(context, getSuiteName(), notifier)))),
+                context -> new Tuple2<>("test-started-function", new FunctionReference(null, new FunctionCall(context, new ExtTestStartedFunction(context, getSuiteName(), notifier)))),
+                context -> new Tuple2<>("test-failure-function", new FunctionReference(null, new FunctionCall(context, new ExtTestFailureFunction(context, getSuiteName(), notifier)))),
+                context -> new Tuple2<>("test-assumption-failed-function", new FunctionReference(null, new FunctionCall(context, new ExtTestAssumptionFailedFunction(context, getSuiteName(), notifier)))),
+                context -> new Tuple2<>("test-error-function", new FunctionReference(null, new FunctionCall(context, new ExtTestErrorFunction(context, getSuiteName(), notifier)))),
+                context -> new Tuple2<>("test-finished-function", new FunctionReference(null, new FunctionCall(context, new ExtTestFinishedFunction(context, getSuiteName(), notifier))))
             );
 
             // NOTE: at this stage EXIST_EMBEDDED_SERVER_CLASS_INSTANCE in XSuite will be usable

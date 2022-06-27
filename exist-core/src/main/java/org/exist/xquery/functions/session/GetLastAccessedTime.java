@@ -65,6 +65,6 @@ public class GetLastAccessedTime extends SessionFunction {
 
         final Date lastAccessedTime = withValidSession(session.get(), SessionWrapper::getLastAccessedTime).map(Date::new)
                 .orElseGet(() -> new Date(0));
-        return new DateTimeValue(lastAccessedTime);
+        return new DateTimeValue(this, lastAccessedTime);
     }
 }

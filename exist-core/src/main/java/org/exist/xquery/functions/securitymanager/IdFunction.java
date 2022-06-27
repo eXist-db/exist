@@ -60,7 +60,7 @@ public class IdFunction extends BasicFunction {
         if (getSignature() == FNS_ID) {
             return functionId();
         } else {
-            throw new XPathException("Unknown function call: " + getSignature());
+            throw new XPathException(this, "Unknown function call: " + getSignature());
         }
     }
     

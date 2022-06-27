@@ -28,6 +28,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -194,7 +195,7 @@ public class OrderedValueSequence extends AbstractSequence {
                                     node = expandedDoc.getNode(node.getNodeNumber());
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null) {
-                                        throw new XPathException("Internal error: nodeId == null");
+                                        throw new XPathException((Expression) null, "Internal error: nodeId == null");
                                     }
                                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                                         nodeId = rootId;
@@ -217,7 +218,7 @@ public class OrderedValueSequence extends AbstractSequence {
             }
             return set;
         } else {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -245,7 +246,7 @@ public class OrderedValueSequence extends AbstractSequence {
             return MemoryNodeSet.EMPTY;
         }
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (int i = 0; i < count; i++) {
@@ -332,7 +333,8 @@ public class OrderedValueSequence extends AbstractSequence {
                 if (seq.hasOne()) {
                     values[i] = seq.itemAt(0).atomize();
                 } else if (seq.hasMany()) {
-                    throw new XPathException("expected a single value for order expression " +
+                    throw new XPathException((values[i] == null) ? null : values[i].getExpression(),
+                            "expected a single value for order expression " +
                             ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
                             " ; found: " + seq.getItemCount());
                 }

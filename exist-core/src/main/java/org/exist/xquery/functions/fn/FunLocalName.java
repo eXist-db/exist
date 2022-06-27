@@ -129,7 +129,7 @@ public class FunLocalName extends Function {
             final Node n = ((NodeValue) item).getNode();
             final String localName = n.getLocalName();
             if (localName != null) {
-                result = new StringValue(localName);
+                result = new StringValue(this, localName);
             } else {
                 result = StringValue.EMPTY_STRING;
             }

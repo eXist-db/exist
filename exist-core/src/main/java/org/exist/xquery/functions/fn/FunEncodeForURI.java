@@ -81,7 +81,7 @@ public class FunEncodeForURI extends Function {
         } else {
             String value; 
             value = URIUtils.encodeForURI(seq.getStringValue());
-            result = new StringValue(value);
+            result = new StringValue(this, value);
         }
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

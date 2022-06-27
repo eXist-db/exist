@@ -219,7 +219,7 @@ public class ExecuteFunction extends BasicFunction {
                 if (type != null) {
                     sqlType = SQLUtils.sqlTypeFromString(type);
                 } else {
-                    throw new XPathException(ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
+                    throw new XPathException(this, ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
                 }
 
                 final String value;
@@ -253,7 +253,7 @@ public class ExecuteFunction extends BasicFunction {
                 }
 
                 if (sqlType == Types.TIMESTAMP) {
-                    final DateTimeValue dv = new DateTimeValue(value);
+                    final DateTimeValue dv = new DateTimeValue(this, value);
                     final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
                     ((PreparedStatement) stmt).setTimestamp(i + 1, timestampValue);
 
@@ -367,7 +367,7 @@ public class ExecuteFunction extends BasicFunction {
                                             }
                                         }
                                     } catch (final Exception e) {
-                                        throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                        throw new XPathException(this, "Could not parse column of type SQLXML: " + e.getMessage(), e);
                                     }
                                 } else {
                                     //otherwise assume string value

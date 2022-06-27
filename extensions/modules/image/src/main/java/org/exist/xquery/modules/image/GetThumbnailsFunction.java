@@ -123,27 +123,27 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 		AnyURIValue picturePath = (AnyURIValue) args[0].itemAt(0);
 		if (picturePath.getStringValue().startsWith("xmldb:exist://")) {
-			picturePath = new AnyURIValue(picturePath.getStringValue()
+			picturePath = new AnyURIValue(this, picturePath.getStringValue()
 					.substring(14));
 		}
 
 		AnyURIValue thumbPath = null;
 		if (args[1].isEmpty()) {
-			thumbPath = new AnyURIValue(picturePath.toXmldbURI().append(
+			thumbPath = new AnyURIValue(this, picturePath.toXmldbURI().append(
 					THUMBPATH));
 			isSaveToDataBase = true;
 		} else {
 			thumbPath = (AnyURIValue) args[1].itemAt(0);
 			if (thumbPath.getStringValue().startsWith("file:")) {
 				isSaveToDataBase = false;
-				thumbPath = new AnyURIValue(thumbPath.getStringValue().substring(5));
+				thumbPath = new AnyURIValue(this, thumbPath.getStringValue().substring(5));
 			} else {
 				isSaveToDataBase = true;
 				try {
 					XmldbURI thumbsURI = XmldbURI.xmldbUriFor(thumbPath.getStringValue());
 					if (!thumbsURI.isAbsolute())
 						thumbsURI = picturePath.toXmldbURI().append(thumbPath.toString());
-					thumbPath = new AnyURIValue(thumbsURI.toString());
+					thumbPath = new AnyURIValue(this, thumbsURI.toString());
 				} catch (URISyntaxException e) {
 					throw new XPathException(this, e.getMessage());
 				}
@@ -177,7 +177,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 		try {
 			pool = BrokerPool.getInstance();
 		} catch (Exception e) {
-			result.add(new StringValue(e.getMessage()));
+			result.add(new StringValue(this, e.getMessage()));
 			return result;
 		}
 
@@ -313,7 +313,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                         // .toString()) + "/" + prefix
                         // + docImage.getFileURI()));
 
-                        result.add(new StringValue(docImage.getFileURI().toString()));
+                        result.add(new StringValue(this, docImage.getFileURI().toString()));
                     }
                 }
             } catch (final PermissionDeniedException | LockException e) {

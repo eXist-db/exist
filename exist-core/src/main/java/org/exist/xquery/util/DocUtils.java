@@ -39,6 +39,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
@@ -144,11 +145,11 @@ public class DocUtils {
             }
         } catch (final ConnectException e) {
             // prevent long stack traces
-            throw new XPathException(e.getMessage() + " (" + path + ")");
+            throw new XPathException((Expression) null, e.getMessage() + " (" + path + ")");
         } catch (final MalformedURLException e) {
-            throw new XPathException(e.getMessage(), e);
+            throw new XPathException((Expression) null, e.getMessage(), e);
         } catch (final IOException e) {
-            throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
+            throw new XPathException((Expression) null, "An error occurred while parsing " + path + ": " + e.getMessage(), e);
         }
     }
 
@@ -183,14 +184,14 @@ public class DocUtils {
                     }
 
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                        throw new XPathException("Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
+                        throw new XPathException((Expression) null, "Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
                     }
 
                     return new NodeProxy(doc);
                 }
             }
         } catch (final URISyntaxException e) {
-            throw new XPathException(e);
+            throw new XPathException((Expression) null, e);
         }
     }
 
@@ -229,9 +230,9 @@ public class DocUtils {
                 reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(src);
             } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
-                throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+                throw new XPathException((Expression) null, "Error creating XML parser: " + e.getMessage(), e);
             } catch (final IOException | SAXException e) {
-                throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+                throw new XPathException((Expression) null, "Error while parsing XML: " + e.getMessage(), e);
             }
 
             return adapter.getDocument();

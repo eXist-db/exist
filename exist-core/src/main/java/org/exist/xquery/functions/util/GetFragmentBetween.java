@@ -146,7 +146,7 @@ public class GetFragmentBetween extends BasicFunction {
             fragment.append(closingElementsOfMsTo);
         }
 
-        return new StringValue(fragment.toString());
+        return new StringValue(this, fragment.toString());
     }
 
     /**
