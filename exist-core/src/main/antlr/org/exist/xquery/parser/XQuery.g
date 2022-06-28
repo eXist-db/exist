@@ -180,6 +180,7 @@ imaginaryTokenDefinitions
 	PRAGMA
 	GTEQ
 	SEQUENCE
+	TUMBLING_WINDOW
 	;
 
 // === XPointer ===
@@ -690,7 +691,7 @@ expr throws XPathException
 
 exprSingle throws XPathException
 :
-	( ( "for" | "let" ) DOLLAR ) => flworExpr
+	( ( "for" | "let" ) ("tumbling" | DOLLAR ) ) => flworExpr
 	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr
@@ -797,7 +798,9 @@ flworExpr throws XPathException
 
 initialClause throws XPathException
 :
-    ( forClause | letClause )
+    ( ( "for" DOLLAR ) => forClause
+    | ("for" "tumbling" ) => windowClause
+    | letClause )
     ;
 
 intermediateClause throws XPathException
@@ -818,6 +821,12 @@ forClause throws XPathException
 letClause throws XPathException
 :
 	"let"^ letVarBinding ( COMMA! letVarBinding )*
+	;
+
+windowClause throws XPathException
+:
+	"for"^ "tumbling"! "window"!
+	{ #windowClause= #([TUMBLING_WINDOW, "tumbling window"], #windowClause); }
 	;
 
 inVarBinding throws XPathException
@@ -2228,7 +2237,12 @@ reservedKeywords returns [String name]
 	"empty-sequence" { name = "empty-sequence"; }
 	|
 	"schema-element" { name = "schema-element"; }
+	|
+	"tumbling" { name = "tumbling"; }
+	|
+	"window" { name = "window"; }
 	;
+
 
 /**
  * The XQuery/XPath lexical analyzer.
