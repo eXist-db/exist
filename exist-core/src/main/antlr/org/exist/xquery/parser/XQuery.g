@@ -836,7 +836,7 @@ letClause throws XPathException
 
 windowClause throws XPathException
 :
-	"for"^ "tumbling" "window" inVarBinding windowStartCondition
+	"for"^ "tumbling" "window" inVarBinding windowStartCondition ( windowEndCondition )?
 	{ #windowClause= #([TUMBLING_WINDOW, "tumbling window"], #windowClause); }
 	;
 
@@ -867,6 +867,11 @@ allowingEmpty
 windowStartCondition throws XPathException
 :
     "start" windowVars "when" exprSingle
+;
+
+windowEndCondition throws XPathException
+:
+    ( "only" )? "end" windowVars "when" exprSingle
 ;
 
 windowVars throws XPathException
