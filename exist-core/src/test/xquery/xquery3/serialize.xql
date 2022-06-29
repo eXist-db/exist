@@ -774,3 +774,31 @@ function ser:item-separator-text-method() {
     let $data := (1, 2)
     return ser:serialize-with-item-separator($data, "text")
 };
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-html-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "html")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-xhtml-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "xhtml")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-xml-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "xml")
+};
+
+declare
+    %test:assertEquals("1--2")
+function ser:item-separator-adaptive-method() {
+    let $data := (1, 2)
+    return ser:serialize-with-item-separator($data, "adaptive")
+};
