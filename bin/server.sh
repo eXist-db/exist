@@ -52,6 +52,6 @@ if [ $PIDFILE ]; then
     echo $$ > $PIDFILE
 fi
 
-${JAVA_RUN} $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
+"${JAVA_RUN}" $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" standalone "${JAVA_OPTS[@]}"
 
 restore_locale_lang;

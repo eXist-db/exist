@@ -59,7 +59,7 @@ if [ $PIDFILE ]; then
     echo $$ > $PIDFILE
 fi
 
-${JAVA_RUN} ${JAVA_OPTIONS} ${OPTIONS} \
+"${JAVA_RUN}" ${JAVA_OPTIONS} ${OPTIONS} \
 	${DEBUG_OPTS} -jar "$EXIST_HOME/start.jar" \
 	jetty ${JAVA_OPTS[@]}
 
