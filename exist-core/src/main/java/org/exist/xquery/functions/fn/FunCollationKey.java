@@ -29,6 +29,7 @@ import org.exist.xquery.value.*;
 
 import com.ibm.icu.text.Collator;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -36,7 +37,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
 public class FunCollationKey extends BasicFunction {
 
-    private static final String FN_NAME = "collation-key"; // , Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX);
+    private static final String FN_NAME = "collation-key";
     private static final String FN_DESCRIPTION =
             "Given a $value-string value and a $collation-string " +
                     "collation, generates an internal value called a collation key, with the " +
@@ -63,8 +64,17 @@ public class FunCollationKey extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String source = (args.length >= 1) ? args[0].itemAt(0).toString() : "";
         final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].itemAt(0).toString()) : null;
-
-        return new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(
-                (collator == null) ? source.getBytes(StandardCharsets.UTF_8) : new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8))).convertTo(new Base64BinaryValueType());
+        final Sequence sequence;
+        try (BinaryValueFromBinaryString binaryValue = new BinaryValueFromBinaryString(
+                new Base64BinaryValueType(),
+                Base64.encodeBase64String(
+                        (collator == null) ?
+                                source.getBytes(StandardCharsets.UTF_8) :
+                                new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)))) {
+            sequence = binaryValue.convertTo(new Base64BinaryValueType());
+        } catch (IOException e) {
+            throw new XPathException(e);
+        }
+        return sequence;
     }
 }

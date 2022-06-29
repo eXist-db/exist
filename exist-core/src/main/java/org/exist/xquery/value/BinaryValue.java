@@ -31,7 +31,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
-import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -291,5 +290,26 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         if (o == null || getClass() != o.getClass()) return false;
         BinaryValue that = (BinaryValue) o;
         return compareTo(that) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        final InputStream is = getInputStream();
+        int hash = 7;
+
+        if (is != null) {
+            int read;
+            do {
+                try {
+                    read = is.read();
+                    if (read != -1) {
+                        hash = 31 * hash + read;
+                    }
+                } catch (final IOException ioe) {
+                    read = -1;
+                }
+            } while (read != -1);
+        }
+        return hash;
     }
 }
