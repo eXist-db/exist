@@ -803,7 +803,7 @@ flworExpr throws XPathException
 initialClause throws XPathException
 :
     ( ( "for" DOLLAR ) => forClause
-    | ("for" "tumbling" ) => windowClause
+    | ( "for" "tumbling" ) => windowClause
     | letClause )
     ;
 
@@ -836,7 +836,7 @@ letClause throws XPathException
 
 windowClause throws XPathException
 :
-	"for"^ "tumbling"! "window"!
+	"for"^ "tumbling" "window" inVarBinding windowStartCondition
 	{ #windowClause= #([TUMBLING_WINDOW, "tumbling window"], #windowClause); }
 	;
 
@@ -863,6 +863,19 @@ allowingEmpty
 :
 	"allowing"! "empty"
 	;
+
+windowStartCondition throws XPathException
+:
+    "start" windowVars "when" exprSingle
+;
+
+windowVars throws XPathException
+{ String currentItem = null, previousItem = null, nextItem = null; }
+:
+    ( DOLLAR! currentItem=eqName )? ( positionalVar )?
+    ( "previous"! DOLLAR! previousItem=eqName )?
+    ( "next"! DOLLAR! nextItem=eqName )?
+;
 
 letVarBinding throws XPathException
 { String varName; }
@@ -2254,8 +2267,17 @@ reservedKeywords returns [String name]
 	"tumbling" { name = "tumbling"; }
 	|
 	"window" { name = "window"; }
+	|
+	"start" { name = "start"; }
+	|
+	"end" { name = "end"; }
+	|
+	"only" { name = "only"; }
+	|
+	"previous" { name = "previous"; }
+	|
+	"next" { name = "next"; }
 	;
-
 
 /**
  * The XQuery/XPath lexical analyzer.
