@@ -166,25 +166,25 @@ public class LuceneMatch extends Match {
         public AtomicValue getValue(int type) throws XPathException {
             switch(type) {
                 case Type.TIME:
-                    return new TimeValue(null, value);
+                    return new TimeValue(value);
                 case Type.DATE_TIME:
-                    return new DateTimeValue(null, value);
+                    return new DateTimeValue(value);
                 case Type.DATE:
-                    return new DateValue(null, value);
+                    return new DateValue(value);
                 case Type.FLOAT:
-                    return new FloatValue(null, value);
+                    return new FloatValue(value);
                 case Type.DOUBLE:
-                    return new DoubleValue(null, value);
+                    return new DoubleValue(value);
                 case Type.DECIMAL:
-                    return new DecimalValue(null, value);
+                    return new DecimalValue(value);
                 case Type.INTEGER:
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    return new IntegerValue(null, value);
+                    return new IntegerValue(value);
                 default:
-                    return new StringValue(null, value);
+                    return new StringValue(value);
             }
         }
     }
@@ -205,7 +205,7 @@ public class LuceneMatch extends Match {
                     final GregorianCalendar gregorianCalendar = new GregorianCalendar();
                     gregorianCalendar.setTime(time);
                     final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
-                    return new TimeValue(null, calendar);
+                    return new TimeValue(calendar);
                 case Type.DATE_TIME:
                     throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
                 case Type.DATE:
@@ -213,25 +213,25 @@ public class LuceneMatch extends Match {
                     final int year = (int)(dl >> 16) & 0xFFFF;
                     final int month = (int)(dl >> 8) & 0xFF;
                     final int day = (int)(dl & 0xFF);
-                    final DateValue date = new DateValue(null);
+                    final DateValue date = new DateValue();
                     date.calendar.setYear(year);
                     date.calendar.setMonth(month);
                     date.calendar.setDay(day);
                     return date;
                 case Type.FLOAT:
-                    return new FloatValue(null, value.floatValue());
+                    return new FloatValue(value.floatValue());
                 case Type.DOUBLE:
-                    return new DoubleValue(null, value.floatValue());
+                    return new DoubleValue(value.floatValue());
                 case Type.DECIMAL:
-                    return new DecimalValue(null, value.doubleValue());
+                    return new DecimalValue(value.doubleValue());
                 case Type.INTEGER:
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    return new IntegerValue(null, value.longValue());
+                    return new IntegerValue(value.longValue());
                 default:
-                    return new StringValue(null, value.toString());
+                    return new StringValue(value.toString());
             }
         }
     }

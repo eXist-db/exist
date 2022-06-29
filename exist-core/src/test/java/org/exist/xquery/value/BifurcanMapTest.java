@@ -74,31 +74,31 @@ public class BifurcanMapTest {
         /*
           2. Remove the entry in the initial map with key `2`: `let $removed := map:remove(..., 2)`
          */
-        final IMap<AtomicValue, Sequence> removed = removeFromMap(map, new IntegerValue(null, 2));
+        final IMap<AtomicValue, Sequence> removed = removeFromMap(map, new IntegerValue(2));
         // taken from MapType.java constructor
         checkMapIsForked(removed);
 
         /*
           3. Get the entry in the removed map with key `1`: `$expected := $removed(1)`
          */
-        final Sequence expected = getFromMap(removed, new IntegerValue(null, 1));
+        final Sequence expected = getFromMap(removed, new IntegerValue(1));
 
         /*
          4. Remove the entry in the removed map with key `1`: `let $result := map:remove($removed, 1)`
          */
-        final IMap<AtomicValue, Sequence> result = removeFromMap(removed, new IntegerValue(null, 1));
+        final IMap<AtomicValue, Sequence> result = removeFromMap(removed, new IntegerValue(1));
         // taken from MapType.java constructor
         checkMapIsForked(result);
 
         /*
          `$expected eq $removed(1)`
         */
-        assertEquals(expected, getFromMap(removed, new IntegerValue(null, 1)));
+        assertEquals(expected, getFromMap(removed, new IntegerValue(1)));
 
         /*
          `$expected ne $result(1)`
          */
-        assertNotEquals(expected, getFromMap(result, new IntegerValue(null, 1)));
+        assertNotEquals(expected, getFromMap(result, new IntegerValue(1)));
     }
 
     /*
@@ -106,8 +106,8 @@ public class BifurcanMapTest {
      */
     private static IMap<AtomicValue, Sequence> createMap() {
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
-        map.put(new IntegerValue(null, 1), BooleanValue.TRUE);
-        map.put(new IntegerValue(null, 2), BooleanValue.TRUE);
+        map.put(new IntegerValue(1), BooleanValue.TRUE);
+        map.put(new IntegerValue(2), BooleanValue.TRUE);
 
         // return an immutable map
         return map.forked();

@@ -1339,7 +1339,7 @@ public class RESTServer {
             }
 
             context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-            context.setBaseURI(new AnyURIValue(null, pathUri.toString()));
+            context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
             declareNamespaces(context, namespaces);
             declareVariables(context, variables, request, response);
@@ -1972,7 +1972,7 @@ public class RESTServer {
             // add an attribute for the creation date as an xs:dateTime
             try {
                 final DateTimeValue dtCreated =
-                        new DateTimeValue(null, new Date(collection.getCreated()));
+                        new DateTimeValue(new Date(collection.getCreated()));
                 attrs.addAttribute("", "created", "created", "CDATA",
                         dtCreated.getStringValue());
             } catch (final XPathException e) {
@@ -1998,7 +1998,7 @@ public class RESTServer {
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(null, new Date(childCollection.getCreated()));
+                                new DateTimeValue(new Date(childCollection.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
                     } catch (final XPathException e) {
                         // fallback to long value
@@ -2022,7 +2022,7 @@ public class RESTServer {
                     // add an attribute for the creation date as an xs:dateTime
                     try {
                         final DateTimeValue dtCreated =
-                                new DateTimeValue(null, new Date(doc.getCreated()));
+                                new DateTimeValue(new Date(doc.getCreated()));
                         attrs.addAttribute("", "created", "created", "CDATA",
                                 dtCreated.getStringValue());
                     } catch (final XPathException e) {

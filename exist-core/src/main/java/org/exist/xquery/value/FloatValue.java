@@ -41,16 +41,24 @@ public class FloatValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^24, 
     // and e is an integer between -149 and 104, inclusive.
     // In addition also -INF, +INF and NaN.
-    public final static FloatValue NaN = new FloatValue(null, Float.NaN);
-    public final static FloatValue POSITIVE_INFINITY = new FloatValue(null, Float.POSITIVE_INFINITY);
-    public final static FloatValue NEGATIVE_INFINITY = new FloatValue(null, Float.NEGATIVE_INFINITY);
-    public final static FloatValue ZERO = new FloatValue(null, 0.0E0f);
+    public final static FloatValue NaN = new FloatValue(Float.NaN);
+    public final static FloatValue POSITIVE_INFINITY = new FloatValue(Float.POSITIVE_INFINITY);
+    public final static FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
+    public final static FloatValue ZERO = new FloatValue(0.0E0f);
 
     final float value;
+
+    public FloatValue(final float value) {
+        this(null, value);
+    }
 
     public FloatValue(final Expression expression, float value) {
         super(expression);
         this.value = value;
+    }
+
+    public FloatValue(final String stringValue) throws XPathException {
+        this(null, stringValue);
     }
 
     public FloatValue(final Expression expression, String stringValue) throws XPathException {

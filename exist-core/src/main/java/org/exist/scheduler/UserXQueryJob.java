@@ -225,7 +225,7 @@ public class UserXQueryJob extends UserJob {
                 for (final Entry param : params.entrySet()) {
                     final String key = (String) param.getKey();
                     final String value = (String) param.getValue();
-                    context.declareVariable(bindingPrefix + ":" + key, new StringValue(null, value));
+                    context.declareVariable(bindingPrefix + ":" + key, new StringValue(value));
                 }
             }
 

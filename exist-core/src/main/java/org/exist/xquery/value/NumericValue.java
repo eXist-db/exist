@@ -34,6 +34,10 @@ import java.util.function.IntSupplier;
 
 public abstract class NumericValue extends ComputableValue {
 
+    protected NumericValue() {
+        this(null);
+    }
+
     protected NumericValue(final Expression expression) {
         super(expression);
     }

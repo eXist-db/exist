@@ -41,6 +41,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
     public static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
 
+    DayTimeDurationValue(final Duration duration) throws XPathException {
+        this(null, duration);
+    }
+
     DayTimeDurationValue(final Expression expression, Duration duration) throws XPathException {
         super(expression, duration);
         if (duration.isSet(DatatypeConstants.YEARS) || duration.isSet(DatatypeConstants.MONTHS)) {
@@ -48,8 +52,16 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         }
     }
 
+    public DayTimeDurationValue(long millis) throws XPathException {
+        this(null, millis);
+    }
+
     public DayTimeDurationValue(final Expression expression, long millis) throws XPathException {
         this(expression, TimeUtils.getInstance().newDurationDayTime(millis));
+    }
+
+    public DayTimeDurationValue(String str) throws XPathException {
+        this(null, str);
     }
 
     public DayTimeDurationValue(final Expression expression, String str) throws XPathException {

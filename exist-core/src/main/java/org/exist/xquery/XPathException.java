@@ -47,6 +47,16 @@ public class XPathException extends Exception implements XPathErrorProvider {
     private Source source = null;
 
     /**
+     * @param message the error message
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
+    public XPathException(String message) {
+        super();
+        this.message = message;
+    }
+
+    /**
      * @param line line number the error appeared in
      * @param column column the error appeared in
      * @param message the error message
@@ -59,7 +69,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.line = line;
         this.column = column;
     }
-    
+
     public XPathException(ErrorCode errorCode, int line, int column) {
         super();
         this.errorCode = errorCode;
@@ -91,7 +101,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
             this.source = expr.getSource();
         }
     }
-    
+
     public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
         super();
         this.errorCode = errorCode;
@@ -153,6 +163,18 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      * @param cause the cause throwable
+     * @deprecated Use a constructor with errorCode
+     */
+    @Deprecated
+    public XPathException(final Throwable cause) {
+        super(cause);
+        if(cause instanceof XPathErrorProvider) {
+            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
+    }
+
+    /**
+     * @param cause the cause throwable
      * @param message the error message
      * @deprecated Use a constructor with errorCode
      */
@@ -181,11 +203,44 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
+    /**
+     *  Constructor.
+     *
+     * @param errorCode Xquery errorcode
+     * @param errorDesc Error code. When Null the ErrorCode text will be used.
+     *
+     */
+    public XPathException(ErrorCode errorCode, String errorDesc) {
+        this.errorCode = errorCode;
+
+        if(errorDesc == null){
+            this.message = errorCode.toString();
+        } else {
+            this.message = errorDesc;
+        }
+    }
+
+    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+        this(errorCode, errorDesc, cause);
+        this.errorVal = errorVal;
+    }
+
+    public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+
+        if(errorDesc == null){
+            this.message = errorCode.toString();
+        } else {
+            this.message = errorDesc;
+        }
+    }
+
     public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
         this(expr, errorCode, errorDesc, cause);
         this.errorVal = errorVal;
     }
-    
+
     public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
@@ -259,16 +314,16 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      * Get the xquery error code. Use getErroCode instead.
-     * 
+     *
      * @return The error code or ErrorCode#Error when not available.
      *
      * @deprecated Use {@link #getErrorCode()}
      */
     @Deprecated
     public ErrorCode getCode() {
-    	return errorCode;
+        return errorCode;
     }
-    
+
     public Source getSource() {
         return source;
     }
@@ -279,7 +334,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
         callStack.add(new FunctionStackElement(def, def.getSource().pathOrShortIdentifier(), call.getLine(), call.getColumn()));
     }
-    
+
     public List<FunctionStackElement> getCallStack() {
         return callStack;
     }
@@ -298,23 +353,23 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Override
     public String getMessage() {
-        
+
         final StringBuilder buf = new StringBuilder();
-        
+
         if(message == null) {
             message = "";
         }
-        
+
         if(errorCode != null) {
             buf.append(errorCode.getErrorQName()); //TODO consider also displaying the W3C message by calling errorCode.toString()
             buf.append(" ");
-            
+
             if(message.isEmpty()) {
                 message = errorCode.getDescription();
             }
         }
         buf.append(message);
-        
+
         // Append location details
         if(getLine() > 0 || source != null) {
             buf.append(" [");
@@ -332,7 +387,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
             }
             buf.append("]");
         }
-        
+
         // Append function stack trace
         if(callStack != null) {
             buf.append("\nIn function:\n");
@@ -344,14 +399,14 @@ public class XPathException extends Exception implements XPathErrorProvider {
                 }
             }
         }
-        
+
         return buf.toString();
     }
 
     /**
      * Returns just the error message, not including
      * line numbers or the call stack.
-     * 
+     *
      * @return error message
      */
     public String getDetailMessage() {
@@ -394,7 +449,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      *  Get the xquery error value.
-     * 
+     *
      * @return Error value as sequence
      */
     public Sequence getErrorVal() {

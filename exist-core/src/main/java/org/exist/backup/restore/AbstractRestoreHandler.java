@@ -352,7 +352,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         Date dateCreated = null;
         if (commonAttributes.created != null) {
             try {
-                dateCreated = new DateTimeValue(null, commonAttributes.created).getDate();
+                dateCreated = new DateTimeValue(commonAttributes.created).getDate();
             } catch (final XPathException xpe) {
                 listener.warn("Illegal creation date. Ignoring date...");
             }
@@ -361,7 +361,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         Date dateModified = null;
         if (dateModifiedStr != null) {
             try {
-                dateModified = new DateTimeValue(null, dateModifiedStr).getDate();
+                dateModified = new DateTimeValue(dateModifiedStr).getDate();
             } catch (final XPathException xpe) {
                 listener.warn("Illegal modification date. Ignoring date...");
             }
@@ -535,7 +535,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
 
         if (strXSDateTime != null) {
             try {
-                dateCreated = new DateTimeValue(null, strXSDateTime).getDate();
+                dateCreated = new DateTimeValue(strXSDateTime).getDate();
             } catch(final XPathException e2) {
                 // no-op, ignore and move on
             }

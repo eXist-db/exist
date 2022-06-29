@@ -71,9 +71,9 @@ public class EmptySequence extends AbstractSequence {
     public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.BOOLEAN:
-                return new BooleanValue(null, false);
+                return new BooleanValue(false);
             case Type.STRING:
-                return new StringValue(null, "");
+                return new StringValue("");
             default:
                 throw new XPathException((Expression) null, "cannot convert empty sequence to " + requiredType);
         }

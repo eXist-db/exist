@@ -78,24 +78,24 @@ public class XPathUtil {
         } else if (obj instanceof Sequence) {
             return (Sequence) obj;
         } else if (obj instanceof String) {
-            final StringValue v = new StringValue(null, (String) obj);
+            final StringValue v = new StringValue((String) obj);
             return (expandChars ? v.expand() : v);
         } else if (obj instanceof Boolean) {
             return BooleanValue.valueOf(((Boolean) obj));
         } else if (obj instanceof Float) {
-            return new FloatValue(null, ((Float) obj));
+            return new FloatValue(((Float) obj));
         } else if (obj instanceof Double) {
-            return new DoubleValue(null, ((Double) obj));
+            return new DoubleValue(((Double) obj));
         } else if (obj instanceof Short) {
-            return new IntegerValue(null, ((Short) obj), Type.SHORT);
+            return new IntegerValue(((Short) obj), Type.SHORT);
         } else if (obj instanceof Integer) {
-            return new IntegerValue(null, ((Integer) obj), Type.INT);
+            return new IntegerValue(((Integer) obj), Type.INT);
         } else if (obj instanceof Long) {
-            return new IntegerValue(null, ((Long) obj), Type.LONG);
+            return new IntegerValue(((Long) obj), Type.LONG);
         } else if (obj instanceof BigInteger) {
-             return new IntegerValue(null, (BigInteger) obj);
+             return new IntegerValue((BigInteger) obj);
         } else if (obj instanceof BigDecimal) {
-            return new DecimalValue(null, (BigDecimal) obj);
+            return new DecimalValue((BigDecimal) obj);
         } else if (obj instanceof byte[]) {
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj), null);
         } else if (obj instanceof ResourceSet) {
@@ -196,7 +196,7 @@ public class XPathUtil {
             return seq;
 
         } else {
-            return new JavaObjectValue(null, obj);
+            return new JavaObjectValue(obj);
         }
     }
 

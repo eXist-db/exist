@@ -32,12 +32,24 @@ import java.util.GregorianCalendar;
 
 public class GMonthDayValue extends AbstractDateTimeValue {
 
+    public GMonthDayValue() throws XPathException {
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
     public GMonthDayValue(final Expression expression) throws XPathException {
         super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
+    public GMonthDayValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
     public GMonthDayValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
         super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    }
+
+    public GMonthDayValue(final String timeValue) throws XPathException {
+        this(null, timeValue);
     }
 
     public GMonthDayValue(final Expression expression, String timeValue) throws XPathException {

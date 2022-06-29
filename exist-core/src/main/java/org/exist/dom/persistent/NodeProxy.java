@@ -681,7 +681,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        return new UntypedAtomicValue(null, getNodeValue());
+        return new UntypedAtomicValue(getNodeValue());
     }
 
     @Override
@@ -756,7 +756,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         } else if(target.isAssignableFrom(Node.class) || target == Object.class) {
             return (T) getNode();
         } else {
-            final StringValue v = new StringValue(null, getStringValue());
+            final StringValue v = new StringValue(getStringValue());
             return v.toJavaObject(target);
         }
     }

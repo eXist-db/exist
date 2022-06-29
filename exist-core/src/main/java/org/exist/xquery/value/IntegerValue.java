@@ -45,7 +45,7 @@ public class IntegerValue extends NumericValue {
     //TODO this class should be split into numerous sub classes for each xs: type with proper
     //inheritance as defined by http://www.w3.org/TR/xmlschema-2/#built-in-datatypes
 
-    public static final IntegerValue ZERO = new IntegerValue(null, 0);
+    public static final IntegerValue ZERO = new IntegerValue(0);
 
     private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
     private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
@@ -74,10 +74,18 @@ public class IntegerValue extends NumericValue {
     final BigInteger value;
     private final int type;
 
+    public IntegerValue(final long value) {
+        this(null, value);
+    }
+
     public IntegerValue(final Expression expression, final long value) {
         super(expression);
         this.value = BigInteger.valueOf(value);
         this.type = Type.INTEGER;
+    }
+
+    public IntegerValue(final BigInteger integer) {
+        this(null, integer);
     }
 
     public IntegerValue(final Expression expression, final BigInteger integer) {
@@ -86,12 +94,24 @@ public class IntegerValue extends NumericValue {
         this.type = Type.INTEGER;
     }
 
+    public IntegerValue(final long value, final int type) throws XPathException {
+        this(null, value, type);
+    }
+
     public IntegerValue(final Expression expression, final long value, final int type) throws XPathException {
         this(expression, BigInteger.valueOf(value), type);
     }
 
+    public IntegerValue(final BigInteger value, final int requiredType) throws XPathException {
+        this(null, value, requiredType);
+    }
+
     public IntegerValue(final Expression expression, final BigInteger value, final int requiredType) throws XPathException {
         this(expression, value, requiredType, true);
+    }
+
+    private IntegerValue(final BigInteger value, final int requiredType, final boolean checkType) throws XPathException {
+        this(null, value, requiredType, checkType);
     }
 
     private IntegerValue(final Expression expression, final BigInteger value, final int requiredType, boolean checkType) throws XPathException {
@@ -105,8 +125,16 @@ public class IntegerValue extends NumericValue {
         }
     }
 
+    public IntegerValue(final String stringValue) throws XPathException {
+        this(null, stringValue);
+    }
+
     public IntegerValue(final Expression expression, final String stringValue) throws XPathException {
         this(expression, stringValue, Type.INTEGER);
+    }
+
+    public IntegerValue(final String stringValue, final int requiredType) throws XPathException {
+        this(null, stringValue, requiredType);
     }
 
     public IntegerValue(final Expression expression, final String stringValue, final int requiredType) throws XPathException {

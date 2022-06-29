@@ -102,7 +102,7 @@ public class ValueIndexFactoryTest {
     public void roundTripDecimal() throws EXistException {
         BigDecimal dec = new BigDecimal("123456789123456789123456789123456789.123456789123456789123456789");
 
-        byte data[] = ValueIndexFactory.serialize(new DecimalValue(null, dec), 0);
+        byte data[] = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
 
         Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
         assertTrue(value instanceof DecimalValue);

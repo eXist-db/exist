@@ -38,6 +38,10 @@ import java.math.BigDecimal;
  */
 abstract class OrderedDurationValue extends DurationValue {
 
+    OrderedDurationValue(final Duration duration) throws XPathException {
+        this(null, duration);
+    }
+
     OrderedDurationValue(final Expression expression, Duration duration) throws XPathException {
         super(expression, duration);
     }

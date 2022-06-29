@@ -47,6 +47,10 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     private final BinaryValueManager binaryValueManager;
     private final BinaryValueType binaryValueType;
 
+    protected BinaryValue(final BinaryValueManager binaryValueManager, final BinaryValueType binaryValueType) {
+        this(null, binaryValueManager, binaryValueType);
+    }
+
     protected BinaryValue(final Expression expression, BinaryValueManager binaryValueManager, BinaryValueType binaryValueType) {
         super(expression);
         this.binaryValueManager = binaryValueManager;

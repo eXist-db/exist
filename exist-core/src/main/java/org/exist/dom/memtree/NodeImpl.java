@@ -569,7 +569,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        return new UntypedAtomicValue(null, getStringValue());
+        return new UntypedAtomicValue(getStringValue());
     }
 
     @Override
@@ -721,7 +721,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
         if(target.isAssignableFrom(NodeImpl.class) || target.isAssignableFrom(Node.class) || target == Object.class) {
             return (T) this;
         } else {
-            final StringValue v = new StringValue(null, getStringValue());
+            final StringValue v = new StringValue(getStringValue());
             return v.toJavaObject(target);
         }
     }

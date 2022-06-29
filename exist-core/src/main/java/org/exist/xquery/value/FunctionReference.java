@@ -40,6 +40,10 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     protected final FunctionCall functionCall;
 
+    public FunctionReference(final FunctionCall functionCall) {
+        this(null, functionCall);
+    }
+
     public FunctionReference(final Expression expression, final FunctionCall functionCall) {
         super(expression);
         this.functionCall = functionCall;

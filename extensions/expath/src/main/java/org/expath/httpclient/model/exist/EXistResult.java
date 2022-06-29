@@ -88,7 +88,7 @@ public class EXistResult implements Result {
         }
         // END TEMP
 
-        result.add(new StringValue(null, builder.toString()));
+        result.add(new StringValue(builder.toString()));
     }
 
     @Override

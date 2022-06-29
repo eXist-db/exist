@@ -297,6 +297,6 @@ class RestXqServiceImpl extends AbstractRestXqService {
             bos.write(is);
             s = new String(bos.toByteArray(), encoding);
         }
-        return new StringValue(null, s);
+        return new StringValue(s);
     }
 }

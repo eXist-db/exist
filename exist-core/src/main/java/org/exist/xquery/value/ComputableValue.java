@@ -31,6 +31,10 @@ import com.ibm.icu.text.Collator;
  */
 public abstract class ComputableValue extends AtomicValue {
 
+    protected ComputableValue() {
+        this(null);
+    }
+
     protected ComputableValue(final Expression expression) {
         super(expression);
     }

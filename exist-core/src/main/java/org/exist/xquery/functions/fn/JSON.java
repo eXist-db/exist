@@ -126,11 +126,11 @@ public class JSON extends BasicFunction {
         String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
         if (getArgumentCount() == 2) {
             final MapType options = (MapType)args[1].itemAt(0);
-            final Sequence liberalOpt = options.get(new StringValue(null, OPTION_LIBERAL));
+            final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
             if (liberalOpt.hasOne()) {
                 liberal = liberalOpt.itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
             }
-            final Sequence duplicateOpt = options.get(new StringValue(null, OPTION_DUPLICATES));
+            final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
             if (duplicateOpt.hasOne()) {
                 handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
             }
@@ -269,13 +269,13 @@ public class JSON extends BasicFunction {
                 case VALUE_NUMBER_FLOAT:
                 case VALUE_NUMBER_INT:
                     // according to spec, all numbers are converted to double
-                    next = new StringValue(null, parser.getText()).convertTo(Type.DOUBLE);
+                    next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
                     break;
                 case VALUE_NULL:
                     next = null;
                     break;
                 default:
-                    next = new StringValue(null, parser.getText());
+                    next = new StringValue(parser.getText());
                     break;
             }
             if (parent != null) {
@@ -288,7 +288,7 @@ public class JSON extends BasicFunction {
                         if (currentName == null) {
                             throw new XPathException((Expression) null, ErrorCodes.FOJS0001, "Invalid JSON object");
                         }
-                        final StringValue name = new StringValue(null, currentName);
+                        final StringValue name = new StringValue(currentName);
                         final MapType map = (MapType) parent;
                         if (map.contains(name)) {
                             // handle duplicate keys

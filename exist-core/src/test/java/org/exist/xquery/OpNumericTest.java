@@ -55,13 +55,13 @@ public class OpNumericTest {
 		broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
 		context = new XQueryContext(pool);
 
-		dtDuration = new DayTimeDurationValue(null, "P1D");
-		ymDuration = new YearMonthDurationValue(null, "P1Y");
-		dateTime = new DateTimeValue(null, "2005-06-02T16:28:00Z");
-		date = new DateValue(null, "2005-06-02");
-		time = new TimeValue(null, "16:28:00Z");
-		integer = new IntegerValue(null, 2);
-		decimal = new DecimalValue(null, "1.5");
+		dtDuration = new DayTimeDurationValue("P1D");
+		ymDuration = new YearMonthDurationValue("P1Y");
+		dateTime = new DateTimeValue("2005-06-02T16:28:00Z");
+		date = new DateValue("2005-06-02");
+		time = new TimeValue("16:28:00Z");
+		integer = new IntegerValue(2);
+		decimal = new DecimalValue("1.5");
 	}
 
     @AfterClass
@@ -88,17 +88,17 @@ public class OpNumericTest {
 
     @Test
 	public void idiv1() throws XPathException {
-        assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(null, 3), new DecimalValue(null, "1.5"));
+        assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(3), new DecimalValue("1.5"));
 	}
 
     @Test
 	public void idiv2() throws XPathException {
-		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(null, 4), new IntegerValue(null, 2));
+		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(4), new IntegerValue(2));
 	}
 
     @Test
 	public void idiv3() throws XPathException {
-		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(null, 5), new IntegerValue(null, 2));
+		assertOp("2", ArithmeticOperator.DIVISION_INTEGER, new IntegerValue(5), new IntegerValue(2));
 	}
 
     @Test

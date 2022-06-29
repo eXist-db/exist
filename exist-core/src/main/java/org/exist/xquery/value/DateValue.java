@@ -36,8 +36,16 @@ import java.util.GregorianCalendar;
  */
 public class DateValue extends AbstractDateTimeValue {
 
+    public DateValue() throws XPathException {
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
     public DateValue(final Expression expression) throws XPathException {
         super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
+    public DateValue(final String dateString) throws XPathException {
+        this(null, dateString);
     }
 
     public DateValue(final Expression expression, String dateString) throws XPathException {
@@ -49,6 +57,10 @@ public class DateValue extends AbstractDateTimeValue {
         } catch (final IllegalStateException e) {
             throw new XPathException(getExpression(), "xs:date must not have hour, minute or second fields set");
         }
+    }
+
+    public DateValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
     }
 
     public DateValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {

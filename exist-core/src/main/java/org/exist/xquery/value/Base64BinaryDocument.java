@@ -35,6 +35,10 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
 
     private String url = null;
 
+    private Base64BinaryDocument(final BinaryValueManager manager, final InputStream is) throws XPathException {
+        this(null, manager, is);
+    }
+
     private Base64BinaryDocument(final Expression expression, final BinaryValueManager manager, final InputStream is) throws XPathException {
         super(expression, manager, new Base64BinaryValueType(), is);
     }

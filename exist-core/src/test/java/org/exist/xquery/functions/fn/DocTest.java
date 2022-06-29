@@ -191,7 +191,7 @@ public class DocTest {
 
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
             context.addDynamicallyAvailableDocument(baseUri + docRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();
@@ -247,7 +247,7 @@ public class DocTest {
 
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
             context.addDynamicallyAvailableDocument(baseUri + docRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();

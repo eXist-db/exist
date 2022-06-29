@@ -38,6 +38,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
     public static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, BigInteger.ZERO, null, null, null, null);
 
+    YearMonthDurationValue(final Duration duration) throws XPathException {
+        this(null, duration);
+    }
+
     YearMonthDurationValue(final Expression expression, Duration duration) throws XPathException {
         super(expression, duration);
         if (!duration.equals(DurationValue.CANONICAL_ZERO_DURATION)) {
@@ -51,6 +55,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
                         " since it specifies days, hours, minutes or seconds values");
             }
         }
+    }
+
+    public YearMonthDurationValue(final String str) throws XPathException {
+        this(null, str);
     }
 
     public YearMonthDurationValue(final Expression expression, String str) throws XPathException {

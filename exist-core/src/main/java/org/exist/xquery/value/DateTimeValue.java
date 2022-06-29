@@ -39,9 +39,18 @@ import java.util.GregorianCalendar;
  */
 public class DateTimeValue extends AbstractDateTimeValue {
 
+    public DateTimeValue() throws XPathException {
+        super(null, TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        normalize();
+    }
+
     public DateTimeValue(final Expression expression) throws XPathException {
         super(expression, TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
         normalize();
+    }
+
+    public DateTimeValue(final XMLGregorianCalendar calendar) {
+        this(null, calendar);
     }
 
     public DateTimeValue(final Expression expression, XMLGregorianCalendar calendar) {
@@ -49,9 +58,17 @@ public class DateTimeValue extends AbstractDateTimeValue {
         normalize();
     }
 
+    public DateTimeValue(final Date date) {
+        this(null, date);
+    }
+
     public DateTimeValue(final Expression expression, Date date) {
         super(expression, dateToXMLGregorianCalendar(date));
         normalize();
+    }
+
+    public DateTimeValue(String dateTime) throws XPathException {
+        this(null, dateTime);
     }
 
     public DateTimeValue(final Expression expression, String dateTime) throws XPathException {

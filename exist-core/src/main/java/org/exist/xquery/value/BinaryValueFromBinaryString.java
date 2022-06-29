@@ -48,6 +48,10 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     private final String value;
     private boolean closed = false;
 
+    public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
+        this(null, binaryValueType, value);
+    }
+
     public BinaryValueFromBinaryString(final Expression expression, BinaryValueType binaryValueType, String value) throws XPathException {
         super(expression, null, binaryValueType);
         this.value = binaryValueType.verifyAndFormatString(value);

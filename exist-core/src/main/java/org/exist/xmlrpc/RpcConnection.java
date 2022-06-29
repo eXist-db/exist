@@ -313,7 +313,7 @@ public class RpcConnection implements RpcAPI {
         }
         final String base = (String) parameters.get(RpcAPI.BASE_URI);
         if (base != null) {
-            context.setBaseURI(new AnyURIValue(null, base));
+            context.setBaseURI(new AnyURIValue(base));
         }
         final String moduleLoadPath = (String) parameters.get(RpcAPI.MODULE_LOAD_PATH);
         if (moduleLoadPath != null) {

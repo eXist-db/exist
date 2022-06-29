@@ -603,7 +603,7 @@ public class Deployment {
     private void storeRepoXML(final DBBroker broker, final Txn transaction, final DocumentImpl repoXML, final XmldbURI targetCollection, final Optional<RequestedPerms> requestedPerms)
             throws PackageException, XPathException {
         // Store repo.xml
-        final DateTimeValue time = new DateTimeValue(null, new Date());
+        final DateTimeValue time = new DateTimeValue(new Date());
         final MemTreeBuilder builder = new MemTreeBuilder();
         builder.startDocument();
         final UpdatingDocumentReceiver receiver = new UpdatingDocumentReceiver(builder, time.getStringValue());

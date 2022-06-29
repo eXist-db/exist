@@ -32,21 +32,21 @@ public class ByteTest {
     
     @Test(expected=XPathException.class)
     public void testOver() throws XPathException {
-        new IntegerValue(null, "128", Type.BYTE);
+        new IntegerValue("128", Type.BYTE);
     }
     
     @Test
     public void testPositiveLimit() throws XPathException {
-        new IntegerValue(null, "127", Type.BYTE);
+        new IntegerValue("127", Type.BYTE);
     }
     
     @Test
     public void testNegativeLimit() throws XPathException {
-        new IntegerValue(null, "-128", Type.BYTE);
+        new IntegerValue("-128", Type.BYTE);
     }
     
     @Test(expected=XPathException.class)
     public void testUnder() throws XPathException {
-        new IntegerValue(null, "-129", Type.BYTE);
+        new IntegerValue("-129", Type.BYTE);
     }
 }

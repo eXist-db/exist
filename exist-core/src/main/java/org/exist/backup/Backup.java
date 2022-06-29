@@ -305,7 +305,7 @@ public class Backup {
             //The name should have come from an XmldbURI.toString() call
             attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
             writeUnixStylePermissionAttributes(attr, currentPerms);
-            attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(null, cur.getCreationTime()));
+            attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
             attr.addAttribute(Namespaces.EXIST_NS, "deduplicate-blobs", "deduplicate-blobs", "CDATA", Boolean.toString(deduplicateBlobs));
             attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(BACKUP_FORMAT_VERSION));
 
@@ -409,12 +409,12 @@ public class Backup {
                     Date date = ris.getCreationTime();
 
                     if (date != null) {
-                        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(null, date));
+                        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
                     }
                     date = ris.getLastModificationTime();
 
                     if (date != null) {
-                        attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(null, date));
+                        attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(date));
                     }
 
                     attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);

@@ -813,13 +813,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
             }
 
             if (term.length() > 0) {
-                startTerm = new StringValue(null, term.toString());
+                startTerm = new StringValue(term.toString());
                 LOG.debug("Match will begin index scan at '{}'", startTerm);
             } else {
                 startTerm = null;
             }
         } else if (collator == null && (type == DBBroker.MATCH_EXACT || type == DBBroker.MATCH_STARTSWITH)) {
-            startTerm = new StringValue(null, expr);
+            startTerm = new StringValue(expr);
             LOG.debug("Match will begin index scan at '{}'", startTerm);
         } else {
             startTerm = null;
@@ -1044,14 +1044,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final AtomicValue atomic;
         if (Type.subTypeOf(xpathType, Type.STRING)) {
             try {
-                atomic = new StringValue(null, value, xpathType, false);
+                atomic = new StringValue(value, xpathType, false);
             } catch (final XPathException e) {
                 LOG.error(e);
                 return null;
             }
         } else {
             try {
-                atomic = new StringValue(null, value).convertTo(xpathType);
+                atomic = new StringValue(value).convertTo(xpathType);
             } catch (final XPathException e) {
                 LOG.warn("Node value '{}' cannot be converted to {}", value, Type.getTypeName(xpathType));
                 return null;

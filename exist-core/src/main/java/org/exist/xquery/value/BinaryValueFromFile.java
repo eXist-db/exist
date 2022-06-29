@@ -52,6 +52,10 @@ public class BinaryValueFromFile extends BinaryValue {
     private final MappedByteBuffer buf;
     private final Optional<BiConsumer<Boolean, Path>> closeListener;
 
+    protected BinaryValueFromFile(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Optional<BiConsumer<Boolean, Path>> closeListener) throws XPathException {
+        this(null, manager, binaryValueType, file, closeListener);
+    }
+
     protected BinaryValueFromFile(final Expression expression, final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Optional<BiConsumer<Boolean, Path>> closeListener) throws XPathException {
         super(expression, manager, binaryValueType);
         try {

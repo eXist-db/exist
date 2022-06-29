@@ -36,6 +36,10 @@ public class UntypedAtomicValue extends AtomicValue {
 
     private final String value;
 
+    public UntypedAtomicValue(final String value) {
+        this(null, value);
+    }
+
     public UntypedAtomicValue(final Expression expression, String value) {
         super(expression);
         this.value = value;

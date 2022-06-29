@@ -133,7 +133,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                             context.prepareForReuse();
                         }
                         context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-                        context.setBaseURI(new AnyURIValue(null, pathUri.toString()));
+                        context.setBaseURI(new AnyURIValue(pathUri.toString()));
 
                         if (compiled == null) {
                             compiled = xquery.compile(context, source);

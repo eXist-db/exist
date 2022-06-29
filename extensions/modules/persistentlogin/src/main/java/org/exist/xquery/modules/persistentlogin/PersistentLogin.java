@@ -83,7 +83,7 @@ public class PersistentLogin {
      * @throws XPathException if a query error occurs
      */
     public LoginDetails register(String user, String password, DurationValue timeToLive) throws XPathException {
-        DateTimeValue now = new DateTimeValue(null, new Date());
+        DateTimeValue now = new DateTimeValue(new Date());
         DateTimeValue expires = (DateTimeValue) now.plus(timeToLive);
         LoginDetails login = new LoginDetails(user, password, timeToLive, expires.getTimeInMillis());
         seriesMap.put(login.getSeries(), login);

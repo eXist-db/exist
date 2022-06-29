@@ -34,12 +34,24 @@ import java.util.GregorianCalendar;
 
 public class GYearMonthValue extends AbstractDateTimeValue {
 
+    public GYearMonthValue() throws XPathException {
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
     public GYearMonthValue(final Expression expression) throws XPathException {
         super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
+    public GYearMonthValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
     public GYearMonthValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
         super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    }
+
+    public GYearMonthValue(final String timeValue) throws XPathException {
+        this(null, timeValue);
     }
 
     public GYearMonthValue(final Expression expression, String timeValue) throws XPathException {

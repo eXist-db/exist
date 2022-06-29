@@ -31,7 +31,7 @@ import static org.junit.Assert.assertNull;
 
 public class RangeSequenceTest {
 
-    private final RangeSequence rangeSequence = new RangeSequence(new IntegerValue(null, 1), new IntegerValue(null, 99));
+    private final RangeSequence rangeSequence = new RangeSequence(new IntegerValue(1), new IntegerValue(99));
 
     @Test
     public void iterate_loop() {

@@ -83,7 +83,7 @@ public class SubSequenceTest {
     @Parameterized.Parameter(value = 3)
     public int expectedSubsequenceLength;
 
-    private static final RangeSequence range = new RangeSequence(new IntegerValue(null, RANGE_START), new IntegerValue(null, RANGE_END));
+    private static final RangeSequence range = new RangeSequence(new IntegerValue(RANGE_START), new IntegerValue(RANGE_END));
 
     private SubSequence getSubsequence() {
         return new SubSequence(fromInclusive, toExclusive, range);

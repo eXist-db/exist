@@ -42,7 +42,7 @@ import static org.exist.dom.QName.Validity.VALID;
 
 public class StringValue extends AtomicValue {
 
-    public final static StringValue EMPTY_STRING = new StringValue(null, "");
+    public final static StringValue EMPTY_STRING = new StringValue("");
 
     private final static String langRegex =
             //http://www.w3.org/TR/xmlschema-2/#language
@@ -63,8 +63,16 @@ public class StringValue extends AtomicValue {
 
     protected String value;
 
+    public StringValue(final String string, final int type) throws XPathException {
+        this(null, string, type);
+    }
+
     public StringValue(final Expression expression, String string, int type) throws XPathException {
         this(expression, string, type, true);
+    }
+
+    public StringValue(final String string, final int type, final boolean expand) throws XPathException {
+        this(null, string, type, expand);
     }
 
     public StringValue(final Expression expression, String string, int type, boolean expand) throws XPathException {
@@ -81,6 +89,10 @@ public class StringValue extends AtomicValue {
             this.value = collapseWhitespace(string);
             checkType();
         }
+    }
+
+    public StringValue(final String string) {
+        this(null, string);
     }
 
     public StringValue(final Expression expression, final String string) {

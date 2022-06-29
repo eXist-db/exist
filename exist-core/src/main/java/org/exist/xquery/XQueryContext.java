@@ -958,7 +958,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (!defaultElementNamespaceSchema.equals(AnyURIValue.EMPTY_URI)) {
             throw new XPathException((Expression) null, ErrorCodes.XQST0066, "Default function namespace schema is already set to: '" + defaultElementNamespaceSchema.getStringValue() + "'");
         }
-        defaultElementNamespaceSchema = new AnyURIValue(null, uri);
+        defaultElementNamespaceSchema = new AnyURIValue(uri);
     }
 
     @Override
@@ -973,10 +973,10 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException((Expression) null, ErrorCodes.XQST0066,
                     "Default element namespace is already set to: '" + defaultElementNamespace.getStringValue() + "'");
         }
-        defaultElementNamespace = new AnyURIValue(null, uri);
+        defaultElementNamespace = new AnyURIValue(uri);
 
         if (schema != null) {
-            defaultElementNamespaceSchema = new AnyURIValue(null, schema);
+            defaultElementNamespaceSchema = new AnyURIValue(schema);
         }
     }
 
@@ -2455,11 +2455,11 @@ public class XQueryContext implements BinaryValueManager, Context {
                     // check if there's a static mapping in the configuration
                     final String moduleLocation = getModuleLocation(namespaceURI);
                     if (moduleLocation != null) {
-                        locationHints = new AnyURIValue[]{ new AnyURIValue(null, moduleLocation) };
+                        locationHints = new AnyURIValue[]{ new AnyURIValue(moduleLocation) };
                     }
 
                     if (isEmpty(locationHints)) {
-                        locationHints = new AnyURIValue[] { new AnyURIValue(null, namespaceURI) };
+                        locationHints = new AnyURIValue[] { new AnyURIValue(namespaceURI) };
                     }
                 }
 
@@ -2563,12 +2563,12 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     protected XPathException moduleLoadException(final String message, final String moduleLocation)
             throws XPathException {
-        return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(null, moduleLocation)));
+        return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation)));
     }
 
     protected XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e)
             throws XPathException {
-        return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(null, moduleLocation)), e);
+        return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation)), e);
     }
 
     @SuppressWarnings("unchecked")
@@ -2913,7 +2913,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         } else if (Option.CURRENT_DATETIME.compareTo(qn) == 0) {
             //TODO : error check
-            final DateTimeValue dtv = new DateTimeValue(null, option.getContents());
+            final DateTimeValue dtv = new DateTimeValue(option.getContents());
             calendar = (XMLGregorianCalendar) dtv.calendar.clone();
         }
     }

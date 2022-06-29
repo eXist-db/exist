@@ -36,12 +36,24 @@ import java.util.GregorianCalendar;
  */
 public class TimeValue extends AbstractDateTimeValue {
 
+    public TimeValue() throws XPathException {
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
     public TimeValue(final Expression expression) throws XPathException {
         super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
+    public TimeValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
     public TimeValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
         super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    }
+
+    public TimeValue(final String timeValue) throws XPathException {
+        this(null, timeValue);
     }
 
     public TimeValue(final Expression expression, String timeValue) throws XPathException {

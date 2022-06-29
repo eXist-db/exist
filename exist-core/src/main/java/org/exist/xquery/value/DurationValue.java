@@ -57,9 +57,17 @@ public class DurationValue extends ComputableValue {
     protected final Duration duration;
     private Duration canonicalDuration;
 
+    public DurationValue(final Duration duration) {
+        this(null, duration);
+    }
+
     public DurationValue(final Expression expression, Duration duration) {
         super(expression);
         this.duration = duration;
+    }
+
+    public DurationValue(final String str) throws XPathException {
+        this(null, str);
     }
 
     public DurationValue(final Expression expression, String str) throws XPathException {
@@ -81,12 +89,12 @@ public class DurationValue extends ComputableValue {
      */
     public static DurationValue wrap(Duration duration) {
         try {
-            return new DayTimeDurationValue(null, duration);
+            return new DayTimeDurationValue(duration);
         } catch (final XPathException e) {
             try {
-                return new YearMonthDurationValue(null, duration);
+                return new YearMonthDurationValue(duration);
             } catch (final XPathException e2) {
-                return new DurationValue(null, duration);
+                return new DurationValue(duration);
             }
         }
     }

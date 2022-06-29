@@ -194,7 +194,7 @@ public class Marshaller {
                             if (Type.subTypeOf(type, Type.NODE))
                                 {item = streamToDOM(type, parser);}
                             else
-                                {item = new StringValue(null, parser.getElementText()).convertTo(type);}
+                                {item = new StringValue(parser.getElementText()).convertTo(type);}
                             result.add(item);
                         }
                     }
@@ -248,7 +248,7 @@ public class Marshaller {
                         data.append(txt.getNodeValue());
                         txt = txt.getNextSibling();
                     }
-                    item = new StringValue(null, data.toString()).convertTo(type);
+                    item = new StringValue(data.toString()).convertTo(type);
                 }
                 result.add(item);
             }

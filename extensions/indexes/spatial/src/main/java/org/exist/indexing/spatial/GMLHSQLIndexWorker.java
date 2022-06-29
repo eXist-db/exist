@@ -544,11 +544,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 return AtomicValue.EMPTY_VALUE;
             AtomicValue result = null;
             if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-                result = new BooleanValue(null, rs.getBoolean(1));
+                result = new BooleanValue(rs.getBoolean(1));
             } else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-                result = new DoubleValue(null, rs.getDouble(1));
+                result = new DoubleValue(rs.getDouble(1));
             } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-                result = new StringValue(null, rs.getString(1));
+                result = new StringValue(rs.getString(1));
             } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
                 result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)), null);
             } else 
@@ -630,11 +630,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
                     if (contextSet.get(p) != null) {
                         if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-                            result.add(new BooleanValue(null, rs.getBoolean(1)));
+                            result.add(new BooleanValue(rs.getBoolean(1)));
                         } else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-                            result.add(new DoubleValue(null, rs.getDouble(1)));
+                            result.add(new DoubleValue(rs.getDouble(1)));
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-                            result.add(new StringValue(null, rs.getString(1)));
+                            result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
                             result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)),null));
                         } else 

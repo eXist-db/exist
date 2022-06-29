@@ -111,7 +111,7 @@ public class CollectionTest {
 
         try (final DBBroker broker = pool.getBroker()) {
             final XQueryContext context = new XQueryContext(pool);
-            context.setBaseURI(new AnyURIValue(null, new URI(baseUri)));
+            context.setBaseURI(new AnyURIValue(new URI(baseUri)));
             context.addDynamicallyAvailableCollection(baseUri + collectionRelativeUri, (broker2, transaction, uri) -> asInMemoryDocument(doc));
 
             final XQuery xqueryService = pool.getXQueryService();

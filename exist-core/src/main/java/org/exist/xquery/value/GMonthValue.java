@@ -37,12 +37,24 @@ public class GMonthValue extends AbstractDateTimeValue {
 
     protected boolean addTrailingZ = false;
 
+    public GMonthValue() throws XPathException {
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
     public GMonthValue(final Expression expression) throws XPathException {
         super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
+    public GMonthValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
     public GMonthValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
         super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    }
+
+    public GMonthValue(final String timeValue) throws XPathException {
+        this(null, timeValue);
     }
 
     public GMonthValue(final Expression expression, String timeValue) throws XPathException {

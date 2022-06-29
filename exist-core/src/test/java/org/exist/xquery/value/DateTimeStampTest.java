@@ -31,26 +31,26 @@ public class DateTimeStampTest extends AbstractTimeRelatedTestCase {
 
     @Test(expected = XPathException.class)
     public void constructWithoutTimeZone() throws XPathException {
-        new DateTimeStampValue(null, "2005-10-11T10:00:00");
+        new DateTimeStampValue("2005-10-11T10:00:00");
     }
 
     @Test
     public void convertDateTimeWithTimeZoneToDateTimeStamp() throws XPathException {
-        final DateTimeValue dateTimeValue = new DateTimeValue(null, "2005-10-11T10:00:00Z");
+        final DateTimeValue dateTimeValue = new DateTimeValue("2005-10-11T10:00:00Z");
         final AtomicValue value = dateTimeValue.convertTo(Type.DATE_TIME_STAMP);
         assertEquals(DateTimeStampValue.class, value.getClass());
     }
 
     @Test(expected = XPathException.class)
     public void convertDateTimeWithoutTimeZoneToDateTimeStamp() throws XPathException {
-        final DateTimeValue dateTimeValue = new DateTimeValue(null, "2005-10-11T10:00:00");
+        final DateTimeValue dateTimeValue = new DateTimeValue("2005-10-11T10:00:00");
         final AtomicValue value = dateTimeValue.convertTo(Type.DATE_TIME_STAMP);
         assertEquals(DateTimeStampValue.class, value.getClass());
     }
 
     @Test()
     public void getTimezone() throws XPathException {
-        final DateTimeStampValue value = new DateTimeStampValue(null, "2005-10-11T10:00:00+10:00");
+        final DateTimeStampValue value = new DateTimeStampValue("2005-10-11T10:00:00+10:00");
         assertEquals(10 * 60, value.calendar.getTimezone());
     }
 }

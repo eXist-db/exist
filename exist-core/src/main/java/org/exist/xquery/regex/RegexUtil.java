@@ -75,7 +75,7 @@ public class RegexUtil {
                         break;
 
                     default:
-                        throw new XPathException(context, ErrorCodes.FORX0001, "Invalid regular expression flag: " + ch, new StringValue(null, String.valueOf(ch)));
+                        throw new XPathException(context, ErrorCodes.FORX0001, "Invalid regular expression flag: " + ch, new StringValue(String.valueOf(ch)));
                 }
             }
         }
@@ -155,7 +155,7 @@ public class RegexUtil {
             final List<RegexSyntaxException> warnings = new ArrayList<>();
             return JDK15RegexTranslator.translate(pattern, options, flagbits, warnings);
         } catch (final RegexSyntaxException e) {
-            throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(null, pattern), e);
+            throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(pattern), e);
         }
     }
 }

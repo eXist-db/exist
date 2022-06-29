@@ -55,7 +55,7 @@ public class DateConverter implements TypeConverter {
                 calendar.setYear(year);
                 calendar.setDay(1);
                 calendar.setMonth(1);
-                dv = new DateValue(null, calendar);
+                dv = new DateValue(calendar);
             } else {
                 // try to handle missing digits as in 1980-8-4
                 Matcher matcher = DATE_REGEX.matcher(content);
@@ -67,7 +67,7 @@ public class DateConverter implements TypeConverter {
                         // invalid content: ignore
                     }
                 }
-                dv = new DateValue(null, content);
+                dv = new DateValue(content);
             }
             final long dl = RangeIndexConfigElement.dateToLong(dv);
             return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);

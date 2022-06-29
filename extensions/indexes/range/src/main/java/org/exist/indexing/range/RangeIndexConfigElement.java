@@ -164,15 +164,15 @@ public class RangeIndexConfigElement {
                     float fvalue = Float.parseFloat(content);
                     return new FloatField(fieldName, fvalue, FloatField.TYPE_NOT_STORED);
                 case Type.DATE:
-                    DateValue dv = new DateValue(null, content);
+                    DateValue dv = new DateValue(content);
                     long dl = dateToLong(dv);
                     return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
                 case Type.TIME:
-                    TimeValue tv = new TimeValue(null, content);
+                    TimeValue tv = new TimeValue(content);
                     long tl = timeToLong(tv);
                     return new LongField(fieldName, tl, LongField.TYPE_NOT_STORED);
                 case Type.DATE_TIME:
-                    DateTimeValue dtv = new DateTimeValue(null, content);
+                    DateTimeValue dtv = new DateTimeValue(content);
                     String dateStr = dateTimeToString(dtv);
                     return new TextField(fieldName, dateStr, Field.Store.NO);
                 default:

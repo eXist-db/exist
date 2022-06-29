@@ -86,7 +86,7 @@ public class RangeSequence extends AbstractSequence {
         @Override
         public Item nextItem() {
             if (current <= end) {
-                return new IntegerValue(null, current++);
+                return new IntegerValue(current++);
             } else {
                 return null;
             }
@@ -122,7 +122,7 @@ public class RangeSequence extends AbstractSequence {
         @Override
         public Item nextItem() {
             if (current >= start) {
-                return new IntegerValue(null, current--);
+                return new IntegerValue(current--);
             } else {
                 return null;
             }
@@ -189,7 +189,7 @@ public class RangeSequence extends AbstractSequence {
     @Override
     public Item itemAt(final int pos) {
         if (pos < getItemCountLong()) {
-            return new IntegerValue(null, start.getLong() + pos);
+            return new IntegerValue(start.getLong() + pos);
         }
         return null;
     }

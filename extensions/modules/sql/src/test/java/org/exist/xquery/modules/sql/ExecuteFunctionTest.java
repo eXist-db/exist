@@ -99,9 +99,9 @@ public class ExecuteFunctionTest {
         // execute function
 
         Sequence res = execute.eval(new Sequence[]{
-                new IntegerValue(null, connId),
-                new StringValue(null, sql),
-                new BooleanValue(null, false)
+                new IntegerValue(connId),
+                new StringValue(sql),
+                new BooleanValue(false)
         }, Sequence.EMPTY_SEQUENCE);
 
 
@@ -200,10 +200,10 @@ public class ExecuteFunctionTest {
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
         execute.eval(new Sequence[]{
-                new IntegerValue(null, connId),
-                new IntegerValue(null, stmtId),
+                new IntegerValue(connId),
+                new IntegerValue(stmtId),
                 sqlParams,
-                new BooleanValue(null, false)
+                new BooleanValue(false)
         }, Sequence.EMPTY_SEQUENCE);
 
 
@@ -265,10 +265,10 @@ public class ExecuteFunctionTest {
         final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
 
         Sequence res = execute.eval(new Sequence[]{
-                new IntegerValue(null, connId),
-                new IntegerValue(null, stmtId),
+                new IntegerValue(connId),
+                new IntegerValue(stmtId),
                 sqlParams,
-                new BooleanValue(null, false)
+                new BooleanValue(false)
         }, Sequence.EMPTY_SEQUENCE);
 
 
@@ -366,10 +366,10 @@ public class ExecuteFunctionTest {
 
         try {
             execute.eval(new Sequence[]{
-                    new IntegerValue(null, connId),
-                    new IntegerValue(null, stmtId),
+                    new IntegerValue(connId),
+                    new IntegerValue(stmtId),
                     sqlParams,
-                    new BooleanValue(null, false)
+                    new BooleanValue(false)
             }, Sequence.EMPTY_SEQUENCE);
 
             fail("This should have thrown");
@@ -412,9 +412,9 @@ public class ExecuteFunctionTest {
         // execute function
 
         Sequence res = execute.eval(new Sequence[]{
-                new IntegerValue(null, connId),
-                new StringValue(null, query),
-                new BooleanValue(null, false)
+                new IntegerValue(connId),
+                new StringValue(query),
+                new BooleanValue(false)
         }, Sequence.EMPTY_SEQUENCE);
 
 

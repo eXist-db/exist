@@ -49,6 +49,10 @@ public class QNameValue extends AtomicValue {
      * @param name name string to parse into QName
      * @throws XPathException in case of dynamic error
      */
+    public QNameValue(final XQueryContext context, final String name) throws XPathException {
+        this(null, context, name);
+    }
+
     public QNameValue(final Expression expression, XQueryContext context, String name) throws XPathException {
         super(expression);
         if (name.isEmpty()) {
@@ -61,6 +65,10 @@ public class QNameValue extends AtomicValue {
             throw new XPathException(getExpression(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
         stringValue = computeStringValue();
+    }
+
+    public QNameValue(XQueryContext context, QName name) {
+        this(null, context, name);
     }
 
     public QNameValue(final Expression expression, XQueryContext context, QName name) {

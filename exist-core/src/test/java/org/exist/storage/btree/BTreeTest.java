@@ -257,32 +257,32 @@ public class BTreeTest {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new SimpleValue(new DoubleValue(null, i));
+                Value value = new SimpleValue(new DoubleValue(i));
                 btree.addValue(value, i);
             }
             btree.flush();
 
             for (int i = 1; i <= COUNT; i++) {
-                long p = btree.findValue(new SimpleValue(new DoubleValue(null, i)));
+                long p = btree.findValue(new SimpleValue(new DoubleValue(i)));
                 assertEquals(p, i);
             }
 
             //Testing IndexQuery.GT
             IndexQuery query;
             for (int i = 0; i < COUNT; i += 10) {
-                query = new IndexQuery(IndexQuery.GT, new SimpleValue(new DoubleValue(null, i)));
+                query = new IndexQuery(IndexQuery.GT, new SimpleValue(new DoubleValue(i)));
                 btree.query(query, new SimpleCallback());
                 assertEquals(COUNT - i, count);
             }
 
             //Testing IndexQuery.GEQ
-            query = new IndexQuery(IndexQuery.GEQ, new SimpleValue(new DoubleValue(null, COUNT / 2)));
+            query = new IndexQuery(IndexQuery.GEQ, new SimpleValue(new DoubleValue(COUNT / 2)));
             btree.query(query, new SimpleCallback());
             assertEquals(COUNT / 2 + 1, count);
 
             //Testing IndexQuery.NEQ
             for (int i = 1; i <= COUNT / 8; i++) {
-                query = new IndexQuery(IndexQuery.NEQ, new SimpleValue(new DoubleValue(null, i)));
+                query = new IndexQuery(IndexQuery.NEQ, new SimpleValue(new DoubleValue(i)));
                 btree.query(query, new SimpleCallback());
                 assertEquals(COUNT - 1, count);
             }
@@ -296,19 +296,19 @@ public class BTreeTest {
             btree.create((short) -1);
 
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new PrefixValue(99, new DoubleValue(null, i));
+                Value value = new PrefixValue(99, new DoubleValue(i));
                 btree.addValue(value, i);
             }
 
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new PrefixValue(100, new DoubleValue(null, i));
+                Value value = new PrefixValue(100, new DoubleValue(i));
                 btree.addValue(value, i);
             }
 
             btree.flush();
 
             for (int i = 1; i <= COUNT; i++) {
-                long p = btree.findValue(new PrefixValue(99, new DoubleValue(null, i)));
+                long p = btree.findValue(new PrefixValue(99, new DoubleValue(i)));
                 assertEquals(p, i);
             }
             Value prefix = new PrefixValue(99);
@@ -320,30 +320,30 @@ public class BTreeTest {
 
             //Testing IndexQuery.GT
             for (int i = 0; i < COUNT; i += 10) {
-                query = new IndexQuery(IndexQuery.GT, new PrefixValue(99, new DoubleValue(null, i)));
+                query = new IndexQuery(IndexQuery.GT, new PrefixValue(99, new DoubleValue(i)));
                 btree.query(query, prefix, new PrefixIndexCallback());
                 assertEquals(COUNT - i, count);
             }
 
             //Testing IndexQuery.GEQ
-            query = new IndexQuery(IndexQuery.GEQ, new PrefixValue(99, new DoubleValue(null, COUNT / 2)));
+            query = new IndexQuery(IndexQuery.GEQ, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2 + 1, count);
 
             //Testing IndexQuery.LT
-            query = new IndexQuery(IndexQuery.LT, new PrefixValue(99, new DoubleValue(null, COUNT / 2)));
+            query = new IndexQuery(IndexQuery.LT, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2 - 1, count);
 
             //Testing IndexQuery.LEQ
-            query = new IndexQuery(IndexQuery.LEQ, new PrefixValue(99, new DoubleValue(null, COUNT / 2)));
+            query = new IndexQuery(IndexQuery.LEQ, new PrefixValue(99, new DoubleValue(COUNT / 2)));
             btree.query(query, prefix, new PrefixIndexCallback());
             assertEquals(COUNT / 2, count);
 
             //Testing IndexQuery.NEQ
             for (int i = 1; i <= COUNT / 8; i++) {
                 count = 0;
-                query = new IndexQuery(IndexQuery.NEQ, new PrefixValue(99, new DoubleValue(null, i)));
+                query = new IndexQuery(IndexQuery.NEQ, new PrefixValue(99, new DoubleValue(i)));
                 btree.query(query, prefix, new PrefixIndexCallback());
                 assertEquals(COUNT - 1, count);
             }

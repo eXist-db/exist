@@ -38,20 +38,32 @@ public class DoubleValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^53,
     // and e is an integer between -1075 and 970, inclusive.
     // In addition also -INF, +INF and NaN.
-    public static final DoubleValue ZERO = new DoubleValue(null, 0.0E0);
-    public static final DoubleValue POSITIVE_INFINITY = new DoubleValue(null, Double.POSITIVE_INFINITY);
-    public static final DoubleValue NEGATIVE_INFINITY = new DoubleValue(null, Double.NEGATIVE_INFINITY);
-    public static final DoubleValue NaN = new DoubleValue(null, Double.NaN);
+    public static final DoubleValue ZERO = new DoubleValue(0.0E0);
+    public static final DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
+    public static final DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
+    public static final DoubleValue NaN = new DoubleValue(Double.NaN);
 
     final double value;
+
+    public DoubleValue(final double value) {
+        this(null, value);
+    }
 
     public DoubleValue(final Expression expression, final double value) {
         super(expression);
         this.value = value;
     }
 
+    public DoubleValue(final AtomicValue otherValue) throws XPathException {
+        this(null, otherValue);
+    }
+
     public DoubleValue(final Expression expression, final AtomicValue otherValue) throws XPathException {
         this(expression, otherValue.getStringValue());
+    }
+
+    public DoubleValue(final String stringValue) throws XPathException {
+        this(null, stringValue);
     }
 
     public DoubleValue(final Expression expression, final String stringValue) throws XPathException {

@@ -30,10 +30,14 @@ import org.exist.xquery.XPathException;
 
 public class BooleanValue extends AtomicValue {
 
-    public final static BooleanValue TRUE = new BooleanValue(null, true);
-    public final static BooleanValue FALSE = new BooleanValue(null, false);
+    public final static BooleanValue TRUE = new BooleanValue(true);
+    public final static BooleanValue FALSE = new BooleanValue(false);
 
     private final boolean value;
+
+    public BooleanValue(final boolean bool) {
+        this(null, bool);
+    }
 
     public BooleanValue(final Expression expression, boolean bool) {
         super(expression);

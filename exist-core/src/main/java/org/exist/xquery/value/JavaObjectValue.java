@@ -37,6 +37,10 @@ public class JavaObjectValue extends AtomicValue {
 
     private final Object object;
 
+    public JavaObjectValue(final Object object) {
+        this(null, object);
+    }
+
     public JavaObjectValue(final Expression expression, Object object) {
         super(expression);
         this.object = object;

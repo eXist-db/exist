@@ -75,9 +75,17 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      *
      * @param calendar the calendar to wrap into an XPath value
      */
+    protected AbstractDateTimeValue(final XMLGregorianCalendar calendar) {
+        this(null, calendar);
+    }
+
     protected AbstractDateTimeValue(final Expression expression, XMLGregorianCalendar calendar) {
         super(expression);
         this.calendar = calendar;
+    }
+
+    protected AbstractDateTimeValue(final String lexicalValue) throws XPathException {
+        this(null, lexicalValue);
     }
 
     protected AbstractDateTimeValue(final Expression expression, String lexicalValue) throws XPathException {

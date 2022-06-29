@@ -43,7 +43,7 @@ public class BinaryValueFromBinaryStringTest {
         final String testData = "test data";
         final String base64TestData = Base64.encodeBase64String(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(null, new Base64BinaryValueType(), base64TestData);
+        BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), base64TestData);
 
 
         try (final InputStream is = binaryValue.getInputStream();
@@ -59,7 +59,7 @@ public class BinaryValueFromBinaryStringTest {
         final String testData = "testdata";
         final String expectedResult = Hex.encodeHexString(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(null, new Base64BinaryValueType(), Base64.encodeBase64String(testData.getBytes()));
+        BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(testData.getBytes()));
 
         final AtomicValue result = binaryValue.convertTo(new HexBinaryValueType());
 
@@ -71,7 +71,7 @@ public class BinaryValueFromBinaryStringTest {
         final String testData = "testdata";
         final String expectedResult = Base64.encodeBase64String(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(null, new HexBinaryValueType(), Hex.encodeHexString(testData.getBytes()));
+        BinaryValue binaryValue = new BinaryValueFromBinaryString(new HexBinaryValueType(), Hex.encodeHexString(testData.getBytes()));
 
         final AtomicValue result = binaryValue.convertTo(new Base64BinaryValueType());
 

@@ -35,9 +35,17 @@ public class DateTimeStampValue extends DateTimeValue {
 
     private static final QName XML_SCHEMA_TYPE = new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "dateTimeStamp");
 
+    public DateTimeStampValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
     public DateTimeStampValue(final Expression expression, final XMLGregorianCalendar calendar) throws XPathException {
         super(expression, calendar);
         checkValidTimezone();
+    }
+
+    public DateTimeStampValue(final String dateTime) throws XPathException {
+        this(null, dateTime);
     }
 
     public DateTimeStampValue(final Expression expression, final String dateTime) throws XPathException {

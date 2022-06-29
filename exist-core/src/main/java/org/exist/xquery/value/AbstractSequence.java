@@ -76,7 +76,7 @@ public abstract class AbstractSequence implements Sequence {
             return first.convertTo(requiredType);
         } else {
             //TODO : clean atomization
-            return new StringValue(null, first.getStringValue()).convertTo(requiredType);
+            return new StringValue(first.getStringValue()).convertTo(requiredType);
         }
     }
 

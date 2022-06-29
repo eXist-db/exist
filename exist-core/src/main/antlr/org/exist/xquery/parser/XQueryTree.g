@@ -418,7 +418,7 @@ throws PermissionDeniedException, EXistException, XPathException
         #(
             "base-uri" base:STRING_LITERAL
             {
-                context.setBaseURI(new AnyURIValue(null, StringValue.expand(base.getText(), null)), true);
+                context.setBaseURI(new AnyURIValue(StringValue.expand(base.getText(), null)), true);
                 if (baseuri)
                     throw new XPathException(base, ErrorCodes.XQST0032, "Base URI is already declared.");
                 baseuri = true;
@@ -966,7 +966,7 @@ throws XPathException
     #(
         uri:STRING_LITERAL
         {
-            AnyURIValue any= new AnyURIValue(null, uri.getText());
+            AnyURIValue any= new AnyURIValue(uri.getText());
             uris.add(any);
         }
     )
@@ -2751,7 +2751,7 @@ throws XPathException
 :
     c:STRING_LITERAL
     {
-        StringValue val = new StringValue(null, c.getText());
+        StringValue val = new StringValue(c.getText());
         val.expand();
         step= new LiteralValue(context, val);
         step.setASTNode(c);
@@ -2759,21 +2759,21 @@ throws XPathException
     |
     i:INTEGER_LITERAL
     {
-        step= new LiteralValue(context, new IntegerValue(null, i.getText()));
+        step= new LiteralValue(context, new IntegerValue(i.getText()));
         step.setASTNode(i);
     }
     |
     (
         dec:DECIMAL_LITERAL
         {
-            step= new LiteralValue(context, new DecimalValue(null, dec.getText()));
+            step= new LiteralValue(context, new DecimalValue(dec.getText()));
             step.setASTNode(dec);
         }
         |
         dbl:DOUBLE_LITERAL
         {
             step= new LiteralValue(context,
-                new DoubleValue(null, Double.parseDouble(dbl.getText())));
+                new DoubleValue(Double.parseDouble(dbl.getText())));
             step.setASTNode(dbl);
         }
     )

@@ -152,7 +152,7 @@ public class ValueSequenceTest {
     private static ValueSequence mockValueSequence(final int size) throws XPathException {
         final ValueSequence valueSequence = new ValueSequence();
         for (int i = 0; i < size; i++) {
-            valueSequence.add(new StringValue(null, String.valueOf(i), Type.STRING));
+            valueSequence.add(new StringValue(String.valueOf(i), Type.STRING));
         }
         return valueSequence;
     }

@@ -87,7 +87,7 @@ class Cache {
     public Sequence listKeys() throws XPathException {
         final ValueSequence keys = new ValueSequence();
 	    for(final String key : store.asMap().keySet()) {
-            keys.add(new StringValue(null, key));
+            keys.add(new StringValue(key));
         }
         return keys;
     }

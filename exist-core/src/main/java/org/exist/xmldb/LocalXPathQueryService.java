@@ -355,7 +355,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
 
     protected void setupContext(final Source source, final XQueryContext context) throws XMLDBException, XPathException {
         try {
-            context.setBaseURI(new AnyURIValue(null, properties.getProperty("base-uri", collection.getPath())));
+            context.setBaseURI(new AnyURIValue(properties.getProperty("base-uri", collection.getPath())));
         } catch(final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,"Invalid base uri",e);
         }

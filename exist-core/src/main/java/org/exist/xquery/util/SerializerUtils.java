@@ -99,22 +99,22 @@ public class SerializerUtils {
         CDATA_SECTION_ELEMENTS(OutputKeys.CDATA_SECTION_ELEMENTS, Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
         DOCTYPE_PUBLIC(OutputKeys.DOCTYPE_PUBLIC, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
         DOCTYPE_SYSTEM(OutputKeys.DOCTYPE_SYSTEM, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
-        ENCODING(OutputKeys.ENCODING, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, UTF_8.name())),
+        ENCODING(OutputKeys.ENCODING, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(UTF_8.name())),
         ESCAPE_URI_ATTRIBUTES("escape-uri-attributes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
-        HTML_VERSION(EXistOutputKeys.HTML_VERSION, Type.DECIMAL, Cardinality.ZERO_OR_ONE, new DecimalValue(null, 5)),
+        HTML_VERSION(EXistOutputKeys.HTML_VERSION, Type.DECIMAL, Cardinality.ZERO_OR_ONE, new DecimalValue(5)),
         INCLUDE_CONTENT_TYPE("include-content-type", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         INDENT(OutputKeys.INDENT, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         ITEM_SEPARATOR(EXistOutputKeys.ITEM_SEPARATOR, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),  //default: () means "absent"
-        JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "xml")),
+        JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
         MEDIA_TYPE(OutputKeys.MEDIA_TYPE, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),    // default: a media type suitable for the chosen method
-        METHOD(OutputKeys.METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "xml")),
-        NORMALIZATION_FORM("normalization-form", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "none")),
+        METHOD(OutputKeys.METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
+        NORMALIZATION_FORM("normalization-form", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         OMIT_XML_DECLARATION(OutputKeys.OMIT_XML_DECLARATION, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         STANDALONE(OutputKeys.STANDALONE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "omit"
         SUPPRESS_INDENTATION("suppress-indentation", Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
         UNDECLARE_PREFIXES("undeclare-prefixes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         USE_CHARACTER_MAPS("use-character-maps", Type.MAP, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
-        VERSION(OutputKeys.VERSION, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "1.0"));
+        VERSION(OutputKeys.VERSION, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("1.0"));
 
         private final String parameterName;
         private final int type;
@@ -161,9 +161,9 @@ public class SerializerUtils {
         EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         PROCESS_XSL_PI("process-xsl-pi", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         JSON_IGNORE_WHITE_SPACE_TEXT_NODES("json-ignore-whitespace-text-nodes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
-        HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "none")),
+        HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
-        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(null, "none"));
+        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
 
 
         private final QName parameterName;
@@ -298,13 +298,13 @@ public class SerializerUtils {
 
             for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
                 final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention,
-                        new StringValue(null, w3cParameterConvention.getParameterName()));
+                        new StringValue(w3cParameterConvention.getParameterName()));
                 setPropertyForMap(properties, w3cParameterConvention, parameterValue);
             }
 
             for (final ExistParameterConvention existParameterConvention : ExistParameterConvention.values()) {
                 final Sequence parameterValue = getParameterValue(parent, entries, existParameterConvention,
-                        new QNameValue(null, null, existParameterConvention.getParameterName()));
+                        new QNameValue(null, existParameterConvention.getParameterName()));
                 setPropertyForMap(properties, existParameterConvention, parameterValue);
             }
 
@@ -324,7 +324,7 @@ public class SerializerUtils {
 
             if (W3CParameterConvention.MEDIA_TYPE == parameterConvention) {
                 // the default value of MEDIA_TYPE is dependent on the METHOD
-                return getDefaultMediaType(entries.get(new StringValue(null, W3CParameterConvention.METHOD.getParameterName())));
+                return getDefaultMediaType(entries.get(new StringValue(W3CParameterConvention.METHOD.getParameterName())));
 
             } else {
                 return parameterConvention.getDefaultValue();
@@ -358,26 +358,26 @@ public class SerializerUtils {
         switch(method) {
             case "xml":
             case "microxml":
-                return new StringValue(null, "application/xml");
+                return new StringValue("application/xml");
 
             case "xhtml":
-                return new StringValue(null, "application/xhtml+xml");
+                return new StringValue("application/xhtml+xml");
 
             case "json":
-                return new StringValue(null, "application/json");
+                return new StringValue("application/json");
 
             case "jsonp":
-                return new StringValue(null, "application/javascript");
+                return new StringValue("application/javascript");
 
             case "html":
-                return new StringValue(null, "text/html");
+                return new StringValue("text/html");
 
             case "adaptive":
             case "text":
-                return new StringValue(null, "text/plain");
+                return new StringValue("text/plain");
 
             case "binary":
-                return new StringValue(null, "application/octet-stream");
+                return new StringValue("application/octet-stream");
 
             default:
                 throw new UnsupportedOperationException("Unrecognised serialization method: " + method);

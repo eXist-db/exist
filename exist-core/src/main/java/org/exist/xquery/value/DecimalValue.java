@@ -56,9 +56,17 @@ public class DecimalValue extends NumericValue {
     private static Method stripTrailingZerosMethod = null;
     final BigDecimal value;
 
+    public DecimalValue(final BigDecimal decimal) {
+        this(null, decimal);
+    }
+
     public DecimalValue(final Expression expression, BigDecimal decimal) {
         super(expression);
         this.value = stripTrailingZeros(decimal);
+    }
+
+    public DecimalValue(final String str) throws XPathException {
+        this(null, str);
     }
 
     public DecimalValue(final Expression expression, String str) throws XPathException {
@@ -74,6 +82,10 @@ public class DecimalValue extends NumericValue {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + getStringValue() + "\"");
         }
+    }
+
+    public DecimalValue(final double doubleValue) {
+        this(null, doubleValue);
     }
 
     public DecimalValue(final Expression expression, double doubleValue) {

@@ -32,21 +32,21 @@ public class ShortTest {
     
     @Test(expected=XPathException.class)
     public void testOver() throws XPathException {
-        new IntegerValue(null, "32768", Type.SHORT);
+        new IntegerValue("32768", Type.SHORT);
     }
     
     @Test
     public void testPositiveLimit() throws XPathException {
-        new IntegerValue(null, "32767", Type.SHORT);
+        new IntegerValue("32767", Type.SHORT);
     }
     
     @Test
     public void testNegativeLimit() throws XPathException {
-        new IntegerValue(null, "-32768", Type.SHORT);
+        new IntegerValue("-32768", Type.SHORT);
     }
     
     @Test(expected=XPathException.class)
     public void testUnder() throws XPathException {
-        new IntegerValue(null, "-32769", Type.SHORT);
+        new IntegerValue("-32769", Type.SHORT);
     }   
 }

@@ -40,7 +40,7 @@ import java.util.BitSet;
  */
 public class    AnyURIValue extends AtomicValue {
 
-    public static final AnyURIValue EMPTY_URI = new AnyURIValue(null);
+    public static final AnyURIValue EMPTY_URI = new AnyURIValue();
     static final int caseDiff = ('a' - 'A');
     static BitSet needEncoding;
 
@@ -92,9 +92,19 @@ public class    AnyURIValue extends AtomicValue {
     private final String uri;
     //TODO: save escaped(URI) version?
 
+    AnyURIValue() {
+        super(null);
+        this.uri = "";
+    }
+
     AnyURIValue(final Expression expression) {
         super(expression);
         this.uri = "";
+    }
+
+    public AnyURIValue(final URI uri) {
+        super(null);
+        this.uri = uri.toString();
     }
 
     public AnyURIValue(final Expression expression, URI uri) {
@@ -102,9 +112,18 @@ public class    AnyURIValue extends AtomicValue {
         this.uri = uri.toString();
     }
 
+    public AnyURIValue(final XmldbURI uri) {
+        super(null);
+        this.uri = uri.toString();
+    }
+
     public AnyURIValue(final Expression expression, XmldbURI uri) {
         super(expression);
         this.uri = uri.toString();
+    }
+
+    public AnyURIValue(String s) throws XPathException {
+        this(null, s);
     }
 
     public AnyURIValue(final Expression expression, String s) throws XPathException {

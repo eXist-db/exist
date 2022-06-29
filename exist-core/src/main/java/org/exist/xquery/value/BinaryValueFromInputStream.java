@@ -47,6 +47,10 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final CachingFilterInputStream is;
     private final FilterInputStreamCache cache;
 
+    protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
+        this(null, manager, binaryValueType, is);
+    }
+
     protected BinaryValueFromInputStream(final Expression expression, final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
         super(expression, manager, binaryValueType);
 

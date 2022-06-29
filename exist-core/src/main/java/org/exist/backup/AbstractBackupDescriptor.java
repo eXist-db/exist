@@ -46,7 +46,7 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor {
                 final String dateStr = properties.getProperty("date");
 
                 if (dateStr != null) {
-                    final DateTimeValue dtv = new DateTimeValue(null, dateStr);
+                    final DateTimeValue dtv = new DateTimeValue(dateStr);
                     date = dtv.getDate();
                 }
             } catch (final IOException | XPathException e) {

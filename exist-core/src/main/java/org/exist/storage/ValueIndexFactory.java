@@ -51,7 +51,7 @@ public class ValueIndexFactory {
         /* xs:string */
         if (Type.subTypeOf(type, Type.STRING)) {
             final String s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE), len - (ValueIndexFactory.LENGTH_VALUE_TYPE), UTF_8);
-            return new StringValue(null, s);
+            return new StringValue(s);
         }
         /* xs:dateTime */
         else if (Type.subTypeOf(type, Type.DATE_TIME)) {
@@ -66,7 +66,7 @@ public class ValueIndexFactory {
                                 data[start + 9],
                                 ByteConversion.byteToShortH(data, start + 10),
                                 0);
-                return new DateTimeValue(null, xmlutccal);
+                return new DateTimeValue(xmlutccal);
             } catch (final DatatypeConfigurationException dtce) {
                 throw new EXistException("Could not deserialize xs:dateTime data type" +
                         "for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
@@ -81,7 +81,7 @@ public class ValueIndexFactory {
                                 data[start + 5],
                                 data[start + 6],
                                 0);
-                return new DateValue(null, xmlutccal);
+                return new DateValue(xmlutccal);
             } catch (final DatatypeConfigurationException | XPathException dtce) {
                 throw new EXistException("Could not deserialize xs:date data type" +
                         " for range index key: " + Type.getTypeName(type) + " - " + dtce.getMessage());
@@ -89,7 +89,7 @@ public class ValueIndexFactory {
         }
         /* xs:integer */
         else if (Type.subTypeOf(type, Type.INTEGER)) {
-            return new IntegerValue(null, ByteConversion.byteToLong(data, start +
+            return new IntegerValue(ByteConversion.byteToLong(data, start +
                     (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L);
         }
         /* xs:double */
@@ -97,24 +97,24 @@ public class ValueIndexFactory {
             final long bits = ByteConversion.byteToLong(data, start +
                     (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L;
             final double d = Double.longBitsToDouble(bits);
-            return new DoubleValue(null, d);
+            return new DoubleValue(d);
         }
         /* xs:float */
         else if (type == Type.FLOAT) {
             final int bits = ByteConversion.byteToInt(data, start +
                     (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x80000000;
             final float f = Float.intBitsToFloat(bits);
-            return new FloatValue(null, f);
+            return new FloatValue(f);
         }
         /* xs:decimal */
         else if (type == Type.DECIMAL) {
             //actually loaded from string data due to the uncertain length
             final String s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE), len - (ValueIndexFactory.LENGTH_VALUE_TYPE), UTF_8);
-            return new DecimalValue(null, new BigDecimal(s));
+            return new DecimalValue(new BigDecimal(s));
         }
         /* xs:boolean */
         else if (type == Type.BOOLEAN) {
-            return new BooleanValue(null, data[start + (ValueIndexFactory.LENGTH_VALUE_TYPE)] == 1);
+            return new BooleanValue(data[start + (ValueIndexFactory.LENGTH_VALUE_TYPE)] == 1);
         }
         /* unknown! */
         else {

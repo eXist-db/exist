@@ -70,7 +70,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     public static LocalCollection getLocalCollection(final Expression callingExpression, final XQueryContext context, final String name) throws XMLDBException {
         try {
-            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> new AnyURIValue(null, name).toXmldbURI()));
+            return new InTxnLocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), null, execAndAddErrorIfMissing(callingExpression, () -> new AnyURIValue(name).toXmldbURI()));
         } catch (final XPathException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
@@ -192,7 +192,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     protected final Collection createCollectionPath(final Collection parentColl, final String relPath) throws XMLDBException, XPathException {
         Collection current = parentColl;
-        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(null, relPath).toXmldbURI().toString()), "/");
+        final StringTokenizer tok = new StringTokenizer(execAndAddErrorIfMissing(this, () -> new AnyURIValue(relPath).toXmldbURI().toString()), "/");
         while (tok.hasMoreTokens()) {
             final String token = tok.nextToken();
             current = createCollection(current, token);
