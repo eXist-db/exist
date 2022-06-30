@@ -42,6 +42,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -362,7 +363,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // nothing to be done by default
     }
 

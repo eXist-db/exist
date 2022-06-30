@@ -35,6 +35,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 public abstract class DeferredFunctionCall implements Sequence {
@@ -309,7 +310,7 @@ public abstract class DeferredFunctionCall implements Sequence {
     }
 
     @Override
-    public void destroy(XQueryContext context, Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // nothing to do
     }
 }
