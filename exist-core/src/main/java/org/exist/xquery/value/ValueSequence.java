@@ -35,6 +35,7 @@ import org.exist.xquery.NodeTest; // Needed by Eclipse to disambiguate
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -385,7 +386,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         holderVar = null;
         for (int i = 0; i <= size; i++) {
             values[i].destroy(context, contextSequence);

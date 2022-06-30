@@ -255,7 +255,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         for (final Item value : values) {
             value.destroy(context, contextSequence);
         }
