@@ -224,7 +224,7 @@ public class DoubleValue extends NumericValue {
                 if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
                     throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type " + Type.getTypeName(requiredType));
                 }
-                return new IntegerValue(getExpression(), new Double(value).longValue(), requiredType);
+                return new IntegerValue(getExpression(), (long) value, requiredType);
             case Type.BOOLEAN:
                 return new BooleanValue(getExpression(), this.effectiveBooleanValue());
             default:
