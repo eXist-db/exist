@@ -167,7 +167,7 @@ public class FloatValue extends NumericValue {
         if (isInfinite()) {
             return false;
         }
-        return new DecimalValue(getExpression(), new BigDecimal(value)).hasFractionalPart();
+        return new DecimalValue(getExpression(), BigDecimal.valueOf(value)).hasFractionalPart();
     }
 
     /* (non-Javadoc)

@@ -109,7 +109,7 @@ public class DoubleValue extends NumericValue {
         if (isInfinite()) {
             return false;
         }
-        return new DecimalValue(getExpression(), new BigDecimal(value)).hasFractionalPart();
+        return new DecimalValue(getExpression(), BigDecimal.valueOf(value)).hasFractionalPart();
     }
 
     @Override
@@ -192,7 +192,7 @@ public class DoubleValue extends NumericValue {
                             + "') to "
                             + Type.getTypeName(requiredType));
                 }
-                return new DecimalValue(getExpression(), new BigDecimal(value));
+                return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
             case Type.NEGATIVE_INTEGER:
@@ -224,7 +224,7 @@ public class DoubleValue extends NumericValue {
                 if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
                     throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type " + Type.getTypeName(requiredType));
                 }
-                return new IntegerValue(getExpression(), Double.valueOf(value).longValue(), requiredType);
+                return new IntegerValue(getExpression(), new Double(value).longValue(), requiredType);
             case Type.BOOLEAN:
                 return new BooleanValue(getExpression(), this.effectiveBooleanValue());
             default:
