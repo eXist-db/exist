@@ -126,6 +126,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String BUILT_IN_MODULE_URI_ATTRIBUTE = "uri";
     public static final String BUILT_IN_MODULE_CLASS_ATTRIBUTE = "class";
     public static final String BUILT_IN_MODULE_SOURCE_ATTRIBUTE = "src";
+    public static final String BUILT_IN_MODULE_LOAD_ATTRIBUTE = "load";
+
 
     public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
     public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
@@ -134,7 +136,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String PROPERTY_ENFORCE_INDEX_USE = "xquery.enforce-index-use";
 
     //TODO : move elsewhere ?
-    public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
+    public static final String PROPERTY_BUILT_IN_MODULES      = "xquery.modules";
+    public static final String PROPERTY_BUILT_IN_LAZY_MODULES = "xquery.modules.lazy";
     public static final String PROPERTY_STATIC_MODULE_MAP = "xquery.modules.static";
     public static final String PROPERTY_MODULE_PARAMETERS = "xquery.modules.parameters";
 
@@ -2512,6 +2515,19 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (namespaceURI != null) {
             modules = getRootModules(namespaceURI);
+
+            //Lazy load modules
+            if (modules == null) {
+                final Class<Module> moduleClass = (Class<Module>) ((Map) getConfiguration()
+                        .getProperty(PROPERTY_BUILT_IN_LAZY_MODULES))
+                        .get(namespaceURI);
+                if(moduleClass != null) {
+                    instantiateModule(namespaceURI, moduleClass ,
+                            (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+
+                    modules = getRootModules(namespaceURI);
+                }
+            }
         }
 
         if (isNotEmpty(modules)) {
