@@ -33,6 +33,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nullable;
+
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
  * 
@@ -160,9 +162,10 @@ public class VariableImpl implements Variable {
         this.initialized = initialized;
     }
 
-    public void destroy(XQueryContext context, Sequence contextSequence) {
-        if (value != null)
-            {value.destroy(context, contextSequence);}
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
+        if (value != null) {
+			value.destroy(context, contextSequence);
+		}
     }
 
 	public String toString() {
