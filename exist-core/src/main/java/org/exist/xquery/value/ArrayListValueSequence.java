@@ -379,7 +379,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
                                     }
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null) {
-                                        throw new XPathException((Expression) null, "Internal error: nodeId == null");
+                                        throw new XPathException("Internal error: nodeId == null");
                                     }
                                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                                         nodeId = rootId;
@@ -405,7 +405,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
 //            }
             return set;
         } else {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException("Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -417,13 +417,13 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
         }
 
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException("Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (final Item value : values) {
             final NodeValue v = (NodeValue) value;
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+                throw new XPathException("Type error: the sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains nodes from stored resources.");
             }
         }

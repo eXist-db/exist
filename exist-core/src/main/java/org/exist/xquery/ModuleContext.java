@@ -256,7 +256,7 @@ public class ModuleContext extends XQueryContext {
         if (e == null) {
             return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)));
         } else {
-            return new XPathException((Expression) null, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)), e);
+            return new XPathException(ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation), new StringValue(dependantModule)), e);
         }
     }
 

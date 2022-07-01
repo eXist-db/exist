@@ -64,7 +64,7 @@ public class Optimize extends Pragma {
         if (contents != null && contents.length() > 0) {
             final String param[] = Option.parseKeyValuePair(contents);
             if (param == null)
-                {throw new XPathException((Expression) null, "Invalid content found for pragma exist:optimize: " + contents);}
+                {throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);}
             if ("enable".equals(param[0])) {
                 enabled = "yes".equals(param[1]);
             }

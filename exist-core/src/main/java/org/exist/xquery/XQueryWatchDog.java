@@ -100,11 +100,11 @@ public class XQueryWatchDog {
     public void setTimeoutFromOption(Option option) throws XPathException {
     	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		{throw new XPathException((Expression) null, "Option 'timeout' should have exactly one parameter: the timeout value.");}
+    		{throw new XPathException("Option 'timeout' should have exactly one parameter: the timeout value.");}
 		try {
 			timeout = Long.parseLong(contents[0]);
 		} catch (final NumberFormatException e) {
-			throw new XPathException((Expression) null, "Error parsing timeout value in option " + option.getQName().getStringValue());
+			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
 		if (LOG.isDebugEnabled()) {
 			final NumberFormat nf = NumberFormat.getNumberInstance();
@@ -123,11 +123,11 @@ public class XQueryWatchDog {
     public void setMaxNodesFromOption(Option option) throws XPathException {
     	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		{throw new XPathException((Expression) null, "Option 'output-size-limit' should have exactly one parameter: the output-size-limit value.");}
+    		{throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the output-size-limit value.");}
 		try {
 			setMaxNodes(Integer.parseInt(contents[0]));
 		} catch (final NumberFormatException e) {
-			throw new XPathException((Expression) null, "Error parsing output-size-limit value in option " + option.getQName().getStringValue());
+			throw new XPathException("Error parsing output-size-limit value in option " + option.getQName().getStringValue());
 		}
 		if (LOG.isDebugEnabled()) {
 			final NumberFormat nf = NumberFormat.getNumberInstance();

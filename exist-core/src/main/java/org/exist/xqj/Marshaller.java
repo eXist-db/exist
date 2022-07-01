@@ -234,7 +234,7 @@ public class Marshaller {
                             n.copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
-                            throw new XPathException((Expression) null, "Error while demarshalling node: " + e.getMessage(), e);
+                            throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);
                         }
                         item = (Item) receiver.getDocument();
                     }

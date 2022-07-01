@@ -50,7 +50,7 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
     @Override
     public void verifyString(String str) throws XPathException {
         if (!getMatcher(str).matches()) {
-            throw new XPathException((Expression) null, "FORG0001: Invalid base64 data");
+            throw new XPathException("FORG0001: Invalid base64 data");
         }
     }
 

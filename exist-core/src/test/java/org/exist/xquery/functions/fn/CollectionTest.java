@@ -148,7 +148,7 @@ public class CollectionTest {
             }
             return saxAdapter.getDocument();
         } catch (final ParserConfigurationException | SAXException | IOException e) {
-            throw new XPathException((Expression) null, "Unable to parse document", e);
+            throw new XPathException("Unable to parse document", e);
         }
     }
 }

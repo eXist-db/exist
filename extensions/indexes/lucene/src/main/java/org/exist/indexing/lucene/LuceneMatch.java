@@ -207,7 +207,7 @@ public class LuceneMatch extends Match {
                     final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
                     return new TimeValue(calendar);
                 case Type.DATE_TIME:
-                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
+                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
                 case Type.DATE:
                     final long dl = value.longValue();
                     final int year = (int)(dl >> 16) & 0xFFFF;

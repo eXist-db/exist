@@ -51,7 +51,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(String message) {
+    public XPathException(final String message) {
         super();
         this.message = message;
     }
@@ -63,21 +63,21 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(int line, int column, String message) {
+    public XPathException(final int line, final int column, final String message) {
         super();
         this.message = message;
         this.line = line;
         this.column = column;
     }
 
-    public XPathException(ErrorCode errorCode, int line, int column) {
+    public XPathException(final ErrorCode errorCode, final int line, final int column) {
         super();
         this.errorCode = errorCode;
         this.line = line;
         this.column = column;
     }
 
-    public XPathException(int line, int column, ErrorCode errorCode, String message) {
+    public XPathException(final int line, final int column, final ErrorCode errorCode, final String message) {
         super();
         this.errorCode = errorCode;
         this.message = message;
@@ -92,7 +92,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(Expression expr, String message) {
+    public XPathException(final Expression expr, final String message) {
         super();
         this.message = message;
         if (expr != null) {
@@ -102,7 +102,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc) {
         super();
         this.errorCode = errorCode;
         this.message = errorDesc;
@@ -113,7 +113,11 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal) {
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {
+        this(null, errorCode, errorDesc, errorVal);
+    }
+
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {
         super();
         this.errorCode = errorCode;
         this.message = errorDesc;
@@ -125,7 +129,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, Throwable cause) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
         this.message = cause.getMessage();
@@ -142,7 +146,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(XQueryAST ast, String message) {
+    public XPathException(final XQueryAST ast, final String message) {
         super();
         this.message = message;
         if(ast != null) {
@@ -151,7 +155,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(XQueryAST ast, ErrorCode errorCode, String message) {
+    public XPathException(final XQueryAST ast, final ErrorCode errorCode, final String message) {
         super();
         this.errorCode=errorCode;
         this.message = message;
@@ -179,6 +183,10 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
+    public XPathException(final String message, final Throwable cause) {
+        this((Expression) null, message, cause);
+    }
+
     public XPathException(final Expression expr, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
@@ -210,7 +218,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @param errorDesc Error code. When Null the ErrorCode text will be used.
      *
      */
-    public XPathException(ErrorCode errorCode, String errorDesc) {
+    public XPathException(final ErrorCode errorCode, final String errorDesc) {
         this.errorCode = errorCode;
 
         if(errorDesc == null){
@@ -220,12 +228,12 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
         this(errorCode, errorDesc, cause);
         this.errorVal = errorVal;
     }
 
-    public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
 
@@ -236,12 +244,12 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
         this(expr, errorCode, errorDesc, cause);
         this.errorVal = errorVal;
     }
 
-    public XPathException(final Expression expr, ErrorCode errorCode, String errorDesc, Throwable cause) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
 

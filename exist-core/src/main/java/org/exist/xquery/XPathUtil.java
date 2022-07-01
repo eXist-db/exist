@@ -106,7 +106,7 @@ public class XPathUtil {
                     seq.add(getNode(broker, (XMLResource) it.nextResource()));
                 }
             } catch (final XMLDBException xe) {
-                throw new XPathException((Expression) null, "Failed to convert ResourceSet to node: " + xe.getMessage());
+                throw new XPathException("Failed to convert ResourceSet to node: " + xe.getMessage());
             }
             return seq;
 
@@ -235,7 +235,7 @@ public class XPathUtil {
             try {
                 return lres.getNode();
             } catch (final XMLDBException xe) {
-                throw new XPathException((Expression) null, "Failed to convert LocalXMLResource to node: " + xe.getMessage());
+                throw new XPathException("Failed to convert LocalXMLResource to node: " + xe.getMessage());
             }
         }
 
@@ -243,11 +243,11 @@ public class XPathUtil {
         try {
             document = broker.getCollection(XmldbURI.xmldbUriFor(xres.getParentCollection().getName())).getDocument(broker, XmldbURI.xmldbUriFor(xres.getDocumentId()));
         } catch (final URISyntaxException xe) {
-            throw new XPathException((Expression) null, xe);
+            throw new XPathException(xe);
         } catch (final XMLDBException xe) {
-            throw new XPathException((Expression) null, "Failed to get document for RemoteXMLResource: " + xe.getMessage());
+            throw new XPathException("Failed to get document for RemoteXMLResource: " + xe.getMessage());
         } catch (final PermissionDeniedException pde) {
-            throw new XPathException((Expression) null, "Failed to get document: " + pde.getMessage());
+            throw new XPathException("Failed to get document: " + pde.getMessage());
         }
         final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromString(((RemoteXMLResource) xres).getNodeId());
         return new NodeProxy(document, nodeId);

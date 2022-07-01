@@ -120,7 +120,7 @@ public class PersistentLogin {
         if (!data.checkAndUpdateToken(tokens[1])) {
             LOG.debug("Out-of-sequence request or cookie theft attack. Deleting session.");
             seriesMap.remove(tokens[0]);
-            throw new XPathException((Expression) null, "Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
+            throw new XPathException("Token mismatch. This may indicate an out-of-sequence request (likely) or a cookie theft attack.  " +
                     "Session is deleted for security reasons.");
         }
     }

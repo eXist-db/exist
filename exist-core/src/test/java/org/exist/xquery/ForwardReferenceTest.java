@@ -157,7 +157,7 @@ public class ForwardReferenceTest {
                     xquerySerializer.serialize(result);
                     return writer.toString();
                 } catch (final IOException | SAXException e) {
-                    throw new XPathException((Expression) null, e);
+                    throw new XPathException(e);
                 }
             });
 

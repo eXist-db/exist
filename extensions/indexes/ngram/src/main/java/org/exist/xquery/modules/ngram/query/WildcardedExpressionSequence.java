@@ -99,7 +99,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
 
         if (expressions.size() != 1 || !(expressions.get(0) instanceof EvaluatableExpression)) { // Should not happen.
             LOG.error("Expression {} could not be evaluated", toString());
-            throw new XPathException((Expression) null, "Could not evaluate wildcarded query.");
+            throw new XPathException("Could not evaluate wildcarded query.");
         }
 
         LOG.trace("Evaluating expression {}", toString());

@@ -58,7 +58,7 @@ class FormatModifier {
     private void parseModifier() throws XPathException {
         final Matcher m = modifierPattern.matcher(modifier);
         if (!m.matches()) {
-            throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Modifier " + modifier + " is not a valid pattern modifier");
+            throw new XPathException(ErrorCodes.FODF1310, "Modifier " + modifier + " is not a valid pattern modifier");
         }
         final String n = m.group(1);
         if (n != null) {

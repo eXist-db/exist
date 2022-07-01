@@ -286,14 +286,14 @@ public class JSON extends BasicFunction {
                     case Type.MAP:
                         final String currentName = parser.getCurrentName();
                         if (currentName == null) {
-                            throw new XPathException((Expression) null, ErrorCodes.FOJS0001, "Invalid JSON object");
+                            throw new XPathException(ErrorCodes.FOJS0001, "Invalid JSON object");
                         }
                         final StringValue name = new StringValue(currentName);
                         final MapType map = (MapType) parent;
                         if (map.contains(name)) {
                             // handle duplicate keys
                             if (handleDuplicates.equals(OPTION_DUPLICATES_REJECT)) {
-                                throw new XPathException((Expression) null, ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
+                                throw new XPathException(ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
                             }
                             if (handleDuplicates.equals(OPTION_DUPLICATES_USE_LAST)) {
                                 map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());

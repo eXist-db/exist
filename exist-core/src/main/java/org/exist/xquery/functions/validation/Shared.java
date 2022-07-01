@@ -120,7 +120,7 @@ public class Shared {
 
             final Object obj = ((JavaObjectValue) item).getObject();
             if (!(obj instanceof File)) {
-                throw new XPathException((Expression) null, "Passed java object should be a File");
+                throw new XPathException("Passed java object should be a File");
             }
 
             final File inputFile = (File) obj;
@@ -189,7 +189,7 @@ public class Shared {
 
         } else {
             LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
-            throw new XPathException((Expression) null, "wrong item type " + Type.getTypeName(item.getType()));
+            throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
 
         return streamSource;
@@ -253,7 +253,7 @@ public class Shared {
         }
 
         if(url==null) {
-            throw new XPathException((Expression) null, "Parameter should be of type xs:anyURI or document.");
+            throw new XPathException("Parameter should be of type xs:anyURI or document.");
         }
         
         if (url.startsWith("/")) {

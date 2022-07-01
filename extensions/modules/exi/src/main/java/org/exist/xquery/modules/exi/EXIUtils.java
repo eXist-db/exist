@@ -83,7 +83,7 @@ public class EXIUtils {
                 return new NodeInputStream(context.getBroker().getBrokerPool(), withSerializerFn, node);
             default:
                 LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
-                throw new XPathException((Expression) null, "wrong item type " + Type.getTypeName(item.getType()));
+                throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
         }
     }
 

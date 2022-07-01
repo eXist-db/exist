@@ -343,7 +343,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 context.setStaticallyKnownDocuments(d);
             } catch (final URISyntaxException e) {
-                throw new XPathException((Expression) null, e);
+                throw new XPathException(e);
             }
         } else if (context.isBaseURIDeclared()) {
             context.setStaticallyKnownDocuments(new XmldbURI[]{context.getBaseURI().toXmldbURI()});
@@ -392,7 +392,7 @@ public class RpcConnection implements RpcAPI {
         for (final String content : contents) {
             final String[] pair = Option.parseKeyValuePair(content);
             if (pair == null) {
-                throw new XPathException((Expression) null, "Unknown parameter found in " + pragma.getQName().getStringValue()
+                throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue()
                         + ": '" + content + "'");
             }
             if(LOG.isDebugEnabled()) {
