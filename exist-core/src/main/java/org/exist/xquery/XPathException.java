@@ -172,7 +172,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
     @Deprecated
     public XPathException(final Throwable cause) {
         super(cause);
-        if(cause instanceof XPathErrorProvider) {
+        if (cause != null && cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
         }
     }
@@ -190,7 +190,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
     public XPathException(final Expression expr, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
-        if(cause instanceof XPathErrorProvider) {
+        if (cause != null && cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
         }
 
@@ -208,7 +208,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Deprecated
     public XPathException(final Expression expr, final Throwable cause) {
-        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
+        this(expr, cause != null && cause instanceof XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
     }
 
     /**
@@ -222,7 +222,9 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.errorCode = errorCode;
 
         if(errorDesc == null){
-            this.message = errorCode.toString();
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
         } else {
             this.message = errorDesc;
         }
@@ -238,7 +240,9 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.errorCode = errorCode;
 
         if(errorDesc == null){
-            this.message = errorCode.toString();
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
         } else {
             this.message = errorDesc;
         }
@@ -254,7 +258,9 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.errorCode = errorCode;
 
         if(errorDesc == null){
-            this.message = errorCode.toString();
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
         } else {
             this.message = errorDesc;
         }
@@ -279,7 +285,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.message = message;
         this.line = line;
         this.column = column;
-        if(cause instanceof XPathErrorProvider) {
+        if (cause != null && cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
         }
     }
