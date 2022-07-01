@@ -73,7 +73,7 @@ public class FunCollationKey extends BasicFunction {
                                 new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)))) {
             sequence = binaryValue.convertTo(new Base64BinaryValueType());
         } catch (IOException e) {
-            throw new XPathException(e);
+            return null;
         }
         return sequence;
     }
