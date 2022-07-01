@@ -208,7 +208,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Deprecated
     public XPathException(final Expression expr, final Throwable cause) {
-        this(expr, cause != null && cause instanceof XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
+        this(expr, cause != null && cause instanceof XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause == null ? "" : cause.getMessage(), null, cause);
     }
 
     /**
