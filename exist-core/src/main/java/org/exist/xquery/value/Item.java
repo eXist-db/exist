@@ -29,6 +29,7 @@ import org.exist.xquery.XQueryContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 /**
@@ -59,7 +60,7 @@ public interface Item {
     /**
      * Clean up any resources used by the items in this sequence.
      */
-    void destroy(XQueryContext context, Sequence contextSequence);
+    void destroy(XQueryContext context, @Nullable Sequence contextSequence);
 
     /**
      * Convert this item into an atomic value, whose type corresponds to

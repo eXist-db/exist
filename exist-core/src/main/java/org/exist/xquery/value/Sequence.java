@@ -311,5 +311,5 @@ public interface Sequence {
     /**
      * Clean up any resources used by the items in this sequence.
      */
-    void destroy(XQueryContext context, Sequence contextSequence);
+    void destroy(final XQueryContext context, @Nullable final Sequence contextSequence);
 }
