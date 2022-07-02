@@ -311,7 +311,7 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    public void popLocalVariables(final LocalVariable var, final Sequence resultSequence) {
+    public void popLocalVariables(final LocalVariable var, @Nullable final Sequence resultSequence) {
         parentContext.popLocalVariables(var, resultSequence);
     }
 

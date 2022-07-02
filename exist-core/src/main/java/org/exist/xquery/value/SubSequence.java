@@ -472,7 +472,7 @@ public class SubSequence extends AbstractSequence {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         sequence.destroy(context, contextSequence);
     }
 
