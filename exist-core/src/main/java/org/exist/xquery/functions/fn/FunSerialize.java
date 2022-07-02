@@ -148,7 +148,11 @@ public class FunSerialize extends BasicFunction {
                 if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE || next.getType() == Type.FUNCTION_REFERENCE)
                     {throw new XPathException(callingExpr, FnModule.SENR0001,
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");}
-                temp.add(next);
+                if (itemSeparator != null && itemSeparator.length() > 0 && !temp.isEmpty()) {
+                    temp.add(new StringValue(itemSeparator + next.getStringValue()));
+                } else {
+                    temp.add(next);
+                }
             } else {
                 // atomic value
                 Item last = null;
