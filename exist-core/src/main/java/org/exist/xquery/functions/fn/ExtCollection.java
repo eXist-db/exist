@@ -60,8 +60,8 @@ public class ExtCollection extends Function {
                             " Documents contained in sub-collections are also included. If no value is supplied, the statically know documents are used, for the REST Server this could be the addressed collection.",
                     new SequenceType[]{
                             //Different from the official specs
-                            new FunctionParameterSequenceType("collection-uris", Type.STRING,
-                                    Cardinality.ZERO_OR_MORE, "The collection-URIs for which to include the documents")},
+                            new FunctionParameterSequenceType("collection-uri", Type.STRING,
+                                    Cardinality.ZERO_OR_ONE, "The collection URI for which to include the documents")},
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
                             "The document nodes contained in or under the given collections"),
                     true);
@@ -109,20 +109,18 @@ public class ExtCollection extends Function {
                     result = dynamicCollection;
                 } else {
                     final MutableDocumentSet ndocs = new DefaultDocumentSet();
-                    for (final String next : args) {
-                        final XmldbURI uri = new AnyURIValue(this, next).toXmldbURI();
-                        try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
-                            if (coll == null) {
-                                if (context.isRaiseErrorOnFailedRetrieval()) {
-                                    throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
-                                }
+                    final XmldbURI uri = new AnyURIValue(this, args.get(0)).toXmldbURI();
+                    try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
+                        if (coll == null) {
+                            if (context.isRaiseErrorOnFailedRetrieval()) {
+                                throw new XPathException(this, ErrorCodes.FODC0002, "Can not access collection '" + uri + "'");
+                            }
+                        } else {
+                            if (context.inProtectedMode()) {
+                                context.getProtectedDocs().getDocsByCollection(coll, ndocs);
                             } else {
-                                if (context.inProtectedMode()) {
-                                    context.getProtectedDocs().getDocsByCollection(coll, ndocs);
-                                } else {
-                                    coll.allDocs(context.getBroker(), ndocs,
-                                            includeSubCollections, context.getProtectedDocs());
-                                }
+                                coll.allDocs(context.getBroker(), ndocs,
+                                        includeSubCollections, context.getProtectedDocs());
                             }
                         }
                     }
