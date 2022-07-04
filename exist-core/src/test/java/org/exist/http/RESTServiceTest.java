@@ -31,15 +31,30 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.http.HttpStatus;
+import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.LockedDocument;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.ExistWebServer;
+import org.exist.test.TestConstants;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -237,11 +252,31 @@ public class RESTServiceTest {
         return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test//../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
-    public static void createCredentials() {
+    public static void setup() throws PermissionDeniedException, IOException, TriggerException {
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
         badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
+
+        //TODO create collection /db/AéB and store doc AéB.xml
+        final XmldbURI TEST_XML_DOC_URI = XmldbURI.create("AéB.xml");
+        final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/AéB");
+        final String TEST_XML_DOC = "<foo/>";
+
+        final BrokerPool pool =  existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XML_DOC_URI, new StringInputSource(TEST_XML_DOC), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            transaction.commit();
+        } catch (EXistException | SAXException | LockException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -1031,6 +1066,33 @@ try {
 
             assertFalse(diff.toString(), diff.hasDifferences());
 
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    //test rest server ability to handle encoded characters
+    @Test
+    public void doGetEncodedPath() throws IOException {
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        final HttpURLConnection connect = getConnection(DOC_URI);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            String response = readResponse(connect.getInputStream());
+
+            //readResponse is appending \r\n to each line that's why its added the expected content
+            assertEquals("Server returned document content " + response,"<foo/>\r\n",response);
         } finally {
             connect.disconnect();
         }
