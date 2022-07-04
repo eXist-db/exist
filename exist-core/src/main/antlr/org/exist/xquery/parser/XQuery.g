@@ -185,6 +185,10 @@ imaginaryTokenDefinitions
 	GTEQ
 	SEQUENCE
 	TUMBLING_WINDOW
+	CURRENT_ITEM
+	PREVIOUS_ITEM
+	NEXT_ITEM
+	WINDOW_VARS
 	;
 
 // === XPointer ===
@@ -836,8 +840,7 @@ letClause throws XPathException
 
 windowClause throws XPathException
 :
-	"for"^ "tumbling" "window" inVarBinding windowStartCondition ( windowEndCondition )?
-	{ #windowClause= #([TUMBLING_WINDOW, "tumbling window"], #windowClause); }
+	"for"! "tumbling"^ "window"! inVarBinding windowStartCondition ( windowEndCondition )?
 	;
 
 inVarBinding throws XPathException
@@ -866,20 +869,32 @@ allowingEmpty
 
 windowStartCondition throws XPathException
 :
-    "start" windowVars "when" exprSingle
+    "start"^ windowVars "when" exprSingle
 ;
 
 windowEndCondition throws XPathException
 :
-    ( "only" )? "end" windowVars "when" exprSingle
+    ( "only" )? "end"^ windowVars "when" exprSingle
 ;
 
 windowVars throws XPathException
-{ String currentItem = null, previousItem = null, nextItem = null; }
+{ String currentItemName = null, previousItemName = null, nextItemName = null;  }
 :
-    ( DOLLAR! currentItem=eqName )? ( positionalVar )?
-    ( "previous"! DOLLAR! previousItem=eqName )?
-    ( "next"! DOLLAR! nextItem=eqName )?
+    ( DOLLAR! currentItemName=eqName! )?
+    ( sp:positionalVar )?
+    ( "previous"! DOLLAR! previousItemName=eqName! )?
+    ( "next"! DOLLAR! nextItemName=eqName! )?
+    {
+        windowVars_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(WINDOW_VARS);
+        if (currentItemName != null)
+            windowVars_AST.addChild(astFactory.create(CURRENT_ITEM,currentItemName));
+        if (sp_AST != null)
+            windowVars_AST.addChild(sp_AST);
+        if (previousItemName != null)
+            windowVars_AST.addChild(astFactory.create(PREVIOUS_ITEM,previousItemName));
+        if (nextItemName != null)
+            windowVars_AST.addChild(astFactory.create(NEXT_ITEM,nextItemName));
+    }
 ;
 
 letVarBinding throws XPathException
