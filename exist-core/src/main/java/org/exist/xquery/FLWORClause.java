@@ -32,7 +32,7 @@ import org.exist.xquery.value.Sequence;
 public interface FLWORClause extends Expression {
 
     enum ClauseType {
-        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY, COUNT
+        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY, COUNT, WINDOW
     }
 
     /**
