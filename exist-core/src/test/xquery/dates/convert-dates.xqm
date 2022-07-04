@@ -25,26 +25,26 @@ module namespace fd="http://exist-db.org/xquery/test/convert-dates";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-(: verify that we can convert xs:string to :xs:dateTimeStamp  :)
+(: verify that we can convert xs:string to :xs:dateTime :)
 declare
     %test:args("2012-06-26T23:14:22.566+02:00")
     %test:assertEquals("11:14 pm on Tuesday, June 26th, 2012")
-function fd:format-dateTimeStamp($date as xs:dateTimeStamp) {
+function fd:format-dateTime($date as xs:dateTime) {
     format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]", "en", (), ())
 };
 
-(: verify that we can't convert xs:string without timezone to :xs:dateTimeStamp  :)
+(: verify that we can't convert xs:string without timezone to :xs:dateTime :)
 declare
     %test:args("2012-06-26T23:14:22.566")
     %test:assertError
-function fd:convert-date-time-stamp($date as xs:dateTimeStamp) {
+function fd:convert-date-time($date as xs:dateTime) {
     format-dateTime($date, "[h00]:[m00] [P] on [FNn], [MNn] [D1o], [Y]", "en", (), ())
 };
 
 declare
     %test:args("2022-05-17T16:24:06.003+02:00", "PT2H")
     %test:assertEquals("2022-05-17T18:24:06.003+02:00")
-function fd:add-test($date as xs:dateTimeStamp, $duration as xs:dayTimeDuration) {
+function fd:add-test($date as xs:dateTime, $duration as xs:dayTimeDuration) {
     $duration + $date
 };
 
@@ -62,44 +62,44 @@ function fd:subtract-from-dateTime-test($date1 as xs:dateTime, $date2 as xs:date
     ($date1 - $date2) cast as xs:string
 };
 
-(: verify that fn:current-dateTime() return type is xs:dateTimeStamp  :)
+(: verify that fn:current-dateTime() return type is xs:dateTime  :)
 declare
     %test:assertEquals("true")
 function fd:current-dateTime-type() {
-    fn:current-dateTime() instance of xs:dateTimeStamp
+    fn:current-dateTime() instance of xs:dateTime
 };
 
 declare
     %test:args("2022-05-17T16:24:06.003+02:00", "PT2H")
     %test:assertEquals("true")
-function fd:return-type-test($date as xs:dateTimeStamp, $duration as xs:dayTimeDuration) {
-    ($duration + $date) instance of xs:dateTimeStamp
+function fd:return-type-test($date as xs:dateTime, $duration as xs:dayTimeDuration) {
+    ($duration + $date) instance of xs:dateTime
 };
 
 declare
-    %test:args("not-a-dateTimeStamp")
+    %test:args("not-a-dateTime")
     %test:assertError
-function fd:not-a-dateTimeStamp($date as xs:dateTimeStamp) {
-    $date instance of xs:dateTimeStamp
+function fd:not-a-dateTime($date as xs:dateTime) {
+    $date instance of xs:dateTime
 };
 
 declare
     %test:args("2022-05-17T17:16:00.000")
     %test:assertError
-function fd:not-a-dateTimeStamp2($date as xs:dateTimeStamp) {
-    $date instance of xs:dateTimeStamp
+function fd:not-a-dateTime2($date as xs:dateTime) {
+    $date instance of xs:dateTime
 };
 
 declare
     %test:args("2022-05-17T17:16:00.000Z")
     %test:assertEquals("true")
-function fd:create-dateTimeStamp($date as xs:dateTimeStamp) {
-    $date instance of xs:dateTimeStamp
+function fd:create-dateTime($date as xs:dateTime) {
+    $date instance of xs:dateTime
 };
 
 declare
     %test:args("2022-05-17T17:16:00.000+01:00")
     %test:assertEquals("true")
-function fd:create-dateTimeStamp2($date as xs:dateTimeStamp) {
-    $date instance of xs:dateTimeStamp
+function fd:create-dateTime2($date as xs:dateTime) {
+    $date instance of xs:dateTime
 };
