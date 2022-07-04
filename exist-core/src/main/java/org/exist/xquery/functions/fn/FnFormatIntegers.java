@@ -46,7 +46,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
  */
 public class FnFormatIntegers extends BasicFunction {
 
-    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optParam("value", Type.NUMBER, "The number to format");
+    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optParam("value", Type.INTEGER, "The number to format");
     private static final FunctionParameterSequenceType FS_PARAM_PICTURE = param("picture", Type.STRING, "The picture string to use for formatting. To understand the picture string syntax, see: https://www.w3.org/TR/xpath-functions-31/#func-format-number");
 
     private static final String FS_FORMAT_INTEGER_NAME = "format-integer";
