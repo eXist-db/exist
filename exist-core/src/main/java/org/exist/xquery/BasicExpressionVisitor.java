@@ -176,7 +176,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
-    public void visitOrderByClause(final OrderByClause orderBy) {
+    public void visitOrderByClause(OrderByClause orderBy) {
         // Nothing to do
     }
 

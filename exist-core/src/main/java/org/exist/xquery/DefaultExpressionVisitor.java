@@ -69,6 +69,11 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         letExpr.getReturnExpression().accept(this);
     }
 
+    public void visitWindowExpression(final WindowExpr windowExpr) {
+        windowExpr.getInputSequence().accept(this);
+        windowExpr.getReturnExpression().accept(this);
+    }
+
     @Override
     public void visitOrderByClause(OrderByClause orderBy) {
         for (OrderSpec spec: orderBy.getOrderSpecs()) {
