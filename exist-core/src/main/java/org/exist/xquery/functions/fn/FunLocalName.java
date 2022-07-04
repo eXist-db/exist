@@ -39,6 +39,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Built-in function fn:local-name().
@@ -126,8 +127,14 @@ public class FunLocalName extends Function {
             }
 
             //TODO : how to improve performance ?
+            final String localName;
             final Node n = ((NodeValue) item).getNode();
-            final String localName = n.getLocalName();
+            if (n.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE) {
+                localName = ((ProcessingInstruction) n).getTarget();
+            } else {
+                localName = n.getLocalName();
+            }
+
             if (localName != null) {
                 result = new StringValue(localName);
             } else {
