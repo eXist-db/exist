@@ -71,7 +71,7 @@ public class DbStoreTest2 {
 
     private final static Path getConfig() {
         try {
-            final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/any-uri-enabled.xml");
+            final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/allowAnyUri.xml");
             return Paths.get(path.toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException("unable to parse URI for resource", e);
@@ -132,8 +132,6 @@ public class DbStoreTest2 {
                                 "        'image/png'\n" +
                                 "    )");
         assertNotNull(rs);
-
-        assertTrue(true);
     }
 
     @Test
@@ -164,7 +162,5 @@ public class DbStoreTest2 {
                                 "        'image/png'\n" +
                                 "    )");
         assertNotNull(rs);
-
-        assertTrue(true);
     }
 }

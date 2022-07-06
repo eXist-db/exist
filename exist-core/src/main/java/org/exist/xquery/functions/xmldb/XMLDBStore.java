@@ -174,8 +174,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 }
 
             } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
-                final boolean isAnyUriDisabled = ((XMLDBModule) getParentModule()).isAnyUriDisabled();
-                if(isAnyUriDisabled) {
+                final boolean allowAnyUri = ((XMLDBModule) getParentModule()).isAllowAnyUri();
+                if(!allowAnyUri) {
                     throw new XPathException(ErrorCodes.ERROR, "xs:anyURI as $contents value for xmldb:store and xmldb:store-as-binary " +
                             "function has been disabled by the eXist administrator in conf.xml");
                 }

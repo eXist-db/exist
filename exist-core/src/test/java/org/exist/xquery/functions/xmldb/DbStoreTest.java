@@ -30,8 +30,7 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
@@ -44,7 +43,7 @@ public class DbStoreTest {
 
     private final static String TEST_COLLECTION = "testAnyUri";
 
-    @Test(expected = XMLDBException.class)
+    @Test
     public final void simpleTest() throws XMLDBException {
         final Collection rootCol = existEmbeddedServer.getRoot();
         Collection testCol = rootCol.getChildCollection(TEST_COLLECTION);
@@ -55,17 +54,18 @@ public class DbStoreTest {
 
         final XPathQueryService xpqs =
                 (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
-        final ResourceSet rs =
-                xpqs.query(
-                        "xmldb:store(\n" +
-                                "        '/db',\n" +
-                                "        'image.jpg',\n" +
-                                "        xs:anyURI('https://www.example.com/image.jpg'),\n" +
-                                "        'image/png'\n" +
-                                "    )");
-        assertNotNull(rs);
+        assertThrows(XMLDBException.class, () -> {
+            final ResourceSet rs =
+                    xpqs.query(
+                            "xmldb:store(\n" +
+                                    "        '/db',\n" +
+                                    "        'image.jpg',\n" +
+                                    "        xs:anyURI('https://www.example.com/image.jpg'),\n" +
+                                    "        'image/png'\n" +
+                                    "    )");
+        });
 
-        assertTrue(true);
+
     }
 
 }

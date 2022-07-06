@@ -107,7 +107,7 @@ public class XMLDBModule extends AbstractInternalModule {
             new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class)
     };
 
-    private boolean anyUriDisabled = true;
+    private boolean allowAnyUri = false;
 
     static {
         Arrays.sort(functions, new FunctionComparator());
@@ -116,11 +116,11 @@ public class XMLDBModule extends AbstractInternalModule {
     public XMLDBModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, true);
 
-        final List<String> anyUriDisabledParameterList = (List<String>) getParameter("anyUriDisabled");
-        if (anyUriDisabledParameterList != null && !anyUriDisabledParameterList.isEmpty()) {
-            final String strAnyUriDisabled = anyUriDisabledParameterList.get(0);
-            if (strAnyUriDisabled != null) {
-                this.anyUriDisabled = Boolean.parseBoolean(strAnyUriDisabled);
+        final List<String> allowAnyUriParameterList = (List<String>) getParameter("allowAnyUri");
+        if (allowAnyUriParameterList != null && !allowAnyUriParameterList.isEmpty()) {
+            final String strAllowAnyUri = allowAnyUriParameterList.get(0);
+            if (strAllowAnyUri != null) {
+                this.allowAnyUri = Boolean.parseBoolean(strAllowAnyUri);
             }
         }
 
@@ -146,8 +146,8 @@ public class XMLDBModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
-    public boolean isAnyUriDisabled() {
-        return anyUriDisabled;
+    public boolean isAllowAnyUri() {
+        return allowAnyUri;
     }
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
