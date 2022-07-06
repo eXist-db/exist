@@ -802,12 +802,19 @@ initialClause throws XPathException
 
 intermediateClause throws XPathException
 :
-    ( initialClause | whereClause | groupByClause | orderByClause )
+    ( initialClause | whereClause | groupByClause | orderByClause | countClause )
     ;
 
 whereClause throws XPathException
 :
 	"where"^ exprSingle
+	;
+
+countClause throws XPathException
+{ String varName; }
+:
+	"count"^ DOLLAR! varName=varName!
+	{ #countClause = #(#countClause, #[VARIABLE_BINDING, varName]); }
 	;
 
 forClause throws XPathException
@@ -2222,6 +2229,8 @@ reservedKeywords returns [String name]
 	"map" { name = "map"; }
 	|
 	"array" { name = "array"; }
+	|
+	"count" { name = "count"; }
 	|
 	"copy-namespaces" { name = "copy-namespaces"; }
 	|
