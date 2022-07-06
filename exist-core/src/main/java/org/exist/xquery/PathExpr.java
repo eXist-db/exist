@@ -302,15 +302,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
                     /**
                      * If the result is an Empty Sequence, we don't need to process
-                     * any more steps as there is no Context Item for the next step!
+                     * any more steps as there is no Context Sequence for the next step!
                      *
-                     * There is one exception to this rule, which is a TextConstructor,
-                     * that only contains whitespace but has been configured
+                     * There is one exception to this rule, which is a TextConstructor
+                     * expression that only contains whitespace but has been configured
                      * to strip-whitespace. In this instance the TextConstructor will
-                     * return an {@link Sequence.EMPTY_SEQUENCE_VALID} to indicate
-                     * that.
+                     * return true when {@link Expression#evalNextExpressionOnEmptyContextSequence()}
+                     * is called to indicate that.
                      */
-                    if (result != Sequence.EMPTY_SEQUENCE_VALID && result.isEmpty()) {
+                    if (result.isEmpty() && !step.evalNextExpressionOnEmptyContextSequence()) {
                         break;
                     }
                 }

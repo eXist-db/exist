@@ -183,4 +183,9 @@ public abstract class AbstractExpression implements Expression {
     public Expression getParent() {
         return null;
     }
+
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        return false;
+    }
 }
