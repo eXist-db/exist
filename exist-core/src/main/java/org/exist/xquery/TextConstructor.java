@@ -54,7 +54,7 @@ public class TextConstructor extends NodeConstructor {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (isWhitespaceOnly && context.stripWhitespace())
-            {return Sequence.EMPTY_SEQUENCE;}
+            {return Sequence.EMPTY_SEQUENCE_VALID;}
         if (newDocumentContext)
             {context.pushDocumentContext();}
         try {

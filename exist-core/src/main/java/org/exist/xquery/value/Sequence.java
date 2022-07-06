@@ -54,6 +54,8 @@ public interface Sequence {
      */
     Sequence EMPTY_SEQUENCE = new EmptySequence();
 
+    Sequence EMPTY_SEQUENCE_VALID = new EmptySequence();
+
     /**
      * The purpose of ordered and unordered flag is to set the ordering mode
      * in the static context to ordered or unordered for a certain region in a query.
