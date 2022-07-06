@@ -73,8 +73,8 @@ public class CountExpressionTest {
         }
 
         // count keyword
-        assertEquals(143, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getType());
+        assertEquals(XQueryParser.LITERAL_count, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getType());
         // rank variable binding
-        assertEquals(20, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getType());
+        assertEquals(XQueryParser.VARIABLE_BINDING, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getType());
     }
 }
