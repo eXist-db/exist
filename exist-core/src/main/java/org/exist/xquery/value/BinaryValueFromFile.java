@@ -26,6 +26,7 @@ import org.exist.util.io.ByteBufferInputStream;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -144,9 +145,9 @@ public class BinaryValueFromFile extends BinaryValue {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // do not close if this object is part of the contextSequence
-        if (contextSequence == this || contextSequence.containsReference(this)) {
+        if (contextSequence != null && (contextSequence == this || contextSequence.containsReference(this))) {
             return;
         }
         try {

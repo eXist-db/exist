@@ -356,7 +356,7 @@ public interface Sequence {
      * @param context the XQuery context
      * @param contextSequence the context sequence
      */
-    void destroy(XQueryContext context, Sequence contextSequence);
+    void destroy(final XQueryContext context, @Nullable final Sequence contextSequence);
 
     static Sequence of(@Nullable final XmldbURI... uris) throws XPathException {
         if (uris == null || uris.length == 0 || (uris.length == 1 && uris[0] == null)) {

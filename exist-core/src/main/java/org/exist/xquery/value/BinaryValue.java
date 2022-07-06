@@ -109,10 +109,13 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
             return -1;
         } else if (otherIs == null) {
             return 1;
+        } else if (is == otherIs) {
+            return 0;
         } else {
-            int read = -1;
-            int otherRead = -1;
-            while (true) {
+            int read;
+            int otherRead;
+            do {
+
                 try {
                     read = is.read();
                 } catch (final IOException ioe) {
@@ -125,8 +128,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     return 1;
                 }
 
-                return read - otherRead;
-            }
+                final int readComparison = Integer.compare(read, otherRead);
+                if (readComparison != 0) {
+                    return readComparison;
+                }
+            } while (read != -1 && otherRead != -1);
+            return 0;
         }
     }
 
@@ -276,4 +283,33 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
      * Increments the number of shared references to this binary value.
      */
     public abstract void incrementSharedReferences();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BinaryValue that = (BinaryValue) o;
+        return compareTo(that) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        final InputStream is = getInputStream();
+        int hash = 7;
+
+        if (is != null) {
+            int read;
+            do {
+                try {
+                    read = is.read();
+                    if (read != -1) {
+                        hash = 31 * hash + read;
+                    }
+                } catch (final IOException ioe) {
+                    read = -1;
+                }
+            } while (read != -1);
+        }
+        return hash;
+    }
 }

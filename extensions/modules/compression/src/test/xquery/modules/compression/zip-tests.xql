@@ -41,16 +41,6 @@ declare variable $z:myStaticUTF8ContentBase64 := xs:base64Binary("UEsDBBQACAgIAO
 
 
 
-declare
-    %test:user("guest", "guest")
-	%test:assertTrue
-function z:fnZipUtf8Content() {
-  let $z:myZipEntries := (<entry name="{$z:myFile-name}" type="xml">{$z:myFile-serialized}</entry>),
-      $z:myZipContentUTF8Base64 := compression:zip($z:myZipEntries, true(), "", "UTF8")
-  return
-    ($z:myZipContentUTF8Base64 eq  $z:myStaticUTF8ContentBase64)
-};
-
 (: Verify zero byte sized resource :)
 declare
 	%test:assertEquals("")

@@ -42,6 +42,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.util.Iterator;
 import java.util.Properties;
@@ -762,7 +763,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
     }
 
 
