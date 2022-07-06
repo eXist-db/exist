@@ -21,13 +21,7 @@
  */
 package org.exist.http;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.io.StringReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -1072,6 +1066,7 @@ try {
     }
 
     //test rest server ability to handle encoded characters
+    // all the tests with EncodedPath in function declaration aim to test rest server ability to handle special characters
     @Test
     public void doGetEncodedPath() throws IOException {
         String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
@@ -1095,6 +1090,120 @@ try {
             assertEquals("Server returned document content " + response,"<foo/>\r\n",response);
         } finally {
             connect.disconnect();
+        }
+    }
+
+    @Test
+    public void doHeadEncodedPath() throws IOException {
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        final HttpURLConnection connect = getConnection(DOC_URI);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void doPutEncodedPath() throws IOException {
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        final HttpURLConnection connect = getConnection(DOC_URI);
+        final HttpURLConnection getConnect = getConnection(DOC_URI);
+        String data = "<foobar/>";
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(data);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("doPut: Server returned response code " + r, HttpStatus.CREATED_201, r);
+
+            // assert file content updated
+            getConnect.setRequestMethod("GET");
+            getConnect.connect();
+
+            final int res_code = getConnect.getResponseCode();
+            assertEquals("Server returned response code " + res_code, HttpStatus.OK_200, res_code);
+
+            String response = readResponse(getConnect.getInputStream());
+
+            //readResponse is appending \r\n to each line that's why its added the expected content
+            assertEquals("Server returned document content " + response,"<foobar/>\r\n",response);
+
+        } finally {
+            connect.disconnect();
+            getConnect.disconnect();
+        }
+    }
+
+    @Test
+    public void doPostEncodedPath() throws IOException {
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        final HttpURLConnection connect = getConnection(DOC_URI);
+
+        String data = "<query xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
+                "    <text>\n" +
+                "        //foo\n" +
+                "    </text>\n" +
+                "</query>";
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("POST");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("Content-Type", "application/xml");
+            try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+                writer.write(data);
+            }
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("doPut: Server returned response code " + r, HttpStatus.OK_200, r);
+
+            String response = readResponse(connect.getInputStream());
+
+            //readResponse is appending \r\n to each line that's why its added the expected content
+            assertTrue("Server returned " + response,response.contains("exist:hits=\"1\""));
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void doDeleteEncodedPath() throws IOException {
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        final HttpURLConnection connect = getConnection(DOC_URI);
+        final HttpURLConnection getConnect = getConnection(DOC_URI);
+
+        try {
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("DELETE");
+            connect.setDoOutput(true);
+
+            connect.connect();
+            final int r = connect.getResponseCode();
+            assertEquals("doPut: Server returned response code " + r, HttpStatus.OK_200, r);
+
+            // assert file content updated
+            getConnect.setRequestMethod("GET");
+            getConnect.connect();
+
+
+            final int res_code = getConnect.getResponseCode();
+            assertEquals("Server returned response code " + res_code, HttpStatus.NOT_FOUND_404, res_code);
+
+        }finally {
+            connect.disconnect();
+            getConnect.disconnect();
         }
     }
 
