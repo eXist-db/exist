@@ -1651,13 +1651,23 @@ throws PermissionDeniedException, EXistException, XPathException
             )
             |
 	    #(
-            	tw:"tumbling"
+            	wc:"window"
             	{
             	    ForLetClause clause= new ForLetClause();
                     clause.type = FLWORClause.ClauseType.WINDOW;
                     clause.windowConditions = new ArrayList<WindowCondition>(2);
-                    clause.windowType = WindowExpr.WindowType.TUMBLING_WINDOW;
             	}
+            	(
+                    "tumbling"
+                    {
+                        clause.windowType = WindowExpr.WindowType.TUMBLING_WINDOW;
+                    }
+                    |
+                    "sliding"
+                    {
+                        clause.windowType = WindowExpr.WindowType.SLIDING_WINDOW;
+                    }
+                )?
             	// invarBinding
             	(
             		#(

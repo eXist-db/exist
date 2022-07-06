@@ -30,7 +30,8 @@ import org.exist.xquery.value.*;
 public class WindowExpr extends BindingExpression {
 
     public enum WindowType {
-        TUMBLING_WINDOW
+        TUMBLING_WINDOW,
+        SLIDING_WINDOW
     }
 
     //private Expression inputSequence = null;
