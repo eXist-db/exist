@@ -695,7 +695,7 @@ expr throws XPathException
 
 exprSingle throws XPathException
 :
-	( ( "for" | "let" ) ("tumbling" | DOLLAR ) ) => flworExpr
+	( ( "for" | "let" ) ("tumbling" | "sliding" | DOLLAR ) ) => flworExpr
 	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr
@@ -803,7 +803,7 @@ flworExpr throws XPathException
 initialClause throws XPathException
 :
     ( ( "for" DOLLAR ) => forClause
-    | ( "for" "tumbling" ) => windowClause
+    | ( "for" ( "tumbling" | "sliding" ) ) => windowClause
     | letClause )
     ;
 
@@ -829,7 +829,7 @@ letClause throws XPathException
 
 windowClause throws XPathException
 :
-	"for"! "tumbling"^ "window"! inVarBinding windowStartCondition ( windowEndCondition )?
+	"for"! ("tumbling"|"sliding") "window"^ inVarBinding windowStartCondition ( windowEndCondition )?
 	;
 
 inVarBinding throws XPathException
@@ -2273,6 +2273,8 @@ reservedKeywords returns [String name]
 	|
 	"tumbling" { name = "tumbling"; }
 	|
+	"sliding" { name = "sliding"; }	
+	|
 	"window" { name = "window"; }
 	|
 	"start" { name = "start"; }
@@ -2285,6 +2287,7 @@ reservedKeywords returns [String name]
 	|
 	"next" { name = "next"; }
 	;
+
 
 /**
  * The XQuery/XPath lexical analyzer.
