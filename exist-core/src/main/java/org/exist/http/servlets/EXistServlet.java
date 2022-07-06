@@ -135,7 +135,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
         try (final DBBroker broker = getPool().get(Optional.of(user));
              final Txn transaction = getPool().getTransactionManager().beginTransaction()) {
 
-            final XmldbURI dbpath = XmldbURI.createInternal(path);
+            final XmldbURI dbpath = XmldbURI.create(path);
             try (final Collection collection = broker.getCollection(dbpath)) {
                 if (collection != null) {
                     transaction.abort();
