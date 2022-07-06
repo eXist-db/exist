@@ -606,8 +606,7 @@ public class XQueryFunctionsTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:local-name()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -657,8 +656,7 @@ public class XQueryFunctionsTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:name()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -762,12 +760,11 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void namespaceURI_contextItem_empty() throws XPathException, XMLDBException {
+    public void namespaceURI_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/exist:b/c/fn:namespace-uri()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
