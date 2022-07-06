@@ -25,6 +25,8 @@ module namespace t="http://exist-db.org/testsuite/copy";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
+import module namespace sm = "http://exist-db.org/xquery/securitymanager";
+
 declare variable $t:collection-name := "copy-test";
 declare variable $t:collection := "/db/" || $t:collection-name;
 declare variable $t:target-collection-name := "copy-target";

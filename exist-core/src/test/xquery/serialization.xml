@@ -45,7 +45,7 @@ some value
         <task>comments and xsl</task>
         <code><![CDATA[
 xquery version "1.0" encoding "UTF-8";
-
+import module namespace transform = "http://exist-db.org/xquery/transform";
 let $doc as document-node() := document {
   <Root>
     <!-- Comment 1 -->

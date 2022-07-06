@@ -1763,8 +1763,8 @@ public class XQueryContext implements BinaryValueManager, Context {
                 declareNamespace(module.getDefaultPrefix(), module.getNamespaceURI());
             }
 
-            modules.compute(module.getNamespaceURI(), addToMapValueArray(module));
-            allModules.compute(module.getNamespaceURI(), addToMapValueArray(module));
+            this.addModule(module.getNamespaceURI(), module);
+            this.addRootModule(module.getNamespaceURI(), module);
 
             if (module instanceof InternalModule) {
                 ((InternalModule) module).prepare(this);

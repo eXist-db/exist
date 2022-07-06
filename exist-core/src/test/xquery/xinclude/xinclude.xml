@@ -175,6 +175,7 @@
     <test output="text">
         <task>XInclude applied before XSLT step</task>
         <code><![CDATA[
+            import module namespace transform = "http://exist-db.org/xquery/transform";
             let $stylesheet := doc("/db/test/test.xsl")
             return
                 transform:transform(doc('/db/test/test1.xml'), $stylesheet, (), (),
@@ -185,6 +186,7 @@
     <test output="text">
         <task>XInclude applied before XSLT step 2</task>
         <code><![CDATA[
+            import module namespace transform = "http://exist-db.org/xquery/transform";
             let $stylesheet := doc("/db/test/test.xsl")
             return
                 transform:transform(doc('/db/test/test1.xml'), $stylesheet, ())

@@ -24,6 +24,7 @@ xquery version "3.0";
 module namespace t="http://exist-db.org/testsuite/permissions";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 declare variable $t:collection-name := "permission-test";
 declare variable $t:collection := "/db/" || $t:collection-name;
