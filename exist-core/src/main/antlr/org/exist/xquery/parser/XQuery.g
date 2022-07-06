@@ -2224,6 +2224,12 @@ reservedKeywords returns [String name]
 	"map" { name = "map"; }
 	|
 	"array" { name = "array"; }
+	|
+	"copy-namespaces" { name = "copy-namespaces"; }
+	|
+    "empty-sequence" { name = "empty-sequence"; }
+    |
+    "schema-element" { name = "schema-element"; }
 	;
 
 /**
