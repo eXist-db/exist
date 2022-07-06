@@ -45,7 +45,6 @@ import java.nio.file.Paths;
 import java.util.Random;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.

@@ -55,7 +55,6 @@ public class DbStoreTest {
         final XPathQueryService xpqs =
                 (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
         assertThrows(XMLDBException.class, () -> {
-            final ResourceSet rs =
                     xpqs.query(
                             "xmldb:store(\n" +
                                     "        '/db',\n" +
