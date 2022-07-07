@@ -201,6 +201,7 @@ public class Type {
 
         // STRING sub-types
         defineSubType(STRING, NORMALIZED_STRING);
+        defineSubType(STRING, ANY_URI); // we can always treat a URI as a string
 
         // NORMALIZED_STRING sub-types
         defineSubType(NORMALIZED_STRING, TOKEN);
