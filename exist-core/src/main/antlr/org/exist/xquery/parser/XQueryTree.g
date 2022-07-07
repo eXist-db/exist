@@ -157,7 +157,7 @@ options {
         }
     }
 
-    private static void processAnnotations(List annots, FunctionSignature signature) {
+    private static Annotation[] processAnnotations(List annots, FunctionSignature signature) {
         Annotation[] anns = new Annotation[annots.size()];
 
         //iterate the declare Annotations
@@ -183,7 +183,11 @@ options {
         }
 
         //set the Annotations on the Function Signature
-        signature.setAnnotations(anns);
+        if (signature != null) {
+            signature.setAnnotations(anns);
+        }
+
+        return anns;
     }
 
     private static void processParams(List varList, UserDefinedFunction func, FunctionSignature signature)
@@ -1081,6 +1085,12 @@ throws XPathException
             }
         )
         |
+        { List annots = new ArrayList(); }
+        (annotations [annots])?
+        {
+            Annotation[] anns = processAnnotations(annots, null);
+            type.setAnnotations(anns);
+        }
         #(
             FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION_REFERENCE); }
             (

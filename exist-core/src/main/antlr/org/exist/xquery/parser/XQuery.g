@@ -581,7 +581,7 @@ itemType throws XPathException
 :
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN!
 	|
-	( "function" LPAREN ) => functionTest
+	( ("function" LPAREN) | ( MOD ) ) => functionTest
 	|
 	( "map" LPAREN ) => mapType
 	|
@@ -616,20 +616,23 @@ atomicType throws XPathException
 
 functionTest throws XPathException
 :
-	( "function" LPAREN STAR RPAREN) => anyFunctionTest
-	|
-	typedFunctionTest
+    annotations
+    (
+	    ( "function" LPAREN STAR RPAREN ) => anyFunctionTest
+	    |
+	    typedFunctionTest
+	)
 	;
 
 anyFunctionTest throws XPathException
 :
-	"function"! LPAREN! s:STAR RPAREN!
+	annotations "function"! LPAREN! s:STAR RPAREN!
 	{ #anyFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #s); }
 	;
 
 typedFunctionTest throws XPathException
 :
-	"function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
+	annotations "function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
 	{ #typedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #typedFunctionTest); }
 	;
 
