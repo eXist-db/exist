@@ -239,6 +239,9 @@ public class ErrorCodes {
 
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 
+    /* XQuery 3.0 Update Facility https://www.w3.org/TR/xquery-update-30/#id-new-error-codes */
+    public static final ErrorCode XUST0032 = new W3CErrorCode("XUST0032", "It is a static error if an %updating or %simple annotation is used on a VarDecl.");
+
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]

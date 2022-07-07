@@ -500,6 +500,24 @@ throws PermissionDeniedException, EXistException, XPathException
                         { List annots = new ArrayList(); }
                         (annotations [annots]
                         )?
+                        {
+                            for(int i = 0; i < annots.size(); i++)
+                            {
+                            	List la = (List) annots.get(i);
+                                if(la.size() > 0)
+                                {
+                                    for(int a = 0; a < la.size(); a++)
+                                    {
+                                         if(la.get(a).toString().equals("simple") || la.get(a).toString().equals("updating"))
+                                         {
+                                             throw new XPathException(qname, ErrorCodes.XUST0032,
+                                             "It is a static error if an %updating or %simple annotation is used on a VarDecl.");
+                                         }
+                                    }
+                                }
+                            }
+
+                        }
             (
                 #(
                     "as"
