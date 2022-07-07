@@ -36,6 +36,8 @@ import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -149,6 +151,35 @@ public class XQueryUpdate3Test {
         }
         catch(XPathException ex) {
             assertEquals(ErrorCodes.XUST0032, ex.getErrorCode());
+        }
+    }
+
+    @Test
+    public void testingForUpdatingFunction() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query = "%simple function ( * )";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.sequenceType();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            SequenceType type = new SequenceType();
+            treeParser.sequenceType(ast, type);
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
         }
     }
 }
