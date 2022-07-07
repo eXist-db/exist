@@ -194,82 +194,7 @@ public class FnTransform extends BasicFunction {
                 xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
 
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
-                if (options.initialFunction.isPresent()) {
-                    final net.sf.saxon.s9api.QName qName = Convert.ToSaxon.of(options.initialFunction.get().getQName());
-                    final XdmValue[] functionParams;
-                    if (options.functionParams.isPresent()) {
-                        functionParams = Convert.ToSaxon.of(options.functionParams.get());
-                    } else {
-                        functionParams = new XdmValue[0];
-                    }
-                    if (options.deliveryFormat == DeliveryFormat.RAW) {
-                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));
-                        return makeResultMap(options, existValue, resultDocuments);
-                    }
-                    xslt30Transformer.callFunction(qName, functionParams, saxDestination);
-                } else if (options.initialTemplate.isPresent()) {
-                    if (options.initialMode.isPresent()) {
-                        throw new XPathException(this, ErrorCodes.FOXT0002,
-                                INITIAL_MODE.name + " supplied indicating apply-templates invocation, " +
-                                "AND " + INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
-                    }
-
-                    if (sourceNode.isPresent()) {
-                        final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
-                        final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
-                        xslt30Transformer.setGlobalContextItem(xdmNode);
-                    } else {
-                        xslt30Transformer.setGlobalContextItem(null);
-                    }
-
-                    final QName qName = options.initialTemplate.get().getQName();
-                    //TODO (AP) - Implement complete conversion in the {@link Convert} class
-                    //TODO (AP) - The saxDestination conversion loses type information in some cases
-                    //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
-                    //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
-                    if (options.deliveryFormat == DeliveryFormat.RAW) {
-                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName)));
-                        return makeResultMap(options, existValue, resultDocuments);
-                    } else {
-                        //TODO (AP) - The saxDestination conversion loses type information in some cases
-                        //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
-                        xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), saxDestination);
-                    }
-                } else {
-                    if (options.initialMatchSelection.isPresent()) {
-                        final Sequence initialMatchSelection = options.initialMatchSelection.get();
-                        final Item item = initialMatchSelection.itemAt(0);
-                        if (item instanceof Document) {
-                            final Source sourceIMS = new DOMSource((Document)item, context.getBaseURI().getStringValue());
-                            if (options.deliveryFormat == DeliveryFormat.RAW) {
-                                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceIMS));
-                                return makeResultMap(options, existValue, resultDocuments);
-                            }
-                            xslt30Transformer.applyTemplates(sourceIMS, saxDestination);
-                        } else {
-                            final XdmValue selection = Convert.ToSaxon.of(initialMatchSelection);
-                            if (options.deliveryFormat == DeliveryFormat.RAW) {
-                                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
-                                return makeResultMap(options, existValue, resultDocuments);
-                            }
-                            xslt30Transformer.applyTemplates(selection, saxDestination);
-                        }
-                    } else if (sourceNode.isPresent()) {
-                        if (options.deliveryFormat == DeliveryFormat.RAW) {
-                            final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
-                            return makeResultMap(options, existValue, resultDocuments);
-                        }
-                        xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
-                    } else {
-                        throw new XPathException(this,
-                                ErrorCodes.FOXT0002,
-                                "One of " + SOURCE_NODE.name + " or " +
-                                        INITIAL_MATCH_SELECTION.name + " or " +
-                                        INITIAL_TEMPLATE.name + " or " +
-                                        INITIAL_FUNCTION.name + " is required.");
-                    }
-                }
-                return makeResultMap(options, builder.getDocument(), resultDocuments);
+                return new TemplateInvocation(options, sourceNode, saxDestination, xslt30Transformer, builder, resultDocuments).invoke();
 
             } catch (final SaxonApiException e) {
                 if (e.getErrorCode() != null) {
@@ -284,6 +209,119 @@ public class FnTransform extends BasicFunction {
 
         } else {
             throw new XPathException(this, ErrorCodes.FOXT0001, "xslt-version: " + options.xsltVersion + " is not supported.");
+        }
+    }
+
+    private class TemplateInvocation {
+
+        final Options options;
+        Optional<Source> sourceNode;
+        final SAXDestination saxDestination;
+        final Xslt30Transformer xslt30Transformer;
+        final Map<URI, MemTreeBuilder> resultDocuments;
+        final MemTreeBuilder resultBuilder;
+
+        TemplateInvocation(final Options options, final Optional<Source> sourceNode, final SAXDestination saxDestination, final Xslt30Transformer xslt30Transformer, final MemTreeBuilder resultBuilder, final Map<URI, MemTreeBuilder> resultDocuments) {
+            this.options = options;
+            this.sourceNode = sourceNode;
+            this.saxDestination = saxDestination;
+            this.xslt30Transformer = xslt30Transformer;
+            this.resultBuilder = resultBuilder;
+            this.resultDocuments = resultDocuments;
+        }
+
+        private MapType invokeCallFunction() throws XPathException, SaxonApiException {
+            final net.sf.saxon.s9api.QName qName = Convert.ToSaxon.of(options.initialFunction.get().getQName());
+            final XdmValue[] functionParams;
+            if (options.functionParams.isPresent()) {
+                functionParams = Convert.ToSaxon.of(options.functionParams.get());
+            } else {
+                functionParams = new XdmValue[0];
+            }
+            if (options.deliveryFormat == DeliveryFormat.RAW) {
+                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));
+                return makeResultMap(options, existValue, resultDocuments);
+            } else {
+                xslt30Transformer.callFunction(qName, functionParams, saxDestination);
+                return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+            }
+        }
+
+        private MapType invokeCallTemplate() throws XPathException, SaxonApiException {
+            if (options.initialMode.isPresent()) {
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002,
+                        INITIAL_MODE.name + " supplied indicating apply-templates invocation, " +
+                                "AND " + INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
+            }
+
+            if (sourceNode.isPresent()) {
+                final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
+                final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
+                xslt30Transformer.setGlobalContextItem(xdmNode);
+            } else {
+                xslt30Transformer.setGlobalContextItem(null);
+            }
+
+            final QName qName = options.initialTemplate.get().getQName();
+            //TODO (AP) - Implement complete conversion in the {@link Convert} class
+            //TODO (AP) - The saxDestination conversion loses type information in some cases
+            //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
+            //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
+            if (options.deliveryFormat == DeliveryFormat.RAW) {
+                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName)));
+                return makeResultMap(options, existValue, resultDocuments);
+            } else {
+                //TODO (AP) - The saxDestination conversion loses type information in some cases
+                //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
+                xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), saxDestination);
+                return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+            }
+        }
+
+        private MapType invokeApplyTemplates() throws XPathException, SaxonApiException {
+            if (options.initialMatchSelection.isPresent()) {
+                final Sequence initialMatchSelection = options.initialMatchSelection.get();
+                final Item item = initialMatchSelection.itemAt(0);
+                if (item instanceof Document) {
+                    final Source sourceIMS = new DOMSource((Document)item, context.getBaseURI().getStringValue());
+                    if (options.deliveryFormat == DeliveryFormat.RAW) {
+                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceIMS));
+                        return makeResultMap(options, existValue, resultDocuments);
+                    }
+                    xslt30Transformer.applyTemplates(sourceIMS, saxDestination);
+                } else {
+                    final XdmValue selection = Convert.ToSaxon.of(initialMatchSelection);
+                    if (options.deliveryFormat == DeliveryFormat.RAW) {
+                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
+                        return makeResultMap(options, existValue, resultDocuments);
+                    }
+                    xslt30Transformer.applyTemplates(selection, saxDestination);
+                }
+            } else if (sourceNode.isPresent()) {
+                if (options.deliveryFormat == DeliveryFormat.RAW) {
+                    final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
+                    return makeResultMap(options, existValue, resultDocuments);
+                }
+                xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
+            } else {
+                throw new XPathException(FnTransform.this,
+                        ErrorCodes.FOXT0002,
+                        "One of " + SOURCE_NODE.name + " or " +
+                                INITIAL_MATCH_SELECTION.name + " or " +
+                                INITIAL_TEMPLATE.name + " or " +
+                                INITIAL_FUNCTION.name + " is required.");
+            }
+            return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+        }
+
+        private MapType invoke() throws XPathException, SaxonApiException {
+            if (options.initialFunction.isPresent()) {
+                return invokeCallFunction();
+            } else if (options.initialTemplate.isPresent()) {
+                return invokeCallTemplate();
+            } else {
+                return invokeApplyTemplates();
+            }
         }
     }
 
