@@ -147,7 +147,7 @@ options {
         String ns = qname.getNamespaceURI();
         if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
             String ln = qname.getLocalPart();
-            return ("private".equals(ln) || "public".equals(ln));
+            return ("private".equals(ln) || "public".equals(ln) || "updating".equals(ln) || "simple".equals(ln));
         } else {
             return !(ns.equals(Namespaces.XML_NS)
                      || ns.equals(Namespaces.SCHEMA_NS)
