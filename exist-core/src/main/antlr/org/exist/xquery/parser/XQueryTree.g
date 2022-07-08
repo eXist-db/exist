@@ -644,6 +644,26 @@ throws PermissionDeniedException, EXistException, XPathException
         functionDecl [path]
         |
         importDecl [path]
+        |
+        #(
+            "revalidation"
+            (
+                "strict"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.STRICT);
+                }
+                |
+                "lax"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.LAX);
+                }
+                |
+                "skip"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.SKIP);
+                }
+            )
+        )
     )*
     ;
 

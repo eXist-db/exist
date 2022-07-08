@@ -266,6 +266,11 @@ prolog throws XPathException
 			// bare keyword updating is valid because of rule CompatibilityAnnotation in the XQUF standard
 			( "declare" (MOD | "updating") )
 			=> annotateDecl { inSetters = false; }
+			|
+			( "declare" "revalidation" )
+			=> revalidationDecl {
+			    inSetters = false;
+		    }
         )
 		SEMICOLON!
     )*
@@ -461,6 +466,11 @@ annotation
         name = "updating";
         #annotation= #(#[ANNOT_DECL, name], #annotation);
     }
+    ;
+
+revalidationDecl throws XPathException
+:
+	"declare"! "revalidation"^ ("strict" | "lax" | "skip")
     ;
 
 eqName returns [String name]
@@ -2240,6 +2250,14 @@ reservedKeywords returns [String name]
 	"schema-element" { name = "schema-element"; }
 	|
 	"updating" { name = "updating"; }
+	|
+	"revalidation" { name = "revalidation"; }
+	|
+    "strict" { name = "strict"; }
+    |
+    "lax" { name = "lax"; }
+    |
+    "skip" { name = "skip"; }
 	;
 
 /**
