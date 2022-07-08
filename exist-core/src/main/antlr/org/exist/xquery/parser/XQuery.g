@@ -238,7 +238,7 @@ moduleDecl throws XPathException
 // === Prolog ===
 
 prolog throws XPathException
-{ boolean inSetters = true; }
+{ boolean inSetters = true; boolean redeclaration = false; }
 :
     (
 		(
@@ -270,6 +270,9 @@ prolog throws XPathException
 			( "declare" "revalidation" )
 			=> revalidationDecl {
 			    inSetters = false;
+			    if(redeclaration)
+                 	throw new XPathException((XQueryAST) returnAST, ErrorCodes.XUST0003, "It is a static error if a Prolog contains more than one revalidation declaration.");
+			    redeclaration = true;
 		    }
         )
 		SEMICOLON!
