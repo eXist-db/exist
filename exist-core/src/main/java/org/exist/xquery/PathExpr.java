@@ -282,6 +282,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         if (ex.getLine() < 1 || ex.getColumn() < 1) {
                             ex.setLocation(expr.getLine(), expr.getColumn());
                         }
+                        if (ex.getLine() < 1 || ex.getColumn() < 1) {
+                            ex.setLocation(getLine(), getColumn());
+                        }
                         throw ex;
                     }
                 }

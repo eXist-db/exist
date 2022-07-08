@@ -659,7 +659,7 @@ public class Eval extends BasicFunction {
             final InputSource src = new InputSource(isr);
 
             xr = parserPool.borrowXMLReader();
-            final SAXAdapter adapter = new SAXAdapter(context);
+            final SAXAdapter adapter = new SAXAdapter(this, context);
             xr.setContentHandler(adapter);
             xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             xr.parse(src);

@@ -115,7 +115,7 @@ public class ParseCQL extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		    }
 		    StringReader reader = new StringReader(xmlContent);
-		    SAXAdapter adapter = new SAXAdapter(context);
+		    SAXAdapter adapter = new SAXAdapter(this, context);
 		    SAXParserFactory factory = SAXParserFactory.newInstance();
 		    factory.setNamespaceAware(true);
 		    InputSource src = new InputSource(reader);

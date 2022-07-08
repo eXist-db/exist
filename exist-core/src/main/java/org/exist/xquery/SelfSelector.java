@@ -40,7 +40,7 @@ public class SelfSelector implements NodeSelector {
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
-        final NodeProxy p = new NodeProxy(doc, nodeId);
+        final NodeProxy p = new NodeProxy(null, doc, nodeId);
         final NodeProxy contextNode = context.get(doc, nodeId);
         if (contextNode != null) {
             if (Expression.NO_CONTEXT_ID != contextId) {

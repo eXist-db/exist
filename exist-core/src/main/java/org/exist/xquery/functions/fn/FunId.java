@@ -183,7 +183,7 @@ public class FunId extends Function {
 		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(this, id, Type.ID));
 		NodeProxy p;
 		for (final NodeProxy n : attribs) {
-			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getExpression(), n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

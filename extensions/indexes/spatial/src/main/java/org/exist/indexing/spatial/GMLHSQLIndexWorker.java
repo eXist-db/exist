@@ -318,7 +318,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 //contextSet == null should be used to scan the whole index
                 if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -499,7 +499,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 }
                 if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -624,7 +624,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 }
                 if (contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -764,7 +764,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     return false;
                 }
                 NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
-                IStoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
+                IStoredNode node = broker.objectWith(new NodeProxy(null, doc, nodeId));
                 if (node == null) {
                     LOG.info("Node {}doesn't exist", nodeId);
                     return false;

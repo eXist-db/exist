@@ -29,6 +29,7 @@ import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.source.Source;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -102,6 +103,16 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
+    @Deprecated
+    public XPathException(final Sequence sequence, final String message) {
+        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, message);
+    }
+
+    @Deprecated
+    public XPathException(final Item item, final String message) {
+        this((item != null) ? item.getExpression() : null, message);
+    }
+
     public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc) {
         super();
         this.errorCode = errorCode;
@@ -111,6 +122,14 @@ public class XPathException extends Exception implements XPathErrorProvider {
             this.column = expr.getColumn();
             this.source = expr.getSource();
         }
+    }
+
+    public XPathException(final Sequence sequence, final ErrorCode errorCode, final String message) {
+        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, errorCode, message);
+    }
+
+    public XPathException(final Item item, final ErrorCode errorCode, final String message) {
+        this((item != null) ? item.getExpression() : null, errorCode, message);
     }
 
     public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {

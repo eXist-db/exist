@@ -21,6 +21,8 @@
  */
 package org.exist.dom;
 
+import org.exist.xquery.Expression;
+
 /**
  * Interface for Nodes in eXist
  * used for both persistent and
@@ -48,4 +50,11 @@ public interface INode<D extends org.w3c.dom.Document, T extends INode> extends 
 
     //TODO try and get rid of this after decoupling nameTyping from QName class (AR)?
     void setQName(QName qname);
+
+    /**
+     * Get the expression from which this node derives.
+     *
+     * @return The expression from which this node derives
+     */
+    Expression getExpression();
 }

@@ -243,7 +243,7 @@ public final class NodeIterator implements INodeIterator {
                     return false;
                 }
 
-                final long addr = db.findValue(broker, new NodeProxy(node));
+                final long addr = db.findValue(broker, new NodeProxy(null, node));
                 if (addr == BTree.KEY_NOT_FOUND) {
                     return false;
                 }

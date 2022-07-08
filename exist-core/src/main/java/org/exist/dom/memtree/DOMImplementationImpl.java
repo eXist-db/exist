@@ -22,6 +22,7 @@
 
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -32,10 +33,24 @@ import org.w3c.dom.DocumentType;
  */
 public class DOMImplementationImpl implements DOMImplementation {
 
+    private final Expression expression;
+
+    public DOMImplementationImpl() {
+        this(null);
+    }
+
+    public DOMImplementationImpl(final Expression expression) {
+        this.expression = expression;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
     @Override
     public Document createDocument(final String namespaceURI,
             final String qualifiedName, final DocumentType doctype) throws DOMException {
-        final DocumentImpl doc = new DocumentImpl(null, true);
+        final DocumentImpl doc = new DocumentImpl(expression, null, true);
         if(qualifiedName != null) {
             if(namespaceURI != null) {
                 doc.createElementNS(namespaceURI, qualifiedName);

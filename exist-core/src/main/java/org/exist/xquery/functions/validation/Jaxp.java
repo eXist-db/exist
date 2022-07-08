@@ -200,7 +200,7 @@ public class Jaxp extends BasicFunction {
         final ContentHandler contenthandler;
         if (isCalledAs("jaxp-parse")) {
             instanceBuilder = context.getDocumentBuilder();
-            contenthandler = new DocumentBuilderReceiver(instanceBuilder, true); // (namespace?)
+            contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true); // (namespace?)
         } else {
             instanceBuilder = null;
             contenthandler = new ValidationContentHandler();

@@ -84,7 +84,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
     public ContentHandler getContentHandler(final DBBroker broker, final NodeValue processorConfig, final Properties parameters, final String mediaType, final OutputStream os) throws XPathException, SAXException {
 
         if (processorConfig == null) {
-            throw new XPathException("XEP requires a configuration file");
+            throw new XPathException((Expression) null, "XEP requires a configuration file");
         }
 
         try {
@@ -95,7 +95,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
             if (Node.DOCUMENT_NODE == config.getNodeType()) {
                 config = ((Document) config).getDocumentElement();
                 if (config == null) {
-                    throw new XPathException("XEP requires a configuration file, but got an empty element");
+                    throw new XPathException((Expression) null, "XEP requires a configuration file, but got an empty element");
                 }
             }
 

@@ -168,7 +168,7 @@ public abstract class AbstractSequence implements Sequence {
             if (OLD_EXIST_VERSION_COMPATIBILITY) {
                 return true;
             } else {
-                throw new XPathException(ErrorCodes.FORG0006,
+                throw new XPathException((Expression) null, ErrorCodes.FORG0006,
                         "effectiveBooleanValue: first item of '" +
                                 (toString().length() < 20 ? toString() : toString().substring(0, 20) + "...") +
                                 "' is not a node, and sequence length > 1");

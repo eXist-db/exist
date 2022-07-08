@@ -84,7 +84,7 @@ public class RootNode extends Step {
                 final NodeValue node = (NodeValue)item;
                 // return fn:root(self::node()) treat as document-node()
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    return new NodeProxy(((NodeProxy)item).getOwnerDocument());
+                    return new NodeProxy(this, ((NodeProxy)item).getOwnerDocument());
                 } else {
                     if (node.getType() == Type.DOCUMENT) {
                         return node;
@@ -110,7 +110,7 @@ public class RootNode extends Step {
                 final NodeValue node = (NodeValue)item;
                 // return fn:root(self::node()) treat as document-node()
                 if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    return new NodeProxy(((NodeProxy)item).getOwnerDocument());
+                    return new NodeProxy(this, ((NodeProxy)item).getOwnerDocument());
                 } else {
                     if (node.getType() == Type.DOCUMENT) {
                         return node;
@@ -146,7 +146,7 @@ public class RootNode extends Step {
                 if (context.inProtectedMode() && !context.getProtectedDocs().containsKey(doc.getDocId()))
                     {continue;}
                 if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-	            	result.add(new NodeProxy(doc));
+	            	result.add(new NodeProxy(this, doc));
 	            }
             }
 	        cached = result;

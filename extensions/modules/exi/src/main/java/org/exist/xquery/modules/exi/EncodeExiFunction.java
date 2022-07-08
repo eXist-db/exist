@@ -92,7 +92,7 @@ public class EncodeExiFunction extends BasicFunction {
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {
 					Item xsdItem = args[1].itemAt(0);
-					try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
+					try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context, this)) {
 						exiSerializer = new EXISerializer(baos, xsdInputStream);
 					}
 				}

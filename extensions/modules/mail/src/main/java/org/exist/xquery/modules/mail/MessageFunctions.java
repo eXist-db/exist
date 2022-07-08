@@ -332,7 +332,7 @@ public class MessageFunctions extends BasicFunction {
             builder.startElement(new QName("xhtml", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
             mimeParamsToAttributes(builder, part.getContentType());
             // extract and clean up the html
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
             /* There's a bug here caused (possibly) by Apple Mail forwarding Outlook Mail
                In the hideous Outlook html, o:p tags are included as paragraph markers. They either contain nothing,
                or else an NBSP entity. The namespace prefix is correctly declared.
@@ -341,7 +341,7 @@ public class MessageFunctions extends BasicFunction {
              */
 
             try (InputStream inputStream = part.getInputStream()) {
-                DocumentImpl html = ModuleUtils.htmlToXHtml(context, new StreamSource(inputStream), null, null);
+                DocumentImpl html = ModuleUtils.htmlToXHtml(context, new StreamSource(inputStream), null, null, this);
                 ElementImpl rootElem = (ElementImpl) html.getDocumentElement();
                 html.copyTo(rootElem,receiver);
                 builder.endElement();

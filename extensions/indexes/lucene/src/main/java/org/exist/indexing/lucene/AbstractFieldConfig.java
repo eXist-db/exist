@@ -114,7 +114,7 @@ public abstract class AbstractFieldConfig {
         }
 
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final NodeProxy currentNode = new NodeProxy(document, nodeId);
+        final NodeProxy currentNode = new NodeProxy(null, document, nodeId);
         try {
             Sequence result = xquery.execute(broker, compiled, currentNode);
 

@@ -165,7 +165,7 @@ public class FunSerialize extends BasicFunction {
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(callingExpr, builder, true);
             for (final SequenceIterator i = temp.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();
                 if (Type.subTypeOf(next.getType(), Type.NODE)) {

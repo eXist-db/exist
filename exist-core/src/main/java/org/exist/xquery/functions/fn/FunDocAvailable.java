@@ -100,7 +100,7 @@ public class FunDocAvailable extends Function {
             }
 
             try {
-                result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path));
+                result = BooleanValue.valueOf(DocUtils.isDocumentAvailable(this.context, path, this));
             } catch (final XPathException e) {
                 result = BooleanValue.FALSE;
             }

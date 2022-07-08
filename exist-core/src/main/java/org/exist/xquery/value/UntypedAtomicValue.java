@@ -45,8 +45,16 @@ public class UntypedAtomicValue extends AtomicValue {
         this.value = value;
     }
 
+    public static AtomicValue convertTo(String value, int requiredType) throws XPathException {
+        return convertTo(value, requiredType, null);
+    }
+
     public static AtomicValue convertTo(String value, int requiredType, final Expression expression) throws XPathException {
         return convertTo(null, value, requiredType, expression);
+    }
+
+    public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType) throws XPathException {
+        return convertTo(strVal, value, requiredType, null);
     }
 
     public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType, final Expression expression) throws XPathException {

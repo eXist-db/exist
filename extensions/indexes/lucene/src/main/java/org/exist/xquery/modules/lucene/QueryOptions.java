@@ -95,7 +95,7 @@ public class QueryOptions {
                 }
             }
         } catch (XMLStreamException | IOException e) {
-            throw new XPathException(LuceneModule.EXXQDYFT0004, "Error while parsing options to ft:query: " + e.getMessage(), e);
+            throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Error while parsing options to ft:query: " + e.getMessage(), e);
         }
     }
 
@@ -223,7 +223,7 @@ public class QueryOptions {
                 try {
                     phraseSlop = Optional.of(Integer.parseInt(value));
                 } catch (NumberFormatException e) {
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
                 }
                 break;
             case OPTION_FILTER_REWRITE:

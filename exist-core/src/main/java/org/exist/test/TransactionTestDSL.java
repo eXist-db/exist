@@ -625,7 +625,7 @@ public interface TransactionTestDSL {
 
                 final XQuery xquery = broker.getBrokerPool().getXQueryService();
                 final NodeSet nodeSet = new NewArrayNodeSet();
-                nodeSet.add(new NodeProxy(doc));
+                nodeSet.add(new NodeProxy(null, doc));
                 xquery.execute(broker, xqueryUpdate, nodeSet);
                 return null;
             };
@@ -647,7 +647,7 @@ public interface TransactionTestDSL {
 
                 final XQuery xquery = broker.getBrokerPool().getXQueryService();
                 final NodeSet nodeSet = new NewArrayNodeSet();
-                nodeSet.add(new NodeProxy(doc));
+                nodeSet.add(new NodeProxy(null, doc));
                 xquery.execute(broker, query, nodeSet);
                 return null;
             };

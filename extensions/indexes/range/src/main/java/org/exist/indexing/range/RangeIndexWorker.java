@@ -643,7 +643,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 int sizeHint = contextSet.getSizeHint(storedDocument);
                 NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
                 if (parentNode != null) {
-                    NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                    NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
                     storedNode.setNodeType(nodeType);
                     getAddress(doc, storedNode);
                     if (axis == NodeSet.ANCESTOR) {
@@ -657,7 +657,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     }
                 }
             } else {
-                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
                 storedNode.setNodeType(nodeType);
                 getAddress(doc, storedNode);
                 resultSet.add(storedNode);
@@ -745,7 +745,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             return token;
         } catch (IOException e) {
-            throw new XPathException("Error analyzing the query string: " + e.getMessage(), e);
+            throw new XPathException((Expression) null, "Error analyzing the query string: " + e.getMessage(), e);
         }
     }
 

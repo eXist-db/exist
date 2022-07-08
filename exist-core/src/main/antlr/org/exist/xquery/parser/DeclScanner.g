@@ -22,7 +22,6 @@
 header {
 	package org.exist.xquery.parser;
 	
-	import org.exist.xquery.Expression;
 	import org.exist.xquery.XPathException;
 }
 

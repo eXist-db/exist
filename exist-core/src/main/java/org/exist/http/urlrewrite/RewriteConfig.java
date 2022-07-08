@@ -37,6 +37,7 @@ import org.exist.thirdparty.net.sf.saxon.functions.regex.RegularExpression;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -249,7 +250,7 @@ public class RewriteConfig {
             XMLReader xr = null;
             try {
                 xr = parserPool.borrowXMLReader();
-                final SAXAdapter adapter = new SAXAdapter();
+                final SAXAdapter adapter = new SAXAdapter((Expression) null);
                 xr.setContentHandler(adapter);
                 xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 xr.parse(src);

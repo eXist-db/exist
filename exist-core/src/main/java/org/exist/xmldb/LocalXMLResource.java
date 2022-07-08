@@ -533,7 +533,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         if(proxy != null) {
             return proxy;
         } else {
-            return read((document, broker, transaction) -> new NodeProxy(document, NodeId.DOCUMENT_NODE));
+            return read((document, broker, transaction) -> new NodeProxy(null, document, NodeId.DOCUMENT_NODE));
         }
     }
 
@@ -553,7 +553,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         if(proxy != null) {
             return proxy;
         } else {
-            return this.<NodeProxy>read(broker, transaction).apply((document, broker1, transaction1) -> new NodeProxy(document, NodeId.DOCUMENT_NODE));
+            return this.<NodeProxy>read(broker, transaction).apply((document, broker1, transaction1) -> new NodeProxy(null, document, NodeId.DOCUMENT_NODE));
         }
     }
 

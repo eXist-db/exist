@@ -148,7 +148,7 @@ public class MoveOverwriteResourceTest {
 
     private void checkIndex(final DBBroker broker, final DocumentSet docs) throws Exception {
         final StructuralIndex index = broker.getStructuralIndex();
-        final NodeSelector selector = NodeProxy::new;
+        final NodeSelector selector = (doc, nodeId) -> new NodeProxy(null, doc, nodeId);
 
         NodeSet nodes;
 

@@ -105,9 +105,9 @@ public class GetParameter extends RequestFunction {
 		}
 
 		if (values.length == 1) {
-			return XPathUtil.javaObjectToXPath(values[0], null, false);
+			return XPathUtil.javaObjectToXPath(values[0], null, false, this);
 		} else {
-			return XPathUtil.javaObjectToXPath(values, null, false);
+			return XPathUtil.javaObjectToXPath(values, null, false, this);
 		}
 	}
 }

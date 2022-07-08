@@ -103,7 +103,7 @@ public class ExampleFunctions extends BasicFunction {
      */
     private DocumentImpl sayHello(final Optional<StringValue> name) throws XPathException {
         try {
-            final MemTreeBuilder builder = new MemTreeBuilder(context);
+            final MemTreeBuilder builder = new MemTreeBuilder(this, context);
             builder.startDocument();
             builder.startElement(new QName("hello"), null);
             builder.characters(name.map(StringValue::toString).orElse("stranger"));

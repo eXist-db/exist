@@ -93,7 +93,7 @@ public class Rename extends Modification {
             if(ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
-                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
             }
             prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
@@ -135,11 +135,11 @@ public class Rename extends Modification {
                     final NamedNode newNode;
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
-                            newNode = new ElementImpl((ElementImpl) node);
+                            newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
                             break;
 
                         case Node.ATTRIBUTE_NODE:
-                            newNode = new AttrImpl((AttrImpl) node);
+                            newNode = new AttrImpl(node.getExpression(), (AttrImpl) node);
                             break;
 
                         default:

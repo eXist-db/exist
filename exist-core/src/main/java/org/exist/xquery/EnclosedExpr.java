@@ -86,7 +86,7 @@ public class EnclosedExpr extends PathExpr {
 
             // create the output
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
             receiver.setCheckNS(true);
             try {
                 // flatten all arrays in the input sequence
@@ -98,7 +98,8 @@ public class EnclosedExpr extends PathExpr {
                 while (next != null) {
                     context.proceed(this, builder);
                     if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
-                        throw new XPathException(this, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
+                        throw new XPathException((getLine() > 0 && getColumn() > 0) ? this : next.getExpression(),
+                                ErrorCodes.XQTY0105, "Enclosed expression contains function item");
 
                         // if item is an atomic value, collect the string values of all
                         // following atomic values and separate them by a space.

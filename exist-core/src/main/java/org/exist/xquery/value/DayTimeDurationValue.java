@@ -68,6 +68,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         this(expression, createDurationDayTime(StringValue.trimWhitespace(str), expression));
     }
 
+    private static Duration createDurationDayTime(String str) throws XPathException {
+        return createDurationDayTime(str, null);
+    }
+
     private static Duration createDurationDayTime(String str, final Expression expression) throws XPathException {
         try {
             return TimeUtils.getInstance().newDurationDayTime(str);

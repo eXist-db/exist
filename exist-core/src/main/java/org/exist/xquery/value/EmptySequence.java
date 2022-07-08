@@ -64,7 +64,7 @@ public class EmptySequence extends AbstractSequence {
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new XPathException("cannot add an item to an empty sequence");
+        throw new XPathException((Expression) null, "cannot add an item to an empty sequence");
     }
 
     @Override
@@ -75,7 +75,7 @@ public class EmptySequence extends AbstractSequence {
             case Type.STRING:
                 return new StringValue("");
             default:
-                throw new XPathException("cannot convert empty sequence to " + requiredType);
+                throw new XPathException((Expression) null, "cannot convert empty sequence to " + requiredType);
         }
     }
 

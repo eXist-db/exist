@@ -417,7 +417,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 context.pushDocumentContext();
                 try {
                     MemTreeBuilder builder = context.getDocumentBuilder();
-                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
                     result = (NodeValue)indexWorker.streamGeometryToElement(geometry, targetSRS, receiver);
                 } finally {
                     context.popDocumentContext();

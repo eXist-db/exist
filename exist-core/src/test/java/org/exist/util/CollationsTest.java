@@ -34,7 +34,7 @@ public class CollationsTest {
 
     @Test
     public void htmlAscii_contains() throws XPathException {
-        final Collator collator = Collations.getCollationFromURI(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI);
+        final Collator collator = Collations.getCollationFromURI(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI, null);
 
         assertTrue(Collations.contains(collator, "iNPut", "pu"));
         assertTrue(Collations.contains(collator, "iNPut", "PU"));

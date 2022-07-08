@@ -221,7 +221,7 @@ public class ExtCollection extends Function {
                     if (!context.inProtectedMode()) {
                         dlock = lockManager.acquireDocumentReadLock(doc.getURI());
                     }
-                    result.add(new NodeProxy(doc));
+                    result.add(new NodeProxy(null, doc));
                 } catch (final LockException e) {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
                 } finally {

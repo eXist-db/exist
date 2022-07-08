@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.btree.Value;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
+import org.exist.xquery.Expression;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -34,25 +35,45 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
     protected XMLString cdata = null;
 
     public AbstractCharacterData(final short nodeType) {
-        super(nodeType);
+        this(null, nodeType);
+    }
+
+    public AbstractCharacterData(final Expression expression, final short nodeType) {
+        super(expression, nodeType);
     }
 
     public AbstractCharacterData(final short nodeType, final NodeId nodeId) {
-        super(nodeType, nodeId);
+        this(null, nodeType, nodeId);
+    }
+
+    public AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId) {
+        super(expression, nodeType, nodeId);
     }
 
     public AbstractCharacterData(final short nodeType, final NodeId nodeId, final String data) {
-        super(nodeType, nodeId);
+        this(null, nodeType, nodeId, data);
+    }
+
+    public AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId, final String data) {
+        super(expression, nodeType, nodeId);
         cdata = new XMLString(data.toCharArray());
     }
 
     public AbstractCharacterData(final short nodeType, final String data) {
-        super(nodeType);
+        this(null, nodeType, data);
+    }
+
+    public AbstractCharacterData(final Expression expression, final short nodeType, final String data) {
+        super(expression, nodeType);
         cdata = new XMLString(data.toCharArray());
     }
 
     public AbstractCharacterData(final short nodeType, final char[] data, final int start, final int howmany) {
-        super(nodeType);
+        this(null, nodeType, data, start, howmany);
+    }
+
+    public AbstractCharacterData(final Expression expression, final short nodeType, final char[] data, final int start, final int howmany) {
+        super(expression, nodeType);
         cdata = new XMLString(data, start, howmany);
     }
 

@@ -43,6 +43,10 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
         super(expression, manager, new Base64BinaryValueType(), is);
     }
 
+    public static Base64BinaryDocument getInstance(final BinaryValueManager manager, final InputStream is) throws XPathException {
+        return getInstance(manager, is, null);
+    }
+
     public static Base64BinaryDocument getInstance(final BinaryValueManager manager, final InputStream is, final Expression expression) throws XPathException {
         final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(expression, manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);

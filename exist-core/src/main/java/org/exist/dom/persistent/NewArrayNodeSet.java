@@ -460,7 +460,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         while(mid > documentNodesOffset[docIdx] && nodes[mid - 1].getNodeId().compareTo(ancestorId) >= 0) {
             --mid;
         }
-        final NodeProxy ancestor = new NodeProxy(nodes[documentNodesOffset[docIdx]].getOwnerDocument(),
+        final NodeProxy ancestor = new NodeProxy(null, nodes[documentNodesOffset[docIdx]].getOwnerDocument(),
             ancestorId, Node.ELEMENT_NODE);
         // we need to check if self should be included
         boolean foundOne = false;
@@ -1175,7 +1175,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         for(int i = 0; i < documentCount; i++) {
             doc = nodes[documentNodesOffset[i]].getOwnerDocument();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
-                result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+                result.add(new NodeProxy(null, doc, NodeId.DOCUMENT_NODE));
             }
         }
         return result;

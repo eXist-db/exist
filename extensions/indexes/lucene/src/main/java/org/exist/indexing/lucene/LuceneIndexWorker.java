@@ -968,7 +968,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
                 //LOG.info("doc: " + docId + "; node: " + nodeId.toString() + "; units: " + units);
 
-                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
                 if (qname != null)
                     storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
                 // if a context set is specified, we can directly check if the

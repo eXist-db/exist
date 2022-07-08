@@ -42,7 +42,7 @@ public class EXIUtils {
 	
 	private static final Logger LOG = LogManager.getLogger(EXIUtils.class);
 	
-	protected static InputStream getInputStream(Item item, XQueryContext context) throws XPathException, MalformedURLException, IOException {
+	protected static InputStream getInputStream(Item item, XQueryContext context, final Expression expression) throws XPathException, MalformedURLException, IOException {
         switch (item.getType()) {
             case Type.ANY_URI:
                 LOG.debug("Streaming xs:anyURI");
@@ -83,7 +83,7 @@ public class EXIUtils {
                 return new NodeInputStream(context.getBroker().getBrokerPool(), withSerializerFn, node);
             default:
                 LOG.error("Wrong item type {}", Type.getTypeName(item.getType()));
-                throw new XPathException("wrong item type " + Type.getTypeName(item.getType()));
+                throw new XPathException(expression, "wrong item type " + Type.getTypeName(item.getType()));
         }
     }
 

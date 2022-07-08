@@ -59,9 +59,17 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     private XQueryContext context;
 
+    public ArrayType(XQueryContext context, List<Sequence> items) {
+        this(null, context, items);
+    }
+
     public ArrayType(final Expression expression, XQueryContext context, List<Sequence> items) {
         this(expression, context);
         vector = PersistentVector.create(items);
+    }
+
+    public ArrayType(XQueryContext context, Sequence items) throws XPathException {
+        this(null, context, items);
     }
 
     public ArrayType(final Expression expression, XQueryContext context, Sequence items) throws XPathException {
@@ -74,9 +82,17 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         vector = PersistentVector.create(itemList);
     }
 
+    public ArrayType(XQueryContext context, IPersistentVector<Sequence> vector) {
+        this(null, context, vector);
+    }
+
     public ArrayType(final Expression expression, XQueryContext context, IPersistentVector<Sequence> vector) {
         this(expression, context);
         this.vector = vector;
+    }
+
+    private ArrayType(XQueryContext context) {
+        this(null, context);
     }
 
     private ArrayType(final Expression expression, XQueryContext context) {

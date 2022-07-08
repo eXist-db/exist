@@ -56,6 +56,7 @@ import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.NamedThreadFactory;
 import org.exist.util.serializer.DOMSerializer;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -252,7 +253,7 @@ public class JMXtoXML {
      * @return xml report
      */
     public Element generateXMLReport(final String errcode, final String categories[]) {
-        final MemTreeBuilder builder = new MemTreeBuilder();
+        final MemTreeBuilder builder = new MemTreeBuilder((Expression) null);
 
         try {
             builder.startDocument();
@@ -319,7 +320,7 @@ public class JMXtoXML {
                 }
                 final Object result = conn.invoke(name, operation, params, types);
 
-                final MemTreeBuilder builder = new MemTreeBuilder();
+                final MemTreeBuilder builder = new MemTreeBuilder((Expression) null);
 
                 try {
                     builder.startDocument();

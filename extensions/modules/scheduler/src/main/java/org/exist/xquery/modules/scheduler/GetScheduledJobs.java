@@ -190,7 +190,7 @@ public class GetScheduledJobs extends BasicFunction
         xmlBuf.append( "</" + SchedulerModule.PREFIX + ":jobs>" );
 
         try {
-            return ModuleUtils.stringToXML( context, xmlBuf.toString());
+            return ModuleUtils.stringToXML( context, xmlBuf.toString(), this);
         } catch(SAXException | IOException se) {
             throw new XPathException(this, se.getMessage(), se);
         }

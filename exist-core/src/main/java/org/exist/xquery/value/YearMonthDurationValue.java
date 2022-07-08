@@ -65,6 +65,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
         this(expression, createDurationYearMonth(str, expression));
     }
 
+    private static Duration createDurationYearMonth(String str) throws XPathException {
+        return createDurationYearMonth(str, null);
+    }
+
     private static Duration createDurationYearMonth(String str, final Expression expression) throws XPathException {
         try {
             return TimeUtils.getInstance().newDurationYearMonth(StringValue.trimWhitespace(str));

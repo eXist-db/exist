@@ -40,7 +40,7 @@ public class DescendantOrSelfSelector extends DescendantSelector {
         final NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, true);
         if(contextNode == null)
             {return null;}
-        final NodeProxy p = new NodeProxy(doc, nodeId);
+        final NodeProxy p = new NodeProxy(contextNode.getExpression(), doc, nodeId);
         if (Expression.NO_CONTEXT_ID != contextId) {
             p.deepCopyContext(contextNode, contextId);
         } else

@@ -104,7 +104,7 @@ public class DecodeExiFunction extends BasicFunction {
 				if (args.length > 1) {
 					if (!args[1].isEmpty()) {
 						Item xsdItem = args[1].itemAt(0);
-						try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context)) {
+						try (InputStream xsdInputStream = EXIUtils.getInputStream(xsdItem, context, this)) {
 							GrammarFactory grammarFactory = GrammarFactory.newInstance();
 							Grammars grammar = grammarFactory.createGrammars(xsdInputStream);
 							exiFactory.setGrammars(grammar);
@@ -113,7 +113,7 @@ public class DecodeExiFunction extends BasicFunction {
 					}
 				}
 				SAXDecoder decoder = new SAXDecoder(exiFactory);
-				SAXAdapter adapter = new AppendingSAXAdapter(builder);
+				SAXAdapter adapter = new AppendingSAXAdapter(this, builder);
 				decoder.setContentHandler(adapter);
 
 				try (InputStream inputStream = exiBinary.getInputStream()) {

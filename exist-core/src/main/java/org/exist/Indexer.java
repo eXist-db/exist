@@ -49,6 +49,7 @@ import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -136,7 +137,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     private int nodeFactoryInstanceCnt = 0;
 
     // reusable fields
-    private final TextImpl text = new TextImpl();
+    private final TextImpl text = new TextImpl((Expression) null);
     private final Deque<ElementImpl> usedElements = new ArrayDeque<>();
 
     // when storing the document data, validation will be switched off, so
@@ -255,7 +256,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         if (insideDTD) {
             return;
         }
-        final CommentImpl comment = new CommentImpl(ch, start, length);
+        final CommentImpl comment = new CommentImpl(null, ch, start, length);
         comment.setOwnerDocument(document);
         if (stack.isEmpty()) {
             comment.setNodeId(broker.getBrokerPool().getNodeFactory()
@@ -280,7 +281,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         if (!stack.isEmpty()) {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
-                final CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
+                final CDATASectionImpl cdata = new CDATASectionImpl((last != null) ? last.getExpression() : null, charBuf);
                 cdata.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, cdata);
                 if (!validate) {
@@ -479,7 +480,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     @Override
     public void processingInstruction(final String target, final String data) {
-        final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(target, data);
+        final ProcessingInstructionImpl pi = new ProcessingInstructionImpl((Expression) null, target, data);
         pi.setOwnerDocument(document);
         if (stack.isEmpty()) {
             pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
@@ -515,7 +516,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     @Override
     public void startDTD(final String name, final String publicId, final String systemId) {
-        final DocumentTypeImpl docType = new DocumentTypeImpl(name, publicId, systemId);
+        final DocumentTypeImpl docType = new DocumentTypeImpl(null, name, publicId, systemId);
         document.setDocumentType(docType);
         insideDTD = true;
     }
@@ -577,7 +578,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
                     node = usedElements.pop();
                     node.setNodeName(qn, broker.getBrokerPool().getSymbols());
                 } else {
-                    node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
+                    node = new ElementImpl((last != null) ? last.getExpression() : null, qn, broker.getBrokerPool().getSymbols());
                 }
             } catch (final DOMException e) {
                 throw new SAXException(e.getMessage(), e);
@@ -605,7 +606,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             }
         } else {
             try {
-                node = new ElementImpl(qn, broker.getBrokerPool().getSymbols());
+                node = new ElementImpl(null, qn, broker.getBrokerPool().getSymbols());
             } catch (final DOMException e) {
                 throw new SAXException(e.getMessage(), e);
             }

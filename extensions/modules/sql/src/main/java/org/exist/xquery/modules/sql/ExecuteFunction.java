@@ -186,7 +186,7 @@ public class ExecuteFunction extends BasicFunction {
             }
 
             // return the XML result set
-            return resultAsElement(makeNodeFromColumnName, executeResult, stmt);
+            return resultAsElement(makeNodeFromColumnName, executeResult, stmt, this);
 
         } catch (final SQLException sqle) {
             LOG.error("sql:execute() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
@@ -265,7 +265,7 @@ public class ExecuteFunction extends BasicFunction {
     }
 
     private ElementImpl resultAsElement(final boolean makeNodeFromColumnName,
-            final boolean executeResult, final Statement stmt) throws SQLException, XPathException {
+            final boolean executeResult, final Statement stmt, final Expression expression) throws SQLException, XPathException {
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
@@ -355,7 +355,7 @@ public class ExecuteFunction extends BasicFunction {
                                                 try {
                                                     reader = parserPool.borrowXMLReader();
 
-                                                    final SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                                    final SAXAdapter adapter = new AppendingSAXAdapter(expression, builder);
                                                     reader.setContentHandler(adapter);
                                                     reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                                                     reader.parse(src);

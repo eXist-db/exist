@@ -113,7 +113,7 @@ public class FunEquals extends CollatingFunction {
             // Make sure we have a collator!
             if (collator == null) {
                 //TODO : raise exception ? -pb
-                collator = Collations.getCollationFromURI("?strength=identical");
+                collator = Collations.getCollationFromURI("?strength=identical", contextItem != null ? contextItem.getExpression() : null);
             }
             if (Collations.equals(collator, s1, s2)) {
                 result = BooleanValue.TRUE;

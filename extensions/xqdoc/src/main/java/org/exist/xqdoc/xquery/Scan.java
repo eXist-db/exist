@@ -166,7 +166,7 @@ public class Scan extends BasicFunction {
         try {
             XQDocHelper helper = new XQDocHelper();
             String xml = helper.scan(source, name);
-            NodeValue root = ModuleUtils.stringToXML(context, xml);
+            NodeValue root = ModuleUtils.stringToXML(context, xml, this);
             if (root == null)
                 return Sequence.EMPTY_SEQUENCE;
             return normalize((NodeValue) ((Document) root).getDocumentElement());

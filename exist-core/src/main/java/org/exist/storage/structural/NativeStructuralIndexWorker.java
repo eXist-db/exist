@@ -237,7 +237,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                     final byte[] key = computeKey(type, qname, doc.getDocId(), parentId);
                     final long address = index.btree.findValue(new Value(key));
                     if (address != -1) {
-                        final NodeProxy storedNode = new NodeProxy(doc, parentId,
+                        final NodeProxy storedNode = new NodeProxy(null, doc, parentId,
                             type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, address);
                         result.add(storedNode);
                         if (Expression.NO_CONTEXT_ID != contextId) {
@@ -329,7 +329,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             final DocumentImpl doc = docs.getDoc(readDocId(key));
             if (doc != null) {
                 if (selector == null) {
-                    final NodeProxy storedNode = new NodeProxy(doc, nodeId,
+                    final NodeProxy storedNode = new NodeProxy(null, doc, nodeId,
                         type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
                     if (qname != null) {
                         storedNode.setQName(qname);
@@ -399,7 +399,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
             }
             if (match) {
                 final NodeProxy storedNode =
-                    new NodeProxy(doc, nodeId, type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
+                    new NodeProxy(null, doc, nodeId, type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, pointer);
                 if (qname != null) {
                     storedNode.setQName(qname);
                 }
@@ -790,7 +790,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (element.getIndexType() != RangeIndexSpec.NO_INDEX)
                     {indexType = (short) element.getIndexType();}
-                final NodeProxy proxy = new NodeProxy(document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
+                final NodeProxy proxy = new NodeProxy(element != null ? element.getExpression() : null, document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
                 proxy.setIndexType(indexType);
                 addNode(element.getQName(), proxy);
             }
@@ -807,7 +807,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (attrib.getIndexType() != RangeIndexSpec.NO_INDEX)
                     {indexType = (short) attrib.getIndexType();}
-                final NodeProxy proxy = new NodeProxy(document, attrib.getNodeId(), Node.ATTRIBUTE_NODE,
+                final NodeProxy proxy = new NodeProxy(null, document, attrib.getNodeId(), Node.ATTRIBUTE_NODE,
                     attrib.getInternalAddress());
                 proxy.setIndexType(indexType);
                 addNode(attrib.getQName(), proxy);

@@ -182,7 +182,7 @@ public class ExecuteFunctionTest {
 
         // execute function
 
-        MemTreeBuilder paramBuilder = new MemTreeBuilder(context);
+        MemTreeBuilder paramBuilder = new MemTreeBuilder(null, context);
 
         paramBuilder.startDocument();
 
@@ -250,7 +250,7 @@ public class ExecuteFunctionTest {
 
         // execute function
 
-        MemTreeBuilder paramBuilder = new MemTreeBuilder(context);
+        MemTreeBuilder paramBuilder = new MemTreeBuilder(null, context);
 
         paramBuilder.startDocument();
 
@@ -351,7 +351,7 @@ public class ExecuteFunctionTest {
 
         // execute function
 
-        MemTreeBuilder paramBuilder = new MemTreeBuilder(context);
+        MemTreeBuilder paramBuilder = new MemTreeBuilder(null, context);
 
         paramBuilder.startDocument();
 

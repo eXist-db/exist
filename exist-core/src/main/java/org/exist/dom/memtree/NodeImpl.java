@@ -54,10 +54,20 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     protected int nodeNumber;
     protected DocumentImpl document;
+    private final Expression expression;
 
     public NodeImpl(final DocumentImpl doc, final int nodeNumber) {
+        this(null, doc, nodeNumber);
+    }
+
+    public NodeImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        this.expression = expression;
         this.document = doc;
         this.nodeNumber = nodeNumber;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     public int getNodeNumber() {
@@ -335,7 +345,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public boolean after(final NodeValue other, final boolean isFollowing) throws XPathException {
         if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
-            throw new XPathException("cannot compare persistent node with in-memory node");
+            throw new XPathException(getExpression(), "cannot compare persistent node with in-memory node");
         }
         return nodeNumber > ((NodeImpl) other).nodeNumber;
     }
@@ -343,7 +353,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public boolean before(final NodeValue other, final boolean isPreceding) throws XPathException {
         if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
-            throw new XPathException("cannot compare persistent node with in-memory node");
+            throw new XPathException(getExpression(), "cannot compare persistent node with in-memory node");
         }
         return nodeNumber < ((NodeImpl)other).nodeNumber;
     }

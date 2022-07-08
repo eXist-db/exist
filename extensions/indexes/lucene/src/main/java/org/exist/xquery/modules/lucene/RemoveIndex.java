@@ -66,7 +66,7 @@ public class RemoveIndex extends BasicFunction {
         try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), LockMode.READ_LOCK)) {
             // Verify the document actually exists
             if (lockedDoc == null) {
-                throw new XPathException("Document " + path + " does not exist.");
+                throw new XPathException((Expression) null, "Document " + path + " does not exist.");
             }
 
             // Retrieve Lucene
@@ -79,7 +79,7 @@ public class RemoveIndex extends BasicFunction {
             index.flush();
 
         } catch (Exception ex) { // PermissionDeniedException
-            throw new XPathException(ex);
+            throw new XPathException((Expression) null, ex);
         }
 
         // Return nothing [status would be nice]

@@ -311,7 +311,7 @@ public class RESTServer {
                 namespaces = nsExtractor.getNamespaces();
             }
         } catch (final SAXException e) {
-            final XPathException x = new XPathException(e.toString());
+            final XPathException x = new XPathException(variables != null ? variables.getExpression() : null, e.toString());
             writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), query, path, x);
         }
 
@@ -421,9 +421,9 @@ public class RESTServer {
                             return;
                         } catch (final LockException le) {
                             if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
                             } else {
-                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException(le.getMessage(), le));
+                                writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, new XPathException((Expression) null, le.getMessage(), le));
                             }
                         }
 
@@ -952,7 +952,7 @@ public class RESTServer {
         XMLReader reader = null;
         try {
             reader = parserPool.borrowXMLReader();
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             nsExtractor.setContentHandler(adapter);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             nsExtractor.setParent(reader);
@@ -1483,7 +1483,7 @@ public class RESTServer {
             try {
                 sequence = value == null ? Sequence.EMPTY_SEQUENCE : Marshaller.demarshall(value);
             } catch (final XMLStreamException xe) {
-                throw new XPathException(xe.toString());
+                throw new XPathException((Expression) null, xe.toString());
             }
 
             // now declare variable

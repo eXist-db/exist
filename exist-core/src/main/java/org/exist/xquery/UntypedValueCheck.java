@@ -40,11 +40,19 @@ public class UntypedValueCheck extends AbstractExpression {
 	private final Error error;
     private final boolean atomize;
     
-    public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression) {
+    public UntypedValueCheck(XQueryContext context, int requiredType) {
+        this(context, requiredType, (Expression) null);
+    }
+    
+    public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression) {
         this(context, requiredType, expression, new Error(Error.TYPE_MISMATCH));
     }
     
-	public UntypedValueCheck(XQueryContext context, int requiredType, Expression expression, Error error) {
+	public UntypedValueCheck(XQueryContext context, int requiredType, Error error) {
+        this(context, requiredType, null, error);
+    }
+    
+	public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression, Error error) {
 		super(context);
 		this.requiredType = requiredType;
         if (expression instanceof Atomize && requiredType != Type.ATOMIC) {

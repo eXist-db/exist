@@ -202,7 +202,7 @@ public class ZipEntryFunctions extends BasicFunction {
 
     private org.exist.dom.memtree.DocumentImpl extractHtmlEntry(final ZipInputStream zis) throws XPathException {
         try {
-            return ModuleUtils.htmlToXHtml(context, new StreamSource(zis), null, null);
+            return ModuleUtils.htmlToXHtml(context, new StreamSource(zis), null, null, this);
         } catch (final SAXException | IOException saxe) {
             throw new XPathException(this, saxe.getMessage(), saxe);
         }
@@ -210,7 +210,7 @@ public class ZipEntryFunctions extends BasicFunction {
 
     private NodeValue extractXmlEntry(final ZipInputStream zis) throws XPathException {
         try {
-            return ModuleUtils.streamToXML(context, zis);
+            return ModuleUtils.streamToXML(context, zis, this);
         } catch (final SAXException | IOException saxe) {
             throw new XPathException(this, saxe.getMessage(), saxe);
         }

@@ -331,7 +331,6 @@ function et:issue3473c() {
  :)
 declare
     %test:assertTrue
-    %test:pending("location info still missing")
 function et:subexpression-in-enclosed-expression-evaluates-to-map() {
     try {
         element test { 1, map {} }
@@ -346,10 +345,71 @@ function et:subexpression-in-enclosed-expression-evaluates-to-map() {
 
 declare
     %test:assertTrue
-    %test:pending("location info still missing")
-function et:enclosed-expression-evaluates-to-map() {
+function et:element-enclosed-of-map-function() {
     try {
         element test { ( "a", map {} )[2] }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:element-enclosed-of-array-function-partial() {
+    try {
+        element test { ['a'](?) }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %private
+function et:f1($p1) {
+    <inner>{$p1}</inner>
+};
+
+declare
+    %test:assertTrue
+function et:element-enclosed-of-function-reference() {
+    try {
+        element test { "a", et:f1#1 }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:element-enclosed-of-partial-function-application() {
+    try {
+        element test { "a", et:f1(?) }
+    }
+    catch err:XQTY0105 {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:element-enclosed-of-inline-function() {
+    try {
+        element test { "a", function() { <inner/> } }
     }
     catch err:XQTY0105 {
         exists($err:line-number) and
@@ -383,4 +443,116 @@ function et:element-type-error-reporting() {
             fn:ends-with($err:description, "Invalid type for variable $test. Expected element(b)?, got element(a)")
     }
 
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-document-constructor() {
+    try {
+        document { fn:error(xs:QName("et:test")) }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-document-element-constructor() {
+    try {
+        document { element eq { fn:error(xs:QName("et:test")) } }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-element-constructor() {
+    try {
+        element e1 { fn:error(xs:QName("et:test")) }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-element-element-constructor() {
+    try {
+        element e1 { element e2 { fn:error(xs:QName("et:test")) } }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-element-attribute-constructor() {
+    try {
+        element e1 { attribute a1 { fn:error(xs:QName("et:test")) } }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-element-comment-constructor() {
+    try {
+        element e1 { comment { fn:error(xs:QName("et:test")) } }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-element-pi-constructor() {
+    try {
+        element e1 { processing-instruction p1 { fn:error(xs:QName("et:test")) } }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
+};
+
+declare
+    %test:assertTrue
+function et:expression-inside-text-constructor() {
+    try {
+        text { fn:error(xs:QName("et:test")) }
+    }
+    catch * {
+        exists($err:line-number) and
+        $err:line-number > 0 and
+        exists($err:column-number) and
+        $err:column-number > 0
+    }
 };

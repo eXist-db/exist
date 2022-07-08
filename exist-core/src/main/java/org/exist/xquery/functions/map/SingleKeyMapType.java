@@ -48,6 +48,10 @@ public class SingleKeyMapType extends AbstractMapType {
     private Sequence value;
     private @Nullable Collator collator;
 
+    public SingleKeyMapType(final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
+        this(null, context, collator, key, value);
+    }
+
     public SingleKeyMapType(final Expression expression, final XQueryContext context, final @Nullable Collator collator, final AtomicValue key, final Sequence value) {
         super(expression, context);
         this.key = key;

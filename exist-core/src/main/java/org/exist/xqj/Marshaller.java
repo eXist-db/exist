@@ -192,9 +192,9 @@ public class Marshaller {
                             final int type = Type.getType(typeName);
                             Item item;
                             if (Type.subTypeOf(type, Type.NODE))
-                                {item = streamToDOM(type, parser);}
+                                {item = streamToDOM(type, parser, null);}
                             else
-                                {item = new StringValue(parser.getElementText()).convertTo(type);}
+                                {item = new StringValue(null, parser.getElementText()).convertTo(type);}
                             result.add(item);
                         }
                     }
@@ -228,13 +228,13 @@ public class Marshaller {
                     item = (Item) child.getFirstChild();
                     if (type == Type.DOCUMENT) {
                         final DocumentImpl n = (DocumentImpl) item;
-                        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver();
+                        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(n.getExpression());
                         try {
                             receiver.startDocument();
                             n.copyTo(n, receiver);
                             receiver.endDocument();
                         } catch (final SAXException e) {
-                            throw new XPathException("Error while demarshalling node: " + e.getMessage(), e);
+                            throw new XPathException(item != null ? item.getExpression() : null, "Error while demarshalling node: " + e.getMessage(), e);
                         }
                         item = (Item) receiver.getDocument();
                     }
@@ -259,9 +259,9 @@ public class Marshaller {
     public static Item streamToDOM(XMLStreamReader parser, XQItemType type) throws XMLStreamException, XQException {
         if (type.getBaseType() == XQItemType.XQITEMKIND_DOCUMENT_ELEMENT ||
                 type.getBaseType() == XQItemType.XQITEMKIND_DOCUMENT_SCHEMA_ELEMENT)
-            {return streamToDOM(Type.DOCUMENT, parser);}
+            {return streamToDOM(Type.DOCUMENT, parser, null);}
         else
-            {return streamToDOM(Type.ELEMENT, parser);}
+            {return streamToDOM(Type.ELEMENT, parser, null);}
     }
 
     /**
@@ -274,7 +274,21 @@ public class Marshaller {
      * @throws XMLStreamException if an error occurs during streaming.
      */
     public static Item streamToDOM(int rootType, XMLStreamReader parser) throws XMLStreamException {
-        final MemTreeBuilder builder = new MemTreeBuilder();
+        return streamToDOM(rootType, parser, null);
+    }
+
+    /**
+     * Creates an Item from a streamed representation.
+     *
+     * @param rootType the type of the root node
+     * @param parser Parser to read xml elements from
+     * @param expression the expression from which the item derives
+     * @return item the item
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
+     */
+    public static Item streamToDOM(int rootType, XMLStreamReader parser, final Expression expression) throws XMLStreamException {
+        final MemTreeBuilder builder = new MemTreeBuilder(expression);
         builder.startDocument();
         int event;
         boolean finish = false;
@@ -346,7 +360,7 @@ public class Marshaller {
      */
     public static Node streamToNode(String content) throws XMLStreamException {
     	final StringReader reader = new StringReader(content);
-    	return streamToNode(reader);
+    	return streamToNode(reader, null);
     }
     
     
@@ -360,11 +374,23 @@ public class Marshaller {
      * @throws XMLStreamException if an error occurs during streaming.
      */
     public static Node streamToNode(Reader reader) throws XMLStreamException {
+        return streamToNode(reader, null);
+    }
+   
+    /**
+     * Creates a node from a streamed representation.
+     *
+     * @param reader the reader.
+     * @return item the result item.
+     *
+     * @throws XMLStreamException if an error occurs during streaming.
+     */
+    public static Node streamToNode(Reader reader, final Expression expression) throws XMLStreamException {
     	final XMLInputFactory factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.TRUE);
         factory.setProperty(XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
         final XMLStreamReader parser = factory.createXMLStreamReader(reader);
-        final MemTreeBuilder builder = new MemTreeBuilder();
+        final MemTreeBuilder builder = new MemTreeBuilder(expression);
         builder.startDocument();
         int event;
         boolean finish = false;

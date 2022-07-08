@@ -67,6 +67,10 @@ public class BinaryValueFromInputStream extends BinaryValue {
         this.is.mark(Integer.MAX_VALUE);
     }
 
+    public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
+        return getInstance(manager, binaryValueType, is, null);
+    }
+
     public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is, final Expression expression) throws XPathException {
         final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(expression, manager, binaryValueType, is);
         manager.registerBinaryValueInstance(binaryInputStream);

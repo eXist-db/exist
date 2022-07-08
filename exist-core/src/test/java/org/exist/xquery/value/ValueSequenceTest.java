@@ -74,8 +74,8 @@ public class ValueSequenceTest {
             final Collection sysCollection = broker.getCollection(SecurityManager.SECURITY_COLLECTION_URI);
             final DocumentImpl doc = sysCollection.getDocument(broker, XmldbURI.create("config.xml"));
 
-            final NodeProxy docProxy = new NodeProxy(doc);
-            final NodeProxy nodeProxy = new NodeProxy(doc, ((NodeImpl)doc.getFirstChild()).getNodeId());
+            final NodeProxy docProxy = new NodeProxy(null, doc);
+            final NodeProxy nodeProxy = new NodeProxy(null, doc, ((NodeImpl)doc.getFirstChild()).getNodeId());
 
             seq.add(memtree.getDocument());
             seq.add(docProxy);

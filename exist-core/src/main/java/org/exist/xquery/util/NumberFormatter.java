@@ -114,7 +114,7 @@ public abstract class NumberFormatter {
             if (ch != OPTIONAL_DIGIT_SIGN)
                 {return ch;}
         }
-        throw new XPathException("There should be at least one digit sign in the picture string: " + picture);
+        throw new XPathException((Expression) null, "There should be at least one digit sign in the picture string: " + picture);
     }
 
     public static int getMinDigits(String picture) {

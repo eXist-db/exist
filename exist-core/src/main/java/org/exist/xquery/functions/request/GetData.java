@@ -191,7 +191,7 @@ public class GetData extends StrictRequestFunction {
 
             reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder, true);
             reader.setContentHandler(receiver);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, receiver);
             reader.parse(src);

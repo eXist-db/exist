@@ -33,6 +33,7 @@ import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
+import org.exist.xquery.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -62,10 +63,6 @@ import org.exist.storage.serializers.CustomMatchListenerFactory;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
 import org.exist.xmldb.DatabaseImpl;
-import org.exist.xquery.FunctionFactory;
-import org.exist.xquery.PerformanceStats;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
 
 import java.io.IOException;
@@ -88,7 +85,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.Namespaces;
 import org.exist.scheduler.JobType;
-import org.exist.xquery.Module;
 import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -208,7 +204,7 @@ public class Configuration implements ErrorHandler
             reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             reader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             reader.setContentHandler(adapter);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);

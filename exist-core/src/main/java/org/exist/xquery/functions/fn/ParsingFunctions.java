@@ -86,7 +86,7 @@ public class ParsingFunctions extends BasicFunction {
 
 
     private Sequence parse(final String xmlContent, final Sequence[] args) throws XPathException {
-        final SAXAdapter adapter = new FragmentSAXAdapter(context, isCalledAs("parse-xml-fragment"));
+        final SAXAdapter adapter = new FragmentSAXAdapter(this, context, isCalledAs("parse-xml-fragment"));
 	    final ValidationReport report = validate(xmlContent, adapter);
 
         if (report.isValid()) {
@@ -144,7 +144,11 @@ public class ParsingFunctions extends BasicFunction {
         private boolean strippedFramentWrapper = false;
 
         public FragmentSAXAdapter(final XQueryContext context, final boolean hasFragmentWrapper) {
-            super(context);
+            this(null, context, hasFragmentWrapper);
+        }
+
+        public FragmentSAXAdapter(final Expression expression, final XQueryContext context, final boolean hasFragmentWrapper) {
+            super(expression, context);
             this.hasFragmentWrapper = hasFragmentWrapper;
         }
 

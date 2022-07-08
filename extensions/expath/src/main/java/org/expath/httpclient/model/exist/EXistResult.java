@@ -114,7 +114,7 @@ public class EXistResult implements Result {
     @Override
     public void add(final Source src) throws HttpClientException {
         try {
-            final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
+            final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src, null);
             result.add(nodeValue);
         } catch(final SAXException | IOException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);

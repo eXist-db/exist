@@ -502,7 +502,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
         for (int i = 0; i < partCount; i++) {
             final DocumentImpl doc = parts[i].getOwnerDocument();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
-                result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+                result.add(new NodeProxy(null, doc, NodeId.DOCUMENT_NODE));
             }
         }
         return result;
@@ -835,7 +835,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
             while(mid > 0 && array[mid - 1].getNodeId().compareTo(ancestorId) >= 0) {
                 --mid;
             }
-            final NodeProxy ancestor = new NodeProxy(getOwnerDocument(), ancestorId, Node.ELEMENT_NODE);
+            final NodeProxy ancestor = new NodeProxy(null, getOwnerDocument(), ancestorId, Node.ELEMENT_NODE);
             // we need to check if self should be included
             boolean foundOne = false;
             for(int i = mid; i < length; i++) {

@@ -67,7 +67,7 @@ public class GetRequestAttribute extends StrictRequestFunction {
 		if (isCalledAs("get-attribute")) {
 			final String name = args[0].getStringValue();
 			final Object attrib = request.getAttribute(name);
-			return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context);
+			return attrib == null ? Sequence.EMPTY_SEQUENCE : XPathUtil.javaObjectToXPath(attrib, context, this);
 		} else {
 			final Enumeration<String> attributeNames = request.getAttributeNames();
 			if (!attributeNames.hasMoreElements()) {

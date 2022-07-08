@@ -63,6 +63,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      *
      * @return the expression from which this value derives, or null
      */
+    @Override
     public Expression getExpression() { return expression; }
 
     protected AtomicValue() { this(null); }

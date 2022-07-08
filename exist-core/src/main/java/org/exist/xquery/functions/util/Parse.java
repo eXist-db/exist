@@ -81,7 +81,7 @@ public class Parse extends BasicFunction {
         }
         final StringReader reader = new StringReader(xmlContent);
         final ValidationReport report = new ValidationReport();
-        final SAXAdapter adapter = new SAXAdapter(context);
+        final SAXAdapter adapter = new SAXAdapter(this, context);
         XMLReader xr = null;
         try {
             final InputSource src = new InputSource(reader);

@@ -97,7 +97,9 @@ public class DynamicFunctionCall extends AbstractExpression {
         	} catch (final XPathException e) {
 				e.setLocation(line, column, getSource());
 				throw e;
-        	}
+        	} catch (final Exception e) {
+                throw new XPathException(this, e);
+            }
         } else {
 	        ref.setArguments(arguments);
             // need to create a new AnalyzeContextInfo to avoid memory leak

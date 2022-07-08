@@ -38,7 +38,11 @@ public class SimpleStep extends Step {
 
 	private final Expression expression;
 
-	public SimpleStep(XQueryContext context, int axis, Expression expression) {
+	public SimpleStep(XQueryContext context, int axis) {
+        this(context, axis, null);
+    }
+
+	public SimpleStep(XQueryContext context, int axis, final Expression expression) {
 		super(context, axis);
 		this.expression = expression;
 		this.expression.setPrimaryAxis(axis);

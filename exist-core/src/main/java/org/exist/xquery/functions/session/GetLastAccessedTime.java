@@ -60,7 +60,7 @@ public class GetLastAccessedTime extends SessionFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
-            return XPathUtil.javaObjectToXPath(-1, context);
+            return XPathUtil.javaObjectToXPath(-1, context, this);
         }
 
         final Date lastAccessedTime = withValidSession(session.get(), SessionWrapper::getLastAccessedTime).map(Date::new)

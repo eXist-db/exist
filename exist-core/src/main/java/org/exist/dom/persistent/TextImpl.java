@@ -28,6 +28,7 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.pool.NodePool;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -41,15 +42,27 @@ import org.w3c.dom.UserDataHandler;
 public class TextImpl extends AbstractCharacterData implements Text {
 
     public TextImpl() {
-        super(Node.TEXT_NODE);
+        this((Expression) null);
+    }
+
+    public TextImpl(final Expression expression) {
+        super(expression, Node.TEXT_NODE);
     }
 
     public TextImpl(final String data) {
-        super(Node.TEXT_NODE, data);
+        this((Expression) null, data);
+    }
+
+    public TextImpl(final Expression expression, final String data) {
+        super(expression, Node.TEXT_NODE, data);
     }
 
     public TextImpl(final NodeId nodeId, final String data) {
-        super(Node.TEXT_NODE, nodeId, data);
+        this(null, nodeId, data);
+    }
+
+    public TextImpl(final Expression expression, final NodeId nodeId, final String data) {
+        super(expression, Node.TEXT_NODE, nodeId, data);
     }
 
     /**
@@ -91,7 +104,7 @@ public class TextImpl extends AbstractCharacterData implements Text {
         if(pooled) {
             text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
         } else {
-            text = new TextImpl();
+            text = new TextImpl((doc != null) ? doc.getExpression() : null);
         }
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;

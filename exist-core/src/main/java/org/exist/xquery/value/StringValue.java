@@ -196,6 +196,10 @@ public class StringValue extends AtomicValue {
         return in.substring(first, last + 1);
     }
 
+    public final static String expand(CharSequence seq) throws XPathException {
+        return expand(seq, null);
+    }
+
     public final static String expand(CharSequence seq, final Expression expression) throws XPathException {
         if (seq == null) {
             return "";
@@ -316,6 +320,18 @@ public class StringValue extends AtomicValue {
      * @return an <code>int</code> value
      * @throws XPathException if an error occurs
      */
+    private final static int expandEntity(String buf) throws XPathException {
+        return expandEntity(buf, null);
+    }
+
+    /**
+     * The method <code>expandEntity</code>
+     *
+     * @param buf a <code>String</code> value
+     * @param expression the expression from which the value derives
+     * @return an <code>int</code> value
+     * @throws XPathException if an error occurs
+     */
     private final static int expandEntity(String buf, final Expression expression) throws XPathException {
         if ("amp".equals(buf)) {
             return '&';
@@ -338,6 +354,18 @@ public class StringValue extends AtomicValue {
      * The method <code>expandCharRef</code>
      *
      * @param buf a <code>String</code> value
+     * @return an <code>int</code> value
+     * @throws XPathException if an error occurs
+     */
+    private final static int expandCharRef(String buf) throws XPathException {
+        return expandCharRef(buf, null);
+    }
+
+    /**
+     * The method <code>expandCharRef</code>
+     *
+     * @param buf a <code>String</code> value
+     * @param expression the expression from which the value derives
      * @return an <code>int</code> value
      * @throws XPathException if an error occurs
      */

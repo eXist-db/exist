@@ -43,6 +43,10 @@ public class StringConstructor extends AbstractExpression {
         content.add(new StringConstructorContent(str));
     }
 
+    public void addInterpolation() {
+        addInterpolation(null);
+    }
+
     public void addInterpolation(final Expression expression) {
         content.add(new StringConstructorInterpolation(expression));
     }
@@ -137,6 +141,10 @@ public class StringConstructor extends AbstractExpression {
     private static class StringConstructorInterpolation implements StringConstructorPart {
 
         private final Expression expression;
+
+        StringConstructorInterpolation() {
+            this(null);
+        }
 
         StringConstructorInterpolation(final Expression expression) {
             this.expression = expression;

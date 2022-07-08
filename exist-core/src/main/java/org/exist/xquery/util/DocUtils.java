@@ -70,13 +70,21 @@ public class DocUtils {
     private static final Pattern PTN_PROTOCOL_PREFIX = Pattern.compile("^[a-z]+:.*");
 
     public static Sequence getDocument(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        return getDocumentByPath(context, path);
+        return getDocument(context, path, null);
+    }
+
+    public static Sequence getDocument(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
+        return getDocumentByPath(context, path, expression);
+    }
+
+    public static boolean isDocumentAvailable(final XQueryContext context, final String path) throws XPathException {
+        return isDocumentAvailable(context, path, null);
     }
 
     //TODO(AR) could make this much more efficient... it doesn't need to actually retrieve the document!
-    public static boolean isDocumentAvailable(final XQueryContext context, final String path) throws XPathException {
+    public static boolean isDocumentAvailable(final XQueryContext context, final String path, final Expression expression) throws XPathException {
         try {
-            final Sequence seq = getDocumentByPath(context, path);
+            final Sequence seq = getDocumentByPath(context, path, expression);
             return (seq != null && seq.effectiveBooleanValue());
         } catch (final PermissionDeniedException e) {
             return false;
@@ -85,14 +93,18 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        Sequence doc = getFromDynamicallyAvailableDocuments(context, path);
+        return getDocumentByPath(context, path, null);
+    }
+
+    private static Sequence getDocumentByPath(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
+        Sequence doc = getFromDynamicallyAvailableDocuments(context, path, expression);
         if (doc == null) {
             if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
                 /* URL */
-                doc = getDocumentByPathFromURL(context, path);
+                doc = getDocumentByPathFromURL(context, path, expression);
             } else {
                 /* Database documents */
-                doc = getDocumentByPathFromDB(context, path);
+                doc = getDocumentByPathFromDB(context, path, expression);
             }
         }
 
@@ -100,6 +112,10 @@ public class DocUtils {
     }
 
     private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path) throws XPathException {
+        return getFromDynamicallyAvailableDocuments(context, path, null);
+    }
+
+    private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path, @Nullable final Expression expression) throws XPathException {
         try {
             URI uri = new URI(path);
             if (!uri.isAbsolute()) {
@@ -114,11 +130,15 @@ public class DocUtils {
             }
             return context.getDynamicallyAvailableDocument(uri.toString());
         } catch (final URISyntaxException e) {
-            throw new XPathException(context.getRootExpression(), ErrorCodes.FODC0005, e);
+            throw new XPathException(expression, ErrorCodes.FODC0005, e);
         }
     }
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
+        return getDocumentByPathFromURL(context, path, null);
+    }
+
+    private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
         try {
             final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
             if (source == null) {
@@ -139,21 +159,26 @@ public class DocUtils {
                 final org.exist.dom.memtree.DocumentImpl memtreeDoc = parse(
                         context.getBroker().getBrokerPool(),
                         context,
-                        is);
+                        is,
+                        expression);
                 memtreeDoc.setDocumentURI(path);
                 return memtreeDoc;
             }
         } catch (final ConnectException e) {
             // prevent long stack traces
-            throw new XPathException(e.getMessage() + " (" + path + ")");
+            throw new XPathException(expression, e.getMessage() + " (" + path + ")");
         } catch (final MalformedURLException e) {
-            throw new XPathException(e.getMessage(), e);
+            throw new XPathException(expression, e.getMessage(), e);
         } catch (final IOException e) {
-            throw new XPathException("An error occurred while parsing " + path + ": " + e.getMessage(), e);
+            throw new XPathException(expression, "An error occurred while parsing " + path + ": " + e.getMessage(), e);
         }
     }
 
     private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
+        return getDocumentByPathFromDB(context, path, null);
+    }
+
+    private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
         // check if the loaded documents should remain locked
         final LockMode lockType = context.lockDocumentsOnLoad() ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
         try {
@@ -184,14 +209,14 @@ public class DocUtils {
                     }
 
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                        throw new XPathException("Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
+                        throw new XPathException(expression, "Document " + path + " is a binary resource, not an XML document. Please consider using the function util:binary-doc() to retrieve a reference to it.");
                     }
 
-                    return new NodeProxy(doc);
+                    return new NodeProxy(expression, doc);
                 }
             }
         } catch (final URISyntaxException e) {
-            throw new XPathException(e);
+            throw new XPathException(expression, e);
         }
     }
 
@@ -204,7 +229,20 @@ public class DocUtils {
      * @throws XPathException in case of dynamic error
      */
     public static org.exist.dom.memtree.DocumentImpl parse(final XQueryContext context, final InputStream is) throws XPathException {
-        return parse(context.getBroker().getBrokerPool(), context, is);
+        return parse(context, is, null);
+    }
+
+    /**
+     * Utility function to parse an input stream into an in-memory DOM document.
+     *
+     * @param context    The XQuery context
+     * @param is         The input stream to parse from
+     * @param expression The expression of the input stream
+     * @return document  The document that was parsed
+     * @throws XPathException in case of dynamic error
+     */
+    public static org.exist.dom.memtree.DocumentImpl parse(final XQueryContext context, final InputStream is, final Expression expression) throws XPathException {
+        return parse(context.getBroker().getBrokerPool(), context, is, expression);
     }
 
     /**
@@ -218,21 +256,36 @@ public class DocUtils {
      */
     public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context,
             final InputStream is) throws XPathException {
+        return parse(pool, context, is, null);
+    }
+
+    /**
+     * Utility function to parse an input stream into an in-memory DOM document.
+     *
+     * @param pool       The broker pool
+     * @param context    The XQuery context
+     * @param is         The input stream to parse from
+     * @param expression The expression of the input stream
+     * @return document The document that was parsed
+     * @throws XPathException in case of dynamic error
+     */
+    public static org.exist.dom.memtree.DocumentImpl parse(final BrokerPool pool, final XQueryContext context,
+            final InputStream is, final Expression expression) throws XPathException {
         // we use eXist's in-memory DOM implementation
         final XMLReaderPool parserPool = pool.getParserPool();
         XMLReader reader = null;
         try {
             reader = pool.getParserPool().borrowXMLReader();
             final InputSource src = new InputSource(is);
-            final SAXAdapter adapter = new SAXAdapter(context);
+            final SAXAdapter adapter = new SAXAdapter(expression, context);
             reader.setContentHandler(adapter);
             try {
                 reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(src);
             } catch (final SAXNotRecognizedException | SAXNotSupportedException e) {
-                throw new XPathException("Error creating XML parser: " + e.getMessage(), e);
+                throw new XPathException(expression, "Error creating XML parser: " + e.getMessage(), e);
             } catch (final IOException | SAXException e) {
-                throw new XPathException("Error while parsing XML: " + e.getMessage(), e);
+                throw new XPathException(expression, "Error while parsing XML: " + e.getMessage(), e);
             }
 
             return adapter.getDocument();

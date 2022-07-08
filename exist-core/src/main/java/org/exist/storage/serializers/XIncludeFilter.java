@@ -509,7 +509,7 @@ public class XIncludeFilter implements Receiver {
                 final InputSource src = new InputSource(is);
 
                 reader = parserPool.borrowXMLReader();
-                final SAXAdapter adapter = new SAXAdapter();
+                final SAXAdapter adapter = new SAXAdapter((Expression) null);
                 reader.setContentHandler(adapter);
                 reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                 reader.parse(src);
@@ -544,13 +544,13 @@ public class XIncludeFilter implements Receiver {
             }
             final int p1 = xpointer.indexOf(')', p0 + 6);
             if (p1 < 0) {
-                throw new XPathException("expected ) for xmlns()");
+                throw new XPathException((Expression) null, "expected ) for xmlns()");
             }
             final String mapping = xpointer.substring(p0 + 6, p1);
             xpointer = xpointer.substring(0, p0) + xpointer.substring(p1 + 1);
             final StringTokenizer tok = new StringTokenizer(mapping, "= \t\n");
             if (tok.countTokens() < 2) {
-                throw new XPathException("expected prefix=namespace mapping in " + mapping);
+                throw new XPathException((Expression) null, "expected prefix=namespace mapping in " + mapping);
             }
             final String prefix = tok.nextToken();
             final String namespaceURI = tok.nextToken();

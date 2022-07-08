@@ -272,7 +272,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
             reader = getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = new MemTreeBuilder();
             builder.startDocument();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(null, builder, true);
             reader.setContentHandler(receiver);
             reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
             reader.parse(src);

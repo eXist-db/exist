@@ -76,6 +76,17 @@ public class FunStringToCodepoints extends BasicFunction {
      * @param s a <code>String</code> value
      * @return a <code>ValueSequence</code> value
      */
+    public static ValueSequence getCodePoints(final String s) {
+        return getCodePoints(null, s);
+	}
+
+    /**
+     * The method <code>getCodePoints</code>
+     *
+     * @param expression the expression from which the code points derive
+     * @param s a <code>String</code> value
+     * @return a <code>ValueSequence</code> value
+     */
     public static ValueSequence getCodePoints(final Expression expression, final String s) {
         final ValueSequence codepoints = new ValueSequence();
         char ch;

@@ -44,7 +44,7 @@ public class NameTest extends TypeTest {
         super(type);
 
         if(name.isValid(true) != QName.Validity.VALID.val) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getStringValue());
+            throw new XPathException((Expression) null, ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getStringValue());
         }
 
         nodeName = name;

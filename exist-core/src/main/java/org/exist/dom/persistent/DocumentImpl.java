@@ -162,7 +162,19 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param pool a <code>BrokerPool</code> instance representing the db
      */
     DocumentImpl(final BrokerPool pool, final int docId) {
-        this(pool, null, docId, null);
+        this(null, pool, docId);
+    }
+
+    /**
+     * Creates a new <code>DocumentImpl</code> instance.
+     *
+     * Package private - for testing!
+     *
+     * @param expression the expression from which this document derives
+     * @param pool a <code>BrokerPool</code> instance representing the db
+     */
+    DocumentImpl(final Expression expression, final BrokerPool pool, final int docId) {
+        this(expression, pool, null, docId, null);
     }
 
     /**
@@ -175,7 +187,21 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection, final int docId, @Nullable
             final XmldbURI fileURI) {
-        this(pool, collection, docId, fileURI,
+        this(null, pool, collection, docId, fileURI);
+    }
+
+    /**
+     * Creates a new persistent Document instance.
+     *
+     * @param expression the expression from which this document derives
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     */
+    public DocumentImpl(final Expression expression, final BrokerPool pool, @Nullable final Collection collection, final int docId, @Nullable
+            final XmldbURI fileURI) {
+        this(expression, pool, collection, docId, fileURI,
                 PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null,
                 System.currentTimeMillis(), null, null, null);
     }
@@ -187,7 +213,17 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param prevDoc The previous Document object that we are overwriting
      */
     public DocumentImpl(final int docId, final DocumentImpl prevDoc) {
-        this(prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null,
+        this(null, docId, prevDoc);
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param docId the id of the document
+     * @param prevDoc The previous Document object that we are overwriting
+     */
+    public DocumentImpl(final Expression expression, final int docId, final DocumentImpl prevDoc) {
+        this(expression, prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null,
                 System.currentTimeMillis(), null, null, null);
     }
 
@@ -211,6 +247,31 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             final int children, @Nullable final long[] childAddress,
             final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
             @Nullable final DocumentType docType) {
+        this(null, pool, collection, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param expression the expression from which the document instance derives
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     * @param permissions the permissions of the document
+     * @param children the number of children that the document has
+     * @param childAddress the addresses of the child nodes
+     * @param created the created time of the document
+     * @param lastModified the last modified time of the document, or null to use the {@code created} time
+     * @param mimeType the media type of the document, or null for application/xml
+     * @param docType the document type, or null
+     */
+    public DocumentImpl(final Expression expression, final BrokerPool pool, @Nullable final Collection collection,
+            final int docId, final XmldbURI fileURI, final Permission permissions,
+            final int children, @Nullable final long[] childAddress,
+            final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
+            @Nullable final DocumentType docType) {
+        super(expression);
         this.pool = pool;
 
         // NOTE: We must not keep a reference to a LockedCollection in the Document object!
@@ -784,7 +845,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             lockToken = null;
         }
 
-        final DocumentImpl doc = new DocumentImpl(pool, null, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
+        final DocumentImpl doc = new DocumentImpl(null, pool, null, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
         doc.pageCount = pageCount;
         doc.userLock = userLock;
         doc.lockToken = lockToken;
@@ -858,7 +919,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             return null;
         }
         try(final DBBroker broker = pool.getBroker()) {
-            return broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0]));
+            return broker.objectWith(new NodeProxy(getExpression(), this, NodeId.DOCUMENT_NODE, childAddress[0]));
         } catch(final EXistException e) {
             LOG.warn("Exception while inserting node: {}", e.getMessage(), e);
             //TODO : throw exception ?
@@ -868,7 +929,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @EnsureContainerLocked(mode=READ_LOCK)
     protected NodeProxy getFirstChildProxy() {
-        return new NodeProxy(this, NodeId.ROOT_NODE, Node.ELEMENT_NODE, childAddress[0]);
+        return new NodeProxy(getExpression(), this, NodeId.ROOT_NODE, Node.ELEMENT_NODE, childAddress[0]);
     }
 
     /**
@@ -896,7 +957,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final org.exist.dom.NodeListImpl list = new org.exist.dom.NodeListImpl();
         try(final DBBroker broker = pool.getBroker()) {
             for(int i = 0; i < children; i++) {
-                final Node child = broker.objectWith(new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[i]));
+                final Node child = broker.objectWith(new NodeProxy(getExpression(), this, NodeId.DOCUMENT_NODE, childAddress[i]));
                 list.add(child);
             }
         } catch(final EXistException e) {
@@ -954,7 +1015,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             docs.add(this);
 
             final NewArrayNodeSet contextSet = new NewArrayNodeSet();
-            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+            contextSet.add(new NodeProxy(getExpression(), this, root.getNodeId(), root.getInternalAddress()));
 
             return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_AXIS,
                     new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
@@ -1077,7 +1138,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
-        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(getExpression(), qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -1114,7 +1175,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
-        final AttrImpl attr = new AttrImpl(qname, getBrokerPool().getSymbols());
+        final AttrImpl attr = new AttrImpl(getExpression(), qname, getBrokerPool().getSymbols());
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -1141,7 +1202,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "name is invalid");
         }
 
-        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(getExpression(), qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -1177,7 +1238,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             throw new DOMException(DOMException.NAMESPACE_ERR, "qualified name is invalid");
         }
 
-        final ElementImpl element = new ElementImpl(qname, getBrokerPool().getSymbols());
+        final ElementImpl element = new ElementImpl(getExpression(), qname, getBrokerPool().getSymbols());
         element.setOwnerDocument(this);
         return element;
     }
@@ -1190,7 +1251,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @Override
     public Text createTextNode(final String data) {
-        final TextImpl text = new TextImpl(data);
+        final TextImpl text = new TextImpl(getExpression(), data);
         text.setOwnerDocument(this);
         return text;
     }
@@ -1252,7 +1313,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
             final NewArrayNodeSet contextSet = new NewArrayNodeSet();
             final ElementImpl root = ((ElementImpl)getDocumentElement());
-            contextSet.add(new NodeProxy(this, root.getNodeId(), root.getInternalAddress()));
+            contextSet.add(new NodeProxy(getExpression(), this, root.getNodeId(), root.getInternalAddress()));
 
             return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_SELF_AXIS,
                     new NameTest(Type.ELEMENT, qname), false, docs, contextSet, Expression.NO_CONTEXT_ID);
@@ -1301,14 +1362,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public CDATASection createCDATASection(final String data) throws DOMException {
-        final CDATASectionImpl cdataSection = new CDATASectionImpl(new XMLString(data.toCharArray()));
+        final CDATASectionImpl cdataSection = new CDATASectionImpl(getExpression(), new XMLString(data.toCharArray()));
         cdataSection.setOwnerDocument(this);
         return cdataSection;
     }
 
     @Override
     public Comment createComment(final String data) {
-        final CommentImpl comment = new CommentImpl(data);
+        final CommentImpl comment = new CommentImpl(getExpression(), data);
         comment.setOwnerDocument(this);
         return comment;
     }
@@ -1316,14 +1377,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @Override
     public ProcessingInstruction createProcessingInstruction(final String target, final String data)
             throws DOMException {
-        final ProcessingInstructionImpl processingInstruction = new ProcessingInstructionImpl(target, data);
+        final ProcessingInstructionImpl processingInstruction = new ProcessingInstructionImpl((Expression) null, target, data);
         processingInstruction.setOwnerDocument(this);
         return processingInstruction;
     }
 
     @Override
     public DocumentFragment createDocumentFragment() throws DOMException {
-        return new DocumentFragmentImpl();
+        return new DocumentFragmentImpl(getExpression());
     }
 
     @Override

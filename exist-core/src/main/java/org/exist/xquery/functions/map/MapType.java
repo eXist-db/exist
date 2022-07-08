@@ -86,8 +86,16 @@ public class MapType extends AbstractMapType {
         return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
     }
 
+    public MapType(final XQueryContext context) {
+        this(null, context);
+    }
+
     public MapType(final Expression expression, final XQueryContext context) {
         this(expression, context,null);
+    }
+
+    public MapType(final XQueryContext context, @Nullable final Collator collator) {
+        this(null, context, collator);
     }
 
     public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator) {
@@ -96,14 +104,26 @@ public class MapType extends AbstractMapType {
         this.map = newMap(collator);
     }
 
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
+        this(null, context, collator, key, value);
+    }
+
     public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final AtomicValue key, final Sequence value) {
         super(expression, context);
         this.map = newMap(collator).put(key, value);
         this.keyType = key.getType();
     }
 
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
+        this(null, context, collator, keyValues);
+    }
+
     public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
         this(expression, context, collator, keyValues.iterator());
+    }
+
+    public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
+        this(null, context, collator, keyValues);
     }
 
     public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
@@ -115,6 +135,10 @@ public class MapType extends AbstractMapType {
         this.map = map.forked();
 
         setKeyType(map);
+    }
+
+    public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
+        this(null, context, other, keyType);
     }
 
     public MapType(final Expression expression, final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {

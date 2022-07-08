@@ -114,7 +114,7 @@ public class LoadXQueryModule extends BasicFunction {
         }
         AnyURIValue[] locationHints = null;
         String xqVersion = getXQueryVersion(context.getXQueryVersion());
-        AbstractMapType externalVars = new MapType(null, context);
+        AbstractMapType externalVars = new MapType(this, context);
         Sequence contextItem = Sequence.EMPTY_SEQUENCE;
 
         // evaluate options
@@ -191,11 +191,11 @@ public class LoadXQueryModule extends BasicFunction {
         }
 
         final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
-                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(null, context, functions.mapValues((k, v) -> (Sequence)new MapType(null, context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
-                new Maps.Entry<>(RESULT_VARIABLES, new MapType(null, context, variables.forked(), Type.QNAME))
+                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(this, context, functions.mapValues((k, v) -> (Sequence)new MapType(this, context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
+                new Maps.Entry<>(RESULT_VARIABLES, new MapType(this, context, variables.forked(), Type.QNAME))
         ));
 
-        return new MapType(null, context, result, Type.STRING);
+        return new MapType(this, context, result, Type.STRING);
     }
 
     private void getModuleVariables(final Module module, final IMap<AtomicValue, Sequence> variables) throws XPathException {

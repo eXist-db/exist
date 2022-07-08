@@ -33,6 +33,7 @@ import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.persistent.TextImpl;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Node;
 
 /**
@@ -81,17 +82,17 @@ public class NodePool {
     private NodeImpl makeObject(final short key) {
         switch (key) {
             case Node.ELEMENT_NODE:
-                return new ElementImpl();
+                return new ElementImpl((Expression) null);
             case Node.TEXT_NODE:
-                return new TextImpl();
+                return new TextImpl((Expression) null);
             case Node.ATTRIBUTE_NODE:
-                return new AttrImpl();
+                return new AttrImpl((Expression) null);
             case Node.CDATA_SECTION_NODE:
-                return new CDATASectionImpl();
+                return new CDATASectionImpl((Expression) null);
             case Node.PROCESSING_INSTRUCTION_NODE:
-                return new ProcessingInstructionImpl();
+                return new ProcessingInstructionImpl(null);
             case Node.COMMENT_NODE:
-                return new CommentImpl();
+                return new CommentImpl((Expression) null);
         }
         throw new IllegalStateException("Unable to create object of type " + key);
     }

@@ -57,10 +57,10 @@ public class GetMaxInactiveInterval extends SessionFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
-            return XPathUtil.javaObjectToXPath(-1, context);
+            return XPathUtil.javaObjectToXPath(-1, context, this);
         }
 
         final int interval = withValidSession(session.get(), SessionWrapper::getMaxInactiveInterval).orElse(-1);
-        return XPathUtil.javaObjectToXPath(interval, context);
+        return XPathUtil.javaObjectToXPath(interval, context, this);
     }
 }

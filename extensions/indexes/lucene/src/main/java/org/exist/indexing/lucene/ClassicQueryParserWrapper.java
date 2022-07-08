@@ -87,7 +87,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
         try {
             return parser.parse(query);
         } catch (ParseException e) {
-            throw new XPathException("Syntax error in Lucene query string: " + e.getMessage());
+            throw new XPathException((Expression) null, "Syntax error in Lucene query string: " + e.getMessage());
         }
     }
 

@@ -31,7 +31,15 @@ public class ProfilePragma extends Pragma {
     public final static QName PROFILING_PRAGMA = new QName("profiling", Namespaces.EXIST_NS, "exist");
     
     public ProfilePragma(QName qname, String contents) throws XPathException {
-        super(qname, contents);
+        this(null, qname, contents);
+    }
+    
+    public ProfilePragma(final Expression expression, QName qname, String contents) throws XPathException {
+        super(expression, qname, contents);
+    }
+
+    public void after(XQueryContext context) throws XPathException {
+        after(context, null);
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {
@@ -39,9 +47,13 @@ public class ProfilePragma extends Pragma {
     	profiler.setEnabled(false);
     }
 
+    public void before(XQueryContext context,Sequence contextSequence) throws XPathException {
+        before(context, null, contextSequence);
+    }
+
     public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
     	final Profiler profiler = context.getProfiler();
-    	final Option pragma = new Option(getQName(), getContents());
+    	final Option pragma = new Option(getExpression(), getQName(), getContents());
     	profiler.configure(pragma);
     }
 }

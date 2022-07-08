@@ -369,7 +369,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
 
         final DocumentType docType;
         if (publicId != null || systemId != null) {
-            docType = new DocumentTypeImpl(nameDocType, publicId, systemId);
+            docType = new DocumentTypeImpl(null, nameDocType, publicId, systemId);
         } else {
             docType = null;
         }

@@ -180,7 +180,7 @@ public class DocumentNameOrId extends BasicFunction {
                     final InputStream is = context.getBroker().getBinaryResource(bin);
                     return Base64BinaryDocument.getInstance(context, is, this);
                 } else {
-                    return new NodeProxy(doc);
+                    return new NodeProxy(this, doc);
                 }
             }
         }

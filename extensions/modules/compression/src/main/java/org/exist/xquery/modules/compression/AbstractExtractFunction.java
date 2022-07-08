@@ -196,7 +196,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                     }
 
                     try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
-                        NodeValue content = ModuleUtils.streamToXML(context, bis);
+                        NodeValue content = ModuleUtils.streamToXML(context, bis, this);
                         resource = target.createResource(name, "XMLResource");
                         ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
                         handler.startDocument();
@@ -227,7 +227,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                 //try and parse as xml, fall back to binary
                 try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
-                    uncompressedData = ModuleUtils.streamToXML(context, bis);
+                    uncompressedData = ModuleUtils.streamToXML(context, bis, this);
                 } catch (SAXException saxe) {
                     if (entryData.length > 0) {
                         try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {

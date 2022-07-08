@@ -25,6 +25,7 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.ContentHandler;
@@ -40,6 +41,13 @@ import java.util.Properties;
  * @author wolf
  */
 public interface Item {
+
+    /**
+     * Return the expression from which this item derives.
+     *
+     * @return  the expression from which this item derives
+     */
+    Expression getExpression();
 
     /**
      * Return the type of this item according to the type constants defined in class

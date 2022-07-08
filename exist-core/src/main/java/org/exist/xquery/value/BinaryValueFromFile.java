@@ -68,10 +68,18 @@ public class BinaryValueFromFile extends BinaryValue {
         }
     }
 
+    public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file) throws XPathException {
+        return getInstance(manager, binaryValueType, file, (Expression) null);
+    }
+
     public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final Expression expression) throws XPathException {
         final BinaryValueFromFile binaryFile = new BinaryValueFromFile(expression, manager, binaryValueType, file, Optional.empty());
         manager.registerBinaryValueInstance(binaryFile);
         return binaryFile;
+    }
+
+    public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final BiConsumer<Boolean, Path> closeListener) throws XPathException {
+        return getInstance(manager, binaryValueType, file, closeListener, null);
     }
 
     public static BinaryValueFromFile getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final Path file, final BiConsumer<Boolean, Path> closeListener, final Expression expression) throws XPathException {

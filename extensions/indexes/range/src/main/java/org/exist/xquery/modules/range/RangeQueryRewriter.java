@@ -119,7 +119,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                     // Step 2: return an OptimizeFieldPragma to handle field lookups and optimize the entire
                     // path expression. If the pragma can optimize the path expression, the original code will
                     // not be called.
-                    return new OptimizeFieldPragma(OptimizeFieldPragma.OPTIMIZE_RANGE_PRAGMA, null, getContext());
+                    return new OptimizeFieldPragma(parentExpr, OptimizeFieldPragma.OPTIMIZE_RANGE_PRAGMA, null, getContext());
                 }
             }
         }

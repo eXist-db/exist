@@ -730,7 +730,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (ancestors == null) {
                         ancestors = new ExtArrayNodeSet();
                     }
-                    ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
+                    ancestors.add(new NodeProxy(null, proxy.getOwnerDocument(), nextMatch.getNodeId()));
                 }
                 nextMatch = nextMatch.getNextMatch();
             }
@@ -860,7 +860,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     } else {
                         try {
                             callback.match(nextListener, s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()),
-                                    new NodeProxy(getCurrentNode()));
+                                    new NodeProxy(null, getCurrentNode()));
                         } catch (final XPathException e) {
                             throw new SAXException("An error occurred while calling match callback: " + e.getMessage(), e);
                         }
@@ -1004,7 +1004,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
                         final int freq = is.readInt();
-                        final NodeProxy nodeProxy = new NodeProxy(storedDocument, nodeId, nameTypeToNodeType(nameType));
+                        final NodeProxy nodeProxy = new NodeProxy(null, storedDocument, nodeId, nameTypeToNodeType(nameType));
                         // if a context set is specified, we can directly check if the
                         // matching node is a descendant of one of the nodes
                         // in the context set.

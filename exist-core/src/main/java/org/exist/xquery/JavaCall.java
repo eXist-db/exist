@@ -256,7 +256,7 @@ public class JavaCall extends Function {
 							args[0].toJavaObject(myClass),
 							params);
 				}
-                result = XPathUtil.javaObjectToXPath(invocationResult, getContext());
+                result = XPathUtil.javaObjectToXPath(invocationResult, getContext(), this);
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to method "
