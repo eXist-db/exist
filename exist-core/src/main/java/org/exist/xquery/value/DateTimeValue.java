@@ -144,6 +144,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
         switch (other.getType()) {
+            case Type.DATE_TIME_STAMP:
             case Type.DATE_TIME:
                 return new DayTimeDurationValue(getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
             case Type.YEAR_MONTH_DURATION:
