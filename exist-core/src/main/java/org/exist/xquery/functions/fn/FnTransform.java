@@ -194,6 +194,17 @@ public class FnTransform extends BasicFunction {
                 xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
                 xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
 
+                if (options.globalContextItem.isPresent()) {
+                    final XdmItem xdmItem = Convert.ToSaxon.of(options.globalContextItem.get());
+                    xslt30Transformer.setGlobalContextItem(xdmItem);
+                } else if (sourceNode.isPresent()) {
+                    final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
+                    final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
+                    xslt30Transformer.setGlobalContextItem(xdmNode);
+                } else {
+                    xslt30Transformer.setGlobalContextItem(null);
+                }
+
                 final SAXDestination saxDestination = new SAXDestination(builderReceiver);
                 return new TemplateInvocation(options, sourceNode, saxDestination, xslt30Transformer, builder, resultDocuments).invoke();
 
@@ -253,14 +264,6 @@ public class FnTransform extends BasicFunction {
                 throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002,
                         INITIAL_MODE.name + " supplied indicating apply-templates invocation, " +
                                 "AND " + INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
-            }
-
-            if (sourceNode.isPresent()) {
-                final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
-                final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
-                xslt30Transformer.setGlobalContextItem(xdmNode);
-            } else {
-                xslt30Transformer.setGlobalContextItem(null);
             }
 
             final QName qName = options.initialTemplate.get().getQName();
@@ -841,6 +844,7 @@ public class FnTransform extends BasicFunction {
         final Optional<QNameValue> initialTemplate;
         final Optional<QNameValue> initialMode;
         final Optional<NodeValue> sourceNode;
+        final Optional<Item> globalContextItem;
         final Optional<Sequence> initialMatchSelection;
         final Optional<BooleanValue> shouldCache;
         final DeliveryFormat deliveryFormat;
@@ -891,6 +895,7 @@ public class FnTransform extends BasicFunction {
             staticParams = readParamsMap(FnTransform.STATIC_PARAMS.get(options), FnTransform.STATIC_PARAMS.name.getStringValue());
 
             sourceNode = FnTransform.SOURCE_NODE.get(options);
+            globalContextItem = FnTransform.GLOBAL_CONTEXT_ITEM.get(options);
             initialMatchSelection = FnTransform.INITIAL_MATCH_SELECTION.get(options);
             if (sourceNode.isPresent() && initialMatchSelection.isPresent()) {
                 throw new XPathException(ErrorCodes.FOXT0002,
