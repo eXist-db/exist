@@ -271,4 +271,39 @@ public class XQueryUpdate3Test {
             }
         }
     }
+
+    @Test
+    public void dynamicUpdatingFunctionCall() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query = "let $f := fn:put#2\n" +
+                "return invoke updating $f(<newnode/>,\"newnode.xml\")";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.xpath();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            PathExpr expr = new PathExpr(context);
+            treeParser.xpath(ast, expr);
+
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
+
+            assertTrue(((DebuggableExpression) ((LetExpr)expr.getFirst()).getReturnExpression()).getFirst() instanceof DynamicFunctionCall);
+            DynamicFunctionCall dfc = (DynamicFunctionCall) ((DebuggableExpression) ((LetExpr)expr.getFirst()).getReturnExpression()).getFirst();
+            assertEquals(Expression.Category.UPDATING, dfc.getCategory());
+        }
+    }
 }
