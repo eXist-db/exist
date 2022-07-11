@@ -2354,7 +2354,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param var       only clear variables after this variable, or null
      * @param resultSeq the result sequence
      */
-    public void popLocalVariables(@Nullable final LocalVariable var, final Sequence resultSeq) {
+    public void popLocalVariables(@Nullable final LocalVariable var, @Nullable final Sequence resultSeq) {
         if (var != null) {
             // clear all variables registered after var. they should be out of scope.
             LocalVariable outOfScope = var.after;

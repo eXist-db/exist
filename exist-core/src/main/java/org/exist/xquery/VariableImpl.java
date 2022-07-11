@@ -30,6 +30,8 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nullable;
+
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
  * 
@@ -164,9 +166,10 @@ public class VariableImpl implements Variable {
         this.initialized = initialized;
     }
 
-    public void destroy(XQueryContext context, Sequence contextSequence) {
-        if (value != null)
-            {value.destroy(context, contextSequence);}
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
+        if (value != null) {
+			value.destroy(context, contextSequence);
+		}
     }
 
     @Override
