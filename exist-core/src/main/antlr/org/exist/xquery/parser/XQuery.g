@@ -1028,7 +1028,7 @@ castableExpr throws XPathException
 
 castExpr throws XPathException
 :
-	arrowExpr ( "cast"^ "as"! singleType )?
+	transformWithExpr ( "cast"^ "as"! singleType )?
 	;
 
 comparisonExpr throws XPathException
@@ -1300,6 +1300,17 @@ postfixExpr throws XPathException
 arrowExpr throws XPathException
 :
     unaryExpr ( ARROW_OP^ arrowFunctionSpecifier argumentList )*
+    ;
+
+
+// This is not perfectly adherent to the standard grammar
+// at https://www.w3.org/TR/xquery-31/#prod-xquery31-ArrowExpr
+// but the standard XQuery 3.1 grammar conflicts with the XQuery Update Facility 3.0 grammar
+// https://www.w3.org/TR/xquery-update-30/#prod-xquery30-TransformWithExpr
+// However, the end behavior should be identical
+transformWithExpr throws XPathException
+:
+    arrowExpr ( "transform"^ "with"! LCURLY! ( expr )? RCURLY! )?
     ;
 
 arrowFunctionSpecifier throws XPathException
@@ -2261,6 +2272,8 @@ reservedKeywords returns [String name]
     "lax" { name = "lax"; }
     |
     "skip" { name = "skip"; }
+    |
+    "transform" { name = "transform"; }
 	;
 
 /**
