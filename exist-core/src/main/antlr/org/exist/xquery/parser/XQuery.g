@@ -720,6 +720,7 @@ exprSingle throws XPathException
 	| ( "switch" LPAREN ) => switchExpr
 	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
+	| ( "copy" DOLLAR) => copyModifyExpr
 	| orExpr
 	;
 
@@ -762,6 +763,14 @@ renameExpr throws XPathException
 :
 	"rename" exprSingle "as"! exprSingle
 	;
+
+copyModifyExpr throws XPathException
+:
+	"copy"^ letVarBinding ( COMMA! letVarBinding )*
+	"modify"! exprSingle
+	"return"! exprSingle
+	;
+
 
 // === try/catch ===
 tryCatchExpr throws XPathException
