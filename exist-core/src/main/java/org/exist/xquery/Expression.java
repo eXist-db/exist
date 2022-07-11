@@ -36,6 +36,16 @@ import org.exist.xquery.value.Sequence;
  */
 public interface Expression {
 
+    /**
+     * Updating expressions are a new category of expression introduced by XQuery Update Facility 3.0
+     * An updating expression is an expression that can return a non-empty pending update list
+     * Simple expressions are all expressions that are not updating expressions
+     */
+    enum Category {
+        UPDATING,
+        SIMPLE
+    }
+
     // Flags to be passed to analyze:
     /**
      * Indicates that the query engine will call the expression once for every
@@ -264,4 +274,6 @@ public interface Expression {
      * @return true if the next expression should be evaluated, false otherwise.
      */
     boolean evalNextExpressionOnEmptyContextSequence();
+
+    public default Category getCategory() { return Category.SIMPLE; };
 }

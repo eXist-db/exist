@@ -351,4 +351,7 @@ public abstract class Modification extends AbstractExpression
             return node.getParentNode();
         }
     }
+
+    @Override
+    public Category getCategory() { return Category.UPDATING; }
 }
