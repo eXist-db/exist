@@ -2195,6 +2195,10 @@ throws PermissionDeniedException, EXistException, XPathException
     step=numericExpr [path]
     |
     step=updateExpr [path]
+    |
+    step=transformWithExpr [path]
+    |
+    step=copyModifyExpr [path]
     ;
 
 /**
@@ -3601,6 +3605,92 @@ throws PermissionDeniedException, EXistException, XPathException
         }
     )
     ;
+
+
+transformWithExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	CopyModifyExpression cpme = new CopyModifyExpression(context);
+	QName virtualVariable = null;
+}:
+	#(
+		tr:"transform"
+		{
+			PathExpr transformExpr = new PathExpr(context);
+		}
+		t:expr [transformExpr]
+		{
+		    try {
+               virtualVariable = QName.parse(staticContext, "virtualCopyModifyName", null);
+            }
+            catch (final IllegalQNameException e) {
+                // this should never happen, since it is a virtual QName
+            }
+
+		    final VariableDeclaration decl = new VariableDeclaration(context, virtualVariable, transformExpr);
+            decl.setASTNode(t);
+
+            cpme.addCopySource("virtualCopyModifyName", decl);
+		}
+		{
+		    PathExpr withExpr = new PathExpr(context);
+		}
+		(
+            expr [withExpr]
+        )?
+        {
+            // see https://www.w3.org/TR/xquery-update-30/#id-transform-with for explanation
+            // in short TransformWith is a shorthand notation for a common Copy Modify Expression
+
+            PathExpr refExpr = new PathExpr(context);
+            refExpr.add(new VariableReference(context, virtualVariable));
+            cpme.setModifyExpr(new OpSimpleMap(context, refExpr, withExpr));
+            cpme.setReturnExpr(refExpr);
+
+            cpme.setASTNode(tr);
+            path.add(cpme);
+            step = cpme;
+        }
+	)
+	;
+
+copyModifyExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	CopyModifyExpression cpme = new CopyModifyExpression(context);
+	PathExpr modify = new PathExpr(context);
+	PathExpr retExpr = new PathExpr(context);
+}:
+	#(
+    	cp:"copy"
+    	(
+    		#(
+    			copyVarName:VARIABLE_BINDING
+    			{
+    				PathExpr inputSequence= new PathExpr(context);
+    			}
+    			step=expr [inputSequence]
+    			{
+    				cpme.addCopySource(copyVarName.getText(), inputSequence);
+    			}
+    		)
+    	)+
+    	step=expr [modify]
+    	step=expr [retExpr]
+    	{
+    	    cpme.setModifyExpr(modify);
+    	    cpme.setReturnExpr(retExpr);
+
+    	    cpme.setASTNode(cp);
+            path.add(cpme);
+            step = cpme;
+    	}
+    )
+	;
 
 typeCastExpr [PathExpr path]
 returns [Expression step]
