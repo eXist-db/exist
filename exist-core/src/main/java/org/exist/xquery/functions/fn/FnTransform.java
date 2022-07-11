@@ -176,6 +176,17 @@ public class FnTransform extends BasicFunction {
 
                 final Xslt30Transformer xslt30Transformer = xsltExecutable.load30();
 
+                options.initialMode.ifPresent(qNameValue -> xslt30Transformer.setInitialMode(Convert.ToSaxon.of(qNameValue.getQName())));
+                xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
+                xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
+                if (options.baseOutputURI.isPresent()) {
+                    final AtomicValue baseOutputURI = options.baseOutputURI.get();
+                    final AtomicValue asString = baseOutputURI.convertTo(Type.STRING);
+                    if (asString instanceof StringValue) {
+                        xslt30Transformer.setBaseOutputURI(asString.getStringValue());
+                    }
+                }
+
                 // TODO(AR) this is just for DOM results... need to handle other response types!
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder);
@@ -189,10 +200,6 @@ public class FnTransform extends BasicFunction {
                     resultDocuments.put(resultDocumentURI, resultBuilder);
                     return new SAXDestination(resultBuilderReceiver);
                 });
-
-                options.initialMode.ifPresent(qNameValue -> xslt30Transformer.setInitialMode(Convert.ToSaxon.of(qNameValue.getQName())));
-                xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
-                xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
 
                 if (options.globalContextItem.isPresent()) {
                     final XdmItem xdmItem = Convert.ToSaxon.of(options.globalContextItem.get());
@@ -599,7 +606,7 @@ public class FnTransform extends BasicFunction {
         throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via STaX");
     }
 
-    private static final Option<AnyURIValue> BASE_OUTPUT_URI = new ItemOption<>(
+    private static final Option<StringValue> BASE_OUTPUT_URI = new ItemOption<>(
             Type.STRING, "base-output-uri", v1_0, v2_0, v3_0);
     private static final Option<BooleanValue> CACHE = new ItemOption<>(
             Type.BOOLEAN, "cache", BooleanValue.TRUE, v1_0, v2_0, v3_0);
@@ -848,7 +855,7 @@ public class FnTransform extends BasicFunction {
         final Optional<Sequence> initialMatchSelection;
         final Optional<BooleanValue> shouldCache;
         final DeliveryFormat deliveryFormat;
-        final Optional<AnyURIValue> baseOutputURI;
+        final Optional<StringValue> baseOutputURI;
         final Optional<MapType> serializationParams;
 
         Options(final MapType options) throws XPathException {
