@@ -190,6 +190,7 @@ public class FnTransform extends BasicFunction {
                     return new SAXDestination(resultBuilderReceiver);
                 });
 
+                options.initialMode.ifPresent(qNameValue -> xslt30Transformer.setInitialMode(Convert.ToSaxon.of(qNameValue.getQName())));
                 xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
                 xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
 

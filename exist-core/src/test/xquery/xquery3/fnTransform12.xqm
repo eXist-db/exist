@@ -39,12 +39,12 @@ declare variable $testTransform:transform-12-xsl := document {
             </xsl:stylesheet> };
 
 declare
-    %test:assertEquals('this')
+    %test:assertEquals('<out>this</out>')
 function testTransform:transform-12() {
     let $xsl := $testTransform:transform-12-xsl
     let $result := fn:transform(map{"stylesheet-node":$xsl,
         "source-node":parse-xml("<doc>this</doc>"),
         "initial-mode": fn:QName('','main')
     })
-    return $result?output//out
+    return $result?output
 };
