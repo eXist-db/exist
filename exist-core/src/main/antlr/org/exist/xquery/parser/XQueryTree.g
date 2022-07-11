@@ -2199,6 +2199,8 @@ throws PermissionDeniedException, EXistException, XPathException
     step=transformWithExpr [path]
     |
     step=copyModifyExpr [path]
+    |
+    step=dynamicUpdFunCall [path]
     ;
 
 /**
@@ -3018,6 +3020,37 @@ throws PermissionDeniedException, EXistException, XPathException
         }
     )
     ;
+
+dynamicUpdFunCall [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step = null;
+	PathExpr primary = new PathExpr(context);
+}
+:
+    #(
+		"updating"
+		{
+			List<Expression> params = new ArrayList<Expression>(5);
+			boolean isPartial = false;
+		}
+        step=primaryExpr [primary]
+		(
+			(
+				{ PathExpr pathExpr = new PathExpr(context); }
+				expr [pathExpr] { params.add(pathExpr); }
+			)
+		)*
+		{
+			DynamicFunctionCall dynCall = new DynamicFunctionCall(context, step, params, isPartial);
+			dynCall.setCategory(Expression.Category.UPDATING);
+			step = dynCall;
+			path.add(step);
+		}
+	)
+;
+
 
 functionCall [PathExpr path]
 returns [Expression step]
