@@ -43,7 +43,8 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateXSDwithJing() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -71,7 +72,8 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateXSDwithJing_invalid() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -99,7 +101,8 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateRNGwithJing() throws XPathException, XMLDBException {
-        final String query = "let $v := <doc>\n" +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $v := <doc>\n" +
                 "\t<title>Title</title>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +
@@ -139,7 +142,8 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateRNGwithJing_invalid() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $v := <doc>\n" +
                 "\t<title1>Title</title1>\n" +
                 "\t<p>Some paragraph.</p>\n" +
                 "      </doc>\n" +

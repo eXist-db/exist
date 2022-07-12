@@ -89,7 +89,8 @@ public class ParseXsdTestNOK {
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/addressbook/addressbook_valid.xml'), " +
                 "xs:anyURI('/db/addressbook/addressbook.xsd'), () )";
 

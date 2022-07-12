@@ -90,7 +90,8 @@ public class JingSchematronTest {
 
     @Test
     public void sch_15_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        String query = "validation:jing-report( " +
+        String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
@@ -99,7 +100,8 @@ public class JingSchematronTest {
 
     @Test
     public void sch_15_stored_valid_boolean() throws XMLDBException {
-        final String query = "validation:jing( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing( " +
                 "doc('/db/tournament/1.5/Tournament-valid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
 
@@ -113,7 +115,8 @@ public class JingSchematronTest {
     @Test
 
     public void sch_15_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
                 "doc('/db/tournament/1.5/tournament-schema.sch') )";
         executeAndEvaluate(query,"invalid");
@@ -121,7 +124,8 @@ public class JingSchematronTest {
 
     @Test
     public void sch_15_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
         executeAndEvaluate(query,"valid");
@@ -129,7 +133,8 @@ public class JingSchematronTest {
 
     @Test
     public void sch_15_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
         executeAndEvaluate(query,"invalid");

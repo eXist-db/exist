@@ -101,7 +101,8 @@ public class ParseDtdTestNOK {
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
@@ -114,7 +115,8 @@ public class ParseDtdTestNOK {
 
     @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
@@ -126,7 +128,8 @@ public class ParseDtdTestNOK {
 
     @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_valid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
@@ -139,7 +142,8 @@ public class ParseDtdTestNOK {
 
     @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), " +
                 "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 

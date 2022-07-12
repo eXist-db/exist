@@ -899,9 +899,9 @@
             <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule" load="lazily"/>
             <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
             <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
-            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule" />
             <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
-            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule"  load="lazily"/>
+            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule"/>
             <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" load="lazily" />
             <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
