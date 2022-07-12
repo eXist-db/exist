@@ -306,4 +306,39 @@ public class XQueryUpdate3Test {
             assertEquals(Expression.Category.UPDATING, dfc.getCategory());
         }
     }
+
+    @Test
+    public void insertExpr() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query =
+                "insert node <year>2005</year>\n" +
+                "    after book/publisher";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.expr();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            PathExpr expr = new PathExpr(context);
+            treeParser.expr(ast, expr);
+
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
+
+            assertTrue(expr.getFirst() instanceof InsertExpr);
+            assertEquals(Expression.Category.UPDATING, expr.getFirst().getCategory());
+        }
+    }
 }
