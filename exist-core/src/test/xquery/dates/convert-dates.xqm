@@ -48,6 +48,19 @@ function fd:add-test($date as xs:dateTimeStamp, $duration as xs:dayTimeDuration)
     $duration + $date
 };
 
+declare
+    %test:args("2022-08-10T12:36:51.723+02:00", "2022-07-10T12:36:51.723+02:00")
+    %test:assertEquals("P31D")
+function fd:subtract-test($date1 as xs:dateTimeStamp, $date2 as xs:dateTimeStamp) {
+    ($date1 - $date2) cast as xs:string
+};
+
+declare
+    %test:args("2022-08-10T12:36:51.723+02:00", "2022-07-10T12:36:51.723+02:00")
+    %test:assertEquals("P31D")
+function fd:subtract-from-dateTime-test($date1 as xs:dateTime, $date2 as xs:dateTimeStamp) {
+    ($date1 - $date2) cast as xs:string
+};
 
 (: verify that fn:current-dateTime() return type is xs:dateTimeStamp  :)
 declare
