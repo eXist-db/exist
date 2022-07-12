@@ -2196,6 +2196,8 @@ throws PermissionDeniedException, EXistException, XPathException
     |
     step=updateExpr [path]
     |
+    step=xqufInsertExpr [path]
+    |
     step=transformWithExpr [path]
     |
     step=copyModifyExpr [path]
@@ -3882,6 +3884,51 @@ throws XPathException, PermissionDeniedException, EXistException
         }
     )
     ;
+
+xqufInsertExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    insertAST:"insert"
+		{
+			PathExpr source = new PathExpr(context);
+			PathExpr target = new PathExpr(context);
+			InsertExpr.Choice choice = null;
+		}
+		step=expr [source]
+		#(
+			it:INSERT_TARGET
+			{
+			    switch (it.getText()) {
+			        case "first":
+			            choice = InsertExpr.Choice.FIRST;
+			            break;
+                    case "last":
+                        choice = InsertExpr.Choice.LAST;
+                        break;
+                    case "into":
+                        choice = InsertExpr.Choice.INTO;
+                        break;
+                    case "before":
+                        choice = InsertExpr.Choice.BEFORE;
+                        break;
+                    case "after":
+                        choice = InsertExpr.Choice.AFTER;
+                        break;
+			    }
+			}
+		)
+		step=expr [target]
+		{
+			InsertExpr insertExpr = new InsertExpr(context, source, target, choice);
+			insertExpr.setASTNode(insertAST);
+			path.add(insertExpr);
+			step = insertExpr;
+		}
+	)
+	;
 
 mapConstr [PathExpr path]
 returns [Expression step]
