@@ -209,11 +209,6 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    public void addModule(String namespaceURI, Module module) {
-        parentContext.addModule(namespaceURI, module);
-    }
-
-    @Override
     protected void setRootModules(final String namespaceURI, final Module[] modules) {
         parentContext.setRootModules(namespaceURI, modules);
     }
