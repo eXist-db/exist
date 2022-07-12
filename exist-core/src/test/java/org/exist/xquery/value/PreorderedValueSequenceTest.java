@@ -105,7 +105,7 @@ public class PreorderedValueSequenceTest {
             expect(mockNode.getNodeId()).andReturn(null);
             expect(mockNode.getNodeType()).andReturn(Node.ELEMENT_NODE);
             expect(mockNode.getInternalAddress()).andReturn(-1l);
-            expect(mockNode.getExpression()).times(1);
+            expect(mockNode.getExpression()).andReturn(null).times(1);
             mockNode.addContextNode(anyInt(), anyObject());
             replay(mockNode);
             valueSequence.add(mockNode);
