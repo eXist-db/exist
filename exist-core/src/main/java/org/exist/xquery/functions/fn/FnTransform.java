@@ -69,10 +69,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -469,7 +466,7 @@ public class FnTransform extends BasicFunction {
             return new DOMSource((Node) document.itemAt(0));
         }
         final EXistURIResolver eXistURIResolver = new EXistURIResolver(
-                context.getBroker().getBrokerPool(), null);
+                context.getBroker().getBrokerPool(), "");
         try {
             return eXistURIResolver.resolve(stylesheetLocation, context.getBaseURI().getStringValue());
         } catch (final TransformerException e) {
@@ -508,15 +505,17 @@ public class FnTransform extends BasicFunction {
      *     value is the source for accessing the stylesheet
      */
     private Tuple2<String, Source> getStylesheet(final MapType options) throws XPathException {
+
+        final List<Tuple2<String, Source>> results = new ArrayList<>(1);
         final Optional<String> stylesheetLocation = FnTransform.STYLESHEET_LOCATION.get(options).map(StringValue::getStringValue);
         if (stylesheetLocation.isPresent()) {
-            return Tuple(stylesheetLocation.get(), resolveStylesheetLocation(stylesheetLocation.get()));
+            results.add(Tuple(stylesheetLocation.get(), resolveStylesheetLocation(stylesheetLocation.get())));
         }
 
         final Optional<Node> stylesheetNode = FnTransform.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
         if (stylesheetNode.isPresent()) {
             final Node node = stylesheetNode.get();
-            return Tuple(node.getBaseURI(), new DOMSource(node));
+            results.add(Tuple(node.getBaseURI(), new DOMSource(node)));
         }
 
         final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
@@ -524,10 +523,18 @@ public class FnTransform extends BasicFunction {
             final String text = stylesheetText.get();
             final byte[] data = text.getBytes(UTF_8);
             final long checksum = FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED);
-            return Tuple("checksum://" + checksum, new StringSource(stylesheetText.get()));
+            results.add(Tuple("checksum://" + checksum, new StringSource(stylesheetText.get())));
         }
 
-        throw new XPathException(this, ErrorCodes.FOXT0002, "Neither stylesheet-location, stylesheet-node, or stylesheet-text was set");
+        if (results.size() > 1) {
+            throw new XPathException(this, ErrorCodes.FOXT0002, "More than one of stylesheet-location, stylesheet-node, and stylesheet-text was set");
+        }
+
+        if (results.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOXT0002, "None of stylesheet-location, stylesheet-node, or stylesheet-text was set");
+        }
+
+        return results.get(0);
     }
 
     private float getXsltVersion(final Source xsltStylesheet) throws XPathException {
