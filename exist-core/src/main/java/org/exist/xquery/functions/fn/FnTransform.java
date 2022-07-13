@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NamespaceNode;
 import org.exist.security.PermissionDeniedException;
@@ -202,8 +203,17 @@ public class FnTransform extends BasicFunction {
                     final XdmItem xdmItem = Convert.ToSaxon.of(options.globalContextItem.get());
                     xslt30Transformer.setGlobalContextItem(xdmItem);
                 } else if (sourceNode.isPresent()) {
+                    final Document document;
+                    Source source = sourceNode.get();
+                    final Node node = ((DOMSource)sourceNode.get()).getNode();
+                    if (!(node instanceof DocumentImpl)) {
+                        //The source may not be a document
+                        //If it isn't, it should be part of a document, so we build a DOMSource to use
+                        document = node.getOwnerDocument();
+                        source = new DOMSource(document);
+                    }
                     final DocumentBuilder sourceBuilder = FnTransform.SAXON_PROCESSOR.newDocumentBuilder();
-                    final XdmNode xdmNode = sourceBuilder.build(sourceNode.get());
+                    final XdmNode xdmNode = sourceBuilder.build(source);
                     xslt30Transformer.setGlobalContextItem(xdmNode);
                 } else {
                     xslt30Transformer.setGlobalContextItem(null);
