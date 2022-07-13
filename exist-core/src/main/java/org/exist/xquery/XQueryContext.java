@@ -144,6 +144,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String HTTP_REQ_ATTR_USER = "xquery.user";
     public static final String HTTP_REQ_ATTR_PASS = "xquery.password";
 
+    public static final String DEFAULT_URI_COLLECTION = "/db";
+
     // Static namespace/prefix mappings
     protected Map<String, String> staticNamespaces = new HashMap<>();
 
@@ -202,6 +204,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     //The Calendar for this context : may be changed by some options
     private XMLGregorianCalendar calendar = null;
     private TimeZone implicitTimeZone = null;
+
+    private final Map<String, Sequence> cachedUriCollectionResults = new HashMap<String, Sequence>();
 
     /**
      * the watchdog object assigned to this query.
@@ -2789,6 +2793,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public void setStaticDecimalFormat(final QName qnDecimalFormat, final DecimalFormat decimalFormat) {
         staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
+    }
+
+    public Map<String, Sequence> getCachedUriCollectionResults() {
+        return cachedUriCollectionResults;
     }
 
     /**

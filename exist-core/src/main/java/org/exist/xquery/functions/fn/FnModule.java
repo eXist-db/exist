@@ -218,6 +218,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunTrueOrFalse.fnFalse, FunTrueOrFalse.class),
         new FunctionDef(FunUpperOrLowerCase.fnLowerCase, FunUpperOrLowerCase.class),
         new FunctionDef(FunUpperOrLowerCase.fnUpperCase, FunUpperOrLowerCase.class),
+        new FunctionDef(FunUriCollection.FS_URI_COLLECTION_SIGNATURES[0], FunUriCollection.class),
+        new FunctionDef(FunUriCollection.FS_URI_COLLECTION_SIGNATURES[1], FunUriCollection.class),
         new FunctionDef(FunXmlToJson.FS_XML_TO_JSON[0], FunXmlToJson.class),
         new FunctionDef(FunXmlToJson.FS_XML_TO_JSON[1], FunXmlToJson.class),
         new FunctionDef(FunZeroOrOne.signature, FunZeroOrOne.class),

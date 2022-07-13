@@ -150,7 +150,7 @@ public class ErrorCodes {
     public static final ErrorCode FODC0001 = new W3CErrorCode("FODC0001", "No context document.");
     public static final ErrorCode FODC0002 = new W3CErrorCode("FODC0002", "Error retrieving resource.");
     public static final ErrorCode FODC0003 = new W3CErrorCode("FODC0003", "Function stability not defined.");
-    public static final ErrorCode FODC0004 = new W3CErrorCode("FODC0004", "Invalid argument to fn:collection.");
+    public static final ErrorCode FODC0004 = new W3CErrorCode("FODC0004", "Invalid argument to fn:collection or fn:uri-collection.");
     public static final ErrorCode FODC0005 = new W3CErrorCode("FODC0005", "Invalid argument to fn:doc or fn:doc-available.");
     public static final ErrorCode FODT0001 = new W3CErrorCode("FODT0001", "Overflow/underflow in date/time operation.");
     public static final ErrorCode FODT0002 = new W3CErrorCode("FODT0002", "Overflow/underflow in duration operation.");
