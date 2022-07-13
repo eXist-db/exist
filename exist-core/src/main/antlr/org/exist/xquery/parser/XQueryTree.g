@@ -2202,6 +2202,8 @@ throws PermissionDeniedException, EXistException, XPathException
     |
     step=xqufReplaceExpr [path]
     |
+    step=xqufRenameExpr [path]
+    |
     step=transformWithExpr [path]
     |
     step=copyModifyExpr [path]
@@ -3979,6 +3981,28 @@ throws XPathException, PermissionDeniedException, EXistException
 			replaceExpr.setASTNode(replaceAST);
 			path.add(replaceExpr);
 			step = replaceExpr;
+		}
+	)
+	;
+
+xqufRenameExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    renameAST:"rename"
+		{
+			PathExpr target = new PathExpr(context);
+			PathExpr newName = new PathExpr(context);
+		}
+		step=expr [target]
+		step=expr [newName]
+		{
+			RenameExpr renameExpr = new RenameExpr(context, target, newName);
+			renameExpr.setASTNode(renameAST);
+			path.add(renameExpr);
+			step = renameExpr;
 		}
 	)
 	;
