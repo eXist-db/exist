@@ -375,4 +375,78 @@ public class XQueryUpdate3Test {
             assertEquals(Expression.Category.UPDATING, expr.getFirst().getCategory());
         }
     }
+
+    @Test
+    public void replaceNodeExpr() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query =
+                "replace node fn:doc(\"bib.xml\")/books/book[1]/publisher\n" +
+                        "with fn:doc(\"bib.xml\")/books/book[2]/publisher";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.expr();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            PathExpr expr = new PathExpr(context);
+            treeParser.expr(ast, expr);
+
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
+
+            assertTrue(expr.getFirst() instanceof ReplaceExpr);
+            assertEquals(ReplaceExpr.ReplacementType.NODE,((ReplaceExpr) expr.getFirst()).getReplacementType());
+            assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[1]/child::{}publisher",((ReplaceExpr) expr.getFirst()).getTargetExpr().toString());
+            assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[2]/child::{}publisher",((ReplaceExpr) expr.getFirst()).getWithExpr().toString());
+        }
+    }
+
+    @Test
+    public void replaceValueExpr() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query =
+                "replace value of node fn:doc(\"bib.xml\")/books/book[1]/price\n" +
+                        "with fn:doc(\"bib.xml\")/books/book[1]/price * 1.1";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.expr();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            PathExpr expr = new PathExpr(context);
+            treeParser.expr(ast, expr);
+
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
+
+            assertTrue(expr.getFirst() instanceof ReplaceExpr);
+            assertEquals(ReplaceExpr.ReplacementType.VALUE,((ReplaceExpr) expr.getFirst()).getReplacementType());
+            assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[1]/child::{}price",((ReplaceExpr) expr.getFirst()).getTargetExpr().toString());
+            assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[1]/child::{}price * 1.1",((ReplaceExpr) expr.getFirst()).getWithExpr().toString());
+        }
+    }
 }
