@@ -724,7 +724,8 @@ exprSingle throws XPathException
 	| ( "insert" ( "node" | "nodes" ) ) => xqufInsertExpr
 	| ( "delete" ( "node" | "nodes" ) ) => xqufDeleteExpr
 	| ( "replace" ( "value" | "node" ) ) => xqufReplaceExpr
-	| ( "copy" DOLLAR) => copyModifyExpr
+	| ( "rename" "node" ) => xqufRenameExpr
+	| ( "copy" DOLLAR ) => copyModifyExpr
 	| ( "invoke" "updating" ) => dynamicUpdFunCall
 	| orExpr
 	;
@@ -798,6 +799,11 @@ xqufDeleteExpr throws XPathException
 xqufReplaceExpr throws XPathException
 :
 	"replace"^ ("value" "of"!)? "node"! exprSingle "with"! exprSingle
+	;
+
+xqufRenameExpr throws XPathException
+:
+	"rename"^ "node"! exprSingle "as"! exprSingle
 	;
 
 copyModifyExpr throws XPathException
