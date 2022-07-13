@@ -85,7 +85,6 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     /**
      * Creates a new <code>StoredNode</code> instance.
      *
-     * @param expression the expression from which the node derives
      * @param nodeType   a <code>short</code> value
      * @param nodeId     a <code>NodeId</code> value
      */

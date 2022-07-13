@@ -91,10 +91,6 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         this.vector = vector;
     }
 
-    private ArrayType(XQueryContext context) {
-        this(null, context);
-    }
-
     private ArrayType(final Expression expression, XQueryContext context) {
         super(expression, null);
         this.context = context;

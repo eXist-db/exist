@@ -45,14 +45,12 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     private boolean replaceAttributeFlag = false;
     private boolean cdataFlag = false;
     private final StringBuilder cdataBuf = new StringBuilder();
-    private final Expression expression;
 
     public SAXAdapter() {
         this((Expression) null);
     }
 
     public SAXAdapter(final Expression expression) {
-        this.expression = expression;
         setBuilder(new MemTreeBuilder(expression));
     }
 
@@ -61,7 +59,6 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     }
 
     public SAXAdapter(final Expression expression, final XQueryContext context) {
-        this.expression = expression;
         setBuilder(new MemTreeBuilder(expression, context));
     }
 

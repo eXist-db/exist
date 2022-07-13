@@ -35,19 +35,19 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
     protected QName nodeName = null;
 
-    public NamedNode(final short nodeType) {
+    protected NamedNode(final short nodeType) {
         this(null, nodeType);
     }
 
-    public NamedNode(final Expression expression, final short nodeType) {
+    protected NamedNode(final Expression expression, final short nodeType) {
         super(expression, nodeType);
     }
 
-    public NamedNode(final short nodeType, final QName qname) {
+    protected NamedNode(final short nodeType, final QName qname) {
         this(null, nodeType, qname);
     }
 
-    public NamedNode(final Expression expression, final short nodeType, final QName qname) {
+    protected NamedNode(final Expression expression, final short nodeType, final QName qname) {
         super(expression, nodeType);
         this.nodeName = qname;
     }
@@ -61,11 +61,11 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
         this.nodeName = qname;
     }
 
-    protected NamedNode(final NamedNode other) {
+    protected NamedNode(final NamedNode<T> other) {
         this(null, other);
     }
 
-    protected NamedNode(final Expression expression, final NamedNode other) {
+    protected NamedNode(final Expression expression, final NamedNode<T> other) {
         super(expression, other);
         this.nodeName = other.nodeName;
     }
@@ -73,8 +73,8 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
     /**
      * Extracts just the details of the NamedNode
      */
-    public NamedNode extract() {
-        return new NamedNode(getExpression(), this) {
+    public NamedNode<T> extract() {
+        return new NamedNode<T>(getExpression(), this) {
         };
     }
 

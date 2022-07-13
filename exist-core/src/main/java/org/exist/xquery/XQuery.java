@@ -179,7 +179,7 @@ public class XQuery {
         try(final Reader reader = source.getReader()) {
             return compile(context, reader, xpointer);
         } catch(final UnsupportedEncodingException e) {
-            throw new XPathException(context != null ? context.getRootExpression() : null, ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
+            throw new XPathException(context.getRootExpression(), ErrorCodes.XQST0087, "unsupported encoding " + e.getMessage());
         }
     }
 
@@ -227,12 +227,12 @@ public class XQuery {
             
             if(parser.foundErrors()) {
             	LOG.debug(parser.getErrorMessage());
-            	throw new StaticXQueryException(context != null ? context.getRootExpression() : null, parser.getErrorMessage());
+            	throw new StaticXQueryException(context.getRootExpression(), parser.getErrorMessage());
             }
 
             final AST ast = parser.getAST();
             if (ast == null) {
-                throw new XPathException(context != null ? context.getRootExpression() : null, "Unknown XQuery parser error: the parser returned an empty syntax tree.");
+                throw new XPathException(context.getRootExpression(), "Unknown XQuery parser error: the parser returned an empty syntax tree.");
             }
             
 //            LOG.debug("Generated AST: " + ast.toStringTree());

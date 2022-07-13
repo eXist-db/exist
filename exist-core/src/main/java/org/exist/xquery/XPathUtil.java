@@ -21,7 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
@@ -64,7 +63,7 @@ public class XPathUtil {
      * @return XQuery sequence
      * @throws XPathException in case of an error
      */
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context)
             throws XPathException {
         return javaObjectToXPath(obj, context, null);
     }
@@ -80,17 +79,17 @@ public class XPathUtil {
      * @return XQuery sequence
      * @throws XPathException in case of an error
      */
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context, final Expression expression)
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context, final Expression expression)
             throws XPathException {
         return javaObjectToXPath(obj, context, true, expression);
     }
 
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context,
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
             boolean expandChars) throws XPathException {
         return javaObjectToXPath(obj, context, expandChars, null);
     }
 
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context,
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
             boolean expandChars, final Expression expression) throws XPathException {
 
         if (obj == null) {
@@ -221,7 +220,7 @@ public class XPathUtil {
         }
     }
 
-    public final static int javaClassToXPath(Class<?> clazz) {
+    public static final int javaClassToXPath(Class<?> clazz) {
         if (clazz == String.class) {
             return Type.STRING;
         } else if (clazz == Boolean.class || clazz == boolean.class) {

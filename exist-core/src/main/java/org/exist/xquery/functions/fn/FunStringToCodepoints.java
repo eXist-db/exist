@@ -97,7 +97,7 @@ public class FunStringToCodepoints extends BasicFunction {
                 final int supp = XMLChar.supplemental(ch, s.charAt(++i));
                 next = new IntegerValue(expression, supp);
             } else {
-                next = new IntegerValue(expression, (int) ch);
+                next = new IntegerValue(expression, ch);
             }
             codepoints.add(next);
         }

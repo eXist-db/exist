@@ -790,7 +790,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 short indexType = RangeIndexSpec.NO_INDEX;
                 if (element.getIndexType() != RangeIndexSpec.NO_INDEX)
                     {indexType = (short) element.getIndexType();}
-                final NodeProxy proxy = new NodeProxy(element != null ? element.getExpression() : null, document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
+                final NodeProxy proxy = new NodeProxy(element.getExpression(), document, element.getNodeId(), Node.ELEMENT_NODE, element.getInternalAddress());
                 proxy.setIndexType(indexType);
                 addNode(element.getQName(), proxy);
             }

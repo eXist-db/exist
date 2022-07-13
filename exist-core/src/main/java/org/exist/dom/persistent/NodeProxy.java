@@ -228,10 +228,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
+     * @param expression the expression from which the node handle derives
      * @param n a <code>NodeHandle</code> value
      */
     public NodeProxy(final Expression expression, final NodeHandle n) {
-        this((expression == null && n != null && n instanceof NodeProxy) ? ((NodeProxy) n).getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        this((expression == null && n instanceof NodeProxy) ? ((NodeProxy) n).getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
         if(n instanceof NodeProxy) {
             this.match = ((NodeProxy) n).match;
             this.context = ((NodeProxy) n).context;
@@ -250,6 +251,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * create a proxy to a document node
      *
+     * @param expression the expression from which the document node derives
      * @param doc a <code>DocumentImpl</code> value
      */
     public NodeProxy(final Expression expression, final DocumentImpl doc) {

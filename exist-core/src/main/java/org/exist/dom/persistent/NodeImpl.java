@@ -38,11 +38,11 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     private final Expression expression;
 
-    public NodeImpl() {
+    protected NodeImpl() {
         this(null);
     }
 
-    public NodeImpl(final Expression expression) {
+    protected NodeImpl(final Expression expression) {
         this.expression = expression;
     }
 

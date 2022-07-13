@@ -120,6 +120,8 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     /**
      * Either reuses the provided transaction
      * in a safe manner or starts a new transaction.
+     *
+     * @return the provided transaction or a new transaction
      */
     protected Txn beginTransaction() {
         if (transaction == null) {
@@ -561,6 +563,8 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     }
 
     /**
+     * Returns a new restore handler.
+     *
      * @param broker the database broker
      * @param transaction the transaction to use for the entire restore,
      *                    or null if restoring each collection/resource
@@ -568,6 +572,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      * @param descriptor the backup descriptor to start restoring from
      * @param listener the listener to report restore events to
      * @param pathsToIgnore database paths to ignore in the backup
+     * @return a new restore handler
      */
     protected abstract AbstractRestoreHandler newSelf(final DBBroker broker, @Nullable final Txn transaction,
             final BackupDescriptor descriptor, final RestoreListener listener,
@@ -578,6 +583,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      *
      * @param collectionUri The URI of the collection being restored.
      * @param attributes the attributes of the collection element from the backup descriptor.
+     * @throws PermissionDeniedException if permission is denied
      */
     protected void notifyStartCollectionRestore(final XmldbURI collectionUri, final Attributes attributes) throws PermissionDeniedException {
         // no-op by default, may be overridden by subclass
@@ -587,6 +593,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      * Receives notification at the end of a Collection being restored.
      *
      * @param collectionUri The URI of the collection being restored.
+     * @throws PermissionDeniedException if permission is denied
      */
     protected void notifyEndCollectionRestore(final XmldbURI collectionUri) throws PermissionDeniedException {
         // no-op by default, may be overridden by subclass
@@ -597,6 +604,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      *
      * @param documentUri The URI of the document being restored.
      * @param attributes the attributes of the collection element from the backup descriptor.
+     * @throws PermissionDeniedException if permission is denied
      */
     protected void notifyStartDocumentRestore(final XmldbURI documentUri, final Attributes attributes) throws PermissionDeniedException {
         // no-op by default, may be overridden by subclass
@@ -606,6 +614,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
      * Receives notification at the end of a Document being restored.
      *
      * @param documentUri The URI of the document being restored.
+     * @throws PermissionDeniedException if permission is denied
      */
     protected void notifyEndDocumentRestore(final XmldbURI documentUri) throws PermissionDeniedException {
         // no-op by default, may be overridden by subclass

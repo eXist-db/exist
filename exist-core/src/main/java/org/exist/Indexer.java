@@ -281,7 +281,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         if (!stack.isEmpty()) {
             final ElementImpl last = stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
-                final CDATASectionImpl cdata = new CDATASectionImpl((last != null) ? last.getExpression() : null, charBuf);
+                final CDATASectionImpl cdata = new CDATASectionImpl(last.getExpression(), charBuf);
                 cdata.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, cdata);
                 if (!validate) {

@@ -34,45 +34,45 @@ public abstract class AbstractCharacterData extends StoredNode implements Charac
 
     protected XMLString cdata = null;
 
-    public AbstractCharacterData(final short nodeType) {
+    protected AbstractCharacterData(final short nodeType) {
         this(null, nodeType);
     }
 
-    public AbstractCharacterData(final Expression expression, final short nodeType) {
+    protected AbstractCharacterData(final Expression expression, final short nodeType) {
         super(expression, nodeType);
     }
 
-    public AbstractCharacterData(final short nodeType, final NodeId nodeId) {
+    protected AbstractCharacterData(final short nodeType, final NodeId nodeId) {
         this(null, nodeType, nodeId);
     }
 
-    public AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId) {
+    protected AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId) {
         super(expression, nodeType, nodeId);
     }
 
-    public AbstractCharacterData(final short nodeType, final NodeId nodeId, final String data) {
+    protected AbstractCharacterData(final short nodeType, final NodeId nodeId, final String data) {
         this(null, nodeType, nodeId, data);
     }
 
-    public AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId, final String data) {
+    protected AbstractCharacterData(final Expression expression, final short nodeType, final NodeId nodeId, final String data) {
         super(expression, nodeType, nodeId);
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(final short nodeType, final String data) {
+    protected AbstractCharacterData(final short nodeType, final String data) {
         this(null, nodeType, data);
     }
 
-    public AbstractCharacterData(final Expression expression, final short nodeType, final String data) {
+    protected AbstractCharacterData(final Expression expression, final short nodeType, final String data) {
         super(expression, nodeType);
         cdata = new XMLString(data.toCharArray());
     }
 
-    public AbstractCharacterData(final short nodeType, final char[] data, final int start, final int howmany) {
+    protected AbstractCharacterData(final short nodeType, final char[] data, final int start, final int howmany) {
         this(null, nodeType, data, start, howmany);
     }
 
-    public AbstractCharacterData(final Expression expression, final short nodeType, final char[] data, final int start, final int howmany) {
+    protected AbstractCharacterData(final Expression expression, final short nodeType, final char[] data, final int start, final int howmany) {
         super(expression, nodeType);
         cdata = new XMLString(data, start, howmany);
     }

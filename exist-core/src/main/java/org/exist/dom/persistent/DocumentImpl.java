@@ -219,6 +219,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * Creates a new persistent Document instance to replace an existing document instance.
      *
+     * @param expression the expression from which the Document object derives
      * @param docId the id of the document
      * @param prevDoc The previous Document object that we are overwriting
      */

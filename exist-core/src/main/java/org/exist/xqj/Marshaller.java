@@ -381,6 +381,7 @@ public class Marshaller {
      * Creates a node from a streamed representation.
      *
      * @param reader the reader.
+     * @param expression the expression from which te node derives
      * @return item the result item.
      *
      * @throws XMLStreamException if an error occurs during streaming.

@@ -104,7 +104,7 @@ public class TextImpl extends AbstractCharacterData implements Text {
         if(pooled) {
             text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
         } else {
-            text = new TextImpl((doc != null) ? doc.getExpression() : null);
+            text = new TextImpl(doc.getExpression());
         }
         int pos = start;
         pos += LENGTH_SIGNATURE_LENGTH;

@@ -110,7 +110,7 @@ abstract class FunRoundBase extends BasicFunction {
         return rounded.convertTo(value.getType());
     }
 
-    private static IntegerValue truncatePrecision(final DecimalValue decimal, final IntegerValue precision, final Expression expression) throws XPathException {
+    private static IntegerValue truncatePrecision(final DecimalValue decimal, final IntegerValue precision, final Expression expression) {
 
         final IntegerValue decimalPrecision = new IntegerValue(expression, decimal.getValue().precision());
         if (decimalPrecision.compareTo(precision) < 0) {
