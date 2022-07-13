@@ -25,13 +25,12 @@ import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
 /**
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
-public class InsertExpr extends AbstractExpression {
+public class InsertExpr extends ModifyingExpression {
     public enum Choice {
         FIRST,
         LAST,
@@ -40,14 +39,12 @@ public class InsertExpr extends AbstractExpression {
         BEFORE
     }
 
-    private final Expression source;
-    private final Expression target;
+    private final Expression sourceExpr;
     private final Choice choice;
 
     public InsertExpr(final XQueryContext context, final Expression source, final Expression target, final Choice choice) {
-        super(context);
-        this.source = source;
-        this.target = target;
+        super(context, target);
+        this.sourceExpr = source;
         this.choice = choice;
     }
 
@@ -61,17 +58,6 @@ public class InsertExpr extends AbstractExpression {
     }
 
     @Override
-    public int returnsType() {
-        // placeholder implementation
-        return Type.EMPTY;
-    }
-
-    public Category getCategory() {
-        // placeholder implementation
-        return Category.UPDATING;
-    }
-
-    @Override
     public Cardinality getCardinality() {
         return Cardinality.ONE_OR_MORE;
     }
@@ -80,22 +66,31 @@ public class InsertExpr extends AbstractExpression {
     public void dump(final ExpressionDumper dumper) {
         dumper.display("insert").nl();
         dumper.startIndent();
-        source.dump(dumper);
+        sourceExpr.dump(dumper);
         dumper.endIndent();
         dumper.display(choice).nl();
         dumper.startIndent();
-        target.dump(dumper);
+        targetExpr.dump(dumper);
+        dumper.endIndent();
     }
 
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("insert ");
-        result.append(source.toString());
+        result.append(sourceExpr.toString());
         result.append(" ");
         result.append(choice.toString());
         result.append(" ");
-        result.append(target.toString());
+        result.append(targetExpr.toString());
         return result.toString();
+    }
+
+    public Choice getChoice() {
+        return choice;
+    }
+
+    public Expression getSourceExpr() {
+        return sourceExpr;
     }
 }
