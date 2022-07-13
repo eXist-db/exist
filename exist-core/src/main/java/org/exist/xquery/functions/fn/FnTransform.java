@@ -137,7 +137,7 @@ public class FnTransform extends BasicFunction {
 
         if (options.xsltVersion == 1.0f || options.xsltVersion == 2.0f || options.xsltVersion == 3.0f) {
             try {
-                final Holder<SaxonApiException> compileException = new Holder<>();
+                final Holder<XPathException> compileException = new Holder<>();
                 final XsltExecutable xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash, key -> {
                     final XsltCompiler xsltCompiler = FnTransform.SAXON_PROCESSOR.newXsltCompiler();
                     xsltCompiler.setErrorListener(FnTransform.ERROR_LISTENER);
@@ -146,10 +146,15 @@ public class FnTransform extends BasicFunction {
                         xsltCompiler.setParameter(entry.getKey(), entry.getValue());
                     }
 
-                    for (final IEntry entry : options.stylesheetParams) {
-                        final QName qKey = ((QNameValue) entry.key()).getQName();
-                        final XdmValue value = XdmValue.makeValue("2");
-                        xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
+                    try {
+                        for (final IEntry<AtomicValue, Sequence> entry : options.stylesheetParams) {
+                            final QName qKey = ((QNameValue) entry.key()).getQName();
+                            final XdmValue value = Convert.ToSaxon.of(entry.value());
+                            xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
+                        }
+                    } catch (final XPathException e) {
+                        compileException.value = e;
+                        return null;
                     }
 
                     try {
@@ -160,7 +165,7 @@ public class FnTransform extends BasicFunction {
                         }
                         return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
                     } catch (final SaxonApiException e) {
-                        compileException.value = e;
+                        compileException.value = new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
                         return null;
                     } catch (final XPathException e) {
                         throw new RuntimeException("Invalid base URI in context", e);
