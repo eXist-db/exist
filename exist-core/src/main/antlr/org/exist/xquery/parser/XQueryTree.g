@@ -2200,6 +2200,8 @@ throws PermissionDeniedException, EXistException, XPathException
     |
     step=xqufDeleteExpr [path]
     |
+    step=xqufReplaceExpr [path]
+    |
     step=transformWithExpr [path]
     |
     step=copyModifyExpr [path]
@@ -3948,6 +3950,35 @@ throws XPathException, PermissionDeniedException, EXistException
 			deleteExpr.setASTNode(deleteAST);
 			path.add(deleteExpr);
 			step = deleteExpr;
+		}
+	)
+	;
+
+xqufReplaceExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    replaceAST:"replace"
+		{
+			PathExpr target = new PathExpr(context);
+			PathExpr with = new PathExpr(context);
+			ReplaceExpr.ReplacementType replacementType = ReplaceExpr.ReplacementType.NODE;
+		}
+		(
+		    "value"
+		    {
+		        replacementType = ReplaceExpr.ReplacementType.VALUE;
+		    }
+		)?
+		step=expr [target]
+		step=expr [with]
+		{
+			ReplaceExpr replaceExpr = new ReplaceExpr(context, target, with, replacementType);
+			replaceExpr.setASTNode(replaceAST);
+			path.add(replaceExpr);
+			step = replaceExpr;
 		}
 	)
 	;
