@@ -449,4 +449,40 @@ public class XQueryUpdate3Test {
             assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[1]/child::{}price * 1.1",((ReplaceExpr) expr.getFirst()).getWithExpr().toString());
         }
     }
+
+    @Test
+    public void renameExpr() throws EXistException, RecognitionException, XPathException, TokenStreamException, PermissionDeniedException
+    {
+        String query =
+                "rename node fn:doc(\"bib.xml\")/books/book[1]/author[1]\n" +
+                        "as \"principal-author\"";
+
+        BrokerPool pool = BrokerPool.getInstance();
+        try(final DBBroker broker = pool.getBroker()) {
+            // parse the query into the internal syntax tree
+            XQueryContext context = new XQueryContext(broker.getBrokerPool());
+            XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
+            XQueryParser xparser = new XQueryParser(lexer);
+            xparser.expr();
+            if (xparser.foundErrors()) {
+                fail(xparser.getErrorMessage());
+                return;
+            }
+
+            XQueryAST ast = (XQueryAST) xparser.getAST();
+
+            XQueryTreeParser treeParser = new XQueryTreeParser(context);
+            PathExpr expr = new PathExpr(context);
+            treeParser.expr(ast, expr);
+
+            if (treeParser.foundErrors()) {
+                fail(treeParser.getErrorMessage());
+                return;
+            }
+
+            assertTrue(expr.getFirst() instanceof RenameExpr);
+            assertEquals("doc(\"bib.xml\")/child::{}books/child::{}book[1]/child::{}author[1]",((RenameExpr) expr.getFirst()).getTargetExpr().toString());
+            assertEquals("\"principal-author\"",((RenameExpr) expr.getFirst()).getNewNameExpr().toString());
+        }
+    }
 }
