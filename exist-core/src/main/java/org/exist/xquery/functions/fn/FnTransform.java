@@ -71,6 +71,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -126,12 +127,49 @@ public class FnTransform extends BasicFunction {
         super(context, signature);
     }
 
+    private XsltExecutable compileExecutable(final Options options) throws XPathException {
+        final XsltCompiler xsltCompiler = FnTransform.SAXON_PROCESSOR.newXsltCompiler();
+        xsltCompiler.setErrorListener(FnTransform.ERROR_LISTENER);
+
+        for (final Map.Entry<net.sf.saxon.s9api.QName, XdmValue> entry : options.staticParams.entrySet()) {
+            xsltCompiler.setParameter(entry.getKey(), entry.getValue());
+        }
+
+        for (final IEntry<AtomicValue, Sequence> entry : options.stylesheetParams) {
+            final QName qKey = ((QNameValue) entry.key()).getQName();
+            final XdmValue value = Convert.ToSaxon.of(entry.value());
+            xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
+        }
+
+        try {
+            if (!options.resolvedStylesheetBaseURI.isEmpty()) {
+                options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.getStringValue());
+            } else {
+                options.xsltSource._2.setSystemId(context.getBaseURI().getStringValue());
+            }
+            return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
+        } catch (final SaxonApiException e) {
+            throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
+        } catch (final XPathException e) {
+            throw new RuntimeException("Invalid base URI in context", e);
+        }
+    }
+
+    /**
+     * Hash on the options used to create a compiled executable
+     * Hash should match only when the executable can be re-used.
+     *
+     * @param options options to read
+     * @return a string, the hash we want
+     */
+    private String executableHash(final Options options) {
+        return Tuple(options.resolvedStylesheetBaseURI, options
+                .stylesheetParams, options.staticParams, options.sourceChecksum, LocalDateTime.now()).toString();
+    }
+
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final Options options = new Options((MapType) args[0].itemAt(0));
-
-        final String executableHash = Tuple(options.resolvedStylesheetBaseURI, options
-                .stylesheetParams, options.staticParams, options.sourceChecksum).toString();
 
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
         final Optional<Source> sourceNode = FnTransform.getSourceNode(options.sourceNode, context.getBaseURI());
@@ -139,37 +177,12 @@ public class FnTransform extends BasicFunction {
         if (options.xsltVersion == 1.0f || options.xsltVersion == 2.0f || options.xsltVersion == 3.0f) {
             try {
                 final Holder<XPathException> compileException = new Holder<>();
-                final XsltExecutable xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash, key -> {
-                    final XsltCompiler xsltCompiler = FnTransform.SAXON_PROCESSOR.newXsltCompiler();
-                    xsltCompiler.setErrorListener(FnTransform.ERROR_LISTENER);
-
-                    for (final Map.Entry<net.sf.saxon.s9api.QName, XdmValue> entry : options.staticParams.entrySet()) {
-                        xsltCompiler.setParameter(entry.getKey(), entry.getValue());
-                    }
-
+                final XsltExecutable xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash(options), key -> {
                     try {
-                        for (final IEntry<AtomicValue, Sequence> entry : options.stylesheetParams) {
-                            final QName qKey = ((QNameValue) entry.key()).getQName();
-                            final XdmValue value = Convert.ToSaxon.of(entry.value());
-                            xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
-                        }
-                    } catch (final XPathException e) {
+                        return compileExecutable(options);
+                    } catch (XPathException e) {
                         compileException.value = e;
                         return null;
-                    }
-
-                    try {
-                        if (!options.resolvedStylesheetBaseURI.isEmpty()) {
-                            options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.getStringValue());
-                        } else {
-                            options.xsltSource._2.setSystemId(context.getBaseURI().getStringValue());
-                        }
-                        return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
-                    } catch (final SaxonApiException e) {
-                        compileException.value = new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
-                        return null;
-                    } catch (final XPathException e) {
-                        throw new RuntimeException("Invalid base URI in context", e);
                     }
                 });
 
