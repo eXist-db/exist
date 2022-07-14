@@ -205,7 +205,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private XMLGregorianCalendar calendar = null;
     private TimeZone implicitTimeZone = null;
 
-    private final Map<String, Sequence> cachedUriCollectionResults = new HashMap<String, Sequence>();
+    private final Map<String, Sequence> cachedUriCollectionResults = new HashMap<>();
 
     /**
      * the watchdog object assigned to this query.

@@ -93,7 +93,7 @@ public class FunUriCollection extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FODC0002, "No URI is supplied and default resource collection is absent.");
             }
         } else {
-            final List<String> resultUris = new LinkedList<String>();
+            final List<String> resultUris = new LinkedList<>();
 
             final String uriWithQueryString = args[0].toString();
             final int queryStringIndex = uriWithQueryString.indexOf('?');
@@ -174,19 +174,21 @@ public class FunUriCollection extends BasicFunction {
 
     private static Map<String, String> parseQueryString(final String uri) {
         final Map<String, String> map = new HashMap<>();
-        final int questionMarkIndex = (uri == null) ? -1 : uri.indexOf('?');
-        if (questionMarkIndex >= 0 && questionMarkIndex + 1 < uri.length()) {
-            String[] keyValuePairs = uri.substring(questionMarkIndex + 1).split("&");
-            for (String keyValuePair : keyValuePairs) {
-                int equalIndex = keyValuePair.indexOf('=');
-                if (equalIndex >= 0) {
-                    if (equalIndex + 1 < uri.length()) {
-                        map.put(keyValuePair.substring(0, equalIndex).trim(), keyValuePair.substring(equalIndex + 1).trim());
+        if (uri != null) {
+            final int questionMarkIndex = uri.indexOf('?');
+            if (questionMarkIndex >= 0 && questionMarkIndex + 1 < uri.length()) {
+                String[] keyValuePairs = uri.substring(questionMarkIndex + 1).split("&");
+                for (String keyValuePair : keyValuePairs) {
+                    int equalIndex = keyValuePair.indexOf('=');
+                    if (equalIndex >= 0) {
+                        if (equalIndex + 1 < uri.length()) {
+                            map.put(keyValuePair.substring(0, equalIndex).trim(), keyValuePair.substring(equalIndex + 1).trim());
+                        } else {
+                            map.put(keyValuePair.substring(0, equalIndex).trim(), "");
+                        }
                     } else {
-                        map.put(keyValuePair.substring(0, equalIndex).trim(), "");
+                        map.put(keyValuePair.trim(), "");
                     }
-                } else {
-                    map.put(keyValuePair.trim(), "");
                 }
             }
         }
@@ -199,11 +201,11 @@ public class FunUriCollection extends BasicFunction {
             final String key = queryStringEntry.getKey();
             final String value = queryStringEntry.getValue();
             if (key.equals(KEY_CONTENT_TYPE)) {
-                if (!Arrays.stream(VALUE_CONTENT_TYPES).anyMatch(contentTypeValue -> contentTypeValue.equals(value))) {
+                if (Arrays.stream(VALUE_CONTENT_TYPES).noneMatch(contentTypeValue -> contentTypeValue.equals(value))) {
                     throw new XPathException(this, ErrorCodes.FODC0004, String.format("Invalid query-string value \"%s\".", queryStringEntry));
                 }
             } else if (key.equals(KEY_STABLE)) {
-                if (!Arrays.stream(VALUE_STABLES).anyMatch(stableValue -> stableValue.equals(value))) {
+                if (Arrays.stream(VALUE_STABLES).noneMatch(stableValue -> stableValue.equals(value))) {
                     throw new XPathException(this, ErrorCodes.FODC0004, String.format("Invalid query-string value \"%s\".", queryStringEntry));
                 }
             } else if (!key.equals(KEY_MATCH)) {
