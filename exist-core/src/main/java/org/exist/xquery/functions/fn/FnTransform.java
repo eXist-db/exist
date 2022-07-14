@@ -31,6 +31,7 @@ import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.UncheckedXPathException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -130,7 +131,7 @@ public class FnTransform extends BasicFunction {
         final Options options = new Options((MapType) args[0].itemAt(0));
 
         final String executableHash = Tuple(options.resolvedStylesheetBaseURI, options
-                .stylesheetParams, options.staticParams).toString();
+                .stylesheetParams, options.staticParams, options.sourceChecksum).toString();
 
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
         final Optional<Source> sourceNode = FnTransform.getSourceNode(options.sourceNode, context.getBaseURI());
@@ -535,10 +536,7 @@ public class FnTransform extends BasicFunction {
 
         final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
         if (stylesheetText.isPresent()) {
-            final String text = stylesheetText.get();
-            final byte[] data = text.getBytes(UTF_8);
-            final long checksum = FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED);
-            results.add(Tuple("checksum://" + checksum, new StringSource(stylesheetText.get())));
+            results.add(Tuple("", new StringSource(stylesheetText.get())));
         }
 
         if (results.size() > 1) {
@@ -879,6 +877,7 @@ public class FnTransform extends BasicFunction {
         final DeliveryFormat deliveryFormat;
         final Optional<StringValue> baseOutputURI;
         final Optional<MapType> serializationParams;
+        final long sourceChecksum;
 
         Options(final MapType options) throws XPathException {
             xsltSource = getStylesheet(options);
@@ -911,7 +910,11 @@ public class FnTransform extends BasicFunction {
             } else {
                 stylesheetBaseUri = xsltSource._1;
             }
-            resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
+            if (StringUtils.isEmpty(stylesheetBaseUri)) {
+                resolvedStylesheetBaseURI = context.getBaseURI();
+            } else {
+                resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
+            }
 
             initialFunction = FnTransform.INITIAL_FUNCTION.get(options);
             functionParams = FnTransform.FUNCTION_PARAMS.get(options);
@@ -931,6 +934,7 @@ public class FnTransform extends BasicFunction {
                         "Both " + SOURCE_NODE.name + " and " + INITIAL_MATCH_SELECTION.name + " were supplied. " +
                                 "These options cannot both be supplied.");
             }
+            sourceChecksum = getSourceChecksum(options);
 
             shouldCache = FnTransform.CACHE.get(xsltVersion, options);
 
@@ -957,6 +961,16 @@ public class FnTransform extends BasicFunction {
             }
              */
             return deliveryFormat;
+        }
+
+        private long getSourceChecksum(final MapType options) throws XPathException {
+            final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
+            if (stylesheetText.isPresent()) {
+                final String text = stylesheetText.get();
+                final byte[] data = text.getBytes(UTF_8);
+                return FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED);
+            }
+            return 0L;
         }
     }
 
