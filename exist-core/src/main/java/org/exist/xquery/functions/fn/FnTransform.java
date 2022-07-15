@@ -143,13 +143,11 @@ public class FnTransform extends BasicFunction {
             if (!options.resolvedStylesheetBaseURI.isEmpty()) {
                 options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.getStringValue());
             } else {
-                options.xsltSource._2.setSystemId(context.getBaseURI().getStringValue());
+                System.err.println("options.resolvedStylesheetBaseURI.isEmpty()");
             }
             return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
         } catch (final SaxonApiException e) {
             throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
-        } catch (final XPathException e) {
-            throw new RuntimeException("Invalid base URI in context", e);
         }
     }
 
