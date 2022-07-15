@@ -307,7 +307,7 @@ public class FnTransform extends BasicFunction {
             if (options.functionParams.isPresent()) {
                 functionParams = Convert.ToSaxon.of(options.functionParams.get());
             } else {
-                functionParams = new XdmValue[0];
+                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Error - transform using XSLT 3.0 option initial-function, but the corresponding option function-params was not supplied.");
             }
             if (options.deliveryFormat == DeliveryFormat.RAW) {
                 final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));

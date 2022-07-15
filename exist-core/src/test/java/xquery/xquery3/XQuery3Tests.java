@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
         //"src/test/xquery/xquery3",
-        "src/test/xquery/xquery3/fnTransformErr9.xqm"
+        "src/test/xquery/xquery3/fnTransformErr16.xqm"
 })
 public class XQuery3Tests {
 }
