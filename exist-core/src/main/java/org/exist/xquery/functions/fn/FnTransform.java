@@ -35,9 +35,11 @@ import net.sf.saxon.trans.UncheckedXPathException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.INode;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.*;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NamespaceNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Holder;
 import org.exist.util.serializer.XQuerySerializer;
@@ -140,10 +142,8 @@ public class FnTransform extends BasicFunction {
         }
 
         try {
-            if (!options.resolvedStylesheetBaseURI.isEmpty()) {
-                options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.getStringValue());
-            } else {
-                System.err.println("options.resolvedStylesheetBaseURI.isEmpty()");
+            if (options.resolvedStylesheetBaseURI.isPresent()) {
+                options.xsltSource._2.setSystemId(options.resolvedStylesheetBaseURI.get().getStringValue());
             }
             return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
         } catch (final SaxonApiException e) {
@@ -876,7 +876,7 @@ public class FnTransform extends BasicFunction {
         final MapType stylesheetParams;
         final Map<net.sf.saxon.s9api.QName, XdmValue> staticParams;
         final float xsltVersion;
-        final AnyURIValue resolvedStylesheetBaseURI;
+        final Optional<AnyURIValue> resolvedStylesheetBaseURI;
         final Optional<QNameValue> initialFunction;
         final Optional<ArrayType> functionParams;
         final Map<net.sf.saxon.s9api.QName, XdmValue> templateParams;
@@ -926,10 +926,10 @@ public class FnTransform extends BasicFunction {
             } else {
                 stylesheetBaseUri = xsltSource._1;
             }
-            if (StringUtils.isEmpty(stylesheetBaseUri)) {
-                resolvedStylesheetBaseURI = context.getBaseURI();
+            if (!StringUtils.isEmpty(stylesheetBaseUri)) {
+                resolvedStylesheetBaseURI = Optional.of(resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI()));
             } else {
-                resolvedStylesheetBaseURI = resolveURI(new AnyURIValue(stylesheetBaseUri), context.getBaseURI());
+                resolvedStylesheetBaseURI = Optional.empty();
             }
             checksumURIs = new Tuple3<>(context.getBaseURI(), explicitStylesheetBaseUri.map(StringValue::getStringValue).orElse(""), xsltSource._1);
 
