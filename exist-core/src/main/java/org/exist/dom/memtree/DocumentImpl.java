@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -701,12 +702,17 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     public NodeImpl selectById(final String id) {
+        return selectById(id, false);
+    }
+
+    public NodeImpl selectById(final String id, boolean rootConsidered) {
         if(size == 1) {
             return null;
         }
         expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
-        if(hasIdAttribute(root.getNodeNumber(), id)) {
+        if ((rootConsidered && Objects.equals(root.getAttributeValue("xsi:type"), "xs:ID")) ||
+                hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
         }
         final int treeLevel = this.treeLevel[root.getNodeNumber()];

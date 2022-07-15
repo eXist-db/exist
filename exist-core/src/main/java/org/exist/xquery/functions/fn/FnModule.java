@@ -74,6 +74,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunDocAvailable.signature, FunDocAvailable.class),
         new FunctionDef(FunDocumentURI.FS_DOCUMENT_URI_0, FunDocumentURI.class),
         new FunctionDef(FunDocumentURI.FS_DOCUMENT_URI_1, FunDocumentURI.class),
+        new FunctionDef(FunElementWithId.FS_ELEMENT_WITH_ID_SIGNATURES[0], FunElementWithId.class),
+        new FunctionDef(FunElementWithId.FS_ELEMENT_WITH_ID_SIGNATURES[1], FunElementWithId.class),
         new FunctionDef(FunEmpty.signature, FunEmpty.class),
         new FunctionDef(FunEncodeForURI.signature, FunEncodeForURI.class),
         new FunctionDef(FunEndsWith.signatures[0], FunEndsWith.class),

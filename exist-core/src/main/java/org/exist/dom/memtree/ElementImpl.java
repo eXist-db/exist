@@ -702,4 +702,16 @@ public class ElementImpl extends NodeImpl implements Element {
 
         throw unsupported();
     }
+
+    public String getAttributeValue(final String name) {
+        int attr = 0;
+        while (attr < document.nextAttr) {
+            final QName attrQName = document.attrName[attr];
+            if (attrQName.getStringValue().equals(name)) {
+                return document.attrValue[attr];
+            }
+            ++attr;
+        }
+        return null;
+    }
 }
