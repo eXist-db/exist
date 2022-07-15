@@ -26,7 +26,7 @@ module namespace testTransform="http://exist-db.org/xquery/test/function_transfo
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
-    %test:assertEquals("Peppa pig")
+    %test:assertError("err:XTSE0165")
 function testTransform:transform-err-9() {
     let $xsl := "<xsl:stylesheet version='2.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
                          <xsl:include href='transform/staticbaseuri.xsl'/>
