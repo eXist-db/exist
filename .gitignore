@@ -19,6 +19,7 @@ exist.jar
 extensions/**/build/
 extensions/contentextraction/lib/
 extensions/debuggee/lib
+extensions/expath/lib
 extensions/indexes/lucene/lib/
 extensions/lib/
 extensions/modules/cqlparser/lib
