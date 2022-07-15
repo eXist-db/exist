@@ -510,23 +510,40 @@ public class FnTransform extends BasicFunction {
      * @throws XPathException if there is a problem resolving the location.
      */
     private Source resolveStylesheetLocation(final String stylesheetLocation) throws XPathException {
-        final Sequence document;
+
+        final URI uri = URI.create(stylesheetLocation);
+        if (uri.isAbsolute()) {
+            System.err.println("resolveStylesheetLocation() absolute: " + stylesheetLocation);
+            return resolvePossibleStylesheetLocation(stylesheetLocation);
+        } else {
+            System.err.println("resolveStylesheetLocation() relative: " + stylesheetLocation);
+            final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
+            System.err.println("resolveStylesheetLocation() resolved: " + resolved);
+            return resolvePossibleStylesheetLocation(resolved.getStringValue());
+        }
+    }
+
+    /**
+     * Resolve an absolute stylesheet location
+     *
+     * @param location
+     * @return
+     * @throws XPathException
+     */
+    private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
+
+        Sequence document = null;
         try {
-            document = DocUtils.getDocument(context, stylesheetLocation);
+            document = DocUtils.getDocument(context, location);
         } catch (final PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FODC0002,
-                    "Can not access '" + stylesheetLocation + "'" + e.getMessage());
+                    "Can not access '" + location + "'" + e.getMessage());
         }
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
             return new DOMSource((Node) document.itemAt(0));
         }
-        final EXistURIResolver eXistURIResolver = new EXistURIResolver(
-                context.getBroker().getBrokerPool(), "");
-        try {
-            return eXistURIResolver.resolve(stylesheetLocation, context.getBaseURI().getStringValue());
-        } catch (final TransformerException e) {
-            throw new XPathException(this, ErrorCodes.FOXT0002, "Unable to resolve stylesheet location: " + stylesheetLocation + ": " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
-        }
+        throw new XPathException(this, ErrorCodes.FODC0002,
+                "Location '"+ location + "' returns an item which is not a document node");
     }
 
     /**
