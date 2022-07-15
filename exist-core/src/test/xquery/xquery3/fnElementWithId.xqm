@@ -24,7 +24,6 @@ xquery version "3.1";
 module namespace fnewi="http://exist-db.org/xquery/test/function_element_with_id";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
-declare namespace x="httpx://x/ns/1.0";
 
 declare variable $fnewi:data :=
           document{

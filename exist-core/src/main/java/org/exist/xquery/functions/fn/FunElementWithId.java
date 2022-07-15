@@ -59,6 +59,7 @@ public class FunElementWithId extends Function {
 		super(context, signature);
 	}
 
+    @Override
 	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
