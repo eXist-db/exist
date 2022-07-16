@@ -41,14 +41,10 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     }
 
     @Override
-    public LocalVariable createVariable(final String name) throws XPathException {
-        try {
-            final LocalVariable var = new LocalVariable(QName.parse(context, name, null));
-            firstVar = var;
-            return var;
-        } catch (final IllegalQNameException e) {
-            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
-        }
+    public LocalVariable createVariable(final QName name) throws XPathException {
+        final LocalVariable var = new LocalVariable(name);
+        firstVar = var;
+        return var;
     }
 
     @Override

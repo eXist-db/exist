@@ -53,7 +53,7 @@ public class LetExpr extends BindingExpression {
             final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
             //Declare the iteration variable
-            final LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+            final LocalVariable inVar = new LocalVariable(varName);
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
@@ -61,8 +61,6 @@ public class LetExpr extends BindingExpression {
             context.setContextSequencePosition(0, null);
 
             returnExpr.analyze(contextInfo);
-        } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
