@@ -525,7 +525,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             return regex.containsMatch(string);
 
         } catch (final net.sf.saxon.trans.XPathException e) {
-            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
+            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
         }
     }
 
@@ -549,7 +549,7 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
             return matcher.find();
 
         } catch (final PatternSyntaxException e) {
-            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
+            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
         }
     }
 

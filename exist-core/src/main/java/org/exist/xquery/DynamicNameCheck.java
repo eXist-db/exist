@@ -41,7 +41,11 @@ public class DynamicNameCheck extends AbstractExpression {
     final private NameTest test;
     final private Expression expression;
 
-    public DynamicNameCheck(XQueryContext context, NameTest test, Expression expression) {
+    public DynamicNameCheck(XQueryContext context, NameTest test) {
+        this(context, test, null);
+    }
+
+    public DynamicNameCheck(XQueryContext context, NameTest test, final Expression expression) {
         super(context);
         this.test = test;
         this.expression = expression;

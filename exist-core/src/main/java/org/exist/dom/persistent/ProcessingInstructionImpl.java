@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.exist.util.pool.NodePool;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
@@ -44,17 +45,29 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     protected String data = null;
 
     public ProcessingInstructionImpl() {
-        super(Node.PROCESSING_INSTRUCTION_NODE);
+        this(null);
+    }
+
+    public ProcessingInstructionImpl(final Expression expression) {
+        super(expression, Node.PROCESSING_INSTRUCTION_NODE);
     }
 
     public ProcessingInstructionImpl(final NodeId nodeId, final String target, final String data) {
-        super(Node.PROCESSING_INSTRUCTION_NODE, nodeId);
+        this(null, nodeId, target, data);
+    }
+
+    public ProcessingInstructionImpl(final Expression expression, final NodeId nodeId, final String target, final String data) {
+        super(expression, Node.PROCESSING_INSTRUCTION_NODE, nodeId);
         this.target = target;
         this.data = data;
     }
 
     public ProcessingInstructionImpl(final String target, final String data) {
-        this(null, target, data);
+        this((Expression) null, target, data);
+    }
+
+    public ProcessingInstructionImpl(final Expression expression, final String target, final String data) {
+        this(expression, null, target, data);
     }
 
     @Override
@@ -197,7 +210,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         if(pooled) {
             pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
         } else {
-            pi = new ProcessingInstructionImpl();
+            pi = new ProcessingInstructionImpl(null);
         }
 
         pi.setTarget(target);

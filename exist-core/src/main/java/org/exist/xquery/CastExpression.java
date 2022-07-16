@@ -114,7 +114,7 @@ public class CastExpression extends AbstractExpression {
                         {result = item.toSequence();}
                     
                     else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
-                        result = new QNameValue(context, item.getStringValue());
+                        result = new QNameValue(this, context, item.getStringValue());
                     
                     } else {
                         throw new XPathException(this, 
@@ -195,7 +195,7 @@ public class CastExpression extends AbstractExpression {
             signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
             return new FunctionWrapper(this, signature);
         } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + typeName);
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + typeName);
         }
     }
 

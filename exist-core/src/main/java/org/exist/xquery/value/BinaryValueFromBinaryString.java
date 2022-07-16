@@ -25,6 +25,7 @@ import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
@@ -48,7 +49,11 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     private boolean closed = false;
 
     public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
-        super(null, binaryValueType);
+        this(null, binaryValueType, value);
+    }
+
+    public BinaryValueFromBinaryString(final Expression expression, BinaryValueType binaryValueType, String value) throws XPathException {
+        super(expression, null, binaryValueType);
         this.value = binaryValueType.verifyAndFormatString(value);
     }
 
@@ -66,7 +71,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             streamBinaryTo(fos);
 
         } catch (final IOException ioe) {
-            throw new XPathException(ioe);
+            throw new XPathException(getExpression(), ioe);
         } finally {
             if (fos != null) {
                 try {
@@ -83,7 +88,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
             }
         }
 
-        return new BinaryValueFromBinaryString(binaryValueType, baos.toString(UTF_8));
+        return new BinaryValueFromBinaryString(getExpression(), binaryValueType, baos.toString(UTF_8));
     }
 
     @Override

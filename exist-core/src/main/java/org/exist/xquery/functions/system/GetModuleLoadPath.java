@@ -56,6 +56,6 @@ public class GetModuleLoadPath extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(context.getModuleLoadPath());
+        return new StringValue(this, context.getModuleLoadPath());
     }
 }

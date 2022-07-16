@@ -192,7 +192,7 @@ public class FunReplace extends FunMatches {
 					}
 				}
 				final CharSequence res = regularExpression.replace(string, replace);
-				result = new StringValue(res.toString());
+				result = new StringValue(this, res.toString());
 
 			} catch (final net.sf.saxon.trans.XPathException e) {
 				switch (e.getErrorCodeLocalPart()) {

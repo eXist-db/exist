@@ -169,7 +169,7 @@ public class FnFormatDates extends BasicFunction {
             place = Optional.empty();
         }
 
-        return new StringValue(formatDate(picture, value, language, place));
+        return new StringValue(this, formatDate(picture, value, language, place));
     }
 
     private String formatDate(String pic, AbstractDateTimeValue dt, final String language,

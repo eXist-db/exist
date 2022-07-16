@@ -66,6 +66,6 @@ public class GetIndex extends BasicFunction {
         } catch (final LockException e) {
             throw new XPathException(this, "Caught lock error while searching index. Giving up.", e);
         }
-        return pos < 0 ? Sequence.EMPTY_SEQUENCE : new IntegerValue(pos, Type.LONG);
+        return pos < 0 ? Sequence.EMPTY_SEQUENCE : new IntegerValue(this, pos, Type.LONG);
     }
 }

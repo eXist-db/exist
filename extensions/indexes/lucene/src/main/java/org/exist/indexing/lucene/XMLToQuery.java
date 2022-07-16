@@ -34,6 +34,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automaton;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.lucene.QueryOptions;
 import org.w3c.dom.Element;
@@ -93,7 +94,7 @@ public class XMLToQuery {
                     query = regexQuery(getField(root, field), root, options);
                     break;
                 default:
-                    throw new XPathException("Unknown element in lucene query expression: " + localName);
+                    throw new XPathException((Expression) null, "Unknown element in lucene query expression: " + localName);
             }
         }
 
@@ -119,7 +120,7 @@ public class XMLToQuery {
                 stream.end();
                 stream.close();
             } catch (IOException e) {
-                throw new XPathException("Error while parsing phrase query: " + qstr);
+                throw new XPathException((Expression) null, "Error while parsing phrase query: " + qstr);
             }
             int slop = getSlop(node);
             if (slop > -1)
@@ -136,7 +137,7 @@ public class XMLToQuery {
                     if (expanded.length > 0)
                         query.add(expanded);
                 } catch (IOException e) {
-                    throw new XPathException("IO error while expanding query terms: " + e.getMessage(), e);
+                    throw new XPathException((Expression) null, "IO error while expanding query terms: " + e.getMessage(), e);
                 }
             } else {
                 String termStr = getTerm(field, text, analyzer);
@@ -171,7 +172,7 @@ public class XMLToQuery {
                 stream.end();
                 stream.close();
             } catch (IOException e) {
-                throw new XPathException("Error while parsing phrase query: " + qstr);
+                throw new XPathException((Expression) null, "Error while parsing phrase query: " + qstr);
             }
             return new SpanNearQuery(list.toArray(new SpanTermQuery[0]), slop, inOrder);
         }
@@ -200,7 +201,7 @@ public class XMLToQuery {
                             list.add(getSpanRegex(field, (Element) child, analyzer));
                             break;
                         default:
-                            throw new XPathException("Unknown query element: " + child.getNodeName());
+                            throw new XPathException((Expression) null, "Unknown query element: " + child.getNodeName());
                     }
                 }
             }
@@ -241,7 +242,7 @@ public class XMLToQuery {
             try {
                 end = Integer.parseInt(node.getAttribute("end"));
             } catch (NumberFormatException e) {
-                throw new XPathException("Attribute 'end' to query element 'first' should be a " +
+                throw new XPathException((Expression) null, "Attribute 'end' to query element 'first' should be a " +
                         "valid integer. Got: " + node.getAttribute("end"));
             }
         }
@@ -254,7 +255,7 @@ public class XMLToQuery {
             try {
                 return Integer.parseInt(slop);
             } catch (NumberFormatException e) {
-                throw new XPathException("Query parameter 'slop' should be an integer value. Got: " + slop);
+                throw new XPathException((Expression) null, "Query parameter 'slop' should be an integer value. Got: " + slop);
             }
         }
         return -1;
@@ -300,7 +301,7 @@ public class XMLToQuery {
 			stream.close();
 			return term;
 		} catch (IOException e) {
-			throw new XPathException("Lucene index error while creating query: " + e.getMessage(), e);
+			throw new XPathException((Expression) null, "Lucene index error while creating query: " + e.getMessage(), e);
 		}
     }
     
@@ -323,10 +324,10 @@ public class XMLToQuery {
             try {
                 maxEdits = Integer.parseInt(attr);
                 if (maxEdits < 0 || maxEdits > LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE) {
-                    throw new XPathException("Query parameter max-edits must by <= " + LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE);
+                    throw new XPathException((Expression) null, "Query parameter max-edits must by <= " + LevenshteinAutomata.MAXIMUM_SUPPORTED_DISTANCE);
                 }
             } catch (NumberFormatException e) {
-                throw new XPathException("Query parameter 'max-edits' should be an integer value. Got: " + attr);
+                throw new XPathException((Expression) null, "Query parameter 'max-edits' should be an integer value. Got: " + attr);
             }
         }
         return new FuzzyQuery(new Term(field, getText(node)), maxEdits);
@@ -428,7 +429,7 @@ public class XMLToQuery {
             try {
                 query.setBoost(Float.parseFloat(boost));
             } catch (NumberFormatException e) {
-                throw new XPathException("Bad value for boost in query parameter. Got: " + boost);
+                throw new XPathException((Expression) null, "Bad value for boost in query parameter. Got: " + boost);
             }
         }
     }

@@ -35,11 +35,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -76,10 +72,11 @@ public class XMLDBSetMimeType extends BasicFunction {
         final MimeTable mimeTable = MimeTable.getInstance();
 
         // Get first parameter
-        final String pathParameter = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[0].itemAt(0).getStringValue()).toString());
+        final Expression expression = this;
+        final String pathParameter = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[0].itemAt(0).getStringValue()).toString());
 
         if (pathParameter.matches("^[a-z]+://.*")) {
-            throw new XPathException("Can not set mime-type for resources outside the database.");
+            throw new XPathException(this, "Can not set mime-type for resources outside the database.");
         }
 
         XmldbURI pathUri = null;
@@ -87,7 +84,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             pathUri = XmldbURI.xmldbUriFor(pathParameter);
         } catch (final URISyntaxException ex) {
             logger.debug(ex.getMessage());
-            throw new XPathException("Invalid path '" + pathParameter + "'");
+            throw new XPathException(this, "Invalid path '" + pathParameter + "'");
         }
 
         // Verify mime-type input
@@ -97,7 +94,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             newMimeType = mimeTable.getContentTypeFor(pathParameter);
 
             if (newMimeType == null) {
-                throw new XPathException("Unable to determine mimetype for '" + pathParameter + "'");
+                throw new XPathException(this, "Unable to determine mimetype for '" + pathParameter + "'");
             }
 
         } else {
@@ -105,7 +102,7 @@ public class XMLDBSetMimeType extends BasicFunction {
             newMimeType = mimeTable.getContentType(args[1].getStringValue());
 
             if (newMimeType == null) {
-                throw new XPathException("mime-type '" + args[1].getStringValue() + "' is not supported.");
+                throw new XPathException(this, "mime-type '" + args[1].getStringValue() + "' is not supported.");
             }
         }
 
@@ -119,14 +116,14 @@ public class XMLDBSetMimeType extends BasicFunction {
             
             // if extension based lookup still fails
             if (currentMimeType == null) {
-                throw new XPathException("Unable to determine mime-type from path '" + pathUri + "'.");
+                throw new XPathException(this, "Unable to determine mime-type from path '" + pathUri + "'.");
             }            
         } 
 
         // Check if mimeType are equivalent
         // in some cases value null is set, then allow to set to new value (repair action)
         if (newMimeType.isXMLType() != currentMimeType.isXMLType() ) {
-            throw new XPathException("New mime-type must be a " + currentMimeType.getXMLDBType() + " mime-type");
+            throw new XPathException(this, "New mime-type must be a " + currentMimeType.getXMLDBType() + " mime-type");
         }
 
         // At this moment it is possible to update the mimetype
@@ -184,7 +181,7 @@ public class XMLDBSetMimeType extends BasicFunction {
 
             final DocumentImpl doc = lockedDocument == null ? null : lockedDocument.getDocument();
             if (doc == null) {
-                throw new XPathException("Resource '" + pathUri + "' does not exist.");
+                throw new XPathException(this, "Resource '" + pathUri + "' does not exist.");
             } else {
                 final String mimetype = doc.getMimeType();
                 returnValue = MimeTable.getInstance().getContentType(mimetype);

@@ -81,7 +81,7 @@ public class GetRunningJobs extends BasicFunction {
                 builder.startElement(new QName("job", NAMESPACE_URI, PREFIX), null);
                 builder.addAttribute(new QName("id", null, null), process.getName());
                 builder.addAttribute(new QName("action", null, null), job.getAction());
-                builder.addAttribute(new QName("start", null, null), new DateTimeValue(startDate).getStringValue());
+                builder.addAttribute(new QName("start", null, null), new DateTimeValue(this, startDate).getStringValue());
                 builder.addAttribute(new QName("info", null, null), job.getAddInfo().toString());
                 builder.endElement();
             }

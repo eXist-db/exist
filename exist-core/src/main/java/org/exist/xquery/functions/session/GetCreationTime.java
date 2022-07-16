@@ -56,11 +56,11 @@ public class GetCreationTime extends SessionFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
         if (!session.isPresent()) {
-            return XPathUtil.javaObjectToXPath(-1, context);
+            return XPathUtil.javaObjectToXPath(-1, context, this);
         }
 
         final Date creationTime = withValidSession(session.get(), SessionWrapper::getCreationTime).map(Date::new)
                 .orElseGet(() -> new Date(0));
-        return new DateTimeValue(creationTime);
+        return new DateTimeValue(this, creationTime);
     }
 }

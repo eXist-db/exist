@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 /**
@@ -36,7 +37,12 @@ public class JavaObjectValue extends AtomicValue {
 
     private final Object object;
 
-    public JavaObjectValue(Object object) {
+    public JavaObjectValue(final Object object) {
+        this(null, object);
+    }
+
+    public JavaObjectValue(final Expression expression, Object object) {
+        super(expression);
         this.object = object;
     }
 
@@ -65,17 +71,17 @@ public class JavaObjectValue extends AtomicValue {
         if (requiredType == Type.JAVA_OBJECT) {
             return this;
         }
-        throw new XPathException(ErrorCodes.FORG0001,
+        throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                 "cannot convert Java object to " + Type.getTypeName(requiredType));
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("Called effectiveBooleanValue() on JavaObjectValue");
+        throw new XPathException(getExpression(), "Called effectiveBooleanValue() on JavaObjectValue");
     }
 
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot compare Java object to " + Type.getTypeName(other.getType()));
     }
 
@@ -83,7 +89,7 @@ public class JavaObjectValue extends AtomicValue {
      * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
      */
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot compare Java object to " + Type.getTypeName(other.getType()));
     }
 
@@ -91,11 +97,11 @@ public class JavaObjectValue extends AtomicValue {
      * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
      */
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare Java objects");
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare Java objects");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare Java objects");
     }
 
     /* (non-Javadoc)
@@ -120,6 +126,6 @@ public class JavaObjectValue extends AtomicValue {
             return (T) object;
         }
 
-        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+        throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 }

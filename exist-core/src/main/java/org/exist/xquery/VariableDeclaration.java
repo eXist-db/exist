@@ -167,7 +167,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
                     if (external == null) {
                         // If no value is provided for the variable by the external environment, and VarDefaultValue
                         // is not specified, then a dynamic error is raised [err:XPDY0002]
-                        throw new XPathException(ErrorCodes.XPDY0002, "no value specified for external variable " +
+                        throw new XPathException(this, ErrorCodes.XPDY0002, "no value specified for external variable " +
                                 qname);
                     }
                     external.setSequenceType(sequenceType);

@@ -318,7 +318,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 //contextSet == null should be used to scan the whole index
                 if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -499,7 +499,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 }
                 if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -550,7 +550,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                 result = new StringValue(rs.getString(1));
             } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)));
+                result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)), null);
             } else 
                 throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
             if (rs.next()) {
@@ -624,7 +624,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 }
                 if (contextSet.getDocumentSet().contains(doc.getDocId())) {
                     NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
-                    NodeProxy p = new NodeProxy(doc, nodeId);
+                    NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
                     //VirtualNodeSet when on the DESCENDANT_OR_SELF axis
@@ -636,7 +636,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                             result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1))));
+                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)),null));
                         } else 
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     }
@@ -764,7 +764,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     return false;
                 }
                 NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
-                IStoredNode node = broker.objectWith(new NodeProxy(doc, nodeId));
+                IStoredNode node = broker.objectWith(new NodeProxy(null, doc, nodeId));
                 if (node == null) {
                     LOG.info("Node {}doesn't exist", nodeId);
                     return false;

@@ -2038,7 +2038,7 @@ public class NativeBroker extends DBBroker {
                     final int tmpDocId = getNextResourceId(transaction);
                     final Permission permission = PermissionFactory.getDefaultResourcePermission(getBrokerPool().getSecurityManager());
                     permission.setMode(Permission.DEFAULT_TEMPORARY_DOCUMENT_PERM);
-                    final DocumentImpl targetDoc = new DocumentImpl(pool, temp, tmpDocId, docName, permission, 0, null, System.currentTimeMillis(), null, null, null);
+                    final DocumentImpl targetDoc = new DocumentImpl(null, pool, temp, tmpDocId, docName, permission, 0, null, System.currentTimeMillis(), null, null, null);
 
                     //index the temporary document
                     final DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
@@ -2545,9 +2545,9 @@ public class NativeBroker extends DBBroker {
             if (sourceDocument.getResourceType() == DocumentImpl.BINARY_FILE) {
                 final BinaryDocument newDoc;
                 if (oldDoc != null) {
-                    newDoc = new BinaryDocument(copiedDocId, oldDoc);
+                    newDoc = new BinaryDocument(null, copiedDocId, oldDoc);
                 } else {
-                    newDoc = new BinaryDocument(getBrokerPool(), targetCollection, copiedDocId, newDocName);
+                    newDoc = new BinaryDocument(null, getBrokerPool(), targetCollection, copiedDocId, newDocName);
                 }
 
                 newDoc.copyOf(this, sourceDocument, oldDoc);
@@ -2561,9 +2561,9 @@ public class NativeBroker extends DBBroker {
             } else {
                 final DocumentImpl newDoc;
                 if (oldDoc != null) {
-                    newDoc = new DocumentImpl(copiedDocId, oldDoc);
+                    newDoc = new DocumentImpl(null, copiedDocId, oldDoc);
                 } else {
-                    newDoc = new DocumentImpl(pool, targetCollection, copiedDocId, newDocName);
+                    newDoc = new DocumentImpl(null, pool, targetCollection, copiedDocId, newDocName);
                 }
 
                 newDoc.copyOf(this, sourceDocument, oldDoc);
@@ -3033,7 +3033,7 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             // create a copy of the old doc to copy the nodes into it
-            final DocumentImpl tempDoc = new DocumentImpl(pool, doc.getCollection(), doc.getDocId(), doc.getFileURI());
+            final DocumentImpl tempDoc = new DocumentImpl(null, null, doc.getCollection(), doc.getDocId(), doc.getFileURI());
             tempDoc.copyOf(this, doc, doc);
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
@@ -3601,7 +3601,7 @@ public class NativeBroker extends DBBroker {
         return new DOMTransaction<IStoredNode<?>>(this, domDb, () -> lockManager.acquireBtreeReadLock(domDb.getLockName())) {
             @Override
             public IStoredNode<?> start() {
-                final Value val = domDb.get(NativeBroker.this, new NodeProxy((DocumentImpl) doc, nodeId));
+                final Value val = domDb.get(NativeBroker.this, new NodeProxy(null, (DocumentImpl) doc, nodeId));
                 if(val == null) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Node {} not found. This is usually not an error.", nodeId);

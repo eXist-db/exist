@@ -79,7 +79,7 @@ public class GetCookieValue extends RequestFunction {
 			final String cookieName = args[0].getStringValue();
 			for (final Cookie cookie : cookies) {
 				if (cookie.getName().equals(cookieName)) {
-					return new StringValue(decode(cookie.getValue()));
+					return new StringValue(this, decode(cookie.getValue()));
 				}
 			}
 		}

@@ -282,6 +282,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         if (ex.getLine() < 1 || ex.getColumn() < 1) {
                             ex.setLocation(expr.getLine(), expr.getColumn());
                         }
+                        if (ex.getLine() < 1 || ex.getColumn() < 1) {
+                            ex.setLocation(getLine(), getColumn());
+                        }
                         throw ex;
                     }
                 }
@@ -499,7 +502,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public int getLine() {
-        if (line < 0 && steps.size() > 0) {
+        if (line <= 0 && !steps.isEmpty()) {
             return steps.get(0).getLine();
         }
         return line;
@@ -507,7 +510,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public int getColumn() {
-        if (column < 0 && steps.size() > 0) {
+        if (column <= 0 && !steps.isEmpty()) {
             return steps.get(0).getColumn();
         }
         return column;

@@ -80,7 +80,7 @@ public class FunctionFunction extends BasicFunction {
     	final String funcName = args[0].getStringValue();
     	final int arity = ((NumericValue) args[1].itemAt(0)).getInt();
     	this.resolvedFunction = lookupFunction(funcName, arity);
-        return new FunctionReference(resolvedFunction);
+        return new FunctionReference(this, resolvedFunction);
     }
 
     private FunctionCall lookupFunction(String funcName, int arity) throws XPathException {

@@ -36,9 +36,9 @@ public class DebuggableExpression implements Expression, RewritableExpression {
     protected int column = -1;
 
     public DebuggableExpression(Expression expression) {
-        this.expression = expression.simplify();
-        this.line = this.expression.getLine();
-        this.column = this.expression.getColumn();
+            this.expression = expression.simplify();
+            this.line = this.expression.getLine();
+            this.column = this.expression.getColumn();
     }
 
     public int getExpressionId() {
@@ -162,7 +162,7 @@ public class DebuggableExpression implements Expression, RewritableExpression {
 
     @Override
     public void remove(Expression oldExpr) throws XPathException {
-        throw new XPathException("Method remove is not supported");
+        throw new XPathException(this, "Method remove is not supported");
     }
 
     @Override

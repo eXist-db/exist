@@ -79,7 +79,7 @@ public class InspectIndex extends BasicFunction {
 			
 			final LuceneIndexWorker index = (LuceneIndexWorker)
 				context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-			return new BooleanValue(index.hasIndex(lockedDoc.getDocument().getDocId()));
+			return new BooleanValue(this, index.hasIndex(lockedDoc.getDocument().getDocId()));
 		} catch (PermissionDeniedException e) {
 			throw new XPathException(this, LuceneModule.EXXQDYFT0001, e.getMessage());
 		} catch (URISyntaxException e) {

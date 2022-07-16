@@ -148,7 +148,7 @@ public class Sync extends BasicFunction {
     private Map<String, Sequence> getOptions(final Sequence parameter) throws XPathException {
         final Map<String, Sequence> options = new HashMap<>();
         options.put(AFTER_OPT, Sequence.EMPTY_SEQUENCE);
-        options.put(PRUNE_OPT, new BooleanValue(false));
+        options.put(PRUNE_OPT, new BooleanValue(this, false));
         options.put(EXCLUDES_OPT, Sequence.EMPTY_SEQUENCE);
 
         if (parameter.isEmpty()) {
@@ -165,12 +165,12 @@ public class Sync extends BasicFunction {
 
             // override defaults set in SerializerUtils
             for(String p : DEFAULT_PROPERTIES.stringPropertyNames()) {
-                if (optionsMap.get(new StringValue(p)).isEmpty()) {
+                if (optionsMap.get(new StringValue(this, p)).isEmpty()) {
                     outputProperties.setProperty(p, DEFAULT_PROPERTIES.getProperty(p));
                 }
             }
 
-            final Sequence seq = optionsMap.get(new StringValue(EXCLUDES_OPT));
+            final Sequence seq = optionsMap.get(new StringValue(this, EXCLUDES_OPT));
             if (!seq.isEmpty() && seq.getItemType() != Type.STRING) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Invalid value for option \"excludes\", expected xs:string* got " +
@@ -195,7 +195,7 @@ public class Sync extends BasicFunction {
             final Map<String, Sequence> options,
             final int... expectedTypes
     ) throws XPathException {
-        final Sequence p = optionsMap.get(new StringValue(name));
+        final Sequence p = optionsMap.get(new StringValue(this, name));
 
         if (p.isEmpty()) {
             return; // nothing to do, continue
@@ -243,7 +243,7 @@ public class Sync extends BasicFunction {
             excludes.add(si.nextItem().getStringValue());
         }
 
-        final Path p = FileModuleHelper.getFile(target);
+        final Path p = FileModuleHelper.getFile(target, this);
         context.pushDocumentContext();
         final MemTreeBuilder output = context.getDocumentBuilder();
         final Path targetDir;
@@ -403,7 +403,7 @@ public class Sync extends BasicFunction {
             output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
             output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
             output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
-            output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
+            output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(this, new Date(doc.getLastModified())).getStringValue());
 
             if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                 output.addAttribute(TYPE_ATTRIBUTE, "binary");

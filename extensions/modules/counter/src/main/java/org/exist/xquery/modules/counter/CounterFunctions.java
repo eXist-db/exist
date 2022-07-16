@@ -130,7 +130,7 @@ public class CounterFunctions extends BasicFunction {
 
         // Precondition check
         if(counters==null){
-            throw new XPathException("Counters are not initialized.");
+            throw new XPathException(this, "Counters are not initialized.");
         }
 
         String counterName = args[0].getStringValue();
@@ -142,7 +142,7 @@ public class CounterFunctions extends BasicFunction {
                             + Counters.DELIMITER + "' is not allowed.");
 
                 } else {
-                    return new IntegerValue(counters.createCounter(counterName), Type.LONG);
+                    return new IntegerValue(this, counters.createCounter(counterName), Type.LONG);
                 }
 
             } catch (EXistException e) {
@@ -158,7 +158,7 @@ public class CounterFunctions extends BasicFunction {
                             + Counters.DELIMITER + "' is not allowed.");
                     
                 } else {
-                    return new IntegerValue( counters.createCounter(counterName, initValue), Type.LONG);
+                    return new IntegerValue(this, counters.createCounter(counterName, initValue), Type.LONG);
                 }
 
             } catch (EXistException e) {
@@ -169,10 +169,10 @@ public class CounterFunctions extends BasicFunction {
         } else {
             try {
                 if (getSignature().equals(destroyCounter)) {
-                    return new BooleanValue(counters.destroyCounter(counterName));
+                    return new BooleanValue(this, counters.destroyCounter(counterName));
 
                 } else if (getSignature().equals(nextValue)) {
-                    return new IntegerValue(counters.nextValue(counterName), Type.LONG);
+                    return new IntegerValue(this, counters.nextValue(counterName), Type.LONG);
 
                 } else {
                     return Sequence.EMPTY_SEQUENCE;

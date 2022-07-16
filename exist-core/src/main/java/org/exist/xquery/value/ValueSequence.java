@@ -282,14 +282,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                                     }
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null) {
-                                        throw new XPathException("Internal error: nodeId == null");
+                                        throw new XPathException(node == null ? null : node.getExpression(), "Internal error: nodeId == null");
                                     }
                                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                                         nodeId = rootId;
                                     } else {
                                         nodeId = rootId.append(nodeId);
                                     }
-                                    final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                    final NodeProxy p = new NodeProxy(node == null ? null : node.getExpression(), newDoc, nodeId, node.getNodeType());
                                     // replace the node by the NodeProxy
                                     values[j] = p;
                                 }
@@ -306,7 +306,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             return set;
         } else {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -317,13 +317,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             return MemoryNodeSet.EMPTY;
         }
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (int i = 0; i <= size; i++) {
             final NodeValue v = (NodeValue) values[i];
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                throw new XPathException("Type error: the sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains nodes from stored resources.");
             }
         }

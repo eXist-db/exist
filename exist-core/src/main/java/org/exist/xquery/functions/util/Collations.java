@@ -70,7 +70,7 @@ public class Collations extends BasicFunction {
 			if (locale.getCountry().length() > 0) {
 				language += '-' + locale.getCountry();
 			}
-			result.add(new StringValue(language));
+			result.add(new StringValue(this, language));
 		}
 		return result;
 	}

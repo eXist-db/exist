@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
@@ -46,7 +47,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     private final BinaryValueManager binaryValueManager;
     private final BinaryValueType binaryValueType;
 
-    protected BinaryValue(BinaryValueManager binaryValueManager, BinaryValueType binaryValueType) {
+    protected BinaryValue(final BinaryValueManager binaryValueManager, final BinaryValueType binaryValueType) {
+        this(null, binaryValueManager, binaryValueType);
+    }
+
+    protected BinaryValue(final Expression expression, BinaryValueManager binaryValueManager, BinaryValueType binaryValueType) {
+        super(expression);
         this.binaryValueManager = binaryValueManager;
         this.binaryValueType = binaryValueType;
     }
@@ -82,10 +88,10 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                 case LTEQ:
                     return value <= 0;
                 default:
-                    throw new XPathException("Type error: cannot apply operator to numeric value");
+                    throw new XPathException(getExpression(), "Type error: cannot apply operator to numeric value");
             }
         } else {
-            throw new XPathException("Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
+            throw new XPathException(getExpression(), "Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
         }
     }
 
@@ -94,7 +100,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
             return compareTo((BinaryValue) other);
         } else {
-            throw new XPathException("Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
+            throw new XPathException(getExpression(), "Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
         }
     }
 
@@ -153,7 +159,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
         }
 
-        throw new XPathException("Cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+        throw new XPathException(getExpression(), "Cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 
     /**
@@ -169,12 +175,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     @Override
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Cannot compare values of type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), "Cannot compare values of type " + Type.getTypeName(getType()));
     }
 
     @Override
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Cannot compare values of type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), "Cannot compare values of type " + Type.getTypeName(getType()));
     }
 
     @Override
@@ -194,14 +200,14 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     break;
                 case Type.UNTYPED_ATOMIC:
                     //TODO still needed? Added trim() since it looks like a new line character is added
-                    result = new UntypedAtomicValue(getStringValue());
+                    result = new UntypedAtomicValue(getExpression(), getStringValue());
                     break;
                 case Type.STRING:
                     //TODO still needed? Added trim() since it looks like a new line character is added
-                    result = new StringValue(getStringValue());
+                    result = new StringValue(getExpression(), getStringValue());
                     break;
                 default:
-                    throw new XPathException(ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
             }
         }
         return result;
@@ -220,7 +226,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     @Override
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) + " has no boolean value.");
+        throw new XPathException(getExpression(), "FORG0006: value of type " + Type.getTypeName(getType()) + " has no boolean value.");
     }
 
     //TODO ideally this should be moved out into serialization where we can stream the output from the buf/channel by calling streamTo()
@@ -230,7 +236,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         try {
             streamTo(baos);
         } catch (final IOException ex) {
-            throw new XPathException("Unable to encode string value: " + ex.getMessage(), ex);
+            throw new XPathException(getExpression(), "Unable to encode string value: " + ex.getMessage(), ex);
         } finally {
             try {
                 baos.close();   //close the stream to ensure all data is flushed

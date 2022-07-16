@@ -54,6 +54,6 @@ public class GetURL extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new StringValue(request.getRequestURL().toString());
+		return new StringValue(this, request.getRequestURL().toString());
 	}
 }

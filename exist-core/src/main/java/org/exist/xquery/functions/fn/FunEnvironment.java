@@ -82,7 +82,7 @@ public class FunEnvironment extends BasicFunction {
 
             final Map<String, String> env = context.getEnvironmentVariables();
             for (final String key : env.keySet()) {
-                result.add(new StringValue(key));
+                result.add(new StringValue(this, key));
             }
 
             return result;
@@ -100,7 +100,7 @@ public class FunEnvironment extends BasicFunction {
                 return Sequence.EMPTY_SEQUENCE;
             }
 
-            return new StringValue(value);
+            return new StringValue(this, value);
         }
     }
 }

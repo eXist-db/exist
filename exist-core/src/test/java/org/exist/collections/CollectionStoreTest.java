@@ -121,7 +121,7 @@ public class CollectionStoreTest {
                 final byte[] bin = TEST_BIN_DOC.getBytes(UTF_8);
                 try (final InputStream is = new UnsynchronizedByteArrayInputStream(bin)) {
                     final int docId = broker.getNextResourceId(transaction);
-                    final BinaryDocument binDoc = col.addBinaryResource(transaction, broker, new BinaryDocument(broker.getBrokerPool(), col, docId, TEST_BIN_DOC_URI), is, "text/plain", bin.length, null, null, preserveOnCopy);
+                    final BinaryDocument binDoc = col.addBinaryResource(transaction, broker, new BinaryDocument(null, broker.getBrokerPool(), col, docId, TEST_BIN_DOC_URI), is, "text/plain", bin.length, null, null, preserveOnCopy);
                     assertNotNull(binDoc);
                 }
                 broker.saveCollection(transaction, col);

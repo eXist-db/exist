@@ -110,7 +110,7 @@ public class GetData extends StrictRequestFunction {
                     if (mimeType != null && !mimeType.isXMLType()) {
 
                         //binary data
-                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), isRequest);
+                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), isRequest, this);
                     }
                 }
 
@@ -191,7 +191,7 @@ public class GetData extends StrictRequestFunction {
 
             reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder, true);
             reader.setContentHandler(receiver);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, receiver);
             reader.parse(src);
@@ -214,7 +214,7 @@ public class GetData extends StrictRequestFunction {
     private Sequence parseAsString(InputStream is, String encoding) throws IOException {
         try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
-            return new StringValue(bos.toString(encoding));
+            return new StringValue(this, bos.toString(encoding));
         }
     }
 }

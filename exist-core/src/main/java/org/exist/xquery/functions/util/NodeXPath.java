@@ -64,7 +64,7 @@ public class NodeXPath extends Function
 
 		//if at the document level just return /
 		if(n.getNodeType() == Node.DOCUMENT_NODE) {
-			return new StringValue("/");
+			return new StringValue(this, "/");
 		}
 		
 		/* walk up the node hierarchy
@@ -80,7 +80,7 @@ public class NodeXPath extends Function
 			}
 		}
 		
-		return new StringValue(buf.toString());
+		return new StringValue(this, buf.toString());
 	}
 
 	private Node getParent(final Node n) {

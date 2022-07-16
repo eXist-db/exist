@@ -1032,7 +1032,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             } catch (XPathException e) {
                 if (e.getErrorCode() != ErrorCodes.FORG0001) {
-                    e = new XPathException(ErrorCodes.FORG0001, e.getMessage(), e);
+                    e = new XPathException(this, ErrorCodes.FORG0001, e.getMessage(), e);
                 }
                 throw e;
             }
@@ -1078,7 +1078,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             /*
              *  d. Otherwise, a type error is raised [err:XPTY0004].
              */
-            throw new XPathException(ErrorCodes.XPTY0004, "Incompatible primitive types");
+            throw new XPathException(this, ErrorCodes.XPTY0004, "Incompatible primitive types");
         }
 
         return value;

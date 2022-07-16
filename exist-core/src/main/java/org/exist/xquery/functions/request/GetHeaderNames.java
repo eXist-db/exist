@@ -70,7 +70,7 @@ public class GetHeaderNames extends StrictRequestFunction {
         final ValueSequence result = new ValueSequence();
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement();
-            result.add(new StringValue(headerName));
+            result.add(new StringValue(this, headerName));
         }
         return result;
     }

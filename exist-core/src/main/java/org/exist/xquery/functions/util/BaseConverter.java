@@ -99,7 +99,7 @@ public class BaseConverter extends BasicFunction {
 
         if (isCalledAs("base-to-integer")) {
             intValue = Integer.parseInt(number, intBase);
-            return new IntegerValue(intValue);
+            return new IntegerValue(this, intValue);
         } else {
             switch (Base.getBase(intBase)) {
                 case BINARY:
@@ -117,10 +117,10 @@ public class BaseConverter extends BasicFunction {
                 default:
                     {
                         logger.error("Unhandled base for conversion target in integer-to-base().");
-						throw new XPathException("Unhandled base for conversion target in integer-to-base().");
+						throw new XPathException(this, "Unhandled base for conversion target in integer-to-base().");
                     }
             }
-            return new StringValue(stringValue);
+            return new StringValue(this, stringValue);
 
         }
 

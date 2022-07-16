@@ -26,6 +26,7 @@ import com.ibm.icu.text.Replaceable;
 import com.ibm.icu.text.ReplaceableString;
 import com.ibm.icu.text.UnicodeSet;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.math.BigInteger;
@@ -108,7 +109,7 @@ class DigitsIntegerPicture extends IntegerPicture {
             final Group group = new Group();
             group.optional = formatParser.matchSet(DigitsIntegerPicture.optionalPrefixDigitSet);
             if (group.optional > 0 && mandatoryDigitsObserved) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
+                throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
             }
 
             group.mandatory = formatParser.matchSet(DigitsIntegerPicture.decimalDigitSet);
@@ -120,7 +121,7 @@ class DigitsIntegerPicture extends IntegerPicture {
                     // represent the family by the 0 character in the family
                     final int codePointFamily = DigitsIntegerPicture.getCodePointFamily(codePoint);
                     if (digitFamily != -1 && digitFamily != codePointFamily) {
-                        throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
+                        throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
                     }
                     digitFamily = codePointFamily;
                 }
@@ -128,17 +129,17 @@ class DigitsIntegerPicture extends IntegerPicture {
 
             final int trailingOptional = formatParser.matchSetOnce(DigitsIntegerPicture.optionalPrefixDigitSet);
             if (trailingOptional > 0) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
+                throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
             }
 
             if (group.optional == 0 && group.mandatory == 0) {
-                throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + formatParser.pos());
+                throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + formatParser.pos());
             }
 
             final int separator = formatParser.matchSetOnce(DigitsIntegerPicture.separatorDigitSet);
             if (separator > 0) {
                 if (formatParser.end()) {
-                    throw new XPathException(ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator at " + formatParser.match());
+                    throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator at " + formatParser.match());
                 }
                 group.separator = Optional.of(String.valueOf(Character.toChars(formatParser.matchCodes().get(0))));
                 groups.add(group);

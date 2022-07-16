@@ -54,6 +54,6 @@ public class GetRemoteAddr extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new StringValue(request.getRemoteAddr());
+		return new StringValue(this, request.getRemoteAddr());
 	}
 }

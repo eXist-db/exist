@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.storage.ElementValue;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -48,7 +49,11 @@ import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
 public class ElementImpl extends NodeImpl implements Element {
 
     public ElementImpl(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public ElementImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override
@@ -198,7 +203,7 @@ public class ElementImpl extends NodeImpl implements Element {
         int attr = document.alpha[nodeNumber];
         if(-1 < attr) {
             while(attr < document.nextAttr && document.attrParent[attr] == nodeNumber) {
-                map.setNamedItem(new AttrImpl(document, attr));
+                map.setNamedItem(new AttrImpl(getExpression(), document, attr));
                 ++attr;
             }
         }
@@ -208,7 +213,7 @@ public class ElementImpl extends NodeImpl implements Element {
             return (map);
         }
         while(ns < document.nextNamespace && document.namespaceParent[ns] == nodeNumber) {
-            final NamespaceNode node = new NamespaceNode(document, ns);
+            final NamespaceNode node = new NamespaceNode(getExpression(), document, ns);
             map.setNamedItem(node);
             ++ns;
         }
@@ -222,7 +227,7 @@ public class ElementImpl extends NodeImpl implements Element {
             while(attr < document.nextAttr && document.attrParent[attr] == nodeNumber) {
                 final QName attrQName = document.attrName[attr];
                 if(attrQName.getStringValue().equals(name)) {
-                    return new AttrImpl(document, attr);
+                    return new AttrImpl(getExpression(), document, attr);
                 }
                 ++attr;
             }
@@ -233,7 +238,7 @@ public class ElementImpl extends NodeImpl implements Element {
                 while(ns < document.nextNamespace && document.namespaceParent[ns] == nodeNumber) {
                     final QName nsQName = document.namespaceCode[ns];
                     if(nsQName.getStringValue().equals(name)) {
-                        return new NamespaceNode(document, ns);
+                        return new NamespaceNode(getExpression(), document, ns);
                     }
                     ++ns;
                 }
@@ -267,7 +272,7 @@ public class ElementImpl extends NodeImpl implements Element {
 
             final int lastNode = document.getLastNode();
             final int attrNodeNum = document.addAttribute(lastNode, attrName, newAttr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
-            return new AttrImpl(document, attrNodeNum);
+            return new AttrImpl(getExpression(), document, attrNodeNum);
         }
     }
 
@@ -281,7 +286,7 @@ public class ElementImpl extends NodeImpl implements Element {
         int attr = document.alpha[nodeNumber];
         if(-1 < attr) {
             while(attr < document.nextAttr && document.attrParent[attr] == nodeNumber) {
-                final AttrImpl attrib = new AttrImpl(document, attr);
+                final AttrImpl attrib = new AttrImpl(getExpression(), document, attr);
                 if(test.matches(attrib)) {
                     result.add(attrib);
                 }
@@ -441,7 +446,7 @@ public class ElementImpl extends NodeImpl implements Element {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 final QName name = document.attrName[attr];
                 if(name.getLocalPart().equals(localName) && name.getNamespaceURI().equals(namespaceURI)) {
-                    return (new AttrImpl(document, attr));
+                    return (new AttrImpl(getExpression(), document, attr));
                 }
                 ++attr;
             }
@@ -452,7 +457,7 @@ public class ElementImpl extends NodeImpl implements Element {
                 while((ns < document.nextNamespace) && (document.namespaceParent[ns] == nodeNumber)) {
                     final QName nsQName = document.namespaceCode[ns];
                     if(nsQName.getLocalPart().equals(localName)) {
-                        return (new NamespaceNode(document, ns));
+                        return (new NamespaceNode(getExpression(), document, ns));
                     }
                     ++ns;
                 }

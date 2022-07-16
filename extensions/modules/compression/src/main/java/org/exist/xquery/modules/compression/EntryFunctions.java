@@ -158,28 +158,28 @@ public class EntryFunctions extends BasicFunction {
 
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?) as empty-sequence()
     private FunctionReference fsStoreEntry3(final Sequence[] args) throws XPathException {
-        final Path fsDest = getFile(args[0].itemAt(0).toString());
-        return new FunctionReference(new FunctionCall(context, new StoreFsFunction3(context, fsDest)));
+        final Path fsDest = getFile(args[0].itemAt(0).toString(), this);
+        return new FunctionReference(this, new FunctionCall(context, new StoreFsFunction3(context, fsDest)));
 
     }
 
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*) as empty-sequence()
     private FunctionReference fsStoreEntry4(final Sequence[] args) throws XPathException {
-        final Path fsDest = getFile(args[0].itemAt(0).toString());
-        return new FunctionReference(new FunctionCall(context, new StoreFsFunction4(context, fsDest)));
+        final Path fsDest = getFile(args[0].itemAt(0).toString(), this);
+        return new FunctionReference(this, new FunctionCall(context, new StoreFsFunction4(context, fsDest)));
     }
 
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?) as empty-sequence()
     private FunctionReference dbStoreEntry3(final Sequence[] args) throws XPathException {
         final XmldbURI destCollection = XmldbURI.create(args[0].itemAt(0).toString());
-        return new FunctionReference(new FunctionCall(context, new StoreDbFunction3(context, destCollection)));
+        return new FunctionReference(this, new FunctionCall(context, new StoreDbFunction3(context, destCollection)));
 
     }
 
     // returns a function reference like: ($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*) as empty-sequence()
     private FunctionReference dbStoreEntry4(final Sequence[] args) throws XPathException {
         final XmldbURI destCollection = XmldbURI.create(args[0].itemAt(0).toString());
-        return new FunctionReference(new FunctionCall(context, new StoreDbFunction4(context, destCollection)));
+        return new FunctionReference(this, new FunctionCall(context, new StoreDbFunction4(context, destCollection)));
     }
 
     private static class StoreFsFunction3 extends StoreFsFunction {
@@ -364,12 +364,12 @@ public class EntryFunctions extends BasicFunction {
      * @return File object
      * @throws XPathException Thrown when the URL cannot be used.
      */
-    public static Path getFile(final String path) throws XPathException {
+    public static Path getFile(final String path, final Expression expression) throws XPathException {
         if(path.startsWith("file:")){
             try {
                 return Paths.get(new URI(path));
             } catch (Exception ex) { // catch all (URISyntaxException)
-                throw new XPathException(path + " is not a valid URI: '"+ ex.getMessage() +"'");
+                throw new XPathException(expression, path + " is not a valid URI: '"+ ex.getMessage() +"'");
             }
         } else {
             return Paths.get(path);

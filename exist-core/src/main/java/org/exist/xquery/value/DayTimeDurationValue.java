@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.value.FloatingPointConverter;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -40,26 +41,42 @@ public class DayTimeDurationValue extends OrderedDurationValue {
     public static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
 
-    DayTimeDurationValue(Duration duration) throws XPathException {
-        super(duration);
+    DayTimeDurationValue(final Duration duration) throws XPathException {
+        this(null, duration);
+    }
+
+    DayTimeDurationValue(final Expression expression, Duration duration) throws XPathException {
+        super(expression, duration);
         if (duration.isSet(DatatypeConstants.YEARS) || duration.isSet(DatatypeConstants.MONTHS)) {
-            throw new XPathException(ErrorCodes.XPTY0004, "the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "the value '" + duration + "' is not an xdt:dayTimeDuration since it specifies year or month values");
         }
     }
 
     public DayTimeDurationValue(long millis) throws XPathException {
-        this(TimeUtils.getInstance().newDurationDayTime(millis));
+        this(null, millis);
+    }
+
+    public DayTimeDurationValue(final Expression expression, long millis) throws XPathException {
+        this(expression, TimeUtils.getInstance().newDurationDayTime(millis));
     }
 
     public DayTimeDurationValue(String str) throws XPathException {
-        this(createDurationDayTime(StringValue.trimWhitespace(str)));
+        this(null, str);
+    }
+
+    public DayTimeDurationValue(final Expression expression, String str) throws XPathException {
+        this(expression, createDurationDayTime(StringValue.trimWhitespace(str), expression));
     }
 
     private static Duration createDurationDayTime(String str) throws XPathException {
+        return createDurationDayTime(str, null);
+    }
+
+    private static Duration createDurationDayTime(String str, final Expression expression) throws XPathException {
         try {
             return TimeUtils.getInstance().newDurationDayTime(str);
         } catch (final IllegalArgumentException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
+            throw new XPathException(expression, ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
                     " from \"" + str + "\"");
         }
     }
@@ -160,38 +177,38 @@ public class DayTimeDurationValue extends OrderedDurationValue {
             case Type.ITEM:
             case Type.ATOMIC:
             case Type.DAY_TIME_DURATION:
-                return new DayTimeDurationValue(getCanonicalDuration());
+                return new DayTimeDurationValue(getExpression(), getCanonicalDuration());
             case Type.STRING: {
-                final DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
-                return new StringValue(dtdv.getStringValue());
+                final DayTimeDurationValue dtdv = new DayTimeDurationValue(getExpression(), getCanonicalDuration());
+                return new StringValue(getExpression(), dtdv.getStringValue());
             }
             case Type.DURATION:
-                return new DurationValue(TimeUtils.getInstance().newDuration(
+                return new DurationValue(getExpression(), TimeUtils.getInstance().newDuration(
                         duration.getSign() >= 0, null, null,
                         (BigInteger) duration.getField(DatatypeConstants.DAYS),
                         (BigInteger) duration.getField(DatatypeConstants.HOURS),
                         (BigInteger) duration.getField(DatatypeConstants.MINUTES),
                         (BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
             case Type.YEAR_MONTH_DURATION:
-                return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);
+                return new YearMonthDurationValue(getExpression(), YearMonthDurationValue.CANONICAL_ZERO_DURATION);
             //case Type.DOUBLE:
             //return new DoubleValue(monthsValueSigned().doubleValue());
             //return new DoubleValue(Double.NaN);
             //case Type.DECIMAL:
             //return new DecimalValue(monthsValueSigned().doubleValue());
             case Type.UNTYPED_ATOMIC: {
-                final DayTimeDurationValue dtdv = new DayTimeDurationValue(getCanonicalDuration());
-                return new UntypedAtomicValue(dtdv.getStringValue());
+                final DayTimeDurationValue dtdv = new DayTimeDurationValue(getExpression(), getCanonicalDuration());
+                return new UntypedAtomicValue(getExpression(), dtdv.getStringValue());
             }
             default:
-                throw new XPathException(ErrorCodes.XPTY0004, "cannot cast '" +
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '" +
                         Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
                         Type.getTypeName(requiredType));
         }
     }
 
     protected DurationValue createSameKind(Duration dur) throws XPathException {
-        return new DayTimeDurationValue(dur);
+        return new DayTimeDurationValue(getExpression(), dur);
     }
 	
 	/*
@@ -199,7 +216,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		try {
 			return super.plus(other);
 		} catch (IllegalArgumentException e) {
-				throw new XPathException("Operand to plus should be of type xdt:dayTimeDuration, xs:time, " +
+				throw new XPathException(getExpression(), "Operand to plus should be of type xdt:dayTimeDuration, xs:time, " +
 					"xs:date or xs:dateTime; got: " +
 					Type.getTypeName(other.getType()));
 		}
@@ -210,40 +227,40 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         if (other instanceof NumericValue) {
             //If $arg2 is NaN an error is raised [err:FOCA0005]
             if (((NumericValue) other).isNaN()) {
-                throw new XPathException(ErrorCodes.FOCA0005, "Operand is not a number");
+                throw new XPathException(getExpression(), ErrorCodes.FOCA0005, "Operand is not a number");
             }
             //If $arg2 is positive or negative infinity, the result overflows
             if (((NumericValue) other).isInfinite()) {
-                throw new XPathException(ErrorCodes.FODT0002, "Multiplication by infinity overflow");
+                throw new XPathException(getExpression(), ErrorCodes.FODT0002, "Multiplication by infinity overflow");
             }
         }
         final BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
         final boolean isFactorNegative = factor.signum() < 0;
-        final DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
+        final DayTimeDurationValue product = new DayTimeDurationValue(getExpression(), duration.multiply(factor.abs()));
         if (isFactorNegative) {
-            return new DayTimeDurationValue(product.negate().getCanonicalDuration());
+            return new DayTimeDurationValue(getExpression(), product.negate().getCanonicalDuration());
         }
-        return new DayTimeDurationValue(product.getCanonicalDuration());
+        return new DayTimeDurationValue(getExpression(), product.getCanonicalDuration());
 
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
         if (other.getType() == Type.DAY_TIME_DURATION) {
-            final DecimalValue a = new DecimalValue(secondsValueSigned());
-            final DecimalValue b = new DecimalValue(((DayTimeDurationValue) other).secondsValueSigned());
-            return new DecimalValue(a.value.divide(b.value, 20, RoundingMode.HALF_UP));
+            final DecimalValue a = new DecimalValue(getExpression(), secondsValueSigned());
+            final DecimalValue b = new DecimalValue(getExpression(), ((DayTimeDurationValue) other).secondsValueSigned());
+            return new DecimalValue(getExpression(), a.value.divide(b.value, 20, RoundingMode.HALF_UP));
         }
         if (other instanceof NumericValue) {
             if (((NumericValue) other).isNaN()) {
-                throw new XPathException(ErrorCodes.FOCA0005, "Operand is not a number");
+                throw new XPathException(getExpression(), ErrorCodes.FOCA0005, "Operand is not a number");
             }
             //If $arg2 is positive or negative infinity, the result is a zero-length duration
             if (((NumericValue) other).isInfinite()) {
-                return new DayTimeDurationValue("PT0S");
+                return new DayTimeDurationValue(getExpression(), "PT0S");
             }
             //If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
             if (((NumericValue) other).isZero()) {
-                throw new XPathException(ErrorCodes.FODT0002, "Division by zero");
+                throw new XPathException(getExpression(), ErrorCodes.FODT0002, "Division by zero");
             }
         }
         final BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
@@ -251,19 +268,18 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         final BigDecimal secondsValueSigned = secondsValueSigned();
         final DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), RoundingMode.HALF_UP));
         if (isDivisorNegative) {
-            return new DayTimeDurationValue(quotient.negate().getCanonicalDuration());
+            return new DayTimeDurationValue(getExpression(), quotient.negate().getCanonicalDuration());
         }
-        return new DayTimeDurationValue(quotient.getCanonicalDuration());
+        return new DayTimeDurationValue(getExpression(), quotient.getCanonicalDuration());
     }
 
     private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {
-        return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+        return new DayTimeDurationValue(getExpression(), TimeUtils.getInstance().newDuration(
                 x.signum() >= 0, null, null, null, null, null, x.abs()));
-
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
                 " has no boolean value.");
     }
 }

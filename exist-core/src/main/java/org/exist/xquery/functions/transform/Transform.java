@@ -205,7 +205,7 @@ public class Transform extends BasicFunction {
 
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
+                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(this, builder, true);
                 final SAXResult result = new SAXResult(builderReceiver);
                 result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
                 handler.setResult(result);

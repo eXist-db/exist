@@ -37,6 +37,7 @@ import com.ibm.icu.util.VersionInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -104,6 +105,7 @@ public class Collations {
      *
      * The original code is from saxon (@linkplain http://saxon.sf.net).
      *
+     * 
      * @param uri The URI describing the collation and settings
      *
      * @return The Collator for the URI, or null.
@@ -111,6 +113,23 @@ public class Collations {
      * @throws XPathException If an error occurs whilst constructing the Collator
      */
     public static @Nullable Collator getCollationFromURI(final String uri) throws XPathException {
+        return getCollationFromURI(uri, null);
+    }
+
+    /**
+     * Get a {@link Comparator}from the specified URI.
+     *
+     * The original code is from saxon (@linkplain http://saxon.sf.net).
+     *
+     * 
+     * @param uri The URI describing the collation and settings
+     * @param expression The expression from which the collation derives
+     *
+     * @return The Collator for the URI, or null.
+     *
+     * @throws XPathException If an error occurs whilst constructing the Collator
+     */
+    public static @Nullable Collator getCollationFromURI(final String uri, @Nullable final Expression expression) throws XPathException {
         final Collator collator;
 
         if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith(UCA_COLLATION_URI) || uri.startsWith("?")) {
@@ -214,19 +233,19 @@ public class Collations {
                 collator = getCollationFromParams(fallback, lang, version,
                         strength, maxVariable, alternate, backwards,
                         normalization, caseLevel, caseFirst, numeric,
-                        reorder, decomposition);
+                        reorder, decomposition, expression);
             }
         } else if(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI.equals(uri)) {
             try {
                 collator = getHtmlAsciiCaseInsensitiveCollator();
             } catch (final Exception e) {
-                throw new XPathException("Unable to instantiate HTML ASCII Case Insensitive Collator: " + e.getMessage(), e);
+                throw new XPathException(expression, "Unable to instantiate HTML ASCII Case Insensitive Collator: " + e.getMessage(), e);
             }
         } else if(XQTS_ASCII_CASE_BLIND_COLLATION_URI.equals(uri)) {
             try {
                 collator = getXqtsAsciiCaseBlindCollator();
             } catch (final Exception e) {
-                throw new XPathException("Unable to instantiate XQTS ASCII Case Blind Collator: " + e.getMessage(), e);
+                throw new XPathException(expression, "Unable to instantiate XQTS ASCII Case Blind Collator: " + e.getMessage(), e);
             }
         } else if (uri.startsWith("java:")) {
             // java class specified: this should be a subclass of
@@ -237,20 +256,20 @@ public class Collations {
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
                     final String msg = "The specified collator class '" + collatorClass.getName() + "' is not a subclass of com.ibm.icu.text.Collator";
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
                 }
                 collator = (Collator) collatorClass.newInstance();
             } catch (final Exception e) {
                 final String msg = "The specified collator class " + uriClassName + " could not be found";
                 logger.error(msg);
-                throw new XPathException(ErrorCodes.FOCH0002, msg, e);
+                throw new XPathException(expression, ErrorCodes.FOCH0002, msg, e);
             }
         } else if (UNICODE_CODEPOINT_COLLATION_URI.equals(uri)) {
             collator = null;
         } else {
             final String msg = "Unknown collation : '" + uri + "'";
             logger.error(msg);
-            throw new XPathException(ErrorCodes.FOCH0002, msg);
+            throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
         }
 
         if (collator != null) {
@@ -456,6 +475,55 @@ public class Collations {
             final boolean caseLevel, @Nullable final String caseFirst,
             final boolean numeric, @Nullable final String reorder,
             @Nullable final String decomposition) throws XPathException {
+        return getCollationFromParams(fallback, lang, version, strength, maxVariable, alternate, backwards, normalization,
+                                      caseLevel, caseFirst, numeric, reorder, decomposition, null);
+    }
+
+    /**
+     * Get a Collator with the provided settings.
+     *
+     * @param fallback Determines whether the processor uses a fallback
+     *     collation if a conformant collation is not available.
+     * @param lang language code: a string in the lexical space of xs:language.
+     * @param strength The collation strength as defined in UCA.
+     * @param maxVariable Indicates that all characters in the specified group
+     *     and earlier groups are treated as "noise" characters to be handled
+     *     as defined by the alternate parameter. "space" | "punct" | "symbol".
+     *     | "currency".
+     * @param alternate Controls the handling of characters such as spaces and
+     *     hyphens; specifically, the "noise" characters in the groups selected
+     *     by the maxVariable parameter. "non-ignorable" | "shifted" |
+     *     "blanked".
+     * @param backwards indicates that the last accent in the string is the
+     *     most significant.
+     * @param normalization Indicates whether strings are converted to
+     *     normalization form D.
+     * @param caseLevel When used with primary strength, setting caseLevel has
+     *     the effect of ignoring accents while taking account of case.
+     * @param caseFirst Indicates whether upper-case precedes lower-case or
+     *     vice versa.
+     * @param numeric When numeric is specified, a sequence of consecutive
+     *     digits is interpreted as a number, for example chap2 sorts before
+     *     chap12.
+     * @param reorder Determines the relative ordering of text in different
+     *     scripts; for example the value digit,Grek,Latn indicates that
+     *     digits precede Greek letters, which precede Latin letters.
+     * @param decomposition The decomposition
+     * @param expression the expression from which the collation derives
+     *
+     * @return The collator of null if a Collator could not be retrieved
+     *
+     * @throws XPathException if an error occurs whilst getting the Collator
+     */
+    private static @Nullable Collator getCollationFromParams(
+            final boolean fallback, @Nullable final String lang,
+            @Nullable final String version, @Nullable final String strength,
+            final String maxVariable, final String alternate,
+            final boolean backwards, final boolean normalization,
+            final boolean caseLevel, @Nullable final String caseFirst,
+            final boolean numeric, @Nullable final String reorder,
+            @Nullable final String decomposition,
+            @Nullable final Expression expression) throws XPathException {
 
         final Collator collator;
         if ("sme-SE".equals(lang)) {
@@ -466,7 +534,7 @@ public class Collations {
                 return null;
             }
         } else {
-            final ULocale locale = getLocale(lang);
+            final ULocale locale = getLocale(lang, expression);
             collator = Collator.getInstance(locale);
         }
 
@@ -481,11 +549,11 @@ public class Collations {
                 versionInfo = VersionInfo.getInstance(version);
             } catch (final IllegalArgumentException iae) {
                 logger.error(iae.getMessage(), iae);
-                throw new XPathException(iae.getMessage(), iae);
+                throw new XPathException(expression, iae.getMessage(), iae);
             }
 
             if(collator.getVersion().compareTo(versionInfo) < 0) {
-                throw new XPathException("Requested UCA Collation version: " + version + ", however eXist-db only has ICU UCA: " + collator.getVersion().toString());
+                throw new XPathException(expression, "Requested UCA Collation version: " + version + ", however eXist-db only has ICU UCA: " + collator.getVersion().toString());
             }
         }
 
@@ -520,7 +588,7 @@ public class Collations {
                 default:
                     final String msg = "eXist-db only supports Collation strengths of 'identical', 'primary', 'secondary', 'tertiary' or 'quaternary', requested: " + strength;
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
 
             }
         }
@@ -546,7 +614,7 @@ public class Collations {
                 default:
                     final String msg = "eXist-db only supports Collation maxVariables of 'space', 'punct', 'symbol', or 'currency', requested: " + maxVariable;
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -564,7 +632,7 @@ public class Collations {
                 default:
                     final String msg = "Collation alternate should be either 'non-ignorable', 'shifted' or 'blanked', but received: " + caseFirst;
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -595,7 +663,7 @@ public class Collations {
                 default:
                     final String msg = "Collation case first should be either 'upper' or 'lower', but received: " + caseFirst;
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -639,7 +707,7 @@ public class Collations {
                 default:
                     final String msg = "Collation decomposition should be either 'none', 'full' or 'standard', but received: " + decomposition;
                     logger.error(msg);
-                    throw new XPathException(ErrorCodes.FOCH0002, msg);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
             }
         }
 
@@ -688,7 +756,7 @@ public class Collations {
      *
      * @return The locale
      */
-    private static ULocale getLocale(@Nullable final String lang) throws XPathException {
+    private static ULocale getLocale(@Nullable final String lang, @Nullable final Expression expression) throws XPathException {
         if(lang == null) {
             return ULocale.getDefault();
         } else {
@@ -704,7 +772,7 @@ public class Collations {
                     return new ULocale(components[0]);
 
                 default:
-                    throw new XPathException(ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
             }
         }
     }

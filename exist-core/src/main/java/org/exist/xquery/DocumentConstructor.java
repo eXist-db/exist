@@ -80,7 +80,7 @@ public class DocumentConstructor extends NodeConstructor {
         context.pushDocumentContext();
 
         final MemTreeBuilder builder = context.getDocumentBuilder(true);
-        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
 
         try {
             if(!contentSeq.isEmpty()) {

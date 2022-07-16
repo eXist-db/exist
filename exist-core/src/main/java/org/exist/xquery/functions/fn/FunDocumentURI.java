@@ -106,12 +106,12 @@ public class FunDocumentURI extends Function {
             final NodeProxy node = (NodeProxy) value;
             if (node.isDocument()) {
                 final XmldbURI path = node.getOwnerDocument().getURI();
-                result = new AnyURIValue(path);
+                result = new AnyURIValue(this, path);
             }
 
         } else {
             if (value instanceof DocumentImpl && ((DocumentImpl) value).getDocumentURI() != null) {
-                result = new AnyURIValue(((DocumentImpl) value).getDocumentURI());
+                result = new AnyURIValue(this, ((DocumentImpl) value).getDocumentURI());
             }
         }
 

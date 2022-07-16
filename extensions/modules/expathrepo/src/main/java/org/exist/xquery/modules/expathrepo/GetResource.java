@@ -71,9 +71,9 @@ public class GetResource extends BasicFunction {
                         try {
                             // FileSystemResolver already returns an input stream
                             StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
-                            return Base64BinaryDocument.getInstance(context, source.getInputStream());
+                            return Base64BinaryDocument.getInstance(context, source.getInputStream(), this);
                         } catch (Storage.NotExistException e) {
-                            throw new XPathException(ErrorCodes.FODC0002, "Resource " + path + " does not exist.", e);
+                            throw new XPathException(this, ErrorCodes.FODC0002, "Resource " + path + " does not exist.", e);
                         }
                     }
                 }
@@ -81,7 +81,7 @@ public class GetResource extends BasicFunction {
 			    throw new XPathException(this, ErrorCodes.FOER0000, "Caught package error while reading expath package");
 		    }
 		} else {
-		    throw new XPathException("expath repository not available");
+		    throw new XPathException(this, "expath repository not available");
 		}
         return Sequence.EMPTY_SEQUENCE;
 	}

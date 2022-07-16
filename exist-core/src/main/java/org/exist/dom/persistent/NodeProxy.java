@@ -110,6 +110,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     private QName qname = null;
 
+    private final Expression expression;
+
     /**
      * Creates a new <code>NodeProxy</code> instance.
      *
@@ -117,7 +119,18 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param nodeId a <code>NodeId</code> value
      */
     public NodeProxy(final DocumentImpl doc, final NodeId nodeId) {
-        this(doc, nodeId, UNKNOWN_NODE_TYPE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+        this(null, doc, nodeId);
+    }
+
+    /**
+     * Creates a new <code>NodeProxy</code> instance.
+     *
+     * @param expression the expression from which this node value derives
+     * @param doc        a <code>DocumentImpl</code> value
+     * @param nodeId     a <code>NodeId</code> value
+     */
+    public NodeProxy(final Expression expression, final DocumentImpl doc, final NodeId nodeId) {
+        this(expression, doc, nodeId, UNKNOWN_NODE_TYPE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
     }
 
     /**
@@ -128,7 +141,19 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param address a <code>long</code> value
      */
     public NodeProxy(final DocumentImpl doc, final NodeId nodeId, final long address) {
-        this(doc, nodeId, UNKNOWN_NODE_TYPE, address);
+        this(null, doc, nodeId, address);
+    }
+
+    /**
+     * Creates a new <code>NodeProxy</code> instance.
+     *
+     * @param expression the expression from which this node value derives
+     * @param doc        a <code>DocumentImpl</code> value
+     * @param nodeId     a <code>NodeId</code> value
+     * @param address    a <code>long</code> value
+     */
+    public NodeProxy(final Expression expression, final DocumentImpl doc, final NodeId nodeId, final long address) {
+        this(expression, doc, nodeId, UNKNOWN_NODE_TYPE, address);
     }
 
     /**
@@ -139,7 +164,19 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param nodeType a <code>short</code> value
      */
     public NodeProxy(final DocumentImpl doc, final NodeId nodeId, final short nodeType) {
-        this(doc, nodeId, nodeType, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+        this(null, doc, nodeId, nodeType);
+    }
+
+    /**
+     * Creates a new <code>NodeProxy</code> instance.
+     *
+     * @param expression the expression from which this node value derives
+     * @param doc        a <code>DocumentImpl</code> value
+     * @param nodeId     a <code>NodeId</code> value
+     * @param nodeType   a <code>short</code> value
+     */
+    public NodeProxy(final Expression expression, final DocumentImpl doc, final NodeId nodeId, final short nodeType) {
+        this(expression, doc, nodeId, nodeType, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
     }
 
     /**
@@ -151,6 +188,20 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param address  a <code>long</code> value
      */
     public NodeProxy(final DocumentImpl doc, final NodeId nodeId, final short nodeType, final long address) {
+        this(null, doc, nodeId, nodeType, address);
+    }
+
+    /**
+     * Creates a new <code>NodeProxy</code> instance.
+     *
+     * @param expression the expression from which this node value derives
+     * @param doc        a <code>DocumentImpl</code> value
+     * @param nodeId     a <code>NodeId</code> value
+     * @param nodeType   a <code>short</code> value
+     * @param address    a <code>long</code> value
+     */
+    public NodeProxy(final Expression expression, final DocumentImpl doc, final NodeId nodeId, final short nodeType, final long address) {
+        this.expression = (expression == null && doc != null) ? doc.getExpression() : expression;
         this.doc = doc;
         this.nodeType = nodeType;
         this.internalAddress = address;
@@ -172,7 +223,17 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param n a <code>NodeHandle</code> value
      */
     public NodeProxy(final NodeHandle n) {
-        this(n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        this(null, n);
+    }
+
+    /**
+     * Creates a new <code>NodeProxy</code> instance.
+     *
+     * @param expression the expression from which the node handle derives
+     * @param n a <code>NodeHandle</code> value
+     */
+    public NodeProxy(final Expression expression, final NodeHandle n) {
+        this((expression == null && n instanceof NodeProxy) ? ((NodeProxy) n).getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
         if(n instanceof NodeProxy) {
             this.match = ((NodeProxy) n).match;
             this.context = ((NodeProxy) n).context;
@@ -185,7 +246,21 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param doc a <code>DocumentImpl</code> value
      */
     public NodeProxy(final DocumentImpl doc) {
-        this(doc, NodeId.DOCUMENT_NODE, Node.DOCUMENT_NODE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+        this(null, doc);
+    }
+
+    /**
+     * create a proxy to a document node
+     *
+     * @param expression the expression from which the document node derives
+     * @param doc a <code>DocumentImpl</code> value
+     */
+    public NodeProxy(final Expression expression, final DocumentImpl doc) {
+        this(expression, doc, NodeId.DOCUMENT_NODE, Node.DOCUMENT_NODE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     @Override
@@ -280,7 +355,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean equals(final NodeValue other) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException(expression, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(otherNode.doc.getDocId() != doc.getDocId()) {
@@ -292,7 +367,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean before(final NodeValue other, final boolean isPreceding) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException(expression, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(doc.getDocId() != otherNode.doc.getDocId()) {
@@ -305,7 +380,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public boolean after(final NodeValue other, final boolean isFollowing) throws XPathException {
         if(other.getImplementationType() != NodeValue.PERSISTENT_NODE) {
-            throw new XPathException("Cannot compare persistent node with in-memory node");
+            throw new XPathException(expression, "Cannot compare persistent node with in-memory node");
         }
         final NodeProxy otherNode = (NodeProxy) other;
         if(doc.getDocId() != otherNode.doc.getDocId()) {
@@ -663,6 +738,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     // getters from INodeHandle and persistent.NodeHandle
     public StoredNode asStoredNode() {
         return new StoredNode(
+            this.getExpression(),
             this.getNodeType(),
             this.getNodeId(),
             this.getOwnerDocument(),
@@ -677,7 +753,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        return UntypedAtomicValue.convertTo(getNodeValue(), requiredType);
+        return UntypedAtomicValue.convertTo(getNodeValue(), requiredType, null);
     }
 
     @Override
@@ -1096,7 +1172,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             return NodeSet.EMPTY_SET;
         }
 
-        final NodeProxy parent = new NodeProxy(doc, pid, Node.ELEMENT_NODE);
+        final NodeProxy parent = new NodeProxy(expression, doc, pid, Node.ELEMENT_NODE);
         if(contextId != Expression.NO_CONTEXT_ID) {
             parent.addContextNode(contextId, this);
         } else {
@@ -1115,7 +1191,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
         NodeId parentID = nodeId.getParentId();
         while(parentID != null) {
-            final NodeProxy parent = new NodeProxy(getOwnerDocument(), parentID, Node.ELEMENT_NODE);
+            final NodeProxy parent = new NodeProxy(expression, getOwnerDocument(), parentID, Node.ELEMENT_NODE);
             if(contextId != Expression.NO_CONTEXT_ID) {
                 parent.addContextNode(contextId, this);
             } else {
@@ -1221,7 +1297,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
                 final AttrImpl attr = (AttrImpl) reader.getNode();
                 if (test.matches(attr)) {
-                    final NodeProxy child = new NodeProxy(attr);
+                    final NodeProxy child = new NodeProxy(expression, attr);
                     if (Expression.NO_CONTEXT_ID != contextId) {
                         child.addContextNode(contextId, this);
                     } else {
@@ -1259,7 +1335,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         for(int i = 0; i < children.getLength(); i++) {
             child = (IStoredNode<?>) children.item(i);
             if(child.getQName().equals(qname)) {
-                final NodeProxy p = new NodeProxy(doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
+                final NodeProxy p = new NodeProxy(expression, doc, child.getNodeId(), Node.ELEMENT_NODE, child.getInternalAddress());
                 if(Expression.NO_CONTEXT_ID != contextId) {
                     p.addContextNode(contextId, this);
                 } else {
@@ -1436,7 +1512,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public NodeSet docsToNodeSet() {
-        return new NodeProxy(doc, NodeId.DOCUMENT_NODE);
+        return new NodeProxy(expression, doc, NodeId.DOCUMENT_NODE);
     }
 
     @Override

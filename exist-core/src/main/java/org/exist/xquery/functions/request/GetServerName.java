@@ -54,7 +54,7 @@ public class GetServerName extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new StringValue(request.getServerName());
+		return new StringValue(this, request.getServerName());
 	}
 	
 }

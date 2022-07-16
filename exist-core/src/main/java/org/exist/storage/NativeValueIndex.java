@@ -1241,7 +1241,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     for (int j = 0; j < gidsCount; j++) {
                         final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
-                        final NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+                        final NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
 
                         // if a context set is specified, we can directly check if the
                         // matching node is a descendant of one of the nodes
@@ -1366,7 +1366,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         if (contextSet != null) {
                             parentNode = contextSet.get(storedDocument, nodeId);
                         } else {
-                            parentNode = new NodeProxy(storedDocument, nodeId);
+                            parentNode = new NodeProxy(null, storedDocument, nodeId);
                         }
 
                         if (parentNode != null) {

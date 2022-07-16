@@ -91,7 +91,7 @@ public class NodeImplTest {
 
     private static class StubNodeImpl extends NodeImpl<StubNodeImpl> {
         public StubNodeImpl() {
-            super(null, 1);
+            super(null, null, 1);
         }
 
         @Override

@@ -133,7 +133,7 @@ public class FunSubstring extends Function {
                     // < fn:round($startingLoc) + fn:round($length)
                     NumericValue endingLoc;
                     if (!length.isInfinite()) {
-                        endingLoc = (NumericValue) new IntegerValue(startingLoc.getInt() + length.getInt());
+                        endingLoc = (NumericValue) new IntegerValue(this, startingLoc.getInt() + length.getInt());
                     } else {
                         endingLoc = length;
                     }
@@ -241,11 +241,11 @@ public class FunSubstring extends Function {
         throws XPathException {
 		if(startingLoc.getInt() <= 1) {
 			//start value is 1 or less, so just return the string
-			return new StringValue(sourceString);
+			return new StringValue(this, sourceString);
 		}
-        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
+        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(this, sourceString);
         // transition from xs:string index to Java string index.
-        return new StringValue(FunStringToCodepoints.subSequence(codepoints, startingLoc.getInt() - 1));
+        return new StringValue(this, FunStringToCodepoints.subSequence(codepoints, startingLoc.getInt() - 1));
  	}
 	
 	/**
@@ -261,9 +261,9 @@ public class FunSubstring extends Function {
 	 */
 	private StringValue substring(String sourceString, NumericValue startingLoc, NumericValue endingLoc)
         throws XPathException {
-        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(sourceString);
+        final ValueSequence codepoints = FunStringToCodepoints.getCodePoints(this, sourceString);
         // transition from xs:string index to Java string index.
-        return new StringValue(FunStringToCodepoints.subSequence(codepoints,
+        return new StringValue(this, FunStringToCodepoints.subSequence(codepoints,
                                                                  startingLoc.getInt() - 1,
                                                                  endingLoc.getInt() - 1));
 	}

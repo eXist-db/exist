@@ -74,7 +74,7 @@ public class DeepCopyFunction extends BasicFunction {
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.startDocument();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
 
             try {
                 final Properties props = new Properties();

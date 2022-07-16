@@ -81,7 +81,7 @@ public class FunEscapeHTMLURI extends Function {
             result = StringValue.EMPTY_STRING;
         } else {
             final String value = URIUtils.escapeHtmlURI(seq.getStringValue());
-            result =  new StringValue(value);
+            result =  new StringValue(this, value);
         }
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}

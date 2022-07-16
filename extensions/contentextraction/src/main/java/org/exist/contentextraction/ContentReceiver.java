@@ -31,6 +31,7 @@ import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReference;
@@ -58,6 +59,7 @@ public class ContentReceiver implements Receiver {
     private Sequence userData = null;
     private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
     private final XQueryContext context;
+    private final Expression expression;
     
     private boolean sendDataToCB = false;
 
@@ -69,11 +71,16 @@ public class ContentReceiver implements Receiver {
      * @param ref     Reference to callback function
      * @param userData Additional user supplied datas
      */
-    public ContentReceiver(XQueryContext context, NodePath[] paths, FunctionReference ref, Sequence userData) {
+    public ContentReceiver(final Expression expression, XQueryContext context, NodePath[] paths, FunctionReference ref, Sequence userData) {
+        this.expression = expression;
         this.context = context;
         this.paths = paths;
         this.ref = ref;
         this.userData = userData;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     /**
@@ -140,7 +147,7 @@ public class ContentReceiver implements Receiver {
                 
                 // Create new receiver
                 MemTreeBuilder memBuilder = context.getDocumentBuilder();
-                docBuilderReceiver = new DocumentBuilderReceiver(memBuilder);
+                docBuilderReceiver = new DocumentBuilderReceiver(expression, memBuilder);
                 
                 // Switch on retrievel
                 sendDataToCB=true;

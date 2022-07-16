@@ -155,7 +155,7 @@ public class ModuleFunctions extends BasicFunction {
             final FunctionCall call =
                     FunOnFunctions.lookupFunction(this, f.getSignature().getName(), f.getSignature().getArgumentCount());
             if (call != null) {
-                resultSeq.add(new FunctionReference(call));
+                resultSeq.add(new FunctionReference(this, call));
             }
         }
     }

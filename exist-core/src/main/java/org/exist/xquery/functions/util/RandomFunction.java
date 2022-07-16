@@ -82,14 +82,14 @@ public class RandomFunction extends BasicFunction {
     	
     	if(getArgumentCount() == 0) {
             if(isCalledAs("random")) {
-                result = new DoubleValue(rnd.nextDouble());
+                result = new DoubleValue(this, rnd.nextDouble());
             } else {
                 final BigInteger rndInt = new BigInteger(64, rnd);
-                result = new IntegerValue(rndInt, Type.UNSIGNED_LONG);
+                result = new IntegerValue(this, rndInt, Type.UNSIGNED_LONG);
             }
     	} else {
             final IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
-            result = new IntegerValue(rnd.nextInt(upper.getInt()));
+            result = new IntegerValue(this, rnd.nextInt(upper.getInt()));
     	}
         
         return result;

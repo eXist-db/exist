@@ -56,6 +56,6 @@ public class EncodeURL extends StrictResponseFunction {
     @Override
     protected Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response) throws XPathException {
         final String url = args[0].getStringValue();
-        return new AnyURIValue(response.encodeURL(url));
+        return new AnyURIValue(this, response.encodeURL(url));
     }
 }

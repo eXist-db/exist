@@ -148,7 +148,7 @@ public class GroupMembershipFunction extends BasicFunction {
                 final String username = args[0].getStringValue();
 
                 if(!securityManager.hasAccount(username)) {
-                    throw new XPathException("The user account with username " + username + " does not exist.");
+                    throw new XPathException(this, "The user account with username " + username + " does not exist.");
                 } else {
                     final Account account = securityManager.getAccount(username);
                     result = BooleanValue.valueOf(securityManager.hasAdminPrivileges(account));
@@ -159,17 +159,17 @@ public class GroupMembershipFunction extends BasicFunction {
                 final String groupName = args[1].getStringValue();
 
                 if(!securityManager.hasAccount(username)) {
-                    throw new XPathException("The user account with username " + username + " does not exist.");
+                    throw new XPathException(this, "The user account with username " + username + " does not exist.");
                 }
 
                 if(!securityManager.hasGroup(groupName)) {
-                    throw new XPathException("The user group with name " + groupName + " does not exist.");
+                    throw new XPathException(this, "The user group with name " + groupName + " does not exist.");
                 }
 
                 final Group group = securityManager.getGroup(groupName);
 
                 if(!isCalledAs(qnGetGroupMembers.getLocalPart()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
-                    throw new XPathException("Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
+                    throw new XPathException(this, "Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
                 }
 
                 final Account account = securityManager.getAccount(username);
@@ -183,13 +183,13 @@ public class GroupMembershipFunction extends BasicFunction {
                 final String groupName = args[0].getStringValue();
 
                 if(!securityManager.hasGroup(groupName)) {
-                    throw new XPathException("The user group with name " + groupName + " does not exist.");
+                    throw new XPathException(this, "The user group with name " + groupName + " does not exist.");
                 }
 
                 final Group group = securityManager.getGroup(groupName);
 
                 if(!isCalledAs(qnGetGroupMembers.getLocalPart()) && (!(group.isManager(currentUser) || currentUser.hasDbaRole()))) {
-                    throw new XPathException("Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
+                    throw new XPathException(this, "Only a Group Manager or DBA may modify the group or retrieve sensitive group information.");
                 }
 
                 if(isCalledAs(qnAddGroupMember.getLocalPart())) {
@@ -203,7 +203,7 @@ public class GroupMembershipFunction extends BasicFunction {
 
                     final ValueSequence seq = new ValueSequence();
                     for(final String groupMember : groupMembers) {
-                        seq.add(new StringValue(groupMember));
+                        seq.add(new StringValue(this, groupMember));
                     }
                     result = seq;
                 } else if(isCalledAs(qnAddGroupManager.getLocalPart())) {
@@ -215,11 +215,11 @@ public class GroupMembershipFunction extends BasicFunction {
                 } else if(isCalledAs(qnGetGroupManagers.getLocalPart())) {
                     final ValueSequence seq = new ValueSequence();
                     for(final Account groupManager : group.getManagers()) {
-                        seq.add(new StringValue(groupManager.getName()));
+                        seq.add(new StringValue(this, groupManager.getName()));
                     }
                     result = seq;
                 } else {
-                    throw new XPathException("Unknown function call: " + getSignature());
+                    throw new XPathException(this, "Unknown function call: " + getSignature());
                 }
             }
         } catch(final PermissionDeniedException | EXistException pde) {
@@ -297,7 +297,7 @@ public class GroupMembershipFunction extends BasicFunction {
             final String user = seq.itemAt(i).toString();
             final Account account = securityManager.getAccount(user);
             if(account == null) {
-                throw new XPathException("The user account '" + user + "' does not exist!");
+                throw new XPathException(this, "The user account '" + user + "' does not exist!");
             } else {
                 accounts.add(account);
             }

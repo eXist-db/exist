@@ -72,7 +72,7 @@ public class GetUploadedFileName extends StrictRequestFunction {
 
 		final ValueSequence result = new ValueSequence();
 		for (final String name: fnames) {
-			result.add(new StringValue(name));
+			result.add(new StringValue(this, name));
 		}
 		return result;
 	}

@@ -40,7 +40,7 @@ public class TextConstructor extends NodeConstructor {
 
     public TextConstructor(XQueryContext context, String text) throws XPathException {
         super(context);
-        this.text = StringValue.expand(text);
+        this.text = StringValue.expand(text, this);
         for (int i = 0; i < text.length(); i++) {
             if (!isWhiteSpace(text.charAt(i))) {
                 isWhitespaceOnly = false;

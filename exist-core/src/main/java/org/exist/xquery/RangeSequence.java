@@ -48,12 +48,12 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException(item, "Internal error: adding to an immutable sequence");
     }
 
     @Override
     public void addAll(final Sequence other) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException(other, "Internal error: adding to an immutable sequence");
     }
 
     public int getItemType() {
@@ -196,13 +196,13 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public NodeSet toNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
                 " a node set. Item type is xs:integer");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
                 " a memory node set. Item type is xs:integer");
     }
 

@@ -47,7 +47,7 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
             firstVar = var;
             return var;
         } catch (final IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
     }
 

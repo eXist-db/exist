@@ -81,7 +81,7 @@ public class FunEscapeURI extends BasicFunction {
         else {
             final String uri = args[0].getStringValue();
             final boolean escapeReserved = args[1].effectiveBooleanValue();
-            return new StringValue(escape(uri, escapeReserved));
+            return new StringValue(this, escape(uri, escapeReserved));
         }
         
         if (context.getProfiler().isEnabled()) 

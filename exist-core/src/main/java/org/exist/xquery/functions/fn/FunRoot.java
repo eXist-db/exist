@@ -127,7 +127,7 @@ public class FunRoot extends Function {
 
             if (s.isPersistentSet()) {
                 final NodeProxy p = s.toNodeSet().get(0);
-                result.add(new NodeProxy(p.getOwnerDocument()));
+                result.add(new NodeProxy(p.getExpression(), p.getOwnerDocument()));
             } else {
                 final NodeImpl ancestor = findAncestorOrSelf((NodeImpl) item);
                 result.add(ancestor);

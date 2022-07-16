@@ -44,7 +44,7 @@ public class FunContainsToken extends BasicFunction {
 
     private final static FunctionParameterSequenceType FS_INPUT = optManyParam("input", Type.STRING, "The input string");
     private final static FunctionParameterSequenceType FS_TOKEN = param("token", Type.STRING, "The token to be searched for");
-    private final static FunctionParameterSequenceType FS_COLLATION = optParam("pattern", Type.STRING, "Collation to use");
+    private final static FunctionParameterSequenceType FS_COLLATION = param("pattern", Type.STRING, "Collation to use");
 
     public final static FunctionSignature[] FS_CONTAINS_TOKEN = functionSignatures(
             FS_CONTAINS_TOKEN_NAME,

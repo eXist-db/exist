@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -46,11 +47,19 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
     private final StringBuilder cdataBuf = new StringBuilder();
 
     public SAXAdapter() {
-        setBuilder(new MemTreeBuilder());
+        this((Expression) null);
+    }
+
+    public SAXAdapter(final Expression expression) {
+        setBuilder(new MemTreeBuilder(expression));
     }
 
     public SAXAdapter(final XQueryContext context) {
-        setBuilder(new MemTreeBuilder(context));
+        this(null, context);
+    }
+
+    public SAXAdapter(final Expression expression, final XQueryContext context) {
+        setBuilder(new MemTreeBuilder(expression, context));
     }
 
     protected final void setBuilder(final MemTreeBuilder builder) {

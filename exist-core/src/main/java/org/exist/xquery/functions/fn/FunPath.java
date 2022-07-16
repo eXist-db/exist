@@ -78,7 +78,7 @@ public class FunPath extends BasicFunction {
             final Item item = sequence.itemAt(0);
             if (item.getType() == Type.DOCUMENT) {
                 // If $arg is a document node, the function returns the string "/".
-                result = new StringValue("/");
+                result = new StringValue(this, "/");
             } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
                 // For an element node, Q{uri}local[position], where uri is the
                 // namespace URI of the node name or the empty string if the
@@ -96,9 +96,9 @@ public class FunPath extends BasicFunction {
                     // This string is prefixed by "Q{http://www.w3.org/2005/xpath-functions}root()"
                     // if the root node is not a document node.
                     pathValues.remove(0);
-                    result = new StringValue(String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
+                    result = new StringValue(this, String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
                 } else {
-                    result = new StringValue(String.join("", pathValues));
+                    result = new StringValue(this, String.join("", pathValues));
                 }
             } else {
                 // If the context item is not a node, type error [err:XPTY0004].

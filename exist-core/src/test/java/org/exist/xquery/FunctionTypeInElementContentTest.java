@@ -69,7 +69,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
     public void functionReference() throws EXistException, PermissionDeniedException {
         final String query = "element test { sum#0 }";
         final String error = "Function types are not allowed in element content. Got function(*)";
-        assertXQStaticError(ErrorCodes.XQTY0105, 0, 0, error, compileQuery(query));
+        assertXQStaticError(ErrorCodes.XQTY0105, -1, -1, error, compileQuery(query));
     }
 
     // TODO(JL): Does not throw at compile time
@@ -108,7 +108,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
     public void sequenceOfMaps() throws EXistException, PermissionDeniedException {
         final String query = "element test { (map {}) }";
         final String error = "Function types are not allowed in element content. Got map(*)";
-        assertXQDynamicError(ErrorCodes.XQTY0105, 0, 0, error, executeQuery(query));
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 17, error, executeQuery(query));
     }
 
     // TODO(JL): add (sub-expression) location
@@ -138,6 +138,6 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
     public void mapConstructorInSubExpression() throws EXistException, PermissionDeniedException {
         final String query = "element test { \"a\", map {} }";
         final String error = "Enclosed expression contains function item";
-        assertXQDynamicError(ErrorCodes.XQTY0105, 0, 0, error, executeQuery(query));
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
     }
 }

@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -34,21 +35,33 @@ import java.util.GregorianCalendar;
 public class GYearMonthValue extends AbstractDateTimeValue {
 
     public GYearMonthValue() throws XPathException {
-        super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
-    public GYearMonthValue(XMLGregorianCalendar calendar) throws XPathException {
-        super(stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    public GYearMonthValue(final Expression expression) throws XPathException {
+        super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
-    public GYearMonthValue(String timeValue) throws XPathException {
-        super(timeValue);
+    public GYearMonthValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
+    public GYearMonthValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
+        super(expression, stripCalendar((XMLGregorianCalendar) calendar.clone()));
+    }
+
+    public GYearMonthValue(final String timeValue) throws XPathException {
+        this(null, timeValue);
+    }
+
+    public GYearMonthValue(final Expression expression, String timeValue) throws XPathException {
+        super(expression, timeValue);
         try {
             if (calendar.getXMLSchemaType() != DatatypeConstants.GYEARMONTH) {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException("xs:gYearMonth instance must not have year, month or day fields set");
+            throw new XPathException(getExpression(), "xs:gYearMonth instance must not have year, month or day fields set");
         }
     }
 
@@ -67,13 +80,13 @@ public class GYearMonthValue extends AbstractDateTimeValue {
             case Type.GYEARMONTH:
             case Type.ATOMIC:
             case Type.ITEM:
-                return new GYearMonthValue(this.calendar);
+                return new GYearMonthValue(getExpression(), this.calendar);
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:time to "
                                 + Type.getTypeName(requiredType));
         }
@@ -81,7 +94,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal)
             throws XPathException {
-        return new GYearMonthValue(cal);
+        return new GYearMonthValue(getExpression(), cal);
     }
 
     public int getType() {
@@ -123,13 +136,13 @@ public class GYearMonthValue extends AbstractDateTimeValue {
             }
             return r;
         }
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "Type error: cannot compare " + Type.getTypeName(getType()) + " to "
                         + Type.getTypeName(other.getType()));
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        throw new XPathException("Subtraction is not supported on values of type " +
+        throw new XPathException(getExpression(), "Subtraction is not supported on values of type " +
                 Type.getTypeName(getType()));
     }
 }

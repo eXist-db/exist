@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -48,7 +49,11 @@ public class BinaryValueFromInputStream extends BinaryValue {
     private final FilterInputStreamCache cache;
 
     protected BinaryValueFromInputStream(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
-        super(manager, binaryValueType);
+        this(null, manager, binaryValueType, is);
+    }
+
+    protected BinaryValueFromInputStream(final Expression expression, final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
+        super(expression, manager, binaryValueType);
 
         try {
 
@@ -56,7 +61,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
             this.is = new CachingFilterInputStream(cache);
 
         } catch (final IOException ioe) {
-            throw new XPathException(ioe);
+            throw new XPathException(getExpression(), ioe);
         }
 
         //mark the start of the stream so that we can re-read again as required
@@ -64,7 +69,11 @@ public class BinaryValueFromInputStream extends BinaryValue {
     }
 
     public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is) throws XPathException {
-        final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(manager, binaryValueType, is);
+        return getInstance(manager, binaryValueType, is, null);
+    }
+
+    public static BinaryValueFromInputStream getInstance(final BinaryValueManager manager, final BinaryValueType binaryValueType, final InputStream is, final Expression expression) throws XPathException {
+        final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(expression, manager, binaryValueType, is);
         manager.registerBinaryValueInstance(binaryInputStream);
         return binaryInputStream;
     }
@@ -72,7 +81,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     @Override
     public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
         try {
-            final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getManager(), binaryValueType, new CachingFilterInputStream(is));
+            final BinaryValueFromInputStream binaryInputStream = new BinaryValueFromInputStream(getExpression(), getManager(), binaryValueType, new CachingFilterInputStream(is));
             getManager().registerBinaryValueInstance(binaryInputStream);
             return binaryInputStream;
         } catch (InstantiationException ex) {

@@ -88,7 +88,7 @@ public class SetCurrentUser extends UserSwitchingBasicFunction {
                         .map(XQueryContext.HttpContext::getSession)
         );
         session.setAttribute("user", userName);
-        session.setAttribute("password", new StringValue(passwd));
+        session.setAttribute("password", new StringValue(this, passwd));
         return BooleanValue.TRUE;
     }
 }

@@ -141,7 +141,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     ((DeflaterOutputStream)os).finish();
                 }
 
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(baos.toByteArray()));
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(baos.toByteArray()), this);
             }
 		} catch (final UnsupportedCharsetException | IOException e) {
 			throw new XPathException(this, e.getMessage(), e);

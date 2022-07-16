@@ -41,6 +41,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Document;
@@ -93,7 +94,7 @@ public class SubSequence extends AbstractSequence {
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new XPathException("Cannot add an item to a sub-sequence");
+        throw new XPathException((Expression) null, "Cannot add an item to a sub-sequence");
     }
 
     @Override
@@ -219,7 +220,7 @@ public class SubSequence extends AbstractSequence {
             final Item item = iterator.nextItem();
 
             if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                throw new XPathException("Type error: the sub-sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
                         " a node set. It contains an item of type: " + Type.getTypeName(item.getType()));
             }
 
@@ -227,7 +228,7 @@ public class SubSequence extends AbstractSequence {
             if (v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                 final NodeProxy p = makePersistent((NodeImpl)v, expandedDocs);
                 if (p == null) {
-                    throw new XPathException("Type error: the sub-sequence cannot be converted into" +
+                    throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
                             " a node set. It contains an in-memory node which cannot be persisted.");
                 } else {
                     nodeSet.add(p);
@@ -288,14 +289,14 @@ public class SubSequence extends AbstractSequence {
                     }
                     NodeId nodeId = node.getNodeId();
                     if (nodeId == null) {
-                        throw new XPathException("Internal error: nodeId == null");
+                        throw new XPathException((Expression) null, "Internal error: nodeId == null");
                     }
                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                         nodeId = rootId;
                     } else {
                         nodeId = rootId.append(nodeId);
                     }
-                    final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                    final NodeProxy p = new NodeProxy(node.getExpression(), newDoc, nodeId, node.getNodeType());
                     // replace the node by the NodeProxy
                     return p;
                 }
@@ -317,13 +318,13 @@ public class SubSequence extends AbstractSequence {
         while (iterator.hasNext()) {
             final Item item = iterator.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                throw new XPathException("Type error: the sub-sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains items which are not nodes");
             }
 
             final NodeValue v = (NodeValue) item;
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                throw new XPathException("Type error: the sub-sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains nodes from stored resources.");
             }
 

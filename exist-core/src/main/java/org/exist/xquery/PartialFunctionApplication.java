@@ -135,7 +135,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 		
 		final FunctionCall newCall = new FunctionCall(context, func);
 		newCall.setLocation(staticCall.getLine(), staticCall.getColumn());
-		return new FunctionReference(newCall);
+		return new FunctionReference(this, newCall);
 	}
 	
 	private static class PrecomputedValue extends AbstractExpression {

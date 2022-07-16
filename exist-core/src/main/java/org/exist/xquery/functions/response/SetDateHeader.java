@@ -62,7 +62,7 @@ public class SetDateHeader extends StrictResponseFunction {
     public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response)
             throws XPathException {
         final String name = args[0].getStringValue();
-        final long value = new DateTimeValue(args[1].getStringValue()).getDate().getTime();
+        final long value = new DateTimeValue(this, args[1].getStringValue()).getDate().getTime();
 
         response.setDateHeader(name, value);
 

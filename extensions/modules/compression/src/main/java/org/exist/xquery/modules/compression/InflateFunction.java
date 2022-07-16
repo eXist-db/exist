@@ -99,7 +99,7 @@ public class InflateFunction extends BasicFunction
                 baos.write(b, 0, read);
             }
 
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

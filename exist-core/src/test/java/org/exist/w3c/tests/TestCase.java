@@ -330,7 +330,7 @@ public abstract class TestCase {
 	}
 	
     public NodeImpl loadVarFromURI(XQueryContext context, String uri) throws IOException {
-        SAXAdapter adapter = new SAXAdapter(context);
+        SAXAdapter adapter = new SAXAdapter(null, context);
 
         SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
@@ -378,7 +378,7 @@ public abstract class TestCase {
     }
 
     public NodeImpl loadVarFromString(XQueryContext context, String source) throws IOException {
-        SAXAdapter adapter = new SAXAdapter(context);
+        SAXAdapter adapter = new SAXAdapter(null, context);
 
         SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);

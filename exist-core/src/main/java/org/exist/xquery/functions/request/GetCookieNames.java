@@ -69,7 +69,7 @@ public class GetCookieNames extends RequestFunction {
 		if (cookies != null && cookies.length > 0) {
 			final ValueSequence names = new ValueSequence();
 			for (final Cookie cookie : cookies) {
-				names.add(new StringValue(cookie.getName()));
+				names.add(new StringValue(this, cookie.getName()));
 			}
 			return names;
 		} else {

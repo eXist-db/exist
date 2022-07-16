@@ -367,7 +367,7 @@ public class PermissionsFunction extends BasicFunction {
     
     private Sequence functionHasAccess(final XmldbURI pathUri, final String modeStr) throws XPathException {
         if(modeStr == null || modeStr.isEmpty() || modeStr.length() > 3) {
-            throw new XPathException("Mode string must be partial i.e. rwx not rwxrwxrwx");
+            throw new XPathException(this, "Mode string must be partial i.e. rwx not rwxrwxrwx");
         }
         
         int mode = 0;
@@ -397,15 +397,15 @@ public class PermissionsFunction extends BasicFunction {
         try {
             final int mode = AbstractUnixStylePermission.simpleSymbolicModeToInt(modeStr);
             final String octal = mode == 0 ? "0" : "0" + Integer.toOctalString(mode);
-            return new StringValue(octal);
+            return new StringValue(this, octal);
         } catch(final SyntaxException se) {
-            throw new XPathException(se.getMessage(), se);
+            throw new XPathException(this, se.getMessage(), se);
         }
     }
     
     private Sequence functionOctalToMode(final String octal) {
         final int mode = Integer.parseInt(octal, 8);
-        return new StringValue(AbstractUnixStylePermission.modeToSimpleSymbolicMode(mode));
+        return new StringValue(this, AbstractUnixStylePermission.modeToSimpleSymbolicMode(mode));
     }
     
     private Permission getPermissions(final XmldbURI pathUri) throws XPathException, PermissionDeniedException {
@@ -418,7 +418,7 @@ public class PermissionsFunction extends BasicFunction {
             if(doc != null) {
                 permissions = doc.getPermissions();
             } else {
-                throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
+                throw new XPathException(this, "Resource or collection '" + pathUri.toString() + "' does not exist.");
             }
         }
 

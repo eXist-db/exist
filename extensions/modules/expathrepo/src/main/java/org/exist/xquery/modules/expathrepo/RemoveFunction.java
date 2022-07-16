@@ -76,7 +76,7 @@ public class RemoveFunction extends BasicFunction {
 		    repo.get().reportAction(ExistRepository.Action.UNINSTALL, pkg);
 		    context.getBroker().getBrokerPool().getXQueryPool().clear();
 		} else {
-		    throw new XPathException("expath repository not available");
+		    throw new XPathException(this, "expath repository not available");
 		}
 	    } catch (PackageException | XPathException pe) {
 		return BooleanValue.FALSE;

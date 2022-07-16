@@ -22,6 +22,7 @@
 
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -32,7 +33,11 @@ import org.w3c.dom.NodeList;
 public class DocumentFragmentImpl extends NodeImpl<DocumentFragmentImpl> implements DocumentFragment {
 
     public DocumentFragmentImpl() {
-        super(new DocumentImpl(null, true), 0);
+        this(null);
+    }
+
+    public DocumentFragmentImpl(final Expression expression) {
+        super(expression, new DocumentImpl(expression, null, true), 0);
     }
 
     @Override

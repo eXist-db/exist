@@ -81,7 +81,7 @@ public class FunNilled extends BasicFunction {
 				if (n.hasAttributes()) {
 					final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
 					if (nilled != null) {
-						result = new BooleanValue(nilled.getNodeValue().equals("true"));
+						result = new BooleanValue(this, nilled.getNodeValue().equals("true"));
 					} else {
 						result = BooleanValue.FALSE;
 					}

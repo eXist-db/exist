@@ -22,6 +22,7 @@
 package org.exist.dom.memtree;
 
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -36,9 +37,12 @@ public class AttrImpl extends NodeImpl implements Attr {
     public static final int ATTR_IDREF_TYPE = 2;
     public static final int ATTR_IDREFS_TYPE = 3;
 
-
     public AttrImpl(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public AttrImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override

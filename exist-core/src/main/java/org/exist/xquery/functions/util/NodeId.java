@@ -74,6 +74,6 @@ public class NodeId extends BasicFunction {
                 } else {
                     nodeId = ((NodeProxy)docNode).getNodeId();
                 }
-		return new StringValue(nodeId.toString());
+		return new StringValue(this, nodeId.toString());
 	}
 }

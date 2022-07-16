@@ -30,11 +30,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -69,14 +65,15 @@ public class XMLDBGetMimeType extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
-		final String path = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[0].itemAt(0).getStringValue()).toString());
+		final Expression expression = this;
+		final String path = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[0].itemAt(0).getStringValue()).toString());
 		
 		if(path.matches("^[a-z]+://.*")) {
 			//external
 			final MimeTable mimeTable = MimeTable.getInstance();
 			final MimeType mimeType = mimeTable.getContentTypeFor(path);
 			if(mimeType != null) {
-				return new StringValue(mimeType.getName());
+				return new StringValue(this, mimeType.getName());
             }
 		} else {
 			//database
@@ -87,7 +84,7 @@ public class XMLDBGetMimeType extends BasicFunction {
 				// try to open the document and acquire a lock
 				try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(pathUri, LockMode.READ_LOCK)) {
 					if (lockedDoc != null) {
-						return new StringValue(lockedDoc.getDocument().getMimeType());
+						return new StringValue(this, lockedDoc.getDocument().getMimeType());
 					}
 				}
 			} catch(final Exception e) {

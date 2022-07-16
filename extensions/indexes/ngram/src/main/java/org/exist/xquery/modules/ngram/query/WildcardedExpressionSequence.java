@@ -31,6 +31,7 @@ import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
@@ -98,7 +99,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
 
         if (expressions.size() != 1 || !(expressions.get(0) instanceof EvaluatableExpression)) { // Should not happen.
             LOG.error("Expression {} could not be evaluated", toString());
-            throw new XPathException("Could not evaluate wildcarded query.");
+            throw new XPathException((Expression) null, "Could not evaluate wildcarded query.");
         }
 
         LOG.trace("Evaluating expression {}", toString());

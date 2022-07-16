@@ -83,7 +83,7 @@ public class FunInScopePrefixes extends BasicFunction {
             if (!(context.getURIForPrefix(prefix) == null &&
                     ("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
                             "wdt".equals(prefix) || "fn".equals(prefix) || "local".equals(prefix)))) {
-                result.add(new StringValue(prefix));
+                result.add(new StringValue(this, prefix));
             }
         }
 

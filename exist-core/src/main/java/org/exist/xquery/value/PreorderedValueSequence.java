@@ -53,7 +53,7 @@ public class PreorderedValueSequence extends AbstractSequence {
         int j = 0;
         for (final SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
             final NodeProxy p = (NodeProxy) i.nextItem();
-            nodes[j] = new OrderedNodeProxy(p);
+            nodes[j] = new OrderedNodeProxy(null, p);
             p.addContextNode(contextId, nodes[j]);
         }
         processAll();
@@ -206,7 +206,11 @@ public class PreorderedValueSequence extends AbstractSequence {
         final AtomicValue[] values;
 
         public OrderedNodeProxy(final NodeProxy p) {
-            super(p);
+            this(null, p);
+        }
+
+        public OrderedNodeProxy(final Expression expression, final NodeProxy p) {
+            super(expression, p);
             this.values = new AtomicValue[orderSpecs.length];
             for (int i = 0; i < values.length; i++) {
                 values[i] = AtomicValue.EMPTY_VALUE;

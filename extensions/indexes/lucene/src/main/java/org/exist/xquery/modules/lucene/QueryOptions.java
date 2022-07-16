@@ -29,6 +29,7 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.MultiTermQuery;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
@@ -94,7 +95,7 @@ public class QueryOptions {
                 }
             }
         } catch (XMLStreamException | IOException e) {
-            throw new XPathException(LuceneModule.EXXQDYFT0004, "Error while parsing options to ft:query: " + e.getMessage(), e);
+            throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Error while parsing options to ft:query: " + e.getMessage(), e);
         }
     }
 
@@ -222,7 +223,7 @@ public class QueryOptions {
                 try {
                     phraseSlop = Optional.of(Integer.parseInt(value));
                 } catch (NumberFormatException e) {
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Option " + OPTION_PHRASE_SLOP + " must be an integer");
                 }
                 break;
             case OPTION_FILTER_REWRITE:

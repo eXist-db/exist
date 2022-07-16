@@ -79,7 +79,7 @@ public class GetNodeById extends BasicFunction {
             return ((NodeImpl) docNode).getOwnerDocument().getNodeById(nodeId);
         } else {
             final DocumentImpl doc = ((NodeProxy)docNode).getOwnerDocument();
-            final NodeProxy proxy = new NodeProxy(doc, nodeId);
+            final NodeProxy proxy = new NodeProxy(this, doc, nodeId);
             if (proxy.getNode() == null) {
             	return Sequence.EMPTY_SEQUENCE;
 			}

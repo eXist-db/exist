@@ -63,13 +63,34 @@ public class XPathUtil {
      * @return XQuery sequence
      * @throws XPathException in case of an error
      */
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context)
             throws XPathException {
-        return javaObjectToXPath(obj, context, true);
+        return javaObjectToXPath(obj, context, null);
     }
 
-    public final static Sequence javaObjectToXPath(Object obj, XQueryContext context,
+    /**
+     * Convert Java object to an XQuery sequence. Objects of type Sequence are
+     * directly returned, other objects are converted into the corresponding
+     * internal types.
+     *
+     * @param obj The java object
+     * @param context XQuery context
+     * @param expression the expression from which the object derives
+     * @return XQuery sequence
+     * @throws XPathException in case of an error
+     */
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context, final Expression expression)
+            throws XPathException {
+        return javaObjectToXPath(obj, context, true, expression);
+    }
+
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
             boolean expandChars) throws XPathException {
+        return javaObjectToXPath(obj, context, expandChars, null);
+    }
+
+    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
+            boolean expandChars, final Expression expression) throws XPathException {
 
         if (obj == null) {
             //return Sequence.EMPTY_SEQUENCE;
@@ -77,41 +98,40 @@ public class XPathUtil {
         } else if (obj instanceof Sequence) {
             return (Sequence) obj;
         } else if (obj instanceof String) {
-            final StringValue v = new StringValue((String) obj);
+            final StringValue v = new StringValue(expression, (String) obj);
             return (expandChars ? v.expand() : v);
         } else if (obj instanceof Boolean) {
             return BooleanValue.valueOf(((Boolean) obj));
         } else if (obj instanceof Float) {
-            return new FloatValue(((Float) obj));
+            return new FloatValue(expression, ((Float) obj));
         } else if (obj instanceof Double) {
-            return new DoubleValue(((Double) obj));
+            return new DoubleValue(expression, ((Double) obj));
         } else if (obj instanceof Short) {
-            return new IntegerValue(((Short) obj), Type.SHORT);
+            return new IntegerValue(expression, ((Short) obj), Type.SHORT);
         } else if (obj instanceof Integer) {
-            return new IntegerValue(((Integer) obj), Type.INT);
+            return new IntegerValue(expression, ((Integer) obj), Type.INT);
         } else if (obj instanceof Long) {
-            return new IntegerValue(((Long) obj), Type.LONG);
+            return new IntegerValue(expression, ((Long) obj), Type.LONG);
         } else if (obj instanceof BigInteger) {
-             return new IntegerValue((BigInteger) obj);
+             return new IntegerValue(expression, (BigInteger) obj);
         } else if (obj instanceof BigDecimal) {
-            return new DecimalValue((BigDecimal) obj);
+            return new DecimalValue(expression, (BigDecimal) obj);
         } else if (obj instanceof byte[]) {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj));
-
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj), expression);
         } else if (obj instanceof ResourceSet) {
             final Sequence seq = new AVLTreeNodeSet();
             try {
                 final DBBroker broker = context.getBroker();
                 for (final ResourceIterator it = ((ResourceSet) obj).getIterator(); it.hasMoreResources();) {
-                    seq.add(getNode(broker, (XMLResource) it.nextResource()));
+                    seq.add(getNode(broker, (XMLResource) it.nextResource(), expression));
                 }
             } catch (final XMLDBException xe) {
-                throw new XPathException("Failed to convert ResourceSet to node: " + xe.getMessage());
+                throw new XPathException(expression, "Failed to convert ResourceSet to node: " + xe.getMessage());
             }
             return seq;
 
         } else if (obj instanceof XMLResource) {
-            return getNode(context.getBroker(), (XMLResource) obj);
+            return getNode(context.getBroker(), (XMLResource) obj, expression);
 
         } else if (obj instanceof Node) {
             context.pushDocumentContext();
@@ -119,7 +139,7 @@ public class XPathUtil {
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 builder.startDocument();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
                 streamer.setContentHandler(receiver);
                 streamer.serialize((Node) obj, false);
                 if(obj instanceof Document) {
@@ -128,7 +148,7 @@ public class XPathUtil {
                     return builder.getDocument().getNode(1);
                 }
             } catch (final SAXException e) {
-                throw new XPathException(
+                throw new XPathException(expression,
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
@@ -147,7 +167,7 @@ public class XPathUtil {
             }
             Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
             for (Object o : ((List<?>) obj)) {
-                seq.add((Item) javaObjectToXPath(o, context, expandChars));
+                seq.add((Item) javaObjectToXPath(o, context, expandChars, expression));
             }
             return seq;
 
@@ -157,7 +177,7 @@ public class XPathUtil {
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 builder.startDocument();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
                 streamer.setContentHandler(receiver);
                 final ValueSequence seq = new ValueSequence();
                 final NodeList nl = (NodeList) obj;
@@ -171,7 +191,7 @@ public class XPathUtil {
                 }
                 return seq;
             } catch (final SAXException e) {
-                throw new XPathException(
+                throw new XPathException(expression,
                         "Failed to transform node into internal model: "
                         + e.getMessage());
             } finally {
@@ -191,7 +211,7 @@ public class XPathUtil {
 
             Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
             for (Object arrayItem : array) {
-                seq.add((Item) javaObjectToXPath(arrayItem, context, expandChars));
+                seq.add((Item) javaObjectToXPath(arrayItem, context, expandChars, expression));
             }
             return seq;
 
@@ -200,7 +220,7 @@ public class XPathUtil {
         }
     }
 
-    public final static int javaClassToXPath(Class<?> clazz) {
+    public static final int javaClassToXPath(Class<?> clazz) {
         if (clazz == String.class) {
             return Type.STRING;
         } else if (clazz == Boolean.class || clazz == boolean.class) {
@@ -230,12 +250,25 @@ public class XPathUtil {
      * @throws XPathException if an XMLDBException is encountered
      */
     public static final NodeProxy getNode(DBBroker broker, XMLResource xres) throws XPathException {
+        return getNode(broker, xres, null);
+    }
+
+    /**
+     * Converts an XMLResource into a NodeProxy.
+     *
+     * @param broker The DBBroker to use to access the database
+     * @param xres The XMLResource to convert
+     * @param expression the expression from which the resource derives
+     * @return A NodeProxy for accessing the content represented by xres
+     * @throws XPathException if an XMLDBException is encountered
+     */
+    public static final NodeProxy getNode(DBBroker broker, XMLResource xres, final Expression expression) throws XPathException {
         if (xres instanceof LocalXMLResource) {
             final LocalXMLResource lres = (LocalXMLResource) xres;
             try {
                 return lres.getNode();
             } catch (final XMLDBException xe) {
-                throw new XPathException("Failed to convert LocalXMLResource to node: " + xe.getMessage());
+                throw new XPathException(expression, "Failed to convert LocalXMLResource to node: " + xe.getMessage());
             }
         }
 
@@ -243,14 +276,14 @@ public class XPathUtil {
         try {
             document = broker.getCollection(XmldbURI.xmldbUriFor(xres.getParentCollection().getName())).getDocument(broker, XmldbURI.xmldbUriFor(xres.getDocumentId()));
         } catch (final URISyntaxException xe) {
-            throw new XPathException(xe);
+            throw new XPathException(expression, xe);
         } catch (final XMLDBException xe) {
-            throw new XPathException("Failed to get document for RemoteXMLResource: " + xe.getMessage());
+            throw new XPathException(expression, "Failed to get document for RemoteXMLResource: " + xe.getMessage());
         } catch (final PermissionDeniedException pde) {
-            throw new XPathException("Failed to get document: " + pde.getMessage());
+            throw new XPathException(expression, "Failed to get document: " + pde.getMessage());
         }
         final NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromString(((RemoteXMLResource) xres).getNodeId());
-        return new NodeProxy(document, nodeId);
+        return new NodeProxy(null, document, nodeId);
 
     }
 }

@@ -171,7 +171,7 @@ public class Jaxv extends BasicFunction  {
             for (final StreamSource grammar : grammars) {
                 final String grammarUrl = grammar.getSystemId();
                 if (grammarUrl != null && !grammarUrl.endsWith(".xsd") && !grammarUrl.endsWith(".rng")) {
-                    throw new XPathException("Only XML schemas (.xsd) and RELAXNG grammars (.rng) are supported"
+                    throw new XPathException(this, "Only XML schemas (.xsd) and RELAXNG grammars (.rng) are supported"
                             + ", depending on the used XML parser.");
                 }
             }
@@ -189,7 +189,7 @@ public class Jaxv extends BasicFunction  {
             } catch (final IllegalArgumentException ex) {
                 final String msg = "Schema language '" + schemaLang + "' is not supported. " + ex.getMessage();
                 LOG.error(msg);
-                throw new XPathException(msg);
+                throw new XPathException(this, msg);
             }
             
             
@@ -222,7 +222,7 @@ public class Jaxv extends BasicFunction  {
         // Create response
         if (isCalledAs("jaxv")) {
             final Sequence result = new ValueSequence();
-            result.add(new BooleanValue(report.isValid()));
+            result.add(new BooleanValue(this, report.isValid()));
             return result;
 
         } else /* isCalledAs("jaxv-report") */ {

@@ -124,14 +124,14 @@ public class FunSubstringAfter extends CollatingFunction {
         }
         
         if(cmp.isEmpty())
-            {result = new StringValue(value);}
+            {result = new StringValue(this, value);}
         else {
             final Collator collator = getCollator(contextSequence, contextItem, 3);
             final int p = Collations.indexOf(collator, value, cmp);
             if (p == Constants.STRING_NOT_FOUND)
                 {result = StringValue.EMPTY_STRING;}
             else
-                {result = new StringValue(p + cmp.length() < value.length() ? 
+                {result = new StringValue(this, p + cmp.length() < value.length() ?
                                          value.substring(p + cmp.length()) : ""
                                          );}        		
         }

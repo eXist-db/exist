@@ -57,7 +57,7 @@ public class ParseSimpleQL extends BasicFunction {
         SimpleQLLexer lexer = new SimpleQLLexer(new StringReader(query));
         SimpleQLParser parser = new SimpleQLParser(lexer);
         try {
-            return new StringValue(parser.expr());
+            return new StringValue(this, parser.expr());
         } catch (RecognitionException | TokenStreamException e) {
             throw new XPathException(this, "An error occurred while parsing the query expression: " + e.getMessage(), e);
         }

@@ -74,7 +74,7 @@ public class GetUploadedFileSize extends StrictRequestFunction {
 
 		final ValueSequence result = new ValueSequence();
 		for (final Path file : files) {
-			result.add(new DoubleValue(FileUtils.sizeQuietly(file)));
+			result.add(new DoubleValue(this, FileUtils.sizeQuietly(file)));
 		}
 		return result;
 	}

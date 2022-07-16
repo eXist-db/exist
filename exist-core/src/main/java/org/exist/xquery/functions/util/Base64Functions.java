@@ -104,18 +104,18 @@ public class Base64Functions extends BasicFunction {
 
         if (isCalledAs("base64-encode")) {
             final String b64Str = Base64.encodeBase64String(str.getBytes(UTF_8));
-            return new StringValue(b64Str);
+            return new StringValue(this, b64Str);
         }
 
         if (isCalledAs("base64-encode-url-safe")) {
             final String b64Str = Base64.encodeBase64URLSafeString(str.getBytes(UTF_8));
-            return new StringValue(b64Str);
+            return new StringValue(this, b64Str);
         }
 
         // isCalledAs("base64-decode")
         // Base64.decodeBase64 can handle standard and url-safe base64 encoded data
         final byte[] data = Base64.decodeBase64(str);
-        return new StringValue(new String(data, UTF_8));
+        return new StringValue(this, new String(data, UTF_8));
     }
 
 }

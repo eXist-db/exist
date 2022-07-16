@@ -25,6 +25,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
 import org.exist.util.pool.NodePool;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 
@@ -33,15 +34,27 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class CommentImpl extends AbstractCharacterData implements Comment {
 
     public CommentImpl() {
-        super(Node.COMMENT_NODE);
+        this((Expression) null);
+    }
+
+    public CommentImpl(final Expression expression) {
+        super(expression, Node.COMMENT_NODE);
     }
 
     public CommentImpl(final String data) {
-        super(Node.COMMENT_NODE, data);
+        this(null, data);
+    }
+
+    public CommentImpl(final Expression expression, final String data) {
+        super(expression, Node.COMMENT_NODE, data);
     }
 
     public CommentImpl(final char[] data, final int start, final int howmany) {
-        super(Node.COMMENT_NODE, data, start, howmany);
+        this(null, data, start, howmany);
+    }
+
+    public CommentImpl(final Expression expression, final char[] data, final int start, final int howmany) {
+        super(expression, Node.COMMENT_NODE, data, start, howmany);
     }
 
     @Override
@@ -97,7 +110,7 @@ public class CommentImpl extends AbstractCharacterData implements Comment {
         if(pooled) {
             comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);
         } else {
-            comment = new CommentImpl();
+            comment = new CommentImpl((Expression) null);
         }
         comment.setNodeId(dln);
         comment.appendData(cdata);

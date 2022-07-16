@@ -49,7 +49,7 @@ public class BinaryValueFromInputStreamTest {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
         try(final InputStream bais = new UnmarkableByteArrayInputStream(testData)) {
 
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
 
             try(final InputStream is = binaryValue.getInputStream()) {
                 final byte[] actual = readAll(is);
@@ -70,7 +70,7 @@ public class BinaryValueFromInputStreamTest {
         final BinaryValueManager binaryValueManager = new MockBinaryValueManager();
         try(final InputStream bais = new UnmarkableByteArrayInputStream(testData)) {
 
-            binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);  //binValue1.sharedRefCount==1
+            binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);  //binValue1.sharedRefCount==1
 
             try(final InputStream is = binaryValue1.getInputStream()) {   //binValue1.sharedRefCount==2
                 final byte[] actual = readAll(is);
@@ -81,7 +81,7 @@ public class BinaryValueFromInputStreamTest {
 
             // second binary from InputStream of first binary
             try(final InputStream is = binaryValue1.getInputStream()) {   //binValue1.sharedRefCount==2
-                binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is);     //binValue1.sharedRefCount==3
+                binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), is, null);     //binValue1.sharedRefCount==3
 
                 try(final InputStream is2 = binaryValue2.getInputStream()) {
                     final byte[] actual = readAll(is2);
@@ -108,12 +108,12 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData = "test data".getBytes();
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis = binaryValue.getInputStream();
 
             // create a filter over the first BinaryValue, with no reference count increment
             final InputStream fis = new BinaryValueFilteringInputStream(bvis, false);
-            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis);
+            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis, null);
 
             // we now destroy the filtered binary value, just as it would be if it went out of scope from popLocalVariables#popLocalVariables.
             // It should close the original binary value, as we have not incremented the reference count!
@@ -142,12 +142,12 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData = "test data".getBytes();
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis = binaryValue.getInputStream();
 
             // create a filter over the first BinaryValue, and reference count increment
             final InputStream fis = new BinaryValueFilteringInputStream(bvis, true);
-            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis);
+            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis, null);
 
             // we now destroy the filtered binary value, just as it would if it went out of scope from popLocalVariables#popLocalVariables.
             // It should not close the original binary value, as BinaryValueFilteringInputStream increased the reference count.
@@ -180,15 +180,15 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData = "test data".getBytes();
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
-            final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis1 = binaryValue1.getInputStream();
 
-            final BinaryValue binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis2 = binaryValue2.getInputStream();
 
             // create a filter over both BinaryValues, with no reference count increment
             final InputStream fis = new MultiBinaryValueFilteringInputStream(new InputStream[]{bvis1, bvis2}, false);
-            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis);
+            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis, null);
 
             // we now destroy the filtered binary value, just as it would be if it went out of scope from popLocalVariables#popLocalVariables.
             // It should close the original binary values, as we have not incremented the reference counts!
@@ -222,15 +222,15 @@ public class BinaryValueFromInputStreamTest {
         try (final InputStream bais1 = new UnsynchronizedByteArrayInputStream(testData1);
                 final InputStream bais2 = new UnsynchronizedByteArrayInputStream(testData2)) {
 
-            final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais1);
+            final BinaryValue binaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais1, null);
             final InputStream bvis1 = binaryValue1.getInputStream();
 
-            final BinaryValue binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais2);
+            final BinaryValue binaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais2, null);
             final InputStream bvis2 = binaryValue2.getInputStream();
 
             // create a filter over both BinaryValues, and reference count increment
             final InputStream fis = new MultiBinaryValueFilteringInputStream(new InputStream[]{bvis1, bvis2}, true);
-            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis);
+            final BinaryValue filteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis, null);
 
             // we now destroy the filtered binary value, just as it would be if it went out of scope from popLocalVariables#popLocalVariables.
             // It should not close the original binary values, as MultiBinaryValueFilteringInputStream increased the reference count.
@@ -275,17 +275,17 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData = "test data".getBytes();
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis = binaryValue.getInputStream();
 
             // create a filter over the first BinaryValue, with no reference count increment
             final InputStream fis1 = new BinaryValueFilteringInputStream(bvis, false);
-            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1);
+            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1, null);
 
             // create a second filter over the first filter, with no reference count increment
             final InputStream fbvis = filteredBinaryValue1.getInputStream();
             final InputStream fis2 = new BinaryValueFilteringInputStream(fbvis, false);
-            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2);
+            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2, null);
 
             // we now destroy the second filtered binary value, just as it would if it went out of scope from popLocalVariables#popLocalVariables.
             // It should close the first filtered binary value and original binary value, as we have not incremented the reference counts!
@@ -318,17 +318,17 @@ public class BinaryValueFromInputStreamTest {
         final byte[] testData = "test data".getBytes();
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
             final InputStream bvis = binaryValue.getInputStream();
 
             // create a filter over the first BinaryValue, and reference count increment
             final InputStream fis1 = new BinaryValueFilteringInputStream(bvis, true);
-            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1);
+            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1, null);
 
             // create a second filter over the first filter, and reference count increment
             final InputStream fbvis = filteredBinaryValue1.getInputStream();
             final InputStream fis2 = new BinaryValueFilteringInputStream(fbvis, true);
-            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2);
+            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2, null);
 
             // we now destroy the second filtered binary value, just as it would if it went out of scope from popLocalVariables#popLocalVariables.
             // It should not close the filtered binary value or original binary value, as BinaryValueFilteringInputStream increased the reference count.
@@ -375,20 +375,20 @@ public class BinaryValueFromInputStreamTest {
 
         try (final InputStream bais = new UnsynchronizedByteArrayInputStream(testData)) {
 
-            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais);
+            final BinaryValue binaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), bais, null);
 
             // create a first filter over the first BinaryValue, and reference count increment
             final InputStream fis1 = new BinaryValueFilteringInputStream(binaryValue.getInputStream(), true);
-            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1);
+            final BinaryValue filteredBinaryValue1 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis1, null);
 
             // create a second filter over the first BinaryValue, and reference count increment
             final InputStream fis2 = new BinaryValueFilteringInputStream(binaryValue.getInputStream(), true);
-            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2);
+            final BinaryValue filteredBinaryValue2 = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), fis2, null);
 
 
             // create a multi filter over both filters
             final InputStream mfis = new MultiBinaryValueFilteringInputStream(new InputStream[]{filteredBinaryValue1.getInputStream(), filteredBinaryValue2.getInputStream()}, true);
-            final BinaryValue multiFilteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), mfis);
+            final BinaryValue multiFilteredBinaryValue = BinaryValueFromInputStream.getInstance(binaryValueManager, new Base64BinaryValueType(), mfis, null);
 
             // we now destroy the multi filtered binary value, just as it would be if it went out of scope from popLocalVariables#popLocalVariables.
             // It should not close the filtered or original binary values, as MultiBinaryValueFilteringInputStream increased the reference count.

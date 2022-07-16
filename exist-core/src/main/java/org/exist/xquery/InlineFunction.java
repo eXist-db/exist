@@ -85,7 +85,7 @@ public class InlineFunction extends AbstractExpression {
         // it after execution
 		calls.push(call);
 
-		return new FunctionReference(call);
+		return new FunctionReference(this, call);
 	}
 
 	@Override

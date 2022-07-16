@@ -36,7 +36,11 @@ public class NoIndexPragma extends Pragma {
     public  final static QName NO_INDEX_PRAGMA = new QName("no-index", Namespaces.EXIST_NS, "exist");
 
     public NoIndexPragma(QName qname, String contents) throws XPathException {
-        super(qname, contents);
+        this(null, qname, contents);
+    }
+
+    public NoIndexPragma(final Expression expression, QName qname, String contents) throws XPathException {
+        super(expression, qname, contents);
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -50,9 +54,17 @@ public class NoIndexPragma extends Pragma {
         return null;
     }
 
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
+    public void before(XQueryContext context, Sequence contextSequence) throws XPathException {
+        before(context, null, contextSequence);
     }
 
-    public void after(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException {
+    }
+
+    public void after(XQueryContext context) throws XPathException {
+        after(context, null);
+    }
+
+    public void after(XQueryContext context, final Expression expression) throws XPathException {
     }
 }

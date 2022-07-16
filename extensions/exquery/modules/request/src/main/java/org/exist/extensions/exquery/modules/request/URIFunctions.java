@@ -102,26 +102,26 @@ public class URIFunctions extends AbstractRequestModuleFunction {
         final Sequence result;
         
         if(isCalledAs(qnScheme.getLocalPart())) {
-            result = new StringValue(request.getScheme());
+            result = new StringValue(this, request.getScheme());
         
         } else if(isCalledAs(qnHostname.getLocalPart())) {
-            result = new StringValue(request.getHostname());
+            result = new StringValue(this, request.getHostname());
         
         } else if(isCalledAs(qnPort.getLocalPart())) {
-            result = new IntegerValue(request.getPort());
+            result = new IntegerValue(this, request.getPort());
 
         } else if(isCalledAs(qnPath.getLocalPart())) {
-            result = new StringValue(request.getPath());
+            result = new StringValue(this, request.getPath());
             
         } else if(isCalledAs(qnQuery.getLocalPart())) {
             final String query = request.getQuery();
             if(query == null) {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
-                result = new StringValue(query);
+                result = new StringValue(this, query);
             }
         } else if(isCalledAs(qnUri.getLocalPart())) {
-            result = new StringValue(request.getURI());
+            result = new StringValue(this, request.getURI());
             
         } else {
             throw new XPathException(this, "Unknown function call: " + getSignature());

@@ -73,8 +73,8 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        DocumentImpl doc = new DocumentImpl(mockBrokerPool, 888);
-        DocumentImpl other = new DocumentImpl(mockBrokerPool, 999);
+        DocumentImpl doc = new DocumentImpl(null, mockBrokerPool, 888);
+        DocumentImpl other = new DocumentImpl(null, mockBrokerPool, 999);
 
         //actions
         doc.copyOf(mockBroker, other, (DocumentImpl)null);
@@ -108,7 +108,7 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
+        final DocumentImpl doc = new DocumentImpl(null, mockBrokerPool, 99);
         assertTrue(doc.isSameNode(doc));
 
         verify(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
@@ -136,9 +136,9 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
+        final DocumentImpl doc = new DocumentImpl(null, mockBrokerPool, 99);
 
-        final DocumentImpl doc2 = new DocumentImpl(mockBrokerPool, 765);
+        final DocumentImpl doc2 = new DocumentImpl(null, mockBrokerPool, 765);
 
         assertFalse(doc.isSameNode(doc2));
 
@@ -167,7 +167,7 @@ public class DocumentImplTest {
         replay(mockBrokerPool, mockDatabase, mockBroker, mockCurrentSubject, mockCurrentSubjectGroup, mockSecurityManager);
 
         //test setup
-        final DocumentImpl doc = new DocumentImpl(mockBrokerPool, 99);
+        final DocumentImpl doc = new DocumentImpl(null, mockBrokerPool, 99);
 
         final TextImpl text = new TextImpl("hello");
 

@@ -70,7 +70,7 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 		try {
 			final String[] collections = collection.listChildCollections();
 			for (String s : collections) {
-				result.add(new StringValue(s));
+				result.add(new StringValue(this, s));
 			}
 			return result;
 		} catch (final XMLDBException e) {

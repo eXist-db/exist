@@ -98,6 +98,6 @@ public class CountInstances extends BasicFunction
 			count = bp.available();
 		}
 		
-		return new IntegerValue(count, Type.INTEGER);
+		return new IntegerValue(this, count, Type.INTEGER);
 	}
 }

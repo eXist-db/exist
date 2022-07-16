@@ -86,16 +86,16 @@ public class ConnectionFunctions extends AbstractRequestModuleFunction {
         final Sequence result;
         
         if(isCalledAs(qnAddress.getLocalPart())) {
-            result = new StringValue(request.getAddress());
+            result = new StringValue(this, request.getAddress());
         
         } else if(isCalledAs(qnRemoteHostname.getLocalPart())) {
-            result = new StringValue(request.getRemoteHostname());
+            result = new StringValue(this, request.getRemoteHostname());
         
         } else if(isCalledAs(qnRemoteAddress.getLocalPart())) {
-            result = new StringValue(request.getRemoteAddress());
+            result = new StringValue(this, request.getRemoteAddress());
 
         } else if(isCalledAs(qnRemotePort.getLocalPart())) {
-            result = new IntegerValue(request.getRemotePort());
+            result = new IntegerValue(this, request.getRemotePort());
                
         } else {
             throw new XPathException(this, "Unknown function call: " + getSignature());

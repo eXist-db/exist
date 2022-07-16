@@ -117,7 +117,7 @@ public class GetWidthFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         } else {
             //return the width of the image
-            return new IntegerValue(iWidth);
+            return new IntegerValue(this, iWidth);
         }
     }
 }

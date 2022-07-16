@@ -32,7 +32,7 @@ public class NodeProxyTest {
 
     @Test
     public void iterate_loop() {
-        final NodeProxy mockNodeProxy = new NodeProxy(null, null, Node.ELEMENT_NODE, -1);
+        final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
 
         final SequenceIterator it = mockNodeProxy.iterate();
         int count = 0;
@@ -46,7 +46,7 @@ public class NodeProxyTest {
 
     @Test
     public void iterate_skip_loop() {
-        final NodeProxy mockNodeProxy = new NodeProxy(null, null, Node.ELEMENT_NODE, -1);
+        final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
         assertEquals(1, it.skippable());
@@ -66,7 +66,7 @@ public class NodeProxyTest {
 
     @Test
     public void iterate_loop_skip_loop() {
-        final NodeProxy mockNodeProxy = new NodeProxy(null, null, Node.ELEMENT_NODE, -1);
+        final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
         int len = 20;

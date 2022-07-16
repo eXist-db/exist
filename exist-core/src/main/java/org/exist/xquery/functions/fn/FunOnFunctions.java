@@ -94,18 +94,18 @@ public class FunOnFunctions extends BasicFunction {
                     }
                     throw e;
                 }
-			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(call);
+			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(this, call);
 			} else if (isCalledAs("function-name")) {
 				final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
 				final QName qname = ref.getSignature().getName();
 				if (qname == null || qname == InlineFunction.INLINE_FUNCTION_QNAME)
 					{return Sequence.EMPTY_SEQUENCE;}
 				else
-					{return new QNameValue(context, qname);}
+					{return new QNameValue(this, context, qname);}
 			} else {
 				// isCalledAs("function-arity")
 				final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
-				return new IntegerValue(ref.getSignature().getArgumentCount());
+				return new IntegerValue(this, ref.getSignature().getArgumentCount());
 			}
 		} catch (final Exception e) {
 			if (e instanceof XPathException)

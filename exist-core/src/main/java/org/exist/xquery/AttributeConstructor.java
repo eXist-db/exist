@@ -97,7 +97,7 @@ public class AttributeConstructor extends NodeConstructor {
 				{buf.append(next);}
 		}
 		//TODO : include that tricky attribute normalization here
-		final StringValue result = new StringValue(buf.toString());
+		final StringValue result = new StringValue(this, buf.toString());
         // String values as expressions are already expanded by
         // the parser -- Alex
 		//result.expand();

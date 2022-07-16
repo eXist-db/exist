@@ -41,7 +41,7 @@ public class DescendantSelector implements NodeSelector {
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
-        final NodeProxy p = new NodeProxy(doc, nodeId);
+        final NodeProxy p = new NodeProxy(null, doc, nodeId);
         final NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, false);
         if (contextNode == null)
             {return null;}

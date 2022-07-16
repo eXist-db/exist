@@ -35,13 +35,25 @@ public class ForceIndexUse extends Pragma {
 		 new QName("force-index-use", Namespaces.EXIST_NS, "exist");
 
     public ForceIndexUse(QName qname, String contents) throws XPathException {
-    	super(qname, contents);
+        this(null, qname, contents);
+    }
+
+    public ForceIndexUse(final Expression expression, QName qname, String contents) throws XPathException {
+    	super(expression, qname, contents);
     }
     
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
+    public void before(XQueryContext context,Sequence contextSequence) throws XPathException {
+        before(context, null, contextSequence);
     }
     
-    public void after(XQueryContext context, Expression expression) throws XPathException {
+    public void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException {
+    }
+    
+    public void after(XQueryContext context) throws XPathException {
+        after(context, null);
+    }
+    
+    public void after(XQueryContext context, final Expression expression) throws XPathException {
     	expression.accept(new DefaultExpressionVisitor() {
         	public void visitGeneralComparison(GeneralComparison expression) {
         		bailout = !expression.hasUsedIndex();

@@ -94,7 +94,7 @@ public class GetDirContextFunction extends BasicFunction
 
 			// store the JNDI Directory Context and return the uid handle of the context
 			
-			return( new IntegerValue( JNDIModule.storeJNDIContext( context, dirCtx ) ) );
+			return( new IntegerValue( this, JNDIModule.storeJNDIContext( context, dirCtx ) ) );
 		}
 		catch( NamingException ne ) {
 			logger.error( "jndi:get-dir-context() Cannot get JNDI directory context: ", ne );

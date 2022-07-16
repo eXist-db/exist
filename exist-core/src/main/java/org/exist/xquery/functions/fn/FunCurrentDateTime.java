@@ -94,7 +94,7 @@ public class FunCurrentDateTime extends Function {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-        Sequence result = new DateTimeStampValue(context.getCalendar());
+        Sequence result = new DateTimeStampValue(this, context.getCalendar());
         if (isCalledAs("current-dateTime")) {
             // do nothing, result already in right form
         } else if (isCalledAs("current-date")) {

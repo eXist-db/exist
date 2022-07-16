@@ -110,7 +110,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 if (ancestors == null) {
                     ancestors = new NewArrayNodeSet();
                 }
-                ancestors.add(new NodeProxy(proxy.getOwnerDocument(), nextMatch.getNodeId()));
+                ancestors.add(new NodeProxy(proxy.getExpression(), proxy.getOwnerDocument(), nextMatch.getNodeId()));
             }
             nextMatch = nextMatch.getNextMatch();
         }
@@ -130,7 +130,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         // the node contents
         while (nextMatch != null) {
             if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
-                scanMatches(new NodeProxy(getCurrentNode()));
+                scanMatches(new NodeProxy(null, getCurrentNode()));
                 break;
             }
             nextMatch = nextMatch.getNextMatch();

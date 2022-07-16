@@ -33,6 +33,7 @@ import org.exist.util.UTF8;
 import org.exist.util.XMLString;
 import org.exist.util.pool.NodePool;
 import org.exist.util.serializer.AttrList;
+import org.exist.xquery.Expression;
 import org.w3c.dom.*;
 
 import javax.xml.XMLConstants;
@@ -56,11 +57,19 @@ public class AttrImpl extends NamedNode implements Attr {
     private XMLString value = null;
 
     public AttrImpl() {
-        super(Node.ATTRIBUTE_NODE);
+        this((Expression) null);
+    }
+
+    public AttrImpl(final Expression expression) {
+        super(expression, Node.ATTRIBUTE_NODE);
     }
 
     public AttrImpl(final QName name, final SymbolTable symbols) throws DOMException {
-        super(Node.ATTRIBUTE_NODE, name);
+        this(null, name, symbols);
+    }
+
+    public AttrImpl(final Expression expression, final QName name, final SymbolTable symbols) throws DOMException {
+        super(expression, Node.ATTRIBUTE_NODE, name);
         if(symbols != null && symbols.getSymbol(nodeName.getLocalPart()) < 0) {
             throw new DOMException(DOMException.INVALID_ACCESS_ERR,
                 "Too many element/attribute names registered in the database. No of distinct names is limited to 16bit. Aborting store.");
@@ -68,12 +77,20 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     public AttrImpl(final QName name, final String str, final SymbolTable symbols) throws DOMException {
-        this(name, symbols);
+        this(null, name, str, symbols);
+    }
+
+    public AttrImpl(final Expression expression, final QName name, final String str, final SymbolTable symbols) throws DOMException {
+        this(expression, name, symbols);
         this.value = new XMLString(str.toCharArray());
     }
 
     public AttrImpl(final AttrImpl other) {
-        super(other);
+        this(null, other);
+    }
+
+    public AttrImpl(final Expression expression, final AttrImpl other) {
+        super(expression, other);
         this.attributeType = other.attributeType;
         this.value = new XMLString(other.value);
     }
@@ -206,7 +223,7 @@ public class AttrImpl extends NamedNode implements Attr {
         if(pooled) {
             attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
         } else {
-            attr = new AttrImpl();
+            attr = new AttrImpl((Expression) null);
         }
         attr.setNodeName(doc.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
         if (attr.value != null) {

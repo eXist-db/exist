@@ -98,7 +98,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
         result.put(new StringValue("next"), nextFunction(context, random));
         result.put(new StringValue("permute"), permuteFunction(context, random));
 
-        return new MapType(context, result.forked(), Type.STRING);
+        return new MapType(null, context, result.forked(), Type.STRING);
     }
 
     private static FunctionReference nextFunction(final XQueryContext context, final XORShiftRandom random) {

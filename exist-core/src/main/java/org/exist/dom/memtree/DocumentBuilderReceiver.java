@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -55,17 +56,36 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     private boolean suppressWhitespace = true;
 
+    private final Expression expression;
+
     public DocumentBuilderReceiver() {
-        this(null);
+        this((Expression) null);
+    }
+
+    public DocumentBuilderReceiver(final Expression expression) {
+        this(expression, null);
     }
 
     public DocumentBuilderReceiver(final MemTreeBuilder builder) {
-        this(builder, false);
+        this(null, builder);
+    }
+
+    public DocumentBuilderReceiver(final Expression expression, final MemTreeBuilder builder) {
+        this(expression, builder, false);
     }
 
     public DocumentBuilderReceiver(final MemTreeBuilder builder, final boolean declareNamespaces) {
+        this(null, builder, declareNamespaces);
+    }
+
+    public DocumentBuilderReceiver(final Expression expression, final MemTreeBuilder builder, final boolean declareNamespaces) {
+        this.expression = expression;
         this.builder = builder;
         this.explicitNSDecl = declareNamespaces;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     public void setCheckNS(final boolean checkNS) {
@@ -92,7 +112,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     @Override
     public void startDocument() throws SAXException {
         if(builder == null) {
-            builder = new MemTreeBuilder();
+            builder = new MemTreeBuilder(expression);
             builder.startDocument();
         }
     }

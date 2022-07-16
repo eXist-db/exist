@@ -42,7 +42,7 @@ class SortTestNodeProxy extends NodeProxy {
 	final int val;
 
 	public SortTestNodeProxy(int id, int val) {
-		super(null, new SortTestNodeId(id));
+		super(null, null, new SortTestNodeId(id));
 		this.val = val;
 	}
 

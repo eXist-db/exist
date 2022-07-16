@@ -53,10 +53,10 @@ public class GetID extends StrictSessionFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
-
+        final Expression expression = this;
         return withValidSession(session, SessionWrapper::getId)
                 .filter(Objects::nonNull)
-                .map(id -> (Sequence)new StringValue(id))
+                .map(id -> (Sequence)new StringValue(expression, id))
                 .orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

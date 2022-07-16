@@ -58,6 +58,6 @@ public class GeneralFunctions extends AbstractRequestModuleFunction {
     
     @Override
     public Sequence eval(final Sequence[] args, final HttpRequest request) throws XPathException {
-        return new StringValue(request.getMethod().name());
+        return new StringValue(this, request.getMethod().name());
     }
 }

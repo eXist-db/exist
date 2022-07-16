@@ -29,6 +29,7 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.SingleInstanceConfiguration;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -131,7 +132,7 @@ public class Descriptor implements ErrorHandler {
             reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             reader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             reader.setContentHandler(adapter);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);
