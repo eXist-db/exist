@@ -581,6 +581,10 @@ public class QueryDialog extends JFrame {
                 tResult = System.currentTimeMillis() - t1;
                 runningContext.set(null);
 
+                if (result == null) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "Query returned 'null' which it should never do, this is likely a bug that should be reported");
+                }
+
                 // jmfg: Is this still needed? I don't think so
                 writer = new StringWriter();
                 service.dump(compiled, writer);
