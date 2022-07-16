@@ -36,13 +36,13 @@ public class WindowCondition {
     private Collator collator;
     private final boolean only;
     private final @Nullable QName currentItem;
-    private final @Nullable String posVar;
+    private final @Nullable QName posVar;
     private final @Nullable QName previousItem;
     private final @Nullable QName nextItem;
     private final Expression whenExpression;
 
     public WindowCondition(final XQueryContext context, final boolean only, @Nullable final QName current,
-            @Nullable final String posVar, @Nullable final QName previous, @Nullable final QName next,
+            @Nullable final QName posVar, @Nullable final QName previous, @Nullable final QName next,
             final Expression whenExpr) {
 
         this.context = context;

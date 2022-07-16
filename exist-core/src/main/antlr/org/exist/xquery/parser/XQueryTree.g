@@ -1685,7 +1685,11 @@ throws PermissionDeniedException, EXistException, XPathException
             			)?
             			step=expr [inputSequence]
             			{
-            				clause.varName= windowWarName.getText();
+            			  try {
+            				  clause.varName = QName.parse(staticContext, windowWarName.getText(), null);
+            				} catch (final IllegalQNameException iqe) {
+                      throw new XPathException(windowWarName.getLine(), windowWarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + windowWarName.getText());
+                    }
             				clause.inputSequence= inputSequence;
             				clauses.add(clause);
             			}
@@ -1699,7 +1703,7 @@ throws PermissionDeniedException, EXistException, XPathException
                         QName currentItemName = null;
                         QName previousItemName = null;
                         QName nextItemName = null;
-                        String windowStartPosVar = null;
+                        QName windowStartPosVar = null;
             	    }
             	    (
                     	// WINDOW_VARS
@@ -1718,7 +1722,11 @@ throws PermissionDeniedException, EXistException, XPathException
                     	(
                     	    startPosVar:POSITIONAL_VAR
                             {
-                                windowStartPosVar = startPosVar.getText();
+                                try {
+                                    windowStartPosVar = QName.parse(staticContext, startPosVar.getText(), null);
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(startPosVar.getLine(), startPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + startPosVar.getText());
+                                }
                             }
                     	)?
                     	(
@@ -1762,7 +1770,7 @@ throws PermissionDeniedException, EXistException, XPathException
                          QName endCurrentItemName = null;
                          QName endPreviousItemName = null;
                          QName endNextItemName = null;
-                         String windowEndPosVar = null;
+                         QName windowEndPosVar = null;
                          Boolean only = false;
                     }
                     #(
@@ -1790,7 +1798,11 @@ throws PermissionDeniedException, EXistException, XPathException
                            	(
                            	    endPosVar:POSITIONAL_VAR
                                 {
-                                    windowEndPosVar = endPosVar.getText();
+                                    try {
+                                        windowEndPosVar = QName.parse(staticContext, endPosVar.getText(), null);
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(endPosVar.getLine(), endPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPosVar.getText());
+                                    }
                                 }
                            	)?
                            	(
