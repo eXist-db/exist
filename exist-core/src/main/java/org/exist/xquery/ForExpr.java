@@ -75,11 +75,6 @@ public class ForExpr extends BindingExpression {
             context.declareVariableBinding(inVar);
             // Declare positional variable
             if (positionalVariable != null) {
-                //could probably be detected by the parser
-                if (varName.equals(positionalVariable)) {
-                    throw new XPathException(this, ErrorCodes.XQST0089,
-                            "bound variable and positional variable have the same name");
-                }
                 final LocalVariable posVar = new LocalVariable(positionalVariable);
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
