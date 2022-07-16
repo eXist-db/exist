@@ -63,12 +63,66 @@ public class WindowCondition {
         return this.collator;
     }
 
+    public boolean isOnly() {
+        return only;
+    }
+
+    @Nullable public QName getCurrentItem() {
+        return currentItem;
+    }
+
+    @Nullable public QName getPosVar() {
+        return posVar;
+    }
+
+    @Nullable public QName getPreviousItem() {
+        return previousItem;
+    }
+
+    @Nullable public QName getNextItem() {
+        return nextItem;
+    }
+
+    public Expression getWhenExpression() {
+        return whenExpression;
+    }
+
     @Override
     public String toString() {
-        return this.only ? "only " : ""
-                + "current " + this.currentItem  + " at " + this.posVar
-                + " previous " + this.previousItem
-                + " next " + this.nextItem
-                + " when " + this.whenExpression.toString();
+        final StringBuilder result = new StringBuilder();
+        if (this.only) {
+            result.append("only");
+        }
+        if (currentItem != null) {
+            if (result.length() != 0) {
+                result.append(' ');
+            }
+            result.append("current $").append(currentItem);
+        }
+        if (posVar != null) {
+            if (result.length() != 0) {
+                result.append(' ');
+            }
+            result.append("at $").append(posVar);
+        }
+        if (previousItem != null) {
+            if (result.length() != 0) {
+                result.append(' ');
+            }
+            result.append("previous $").append(previousItem);
+        }
+        if (nextItem != null) {
+            if (result.length() != 0) {
+                result.append(' ');
+            }
+            result.append("next $").append(nextItem);
+        }
+
+        if (result.length() != 0) {
+            result.append(' ');
+        }
+        result.append("when ").append(whenExpression);
+
+        return result.toString();
     }
 }
