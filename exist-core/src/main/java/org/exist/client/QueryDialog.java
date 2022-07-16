@@ -76,6 +76,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
@@ -590,6 +591,10 @@ public class QueryDialog extends JFrame {
                 result = service.execute(compiled);
                 tResult = System.currentTimeMillis() - t1;
                 runningContext.set(null);
+
+                if (result == null) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "Query returned 'null' which it should never do, this is likely a bug that should be reported");
+                }
 
                 // jmfg: Is this still needed? I don't think so
                 writer = new StringWriter();
