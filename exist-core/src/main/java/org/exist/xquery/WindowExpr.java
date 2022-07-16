@@ -25,6 +25,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 /**
+ * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
 public class WindowExpr extends BindingExpression {
@@ -35,16 +36,16 @@ public class WindowExpr extends BindingExpression {
     }
 
     //private Expression inputSequence = null;
-    private final WindowCondition startWindowCondition;
-    private final WindowCondition endWindowCondition;
+    private final WindowCondition windowStartCondition;
+    private final WindowCondition windowEndCondition;
 
     private final WindowType windowType;
-    public WindowExpr(final XQueryContext context, final WindowType type, final WindowCondition start, final WindowCondition end) {
+    public WindowExpr(final XQueryContext context, final WindowType type, final WindowCondition windowStartCondition, final WindowCondition windowEndCondition) {
         super(context);
         //this.inputSequence = inputSequence;
         this.windowType = type;
-        this.startWindowCondition = start;
-        this.endWindowCondition = end;
+        this.windowStartCondition = windowStartCondition;
+        this.windowEndCondition = windowEndCondition;
     }
 
     @Override
@@ -56,12 +57,12 @@ public class WindowExpr extends BindingExpression {
         return this.windowType;
     }
 
-    public WindowCondition getStartWindowCondition() {
-        return startWindowCondition;
+    public WindowCondition getWindowStartCondition() {
+        return windowStartCondition;
     }
 
-    public WindowCondition getEndWindowCondition() {
-        return endWindowCondition;
+    public WindowCondition getWindowEndCondition() {
+        return windowEndCondition;
     }
 
     @Override
@@ -112,8 +113,8 @@ public class WindowExpr extends BindingExpression {
         result.append(" in ");
         result.append(inputSequence.toString());
         result.append(" ");
-        result.append("start ").append(startWindowCondition.toString());
-        result.append(" end ").append(endWindowCondition.toString());
+        result.append("start ").append(windowStartCondition.toString());
+        result.append(" end ").append(windowEndCondition.toString());
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr) {
             result.append(" ");
