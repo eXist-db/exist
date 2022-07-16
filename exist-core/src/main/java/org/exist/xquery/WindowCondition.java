@@ -31,26 +31,28 @@ import javax.annotation.Nullable;
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
 public class WindowCondition {
-    @SuppressWarnings("unused")
+
     private final XQueryContext context;
     private Collator collator;
-    private final Expression whenExpression;
-    private final @Nullable String posVar;
+    private final boolean only;
     private final @Nullable QName currentItem;
+    private final @Nullable String posVar;
     private final @Nullable QName previousItem;
     private final @Nullable QName nextItem;
-    private final boolean only;
+    private final Expression whenExpression;
 
-    public WindowCondition(final XQueryContext context, final Expression whenExpr,
-             @Nullable final QName current, @Nullable final QName previous, @Nullable final QName next, @Nullable final String posVar, final boolean only) {
-        this.whenExpression = whenExpr;
+    public WindowCondition(final XQueryContext context, final boolean only, @Nullable final QName current,
+            @Nullable final String posVar, @Nullable final QName previous, @Nullable final QName next,
+            final Expression whenExpr) {
+
         this.context = context;
+        this.collator = context.getDefaultCollator();
+        this.only = only;
         this.currentItem = current;
+        this.posVar = posVar;
         this.previousItem = previous;
         this.nextItem = next;
-        this.posVar = posVar;
-        this.only = only;
-        this.collator = context.getDefaultCollator();
+        this.whenExpression = whenExpr;
     }
 
     public void setCollator(final String collation) throws XPathException {
