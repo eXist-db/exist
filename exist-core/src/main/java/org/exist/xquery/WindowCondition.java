@@ -24,7 +24,10 @@ package org.exist.xquery;
 import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 
+import javax.annotation.Nullable;
+
 /**
+ * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
  */
 public class WindowCondition {
@@ -32,14 +35,14 @@ public class WindowCondition {
     private final XQueryContext context;
     private Collator collator;
     private final Expression whenExpression;
-    private final String posVar;
-    private final QName currentItem;
-    private final QName previousItem;
-    private final QName nextItem;
+    private final @Nullable String posVar;
+    private final @Nullable QName currentItem;
+    private final @Nullable QName previousItem;
+    private final @Nullable QName nextItem;
     private final boolean only;
 
     public WindowCondition(final XQueryContext context, final Expression whenExpr,
-            final QName current, final QName previous, final QName next, final String posVar, final boolean only) {
+             @Nullable final QName current, @Nullable final QName previous, @Nullable final QName next, @Nullable final String posVar, final boolean only) {
         this.whenExpression = whenExpr;
         this.context = context;
         this.currentItem = current;
