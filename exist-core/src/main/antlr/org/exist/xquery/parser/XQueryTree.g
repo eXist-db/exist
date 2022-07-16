@@ -1750,7 +1750,7 @@ throws PermissionDeniedException, EXistException, XPathException
                     step=expr [whenExpr]
                     {
                         WindowCondition windowCondition = new WindowCondition(
-                        	context, whenExpr, currentItemName, previousItemName, nextItemName, windowStartPosVar, false
+                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, whenExpr
                     	);
                     	clause.windowConditions.add(windowCondition);
                     }
@@ -1822,7 +1822,7 @@ throws PermissionDeniedException, EXistException, XPathException
                         step=expr [endWhenExpr]
                         {
                         	WindowCondition endWindowCondition = new WindowCondition(
-                            	context, endWhenExpr, endCurrentItemName, endPreviousItemName, endNextItemName, windowEndPosVar, only
+                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, endWhenExpr
                         	);
                             clause.windowConditions.add(endWindowCondition);
                         }
