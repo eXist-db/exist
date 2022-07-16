@@ -24,6 +24,8 @@ package org.exist.xquery;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="gabriele@strumenta.com">Gabriele Tomassetti</a>
@@ -37,10 +39,10 @@ public class WindowExpr extends BindingExpression {
 
     //private Expression inputSequence = null;
     private final WindowCondition windowStartCondition;
-    private final WindowCondition windowEndCondition;
+    private final @Nullable WindowCondition windowEndCondition;
 
     private final WindowType windowType;
-    public WindowExpr(final XQueryContext context, final WindowType type, final WindowCondition windowStartCondition, final WindowCondition windowEndCondition) {
+    public WindowExpr(final XQueryContext context, final WindowType type, final WindowCondition windowStartCondition, @Nullable final WindowCondition windowEndCondition) {
         super(context);
         //this.inputSequence = inputSequence;
         this.windowType = type;
@@ -61,7 +63,7 @@ public class WindowExpr extends BindingExpression {
         return windowStartCondition;
     }
 
-    public WindowCondition getWindowEndCondition() {
+    public @Nullable WindowCondition getWindowEndCondition() {
         return windowEndCondition;
     }
 
@@ -114,7 +116,9 @@ public class WindowExpr extends BindingExpression {
         result.append(inputSequence.toString());
         result.append(" ");
         result.append("start ").append(windowStartCondition.toString());
-        result.append(" end ").append(windowEndCondition.toString());
+        if (windowEndCondition != null) {
+            result.append(" end ").append(windowEndCondition.toString());
+        }
         //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr) {
             result.append(" ");
