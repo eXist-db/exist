@@ -1598,6 +1598,9 @@ throws PermissionDeniedException, EXistException, XPathException
                             {
                                 try {
                                     clause.posVar = QName.parse(staticContext, posVar.getText(), null);
+                                    if (clause.posVar.equals(clause.varName)) {
+                                        throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XQST0089, "bound variable and positional variable have the same name: " + posVar.getText());
+                                    }
                                 } catch (final IllegalQNameException iqe) {
                                     throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + posVar.getText());
                                 }
