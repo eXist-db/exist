@@ -1,0 +1,35 @@
+<!--
+ Ivy module to retrieve the tika jars, including dependencies,
+ excluding jars that are provided by eXist-db already
+-->
+<ivy-module version="2.0">
+
+    <info organisation="org.exist" module="expath"/>
+
+    <configurations>
+        <conf name="core" visibility="private"/>
+        <conf name="compile" visibility="private" transitive="false" extends="core"/>
+        <conf name="runtime" visibility="public"  transitive="true" extends="compile"/>
+    </configurations>
+
+    <publications>
+        <artifact name="exist-expath" type="jar" conf="runtime" ext="jar"/>
+    </publications>
+
+    <dependencies defaultconf="compile->default">
+
+        <dependency org="org.expath.http.client" name="http-client-java" rev="1.4.1">
+            <artifact name="http-client-java" type="jar"/>
+        </dependency>
+
+        <!-- identified as provided by eXist-db -->
+        <exclude module="commons-codec"/>
+        <exclude module="commons-logging"/>
+        <exclude module="httpclient"/>
+        <exclude module="httpcore"/>
+        <exclude module="jcip-annotations"/>
+        <exclude module="jsr305"/>
+        <exclude module="slf4j-api"/>
+
+    </dependencies>
+</ivy-module>
