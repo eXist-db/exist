@@ -145,7 +145,7 @@ function fnt:document-uri0_context() {
 };
 
 declare
-    %test:assertError("err:XPDY0002")
+    %test:assertEmpty
 function fnt:document-uri0_context_empty() {
      root(collection('/db/fn-test')//bookies)/document-uri()
 };

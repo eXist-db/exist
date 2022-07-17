@@ -96,4 +96,13 @@ public class TextConstructor extends NodeConstructor {
     public boolean allowMixedNodesInReturn() {
         return true;
     }
+
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        /*
+        When this TextConstructor only contains whitespace but has been configured
+        to strip-whitespace, return true so that the next expression is processed correctly.
+         */
+        return isWhitespaceOnly && context.stripWhitespace();
+    }
 }

@@ -194,4 +194,9 @@ public class DebuggableExpression implements Expression, RewritableExpression {
     public Expression getParent() {
         return null;
     }
+
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        return false;
+    }
 }
