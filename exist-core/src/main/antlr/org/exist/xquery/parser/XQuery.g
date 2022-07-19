@@ -2227,9 +2227,9 @@ reservedKeywords returns [String name]
 	|
 	"copy-namespaces" { name = "copy-namespaces"; }
 	|
-    "empty-sequence" { name = "empty-sequence"; }
-    |
-    "schema-element" { name = "schema-element"; }
+	"empty-sequence" { name = "empty-sequence"; }
+	|
+	"schema-element" { name = "schema-element"; }
 	;
 
 /**
