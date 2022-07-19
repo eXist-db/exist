@@ -60,8 +60,8 @@ public class VariableReference extends AbstractExpression {
             return;
         }
         if (var == null) {
-            throw new XPathException(this, ErrorCodes.XPDY0002,
-                    "variable '$" + qname + "' is not set.");
+            throw new XPathException(this, ErrorCodes.XPST0008,
+                    "Variable '$" + qname + "' is not declared.");
         }
         if (!var.isInitialized()) {
             throw new XPathException(this, ErrorCodes.XQST0054,
@@ -88,7 +88,7 @@ public class VariableReference extends AbstractExpression {
         }
         final Variable var = getVariable(new AnalyzeContextInfo(parent, 0));
         if (var == null) {
-            throw new XPathException(this, ErrorCodes.XPDY0002, "variable '$" + qname + "' is not set.");
+            throw new XPathException(this, ErrorCodes.XPST0008, "Variable '$" + qname + "' is not declared.");
         }
         final Sequence seq = var.getValue();
         if (seq == null) {
