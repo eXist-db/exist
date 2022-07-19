@@ -87,8 +87,8 @@ public class WindowExpr extends BindingExpression {
             context.declareVariableBinding(windowVar);
 
             // Declare WindowCondition variables
-            declareWindowConditionVariables(context, windowStartCondition);
-            declareWindowConditionVariables(context, windowEndCondition);
+            declareWindowConditionVariables(true, windowStartCondition);
+            declareWindowConditionVariables(true, windowEndCondition);
 
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 //            newContextInfo.addFlag(SINGLE_STEP_EXECUTION);  // TODO(AR) is this correct
@@ -120,33 +120,15 @@ public class WindowExpr extends BindingExpression {
 
         context.expressionStart(this);
 
-        final LocalVariable windowVar;
         final Sequence in;
 
         // Save the local variable stack
-        final LocalVariable mark = context.markLocalVariables(false);
+//        final LocalVariable mark = context.markLocalVariables(false);
         final Sequence resultSequence = new ValueSequence(unordered);
         try {
             in = inputSequence.eval(contextSequence, contextItem);
 
-            // Declare the Window variable
-            windowVar = createVariable(varName);
-            windowVar.setSequenceType(sequenceType);
-            context.declareVariableBinding(windowVar);
-
             registerUpdateListener(in);
-
-            // Declare WindowCondition variables
-            final WindowConditionVariables windowStartConditionVariables = declareWindowConditionVariables(context, windowStartCondition);
-            final WindowConditionVariables windowEndConditionVariables = declareWindowConditionVariables(context, windowEndCondition);
-
-            // Save the current context document set to the variable as a hint
-            // for path expressions occurring in the "return" clause.
-            if (in instanceof NodeSet) {
-                windowVar.setContextDocs(in.getDocumentSet());
-            } else {
-                windowVar.setContextDocs(null);
-            }
 
             //TODO(AR) is this required?
 //            //Type.EMPTY is *not* a subtype of other types ;
@@ -163,9 +145,15 @@ public class WindowExpr extends BindingExpression {
             Sequence window = null;
             int windowStartIdx = -1;
 
-            Sequence startPreviousItem = Sequence.EMPTY_SEQUENCE;
-            Sequence startNextItem = Sequence.EMPTY_SEQUENCE;
-            Sequence endPreviousItem = Sequence.EMPTY_SEQUENCE;
+            LocalVariable windowStartMark = null;
+            WindowConditionVariables windowStartConditionVariables = null;
+            Item startPreviousItem = null;
+            Item startNextItem = null;
+
+            LocalVariable windowEndMark = null;
+            WindowConditionVariables windowEndConditionVariables = null;
+            Item endPreviousItem = null;
+            Item endNextItem = null; //TODO(AR) this is currently unset and needs to be implemented
 
             for (int i = 0; i < in.getItemCount(); i++) {
 
@@ -174,25 +162,12 @@ public class WindowExpr extends BindingExpression {
                 // if we have NOT started, check if the start-when condition is true
                 if (window == null) {
 
-                    // set the start-item
-                    if (windowStartConditionVariables.currentItem != null) {
-                        windowStartConditionVariables.currentItem.setValue(currentItem.toSequence());
-                    }
+                    // Save the local variable stack
+                    windowStartMark = context.markLocalVariables(false);
 
-                    // set the start-position
-                    if (windowStartConditionVariables.posVar != null) {
-                        windowStartConditionVariables.posVar.setValue(new IntegerValue(i+1));
-                    }
-
-                    // set the start-previous-item
-                    if (windowStartConditionVariables.previousItem != null) {
-                        windowStartConditionVariables.previousItem.setValue(startPreviousItem);
-                    }
-
-                    // set the start-next-item
-                    if (windowStartConditionVariables.nextItem != null) {
-                        windowStartConditionVariables.nextItem.setValue(startNextItem);
-                    }
+                    // Declare Window Start Condition variables
+                    windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
+                    setWindowConditionVariables(windowStartConditionVariables, currentItem, i, startPreviousItem, startNextItem);
 
                     // check if the start-when condition is true
                     final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
@@ -204,7 +179,7 @@ public class WindowExpr extends BindingExpression {
 
                     } else {
                         // remember the start-previous-item
-                        startPreviousItem = currentItem.toSequence();
+                        startPreviousItem = currentItem;
                     }
                 }
 
@@ -216,23 +191,17 @@ public class WindowExpr extends BindingExpression {
 
                     // remember the start-next-item
                     if (window.getItemCount() == 2) {
-                        startNextItem = currentItem.toSequence();
+                        startNextItem = currentItem;
                     }
 
-                    if (windowEndConditionVariables != null) {
-                        // set the end-item
-                        if (windowEndConditionVariables.currentItem != null) {
-                            windowEndConditionVariables.currentItem.setValue(currentItem.toSequence());
-                        }
+                    // Declare Window End Condition variables)
+                    if (windowEndCondition != null) {
+                        // Save the local variable stack
+                        windowEndMark = context.markLocalVariables(false);
 
-                        // set the end-position
-                        if (windowEndConditionVariables.posVar != null) {
-                            windowEndConditionVariables.posVar.setValue(new IntegerValue(i + 1));
-                        }
-
-                        // set the end-previous-item
-                        if (windowEndConditionVariables.previousItem != null) {
-                            windowEndConditionVariables.previousItem.setValue(endPreviousItem);
+                        windowEndConditionVariables = declareWindowConditionVariables(false, windowEndCondition);
+                        if (windowEndConditionVariables != null) {
+                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, endPreviousItem, endNextItem);
                         }
                     }
 
@@ -251,17 +220,30 @@ public class WindowExpr extends BindingExpression {
 
                         if (window != null) {
                             // eval the return expression on the window binding
-                            returnEvalWindowBinding(windowVar, window,resultSequence);
+                            returnEvalWindowBinding(in, window, resultSequence);
 
                             // reset the window
+                            if (windowEndMark != null) {
+                                context.popLocalVariables(windowEndMark, resultSequence);
+                                windowEndConditionVariables.destroy(context, resultSequence);
+                                windowEndConditionVariables = null;
+                                windowEndMark = null;
+
+                            }
+                            if (windowStartMark != null) {
+                                context.popLocalVariables(windowStartMark, resultSequence);
+                                windowStartConditionVariables.destroy(context, resultSequence);
+                                windowStartConditionVariables = null;
+                                windowStartMark = null;
+                            }
                             window = null;
-                            startPreviousItem = Sequence.EMPTY_SEQUENCE;
-                            startNextItem = Sequence.EMPTY_SEQUENCE;
-                            endPreviousItem = Sequence.EMPTY_SEQUENCE;
+                            startPreviousItem = null;
+                            startNextItem = null;
+                            endPreviousItem = null;
                         }
                     } else {
                         // remember the end-previous-item
-                        endPreviousItem = currentItem.toSequence();
+                        endPreviousItem = currentItem;
                     }
                 }
             }
@@ -270,18 +252,27 @@ public class WindowExpr extends BindingExpression {
                 // output the remaining binding sequence as a final window
 
                 // eval the return expression on the window binding
-                returnEvalWindowBinding(windowVar, window,resultSequence);
+                returnEvalWindowBinding(in, window, resultSequence);
 
                 // reset the window
-                window = null;
-                startPreviousItem = Sequence.EMPTY_SEQUENCE;
-                startNextItem = Sequence.EMPTY_SEQUENCE;
-                endPreviousItem = Sequence.EMPTY_SEQUENCE;
+                if (windowEndMark != null) {
+                    context.popLocalVariables(windowEndMark, resultSequence);
+                    windowEndConditionVariables.destroy(context, resultSequence);
+                    windowEndConditionVariables = null;
+                    windowEndMark = null;
+
+                }
+                if (windowStartMark != null) {
+                    context.popLocalVariables(windowStartMark, resultSequence);
+                    windowStartConditionVariables.destroy(context, resultSequence);
+                    windowStartConditionVariables = null;
+                    windowStartMark = null;
+                }
             }
 
         } finally {
             // restore the local variable stack
-            context.popLocalVariables(mark, resultSequence);
+//            context.popLocalVariables(mark, resultSequence);
         }
 
         clearContext(getExpressionId(), in);
@@ -322,15 +313,36 @@ public class WindowExpr extends BindingExpression {
         return resultSequence;
     }
 
-    private void returnEvalWindowBinding(final LocalVariable windowVar, final Sequence window, final Sequence resultSequence) throws XPathException {
-        // set the binding for the window
-        windowVar.setValue(new ValueSequence(window, false));
+    private void returnEvalWindowBinding(final Sequence in, final Sequence window, final Sequence resultSequence) throws XPathException {
+        // Save the local variable stack
+        final LocalVariable mark = context.markLocalVariables(false);
+
+        try {
+            // Declare the Window variable
+            final LocalVariable windowVar = createVariable(varName);
+            windowVar.setSequenceType(sequenceType);
+            context.declareVariableBinding(windowVar);
+
+            // Save the current context document set to the variable as a hint
+            // for path expressions occurring in the "return" clause.
+            if (in instanceof NodeSet) {
+                windowVar.setContextDocs(in.getDocumentSet());
+            } else {
+                windowVar.setContextDocs(null);
+            }
+
+            // set the binding for the window
+            windowVar.setValue(new ValueSequence(window, false));
 
         // eval the return expression on the window binding
         resultSequence.addAll(returnExpr.eval(null, null));
 
-        // free resources
-        windowVar.destroy(context, resultSequence); // TODO(AR) is this in the correct place?
+            // free resources
+            windowVar.destroy(context, resultSequence); // TODO(AR) is this in the correct place?
+        } finally {
+            // restore the local variable stack
+            context.popLocalVariables(mark, resultSequence);
+        }
     }
 
     @Override
@@ -390,29 +402,55 @@ public class WindowExpr extends BindingExpression {
         return true;
     }
 
-    private static @Nullable
-    WindowConditionVariables declareWindowConditionVariables(final XQueryContext context, @Nullable final WindowCondition windowCondition) throws XPathException {
+    private @Nullable WindowConditionVariables declareWindowConditionVariables(final boolean analyzePhase, @Nullable final WindowCondition windowCondition) throws XPathException {
         if (windowCondition == null) {
             return null;
         }
         return new WindowConditionVariables(
-                declareWindowConditionVariable(context, windowCondition.getCurrentItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)),
-                declareWindowConditionVariable(context, windowCondition.getPosVar(), Type.INTEGER, POSITIONAL_VAR_TYPE),
-                declareWindowConditionVariable(context, windowCondition.getPreviousItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)),
-                declareWindowConditionVariable(context, windowCondition.getNextItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE))
+                declareWindowConditionVariable(analyzePhase, windowCondition.getCurrentItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)),
+                declareWindowConditionVariable(analyzePhase, windowCondition.getPosVar(), Type.INTEGER, POSITIONAL_VAR_TYPE),
+                declareWindowConditionVariable(analyzePhase, windowCondition.getPreviousItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)),
+                declareWindowConditionVariable(analyzePhase, windowCondition.getNextItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE))
         );
     }
 
-    private static @Nullable
-    LocalVariable declareWindowConditionVariable(final XQueryContext context, @Nullable final QName variableName, final int staticType, final SequenceType sequenceType) throws XPathException {
+    private @Nullable LocalVariable declareWindowConditionVariable(final boolean analyzePhase, @Nullable final QName variableName, final int staticType, final SequenceType sequenceType) throws XPathException {
         if (variableName == null) {
             return null;
         }
-        final LocalVariable windowConditionVariable = new LocalVariable(variableName);
+
+        final LocalVariable windowConditionVariable;
+        if (analyzePhase) {
+            windowConditionVariable = new LocalVariable(variableName);
+        } else {
+            windowConditionVariable = createVariable(variableName);
+        }
         windowConditionVariable.setSequenceType(sequenceType);
         windowConditionVariable.setStaticType(staticType);
         context.declareVariableBinding(windowConditionVariable);
         return windowConditionVariable;
+    }
+
+    private static void setWindowConditionVariables(final WindowConditionVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item startNextItem) {
+        // set the current-item
+        if (windowConditionVariables.currentItem != null) {
+            windowConditionVariables.currentItem.setValue(currentItem.toSequence());
+        }
+
+        // set the position
+        if (windowConditionVariables.posVar != null) {
+            windowConditionVariables.posVar.setValue(new IntegerValue(idx + 1));
+        }
+
+        // set the previous-item
+        if (windowConditionVariables.previousItem != null) {
+            windowConditionVariables.previousItem.setValue(previousItem != null ? previousItem.toSequence() : Sequence.EMPTY_SEQUENCE);
+        }
+
+        // set the next-item
+        if (windowConditionVariables.nextItem != null) {
+            windowConditionVariables.nextItem.setValue(startNextItem != null ? startNextItem.toSequence() : Sequence.EMPTY_SEQUENCE);
+        }
     }
 
     private static class WindowConditionVariables {
@@ -430,6 +468,21 @@ public class WindowExpr extends BindingExpression {
             this.posVar = posVar;
             this.previousItem = previousItem;
             this.nextItem = nextItem;
+        }
+
+        public void destroy(final XQueryContext context, final Sequence contextSequence) {
+            if (nextItem != null) {
+                nextItem.destroy(context, contextSequence);
+            }
+            if (previousItem != null) {
+                previousItem.destroy(context, contextSequence);
+            }
+            if (posVar != null) {
+                posVar.destroy(context, contextSequence);
+            }
+            if (currentItem != null) {
+                currentItem.destroy(context, contextSequence);
+            }
         }
     }
 }
