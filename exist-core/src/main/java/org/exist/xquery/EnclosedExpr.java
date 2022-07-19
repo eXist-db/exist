@@ -193,4 +193,8 @@ public class EnclosedExpr extends PathExpr {
         return this;
     }
 
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        return true;
+    }
 }
