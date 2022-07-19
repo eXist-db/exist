@@ -83,3 +83,22 @@ function twt:non-overlapping-sequences-starting-with-mod3() {
   return
     <window>{$w}</window>
 };
+
+declare
+    %test:assertError("XPST0008")
+function twt:single-step-window-var-in-start-condition() {
+  for tumbling window $w in (1, 2, 3)
+  start when fn:not(fn:empty($w))
+  return
+    <window>{$w}</window>
+};
+
+declare
+    %test:assertError("XPST0008")
+function twt:single-step-window-var-in-end-condition() {
+  for tumbling window $w in (1, 2, 3)
+  start when fn:true()
+  end when fn:not(fn:empty($w))
+  return
+    <window>{$w}</window>
+};
