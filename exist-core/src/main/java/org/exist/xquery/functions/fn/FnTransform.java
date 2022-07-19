@@ -49,7 +49,6 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
-import org.exist.xslt.EXistURIResolver;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -64,7 +63,6 @@ import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
@@ -116,6 +114,13 @@ public class FnTransform extends BasicFunction {
     private static final Configuration SAXON_CONFIGURATION = new Configuration();
     private static final Processor SAXON_PROCESSOR = new Processor(FnTransform.SAXON_CONFIGURATION);
 
+    private static final Convert.ToSaxon toSaxon = new Convert.ToSaxon() {
+        @Override
+        DocumentBuilder newDocumentBuilder() {
+            return SAXON_PROCESSOR.newDocumentBuilder();
+        }
+    };
+
     private static final long XXHASH64_SEED = 0x2245a28e;
     private static final XXHash64 XX_HASH_64 = XXHashFactory.fastestInstance().hash64();
 
@@ -138,7 +143,7 @@ public class FnTransform extends BasicFunction {
 
         for (final IEntry<AtomicValue, Sequence> entry : options.stylesheetParams) {
             final QName qKey = ((QNameValue) entry.key()).getQName();
-            final XdmValue value = Convert.ToSaxon.of(entry.value());
+            final XdmValue value = toSaxon.of(entry.value());
             xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
         }
 
@@ -245,7 +250,8 @@ public class FnTransform extends BasicFunction {
                 });
 
                 if (options.globalContextItem.isPresent()) {
-                    final XdmItem xdmItem = Convert.ToSaxon.of(options.globalContextItem.get());
+                    final Item item = options.globalContextItem.get();
+                    final XdmItem xdmItem = (XdmItem) toSaxon.of(item);
                     xslt30Transformer.setGlobalContextItem(xdmItem);
                 } else if (sourceNode.isPresent()) {
                     final Document document;
@@ -305,7 +311,7 @@ public class FnTransform extends BasicFunction {
             final net.sf.saxon.s9api.QName qName = Convert.ToSaxon.of(options.initialFunction.get().getQName());
             final XdmValue[] functionParams;
             if (options.functionParams.isPresent()) {
-                functionParams = Convert.ToSaxon.of(options.functionParams.get());
+                functionParams = toSaxon.of(options.functionParams.get());
             } else {
                 throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Error - transform using XSLT 3.0 option initial-function, but the corresponding option function-params was not supplied.");
             }
@@ -353,7 +359,7 @@ public class FnTransform extends BasicFunction {
                     }
                     xslt30Transformer.applyTemplates(sourceIMS, saxDestination);
                 } else {
-                    final XdmValue selection = Convert.ToSaxon.of(initialMatchSelection);
+                    final XdmValue selection = toSaxon.of(initialMatchSelection);
                     if (options.deliveryFormat == DeliveryFormat.RAW) {
                         final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
                         return makeResultMap(options, existValue, resultDocuments);
@@ -910,7 +916,7 @@ public class FnTransform extends BasicFunction {
                 if (!(entry.value() instanceof Sequence)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:sequence: " + entry);
                 }
-                result.put(Convert.ToSaxon.of((QNameValue) key), Convert.ToSaxon.of(entry.value()));
+                result.put(Convert.ToSaxon.of((QNameValue) key), toSaxon.of(entry.value()));
             }
             return result;
         }
@@ -1034,31 +1040,10 @@ public class FnTransform extends BasicFunction {
             return 0L;
         }
 
-        private StringBuilder pathTo(Node node) {
-            final List<Node> priors = new ArrayList<>();
-            Node prev = node;
-            while (prev != null) {
-                priors.add(prev);
-                prev = prev.getPreviousSibling();
-            }
-            Node parent = priors.get(0).getParentNode();
-            StringBuilder sb;
-            if (parent == null) {
-                sb = new StringBuilder();
-            } else {
-                sb = pathTo(parent).append('/');
-            }
-            for (Node prior : priors) {
-                sb.append(((NodeValue)prior).getQName()).append(';');
-            }
-
-            return sb;
-        }
-
         private String getStylesheetNodeDocumentPath(final MapType options) throws XPathException {
             final Optional<Node> stylesheetNode = FnTransform.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
             if (stylesheetNode.isPresent()) {
-                return pathTo(stylesheetNode.get()).toString();
+                return TreeUtils.pathTo(stylesheetNode.get()).toString();
             }
             return "/";
         }

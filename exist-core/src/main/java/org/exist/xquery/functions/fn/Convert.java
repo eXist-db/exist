@@ -22,18 +22,18 @@
 
 package org.exist.xquery.functions.fn;
 
-import net.sf.saxon.s9api.XdmItem;
-import net.sf.saxon.s9api.XdmNode;
-import net.sf.saxon.s9api.XdmValue;
+import net.sf.saxon.s9api.*;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
+import javax.xml.transform.dom.DOMSource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -102,7 +102,9 @@ class Convert {
         }
     }
 
-    static class ToSaxon {
+    abstract static class ToSaxon {
+
+        abstract DocumentBuilder newDocumentBuilder();
 
         static net.sf.saxon.s9api.QName of(final QName qName) {
             return new net.sf.saxon.s9api.QName(qName.getPrefix() == null ? "" : qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart());
@@ -112,44 +114,77 @@ class Convert {
             return of(qName.getQName());
         }
 
-        static XdmItem of(final Item item) throws XPathException {
+        XdmValue of(final Item item) throws XPathException {
             final int itemType = item.getType();
             if (Type.subTypeOf(itemType, Type.ATOMIC)) {
-                final AtomicValue atomicValue = (AtomicValue) item;
-                if (Type.subTypeOf(itemType, Type.INTEGER)) {
-                    return (XdmItem)XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
-                } else if (Type.subTypeOf(itemType, Type.NUMBER)) {
-                    return (XdmItem)XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
-                } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
-                    return (XdmItem)XdmValue.makeValue(((BooleanValue) atomicValue).getValue());
-                } else if (Type.subTypeOf(itemType, Type.STRING)) {
-                    return (XdmItem)XdmValue.makeValue(((StringValue) atomicValue).getStringValue());
-                }
+                return ofAtomic((AtomicValue) item);
+            } else if (Type.subTypeOf(itemType, Type.NODE)) {
+                return ofNode((Node) item);
             }
             throw new XPathException(ErrorCodes.XPTY0004,
                     "Item " + item + " of type " + Type.getTypeName(itemType) +
                             " could not be converted to an XdmValue");
         }
 
-        static XdmValue[] of(final ArrayType values) throws XPathException {
+        static private XdmValue ofAtomic(final AtomicValue atomicValue) throws XPathException {
+            final int itemType = atomicValue.getType();
+            if (Type.subTypeOf(itemType, Type.INTEGER)) {
+                return XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
+            } else if (Type.subTypeOf(itemType, Type.NUMBER)) {
+                return XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
+            } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
+                return XdmValue.makeValue(((BooleanValue) atomicValue).getValue());
+            } else if (Type.subTypeOf(itemType, Type.STRING)) {
+                return XdmValue.makeValue(((StringValue) atomicValue).getStringValue());
+            }
+
+            throw new XPathException(ErrorCodes.XPTY0004,
+                    "Atomic value " + atomicValue + " of type " + Type.getTypeName(itemType) +
+                            " could not be converted to an XdmValue");
+        }
+
+        private XdmValue ofNode(final Node node) throws XPathException {
+
+            final DocumentBuilder sourceBuilder = newDocumentBuilder();
+            try {
+                if (node instanceof DocumentImpl) {
+                    return sourceBuilder.build(new DOMSource(node));
+                } else {
+                    //The source must be part of a document
+                    //TODO AP If it isn't, we don't know how to convert it
+                    final Document document = node.getOwnerDocument();
+                    if (document == null) {
+                        throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + " could not be converted to an XdmValue, as it is not part of a document.");
+                    }
+                    final List<Integer> nodeIndex = TreeUtils.treeIndex(node);
+                    final XdmNode xdmDocument = sourceBuilder.build(new DOMSource(document));
+                    final XdmNode xdmNode = TreeUtils.xdmNodeAtIndex(xdmDocument, nodeIndex);
+                    return xdmNode;
+                }
+            } catch (final SaxonApiException e) {
+                throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + " could not be converted to an XdmValue", e);
+            }
+        }
+
+        XdmValue[] of(final ArrayType values) throws XPathException {
             final int size = values.getSize();
             final XdmValue[] result = new XdmValue[size];
             for (int i = 0; i < size; i++) {
                 final Sequence sequence = values.get(i);
-                result[i] = XdmValue.makeValue(ToSaxon.listOf(sequence));
+                result[i] = XdmValue.makeValue(listOf(sequence));
             }
             return result;
         }
 
-        static XdmValue of(final Sequence value) throws XPathException {
-            return XdmValue.makeSequence(ToSaxon.listOf(value));
+        XdmValue of(final Sequence value) throws XPathException {
+            return XdmValue.makeSequence(listOf(value));
         }
 
-        static private List<XdmItem> listOf(final Sequence value) throws XPathException {
+        private List<XdmValue> listOf(final Sequence value) throws XPathException {
             final int size = value.getItemCount();
-            final List<XdmItem> result = new ArrayList<>(size);
+            final List<XdmValue> result = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
-                result.add(ToSaxon.of(value.itemAt(i)));
+                result.add(of(value.itemAt(i)));
             }
             return result;
         }
