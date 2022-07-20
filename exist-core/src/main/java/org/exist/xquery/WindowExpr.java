@@ -80,9 +80,16 @@ public class WindowExpr extends BindingExpression {
             final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
 
+            final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
+
+            // TODO(AR) likely this check has to be moved into the eval stage, and the actual values selected for the Window need to have their types checked against the `windowVarType` instead
+            if (!Type.subTypeOf(inputSequence.returnsType(), windowVarType.getPrimaryType())) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Window variable expects type: " + windowVarType + ", but window binding sequence is of type: " + Type.getTypeName(inputSequence.returnsType()) + inputSequence.getCardinality().toXQueryCardinalityString());
+            }
+
             // Declare the Window variable
             final LocalVariable windowVar = new LocalVariable(varName);
-            windowVar.setSequenceType(sequenceType);
+            windowVar.setSequenceType(windowVarType);
             windowVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(windowVar);
 
@@ -320,7 +327,8 @@ public class WindowExpr extends BindingExpression {
         try {
             // Declare the Window variable
             final LocalVariable windowVar = createVariable(varName);
-            windowVar.setSequenceType(sequenceType);
+            final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
+            windowVar.setSequenceType(windowVarType);
             context.declareVariableBinding(windowVar);
 
             // Save the current context document set to the variable as a hint
