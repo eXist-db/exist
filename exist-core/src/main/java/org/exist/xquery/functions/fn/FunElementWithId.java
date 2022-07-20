@@ -37,7 +37,7 @@ import java.util.TreeSet;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
-public class FunElementWithId extends Function {
+public class FunElementWithId extends BasicFunction {
     private static final String FN_NAME = "element-with-id";
     private static final String FN_DESCRIPTION =
             "Returns the sequence of element nodes that have an ID value " +
@@ -60,39 +60,35 @@ public class FunElementWithId extends Function {
 	}
 
     @Override
-	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
+    public Sequence eval(final Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
         }
 
         if (getArgumentCount() < 1) {
-			throw new XPathException(this, ErrorCodes.XPST0017, "function element-with-id requires one argument");
-        }
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
+            throw new XPathException(this, ErrorCodes.XPST0017, "function element-with-id requires one argument");
         }
 
         final Sequence result;
         boolean processInMem = false;
         final Expression arg = getArgument(0);
-		final Sequence idval = arg.eval(contextSequence);
+        final Sequence idval = arg.eval(contextSequence);
 
-		if (idval.isEmpty() || (getArgumentCount() == 1 && contextSequence != null && contextSequence.isEmpty())) {
+        if (idval.isEmpty() || (getArgumentCount() == 1 && contextSequence != null && contextSequence.isEmpty())) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-    		String nextId;
-    		DocumentSet docs = null;
+            String nextId;
+            DocumentSet docs = null;
             if (getArgumentCount() == 2) {
                 final Sequence nodes = getArgument(1).eval(contextSequence);
                 if (nodes.isEmpty()) {
                     throw new XPathException(this, ErrorCodes.XPDY0002, "XPDY0002: no node or context item for fn:id", nodes);
                 } else if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) {
-                	throw new XPathException(this, ErrorCodes.XPTY0004, "XPTY0004: fn:id() argument is not a node", nodes);
+                    throw new XPathException(this, ErrorCodes.XPTY0004, "XPTY0004: fn:id() argument is not a node", nodes);
                 }
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
@@ -105,10 +101,10 @@ public class FunElementWithId extends Function {
                 contextSequence = node;
             } else if (contextSequence == null) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No context item specified");
-           } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-    			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);
-    		} else {
-    			if (contextSequence.isPersistentSet()) {
+            } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);
+            } else {
+                if (contextSequence.isPersistentSet()) {
                     docs = contextSequence.toNodeSet().getDocumentSet();
                 } else {
                     processInMem = true;
@@ -122,7 +118,7 @@ public class FunElementWithId extends Function {
             }
 
             for(final SequenceIterator i = idval.iterate(); i.hasNext(); ) {
-    			nextId = i.nextItem().getStringValue();
+                nextId = i.nextItem().getStringValue();
                 if (!nextId.isEmpty()) {
                     if (nextId.indexOf(' ') != Constants.STRING_NOT_FOUND) {
                         final StringTokenizer tok = new StringTokenizer(nextId, " ");
@@ -146,15 +142,15 @@ public class FunElementWithId extends Function {
                         }
                     }
                 }
-    		}
+            }
         }
-		result.removeDuplicates();
+        result.removeDuplicates();
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
 
         return result;
-	}
+    }
 
 	private void getId(final NodeSet result, final DocumentSet docs, final String id) throws XPathException {
 		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
