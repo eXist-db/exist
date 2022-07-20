@@ -129,7 +129,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
     public void arrayOfMaps() throws EXistException, PermissionDeniedException {
         final String query = "element test { [map {}] }";
         final String error = "Enclosed expression contains function item";
-        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 17, error, executeQuery(query));
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
     };
 
     // TODO(JL): add (sub-expression) location
@@ -138,6 +138,6 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
     public void mapConstructorInSubExpression() throws EXistException, PermissionDeniedException {
         final String query = "element test { \"a\", map {} }";
         final String error = "Enclosed expression contains function item";
-        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 21, error, executeQuery(query));
+        assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
     }
 }
