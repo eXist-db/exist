@@ -71,6 +71,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -190,7 +191,28 @@ public class FnTransform extends BasicFunction {
      * @return a string, the hash we want
      */
     private String executableHash(final Options options) {
-        return Tuple(options.stylesheetParams, options.staticParams, options.checksumURIs, options.sourceTextChecksum, options.stylesheetNodeDocumentPath).toString();
+
+        final String uniquifier;
+        if (options.resolvedStylesheetBaseURI.isPresent() || options.sourceTextChecksum.isPresent()) {
+            uniquifier = "";
+        } else {
+            uniquifier = LocalDateTime.now().toString();
+        }
+        final String paramHash = Tuple(
+                options.stylesheetParams,
+                options.staticParams).toString();
+
+        final String locationHash = Tuple(
+                options.resolvedStylesheetBaseURI.map(AnyURIValue::getStringValue).orElse(""),
+                options.sourceTextChecksum.orElse(0L),
+                uniquifier,
+                options.stylesheetNodeDocumentPath,
+                options.stylesheetNodeDocumentPath).toString();
+
+        final String hash = Tuple(locationHash, paramHash).toString();
+
+        System.err.println("HASH : " + hash);
+        return hash;
     }
 
     @Override
@@ -205,7 +227,9 @@ public class FnTransform extends BasicFunction {
                 final Holder<XPathException> compileException = new Holder<>();
                 final XsltExecutable xsltExecutable;
                 if (options.shouldCache.orElse(BooleanValue.TRUE).getValue()) {
+                    System.err.println("CACHE GET");
                     xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash(options), key -> {
+                        System.err.println("CACHE CREATE ENTRY");
                         try {
                             return compileExecutable(options);
                         } catch (final XPathException e) {
@@ -214,6 +238,7 @@ public class FnTransform extends BasicFunction {
                         }
                     });
                 } else {
+                    System.err.println("CACHE EXPLICITLY OFF");
                     xsltExecutable = compileExecutable(options);
                 }
 
@@ -940,8 +965,7 @@ public class FnTransform extends BasicFunction {
         final Optional<StringValue> baseOutputURI;
         final Optional<MapType> serializationParams;
 
-        final long sourceTextChecksum;
-        final Tuple3<AnyURIValue, String, String> checksumURIs;
+        final Optional<Long> sourceTextChecksum;
         final String stylesheetNodeDocumentPath;
 
         Options(final MapType options) throws XPathException {
@@ -980,8 +1004,6 @@ public class FnTransform extends BasicFunction {
             } else {
                 resolvedStylesheetBaseURI = Optional.empty();
             }
-            checksumURIs = new Tuple3<>(context.getBaseURI(), explicitStylesheetBaseUri.map(StringValue::getStringValue).orElse(""), xsltSource._1);
-
             initialFunction = FnTransform.INITIAL_FUNCTION.get(options);
             functionParams = FnTransform.FUNCTION_PARAMS.get(options);
 
@@ -1030,14 +1052,14 @@ public class FnTransform extends BasicFunction {
             return deliveryFormat;
         }
 
-        private long getSourceTextChecksum(final MapType options) throws XPathException {
+        private Optional<Long> getSourceTextChecksum(final MapType options) throws XPathException {
             final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
             if (stylesheetText.isPresent()) {
                 final String text = stylesheetText.get();
                 final byte[] data = text.getBytes(UTF_8);
-                return FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED);
+                return Optional.of(FnTransform.XX_HASH_64.hash(data, 0, data.length, FnTransform.XXHASH64_SEED));
             }
-            return 0L;
+            return Optional.empty();
         }
 
         private String getStylesheetNodeDocumentPath(final MapType options) throws XPathException {
@@ -1045,7 +1067,7 @@ public class FnTransform extends BasicFunction {
             if (stylesheetNode.isPresent()) {
                 return TreeUtils.pathTo(stylesheetNode.get()).toString();
             }
-            return "/";
+            return "";
         }
     }
 
