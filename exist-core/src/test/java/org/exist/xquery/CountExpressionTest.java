@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -76,5 +77,8 @@ public class CountExpressionTest {
         assertEquals(XQueryParser.LITERAL_count, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getType());
         // rank variable binding
         assertEquals(XQueryParser.VARIABLE_BINDING, ast.getNextSibling().getFirstChild().getNextSibling().getNextSibling().getFirstChild().getType());
+        assertTrue(((ForExpr)expr.getFirst()).returnExpr instanceof OrderByClause);
+        assertTrue(((OrderByClause)(((ForExpr)expr.getFirst()).returnExpr)).returnExpr instanceof CountClause);
+        assertEquals("rank", ((CountClause)((OrderByClause)(((ForExpr)expr.getFirst()).returnExpr)).returnExpr).varName);
     }
 }

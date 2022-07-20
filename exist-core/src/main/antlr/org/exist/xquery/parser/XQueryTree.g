@@ -1773,21 +1773,24 @@ throws PermissionDeniedException, EXistException, XPathException
                 FLWORClause expr;
                 switch (clause.type) {
                     case LET:
-                        expr= new LetExpr(context);
+                        expr = new LetExpr(context);
                         expr.setASTNode(expr_AST_in);
                         break;
                     case GROUPBY:
-                expr = new GroupByClause(context);
-                break;
-            case ORDERBY:
-                expr = new OrderByClause(context, clause.orderSpecs);
-                break;
-                        case WHERE:
-                                expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
-                                break;
-            default:
-                expr= new ForExpr(context, clause.allowEmpty);
-                break;
+                        expr = new GroupByClause(context);
+                        break;
+                    case ORDERBY:
+                        expr = new OrderByClause(context, clause.orderSpecs);
+                        break;
+                    case WHERE:
+                        expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
+                        break;
+                    case COUNT:
+                        expr = new CountClause(context, clause.varName);
+                        break;
+                    default:
+                        expr = new ForExpr(context, clause.allowEmpty);
+                        break;
                 }
                 expr.setASTNode(clause.ast);
                 if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET) {
