@@ -878,22 +878,23 @@ windowEndCondition throws XPathException
 ;
 
 windowVars throws XPathException
-{ String currentItemName = null, previousItemName = null, nextItemName = null;  }
+{ String currentItemName = null, positionalVarName = null, previousItemName = null, nextItemName = null; }
 :
     ( DOLLAR! currentItemName=eqName! )?
-    ( sp:positionalVar )?
+    ( "at"! DOLLAR! positionalVarName=eqName! )?
     ( "previous"! DOLLAR! previousItemName=eqName! )?
     ( "next"! DOLLAR! nextItemName=eqName! )?
     {
         windowVars_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(WINDOW_VARS);
         if (currentItemName != null)
             windowVars_AST.addChild(astFactory.create(CURRENT_ITEM,currentItemName));
-        if (sp_AST != null)
-            windowVars_AST.addChild(sp_AST);
+        if (positionalVarName != null)
+            windowVars_AST.addChild(astFactory.create(POSITIONAL_VAR,positionalVarName));
         if (previousItemName != null)
             windowVars_AST.addChild(astFactory.create(PREVIOUS_ITEM,previousItemName));
         if (nextItemName != null)
             windowVars_AST.addChild(astFactory.create(NEXT_ITEM,nextItemName));
+        currentAST.root = (org.exist.xquery.parser.XQueryAST) windowVars_AST;
     }
 ;
 

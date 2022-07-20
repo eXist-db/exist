@@ -1719,8 +1719,9 @@ throws PermissionDeniedException, EXistException, XPathException
                         QName nextItemName = null;
                         QName windowStartPosVar = null;
             	    }
-            	    (
+            	    #(
                     	// WINDOW_VARS
+                    	WINDOW_VARS
                     	(
                     	    currentItem:CURRENT_ITEM
                     	    {
@@ -1795,8 +1796,9 @@ throws PermissionDeniedException, EXistException, XPathException
                                 only = true;
                             }
                         )?
-                        (
+                        #(
                             // WINDOW_VARS
+                            WINDOW_VARS
                            	(
                            	    endCurrentItem:CURRENT_ITEM
                            	    {
