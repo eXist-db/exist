@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Document;
@@ -204,7 +205,7 @@ public class SequenceType {
         }
 
         if (!Type.subTypeOf(type, primaryType)) {
-            throw new XPathException((Expression) null,
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0004,
                     "Type error: expected type: "
                             + Type.getTypeName(primaryType)
                             + "; got: "
