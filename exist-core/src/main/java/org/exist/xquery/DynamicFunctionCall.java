@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import java.util.List;
 
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
@@ -89,11 +90,16 @@ public class DynamicFunctionCall extends AbstractExpression {
         // if the call is a partial application, create a new function
         if (isPartial) {
         	try {
-	        	final FunctionCall call = ref.getCall();
-	        	call.setArguments(arguments);
-	        	final PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
-                partialApp.analyze(new AnalyzeContextInfo(cachedContextInfo));
-	        	return partialApp.eval(contextSequence, contextItem);
+                if (ref instanceof ArrayType) {
+                    ref.setArguments(arguments);
+                    return ref;
+                } else {
+                    final FunctionCall call = ref.getCall();
+                    call.setArguments(arguments);
+                    final PartialFunctionApplication partialApp = new PartialFunctionApplication(context, call);
+                    partialApp.analyze(new AnalyzeContextInfo(cachedContextInfo));
+                    return partialApp.eval(contextSequence, contextItem);
+                }
         	} catch (final XPathException e) {
 				e.setLocation(line, column, getSource());
 				throw e;
