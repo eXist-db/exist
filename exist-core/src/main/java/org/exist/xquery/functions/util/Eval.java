@@ -404,7 +404,7 @@ public class Eval extends BasicFunction {
 
                         final Sequence seq;
                         if (xqSerializer.normalize()) {
-                            seq = FunSerialize.normalize(this, context, result);
+                            seq = FunSerialize.normalize(this, context, result, null);
                         } else {
                             seq = result;
                         }
