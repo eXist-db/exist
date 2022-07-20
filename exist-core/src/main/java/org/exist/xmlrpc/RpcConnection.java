@@ -343,7 +343,7 @@ public class RpcConnection implements RpcAPI {
                 }
                 context.setStaticallyKnownDocuments(d);
             } catch (final URISyntaxException e) {
-                throw new XPathException(e);
+                throw new XPathException((Expression) null, e);
             }
         } else if (context.isBaseURIDeclared()) {
             context.setStaticallyKnownDocuments(new XmldbURI[]{context.getBaseURI().toXmldbURI()});
@@ -392,7 +392,7 @@ public class RpcConnection implements RpcAPI {
         for (final String content : contents) {
             final String[] pair = Option.parseKeyValuePair(content);
             if (pair == null) {
-                throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue()
+                throw new XPathException((Expression) null, "Unknown parameter found in " + pragma.getQName().getStringValue()
                         + ": '" + content + "'");
             }
             if(LOG.isDebugEnabled()) {
@@ -1733,7 +1733,7 @@ public class RpcConnection implements RpcAPI {
 
                     if (s_id.length() > 0) {
                         final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
-                        final NodeProxy node = new NodeProxy(document, nodeId);
+                        final NodeProxy node = new NodeProxy(null, document, nodeId);
                         final NodeSet nodeSet = new ExtArrayNodeSet(1);
                         nodeSet.add(node);
                         return nodeSet;
@@ -1854,7 +1854,7 @@ public class RpcConnection implements RpcAPI {
 
                     if (s_id.length() > 0) {
                         final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
-                        final NodeProxy node = new NodeProxy(document, nodeId);
+                        final NodeProxy node = new NodeProxy(null, document, nodeId);
                         final NodeSet nodeSet = new ExtArrayNodeSet(1);
                         nodeSet.add(node);
                         return nodeSet;
@@ -2143,7 +2143,7 @@ public class RpcConnection implements RpcAPI {
                             final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return this.<String>readDocument(docUri).apply((document, broker, transaction) -> {
             final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
-            final NodeProxy node = new NodeProxy(document, nodeId);
+            final NodeProxy node = new NodeProxy(null, document, nodeId);
 
             try (final StringWriter writer = new StringWriter()) {
                 serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.serialize(node), writer);
@@ -2166,7 +2166,7 @@ public class RpcConnection implements RpcAPI {
 
         return this.<Map<String, Object>>readDocument(docUri).apply((document, broker, transaction) -> {
             final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(id);
-            final NodeProxy node = new NodeProxy(document, nodeId);
+            final NodeProxy node = new NodeProxy(null, document, nodeId);
 
             final Map<String, Object> result = new HashMap<>();
             final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
@@ -3320,7 +3320,7 @@ public class RpcConnection implements RpcAPI {
 
             DocumentType result = null;
             if (doctypename != null && !doctypename.isEmpty()) {
-                result = new DocumentTypeImpl(doctypename,
+                result = new DocumentTypeImpl(null, doctypename,
                         publicid != null && publicid.isEmpty() ? null : publicid,
                         systemid != null && systemid.isEmpty() ? null : systemid);
             }

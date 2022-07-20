@@ -56,6 +56,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
@@ -375,7 +376,7 @@ public class SystemExport {
 //        }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw (new TerminatedException((Expression) null, "system export terminated by db"));
         }
 
 //        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
@@ -484,7 +485,7 @@ public class SystemExport {
         }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw new TerminatedException((Expression) null, "system export terminated by db");
         }
         final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getLastModified());
 

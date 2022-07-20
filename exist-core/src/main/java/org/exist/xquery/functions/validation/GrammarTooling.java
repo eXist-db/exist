@@ -155,7 +155,7 @@ public class GrammarTooling extends BasicFunction  {
             
             final int delta=before-after;
             
-            result.add(new IntegerValue(delta));
+            result.add(new IntegerValue(this, delta));
             
             return result;
             
@@ -226,7 +226,7 @@ public class GrammarTooling extends BasicFunction  {
             // Construct result to end user
             final ValueSequence result = new ValueSequence();
             for(final Grammar one : grammars){
-                result.add( new StringValue(one.getGrammarDescription().getNamespace()) );
+                result.add( new StringValue(this, one.getGrammarDescription().getNamespace()) );
             }
             
 

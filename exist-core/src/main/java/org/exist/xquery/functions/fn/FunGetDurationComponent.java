@@ -137,24 +137,24 @@ public class FunGetDurationComponent extends BasicFunction {
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {
 			final Sequence arg = args[0];
-			final DurationValue duration = new DurationValue(((DurationValue) arg.itemAt(0)).getCanonicalDuration());
+			final DurationValue duration = new DurationValue(this, ((DurationValue) arg.itemAt(0)).getCanonicalDuration());
 			if (isCalledAs("days-from-duration")) {
-            result = new IntegerValue(duration.getPart(DurationValue.DAY));
+            result = new IntegerValue(this, duration.getPart(DurationValue.DAY));
 			} else if (isCalledAs("hours-from-duration")) {
-            result = new IntegerValue(duration.getPart(DurationValue.HOUR));
+            result = new IntegerValue(this, duration.getPart(DurationValue.HOUR));
 			} else if (isCalledAs("minutes-from-duration")) {
-            result = new IntegerValue(duration.getPart(DurationValue.MINUTE));
+            result = new IntegerValue(this, duration.getPart(DurationValue.MINUTE));
 			} else if (isCalledAs("seconds-from-duration")) {
 				if (duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS) == null)
-					{result = new DecimalValue(0);}
+					{result = new DecimalValue(this, 0);}
 				else
-					{result = new DecimalValue((BigDecimal)duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS));}
+					{result = new DecimalValue(this, (BigDecimal)duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS));}
 				if (duration.getCanonicalDuration().getSign() < 0)
 					{result = ((DecimalValue)result).negate();}
 			} else if (isCalledAs("months-from-duration")) {
-            result = new IntegerValue(duration.getPart(DurationValue.MONTH));
+            result = new IntegerValue(this, duration.getPart(DurationValue.MONTH));
 			} else if (isCalledAs("years-from-duration")) {
-            result = new IntegerValue(duration.getPart(DurationValue.YEAR));
+            result = new IntegerValue(this, duration.getPart(DurationValue.YEAR));
 			} else {
 				logger.error("can't handle function {}", getName().getLocalPart());
 				throw new Error("can't handle function " + getName().getLocalPart());

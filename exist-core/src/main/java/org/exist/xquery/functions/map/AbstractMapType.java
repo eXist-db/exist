@@ -70,8 +70,12 @@ public abstract class AbstractMapType extends FunctionReference
 
     protected XQueryContext context;
 
-    public AbstractMapType(XQueryContext context) {
-        super(null);
+    protected AbstractMapType(XQueryContext context) {
+        this(null, context);
+    }
+
+    protected AbstractMapType(final Expression expression, XQueryContext context) {
+        super(expression, null);
         this.context = context;
     }
 

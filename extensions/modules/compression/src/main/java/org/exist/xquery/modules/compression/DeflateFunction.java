@@ -102,7 +102,7 @@ public class DeflateFunction extends BasicFunction
             dos.flush();
             dos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream());
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
         } catch(IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }

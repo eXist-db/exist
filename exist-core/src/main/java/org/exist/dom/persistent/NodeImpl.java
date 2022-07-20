@@ -27,6 +27,7 @@ import org.exist.dom.INode;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.storage.txn.Txn;
+import org.exist.xquery.Expression;
 import org.w3c.dom.*;
 
 import javax.xml.XMLConstants;
@@ -34,6 +35,20 @@ import javax.xml.XMLConstants;
 public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T> {
 
     protected static final Logger LOG = LogManager.getLogger(NodeImpl.class);
+
+    private final Expression expression;
+
+    protected NodeImpl() {
+        this(null);
+    }
+
+    protected NodeImpl(final Expression expression) {
+        this.expression = expression;
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
 
     @Override
     public Node cloneNode(final boolean deep) {

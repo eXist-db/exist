@@ -68,7 +68,7 @@ public class GetParameterNames extends StrictRequestFunction {
 		final ValueSequence result = new ValueSequence();
 		while (parameterNames.hasMoreElements()) {
 			final String parameterName = parameterNames.nextElement();
-			result.add(new StringValue(parameterName));
+			result.add(new StringValue(this, parameterName));
 		}
 		return result;
 	}

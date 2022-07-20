@@ -26,6 +26,7 @@ import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.lucene.LuceneModule;
 import org.exist.xquery.value.*;
@@ -206,7 +207,7 @@ public class LuceneMatch extends Match {
                     final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
                     return new TimeValue(calendar);
                 case Type.DATE_TIME:
-                    throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
+                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
                 case Type.DATE:
                     final long dl = value.longValue();
                     final int year = (int)(dl >> 16) & 0xFFFF;

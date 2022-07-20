@@ -45,6 +45,7 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.util.HtmlToXmlParser;
 import com.evolvedbinary.j8fu.Either;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
@@ -76,8 +77,27 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
 	 */
 	public static NodeValue stringToXML(XQueryContext context, String str) throws SAXException, IOException {
+        return stringToXML(context, str, null);
+    }
+
+	/**
+	 * Takes a String of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param str
+	 *            The String of XML
+	 * @param expression
+	 *            The expression from which the string derives
+	 * 
+	 * @return The NodeValue of XML
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+	 */
+	public static NodeValue stringToXML(XQueryContext context, String str, final Expression expression) throws SAXException, IOException {
         try (final Reader reader = new StringReader(str)) {
-            return inputSourceToXML(context, new InputSource(reader));
+            return inputSourceToXML(context, new InputSource(reader), expression);
         }
 	}
 	
@@ -96,7 +116,27 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      */
 	public static NodeValue streamToXML(XQueryContext context, InputStream is) throws SAXException, IOException {
-            return inputSourceToXML(context, new InputSource(is));
+        return streamToXML(context, is, null);
+    }
+	
+	
+	/**
+	 * Takes an InputStream of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param is
+	 *            The InputStream of XML
+	 * @param expression
+	 *            The expression from which the node derives
+	 * 
+	 * @return The NodeValue of XML
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
+	public static NodeValue streamToXML(XQueryContext context, InputStream is, final Expression expression) throws SAXException, IOException {
+            return inputSourceToXML(context, new InputSource(is), expression);
 	}
         
         /**
@@ -113,18 +153,37 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      */
         public static NodeValue sourceToXML(XQueryContext context, Source src) throws SAXException, IOException {
+            return sourceToXML(context, src, null);
+        }
+        
+        /**
+	 * Takes a Source of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param src
+	 *            The Source of XML
+	 * @param expression
+	 *            The expression from which the source derives
+	 * 
+	 * @return The NodeValue of XML
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
+        public static NodeValue sourceToXML(XQueryContext context, Source src, final Expression expression) throws SAXException, IOException {
             if(src instanceof SAXSource && ((SAXSource)src).getXMLReader() != null) {
                 //Handles the case where a SAXSource may already have an
                 //XMLReader allocated, for example EXPath httpclient
                 //where it wants to tidy html using TagSoup
-                return inputSourceToXML(context, (SAXSource)src);
+                return inputSourceToXML(context, (SAXSource)src, expression);
             } else {
                 final InputSource inputSource = SAXSource.sourceToInputSource(src);
                 if(inputSource == null){
                     throw new IOException(src.getClass().getName() + " is unsupported.");
                 }
 
-                return inputSourceToXML(context, inputSource);
+                return inputSourceToXML(context, inputSource, expression);
             }
         }
 	
@@ -143,6 +202,25 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      */
 	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource) throws SAXException, IOException  {
+        return inputSourceToXML(context, inputSource, null);
+    }
+
+        /**
+	 * Takes a InputSource of XML and Creates an XML Node from it using SAX in the
+	 * context of the query
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param inputSource
+	 *            The InputSource of XML
+	 * @param expression
+	 *            The expression from which the node derives
+	 * 
+	 * @return The NodeValue of XML
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     */
+	public static NodeValue inputSourceToXML(XQueryContext context, InputSource inputSource, final Expression expression) throws SAXException, IOException  {
             context.pushDocumentContext();
 
             XMLReader reader = null;
@@ -154,7 +232,7 @@ public class ModuleUtils {
 
                 // TODO : we should be able to cope with context.getBaseURI()
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver( builder, true );
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder, true );
                 reader.setContentHandler(receiver);
                 reader.setProperty("http://xml.org/sax/properties/lexical-handler", receiver);
                 reader.parse(inputSource);
@@ -183,7 +261,7 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      * @return The NodeValue of XML
 	 */
-	private static NodeValue inputSourceToXML(XQueryContext context, SAXSource src) throws SAXException, IOException  {
+	private static NodeValue inputSourceToXML(XQueryContext context, SAXSource src, final Expression expression) throws SAXException, IOException  {
             if(src.getXMLReader() == null) {
                 throw new SAXException("No XML Reader specified.");
             }
@@ -197,7 +275,7 @@ public class ModuleUtils {
 
                 // TODO : we should be able to cope with context.getBaseURI()
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder, true);
                 reader.setContentHandler(receiver);
                 reader.parse(src.getInputSource());
                 final Document doc = receiver.getDocument();
@@ -224,14 +302,37 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      * @return An in-memory Document representing the XML'ised HTML
 	 */
-	public static DocumentImpl htmlToXHtml(final XQueryContext context, final Source srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties) throws IOException, SAXException {
+	public static DocumentImpl htmlToXHtml(final XQueryContext context, final Source srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String> parserProperties) throws IOException, SAXException {
+        return htmlToXHtml(context, srcHtml, parserFeatures, parserProperties, null);
+	}
+        
+    /**
+	 * Takes a HTML InputSource and creates an XML representation of the HTML by
+	 * tidying it (uses NekoHTML)
+	 * 
+	 * @param context
+	 *            The Context of the calling XQuery
+	 * @param srcHtml
+	 *            The Source for the HTML
+     * @param parserFeatures
+     *            The features to set on the Parser
+     * @param parserProperties
+     *            The properties to set on the Parser
+     * @param expression
+     *            The expression from which the source derives
+	 *
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     * @return An in-memory Document representing the XML'ised HTML
+	 */
+	public static DocumentImpl htmlToXHtml(final XQueryContext context, final Source srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties , final Expression expression) throws IOException, SAXException {
         final InputSource inputSource = SAXSource.sourceToInputSource(srcHtml);
 
         if(inputSource == null){
             throw new IOException(srcHtml.getClass().getName() + " is unsupported.");
         }
 
-        return htmlToXHtml(context, inputSource, parserFeatures, parserProperties);
+        return htmlToXHtml(context, inputSource, parserFeatures, parserProperties, expression);
 	}
 
     /**
@@ -251,7 +352,30 @@ public class ModuleUtils {
      * @throws IOException in case of error reading input source
      * @return An in-memory Document representing the XML'ised HTML
      */
-    public static DocumentImpl htmlToXHtml(final XQueryContext context, final InputSource srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties) throws IOException, SAXException {
+    public static DocumentImpl htmlToXHtml(final XQueryContext context, final InputSource srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String> parserProperties) throws IOException, SAXException {
+        return htmlToXHtml(context, srcHtml, parserFeatures, parserProperties, null);
+	}
+
+    /**
+     * Takes a HTML InputSource and creates an XML representation of the HTML by
+     * tidying it
+     *
+     * @param context
+     *            The Context of the calling XQuery
+     * @param srcHtml
+     *            The InputSource for the HTML
+     * @param parserFeatures
+     *            The features to set on the Parser
+     * @param parserProperties
+     *            The properties to set on the Parser
+     * @param expression
+     *            The expression from which the HTML derives
+     *
+     * @throws SAXException in case of a SAX error
+     * @throws IOException in case of error reading input source
+     * @return An in-memory Document representing the XML'ised HTML
+     */
+    public static DocumentImpl htmlToXHtml(final XQueryContext context, final InputSource srcHtml, final Map<String, Boolean> parserFeatures, final Map<String, String>parserProperties, final Expression expression) throws IOException, SAXException {
         // use the configures HTML parser to parse the HTML content to XML
         final Optional<Either<Throwable, XMLReader>> maybeReaderInst = HtmlToXmlParser.getHtmlToXmlParser(context.getBroker().getConfiguration());
 
@@ -281,7 +405,7 @@ public class ModuleUtils {
                     LOG.debug("Converting HTML to XML using: {}", reader.getClass().getName());
                 }
 
-                final SAXAdapter adapter = new SAXAdapter();
+                final SAXAdapter adapter = new SAXAdapter(expression);
 
                 // allow multiple attributes of the same name attached to the same element
                 // to enhance resilience against bad HTML. The last attribute value wins.

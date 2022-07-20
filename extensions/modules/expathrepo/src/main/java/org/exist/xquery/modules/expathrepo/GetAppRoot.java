@@ -46,9 +46,9 @@ public class GetAppRoot extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         String configured = (String) context.getBroker().getConfiguration().getProperty(Deployment.PROPERTY_APP_ROOT);
         if (configured != null) {
-            return new StringValue(configured);
+            return new StringValue(this, configured);
         } else {
-            return new StringValue(XmldbURI.ROOT_COLLECTION);
+            return new StringValue(this, XmldbURI.ROOT_COLLECTION);
         }
     }
 }

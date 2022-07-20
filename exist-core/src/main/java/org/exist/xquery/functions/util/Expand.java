@@ -111,8 +111,8 @@ public class Expand extends BasicFunction {
         try {
             final InMemoryNodeSet result = new InMemoryNodeSet();
 
-            final MemTreeBuilder builder = new MemTreeBuilder(getContext());
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final MemTreeBuilder builder = new MemTreeBuilder(this, getContext());
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder, true);
 
             int attrNr = -1;
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {

@@ -34,7 +34,11 @@ public interface IPragma {
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
 
+	public void before(Context context) throws XPathException;
+
 	public void before(Context context, Expression expression) throws XPathException;
+
+	public void after(Context context) throws XPathException;
 
 	public void after(Context context, Expression expression) throws XPathException;
 

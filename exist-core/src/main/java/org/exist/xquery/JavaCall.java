@@ -226,7 +226,7 @@ public class JavaCall extends Function {
 		if (bestMethod instanceof Constructor<?>) {
 			try {
 				final Object object = ((Constructor<?>) bestMethod).newInstance(params);
-                result = new JavaObjectValue(object);
+                result = new JavaObjectValue(this, object);
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to constructor "
@@ -256,7 +256,7 @@ public class JavaCall extends Function {
 							args[0].toJavaObject(myClass),
 							params);
 				}
-                result = XPathUtil.javaObjectToXPath(invocationResult, getContext());
+                result = XPathUtil.javaObjectToXPath(invocationResult, getContext(), this);
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to method "

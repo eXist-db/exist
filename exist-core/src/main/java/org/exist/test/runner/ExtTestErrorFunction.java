@@ -72,7 +72,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
     }
 
     private XPathException errorMapAsXPathException(final MapType errorMap) throws XPathException {
-        final Sequence seqDescription = errorMap.get(new StringValue("description"));
+        final Sequence seqDescription = errorMap.get(new StringValue(this, "description"));
         final String description;
         if(seqDescription != null && !seqDescription.isEmpty()) {
             description = seqDescription.itemAt(0).getStringValue();
@@ -80,7 +80,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             description = "";
         }
 
-        final Sequence seqErrorCode = errorMap.get(new StringValue("code"));
+        final Sequence seqErrorCode = errorMap.get(new StringValue(this, "code"));
         final ErrorCodes.ErrorCode errorCode;
         if(seqErrorCode != null && !seqErrorCode.isEmpty()) {
             errorCode = new ErrorCodes.ErrorCode(((QNameValue)seqErrorCode.itemAt(0)).getQName(), description);
@@ -88,7 +88,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             errorCode = ErrorCodes.ERROR;
         }
 
-        final Sequence seqLineNumber = errorMap.get(new StringValue("line-number"));
+        final Sequence seqLineNumber = errorMap.get(new StringValue(this, "line-number"));
         final int lineNumber;
         if(seqLineNumber != null && !seqLineNumber.isEmpty()) {
             lineNumber = seqLineNumber.itemAt(0).toJavaObject(int.class);
@@ -96,7 +96,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             lineNumber = -1;
         }
 
-        final Sequence seqColumnNumber = errorMap.get(new StringValue("column-number"));
+        final Sequence seqColumnNumber = errorMap.get(new StringValue(this, "column-number"));
         final int columnNumber;
         if(seqColumnNumber != null && !seqColumnNumber.isEmpty()) {
             columnNumber = seqColumnNumber.itemAt(0).toJavaObject(int.class);
@@ -106,7 +106,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
 
         final XPathException xpe = new XPathException(lineNumber, columnNumber, errorCode, description);
 
-        final Sequence seqJavaStackTrace = errorMap.get(new StringValue("java-stack-trace"));
+        final Sequence seqJavaStackTrace = errorMap.get(new StringValue(this, "java-stack-trace"));
         if (seqJavaStackTrace != null && !seqJavaStackTrace.isEmpty()) {
             try {
                 xpe.setStackTrace(convertStackTraceElements(seqJavaStackTrace));

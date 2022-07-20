@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Text;
@@ -29,7 +30,11 @@ import org.w3c.dom.Text;
 public class TextImpl extends AbstractCharacterData implements Text {
 
     public TextImpl(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public TextImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override

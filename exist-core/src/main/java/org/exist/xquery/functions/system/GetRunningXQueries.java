@@ -115,7 +115,7 @@ public class GetRunningXQueries extends BasicFunction
 		
 		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
 		builder.addAttribute( new QName( "sourceType", null, null ), context.getSource().type() );
-                builder.addAttribute( new QName( "started", null, null), new DateTimeValue(new Date(watchdog.getStartTime())).getStringValue());
+                builder.addAttribute( new QName( "started", null, null), new DateTimeValue(this, new Date(watchdog.getStartTime())).getStringValue());
 		builder.addAttribute( new QName( "terminating", null, null ), ( watchdog.isTerminating() ? "true" : "false" ) );
 
 		builder.addAttribute(new QName("caller", null, null), context == getContext() ? "true" : "false");

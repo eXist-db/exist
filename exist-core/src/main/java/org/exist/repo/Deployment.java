@@ -149,7 +149,7 @@ public class Deployment {
             return null;
         }
         try(final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
-            return DocUtils.parse(broker.getBrokerPool(), null, is);
+            return DocUtils.parse(broker.getBrokerPool(), null, is, null);
         } catch (final XPathException | IOException e) {
             throw new PackageException("Failed to parse repo.xml: " + e.getMessage(), e);
         }
@@ -387,7 +387,7 @@ public class Deployment {
                     // no target means: package does not need to be deployed into database
                     // however, we need to preserve a copy for backup purposes
                     final Optional<Package> pkg = getPackage(pkgName, repo);
-		            pkg.orElseThrow(() -> new XPathException("expath repository is not available so the package was not stored."));
+		            pkg.orElseThrow(() -> new XPathException((Expression) null, "expath repository is not available so the package was not stored."));
                     final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
@@ -604,9 +604,9 @@ public class Deployment {
             throws PackageException, XPathException {
         // Store repo.xml
         final DateTimeValue time = new DateTimeValue(new Date());
-        final MemTreeBuilder builder = new MemTreeBuilder();
+        final MemTreeBuilder builder = new MemTreeBuilder((Expression) null);
         builder.startDocument();
-        final UpdatingDocumentReceiver receiver = new UpdatingDocumentReceiver(builder, time.getStringValue());
+        final UpdatingDocumentReceiver receiver = new UpdatingDocumentReceiver(null, builder, time.getStringValue());
         try {
             repoXML.copyTo(broker, receiver);
         } catch (final SAXException e) {
@@ -905,7 +905,7 @@ public class Deployment {
             while ((entry = jis.getNextJarEntry()) != null) {
                 if (!entry.isDirectory() && "expath-pkg.xml".equals(entry.getName())) {
                     try {
-                        return Optional.of(DocUtils.parse(broker.getBrokerPool(), null, jis));
+                        return Optional.of(DocUtils.parse(broker.getBrokerPool(), null, jis, null));
                     } catch (final XPathException e) {
                         throw new PackageException("Error while parsing expath-pkg.xml: " + e.getMessage(), e);
                     }
@@ -924,7 +924,11 @@ public class Deployment {
         private final Deque<String> stack = new ArrayDeque<>();
 
         public UpdatingDocumentReceiver(final MemTreeBuilder builder, final String time) {
-            super(builder, false);
+            this(null, builder, time);
+        }
+
+        public UpdatingDocumentReceiver(final Expression expression, final MemTreeBuilder builder, final String time) {
+            super(expression, builder, false);
             this.time = time;
         }
 

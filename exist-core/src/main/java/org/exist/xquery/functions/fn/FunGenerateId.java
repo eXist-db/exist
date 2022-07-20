@@ -113,6 +113,6 @@ public class FunGenerateId extends BasicFunction {
         final NodeId nodeId = node.getNodeId();
         final String nodeIdStr = nodeId.toString().replace('.', 'l').replace('/', 's');
 
-        return new StringValue(nodeImplementationType + "D" + docId + "N" + nodeIdStr);
+        return new StringValue(this, nodeImplementationType + "D" + docId + "N" + nodeIdStr);
     }
 }

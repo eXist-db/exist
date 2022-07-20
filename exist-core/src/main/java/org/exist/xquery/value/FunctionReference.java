@@ -41,6 +41,11 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     protected final FunctionCall functionCall;
 
     public FunctionReference(final FunctionCall functionCall) {
+        this(null, functionCall);
+    }
+
+    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
+        super(expression);
         this.functionCall = functionCall;
     }
 
@@ -150,37 +155,37 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         if (requiredType == Type.FUNCTION_REFERENCE) {
             return this;
         }
-        throw new XPathException(ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));
+        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
     }
 
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
+        throw new XPathException(getExpression(), "cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
     public int compareTo(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
+        throw new XPathException(getExpression(), "cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
     public AtomicValue max(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare function references");
     }
 
     public AtomicValue min(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare function references");
     }
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        throw new XPathException(ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
+        throw new XPathException(getExpression(), ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
     }
 
     @Override

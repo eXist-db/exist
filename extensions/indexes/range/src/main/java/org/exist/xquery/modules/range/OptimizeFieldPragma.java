@@ -48,8 +48,8 @@ public class OptimizeFieldPragma extends Pragma {
     private AnalyzeContextInfo contextInfo;
     private int axis;
 
-    public OptimizeFieldPragma(QName qname, String contents, XQueryContext context) throws XPathException {
-        super(qname, contents);
+    public OptimizeFieldPragma(final Expression expression, QName qname, String contents, XQueryContext context) throws XPathException {
+        super(expression, qname, contents);
         this.context = context;
     }
 
@@ -69,6 +69,11 @@ public class OptimizeFieldPragma extends Pragma {
     }
 
     @Override
+    public void before(final XQueryContext context, final Sequence contextSequence) throws XPathException {
+        before(context, null, contextSequence);
+    }
+
+    @Override
     public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
         final LocationStep locationStep = (LocationStep) expression;
         @Nullable final Predicate[] preds = locationStep.getPredicates();
@@ -84,6 +89,10 @@ public class OptimizeFieldPragma extends Pragma {
             rewritten = tryRewriteToFields(locationStep, preds, contextPath, contextSequence);
             axis = locationStep.getAxis();
         }
+    }
+
+    public void after(XQueryContext context) throws XPathException {
+        after(context, null);
     }
 
     @Override

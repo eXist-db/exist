@@ -83,7 +83,7 @@ public class FunPosition extends Function {
 		if (inSequence.isEmpty())
             {result = Sequence.EMPTY_SEQUENCE;}
         else
-            {result = new IntegerValue(context.getContextPosition() + 1);}
+            {result = new IntegerValue(this, context.getContextPosition() + 1);}
         
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

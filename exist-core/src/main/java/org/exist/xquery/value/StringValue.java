@@ -31,6 +31,7 @@ import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.XMLConstants;
@@ -62,14 +63,23 @@ public class StringValue extends AtomicValue {
 
     protected String value;
 
-    public StringValue(String string, int type) throws XPathException {
-        this(string, type, true);
+    public StringValue(final String string, final int type) throws XPathException {
+        this(null, string, type);
     }
 
-    public StringValue(String string, int type, boolean expand) throws XPathException {
+    public StringValue(final Expression expression, String string, int type) throws XPathException {
+        this(expression, string, type, true);
+    }
+
+    public StringValue(final String string, final int type, final boolean expand) throws XPathException {
+        this(null, string, type, expand);
+    }
+
+    public StringValue(final Expression expression, String string, int type, boolean expand) throws XPathException {
+        super(expression);
         this.type = type;
         if (expand) {
-            string = StringValue.expand(string);
+            string = StringValue.expand(string, expression);
         } //Should we have character entities
         if (type == Type.STRING) {
             this.value = string;
@@ -82,6 +92,11 @@ public class StringValue extends AtomicValue {
     }
 
     public StringValue(final String string) {
+        this(null, string);
+    }
+
+    public StringValue(final Expression expression, final String string) {
+        super(expression);
         //string = StringValue.expand(string); //Should we have character entities
         value = string;
     }
@@ -182,6 +197,10 @@ public class StringValue extends AtomicValue {
     }
 
     public final static String expand(CharSequence seq) throws XPathException {
+        return expand(seq, null);
+    }
+
+    public final static String expand(CharSequence seq, final Expression expression) throws XPathException {
         if (seq == null) {
             return "";
         }
@@ -198,15 +217,15 @@ public class StringValue extends AtomicValue {
                         entityRef.setLength(0);
                     }
                     if ((i + 1) == seq.length()) {
-                        throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped.");
+                        throw new XPathException(expression, ErrorCodes.XPST0003, "Ampersands (&) must be escaped.");
                     }
                     if ((i + 2) == seq.length()) {
-                        throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped (missing ;).");
+                        throw new XPathException(expression, ErrorCodes.XPST0003, "Ampersands (&) must be escaped (missing ;).");
                     }
                     ch = seq.charAt(i + 1);
                     if (ch != '#') {
                         if (!Character.isLetter(ch)) {
-                            throw new XPathException(ErrorCodes.XPST0003, "Ampersands (&) must be escaped (following character was not a name start character).");
+                            throw new XPathException(expression, ErrorCodes.XPST0003, "Ampersands (&) must be escaped (following character was not a name start character).");
                         }
                         entityRef.append(ch);
                         boolean found = false;
@@ -223,9 +242,9 @@ public class StringValue extends AtomicValue {
                             }
                         }
                         if (found) {
-                            buf.append((char) expandEntity(entityRef.toString()));
+                            buf.append((char) expandEntity(entityRef.toString(), expression));
                         } else {
-                            throw new XPathException(ErrorCodes.XPST0003, "Invalid character (" + ch + ") in entity name (" + entityRef + ") or missing ;");
+                            throw new XPathException(expression, ErrorCodes.XPST0003, "Invalid character (" + ch + ") in entity name (" + entityRef + ") or missing ;");
                         }
 
                     } else {
@@ -265,7 +284,7 @@ public class StringValue extends AtomicValue {
                             }
                         }
                         if (found) {
-                            final int charref = expandEntity(entityRef.toString());
+                            final int charref = expandEntity(entityRef.toString(), expression);
                             if (XMLChar.isSupplemental(charref)) {
                                 buf.append(XMLChar.highSurrogate(charref));
                                 buf.append(XMLChar.lowSurrogate(charref));
@@ -273,7 +292,7 @@ public class StringValue extends AtomicValue {
                                 buf.append((char) charref);
                             }
                         } else {
-                            throw new XPathException(ErrorCodes.XPST0003, "Invalid character in character reference (" + ch + ") or missing ;");
+                            throw new XPathException(expression, ErrorCodes.XPST0003, "Invalid character in character reference (" + ch + ") or missing ;");
                         }
 
                     }
@@ -302,6 +321,18 @@ public class StringValue extends AtomicValue {
      * @throws XPathException if an error occurs
      */
     private final static int expandEntity(String buf) throws XPathException {
+        return expandEntity(buf, null);
+    }
+
+    /**
+     * The method <code>expandEntity</code>
+     *
+     * @param buf a <code>String</code> value
+     * @param expression the expression from which the value derives
+     * @return an <code>int</code> value
+     * @throws XPathException if an error occurs
+     */
+    private final static int expandEntity(String buf, final Expression expression) throws XPathException {
         if ("amp".equals(buf)) {
             return '&';
         } else if ("lt".equals(buf)) {
@@ -313,9 +344,9 @@ public class StringValue extends AtomicValue {
         } else if ("apos".equals(buf)) {
             return '\'';
         } else if (buf.length() > 1 && buf.charAt(0) == '#') {
-            return expandCharRef(buf.substring(1));
+            return expandCharRef(buf.substring(1), expression);
         } else {
-            throw new XPathException("Unknown entity reference: " + buf);
+            throw new XPathException(expression, "Unknown entity reference: " + buf);
         }
     }
 
@@ -327,6 +358,18 @@ public class StringValue extends AtomicValue {
      * @throws XPathException if an error occurs
      */
     private final static int expandCharRef(String buf) throws XPathException {
+        return expandCharRef(buf, null);
+    }
+
+    /**
+     * The method <code>expandCharRef</code>
+     *
+     * @param buf a <code>String</code> value
+     * @param expression the expression from which the value derives
+     * @return an <code>int</code> value
+     * @throws XPathException if an error occurs
+     */
+    private final static int expandCharRef(String buf, final Expression expression) throws XPathException {
         try {
             int charNumber;
             if (buf.length() > 1 && buf.charAt(0) == 'x') {
@@ -336,11 +379,11 @@ public class StringValue extends AtomicValue {
                 charNumber = Integer.parseInt(buf);
             }
             if (charNumber == 0) {
-                throw new XPathException(ErrorCodes.XQST0090, "Character number zero (0) is not allowed.");
+                throw new XPathException(expression, ErrorCodes.XQST0090, "Character number zero (0) is not allowed.");
             }
             return charNumber;
         } catch (final NumberFormatException e) {
-            throw new XPathException("Unknown character reference: " + buf);
+            throw new XPathException(expression, "Unknown character reference: " + buf);
         }
     }
 
@@ -349,7 +392,7 @@ public class StringValue extends AtomicValue {
     }
 
     public StringValue expand() throws XPathException {
-        value = expand(value);
+        value = expand(value, getExpression());
         return this;
     }
 
@@ -361,7 +404,7 @@ public class StringValue extends AtomicValue {
             case Type.LANGUAGE:
                 final Matcher matcher = langPattern.matcher(value);
                 if (!matcher.matches()) {
-                    throw new XPathException(
+                    throw new XPathException(getExpression(),
                             "Type error: string "
                                     + value
                                     + " is not valid for type xs:language");
@@ -369,7 +412,7 @@ public class StringValue extends AtomicValue {
                 return;
             case Type.NAME:
                 if (QName.isQName(value) != VALID.val) {
-                    throw new XPathException("Type error: string " + value + " is not a valid xs:Name");
+                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:Name");
                 }
                 return;
             case Type.NCNAME:
@@ -377,12 +420,12 @@ public class StringValue extends AtomicValue {
             case Type.IDREF:
             case Type.ENTITY:
                 if (!XMLNames.isNCName(value)) {
-                    throw new XPathException("Type error: string " + value + " is not a valid " + Type.getTypeName(type));
+                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid " + Type.getTypeName(type));
                 }
                 return;
             case Type.NMTOKEN:
                 if (!XMLNames.isNmToken(value)) {
-                    throw new XPathException("Type error: string " + value + " is not a valid xs:NMTOKEN");
+                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:NMTOKEN");
                 }
         }
     }
@@ -450,9 +493,9 @@ public class StringValue extends AtomicValue {
             case Type.ID:
             case Type.IDREF:
             case Type.ENTITY:
-                return new StringValue(value, requiredType);
+                return new StringValue(getExpression(), value, requiredType);
             case Type.ANY_URI:
-                return new AnyURIValue(value);
+                return new AnyURIValue(getExpression(), value);
             case Type.BOOLEAN:
                 final String trimmed = trimWhitespace(value);
                 if ("0".equals(trimmed) || "false".equals(trimmed)) {
@@ -460,16 +503,16 @@ public class StringValue extends AtomicValue {
                 } else if ("1".equals(trimmed) || "true".equals(trimmed)) {
                     return BooleanValue.TRUE;
                 } else {
-                    throw new XPathException(ErrorCodes.FORG0001,
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "cannot convert string '" + value + "' to boolean");
                 }
             case Type.FLOAT:
-                return new FloatValue(value);
+                return new FloatValue(getExpression(), value);
             case Type.DOUBLE:
             case Type.NUMBER:
-                return new DoubleValue(this);
+                return new DoubleValue(getExpression(), this);
             case Type.DECIMAL:
-                return new DecimalValue(value);
+                return new DecimalValue(getExpression(), value);
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
             case Type.NEGATIVE_INTEGER:
@@ -483,39 +526,39 @@ public class StringValue extends AtomicValue {
             case Type.UNSIGNED_INT:
             case Type.UNSIGNED_SHORT:
             case Type.UNSIGNED_BYTE:
-                return new IntegerValue(value, requiredType);
+                return new IntegerValue(getExpression(), value, requiredType);
             case Type.BASE64_BINARY:
-                return new BinaryValueFromBinaryString(new Base64BinaryValueType(), value);
+                return new BinaryValueFromBinaryString(getExpression(), new Base64BinaryValueType(), value);
             case Type.HEX_BINARY:
-                return new BinaryValueFromBinaryString(new HexBinaryValueType(), value);
+                return new BinaryValueFromBinaryString(getExpression(), new HexBinaryValueType(), value);
             case Type.DATE_TIME:
-                return new DateTimeValue(value);
+                return new DateTimeValue(getExpression(), value);
             case Type.TIME:
-                return new TimeValue(value);
+                return new TimeValue(getExpression(), value);
             case Type.DATE:
-                return new DateValue(value);
+                return new DateValue(getExpression(), value);
             case Type.DATE_TIME_STAMP:
-                return new DateTimeStampValue(value);
+                return new DateTimeStampValue(getExpression(), value);
             case Type.DURATION:
-                return new DurationValue(value);
+                return new DurationValue(getExpression(), value);
             case Type.YEAR_MONTH_DURATION:
-                return new YearMonthDurationValue(value);
+                return new YearMonthDurationValue(getExpression(), value);
             case Type.DAY_TIME_DURATION:
-                return new DayTimeDurationValue(value);
+                return new DayTimeDurationValue(getExpression(), value);
             case Type.GYEAR:
-                return new GYearValue(value);
+                return new GYearValue(getExpression(), value);
             case Type.GMONTH:
-                return new GMonthValue(value);
+                return new GMonthValue(getExpression(), value);
             case Type.GDAY:
-                return new GDayValue(value);
+                return new GDayValue(getExpression(), value);
             case Type.GYEARMONTH:
-                return new GYearMonthValue(value);
+                return new GYearMonthValue(getExpression(), value);
             case Type.GMONTHDAY:
-                return new GMonthDayValue(value);
+                return new GMonthDayValue(getExpression(), value);
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" +
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '" +
                         Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
                         Type.getTypeName(requiredType));
         }
@@ -587,12 +630,12 @@ public class StringValue extends AtomicValue {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         } else if (target == char.class || target == Character.class) {
             if (value.length() > 1 || value.length() == 0) {
-                throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
+                throw new XPathException(getExpression(), "cannot convert string with length = 0 or length > 1 to Java character");
             }
             return (T) Character.valueOf(value.charAt(0));
         }
 
-        throw new XPathException("cannot convert value of type " + Type.getTypeName(type) +
+        throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(type) +
                 " to Java object of type " + target.getName());
     }
 
@@ -624,13 +667,13 @@ public class StringValue extends AtomicValue {
                     case GTEQ:
                         return cmp >= 0;
                     default:
-                        throw new XPathException("Type error: cannot apply operand to string value");
+                        throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
                 }
             } catch (final UnsupportedOperationException e) {
-                throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+                throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
             }
         }
-        throw new XPathException(ErrorCodes.XPTY0004,
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                 "can not compare xs:string('" + value + "') with " +
                         Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "')");
     }
@@ -649,7 +692,7 @@ public class StringValue extends AtomicValue {
         try {
             return Collations.compare(collator, value, other.getStringValue());
         } catch (final UnsupportedOperationException e) {
-            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
         }
     }
 
@@ -658,7 +701,7 @@ public class StringValue extends AtomicValue {
         try {
             return Collations.startsWith(collator, value, other.getStringValue());
         } catch (final UnsupportedOperationException e) {
-            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
         }
     }
 
@@ -667,7 +710,7 @@ public class StringValue extends AtomicValue {
         try {
             return Collations.endsWith(collator, value, other.getStringValue());
         } catch (final UnsupportedOperationException e) {
-            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
         }
     }
 
@@ -676,7 +719,7 @@ public class StringValue extends AtomicValue {
         try {
             return Collations.contains(collator, value, other.getStringValue());
         } catch (final UnsupportedOperationException e) {
-            throw new XPathException(ErrorCodes.FOCH0004, e.getMessage());
+            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
         }
     }
 

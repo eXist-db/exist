@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -39,28 +40,45 @@ import java.util.GregorianCalendar;
 public class DateTimeValue extends AbstractDateTimeValue {
 
     public DateTimeValue() throws XPathException {
-        super(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        super(null, TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
         normalize();
     }
 
-    public DateTimeValue(XMLGregorianCalendar calendar) {
-        super(fillCalendar(cloneXMLGregorianCalendar(calendar)));
+    public DateTimeValue(final Expression expression) throws XPathException {
+        super(expression, TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
         normalize();
     }
 
-    public DateTimeValue(Date date) {
-        super(dateToXMLGregorianCalendar(date));
+    public DateTimeValue(final XMLGregorianCalendar calendar) {
+        this(null, calendar);
+    }
+
+    public DateTimeValue(final Expression expression, XMLGregorianCalendar calendar) {
+        super(expression, fillCalendar(cloneXMLGregorianCalendar(calendar)));
+        normalize();
+    }
+
+    public DateTimeValue(final Date date) {
+        this(null, date);
+    }
+
+    public DateTimeValue(final Expression expression, Date date) {
+        super(expression, dateToXMLGregorianCalendar(date));
         normalize();
     }
 
     public DateTimeValue(String dateTime) throws XPathException {
-        super(dateTime);
+        this(null, dateTime);
+    }
+
+    public DateTimeValue(final Expression expression, String dateTime) throws XPathException {
+        super(expression, dateTime);
         try {
             if (calendar.getXMLSchemaType() != DatatypeConstants.DATETIME) {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException("xs:dateTime instance must have all fields set");
+            throw new XPathException(getExpression(), "xs:dateTime instance must have all fields set");
         }
         normalize();
     }
@@ -98,7 +116,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
     }
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException {
-        return new DateTimeValue(cal);
+        return new DateTimeValue(getExpression(), cal);
     }
 
     protected QName getXMLSchemaType() {
@@ -116,27 +134,27 @@ public class DateTimeValue extends AbstractDateTimeValue {
             case Type.ITEM:
                 return this;
             case Type.DATE_TIME_STAMP:
-                return new DateTimeStampValue(calendar);
+                return new DateTimeStampValue(getExpression(), calendar);
             case Type.DATE:
-                return new DateValue(calendar);
+                return new DateValue(getExpression(), calendar);
             case Type.TIME:
-                return new TimeValue(calendar);
+                return new TimeValue(getExpression(), calendar);
             case Type.GYEAR:
-                return new GYearValue(calendar);
+                return new GYearValue(getExpression(), calendar);
             case Type.GYEARMONTH:
-                return new GYearMonthValue(calendar);
+                return new GYearMonthValue(getExpression(), calendar);
             case Type.GMONTHDAY:
-                return new GMonthDayValue(calendar);
+                return new GMonthDayValue(getExpression(), calendar);
             case Type.GDAY:
-                return new GDayValue(calendar);
+                return new GDayValue(getExpression(), calendar);
             case Type.GMONTH:
-                return new GMonthValue(calendar);
+                return new GMonthValue(getExpression(), calendar);
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast xs:dateTime to "
                                 + Type.getTypeName(requiredType));
         }
@@ -146,13 +164,13 @@ public class DateTimeValue extends AbstractDateTimeValue {
         switch (other.getType()) {
             case Type.DATE_TIME_STAMP:
             case Type.DATE_TIME:
-                return new DayTimeDurationValue(getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
+                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
             case Type.YEAR_MONTH_DURATION:
                 return ((YearMonthDurationValue) other).negate().plus(this);
             case Type.DAY_TIME_DURATION:
                 return ((DayTimeDurationValue) other).negate().plus(this);
             default:
-                throw new XPathException(
+                throw new XPathException(getExpression(), 
                         "Operand to minus should be of type xs:dateTime, xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }

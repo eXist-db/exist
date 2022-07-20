@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -102,8 +103,9 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
             final Sequence contextSequence) throws XPathException {
 
         if (isCalledAs(FS_COPY_RESOURCE_NAME)) {
-            final XmldbURI destination = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI());
-            final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI());
+            final Expression expression = this;
+            final XmldbURI destination = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[2].itemAt(0).getStringValue()).toXmldbURI());
+            final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].itemAt(0).getStringValue()).toXmldbURI());
             try {
                 final Resource resource = collection.getResource(doc.toString());
                 if (resource == null) {
@@ -137,7 +139,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
                 service.copyResource(doc, destination, newName, preserve.name());
 
                 if (isCalledAs(FS_COPY_RESOURCE_NAME)) {
-                    return new StringValue(destination.append(newName).getRawCollectionPath());
+                    return new StringValue(this, destination.append(newName).getRawCollectionPath());
                 } else {
                     return Sequence.EMPTY_SEQUENCE;
                 }
@@ -148,7 +150,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
             }
 
         } else {
-            final XmldbURI destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI();
+            final XmldbURI destination = new AnyURIValue(this, args[1].itemAt(0).getStringValue()).toXmldbURI();
             try {
                 final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
 
@@ -168,7 +170,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 
                 if (isCalledAs(FS_COPY_COLLECTION_NAME)) {
                     final XmldbURI targetName = XmldbURI.xmldbUriFor(collection.getName()).lastSegment();
-                    return new StringValue(destination.append(targetName).getRawCollectionPath());
+                    return new StringValue(this, destination.append(targetName).getRawCollectionPath());
                 } else {
                     return Sequence.EMPTY_SEQUENCE;
                 }

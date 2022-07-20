@@ -38,6 +38,7 @@ import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -152,7 +153,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
 
     public DocumentImpl(final XQueryContext context, final boolean explicitlyCreated) {
-        super(null, 0);
+        this(null, context, explicitlyCreated);
+    }
+
+
+    public DocumentImpl(final Expression expression, final XQueryContext context, final boolean explicitlyCreated) {
+        super(expression, null, 0);
         this.context = context;
         this.explicitlyCreated = explicitlyCreated;
         this.docId = nextDocId.incrementAndGet();
@@ -498,11 +504,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     public NodeImpl getAttribute(final int nodeNum) throws DOMException {
-        return new AttrImpl(this, nodeNum);
+        return new AttrImpl(getExpression(), this, nodeNum);
     }
 
     public NodeImpl getNamespaceNode(final int nodeNum) throws DOMException {
-        return new NamespaceNode(this, nodeNum);
+        return new NamespaceNode(getExpression(), this, nodeNum);
     }
 
     public NodeImpl getNode(final int nodeNum) throws DOMException {
@@ -515,22 +521,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         final NodeImpl node;
         switch(nodeKind[nodeNum]) {
             case Node.ELEMENT_NODE:
-                node = new ElementImpl(this, nodeNum);
+                node = new ElementImpl(getExpression(), this, nodeNum);
                 break;
             case Node.TEXT_NODE:
-                node = new TextImpl(this, nodeNum);
+                node = new TextImpl(getExpression(), this, nodeNum);
                 break;
             case Node.COMMENT_NODE:
-                node = new CommentImpl(this, nodeNum);
+                node = new CommentImpl(getExpression(), this, nodeNum);
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:
-                node = new ProcessingInstructionImpl(this, nodeNum);
+                node = new ProcessingInstructionImpl(getExpression(), this, nodeNum);
                 break;
             case Node.CDATA_SECTION_NODE:
-                node = new CDATASectionImpl(this, nodeNum);
+                node = new CDATASectionImpl(getExpression(), this, nodeNum);
                 break;
             case NodeImpl.REFERENCE_NODE:
-                node = new ReferenceNode(this, nodeNum);
+                node = new ReferenceNode(getExpression(), this, nodeNum);
                 break;
             default:
                 throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
@@ -542,7 +548,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nextAttr == 0) {
             return null;
         }
-        return new AttrImpl(this, nextAttr - 1);
+        return new AttrImpl(getExpression(), this, nextAttr - 1);
     }
 
     @Override
@@ -557,7 +563,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DOMImplementation getImplementation() {
-        return new DOMImplementationImpl();
+        return new DOMImplementationImpl(getExpression());
     }
 
     @Override
@@ -763,7 +769,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 if((document.attrType[attr] == AttrImpl.ATTR_IDREF_TYPE) &&
                     id.equals(document.attrValue[attr])) {
-                    return new AttrImpl(this, attr);
+                    return new AttrImpl(getExpression(), this, attr);
                 }
                 ++attr;
             }
@@ -844,7 +850,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
-        return new ElementImpl(this, nodeNum);
+        return new ElementImpl(getExpression(), this, nodeNum);
     }
 
     @Override
@@ -875,12 +881,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
-        return new ElementImpl(this, nodeNum);
+        return new ElementImpl(getExpression(), this, nodeNum);
     }
 
     @Override
     public DocumentFragment createDocumentFragment() {
-        return new DocumentFragmentImpl();
+        return new DocumentFragmentImpl(getExpression());
     }
 
     @Override
@@ -1179,8 +1185,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 computeNodeIds();
                 return this;
             }
-            final MemTreeBuilder builder = new MemTreeBuilder(context);
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final MemTreeBuilder builder = new MemTreeBuilder(getExpression(), context);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(getExpression(), builder);
             try {
                 builder.startDocument();
                 NodeImpl node = (rootNode == null) ? (NodeImpl) getFirstChild() : rootNode;

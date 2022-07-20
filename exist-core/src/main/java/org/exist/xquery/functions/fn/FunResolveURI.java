@@ -143,7 +143,7 @@ public class FunResolveURI extends Function {
 			if (relativeURI.isAbsolute()) {
 				result = relative;
             } else {
-				result = new AnyURIValue(baseURI.resolve(relativeURI));
+				result = new AnyURIValue(this, baseURI.resolve(relativeURI));
             }
         }
         

@@ -115,14 +115,14 @@ public class FindUserFunction extends BasicFunction {
         if(isCalledAs(qnListUsers.getLocalPart())) {
             result = new ValueSequence();
             if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-                result.add(new StringValue(SecurityManager.GUEST_USER));
+                result.add(new StringValue(this, SecurityManager.GUEST_USER));
             } else {
                 addUserNamesToSequence(securityManager.findAllUserNames(), result);
             }
         } else {
         
             if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-                throw new XPathException("You must be an authenticated user");
+                throw new XPathException(this, "You must be an authenticated user");
             }
             
             if(isCalledAs(qnUserExists.getLocalPart())) {
@@ -140,7 +140,7 @@ public class FindUserFunction extends BasicFunction {
                 } else if(isCalledAs(qnFindUsersByNamePart.getLocalPart())) {
                     usernames = securityManager.findUsernamesWhereNamePartStarts(startsWith);
                 } else {
-                    throw new XPathException("Unknown function");
+                    throw new XPathException(this, "Unknown function");
                 }
 
                 addUserNamesToSequence(usernames, result);
@@ -155,7 +155,7 @@ public class FindUserFunction extends BasicFunction {
         Collections.sort(userNames);
 
         for(final String userName : userNames) {
-            sequence.add(new StringValue(userName));
+            sequence.add(new StringValue(this, userName));
         }
     }
 }

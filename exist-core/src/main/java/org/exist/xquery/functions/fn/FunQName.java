@@ -142,7 +142,7 @@ public class FunQName extends BasicFunction {
         if(!XMLNames.isName(qname.getLocalPart()))
             {throw new XPathException(this, ErrorCodes.FOCA0002, "'" + qname.getLocalPart() + "' is not a valid local name.");}
 
-        final Sequence result = new QNameValue(context, qname);
+        final Sequence result = new QNameValue(this, context, qname);
 
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 

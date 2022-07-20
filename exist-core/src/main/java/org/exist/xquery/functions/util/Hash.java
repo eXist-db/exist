@@ -88,10 +88,10 @@ public class Hash extends BasicFunction {
             md = MessageDigester.calculate(message, algorithm, base64);
 
         } catch (final IllegalArgumentException ex) {
-            throw new XPathException(ex.getMessage());
+            throw new XPathException(this, ex.getMessage());
         }
 
-        return (new StringValue(md));
+        return (new StringValue(this, md));
     }
 
 }

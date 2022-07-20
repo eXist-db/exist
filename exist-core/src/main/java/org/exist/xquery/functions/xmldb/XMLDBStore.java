@@ -42,6 +42,7 @@ import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -128,12 +129,13 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
     @Override
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
+        final Expression expression = this;
         String docName = args[1].isEmpty() ? null : args[1].getStringValue();
         if (docName != null && docName.isEmpty()) {
             docName = null;
         } else if (docName != null) {
             final String localDocName = docName;
-            docName = execAndAddErrorIfMissing(this, () -> new AnyURIValue(localDocName).toXmldbURI().toString());
+            docName = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, localDocName).toXmldbURI().toString());
         }
 
         final Item item = args[2].itemAt(0);
@@ -233,7 +235,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         } else {
             try {
                 //TODO : use dedicated function in XmldbURI
-                return new StringValue(collection.getName() + "/" + resource.getId());
+                return new StringValue(this, collection.getName() + "/" + resource.getId());
             } catch (final XMLDBException e) {
                 LOGGER.error(e.getMessage());
                 throw new XPathException(this, "XMLDB reported an exception while retrieving the "

@@ -140,7 +140,7 @@ public class PrologFunctions extends BasicFunction {
 			final Option option = context.getOption(qname);
 
 			if (option != null) {
-				return new StringValue(option.getContents());
+				return new StringValue(this, option.getContents());
 			} else {
 				return Sequence.EMPTY_SEQUENCE;
 			}

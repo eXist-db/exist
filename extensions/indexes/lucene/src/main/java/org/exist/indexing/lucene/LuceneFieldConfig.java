@@ -143,7 +143,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
 
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
-        final NodeProxy currentNode = new NodeProxy(document, nodeId);
+        final NodeProxy currentNode = new NodeProxy(null, document, nodeId);
         try {
             Sequence result = xquery.execute(broker, compiledCondition, currentNode);
             return result != null && result.effectiveBooleanValue();

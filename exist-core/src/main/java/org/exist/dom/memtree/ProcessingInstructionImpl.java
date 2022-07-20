@@ -22,6 +22,7 @@
 package org.exist.dom.memtree;
 
 import org.exist.dom.QName;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
@@ -36,7 +37,11 @@ import org.w3c.dom.ProcessingInstruction;
 public class ProcessingInstructionImpl extends NodeImpl implements ProcessingInstruction {
 
     public ProcessingInstructionImpl(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public ProcessingInstructionImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override

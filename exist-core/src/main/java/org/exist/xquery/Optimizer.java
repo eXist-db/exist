@@ -132,7 +132,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 if (optimizePragma != null) {
                     extension.addPragma(optimizePragma);
                 }
-                extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
+                extension.addPragma(new Optimize(extension, context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(locationStep);
                 
                 // Replace the old expression with the pragma
@@ -201,7 +201,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             try {
                 // Create the pragma
                 final ExtensionExpression extension = new ExtensionExpression(context);
-                extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
+                extension.addPragma(new Optimize(extension, context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(filtered);
                 // Replace the old expression with the pragma
                 path.replace(filtered, extension);

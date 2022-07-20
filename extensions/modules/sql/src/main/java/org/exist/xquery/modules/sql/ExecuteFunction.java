@@ -186,7 +186,7 @@ public class ExecuteFunction extends BasicFunction {
             }
 
             // return the XML result set
-            return resultAsElement(makeNodeFromColumnName, executeResult, stmt);
+            return resultAsElement(makeNodeFromColumnName, executeResult, stmt, this);
 
         } catch (final SQLException sqle) {
             LOG.error("sql:execute() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
@@ -219,7 +219,7 @@ public class ExecuteFunction extends BasicFunction {
                 if (type != null) {
                     sqlType = SQLUtils.sqlTypeFromString(type);
                 } else {
-                    throw new XPathException(ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
+                    throw new XPathException(this, ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");
                 }
 
                 final String value;
@@ -253,7 +253,7 @@ public class ExecuteFunction extends BasicFunction {
                 }
 
                 if (sqlType == Types.TIMESTAMP) {
-                    final DateTimeValue dv = new DateTimeValue(value);
+                    final DateTimeValue dv = new DateTimeValue(this, value);
                     final Timestamp timestampValue = new Timestamp(dv.getDate().getTime());
                     ((PreparedStatement) stmt).setTimestamp(i + 1, timestampValue);
 
@@ -265,7 +265,7 @@ public class ExecuteFunction extends BasicFunction {
     }
 
     private ElementImpl resultAsElement(final boolean makeNodeFromColumnName,
-            final boolean executeResult, final Statement stmt) throws SQLException, XPathException {
+            final boolean executeResult, final Statement stmt, final Expression expression) throws SQLException, XPathException {
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
@@ -355,7 +355,7 @@ public class ExecuteFunction extends BasicFunction {
                                                 try {
                                                     reader = parserPool.borrowXMLReader();
 
-                                                    final SAXAdapter adapter = new AppendingSAXAdapter(builder);
+                                                    final SAXAdapter adapter = new AppendingSAXAdapter(expression, builder);
                                                     reader.setContentHandler(adapter);
                                                     reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
                                                     reader.parse(src);
@@ -367,7 +367,7 @@ public class ExecuteFunction extends BasicFunction {
                                             }
                                         }
                                     } catch (final Exception e) {
-                                        throw new XPathException("Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                        throw new XPathException(this, "Could not parse column of type SQLXML: " + e.getMessage(), e);
                                     }
                                 } else {
                                     //otherwise assume string value

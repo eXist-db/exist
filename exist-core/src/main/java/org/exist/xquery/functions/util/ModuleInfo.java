@@ -161,22 +161,22 @@ public class ModuleInfo extends BasicFunction {
 			}
 			final Sequence result = new ValueSequence();
 			for (final Module module : modules) {
-				result.add(new StringValue(module.getDescription()));
+				result.add(new StringValue(this, module.getDescription()));
 			}
 			return result;
 		} else if ("is-module-registered".equals(getSignature().getName().getLocalPart())) {
 			final String uri = args[0].getStringValue();
 			final Module[] modules = context.getModules(uri);
-			return new BooleanValue(modules != null && modules.length > 0);
+			return new BooleanValue(this, modules != null && modules.length > 0);
         } else if ("mapped-modules".equals(getSignature().getName().getLocalPart())) {
             final ValueSequence resultSeq = new ValueSequence();
             for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
-                resultSeq.add(new StringValue(i.next()));
+                resultSeq.add(new StringValue(this, i.next()));
             }
             return resultSeq;
 		} else if ("is-module-mapped".equals(getSignature().getName().getLocalPart())) {
 			final String uri = args[0].getStringValue();
-			return new BooleanValue(((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
+			return new BooleanValue(this, ((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
 		} else if ("map-module".equals(getSignature().getName().getLocalPart())) {
 			if (!context.getSubject().hasDbaRole()) {
 				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
@@ -225,11 +225,11 @@ public class ModuleInfo extends BasicFunction {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
 			for(final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
 				final Module module = i.next();
-				resultSeq.add(new StringValue(module.getNamespaceURI()));
+				resultSeq.add(new StringValue(this, module.getNamespaceURI()));
 			}
 			if (tempContext.getRepository().isPresent()) {
 			    for (final URI uri : tempContext.getRepository().get().getJavaModules()) {
-				resultSeq.add(new StringValue(uri.toString()));
+				resultSeq.add(new StringValue(this, uri.toString()));
 			    }
 			}
 			return resultSeq;

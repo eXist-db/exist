@@ -69,7 +69,7 @@ public class GetAttributeNames extends StrictSessionFunction {
         final ValueSequence result = new ValueSequence();
         while (attributeNames.hasMoreElements()) {
             final String attributeName = attributeNames.nextElement();
-            result.add(new StringValue(attributeName));
+            result.add(new StringValue(this, attributeName));
         }
         return result;
     }

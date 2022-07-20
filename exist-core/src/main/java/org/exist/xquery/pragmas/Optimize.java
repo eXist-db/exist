@@ -58,13 +58,17 @@ public class Optimize extends Pragma {
     private boolean cachedOptimize;
     
     public Optimize(XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
-        super(pragmaName, contents);
+        this(null, context, pragmaName, contents, explicit);
+    }
+    
+    public Optimize(final Expression expression, XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
+        super(expression, pragmaName, contents);
         this.context = context;
         this.enabled = explicit || context.optimizationsEnabled();
         if (contents != null && contents.length() > 0) {
             final String param[] = Option.parseKeyValuePair(contents);
             if (param == null)
-                {throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);}
+                {throw new XPathException((Expression) null, "Invalid content found for pragma exist:optimize: " + contents);}
             if ("enable".equals(param[0])) {
                 enabled = "yes".equals(param[1]);
             }
@@ -176,6 +180,10 @@ public class Optimize extends Pragma {
         }
     }
 
+    public void before(XQueryContext context, Sequence contextSequence) throws XPathException {
+        before(context, null, contextSequence);
+    }
+
     public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
         if (innerExpr != null)
             {return;}
@@ -244,6 +252,10 @@ public class Optimize extends Pragma {
             LOG.trace("exist:optimize: context step: {}", contextStep);
             LOG.trace("exist:optimize: context var: {}", contextVar);
         }
+    }
+
+    public void after(XQueryContext context) throws XPathException {
+        after(context, null);
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {

@@ -178,9 +178,9 @@ public class DocumentNameOrId extends BasicFunction {
                 if (doc instanceof BinaryDocument) {
                     final BinaryDocument bin = (BinaryDocument) doc;
                     final InputStream is = context.getBroker().getBinaryResource(bin);
-                    return Base64BinaryDocument.getInstance(context, is);
+                    return Base64BinaryDocument.getInstance(context, is, this);
                 } else {
-                    return new NodeProxy(doc);
+                    return new NodeProxy(this, doc);
                 }
             }
         }

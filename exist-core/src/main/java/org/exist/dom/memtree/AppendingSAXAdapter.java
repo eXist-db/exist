@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.xml.sax.SAXException;
 
 /**
@@ -33,6 +34,11 @@ import org.xml.sax.SAXException;
 public class AppendingSAXAdapter extends SAXAdapter {
 
     public AppendingSAXAdapter(final MemTreeBuilder builder) {
+        this(null, builder);
+    }
+
+    public AppendingSAXAdapter(final Expression expression, final MemTreeBuilder builder) {
+        super(expression);
         setBuilder(builder);
     }
 

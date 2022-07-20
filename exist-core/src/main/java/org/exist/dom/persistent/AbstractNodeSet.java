@@ -78,7 +78,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public void add(final Item item) throws XPathException {
         if(!Type.subTypeOf(item.getType(), Type.NODE)) {
-            throw new XPathException("item has wrong type");
+            throw new XPathException(item.getExpression(), "item has wrong type");
         }
         add((NodeProxy) item);
     }
@@ -106,7 +106,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     @Override
     public void addAll(final Sequence other) throws XPathException {
         if(!other.isEmpty() && !Type.subTypeOf(other.getItemType(), Type.NODE)) {
-            throw new XPathException("sequence argument is not a node sequence");
+            throw new XPathException(other.getItemCount() > 0 ? other.itemAt(0).getExpression() : null, "sequence argument is not a node sequence");
         }
         if(Type.subTypeOf(other.getItemType(), Type.NODE)) {
             addAll((NodeSet) other);
@@ -348,10 +348,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 if (parent == null || parent.getOwnerDocument().getDocId() !=
                         current.getOwnerDocument().getDocId() || !parent.getNodeId().equals(parentID)) {
                     if (parentID != NodeId.DOCUMENT_NODE) {
-                        parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE,
+                        parent = new NodeProxy(null, current.getOwnerDocument(), parentID, Node.ELEMENT_NODE,
                                 StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     } else {
-                        parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.DOCUMENT_NODE,
+                        parent = new NodeProxy(null, current.getOwnerDocument(), parentID, Node.DOCUMENT_NODE,
                                 StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                     }
                 }
@@ -389,7 +389,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 //Filter out the temporary nodes wrapper element
                 if (parentID != NodeId.DOCUMENT_NODE &&
                         !(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
-                    final NodeProxy parent = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
+                    final NodeProxy parent = new NodeProxy(null, current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
                     if (Expression.NO_CONTEXT_ID != contextId) {
                         parent.addContextNode(contextId, current);
                     } else {

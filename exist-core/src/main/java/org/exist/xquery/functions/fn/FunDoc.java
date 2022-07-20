@@ -98,7 +98,7 @@ public class FunDoc extends Function {
                 //return cached;
             //}
             try {
-                result = DocUtils.getDocument(this.context, path);
+                result = DocUtils.getDocument(this.context, path, this);
                 if (result.isEmpty() && context.isRaiseErrorOnFailedRetrieval()) {
                     throw new XPathException(this, ErrorCodes.FODC0002,
                         "Can not access '" + path + "'", arg);

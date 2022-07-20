@@ -272,7 +272,7 @@ try{
 ]]>
         </code>
         <expected>
-            <error><code>java:org.xmldb.api.base.XMLDBException</code><value exists="false"/><description>Collection /db/foobaar not found. Could not locate collection: /db/foobaar/</description><module/><line>4</line><column>5</column></error>
+            <error><code>java:org.xmldb.api.base.XMLDBException</code><value exists="false"/><description>Collection /db/foobaar not found. Could not locate collection: /db/foobaar/</description><module>String/-563337617169755270</module><line>4</line><column>5</column></error>
         </expected>
     </test>
 

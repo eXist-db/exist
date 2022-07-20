@@ -97,7 +97,7 @@ public class SystemTime extends Function
 			}
 		}        
 
-		Sequence result = new DateTimeValue( new Date() );
+		Sequence result = new DateTimeValue( this, new Date() );
 		
 		if( isCalledAs("system-dateTime" ) ) {
 			// do nothing, result already in right form

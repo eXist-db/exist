@@ -46,7 +46,7 @@ public class FnDefaultLanguage extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        return new StringValue(context.getDefaultLanguage());
+        return new StringValue(this, context.getDefaultLanguage());
     }
 
 }

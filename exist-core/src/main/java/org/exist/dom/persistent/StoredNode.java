@@ -33,6 +33,7 @@ import org.exist.storage.Signatures;
 import org.exist.storage.dom.INodeIterator;
 import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -66,27 +67,60 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      * return new StoredNode
      */
     protected StoredNode(final short nodeType) {
+        this(null, nodeType);
+    }
+
+    /**
+     * Creates a new <code>StoredNode</code> instance.
+     *
+     * @param expression the expression from which the node derives
+     * @param nodeType a <code>short</code> value
+     * return new StoredNode
+     */
+    protected StoredNode(final Expression expression, final short nodeType) {
+        super(expression);
         this.nodeType = nodeType;
     }
 
     /**
      * Creates a new <code>StoredNode</code> instance.
      *
+     * @param nodeType   a <code>short</code> value
+     * @param nodeId     a <code>NodeId</code> value
+     */
+    protected StoredNode(final short nodeType, final NodeId nodeId) {
+        this(null, nodeType, nodeId);
+    }
+
+    /**
+     * Creates a new <code>StoredNode</code> instance.
+     *
+     * @param expression the expression from which the node derives
      * @param nodeType a <code>short</code> value
      * @param nodeId   a <code>NodeId</code> value
      */
-    protected StoredNode(final short nodeType, final NodeId nodeId) {
+    protected StoredNode(final Expression expression, final short nodeType, final NodeId nodeId) {
+        super(expression);
         this.nodeType = nodeType;
         this.nodeId = nodeId;
     }
 
     protected StoredNode(final short nodeType, final NodeId nodeId, final DocumentImpl ownerDocument, long internalAddress) {
-        this(nodeType, nodeId);
+        this(null, nodeType, nodeId, ownerDocument, internalAddress);
+    }
+
+    protected StoredNode(final Expression expression, final short nodeType, final NodeId nodeId, final DocumentImpl ownerDocument, long internalAddress) {
+        this(expression, nodeType, nodeId);
         this.ownerDocument = ownerDocument;
         this.internalAddress = internalAddress;
     }
 
     protected StoredNode(final StoredNode other) {
+        this(null, other);
+    }
+
+    protected StoredNode(final Expression expression, final StoredNode other) {
+        super(expression);
         this.nodeType = other.nodeType;
         this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
@@ -99,7 +133,7 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
      *
      */
     public StoredNode extract() {
-        return new StoredNode(this) {
+        return new StoredNode(getExpression(), this) {
         };
     }
 

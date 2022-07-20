@@ -150,7 +150,11 @@ public abstract class AbstractExpression implements Expression {
 
     @Override
     public Source getSource() {
-        return context.getSource();
+        try {
+            return context.getSource();
+        } catch (IllegalStateException e) {
+            return null;
+        }
     }
 
     @Override
@@ -182,5 +186,10 @@ public abstract class AbstractExpression implements Expression {
     @Override
     public Expression getParent() {
         return null;
+    }
+
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        return false;
     }
 }

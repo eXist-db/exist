@@ -162,7 +162,7 @@ public class SortedNodeSet extends AbstractNodeSet {
     }
 
     public NodeProxy get(final DocumentImpl doc, final NodeId nodeId) {
-        final NodeProxy proxy = new NodeProxy(doc, nodeId);
+        final NodeProxy proxy = new NodeProxy(null, doc, nodeId);
         for(final Iterator<IteratorItem> i = list.iterator(); i.hasNext(); ) {
             final NodeProxy p = (i.next()).proxy;
             if(p.compareTo(proxy) == 0) {

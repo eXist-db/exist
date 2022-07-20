@@ -69,7 +69,7 @@ public class AccountFunctions extends BasicFunction {
 
         final Account ldapAccount = sm.getAccount(accountName);
         if (ldapAccount == null)
-            throw new XPathException("The Account '" + accountName + "' does not exist!");
+            throw new XPathException(this, "The Account '" + accountName + "' does not exist!");
 
         try {
             ldapRealm.refreshAccountFromLdap(ldapAccount);
@@ -86,7 +86,7 @@ public class AccountFunctions extends BasicFunction {
             mFindRealm.setAccessible(true);
             final Realm realm = (Realm) mFindRealm.invoke(sm, LDAPRealm.ID);
             if (realm == null) {
-                throw new XPathException("The LDAP Realm is not in use!");
+                throw new XPathException(this, "The LDAP Realm is not in use!");
             }
             return (LDAPRealm) realm;
 

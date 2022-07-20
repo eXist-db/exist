@@ -26,6 +26,7 @@ import org.exist.util.Collations;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 /**
@@ -35,24 +36,37 @@ public class UntypedAtomicValue extends AtomicValue {
 
     private final String value;
 
-    public UntypedAtomicValue(String value) {
+    public UntypedAtomicValue(final String value) {
+        this(null, value);
+    }
+
+    public UntypedAtomicValue(final Expression expression, String value) {
+        super(expression);
         this.value = value;
     }
 
     public static AtomicValue convertTo(String value, int requiredType) throws XPathException {
-        return convertTo(null, value, requiredType);
+        return convertTo(value, requiredType, null);
+    }
+
+    public static AtomicValue convertTo(String value, int requiredType, final Expression expression) throws XPathException {
+        return convertTo(null, value, requiredType, expression);
     }
 
     public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType) throws XPathException {
+        return convertTo(strVal, value, requiredType, null);
+    }
+
+    public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType, final Expression expression) throws XPathException {
         switch (requiredType) {
             case Type.ATOMIC:
             case Type.ITEM:
             case Type.UNTYPED_ATOMIC:
-                return strVal == null ? new UntypedAtomicValue(value) : strVal;
+                return strVal == null ? new UntypedAtomicValue(expression, value) : strVal;
             case Type.STRING:
-                return new StringValue(value);
+                return new StringValue(expression, value);
             case Type.ANY_URI:
-                return new AnyURIValue(value);
+                return new AnyURIValue(expression, value);
             case Type.BOOLEAN:
                 final String trimmed = StringValue.trimWhitespace(value);
                 if ("0".equals(trimmed) || "false".equals(trimmed)) {
@@ -60,19 +74,19 @@ public class UntypedAtomicValue extends AtomicValue {
                 } else if ("1".equals(trimmed) || "true".equals(trimmed)) {
                     return BooleanValue.TRUE;
                 } else {
-                    throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" +
+                    throw new XPathException(expression, ErrorCodes.FORG0001, "cannot cast '" +
                             Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
                             Type.getTypeName(requiredType));
                 }
             case Type.FLOAT:
-                return new FloatValue(value);
+                return new FloatValue(expression, value);
             case Type.DOUBLE:
-                return new DoubleValue(value);
+                return new DoubleValue(expression, value);
             case Type.NUMBER:
                 //TODO : more complicated
-                return new DoubleValue(value);
+                return new DoubleValue(expression, value);
             case Type.DECIMAL:
-                return new DecimalValue(value);
+                return new DecimalValue(expression, value);
             case Type.INTEGER:
             case Type.POSITIVE_INTEGER:
             case Type.NON_POSITIVE_INTEGER:
@@ -86,7 +100,7 @@ public class UntypedAtomicValue extends AtomicValue {
             case Type.UNSIGNED_INT:
             case Type.UNSIGNED_SHORT:
             case Type.UNSIGNED_BYTE:
-                return new IntegerValue(value, requiredType);
+                return new IntegerValue(expression, value, requiredType);
 
 
         /*
@@ -99,38 +113,38 @@ public class UntypedAtomicValue extends AtomicValue {
          values from the database.
          */
             case Type.BASE64_BINARY:
-                return new BinaryValueFromBinaryString(new Base64BinaryValueType(), value);
+                return new BinaryValueFromBinaryString(expression, new Base64BinaryValueType(), value);
             case Type.HEX_BINARY:
-                return new BinaryValueFromBinaryString(new HexBinaryValueType(), value);
+                return new BinaryValueFromBinaryString(expression, new HexBinaryValueType(), value);
 
 
             case Type.DATE_TIME:
-                return new DateTimeValue(value);
+                return new DateTimeValue(expression, value);
             case Type.DATE_TIME_STAMP:
-                return new DateTimeStampValue(value);
+                return new DateTimeStampValue(expression, value);
             case Type.TIME:
-                return new TimeValue(value);
+                return new TimeValue(expression, value);
             case Type.DATE:
-                return new DateValue(value);
+                return new DateValue(expression, value);
             case Type.GYEAR:
-                return new GYearValue(value);
+                return new GYearValue(expression, value);
             case Type.GMONTH:
-                return new GMonthValue(value);
+                return new GMonthValue(expression, value);
             case Type.GDAY:
-                return new GDayValue(value);
+                return new GDayValue(expression, value);
             case Type.GYEARMONTH:
-                return new GYearMonthValue(value);
+                return new GYearMonthValue(expression, value);
             case Type.GMONTHDAY:
-                return new GMonthDayValue(value);
+                return new GMonthDayValue(expression, value);
             case Type.DURATION:
-                return new DurationValue(value);
+                return new DurationValue(expression, value);
             case Type.YEAR_MONTH_DURATION:
-                return new YearMonthDurationValue(value);
+                return new YearMonthDurationValue(expression, value);
             case Type.DAY_TIME_DURATION:
-                final DayTimeDurationValue dtdv = new DayTimeDurationValue(value);
-                return new DayTimeDurationValue(dtdv.getCanonicalDuration());
+                final DayTimeDurationValue dtdv = new DayTimeDurationValue(expression, value);
+                return new DayTimeDurationValue(expression, dtdv.getCanonicalDuration());
             default:
-                throw new XPathException(ErrorCodes.FORG0001, "cannot cast '" +
+                throw new XPathException(expression, ErrorCodes.FORG0001, "cannot cast '" +
                         Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
                         Type.getTypeName(requiredType));
         }
@@ -157,7 +171,7 @@ public class UntypedAtomicValue extends AtomicValue {
      */
     @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        return convertTo(this, value, requiredType);
+        return convertTo(value, requiredType, getExpression());
     }
 
     @Override
@@ -182,10 +196,10 @@ public class UntypedAtomicValue extends AtomicValue {
                 case GTEQ:
                     return cmp >= 0;
                 default:
-                    throw new XPathException("Type error: cannot apply operand to string value");
+                    throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
             }
         }
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "Type error: operands are not comparable; expected xdt:untypedAtomic; got "
                         + Type.getTypeName(other.getType()));
     }
@@ -325,12 +339,12 @@ public class UntypedAtomicValue extends AtomicValue {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         } else if (target == char.class || target == Character.class) {
             if (value.length() > 1 || value.isEmpty()) {
-                throw new XPathException("cannot convert string with length = 0 or length > 1 to Java character");
+                throw new XPathException(getExpression(), "cannot convert string with length = 0 or length > 1 to Java character");
             }
             return (T) Character.valueOf(value.charAt(0));
         }
 
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "

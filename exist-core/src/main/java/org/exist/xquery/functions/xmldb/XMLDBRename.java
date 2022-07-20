@@ -28,10 +28,7 @@ import java.net.URISyntaxException;
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -81,8 +78,9 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
         throws XPathException {
 
+		final Expression expression = this;
 		if(getSignature().getArgumentCount() == 3) {
-			final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI());
+			final XmldbURI doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].itemAt(0).getStringValue()).toXmldbURI());
 			try {
 				final Resource resource = collection.getResource(doc.toString());
 				if (resource == null) {

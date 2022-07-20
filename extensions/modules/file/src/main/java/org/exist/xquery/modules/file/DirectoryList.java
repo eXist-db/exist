@@ -105,7 +105,7 @@ public class DirectoryList extends BasicFunction {
         }
 
         final String inputPath = args[0].getStringValue();
-        final Path baseDir = FileModuleHelper.getFile(inputPath);
+        final Path baseDir = FileModuleHelper.getFile(inputPath, this);
 
         final Sequence patterns = args[1];
 
@@ -159,7 +159,7 @@ public class DirectoryList extends BasicFunction {
 
                 builder.addAttribute(new QName("size", null, null), sizeString);
                 builder.addAttribute(new QName("human-size", null, null), humanSize);
-                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
+                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(this, new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
 
                 if (relDir != null && !relDir.isEmpty()) {
                     builder.addAttribute(new QName("subdir", null, null), relDir);

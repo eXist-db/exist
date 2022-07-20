@@ -56,7 +56,7 @@ public class RetrieveBackup extends BasicFunction
     public Sequence eval(final Sequence[] args, final Sequence contextSequence ) throws XPathException
     {
         if(!context.getEffectiveUser().hasDbaRole()) {
-            throw new XPathException("You must be a DBA to retrieve a backup");
+            throw new XPathException(this, "You must be a DBA to retrieve a backup");
         }
 
         final String exportDir = args[0].getStringValue();
@@ -73,7 +73,7 @@ public class RetrieveBackup extends BasicFunction
         }
 
         if( !name.endsWith( ".zip" ) ) {
-            throw( new XPathException( this, "for security reasons, the function only allows " + "reading zipped backup archives" ) );
+            throw( new XPathException(this, "for security reasons, the function only allows " + "reading zipped backup archives" ) );
         }
 
         try {

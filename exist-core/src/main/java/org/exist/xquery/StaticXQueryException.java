@@ -26,7 +26,11 @@ public class StaticXQueryException extends XPathException
 	private static final long serialVersionUID = -8229758099980343418L;
 
 	public StaticXQueryException(String message) {
-		super(message);
+        this(null, message);
+    }
+
+	public StaticXQueryException(final Expression expression, String message) {
+		super(expression, message);
 	}
 
 	public StaticXQueryException(int line, int column, String message) {
@@ -34,11 +38,19 @@ public class StaticXQueryException extends XPathException
 	}
 	
 	public StaticXQueryException(Throwable cause) {
-		super(cause);
+        this((Expression) null, cause);
+    }
+	
+	public StaticXQueryException(final Expression expression, Throwable cause) {
+		super(expression, cause);
 	}
 
 	public StaticXQueryException(String message, Throwable cause) {
-		super(message, cause);
+        this(null, message, cause);
+	}
+
+	public StaticXQueryException(final Expression expression, String message, Throwable cause) {
+		super(expression, message, cause);
 	}
 
         //TODO add in ErrorCode and ErrorVal

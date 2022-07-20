@@ -211,7 +211,7 @@ public class DefaultDocumentSet implements MutableDocumentSet {
         for (final Iterator<DocumentImpl> i = getDocumentIterator(); i.hasNext(); ) {
             final DocumentImpl doc = i.next();
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
-                result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+                result.add(new NodeProxy(null, doc, NodeId.DOCUMENT_NODE));
             }
         }
         return result;

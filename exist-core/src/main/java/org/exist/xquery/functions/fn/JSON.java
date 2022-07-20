@@ -253,11 +253,11 @@ public class JSON extends BasicFunction {
             }
             switch (token) {
                 case START_OBJECT:
-                    next = new MapType(context, null);
+                    next = new MapType(null, context, null);
                     readValue(context, parser, next, handleDuplicates);
                     break;
                 case START_ARRAY:
-                    next = new ArrayType(context, Sequence.EMPTY_SEQUENCE);
+                    next = new ArrayType(null, context, Sequence.EMPTY_SEQUENCE);
                     readValue(context, parser, next, handleDuplicates);
                     break;
                 case VALUE_FALSE:
@@ -286,14 +286,14 @@ public class JSON extends BasicFunction {
                     case Type.MAP:
                         final String currentName = parser.getCurrentName();
                         if (currentName == null) {
-                            throw new XPathException(ErrorCodes.FOJS0001, "Invalid JSON object");
+                            throw new XPathException(next, ErrorCodes.FOJS0001, "Invalid JSON object");
                         }
                         final StringValue name = new StringValue(currentName);
                         final MapType map = (MapType) parent;
                         if (map.contains(name)) {
                             // handle duplicate keys
                             if (handleDuplicates.equals(OPTION_DUPLICATES_REJECT)) {
-                                throw new XPathException(ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
+                                throw new XPathException(map.getExpression(), ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
                             }
                             if (handleDuplicates.equals(OPTION_DUPLICATES_USE_LAST)) {
                                 map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());

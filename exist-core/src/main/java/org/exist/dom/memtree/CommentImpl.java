@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
@@ -31,7 +32,11 @@ import org.w3c.dom.Node;
 public class CommentImpl extends AbstractCharacterData implements Comment {
 
     public CommentImpl(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public CommentImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override

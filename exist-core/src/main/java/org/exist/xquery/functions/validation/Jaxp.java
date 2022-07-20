@@ -200,7 +200,7 @@ public class Jaxp extends BasicFunction {
         final ContentHandler contenthandler;
         if (isCalledAs("jaxp-parse")) {
             instanceBuilder = context.getDocumentBuilder();
-            contenthandler = new DocumentBuilderReceiver(instanceBuilder, true); // (namespace?)
+            contenthandler = new DocumentBuilderReceiver(this, instanceBuilder, true); // (namespace?)
         } else {
             instanceBuilder = null;
             contenthandler = new ValidationContentHandler();
@@ -319,13 +319,13 @@ public class Jaxp extends BasicFunction {
         // Create response
         if (isCalledAs("jaxp")) {
             final Sequence result = new ValueSequence();
-            result.add(new BooleanValue(report.isValid()));
+            result.add(new BooleanValue(this, report.isValid()));
             return result;
 
         } else /* isCalledAs("jaxp-report or jaxp-parse ") */ {
 
             if(report.getThrowable()!=null){
-                throw new XPathException(report.getThrowable().getMessage(), report.getThrowable());
+                throw new XPathException(this, report.getThrowable().getMessage(), report.getThrowable());
             }
 
             if (contenthandler instanceof DocumentBuilderReceiver) {

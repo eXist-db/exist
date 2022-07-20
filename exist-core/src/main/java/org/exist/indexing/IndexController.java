@@ -225,7 +225,7 @@ public class IndexController {
 
         setReindexing(true);
         try {
-            final IStoredNode<? extends IStoredNode> node = broker.objectWith(new NodeProxy(reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
+            final IStoredNode<? extends IStoredNode> node = broker.objectWith(new NodeProxy(null, reindexRoot.getOwnerDocument(), reindexRoot.getNodeId()));
             listener = getStreamListener(node.getOwnerDocument(), mode);
             listener.startIndexDocument(transaction);
             try {

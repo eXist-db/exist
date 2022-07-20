@@ -77,7 +77,7 @@ public class FileIsReadable extends BasicFunction {
 		}
         
 		final String inputPath = args[0].getStringValue();
-        final Path file = FileModuleHelper.getFile(inputPath);
+        final Path file = FileModuleHelper.getFile(inputPath, this);
 		
 		return BooleanValue.valueOf(Files.isReadable(file));
 	}

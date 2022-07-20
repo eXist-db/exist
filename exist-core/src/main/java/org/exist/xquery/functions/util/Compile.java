@@ -157,7 +157,7 @@ public class Compile extends BasicFunction {
 		}
 		
 		if (isCalledAs("compile")) {
-			return error == null ? Sequence.EMPTY_SEQUENCE : new StringValue(error);
+			return error == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, error);
 		} else {
 			return response(pContext, error, code, line, column);
 		}

@@ -121,7 +121,7 @@ public class Compare extends Function {
 				.checkForIdentical()
 				.build();
             boolean identical = !diff.hasDifferences();
-            result = new BooleanValue(identical);
+            result = new BooleanValue(this, identical);
         } catch (Exception e) {
 	    throw new XPathException(this, "An exception occurred while serializing node " +
 				     "for comparison: " + e.getMessage(), e);

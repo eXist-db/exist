@@ -27,11 +27,7 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -60,6 +56,7 @@ public class GetExistHome extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final Optional<Path> existHome = context.getBroker().getConfiguration().getExistHome();
-        return existHome.<Sequence>map(h -> new StringValue(h.toAbsolutePath().toString())).orElse(Sequence.EMPTY_SEQUENCE);
+        final Expression expression = this;
+        return existHome.<Sequence>map(h -> new StringValue(expression, h.toAbsolutePath().toString())).orElse(Sequence.EMPTY_SEQUENCE);
     }
 }

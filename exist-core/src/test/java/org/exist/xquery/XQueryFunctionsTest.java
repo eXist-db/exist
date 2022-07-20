@@ -606,8 +606,7 @@ public class XQueryFunctionsTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:local-name()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -657,8 +656,7 @@ public class XQueryFunctionsTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/b/c/fn:name()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -762,12 +760,11 @@ public class XQueryFunctionsTest {
     }
 
     @Test
-    public void namespaceURI_contextItem_empty() throws XPathException, XMLDBException {
+    public void namespaceURI_contextItem_empty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $a := <a><b/></a>" +
                         "return $a/exist:b/c/fn:namespace-uri()");
-        final String r = (String) result.getResource(0).getContent();
-        assertEquals("", r);
+        assertEquals(0, result.getSize());
     }
 
     @Test
@@ -1032,5 +1029,30 @@ public class XQueryFunctionsTest {
         assertEquals(1, result.getSize());
         final String defaultLanguage = (String) result.getResource(0).getContent();
         assertEquals(Locale.getDefault().getLanguage(), defaultLanguage);
+    }
+
+    @Test
+    public void enclosedExpression() throws XMLDBException {
+        ResourceSet result = existEmbeddedServer.executeQuery("<abc>{()}{123}</abc>");
+        assertEquals(1, result.getSize());
+        String text = (String) result.getResource(0).getContent();
+        assertEquals("<abc>123</abc>", text);
+
+        result = existEmbeddedServer.executeQuery("<abc>{(), 123}</abc>");
+        assertEquals(1, result.getSize());
+        text = (String) result.getResource(0).getContent();
+        assertEquals("<abc>123</abc>", text);
+
+        result = existEmbeddedServer.executeQuery("<abc>{()}123</abc>");
+        assertEquals(1, result.getSize());
+        text = (String) result.getResource(0).getContent();
+        assertEquals("<abc>123</abc>", text);
+
+        result = existEmbeddedServer.executeQuery("<root>{'time '}{()}{'is: '}{current-time()}</root>");
+        assertEquals(1, result.getSize());
+        text = (String) result.getResource(0).getContent();
+        assertTrue(text.startsWith("<root>time is: "));
+        assertTrue(text.length() > 35);
+        assertTrue(text.endsWith("</root>"));
     }
 }

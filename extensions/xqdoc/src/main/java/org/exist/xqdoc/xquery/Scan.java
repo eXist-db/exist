@@ -105,7 +105,7 @@ public class Scan extends BasicFunction {
             try{
                 data = binaryValueToByteArray((BinaryValue)args[0].itemAt(0));
             } catch(IOException ioe) {
-                throw new XPathException(ioe.getMessage(), ioe);
+                throw new XPathException(this, ioe.getMessage(), ioe);
             }
             name = args[1].getStringValue();
             source = new BinarySource(data, true);
@@ -166,7 +166,7 @@ public class Scan extends BasicFunction {
         try {
             XQDocHelper helper = new XQDocHelper();
             String xml = helper.scan(source, name);
-            NodeValue root = ModuleUtils.stringToXML(context, xml);
+            NodeValue root = ModuleUtils.stringToXML(context, xml, this);
             if (root == null)
                 return Sequence.EMPTY_SEQUENCE;
             return normalize((NodeValue) ((Document) root).getDocumentElement());

@@ -128,7 +128,7 @@ public class MailStoreFunctions extends BasicFunction
 		
 		// save the store and return the handle of the store
 			
-		return( new IntegerValue( MailModule.storeStore( context, store ) ) );
+		return( new IntegerValue( this, MailModule.storeStore( context, store ) ) );
 	}
 
 	private Sequence closeMailStore( Sequence[] args, Sequence contextSequence ) throws XPathException

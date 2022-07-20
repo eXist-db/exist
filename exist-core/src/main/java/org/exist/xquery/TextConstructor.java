@@ -40,7 +40,7 @@ public class TextConstructor extends NodeConstructor {
 
     public TextConstructor(XQueryContext context, String text) throws XPathException {
         super(context);
-        this.text = StringValue.expand(text);
+        this.text = StringValue.expand(text, this);
         for (int i = 0; i < text.length(); i++) {
             if (!isWhiteSpace(text.charAt(i))) {
                 isWhitespaceOnly = false;
@@ -95,5 +95,14 @@ public class TextConstructor extends NodeConstructor {
     @Override
     public boolean allowMixedNodesInReturn() {
         return true;
+    }
+
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        /*
+        When this TextConstructor only contains whitespace but has been configured
+        to strip-whitespace, return true so that the next expression is processed correctly.
+         */
+        return isWhitespaceOnly && context.stripWhitespace();
     }
 }

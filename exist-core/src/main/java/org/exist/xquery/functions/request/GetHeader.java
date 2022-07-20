@@ -66,7 +66,7 @@ public class GetHeader extends StrictRequestFunction {
 		if (headerValue == null) {
 			return Sequence.EMPTY_SEQUENCE;
 		} else {
-			return XPathUtil.javaObjectToXPath(headerValue, null, false);
+			return XPathUtil.javaObjectToXPath(headerValue, null, false, this);
 		}
 	}
 }

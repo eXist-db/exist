@@ -56,6 +56,6 @@ public class GetPathInfo extends StrictRequestFunction {
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
 		final String path = request.getPathInfo();
-		return new StringValue(path == null ? "" : path);
+		return new StringValue(this, path == null ? "" : path);
 	}
 }

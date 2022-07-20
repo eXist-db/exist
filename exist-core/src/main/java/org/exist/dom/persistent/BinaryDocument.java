@@ -29,6 +29,7 @@ import org.exist.storage.blob.BlobId;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DocumentType;
 
 import javax.annotation.Nullable;
@@ -55,7 +56,20 @@ public class BinaryDocument extends DocumentImpl {
      * @param fileURI The name of the document
      */
     public BinaryDocument(final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI) {
-        super(pool, collection, docId, fileURI);
+        this(null, pool, collection, docId, fileURI);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance.
+     *
+     * @param expression the expression from which this document derives
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     */
+    public BinaryDocument(final Expression expression, final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI) {
+        super(expression, pool, collection, docId, fileURI);
     }
 
     /**
@@ -65,7 +79,18 @@ public class BinaryDocument extends DocumentImpl {
      * @param prevDoc The previous binary Document object that we are overwriting
      */
     public BinaryDocument(final int docId, final DocumentImpl prevDoc) {
-        super(docId, prevDoc);
+        this(null, docId, prevDoc);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance to replace an existing document instance.
+     *
+     * @param expression the expression from which this document derives
+     * @param docId the id of the document
+     * @param prevDoc The previous binary Document object that we are overwriting
+     */
+    public BinaryDocument(final Expression expression, final int docId, final DocumentImpl prevDoc) {
+        super(expression, docId, prevDoc);
     }
 
     /**
@@ -86,7 +111,29 @@ public class BinaryDocument extends DocumentImpl {
     private BinaryDocument(final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI,
             final BlobId blobId, final Permission permissions, final long realSize, final long created,
             @Nullable final Long lastModified, @Nullable final String mimeType, @Nullable final DocumentType docType) {
-        super(pool, collection, docId, fileURI, permissions, 0, null, created, lastModified, mimeType, docType);
+        this(null, pool, collection, docId, fileURI, blobId, permissions, realSize, created, lastModified, mimeType, docType);
+    }
+
+    /**
+     * Creates a new persistent binary Document instance.
+     *
+     * @param expression the expression from which the binary document derives
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     * @param blobId the id of the blob in the blob store
+     * @param permissions the permissions of the document
+     * @param realSize the real size of the binary document
+     * @param created the created time of the document
+     * @param lastModified the last modified time of the document, or null to use the {@code created} time
+     * @param mimeType the media type of the document, or null for application/xml
+     * @param docType the document type, or null
+     */
+    private BinaryDocument(final Expression expression, final BrokerPool pool, final Collection collection, final int docId, final XmldbURI fileURI,
+            final BlobId blobId, final Permission permissions, final long realSize, final long created,
+            @Nullable final Long lastModified, @Nullable final String mimeType, @Nullable final DocumentType docType) {
+        super(expression, pool, collection, docId, fileURI, permissions, 0, null, created, lastModified, mimeType, docType);
         this.blobId = blobId;
         this.realSize = realSize;
     }
@@ -193,7 +240,7 @@ public class BinaryDocument extends DocumentImpl {
             lockToken = null;
         }
 
-        final BinaryDocument doc = new BinaryDocument(pool, null, docId, fileURI, blobId, permissions, realSize, created, lastModified, mimeType, docType);
+        final BinaryDocument doc = new BinaryDocument(null, pool, null, docId, fileURI, blobId, permissions, realSize, created, lastModified, mimeType, docType);
         doc.pageCount = pageCount;
         doc.userLock = userLock;
         doc.lockToken = lockToken;

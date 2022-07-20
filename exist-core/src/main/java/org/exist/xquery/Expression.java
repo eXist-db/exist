@@ -255,4 +255,13 @@ public interface Expression {
     public boolean allowMixedNodesInReturn();
 
     public Expression getParent();
+
+    /**
+     * Return true only if the next expression within a path expression
+     * should be evaluated even when this expression returns an
+     * empty sequence.
+     *
+     * @return true if the next expression should be evaluated, false otherwise.
+     */
+    boolean evalNextExpressionOnEmptyContextSequence();
 }

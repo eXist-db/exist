@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -48,20 +49,30 @@ public class QNameValue extends AtomicValue {
      * @param name name string to parse into QName
      * @throws XPathException in case of dynamic error
      */
-    public QNameValue(XQueryContext context, String name) throws XPathException {
+    public QNameValue(final XQueryContext context, final String name) throws XPathException {
+        this(null, context, name);
+    }
+
+    public QNameValue(final Expression expression, XQueryContext context, String name) throws XPathException {
+        super(expression);
         if (name.isEmpty()) {
-            throw new XPathException(ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "An empty string is not a valid lexical representation of xs:QName.");
         }
 
         try {
             qname = QName.parse(context, name, context.getURIForPrefix(""));
         } catch (final QName.IllegalQNameException iqe) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+            throw new XPathException(getExpression(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
         stringValue = computeStringValue();
     }
 
     public QNameValue(XQueryContext context, QName name) {
+        this(null, context, name);
+    }
+
+    public QNameValue(final Expression expression, XQueryContext context, QName name) {
+        super(expression);
         this.qname = name;
         stringValue = computeStringValue();
     }
@@ -101,7 +112,7 @@ public class QNameValue extends AtomicValue {
 //	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
 //			if (prefix != null)
 //				qname.setPrefix(prefix);
-//				//throw new XPathException(
+//				//throw new XPathException(getExpression(), 
 //				//	"namespace " + qname.getNamespaceURI() + " is not defined");
 //
 //	    }
@@ -123,11 +134,11 @@ public class QNameValue extends AtomicValue {
             case Type.QNAME:
                 return this;
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "A QName cannot be converted to " + Type.getTypeName(requiredType));
         }
     }
@@ -153,10 +164,10 @@ public class QNameValue extends AtomicValue {
 					return cmp >= 0;
 				*/
                 default:
-                    throw new XPathException(ErrorCodes.XPTY0004, "cannot apply operator to QName");
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot apply operator to QName");
             }
         } else {
-            throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare QName to "
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot compare QName to "
                     + Type.getTypeName(other.getType()));
         }
     }
@@ -168,7 +179,7 @@ public class QNameValue extends AtomicValue {
         if (other.getType() == Type.QNAME) {
             return qname.compareTo(((QNameValue) other).qname);
         } else {
-            throw new XPathException(
+            throw new XPathException(getExpression(), 
                     "Type error: cannot compare QName to "
                             + Type.getTypeName(other.getType()));
         }
@@ -178,11 +189,11 @@ public class QNameValue extends AtomicValue {
      * @see org.exist.xquery.value.AtomicValue#max(Collator, AtomicValue)
      */
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: QName");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: QName");
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: QName");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: QName");
     }
 
     /**
@@ -215,7 +226,7 @@ public class QNameValue extends AtomicValue {
             return (T) qname;
         }
 
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "
@@ -231,7 +242,7 @@ public class QNameValue extends AtomicValue {
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006,
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006,
                 "value of type " + Type.getTypeName(getType()) +
                         " has no boolean value.");
     }

@@ -84,7 +84,7 @@ public class RawNodeIterator implements IRawNodeIterator {
                 {rec = db.findRecord(node.getInternalAddress());}
             if (rec == null) {
                 try {
-                    final long address = db.findValue(broker, new NodeProxy(node));
+                    final long address = db.findValue(broker, new NodeProxy(null, node));
                     if (address == BTree.KEY_NOT_FOUND)
                         {throw new IOException("Node not found.");}
                     rec = db.findRecord(address);

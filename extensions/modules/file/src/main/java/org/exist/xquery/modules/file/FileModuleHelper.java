@@ -25,6 +25,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 /**
@@ -47,12 +48,12 @@ public class FileModuleHelper {
      * @return File object
      * @throws XPathException Thrown when the URL cannot be used.
      */
-    public static Path getFile(String path) throws XPathException {
+    public static Path getFile(String path, final Expression expression) throws XPathException {
         if(path.startsWith("file:")){
             try {
                 return Paths.get(new URI(path));
             } catch (Exception ex) { // catch all (URISyntaxException)
-                throw new XPathException(path + " is not a valid URI: '"+ ex.getMessage() +"'");
+                throw new XPathException(expression, path + " is not a valid URI: '"+ ex.getMessage() +"'");
             }
         } else {
             return Paths.get(path);

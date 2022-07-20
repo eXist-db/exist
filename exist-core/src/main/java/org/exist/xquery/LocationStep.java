@@ -842,7 +842,7 @@ public class LocationStep extends Step {
                         } else {
                             startNodeId = current.getNodeId().getParentId().getChild(1);
                         }
-                        final NodeProxy startNode = new NodeProxy(current.getOwnerDocument(), startNodeId);
+                        final NodeProxy startNode = new NodeProxy(this, current.getOwnerDocument(), startNodeId);
 
                         reader = context.getBroker().getXMLStreamReader(startNode, false);
                         filter = new PrecedingSiblingFilter(test, startNode, current, result, contextId);
@@ -933,7 +933,7 @@ public class LocationStep extends Step {
                     final NodeList cl = next.getOwnerDocument().getChildNodes();
                     for (int j = 0; j < cl.getLength(); j++) {
                         final NodeHandle node = (NodeHandle) cl.item(j);
-                        final NodeProxy root = new NodeProxy(node);
+                        final NodeProxy root = new NodeProxy(this, node);
                         final StreamFilter filter;
                         if (axis == Constants.PRECEDING_AXIS) {
                             filter = new PrecedingFilter(test, root, next, result, contextId);
@@ -1035,7 +1035,7 @@ public class LocationStep extends Step {
             for (final NodeProxy current : contextSet) {
                 NodeProxy ancestor;
                 if (axis == Constants.ANCESTOR_SELF_AXIS && test.matches(current)) {
-                    ancestor = new NodeProxy(current);
+                    ancestor = new NodeProxy(this, current);
                     ancestor.setNodeType(Node.ELEMENT_NODE);
                     final NodeProxy t = result.get(ancestor);
                     if (t == null) {
@@ -1054,7 +1054,7 @@ public class LocationStep extends Step {
 
                 NodeId parentID = current.getNodeId().getParentId();
                 while (parentID != null) {
-                    ancestor = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
+                    ancestor = new NodeProxy(this, current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
                     // Filter out the temporary nodes wrapper element
                     if (parentID != NodeId.DOCUMENT_NODE
                             && !(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
@@ -1311,7 +1311,7 @@ public class LocationStep extends Step {
                 // sibling which matches the test
                 NodeProxy sibling = result.get(start.getOwnerDocument(), currentId);
                 if (sibling == null) {
-                    sibling = new NodeProxy(start.getOwnerDocument(), currentId,
+                    sibling = new NodeProxy(null, start.getOwnerDocument(), currentId,
                             StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
 
                     if (Expression.IGNORE_CONTEXT != contextId) {
@@ -1367,7 +1367,7 @@ public class LocationStep extends Step {
                 // sibling which matches the test
                 NodeProxy sibling = result.get(referenceNode.getOwnerDocument(), currentId);
                 if (sibling == null) {
-                    sibling = new NodeProxy(referenceNode.getOwnerDocument(), currentId,
+                    sibling = new NodeProxy(null, referenceNode.getOwnerDocument(), currentId,
                             StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                     if (Expression.IGNORE_CONTEXT != contextId) {
                         if (Expression.NO_CONTEXT_ID == contextId) {
@@ -1417,7 +1417,7 @@ public class LocationStep extends Step {
             }
 
             if (isAfter && !refId.isDescendantOf(currentId) && test.matches(reader)) {
-                final NodeProxy proxy = new NodeProxy(referenceNode.getOwnerDocument(), currentId,
+                final NodeProxy proxy = new NodeProxy(null, referenceNode.getOwnerDocument(), currentId,
                         StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                 if (Expression.IGNORE_CONTEXT != contextId) {
                     if (Expression.NO_CONTEXT_ID == contextId) {
@@ -1462,7 +1462,7 @@ public class LocationStep extends Step {
             }
 
             if (!refId.isDescendantOf(currentId) && test.matches(reader)) {
-                final NodeProxy proxy = new NodeProxy(referenceNode.getOwnerDocument(), currentId,
+                final NodeProxy proxy = new NodeProxy(null, referenceNode.getOwnerDocument(), currentId,
                         StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                 if (Expression.IGNORE_CONTEXT != contextId) {
                     if (Expression.NO_CONTEXT_ID == contextId) {

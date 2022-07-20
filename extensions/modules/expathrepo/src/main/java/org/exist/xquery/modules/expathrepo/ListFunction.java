@@ -72,14 +72,14 @@ public class ListFunction extends BasicFunction {
 		    Repository parent_repo = repo.get().getParentRepo();
 		    for ( Packages pkg :  parent_repo.listPackages() ) {
 			String name = pkg.name();
-			result.add(new StringValue(name));
+			result.add(new StringValue(this, name));
 		    }
 		} catch (Exception ex) {
-		    throw new XPathException("Problem listing packages in expath repository ", ex);
+		    throw new XPathException(this, "Problem listing packages in expath repository ", ex);
 		}
 		return result;
 	    } else {
-		throw new XPathException("expath repository not available");
+		throw new XPathException(this, "expath repository not available");
 	    }
 
 	}

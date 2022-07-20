@@ -120,7 +120,7 @@ public class InstallFunction extends BasicFunction {
                 context.getBroker().getBrokerPool().getXQueryPool().clear();
                 removed = BooleanValue.TRUE;
             } else {
-                throw new XPathException("expath repository not available");
+                throw new XPathException(this, "expath repository not available");
             }
         } catch (PackageException | TransactionException ex) {
             logger.error(ex.getMessage(), ex);
@@ -139,12 +139,12 @@ public class InstallFunction extends BasicFunction {
         try {
             uri = new URI(s);
         } catch (URISyntaxException ex) {
-            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " is not a valid URI: " + ex.getMessage(), new StringValue(s), ex);
+            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " is not a valid URI: " + ex.getMessage(), new StringValue(this, s), ex);
         }
         if (uri.isAbsolute()) {
             return uri;
         } else {
-            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " must be an absolute URI", new StringValue(s));
+            throw new XPathException(this, EXPathErrorCode.EXPDY001, s + " must be an absolute URI", new StringValue(this, s));
         }
     }
 
@@ -155,18 +155,18 @@ public class InstallFunction extends BasicFunction {
           if (lockedDoc == null) {
             throw new XPathException(this, EXPathErrorCode.EXPDY001,
                 path + " is not .xar resource",
-                new StringValue(path)
+                new StringValue(this, path)
             );
           } else if (lockedDoc.getDocument().getResourceType() != DocumentImpl.BINARY_FILE) {
             lockedDoc.close();
             throw new XPathException(this, EXPathErrorCode.EXPDY001,
                 path + " is not a valid .xar, it's not a binary resource",
-                new StringValue(path)
+                new StringValue(this, path)
             );
           }
           return lockedDoc;
       } catch (PermissionDeniedException e) {
-        throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(path), e);
+        throw new XPathException(this, EXPathErrorCode.EXPDY003, e.getMessage(), new StringValue(this, path), e);
       }
   }
 }

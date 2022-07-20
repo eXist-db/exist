@@ -85,7 +85,7 @@ public class FunUnparsedText extends BasicFunction {
             } else if (isCalledAs("unparsed-text-available")) {
                 return BooleanValue.valueOf(contentAvailable(args[0].getStringValue(), encoding));
             } else {
-                return new StringValue(readContent(args[0].getStringValue(), encoding));
+                return new StringValue(this, readContent(args[0].getStringValue(), encoding));
             }
         }
         return Sequence.EMPTY_SEQUENCE;
@@ -174,7 +174,7 @@ public class FunUnparsedText extends BasicFunction {
                 try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        result.add(new StringValue(line));
+                        result.add(new StringValue(this, line));
                     }
                 }
             }

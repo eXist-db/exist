@@ -68,6 +68,6 @@ public class SystemProperty extends BasicFunction {
         if(value == null) {
                 value = System.getProperty(key);
         }
-        return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(value);
+        return value == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, value);
     }
 }

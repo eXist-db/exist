@@ -27,6 +27,7 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
+import org.exist.xquery.Expression;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -35,24 +36,44 @@ import org.w3c.dom.Text;
 public class CDATASectionImpl extends AbstractCharacterData implements CDATASection {
 
     public CDATASectionImpl() {
-        super(Node.CDATA_SECTION_NODE);
+        this((Expression) null);
+    }
+
+    public CDATASectionImpl(final Expression expression) {
+        super(expression, Node.CDATA_SECTION_NODE);
     }
 
     public CDATASectionImpl(final NodeId nodeId, final String data) {
-        super(Node.CDATA_SECTION_NODE, nodeId, data);
+        this((Expression) null, nodeId, data);
+    }
+
+    public CDATASectionImpl(final Expression expression, final NodeId nodeId, final String data) {
+        super(expression, Node.CDATA_SECTION_NODE, nodeId, data);
     }
 
     public CDATASectionImpl(final NodeId nodeId) {
-        super(Node.CDATA_SECTION_NODE, nodeId);
+        this((Expression) null, nodeId);
+    }
+
+    public CDATASectionImpl(final Expression expression, final NodeId nodeId) {
+        super(expression, Node.CDATA_SECTION_NODE, nodeId);
     }
 
     public CDATASectionImpl(final XMLString data) {
-        super(Node.CDATA_SECTION_NODE);
+        this((Expression) null, data);
+    }
+
+    public CDATASectionImpl(final Expression expression, final XMLString data) {
+        super(expression, Node.CDATA_SECTION_NODE);
         this.cdata = data;
     }
 
     public CDATASectionImpl(final String data) {
-        super(Node.CDATA_SECTION_NODE, data);
+        this((Expression) null, data);
+    }
+
+    public CDATASectionImpl(final Expression expression, final String data) {
+        super(expression, Node.CDATA_SECTION_NODE, data);
     }
 
     @Override
@@ -97,7 +118,7 @@ public class CDATASectionImpl extends AbstractCharacterData implements CDATASect
         final NodeId dln = doc.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
         pos += nodeIdLen;
-        final CDATASectionImpl cdata = new CDATASectionImpl(dln);
+        final CDATASectionImpl cdata = new CDATASectionImpl(null, dln);
         cdata.cdata = UTF8.decode(data, pos, len - (pos - start));
         return cdata;
     }

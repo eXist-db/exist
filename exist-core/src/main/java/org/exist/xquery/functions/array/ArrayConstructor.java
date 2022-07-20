@@ -72,10 +72,10 @@ public class ArrayConstructor extends AbstractExpression {
                         items.add(result);
                     }
                 }
-                return new ArrayType(context, items);
+                return new ArrayType(this, context, items);
             default:
                 final Sequence result = arguments.get(0).eval(contextSequence, contextItem);
-                return new ArrayType(context, result);
+                return new ArrayType(this, context, result);
         }
     }
 

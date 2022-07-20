@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.io.InputStream;
@@ -35,11 +36,19 @@ public class Base64BinaryDocument extends BinaryValueFromInputStream {
     private String url = null;
 
     private Base64BinaryDocument(final BinaryValueManager manager, final InputStream is) throws XPathException {
-        super(manager, new Base64BinaryValueType(), is);
+        this(null, manager, is);
+    }
+
+    private Base64BinaryDocument(final Expression expression, final BinaryValueManager manager, final InputStream is) throws XPathException {
+        super(expression, manager, new Base64BinaryValueType(), is);
     }
 
     public static Base64BinaryDocument getInstance(final BinaryValueManager manager, final InputStream is) throws XPathException {
-        final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(manager, is);
+        return getInstance(manager, is, null);
+    }
+
+    public static Base64BinaryDocument getInstance(final BinaryValueManager manager, final InputStream is, final Expression expression) throws XPathException {
+        final Base64BinaryDocument b64BinaryDocument = new Base64BinaryDocument(expression, manager, is);
         manager.registerBinaryValueInstance(b64BinaryDocument);
         return b64BinaryDocument;
     }

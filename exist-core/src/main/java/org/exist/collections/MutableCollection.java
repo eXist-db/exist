@@ -1543,7 +1543,7 @@ public class MutableCollection implements Collection {
 
                 // NOTE: the new `document` object actually gets discarded in favour of the `oldDoc` below if there is an oldDoc and it is XML (so we can use -1 as the docId because it will never be used)
                 final int docId = (oldDoc != null && oldDoc.getResourceType() == DocumentImpl.XML_FILE) ? - 1 : broker.getNextResourceId(transaction);
-                DocumentImpl document = new DocumentImpl((BrokerPool) db, this, docId, name);
+                DocumentImpl document = new DocumentImpl(null, (BrokerPool) db, this, docId, name);
 
                 checkCollectionConflict(name);
                 manageDocumentInformation(oldDoc, document);
@@ -1772,9 +1772,9 @@ public class MutableCollection implements Collection {
             final int docId = broker.getNextResourceId(transaction);
             final BinaryDocument blob;
             if (oldDoc != null) {
-                blob = new BinaryDocument(docId, oldDoc);
+                blob = new BinaryDocument(null, docId, oldDoc);
             } else {
-                blob = new BinaryDocument(broker.getBrokerPool(), this, docId, name);
+                blob = new BinaryDocument(null, broker.getBrokerPool(), this, docId, name);
             }
 
             return addBinaryResource(db, transaction, broker, blob, is, mimeType, size, created, modified, permission,
@@ -1787,7 +1787,7 @@ public class MutableCollection implements Collection {
     public BinaryDocument validateBinaryResource(final Txn transaction, final DBBroker broker, final XmldbURI name) throws PermissionDeniedException, LockException, TriggerException, IOException {
         try {
             final int docId = broker.getNextResourceId(transaction);
-            return new BinaryDocument(broker.getBrokerPool(), this, docId, name);
+            return new BinaryDocument(null, broker.getBrokerPool(), this, docId, name);
         } catch (final EXistException e) {
             throw new IOException(e.getMessage(), e);
         }

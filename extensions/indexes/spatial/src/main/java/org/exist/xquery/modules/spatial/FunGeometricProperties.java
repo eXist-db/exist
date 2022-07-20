@@ -320,7 +320,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     propertyName = "IS_VALID";
                 } else {
                     logger.error("Unknown spatial property: {}", getName().getLocalPart());
-                    throw new XPathException("Unknown spatial property: " + getName().getLocalPart());
+                    throw new XPathException(this, "Unknown spatial property: " + getName().getLocalPart());
                 }
                 NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
                 if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
@@ -333,68 +333,68 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
                     if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
-                        throw new XPathException("Unable to get a geometry from the node");
+                        throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     //Transform the geometry to EPSG:4326 if relevant
                     if (propertyName.contains("EPSG4326")) {
                         geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
                         if (isCalledAs("getEPSG4326WKT")) {
-                            result = new StringValue(wktWriter.write(geometry));
+                            result = new StringValue(this, wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
                             byte data[] = wkbWriter.write(geometry);
-                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data));
+                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data), this);
                         } else if (isCalledAs("getEPSG4326MinX")) {
-                            result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+                            result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
                         } else if (isCalledAs("getEPSG4326MaxX")) {
-                            result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+                            result = new DoubleValue(this, geometry.getEnvelopeInternal().getMaxX());
                         } else if (isCalledAs("getEPSG4326MinY")) {
-                            result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+                            result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinY());
                         } else if (isCalledAs("getEPSG4326MaxY")) {
-                            result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+                            result = new DoubleValue(this, geometry.getEnvelopeInternal().getMaxY());
                         } else if (isCalledAs("getEPSG4326CentroidX")) {
-                            result = new DoubleValue(geometry.getCentroid().getX());
+                            result = new DoubleValue(this, geometry.getCentroid().getX());
                         } else if (isCalledAs("getEPSG4326CentroidY")) {
-                            result = new DoubleValue(geometry.getCentroid().getY());
+                            result = new DoubleValue(this, geometry.getCentroid().getY());
                         } else if (isCalledAs("getEPSG4326Area")) {
-                            result = new DoubleValue(geometry.getArea());
+                            result = new DoubleValue(this, geometry.getArea());
                         }
                     } else if (isCalledAs("getWKT")) {
-                        result = new StringValue(wktWriter.write(geometry));
+                        result = new StringValue(this, wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
                         byte data[] = wkbWriter.write(geometry);
-                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data));
+                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data), this);
                     } else if (isCalledAs("getMinX")) {
-                        result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+                        result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
                     } else if (isCalledAs("getMaxX")) {
-                        result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+                        result = new DoubleValue(this, geometry.getEnvelopeInternal().getMaxX());
                     } else if (isCalledAs("getMinY")) {
-                        result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+                        result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinY());
                     } else if (isCalledAs("getMaxY")) {
-                        result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+                        result = new DoubleValue(this, geometry.getEnvelopeInternal().getMaxY());
                     } else if (isCalledAs("getCentroidX")) {
-                        result = new DoubleValue(geometry.getCentroid().getX());
+                        result = new DoubleValue(this, geometry.getCentroid().getX());
                     } else if (isCalledAs("getCentroidY")) {
-                        result = new DoubleValue(geometry.getCentroid().getY());
+                        result = new DoubleValue(this, geometry.getCentroid().getY());
                     } else if (isCalledAs("getArea")) {
-                        result = new DoubleValue(geometry.getArea());
+                        result = new DoubleValue(this, geometry.getArea());
                     } else if (isCalledAs("getSRS")) {
-                        result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
+                        result = new StringValue(this, ((Element)geometryNode).getAttribute("srsName"));
                     } else if (isCalledAs("getGeometryType")) {
-                        result = new StringValue(geometry.getGeometryType());
+                        result = new StringValue(this, geometry.getGeometryType());
                     } else if (isCalledAs("isClosed")) {
-                        result = new BooleanValue(!geometry.isEmpty());
+                        result = new BooleanValue(this, !geometry.isEmpty());
                     } else if (isCalledAs("isSimple")) {
-                        result = new BooleanValue(geometry.isSimple());
+                        result = new BooleanValue(this, geometry.isSimple());
                     } else if (isCalledAs("isValid")) {
-                        result = new BooleanValue(geometry.isValid());
+                        result = new BooleanValue(this, geometry.isValid());
                     } else {
                         logger.error("Unknown spatial property: {}", getName().getLocalPart());
-                        throw new XPathException("Unknown spatial property: " + getName().getLocalPart());
+                        throw new XPathException(this, "Unknown spatial property: " + getName().getLocalPart());
                     }
                 }
             } catch (SpatialIndexException e) {
                 logger.error(e.getMessage());
-                throw new XPathException(e);
+                throw new XPathException(this, e);
             }
         }
         return result;

@@ -32,6 +32,7 @@ import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -222,7 +223,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         xr.setFeature(FEATURE_SECURE_PROCESSING, true);
 
         // we have to use eXist-db's SAXAdapter, otherwise un-referenced namespaces as used by xpath assertions may be stripped by Xerces.
-        final SAXAdapter adapter = new SAXAdapter();
+        final SAXAdapter adapter = new SAXAdapter((Expression) null);
         xr.setContentHandler(adapter);
         xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
         xr.parse(src);

@@ -78,7 +78,7 @@ public class UMaskFunction extends BasicFunction {
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getCurrentSubject();
         if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-            throw new XPathException("You must be an authenticated user");
+            throw new XPathException(this, "You must be an authenticated user");
         }
         
         final String username = args[0].getStringValue();
@@ -90,14 +90,14 @@ public class UMaskFunction extends BasicFunction {
             setUMask(broker, currentUser, username, umask);
             return Sequence.EMPTY_SEQUENCE;
         } else {
-            throw new XPathException("Unknown function");
+            throw new XPathException(this, "Unknown function");
         }
     }
     
     private IntegerValue getUMask(final DBBroker broker, final String username) {
        final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
        final Account account = securityManager.getAccount(username);
-       return new IntegerValue(account.getUserMask());
+       return new IntegerValue(this, account.getUserMask());
     }
     
     private void setUMask(final DBBroker broker, final Subject currentUser, final String username, final int umask) throws XPathException {

@@ -234,23 +234,23 @@ public class MapFunction extends BasicFunction {
 
     private Sequence entry(final Sequence[] args) throws XPathException {
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
-        return new SingleKeyMapType(this.context, null, key, args[1]);
+        return new SingleKeyMapType(this, this.context, null, key, args[1]);
     }
 
     private Sequence size(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return new IntegerValue(map.size(), Type.INTEGER);
+        return new IntegerValue(this, map.size(), Type.INTEGER);
     }
 
     private Sequence merge(final Sequence[] args) throws XPathException {
         if (args[0].getItemCount() == 0) {
             // map:merge(())
-            return new MapType(this.context);
+            return new MapType(this, this.context);
         }
 
         final MergeDuplicates mergeDuplicates;
         if (args.length == 2) {
-            final Sequence mapValue = ((MapType) args[1]).get(new StringValue("duplicates"));
+            final Sequence mapValue = ((MapType) args[1]).get(new StringValue(this, "duplicates"));
             if (mapValue != null) {
                 mergeDuplicates = MergeDuplicates.fromDuplicatesValue(mapValue.getStringValue());
                 if (mergeDuplicates == null) {
@@ -355,7 +355,7 @@ public class MapFunction extends BasicFunction {
     private ArrayType find(final Sequence[] args) {
 
         final AtomicValue key = (AtomicValue) args[1].itemAt(0);
-        final ArrayType result = new ArrayType(context, Collections.emptyList());
+        final ArrayType result = new ArrayType(this, context, Collections.emptyList());
         MapFunction.findRec(result, key, args[0]);
         return result;
     }

@@ -82,16 +82,16 @@ public class AccountStatusFunction extends BasicFunction {
         
         if(isCalledAs(qnIsAccountEnabled.getLocalPart())) {
             if(!currentUser.hasDbaRole() && !currentUser.getName().equals(username)) {
-                throw new XPathException("You must be a DBA or be enquiring about your own account!");
+                throw new XPathException(this, "You must be a DBA or be enquiring about your own account!");
             }
             final Account account = securityManager.getAccount(username);
 
             return (account==null) ? BooleanValue.FALSE
-                                   : new BooleanValue(account.isEnabled());
+                                   : new BooleanValue(this, account.isEnabled());
 
         } else if(isCalledAs(qnSetAccountEnabled.getLocalPart())) {
             if(!currentUser.hasDbaRole()) {
-                throw new XPathException("You must be a DBA to change the status of an account!");
+                throw new XPathException(this, "You must be a DBA to change the status of an account!");
             }
             
             final boolean enable = args[1].effectiveBooleanValue();
@@ -103,10 +103,10 @@ public class AccountStatusFunction extends BasicFunction {
                 account.save(broker);
                 return Sequence.EMPTY_SEQUENCE;
             } catch(final ConfigurationException | PermissionDeniedException ce) {
-                throw new XPathException(ce.getMessage(), ce);
+                throw new XPathException(this, ce.getMessage(), ce);
             }
         } else {
-            throw new XPathException("Unknown function");
+            throw new XPathException(this, "Unknown function");
         }
     }
     

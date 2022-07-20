@@ -131,11 +131,11 @@ public class FunNormalizeUnicode extends Function {
 				{newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();}
 			//TODO : handle the "FULLY-NORMALIZED" string...
 			if (newNormalizationForm.isEmpty())
-				{result =  new StringValue(s1.getStringValue());}
+				{result =  new StringValue(this, s1.getStringValue());}
 			else {
                 try {
                     Normalizer.Form form = Normalizer.Form.valueOf(newNormalizationForm);
-                    result = new StringValue(Normalizer.normalize(s1.getStringValue(), form));
+                    result = new StringValue(this, Normalizer.normalize(s1.getStringValue(), form));
                 } catch (IllegalArgumentException e) {
                     throw new XPathException(this, ErrorCodes.FOCH0003, "Unknown normalization form: " +
                             newNormalizationForm);

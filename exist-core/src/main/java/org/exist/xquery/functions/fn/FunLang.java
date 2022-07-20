@@ -144,7 +144,7 @@ public class FunLang extends Function {
 				    include = lang.equalsIgnoreCase(langValue);
 				}
 			    }
-			    result = new BooleanValue(include);
+			    result = new BooleanValue(this, include);
 			}
             else 
             	{throw new XPathException(this, ErrorCodes.XPTY0004, "Sequence returned more than one item !");}

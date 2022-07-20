@@ -99,7 +99,7 @@ public class EXistResult implements Result {
             final Path tempFile = temporaryFileManager.getTemporaryFile();
             Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file)));
+            result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file), null));
         } catch(final XPathException | IOException xpe) {
             throw new HttpClientException("Unable to add binary value to result:" + xpe.getMessage(), xpe);
         } finally {
@@ -114,7 +114,7 @@ public class EXistResult implements Result {
     @Override
     public void add(final Source src) throws HttpClientException {
         try {
-            final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src);
+            final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src, null);
             result.add(nodeValue);
         } catch(final SAXException | IOException saxe) {
             throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);

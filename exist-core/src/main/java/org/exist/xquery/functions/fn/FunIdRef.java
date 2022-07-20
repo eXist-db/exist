@@ -182,7 +182,7 @@ public class FunIdRef extends Function {
 	}
 
 	private void getIdRef(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.IDREF));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(this, id, Type.IDREF));
 
 		for (final NodeProxy n : attribs) {
             n.setNodeType(Node.ATTRIBUTE_NODE);

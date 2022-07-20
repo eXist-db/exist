@@ -413,7 +413,7 @@ public class RemoteXMLResource
         final Object[] request = (Object[]) collection.execute("getDocType", params);
         final DocumentType result;
         if (!"".equals(request[0])) {
-            result = new DocumentTypeImpl((String) request[0], (String) request[1], (String) request[2]);
+            result = new DocumentTypeImpl(null, (String) request[0], (String) request[1], (String) request[2]);
         } else {
             result = null;
         }
