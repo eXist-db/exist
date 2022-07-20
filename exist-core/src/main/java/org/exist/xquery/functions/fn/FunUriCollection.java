@@ -28,6 +28,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
+import org.exist.util.PatternFactory;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
@@ -44,10 +45,29 @@ public class FunUriCollection extends BasicFunction {
 
     private static final String FN_NAME = "uri-collection";
     private static final String FN_DESCRIPTION = "Returns a sequence of xs:anyURI values that represent the URIs in a URI collection.";
-    private static final FunctionReturnSequenceType FN_RETURN = returnsOptMany(Type.STRING,
+    private static final FunctionReturnSequenceType FN_RETURN = returnsOptMany(Type.ANY_URI,
             "the default URI collection, if $arg is not specified or is an empty sequence, " +
                     "or the sequence of URIs that correspond to the supplied URI");
-    private static final FunctionParameterSequenceType ARG = optParam("arg", Type.STRING, "The base-URI property from the static context, or an empty sequence");
+    private static final FunctionParameterSequenceType ARG = optParam("arg", Type.STRING,
+            "An xs:string identifying a URI Collection. " +
+                    "The argument is interpreted as either an absolute xs:anyURI, or a relative xs:anyURI resolved " +
+                    "against the base-URI property from the static context. In eXist-db this function consults the " +
+                    "query hierarchy of the database. Query String parameters may be provided to " +
+                    "control the URIs returned by this function. " +
+                    "The parameter `match` may be used to provide a Regular Expression against which the result " +
+                    "sequence of URIs are filtered. " +
+                    "The parameter `content-type` may be used to determine the Internet Media Type (or generally " +
+                    "whether XML, Binary, and/or (Sub) Collection) URIs that are returned in the result sequence; " +
+                    "the special values: 'application/vnd.existdb.collection' includes (Sub) Collections, " +
+                    "'application/vnd.existdb.document' includes any document, " +
+                    "'application/vnd.existdb.document+xml' includes only XML documents, and " +
+                    "'application/vnd.existdb.document+binary' includes only Binary documents. By default, " +
+                    "`content-type=application/vnd.existdb.collection,application/vnd.existdb.document` " +
+                    "(i.e. all Collections and Documents). " +
+                    "The parameter `stable` may be used to determine if the function is deterministic. " +
+                    "By default `stable=yes` to ensure that the same results are returned by each call within the same " +
+                    "query."
+    );
     public static final FunctionSignature[] FS_URI_COLLECTION_SIGNATURES = functionSignatures(
             FN_NAME,
             FN_DESCRIPTION,
@@ -87,13 +107,9 @@ public class FunUriCollection extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final Sequence result;
         if (args.length == 0 || args[0].isEmpty() || args[0].toString().isEmpty()) {
-            if (XQueryContext.DEFAULT_URI_COLLECTION != null && XQueryContext.DEFAULT_URI_COLLECTION.length() > 0) {
-                result = new StringValue(XQueryContext.DEFAULT_URI_COLLECTION);
-            } else {
-                throw new XPathException(this, ErrorCodes.FODC0002, "No URI is supplied and default resource collection is absent.");
-            }
+            result = new AnyURIValue(XmldbURI.ROOT_COLLECTION);
         } else {
-            final List<String> resultUris = new LinkedList<>();
+            final List<String> resultUris = new ArrayList<>();
 
             final String uriWithQueryString = args[0].toString();
             final int queryStringIndex = uriWithQueryString.indexOf('?');
@@ -127,45 +143,53 @@ public class FunUriCollection extends BasicFunction {
                                 queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_DOCUMENT_XML));
 
                 try (final Collection collection = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
-                    if (binaryUrisIncluded || xmlUrisIncluded) {
-                        final Iterator<DocumentImpl> documentIterator = collection.iterator(context.getBroker());
-                        while (documentIterator.hasNext()) {
-                            final DocumentImpl document = documentIterator.next();
-                            if ((xmlUrisIncluded && !(document instanceof BinaryDocument)) ||
-                                    (binaryUrisIncluded && document instanceof BinaryDocument)) {
-                                resultUris.add(document.getURI().toString());
+                    if (collection != null) {
+                        if (binaryUrisIncluded || xmlUrisIncluded) {
+                            final Iterator<DocumentImpl> documentIterator = collection.iterator(context.getBroker());
+                            while (documentIterator.hasNext()) {
+                                final DocumentImpl document = documentIterator.next();
+                                if ((xmlUrisIncluded && !(document instanceof BinaryDocument)) ||
+                                        (binaryUrisIncluded && document instanceof BinaryDocument)) {
+                                    resultUris.add(document.getURI().toString());
+                                }
                             }
                         }
-                    }
 
-                    if (subcollectionUrisIncluded) {
-                        final Iterator<XmldbURI> collectionsIterator = collection.collectionIterator(context.getBroker());
-                        while (collectionsIterator.hasNext()) {
-                            resultUris.add(uri.append(collectionsIterator.next()).toString());
+                        if (subcollectionUrisIncluded) {
+                            final Iterator<XmldbURI> collectionsIterator = collection.collectionIterator(context.getBroker());
+                            while (collectionsIterator.hasNext()) {
+                                resultUris.add(uri.append(collectionsIterator.next()).toString());
+                            }
                         }
+                    } else {
+                        throw new XPathException(this, ErrorCodes.FODC0002, String.format("Collection \"%s\" not found.", uri));
                     }
                 } catch (final LockException | PermissionDeniedException e) {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
                 }
 
                 if (queryStringMap.containsKey(KEY_MATCH) && queryStringMap.get(KEY_MATCH).length() > 0) {
-                    final Pattern pattern = Pattern.compile(queryStringMap.get(KEY_MATCH));
+                    final Pattern pattern = PatternFactory.getInstance().getPattern(queryStringMap.get(KEY_MATCH));
                     final List<String> matchedResultUris = resultUris.stream().filter(resultUri -> pattern.matcher(resultUri).find()).collect(Collectors.toList());
                     if (matchedResultUris.isEmpty()) {
                         result = Sequence.EMPTY_SEQUENCE;
                     } else {
                         result = new ValueSequence();
                         for (String resultUri : matchedResultUris) {
-                            result.add(new StringValue(resultUri));
+                            result.add(new AnyURIValue(resultUri));
                         }
                     }
                 } else {
                     result = new ValueSequence();
                     for (String resultUri : resultUris) {
-                        result.add(new StringValue(resultUri));
+                        result.add(new AnyURIValue(resultUri));
                     }
                 }
-                context.getCachedUriCollectionResults().put(uriWithoutStableQueryString, result);
+
+                // only store the result if they were not previously stored - otherwise we loose stability!
+                if (!context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
+                    context.getCachedUriCollectionResults().put(uriWithoutStableQueryString, result);
+                }
             }
         }
 

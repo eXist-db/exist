@@ -144,8 +144,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String HTTP_REQ_ATTR_USER = "xquery.user";
     public static final String HTTP_REQ_ATTR_PASS = "xquery.password";
 
-    public static final String DEFAULT_URI_COLLECTION = "/db";
-
     // Static namespace/prefix mappings
     protected Map<String, String> staticNamespaces = new HashMap<>();
 
@@ -1406,6 +1404,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         fragmentStack = new ArrayDeque<>();
         callStack.clear();
         protectedDocuments = null;
+
+        cachedUriCollectionResults.clear();
 
         if (!keepGlobals) {
             globalVariables.clear();

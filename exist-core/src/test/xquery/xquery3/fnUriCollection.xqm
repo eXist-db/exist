@@ -124,3 +124,10 @@ function fnuc:not-stable() {
     let $a  := xmldb:store("/db/test-collection", "test.xml", document { <container><a/><b/></container>})
     return $c2
 };
+
+declare
+    %test:assertError("FODC0002")
+function fnuc:non-existent-resource() {
+    fn:uri-collection("thisfileshouldnotexists")
+};
+
