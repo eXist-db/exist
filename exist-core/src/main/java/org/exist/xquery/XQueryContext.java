@@ -1711,7 +1711,13 @@ public class XQueryContext implements BinaryValueManager, Context {
     Module initBuiltInModule(final String namespaceURI, final String moduleClassName) {
         try {
             // lookup the class
-            final ClassLoader existClassLoader = getBroker().getBrokerPool().getClassLoader();
+			final ClassLoader existClassLoader;
+            if (getBroker() != null) {
+                existClassLoader = getBroker().getBrokerPool().getClassLoader();
+            } else {
+                existClassLoader = Thread.currentThread().getContextClassLoader();
+            }
+
             final Class<?> mClass = Class.forName(moduleClassName, false, existClassLoader);
 
             if (!(Module.class.isAssignableFrom(mClass))) {
@@ -1720,7 +1726,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             // INOTE: expathrepo
             final Module module = instantiateModule(namespaceURI, (Class<Module>) mClass,
-                    (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+                    getConfiguration() != null ? (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS) : Collections.emptyMap());
             if (LOG.isDebugEnabled()) {
                 LOG.debug("module {} loaded successfully.", module.getNamespaceURI());
             }
