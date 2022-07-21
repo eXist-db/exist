@@ -70,6 +70,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      *
      * @return  the expression from which this type derives
      */
+    @Override
     public Expression getExpression() {
         return expression;
     }

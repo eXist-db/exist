@@ -25,13 +25,10 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.TextImpl;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
 
 /**
  * Represents an enclosed expression <code>{expr}</code> inside element
