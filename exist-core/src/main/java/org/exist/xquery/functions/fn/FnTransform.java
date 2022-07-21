@@ -211,7 +211,6 @@ public class FnTransform extends BasicFunction {
 
         final String hash = Tuple(locationHash, paramHash).toString();
 
-        System.err.println("HASH : " + hash);
         return hash;
     }
 
@@ -227,9 +226,7 @@ public class FnTransform extends BasicFunction {
                 final Holder<XPathException> compileException = new Holder<>();
                 final XsltExecutable xsltExecutable;
                 if (options.shouldCache.orElse(BooleanValue.TRUE).getValue()) {
-                    System.err.println("CACHE GET");
                     xsltExecutable = FnTransform.XSLT_EXECUTABLE_CACHE.get(executableHash(options), key -> {
-                        System.err.println("CACHE CREATE ENTRY");
                         try {
                             return compileExecutable(options);
                         } catch (final XPathException e) {
@@ -238,7 +235,6 @@ public class FnTransform extends BasicFunction {
                         }
                     });
                 } else {
-                    System.err.println("CACHE EXPLICITLY OFF");
                     xsltExecutable = compileExecutable(options);
                 }
 
@@ -544,12 +540,9 @@ public class FnTransform extends BasicFunction {
 
         final URI uri = URI.create(stylesheetLocation);
         if (uri.isAbsolute()) {
-            System.err.println("resolveStylesheetLocation() absolute: " + stylesheetLocation);
             return resolvePossibleStylesheetLocation(stylesheetLocation);
         } else {
-            System.err.println("resolveStylesheetLocation() relative: " + stylesheetLocation);
             final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
-            System.err.println("resolveStylesheetLocation() resolved: " + resolved);
             return resolvePossibleStylesheetLocation(resolved.getStringValue());
         }
     }
