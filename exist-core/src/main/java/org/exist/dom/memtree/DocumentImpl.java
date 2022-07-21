@@ -701,18 +701,35 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
     }
 
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id  the ID of the node to select
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
     public NodeImpl selectById(final String id) {
         return selectById(id, false);
     }
 
-    public NodeImpl selectById(final String id, boolean typeConsidered) {
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id              the ID of the node to select
+     * @param   typeConsidered  if true, this method should consider node
+     *                          type attributes (i.e. <code>xsi:type="xs:ID"</code>);
+     *                          if false, this method should not consider
+     *                          node type attributes
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
+    public NodeImpl selectById(final String id, final boolean typeConsidered) {
         if(size == 1) {
             return null;
         }
         expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
-        if ( // (rootConsidered && Objects.equals(root.getAttributeValue("xsi:type"), "xs:ID")) ||
-                hasIdAttribute(root.getNodeNumber(), id)) {
+        if (hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
         }
         final int treeLevel = this.treeLevel[root.getNodeNumber()];
