@@ -133,7 +133,7 @@ public class WindowExpr extends BindingExpression {
 
         // Save the local variable stack
 //        final LocalVariable mark = context.markLocalVariables(false);
-        final Sequence resultSequence = new ValueSequence(unordered);
+        Sequence resultSequence = new ValueSequence(unordered);
         try {
             in = inputSequence.eval(contextSequence, contextItem);
 
@@ -307,6 +307,10 @@ public class WindowExpr extends BindingExpression {
 //        }
         setActualReturnType(resultSequence.getItemType());
 
+        if (callPostEval()) {
+            resultSequence = postEval(resultSequence);
+        }
+
         context.expressionEnd(this);
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", resultSequence);
@@ -354,6 +358,22 @@ public class WindowExpr extends BindingExpression {
             // restore the local variable stack
             context.popLocalVariables(mark, resultSequence);
         }
+    }
+
+    private boolean callPostEval() {
+        FLWORClause prev = getPreviousClause();
+        while (prev != null) {
+            switch (prev.getType()) {
+                case LET:
+                case FOR:
+                    return false;
+                case ORDERBY:
+                case GROUPBY:
+                    return true;
+            }
+            prev = prev.getPreviousClause();
+        }
+        return true;
     }
 
     @Override
