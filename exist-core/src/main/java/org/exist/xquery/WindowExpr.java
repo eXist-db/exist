@@ -156,11 +156,11 @@ public class WindowExpr extends BindingExpression {
 
             LocalVariable windowStartMark = null;
             WindowConditionVariables windowStartConditionVariables = null;
-            Item startPreviousItem = null;
 
             LocalVariable windowEndMark = null;
             WindowConditionVariables windowEndConditionVariables = null;
-            Item endPreviousItem = null;
+
+            Item previousItem = null;
 
             final int inCount = in.getItemCount();
             for (int i = 0; i < inCount; i++) {
@@ -181,7 +181,7 @@ public class WindowExpr extends BindingExpression {
 
                     // Declare Window Start Condition variables
                     windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
-                    setWindowConditionVariables(windowStartConditionVariables, currentItem, i, startPreviousItem, nextItem);
+                    setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
 
                     // check if the start-when condition is true
                     final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
@@ -191,9 +191,6 @@ public class WindowExpr extends BindingExpression {
                         window = new ValueSequence(false);
                         windowStartIdx = i;
 
-                    } else {
-                        // remember the start-previous-item
-                        startPreviousItem = currentItem;
                     }
                 }
 
@@ -210,7 +207,7 @@ public class WindowExpr extends BindingExpression {
 
                         windowEndConditionVariables = declareWindowConditionVariables(false, windowEndCondition);
                         if (windowEndConditionVariables != null) {
-                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, endPreviousItem, nextItem);
+                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, previousItem, nextItem);
                         }
                     }
 
@@ -244,14 +241,11 @@ public class WindowExpr extends BindingExpression {
                                 windowStartMark = null;
                             }
                             window = null;
-                            startPreviousItem = null;
-                            endPreviousItem = null;
                         }
-                    } else {
-                        // remember the end-previous-item
-                        endPreviousItem = currentItem;
                     }
                 }
+
+                previousItem = currentItem;
             }
 
             if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
@@ -275,8 +269,6 @@ public class WindowExpr extends BindingExpression {
                     windowStartMark = null;
 
                     window = null;
-                    startPreviousItem = null;
-                    endPreviousItem = null;
                 }
             }
 
