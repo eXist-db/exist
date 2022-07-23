@@ -82,8 +82,10 @@ public class WindowExpr extends BindingExpression {
 
             final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
 
-            // TODO(AR) likely this check has to be moved into the eval stage, and the actual values selected for the Window need to have their types checked against the `windowVarType` instead
-            if (!Type.subTypeOf(inputSequence.returnsType(), windowVarType.getPrimaryType())) {
+            // NOTE: we don't know what the Window will select for the WindowVar at this stage, so we can only do a check if the types are explicitly known at this point
+            final int inReturnType = inputSequence.returnsType();
+            if (!(inReturnType == Type.ITEM && windowVarType.getPrimaryType() != Type.ITEM)
+                    && !Type.subTypeOf(inReturnType, windowVarType.getPrimaryType())) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Window variable expects type: " + windowVarType + ", but window binding sequence is of type: " + Type.getTypeName(inputSequence.returnsType()) + inputSequence.getCardinality().toXQueryCardinalityString());
             }
 
@@ -326,9 +328,17 @@ public class WindowExpr extends BindingExpression {
         final LocalVariable mark = context.markLocalVariables(false);
 
         try {
+
+            // check that the type of the window binding var can accept the window data
+            final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
+            final SequenceType windowDataType = new SequenceType(window.getItemType(), window.getCardinality());
+            if (!Type.subTypeOf(windowDataType.getPrimaryType(), windowVarType.getPrimaryType())
+                    || !windowDataType.getCardinality().isSubCardinalityOrEqualOf(windowVarType.getCardinality())) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Window variable expects type: " + windowVarType + ", but window binding sequence is of type: " + windowDataType);
+            }
+
             // Declare the Window variable
             final LocalVariable windowVar = createVariable(varName);
-            final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
             windowVar.setSequenceType(windowVarType);
             context.declareVariableBinding(windowVar);
 
