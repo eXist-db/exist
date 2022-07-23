@@ -155,16 +155,21 @@ public class WindowExpr extends BindingExpression {
             LocalVariable windowStartMark = null;
             WindowConditionVariables windowStartConditionVariables = null;
             Item startPreviousItem = null;
-            Item startNextItem = null;
 
             LocalVariable windowEndMark = null;
             WindowConditionVariables windowEndConditionVariables = null;
             Item endPreviousItem = null;
-            Item endNextItem = null; //TODO(AR) this is currently unset and needs to be implemented
 
-            for (int i = 0; i < in.getItemCount(); i++) {
+            final int inCount = in.getItemCount();
+            for (int i = 0; i < inCount; i++) {
 
                 final Item currentItem = in.itemAt(i);
+                final Item nextItem;
+                if (i + 1 <= inCount - 1) {
+                    nextItem = in.itemAt(i + 1);
+                } else {
+                    nextItem = null;
+                }
 
                 // if we have NOT started, check if the start-when condition is true
                 if (window == null) {
@@ -174,7 +179,7 @@ public class WindowExpr extends BindingExpression {
 
                     // Declare Window Start Condition variables
                     windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
-                    setWindowConditionVariables(windowStartConditionVariables, currentItem, i, startPreviousItem, startNextItem);
+                    setWindowConditionVariables(windowStartConditionVariables, currentItem, i, startPreviousItem, nextItem);
 
                     // check if the start-when condition is true
                     final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
@@ -196,11 +201,6 @@ public class WindowExpr extends BindingExpression {
                     // add the currentItem to the Window
                     window.add(currentItem);
 
-                    // remember the start-next-item
-                    if (window.getItemCount() == 2) {
-                        startNextItem = currentItem;
-                    }
-
                     // Declare Window End Condition variables)
                     if (windowEndCondition != null) {
                         // Save the local variable stack
@@ -208,7 +208,7 @@ public class WindowExpr extends BindingExpression {
 
                         windowEndConditionVariables = declareWindowConditionVariables(false, windowEndCondition);
                         if (windowEndConditionVariables != null) {
-                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, endPreviousItem, endNextItem);
+                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, endPreviousItem, nextItem);
                         }
                     }
 
@@ -222,8 +222,6 @@ public class WindowExpr extends BindingExpression {
                         endWhen = false;
                     }
                     if (endWhen) {
-
-                        // TODO(AR) end-next-item
 
                         if (window != null) {
                             // eval the return expression on the window binding
@@ -245,7 +243,6 @@ public class WindowExpr extends BindingExpression {
                             }
                             window = null;
                             startPreviousItem = null;
-                            startNextItem = null;
                             endPreviousItem = null;
                         }
                     } else {
@@ -274,6 +271,10 @@ public class WindowExpr extends BindingExpression {
                     windowStartConditionVariables.destroy(context, resultSequence);
                     windowStartConditionVariables = null;
                     windowStartMark = null;
+
+                    window = null;
+                    startPreviousItem = null;
+                    endPreviousItem = null;
                 }
             }
 
@@ -439,7 +440,7 @@ public class WindowExpr extends BindingExpression {
         return windowConditionVariable;
     }
 
-    private static void setWindowConditionVariables(final WindowConditionVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item startNextItem) {
+    private static void setWindowConditionVariables(final WindowConditionVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item nextItem) {
         // set the current-item
         if (windowConditionVariables.currentItem != null) {
             windowConditionVariables.currentItem.setValue(currentItem.toSequence());
@@ -457,7 +458,7 @@ public class WindowExpr extends BindingExpression {
 
         // set the next-item
         if (windowConditionVariables.nextItem != null) {
-            windowConditionVariables.nextItem.setValue(startNextItem != null ? startNextItem.toSequence() : Sequence.EMPTY_SEQUENCE);
+            windowConditionVariables.nextItem.setValue(nextItem != null ? nextItem.toSequence() : Sequence.EMPTY_SEQUENCE);
         }
     }
 
