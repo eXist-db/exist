@@ -222,12 +222,12 @@ public class SequenceType {
      */
     public void checkCardinality(Sequence seq) throws XPathException {
         if (!seq.isEmpty() && cardinality == Cardinality.EMPTY_SEQUENCE) {
-            throw new XPathException((Expression) null, "Empty sequence expected; got " + seq.getItemCount());
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0004, "Empty sequence expected; got " + seq.getItemCount());
         }
         if (seq.isEmpty() && cardinality.atLeastOne()) {
-            throw new XPathException((Expression) null, "Empty sequence is not allowed here");
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0004, "Empty sequence is not allowed here");
         } else if (seq.hasMany() && cardinality.atMostOne()) {
-            throw new XPathException((Expression) null, "Sequence with more than one item is not allowed here");
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0004, "Sequence with more than one item is not allowed here");
         }
     }
 
