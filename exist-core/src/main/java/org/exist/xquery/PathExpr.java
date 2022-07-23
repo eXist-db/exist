@@ -319,7 +319,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     }
                 }
 
-                if (!staticContext) {
+                if (!staticContext && (!(step instanceof VariableDeclaration))) {
                     currentContext = result;
                 }
             }
