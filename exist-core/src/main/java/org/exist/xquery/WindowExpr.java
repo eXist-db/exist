@@ -39,10 +39,10 @@ public class WindowExpr extends BindingExpression {
         SLIDING_WINDOW
     }
 
-    private final WindowCondition windowStartCondition;
-    private final @Nullable
-    WindowCondition windowEndCondition;
+    private boolean isOuterFor = true;
 
+    private final WindowCondition windowStartCondition;
+    private final @Nullable WindowCondition windowEndCondition;
     private final WindowType windowType;
 
     public WindowExpr(final XQueryContext context, final WindowType type, final WindowCondition windowStartCondition, @Nullable final WindowCondition windowEndCondition) {
@@ -129,7 +129,7 @@ public class WindowExpr extends BindingExpression {
 
         context.expressionStart(this);
 
-        final Sequence in;
+        Sequence in;
 
         // Save the local variable stack
 //        final LocalVariable mark = context.markLocalVariables(false);
@@ -149,6 +149,14 @@ public class WindowExpr extends BindingExpression {
 //                                ". Expected " + sequenceType.getCardinality().getHumanDescription() +
 //                                ", got " + in.getCardinality().getHumanDescription());
 //            }
+
+            // pre-eval the return expr if it is a FLWORClause and we are the outer for-loop
+            if (isOuterFor) {
+                if (returnExpr instanceof FLWORClause) {
+                    in = ((FLWORClause) returnExpr).preEval(in);
+                }
+            }
+
 
             // when `window` is not null, we have started
             Sequence window = null;
@@ -399,6 +407,13 @@ public class WindowExpr extends BindingExpression {
             // restore the local variable stack
             context.popLocalVariables(mark, resultSequence);
         }
+    }
+
+    @Override
+    public Sequence preEval(final Sequence seq) throws XPathException {
+        // if preEval gets called, we know we're inside another FOR
+        isOuterFor = false;
+        return super.preEval(seq);
     }
 
     private boolean callPostEval() {
