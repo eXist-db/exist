@@ -923,7 +923,6 @@ orderModifier
 groupByClause throws XPathException
 :
 	"group"! "by"! groupingSpecList
-    // "group"! toGroupVarRef "as"! groupVarBinding "by"! groupSpecList
     { #groupByClause= #([GROUP_BY, "group by"], #groupByClause); }
     ;
 
@@ -935,7 +934,7 @@ groupingSpecList throws XPathException
 groupingSpec throws XPathException
 { String groupKeyVarName; }
 :
-	DOLLAR! groupKeyVarName=varName! ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
+	DOLLAR! groupKeyVarName=varName! ( typeDeclaration )? ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
     { #groupingSpec = #(#[VARIABLE_BINDING, groupKeyVarName], #groupingSpec); }
     ;
 
