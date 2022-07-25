@@ -190,7 +190,6 @@ public class WindowExpr extends BindingExpression {
                         // signal we have started
                         window = new ValueSequence(false);
                         windowStartIdx = i;
-
                     }
                 }
 
@@ -253,7 +252,7 @@ public class WindowExpr extends BindingExpression {
                     } else {
                         endWhen = false;
                     }
-                    if (endWhen) {
+                    if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (!windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
 
                         if (window != null) {
                             // eval the return expression on the window binding
@@ -274,11 +273,20 @@ public class WindowExpr extends BindingExpression {
                                 windowStartMark = null;
                             }
                             window = null;
+
+                            if (windowType == WindowType.SLIDING_WINDOW) {
+                                // return to the start of the window, so that when we next come around the loop we start examining a new window immediately after the start of the previous window
+                                i = windowStartIdx;
+                            }
                         }
                     }
                 }
 
-                previousItem = currentItem;
+                if (windowType == WindowType.SLIDING_WINDOW && window == null && windowStartIdx > 0) {
+                    previousItem = in.itemAt(windowStartIdx);
+                } else {
+                    previousItem = currentItem;
+                }
             }
 
             if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
