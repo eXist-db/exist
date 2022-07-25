@@ -1862,7 +1862,7 @@ throws PermissionDeniedException, EXistException, XPathException
       #(
           gb:GROUP_BY
           {
-              ForLetClause clause= new ForLetClause();
+              ForLetClause clause = new ForLetClause();
               clause.ast = gb;
               clause.type = FLWORClause.ClauseType.GROUPBY;
               clause.groupSpecs = new ArrayList<GroupSpec>(4);
@@ -1871,9 +1871,15 @@ throws PermissionDeniedException, EXistException, XPathException
           (
               #(
                   groupVarName:VARIABLE_BINDING
-
+                  (
+                    #(
+                      "as"
+                      { clause.sequenceType = new SequenceType(); }
+                      sequenceType [clause.sequenceType]
+                    )
+                  )?
                   // optional := exprSingle
-                  { PathExpr groupSpecExpr= null; }
+                  { PathExpr groupSpecExpr = null; }
                   (
                       {
                           groupSpecExpr = new PathExpr(context);
@@ -1889,7 +1895,7 @@ throws PermissionDeniedException, EXistException, XPathException
                           throw new XPathException(groupVarName.getLine(), groupVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + groupVarName.getText());
                       }
 
-                      GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
+                      GroupSpec groupSpec = new GroupSpec(context, groupSpecExpr, groupKeyVar, clause.sequenceType);
                       clause.groupSpecs.add(groupSpec);
                   }
                   (
@@ -2040,11 +2046,11 @@ throws PermissionDeniedException, EXistException, XPathException
             bind.setInputSequence(clause.inputSequence);
             if (clause.type == FLWORClause.ClauseType.FOR) {
                  ((ForExpr) bind).setPositionalVariable(clause.posVar);
-                         }
-                } else if (clause.type == FLWORClause.ClauseType.GROUPBY ) {
-                    if (clause.groupSpecs != null) {
-                GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
-                int k= 0;
+						 }
+				} else if (clause.type == FLWORClause.ClauseType.GROUPBY) {
+				    if (clause.groupSpecs != null) {
+                GroupSpec specs[] = new GroupSpec[clause.groupSpecs.size()];
+                int k = 0;
                 for (GroupSpec groupSpec : clause.groupSpecs) {
                     specs[k++]= groupSpec;
                 }

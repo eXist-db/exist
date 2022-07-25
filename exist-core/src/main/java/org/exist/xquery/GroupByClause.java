@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 /**
  * Implements a "group by" clause inside a FLWOR.
  *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
  */
 public class GroupByClause extends AbstractFLWORClause {
@@ -89,7 +90,7 @@ public class GroupByClause extends AbstractFLWORClause {
         // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
         final List<AtomicValue> groupingKeys = new ArrayList<>();
-        for (GroupSpec spec: groupSpecs) {
+        for (final GroupSpec spec: groupSpecs) {
             final Sequence groupingSeq = spec.getGroupExpression().eval(null, null);
             if (groupingSeq.getItemCount() > 1) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable " + spec.getKeyVarName() + " " +
@@ -97,9 +98,17 @@ public class GroupByClause extends AbstractFLWORClause {
             }
             final AtomicValue groupingValue = groupingSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : groupingSeq.itemAt(0)
                     .atomize();
+
+            final SequenceType groupingVarType = spec.getKeyVarType() != null ? spec.getKeyVarType() : new SequenceType(Type.ANY_ATOMIC_TYPE, groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE);
+            final SequenceType groupingValueType = new SequenceType(groupingValue.getType(), groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE);
+            if (!Type.subTypeOf(groupingValueType.getPrimaryType(), groupingVarType.getPrimaryType())
+                    || !groupingValueType.getCardinality().isSubCardinalityOrEqualOf(groupingVarType.getCardinality())) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable expects type: " + groupingVarType + ", but pre-grouping tuple is of type: " + groupingValueType);
+            }
+
             if (!data.initialized) {
                 final LocalVariable groupingVar = new LocalVariable(spec.getKeyVarName());
-                groupingVar.setSequenceType(new SequenceType(Type.ANY_ATOMIC_TYPE, groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE));
+                groupingVar.setSequenceType(groupingVarType);
                 groupingVar.setStaticType(groupingValue.getType());
                 data.groupingVars.add(groupingVar);
             }
