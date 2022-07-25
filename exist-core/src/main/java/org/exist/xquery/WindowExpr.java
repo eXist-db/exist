@@ -197,10 +197,45 @@ public class WindowExpr extends BindingExpression {
                 if (window != null) {
                     // if we have started...
 
+                    // if there is no end-when condition and we are after the start-item, check if the start-when condition is true
+                    if (windowEndCondition == null && i > windowStartIdx) {
+                        // Save the local variable stack
+                        windowStartMark = context.markLocalVariables(false);
+
+                        // Declare Window Start Condition variables
+                        windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
+                        setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
+
+                        final boolean endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
+                        if (endWhen) {
+                            // eval the return expression on the window binding
+                            returnEvalWindowBinding(in, window, resultSequence);
+
+                            // reset the window
+                            if (windowEndMark != null) {
+                                context.popLocalVariables(windowEndMark, resultSequence);
+                                windowEndConditionVariables.destroy(context, resultSequence);
+                                windowEndConditionVariables = null;
+                                windowEndMark = null;
+
+                            }
+                            if (windowStartMark != null) {
+                                context.popLocalVariables(windowStartMark, resultSequence);
+                                windowStartConditionVariables.destroy(context, resultSequence);
+                                windowStartConditionVariables = null;
+                                windowStartMark = null;
+                            }
+
+                            // signal the start of a new window
+                            window = new ValueSequence(false);
+                            windowStartIdx = i;
+                        }
+                    }
+
                     // add the currentItem to the Window
                     window.add(currentItem);
 
-                    // Declare Window End Condition variables)
+                    // Declare Window End Condition variables
                     if (windowEndCondition != null) {
                         // Save the local variable stack
                         windowEndMark = context.markLocalVariables(false);
@@ -215,8 +250,6 @@ public class WindowExpr extends BindingExpression {
                     final boolean endWhen;
                     if (windowEndCondition != null) {
                         endWhen = windowEndCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                    } else if (i > windowStartIdx + 1) {
-                        endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
                     } else {
                         endWhen = false;
                     }
