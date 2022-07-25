@@ -46,7 +46,7 @@ public class GroupByClause extends AbstractFLWORClause {
      * in a separate object and push it to a stack, otherwise recursive calls
      * would overwrite data.
      */
-    private class GroupByData {
+    private static class GroupByData {
 
         private Map<List<AtomicValue>, Tuple> groupedMap = null;
         private Map<QName, LocalVariable> variables = null;
@@ -54,13 +54,13 @@ public class GroupByClause extends AbstractFLWORClause {
 
         private boolean initialized = false;
 
-        public GroupByData() {
+        public GroupByData(final boolean useDefaultCollator, final Comparator<List<AtomicValue>> keyComparator) {
             // check if we can use a hash map
-            if (usesDefaultCollator()) {
+            if (useDefaultCollator) {
                 groupedMap = new HashMap<>();
             } else {
                 // non-default collation: must use tree map
-                groupedMap = new TreeMap<>(GroupByClause.this::compareKeys);
+                groupedMap = new TreeMap<>(keyComparator);
             }
             variables = new HashMap<>();
             groupingVars = new ArrayList<>();
@@ -78,7 +78,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        stack.push(new GroupByData());
+        stack.push(new GroupByData(usesDefaultCollator(), this::compareKeys));
         return super.preEval(seq);
     }
 
@@ -103,7 +103,7 @@ public class GroupByClause extends AbstractFLWORClause {
                 groupingVar.setStaticType(groupingValue.getType());
                 data.groupingVars.add(groupingVar);
             }
-            groupingValues.add(groupingSeq);
+            groupingValues.add(groupingValue);
             groupingKeys.add(groupingValue);
         }
 
@@ -156,7 +156,7 @@ public class GroupByClause extends AbstractFLWORClause {
                             Sequence val = siter.next();
                             var.setValue(val);
                         } else {
-                            throw new XPathException(this, "Internal error: missing grouping value");
+                            throw new XPathException(this, ErrorCodes.XPTY0004, "Internal error: missing grouping value for variable: $" + var.getQName());
                         }
                     }
                     // set values of non-grouping variables
@@ -268,7 +268,7 @@ public class GroupByClause extends AbstractFLWORClause {
      * Compare keys using the collator given in the group spec. Used to
      * sort keys into the grouping map.
      */
-    private int compareKeys(List<AtomicValue> s1, List<AtomicValue> s2) {
+    private int compareKeys(final List<AtomicValue> s1, final List<AtomicValue> s2) {
         final int c1 = s1.size();
         final int c2 = s2.size();
         if (c1 == c2) {
