@@ -61,14 +61,6 @@ public class FunElementWithId extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-        }
-
         if (getArgumentCount() < 1) {
             throw new XPathException(this, ErrorCodes.XPST0017, "function element-with-id requires one argument");
         }
