@@ -26,7 +26,6 @@ import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 
