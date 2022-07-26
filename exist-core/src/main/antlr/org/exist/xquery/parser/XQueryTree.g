@@ -3720,7 +3720,7 @@ throws XPathException, PermissionDeniedException, EXistException
 		t:MAP
 		{
 			MapExpr expr = new MapExpr(context);
-            expr.setASTNode(mapConstr_AST_in);
+			expr.setASTNode(mapConstr_AST_in);
 			step = expr;
 		}
 		(

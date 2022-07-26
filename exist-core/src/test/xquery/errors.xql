@@ -363,7 +363,7 @@ function et:element-enclosed-of-array-function-partial() {
     try {
         element test { ['a'](?) }
     }
-    catch * {
+    catch err:XQTY0105 {
         exists($err:line-number) and
         $err:line-number > 0 and
         exists($err:column-number) and
