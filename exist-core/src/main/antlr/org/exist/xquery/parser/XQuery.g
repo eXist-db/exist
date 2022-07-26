@@ -941,7 +941,7 @@ groupingSpecList throws XPathException
 groupingSpec throws XPathException
 { String groupKeyVarName; }
 :
-	DOLLAR! groupKeyVarName=varName! ( typeDeclaration )? ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
+	DOLLAR! groupKeyVarName=varName! ( ( typeDeclaration )? COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
     { #groupingSpec = #(#[VARIABLE_BINDING, groupKeyVarName], #groupingSpec); }
     ;
 
