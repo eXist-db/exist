@@ -1871,21 +1871,23 @@ throws PermissionDeniedException, EXistException, XPathException
           (
               #(
                   groupVarName:VARIABLE_BINDING
-                  (
-                    #(
-                      "as"
-                      { clause.sequenceType = new SequenceType(); }
-                      sequenceType [clause.sequenceType]
-                    )
-                  )?
-                  // optional := exprSingle
                   { PathExpr groupSpecExpr = null; }
                   (
+                    (
+                      #(
+                        "as"
+                        { clause.sequenceType = new SequenceType(); }
+                        sequenceType [clause.sequenceType]
+                      )
+                    )?
+                    // optional := exprSingle
+                    (
                       {
                           groupSpecExpr = new PathExpr(context);
                           groupSpecExpr.setASTNode(expr_AST_in);
                       }
-                      step=expr [groupSpecExpr]
+                        step=expr [groupSpecExpr]
+                    )
                   )?
                   {
                       final QName groupKeyVar;
