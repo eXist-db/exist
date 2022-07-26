@@ -74,6 +74,12 @@ public interface Namespaces {
 	/** QName representing xml:space */
 	QName XML_SPACE_QNAME = new QName("space", XML_NS, "xml");
 	
+	/** QName representing xs:id */
+	QName XS_ID_QNAME = new QName("ID", XML_NS, "xs");
+
+	/** QName representing xsi:type */
+	QName XSI_TYPE_QNAME = new QName("type", XML_NS, "xsi");
+
 	String SOAP_ENVELOPE = "http://schemas.xmlsoap.org/soap/envelope/";
 
 	//SAXfeatures / properties : move toadedicated package

@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -706,21 +707,49 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
     }
 
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id  the ID of the node to select
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
     public NodeImpl selectById(final String id) {
+        return selectById(id, false);
+    }
+
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id              the ID of the node to select
+     * @param   typeConsidered  if true, this method should consider node
+     *                          type attributes (i.e. <code>xsi:type="xs:ID"</code>);
+     *                          if false, this method should not consider
+     *                          node type attributes
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
+    public NodeImpl selectById(final String id, final boolean typeConsidered) {
         if(size == 1) {
             return null;
         }
         expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
-        if(hasIdAttribute(root.getNodeNumber(), id)) {
+        if (hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
         }
         final int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode = root.getNodeNumber();
         while((++nextNode < document.size) && (document.treeLevel[nextNode] > treeLevel)) {
-            if((document.nodeKind[nextNode] == Node.ELEMENT_NODE) &&
-                hasIdAttribute(nextNode, id)) {
-                return getNode(nextNode);
+            if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+                if (hasIdAttribute(nextNode, id)) {
+                    return getNode(nextNode);
+                } else if (hasIdTypeAttribute(nextNode, id)) {
+                    return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
+                } else if (getNode(nextNode).getNodeName().equalsIgnoreCase("id") &&
+                        getNode(nextNode).getStringValue().equals(id)) {
+                    return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
+                }
             }
         }
         return null;
@@ -754,7 +783,25 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(-1 < attr) {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 if((document.attrType[attr] == AttrImpl.ATTR_ID_TYPE) &&
-                    id.equals(document.attrValue[attr])) {
+                        id.equals(document.attrValue[attr])) {
+                    return true;
+                } else if (document.attrName[attr].getLocalPart().equals("id") &&
+                           Objects.equals(document.attrValue[attr], id)) {
+                    return true;
+                }
+                ++attr;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasIdTypeAttribute(final int nodeNumber, final String id) {
+        int attr = document.alpha[nodeNumber];
+        if(-1 < attr) {
+            while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
+                if (document.attrName[attr].getStringValue().equals(Namespaces.XSI_TYPE_QNAME.getStringValue()) &&
+                        document.attrValue[attr].equals(Namespaces.XS_ID_QNAME.getStringValue()) &&
+                        document.getNode(nodeNumber).getStringValue().equals(id)) {
                     return true;
                 }
                 ++attr;
