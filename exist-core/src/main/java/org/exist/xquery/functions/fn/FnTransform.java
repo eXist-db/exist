@@ -23,7 +23,6 @@
 package org.exist.xquery.functions.fn;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import com.evolvedbinary.j8fu.tuple.Tuple3;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.lacuna.bifurcan.IEntry;
@@ -31,6 +30,7 @@ import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.s9api.*;
+import net.sf.saxon.serialize.SerializationProperties;
 import net.sf.saxon.trans.UncheckedXPathException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -42,15 +42,12 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NamespaceNode;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Holder;
-import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.DocUtils;
-import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
@@ -65,7 +62,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -81,7 +77,6 @@ import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.returnsOptMany;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 import static org.exist.xquery.functions.fn.FnTransform.Option.*;
-import static org.exist.xquery.functions.fn.FunSerialize.normalize;
 
 /**
  * Implementation of fn:transform.
@@ -256,18 +251,19 @@ public class FnTransform extends BasicFunction {
                     }
                 }
 
-                // TODO(AR) this is just for DOM results... need to handle other response types!
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder);
+                // The delivery mechanism
+                final SerializationProperties serializationProperties =
+                        SerializationParameters.getAsSerializationProperties(
+                                options.serializationParams.orElse(new MapType(context)),
+                                (code, message) -> new XPathException(FnTransform.this, code, message));
+                final Delivery delivery = new Delivery(options.deliveryFormat, serializationProperties);
 
                 // Record the secondary result documents generated
-                final Map<URI, MemTreeBuilder> resultDocuments = new HashMap<>();
+                final Map<URI, Delivery> resultDocuments = new HashMap<>();
                 xslt30Transformer.setResultDocumentHandler(resultDocumentURI -> {
-                    final MemTreeBuilder resultBuilder = new MemTreeBuilder(context);
-                    resultBuilder.startDocument();
-                    final DocumentBuilderReceiver resultBuilderReceiver = new DocumentBuilderReceiver(resultBuilder);
-                    resultDocuments.put(resultDocumentURI, resultBuilder);
-                    return new SAXDestination(resultBuilderReceiver);
+                    final Delivery resultDelivery = new Delivery(options.deliveryFormat, serializationProperties);
+                    resultDocuments.put(resultDocumentURI, resultDelivery);
+                    return resultDelivery.createDestination(xslt30Transformer, true);
                 });
 
                 if (options.globalContextItem.isPresent()) {
@@ -291,8 +287,7 @@ public class FnTransform extends BasicFunction {
                     xslt30Transformer.setGlobalContextItem(null);
                 }
 
-                final SAXDestination saxDestination = new SAXDestination(builderReceiver);
-                return new TemplateInvocation(options, sourceNode, saxDestination, xslt30Transformer, builder, resultDocuments).invoke();
+                return new TemplateInvocation(options, sourceNode, delivery, xslt30Transformer, resultDocuments).invoke();
 
             } catch (final SaxonApiException e) {
                 if (e.getErrorCode() != null) {
@@ -314,17 +309,17 @@ public class FnTransform extends BasicFunction {
 
         final Options options;
         Optional<Source> sourceNode;
-        final SAXDestination saxDestination;
+        final Delivery delivery;
+        final Destination destination;
         final Xslt30Transformer xslt30Transformer;
-        final Map<URI, MemTreeBuilder> resultDocuments;
-        final MemTreeBuilder resultBuilder;
+        final Map<URI, Delivery> resultDocuments;
 
-        TemplateInvocation(final Options options, final Optional<Source> sourceNode, final SAXDestination saxDestination, final Xslt30Transformer xslt30Transformer, final MemTreeBuilder resultBuilder, final Map<URI, MemTreeBuilder> resultDocuments) {
+        TemplateInvocation(final Options options, final Optional<Source> sourceNode, final Delivery delivery, final Xslt30Transformer xslt30Transformer, final Map<URI, Delivery> resultDocuments) throws XPathException {
             this.options = options;
             this.sourceNode = sourceNode;
-            this.saxDestination = saxDestination;
+            this.delivery = delivery;
+            this.destination = delivery.createDestination(xslt30Transformer, false);
             this.xslt30Transformer = xslt30Transformer;
-            this.resultBuilder = resultBuilder;
             this.resultDocuments = resultDocuments;
         }
 
@@ -340,8 +335,8 @@ public class FnTransform extends BasicFunction {
                 final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));
                 return makeResultMap(options, existValue, resultDocuments);
             } else {
-                xslt30Transformer.callFunction(qName, functionParams, saxDestination);
-                return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+                xslt30Transformer.callFunction(qName, functionParams, destination);
+                return makeResultMap(options, delivery.getDocument(), resultDocuments);
             }
         }
 
@@ -363,8 +358,8 @@ public class FnTransform extends BasicFunction {
             } else {
                 //TODO (AP) - The saxDestination conversion loses type information in some cases
                 //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
-                xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), saxDestination);
-                return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+                xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), destination);
+                return makeResultMap(options, delivery, resultDocuments);
             }
         }
 
@@ -378,21 +373,21 @@ public class FnTransform extends BasicFunction {
                         final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceIMS));
                         return makeResultMap(options, existValue, resultDocuments);
                     }
-                    xslt30Transformer.applyTemplates(sourceIMS, saxDestination);
+                    xslt30Transformer.applyTemplates(sourceIMS, destination);
                 } else {
                     final XdmValue selection = toSaxon.of(initialMatchSelection);
                     if (options.deliveryFormat == DeliveryFormat.RAW) {
                         final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
                         return makeResultMap(options, existValue, resultDocuments);
                     }
-                    xslt30Transformer.applyTemplates(selection, saxDestination);
+                    xslt30Transformer.applyTemplates(selection, destination);
                 }
             } else if (sourceNode.isPresent()) {
                 if (options.deliveryFormat == DeliveryFormat.RAW) {
                     final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
                     return makeResultMap(options, existValue, resultDocuments);
                 }
-                xslt30Transformer.applyTemplates(sourceNode.get(), saxDestination);
+                xslt30Transformer.applyTemplates(sourceNode.get(), destination);
             } else {
                 throw new XPathException(FnTransform.this,
                         ErrorCodes.FOXT0002,
@@ -401,7 +396,7 @@ public class FnTransform extends BasicFunction {
                                 INITIAL_TEMPLATE.name + " or " +
                                 INITIAL_FUNCTION.name + " is required.");
             }
-            return makeResultMap(options, resultBuilder.getDocument(), resultDocuments);
+            return makeResultMap(options, delivery, resultDocuments);
         }
 
         private MapType invoke() throws XPathException, SaxonApiException {
@@ -415,7 +410,56 @@ public class FnTransform extends BasicFunction {
         }
     }
 
-    private MapType makeResultMap(final Options options, final NodeValue outputDocument, final Map<URI, MemTreeBuilder> resultDocuments) throws XPathException {
+    private class Delivery {
+
+        final DeliveryFormat format;
+        final SerializationProperties serializationProperties;
+        MemTreeBuilder builder;
+        StringWriter stringWriter;
+
+        Delivery(final DeliveryFormat format, final SerializationProperties serializationProperties) {
+            this.format = format;
+            this.serializationProperties = serializationProperties;
+        }
+
+        final Destination createDestination(final Xslt30Transformer xslt30Transformer, final boolean forceCreation) {
+            switch (format) {
+                case DOCUMENT:
+                    if (!forceCreation) {
+                        this.builder = context.getDocumentBuilder();
+                    } else {
+                        this.builder = new MemTreeBuilder(context);
+                        this.builder.startDocument();
+                    }
+                    return new SAXDestination(new DocumentBuilderReceiver(builder));
+                case SERIALIZED:
+                    final Serializer serializer = xslt30Transformer.newSerializer();
+                    final SerializationProperties stylesheetProperties = serializer.getSerializationProperties();
+
+                    final SerializationProperties combinedProperties =
+                    SerializationParameters.combinePropertiesAndCharacterMaps(
+                                    stylesheetProperties,
+                                    serializationProperties);
+
+                    serializer.setOutputProperties(combinedProperties);
+                    stringWriter = new StringWriter();
+                    serializer.setOutputWriter(stringWriter);
+                    return serializer;
+                default:
+                    return null;
+            }
+        }
+
+        final String getSerializedString() {
+            return stringWriter.getBuffer().toString();
+        }
+
+        final DocumentImpl getDocument() {
+            return builder.getDocument();
+        }
+   }
+
+    private MapType makeResultMap(final Options options, final Delivery delivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
 
         final MapType outputMap = new MapType(context);
         final AtomicValue outputKey;
@@ -425,18 +469,18 @@ public class FnTransform extends BasicFunction {
             outputKey = new StringValue("output");
         }
 
-        final Sequence primaryValue = convertToDeliveryFormat(options, outputDocument);
+        final Sequence primaryValue = convertToDeliveryFormat(options, delivery);
         outputMap.add(outputKey, primaryValue);
 
-        for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
-            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
+        for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
+            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue());
             outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
         }
 
         return outputMap;
     }
 
-    private MapType makeResultMap(final Options options, final Sequence rawPrimaryOutput, final Map<URI, MemTreeBuilder> resultDocuments) throws XPathException {
+    private MapType makeResultMap(final Options options, final Sequence rawPrimaryOutput, final Map<URI, Delivery> resultDocuments) throws XPathException {
 
         final MapType outputMap = new MapType(context);
         final AtomicValue outputKey;
@@ -448,50 +492,24 @@ public class FnTransform extends BasicFunction {
 
         outputMap.add(outputKey, rawPrimaryOutput);
 
-        for (final Map.Entry<URI, MemTreeBuilder> resultDocument : resultDocuments.entrySet()) {
-            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue().getDocument());
+        for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
+            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue());
             outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
         }
 
         return outputMap;
     }
 
-    private Sequence convertToDeliveryFormat(final Options options, final NodeValue document) throws XPathException {
+    private Sequence convertToDeliveryFormat(final Options options, final Delivery delivery) throws XPathException {
 
         switch (options.deliveryFormat) {
             case SERIALIZED:
-                return serializeOutput(options.serializationParams, document);
+                return new StringValue(delivery.getSerializedString());
             case RAW:
-                return rawOutput(document);
+                return rawOutput(delivery.getDocument());
             case DOCUMENT:
             default:
-                return document;
-        }
-    }
-
-    /**
-     * If the output document is to be serialized, serialize it.
-     *
-     * @param serializationOptionsMap fromserialization parameters
-     * @param outputDocument the generated document to be serialized
-     * @return a {@link StringValue} which is the serialized value of the document
-     * @throws XPathException if serialization failed
-     */
-    private Sequence serializeOutput(final Optional<MapType> serializationOptionsMap, final NodeValue outputDocument) throws XPathException {
-        final Properties outputProperties = SerializerUtils.getSerializationOptions(this, serializationOptionsMap.orElse(new MapType(context)));
-        try(final StringWriter writer = new StringWriter()) {
-            final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
-
-            Sequence seq = outputDocument;
-            if (xqSerializer.normalize()) {
-                seq = normalize(this, context, seq);
-            }
-
-            xqSerializer.serialize(seq);
-            final String serialized = writer.toString().replaceAll("\"", "\\\"");
-            return new StringValue(serialized);
-        } catch (final IOException | SAXException e) {
-            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+                return delivery.getDocument();
         }
     }
 
