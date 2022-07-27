@@ -3389,6 +3389,10 @@ public class XQueryContext implements BinaryValueManager, Context {
         void cleanup(final XQueryContext context, final Predicate<Object> predicate);
     }
 
+    public Map<String, String> getStaticNamespaces() {
+        return staticNamespaces;
+    }
+
     @Override
     public void runCleanupTasks(final Predicate<Object> predicate) {
         for (final CleanupTask cleanupTask : cleanupTasks) {
