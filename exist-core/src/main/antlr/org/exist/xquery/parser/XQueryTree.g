@@ -3664,6 +3664,11 @@ throws PermissionDeniedException, EXistException, XPathException
                                           String nsPrefix = attrib.getQName().equals(XMLConstants.XMLNS_ATTRIBUTE) ?
                                                   "" : QName.extractLocalName(attrib.getQName());
                                           staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
+
+                                          if (context.getStaticNamespaces().containsKey(QName.extractLocalName(attrib.getQName())) &&
+                                                  !context.getStaticNamespaces().get(QName.extractLocalName(attrib.getQName())).equals(attrib.getLiteralValue())) {
+                                              throw new XPathException(attrib.getLine(), attrib.getColumn(), ErrorCodes.XUDY0023, "Conflicting namespace for prefix " + QName.extractLocalName(attrib.getQName()));
+                                          }
                                       } catch (final IllegalQNameException iqe) {
                                           throw new XPathException(attrib.getLine(), attrib.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + attrib.getQName());
                                       }
