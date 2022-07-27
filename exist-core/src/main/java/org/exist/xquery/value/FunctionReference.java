@@ -36,6 +36,9 @@ import java.util.List;
  */
 public class FunctionReference extends AtomicValue implements AutoCloseable {
 
+    /** the expression from which this type derives */
+    private Expression expression;
+
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
     protected final FunctionCall functionCall;
@@ -60,6 +63,25 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      */
     public FunctionSignature getSignature() {
         return functionCall.getSignature();
+    }
+
+    /**
+     * Gets the expression from which this type derives.
+     *
+     * @return  the expression from which this type derives
+     */
+    @Override
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /**
+     * Sets the expression from which this type derives.
+     *
+     * @param   expression  the expression to use
+     */
+    public void setExpression(final Expression expression) {
+        this.expression = expression;
     }
 
     /**

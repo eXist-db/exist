@@ -127,7 +127,7 @@ public class FunId extends Function {
                 contextSequence = node;
             } else if (contextSequence == null) {
                 logger.error("{} No context item specified", ErrorCodes.XPDY0002);
-                throw new XPathException(this, ErrorCodes.XPDY0002, "No context item specified");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "No context item specified");
            } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
                 logger.error("{} Context item is not a node", ErrorCodes.XPTY0004);
     			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);

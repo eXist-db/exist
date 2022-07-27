@@ -107,12 +107,23 @@ public class XMLDBModule extends AbstractInternalModule {
             new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class)
     };
 
+    private boolean allowAnyUri = false;
+
     static {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public XMLDBModule(Map<String, List<?>> parameters) {
+    public XMLDBModule(final Map<String, List<?>> parameters) {
         super(functions, parameters, true);
+
+        final List<String> allowAnyUriParameterList = (List<String>) getParameter("allowAnyUri");
+        if (allowAnyUriParameterList != null && !allowAnyUriParameterList.isEmpty()) {
+            final String strAllowAnyUri = allowAnyUriParameterList.get(0);
+            if (strAllowAnyUri != null) {
+                this.allowAnyUri = Boolean.parseBoolean(strAllowAnyUri);
+            }
+        }
+
     }
 
     @Override
@@ -133,6 +144,10 @@ public class XMLDBModule extends AbstractInternalModule {
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    public boolean isAllowAnyUri() {
+        return allowAnyUri;
     }
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {

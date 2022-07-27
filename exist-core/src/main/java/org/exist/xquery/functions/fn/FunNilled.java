@@ -22,24 +22,12 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.Namespaces;
-import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
+
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
  * Built-in function fn:nilled().
@@ -48,54 +36,66 @@ import org.w3c.dom.Node;
  */
 public class FunNilled extends BasicFunction {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("nilled", Function.BUILTIN_FUNCTION_NS),
-			"Returns an xs:boolean indicating whether the argument node is \"nilled\". " +
-			"If the argument is not an element node, returns the empty sequence. " +
-			"If the argument is the empty sequence, returns the empty sequence.",
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node") },
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "true if the argument node is \"nilled\""));
+	private static final String FUN_NAME = "nilled";
+	private static final FunctionReturnSequenceType RETURNS = FunctionDSL.returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the argument node is \"nilled\"");
 
-	public FunNilled(XQueryContext context) {
+	public static final FunctionSignature[] FUNCTION_SIGNATURES_NILLED = {
+
+			functionSignature(
+					FUN_NAME,
+					"Returns an xs:boolean indicating whether the argument node is \"nilled\". " +
+							"If the argument is not an element node, returns the empty sequence. " +
+							"If the argument is the empty sequence, returns the empty sequence.",
+					RETURNS,
+					param("node", Type.NODE, Cardinality.ZERO_OR_MORE, "node to test")),
+			functionSignature(
+					FUN_NAME,
+					"Returns an xs:boolean indicating whether the default (context) item is \"nilled\". " +
+							"If the context item is not an element node, returns the empty sequence. " +
+							"If the context item is the empty sequence, returns the empty sequence.",
+					RETURNS)
+	};
+
+	public FunNilled(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
 
-	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-        }
+	@Override
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-		Sequence result;
-		if (args[0].isEmpty()) {
-			result = Sequence.EMPTY_SEQUENCE;
-		} else {
-			final Item arg = args[0].itemAt(0);
-			if (!Type.subTypeOf(arg.getType(), Type.ELEMENT)) {
-				result = Sequence.EMPTY_SEQUENCE;
-			} else {
-				final Node n = ((NodeValue) arg).getNode();
-				if (n.hasAttributes()) {
-					final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
-					if (nilled != null) {
-						result = new BooleanValue(this, nilled.getNodeValue().equals("true"));
-					} else {
-						result = BooleanValue.FALSE;
-					}
-				} else {
-					result = BooleanValue.FALSE;
-				}
+		final Sequence item;
+		if (args.length == 0) {
+			if (contextSequence == null || contextSequence.isEmpty()) {
+				throw new XPathException(ErrorCodes.XPDY0002, "Context item is absent in call to nilled. ");
 			}
+			item = contextSequence;
+		} else {
+			item = args[0];
 		}
 
+		if (item == null || item.isEmpty()) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
 
-		if (context.getProfiler().isEnabled())
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result;           
+		if (!Type.subTypeOf(item.getItemType(), Type.NODE)) {
+			throw new XPathException(ErrorCodes.XPTY0004, "Type error in call to nilled. " + item + " type ( " + item.getItemType() + " ) is not a node type");
+		}
+
+		final Item arg = item.itemAt(0);
+		if (!Type.subTypeOf(arg.getType(), Type.ELEMENT)) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
+
+		// NOTE(AR) should only be used if the node has been validated against a Schema, which at this time eXist-db does not support.
+//		final Node n = ((NodeValue) arg).getNode();
+//		if (n.hasAttributes()) {
+//			final Node nilled = n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
+//			if (nilled != null) {
+//				return new BooleanValue(this, nilled.getNodeValue().equals("true"));
+//			}
+//		}
+
+		return BooleanValue.FALSE;
 		
 	}
 
