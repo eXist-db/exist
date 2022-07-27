@@ -120,7 +120,7 @@
         <xmlresolver.version>4.4.3</xmlresolver.version>
         <xmlunit.version>2.9.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <junit.vintage.version>5.8.2</junit.vintage.version>
         <easymock.version>4.3</easymock.version>
         <objenesis.version>3.2</objenesis.version>
