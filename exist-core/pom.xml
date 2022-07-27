@@ -638,6 +638,7 @@
                                 <exclude>src/test/resources/**/*.xar</exclude>
                                 <exclude>src/test/resources/**/*.bin</exclude>
                                 <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
+                                <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
 
                                 <!--
                                     Already under LGPL 2.1, but with a different Copyright
