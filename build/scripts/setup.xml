@@ -72,7 +72,7 @@
       </classpath>
     </taskdef>
     <fetch dest="${autostart-dir}" url="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
-        failonerror="true" maxtime="180">
+        failonerror="true" failonzeroextracted="true" maxtime="180">
       <patternset>
         <include name="**/*.xar"/>
       </patternset>

@@ -52,7 +52,8 @@
     <available file="${keystore.file}" property="key.store.present"/>
 
     <!-- additional set of ant tasks -->
-    <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist-1.0.jar"/>
+    <!-- NOTE: asocat jar comes from https://github.com/dizzzz/asocat -->
+    <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-1.1.0.jar"/>
 
     <path id="classpath.external">
         <fileset dir="${lib.core}">
