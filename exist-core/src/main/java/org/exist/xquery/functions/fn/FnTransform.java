@@ -29,6 +29,7 @@ import io.lacuna.bifurcan.IEntry;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
+import net.sf.saxon.functions.SystemProperty;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.serialize.SerializationProperties;
 import net.sf.saxon.trans.UncheckedXPathException;
@@ -82,6 +83,7 @@ import static org.exist.xquery.functions.fn.FnTransform.Option.*;
  * Implementation of fn:transform.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ * @author <a href="mailto:alan@evolvedbinary.com">Alan Paxton</a>
  */
 public class FnTransform extends BasicFunction {
 
@@ -163,6 +165,7 @@ public class FnTransform extends BasicFunction {
 
         try {
             options.resolvedStylesheetBaseURI.ifPresent(anyURIValue -> options.xsltSource._2.setSystemId(anyURIValue.getStringValue()));
+            FnTransform.ERROR_LISTENER.clear();
             return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
         } catch (final SaxonApiException e) {
             Throwable cause = e.getCause();
@@ -172,6 +175,10 @@ public class FnTransform extends BasicFunction {
                     throw (XPathException) cause;
                 }
                 cause = cause.getCause();
+            }
+            final Optional<TransformerException> compilerException = FnTransform.ERROR_LISTENER.getWorst();
+            if (compilerException.isPresent()) {
+                throw new XPathException(this, ErrorCodes.FOXT0003,compilerException.get());
             }
             //Wrap any other error
             throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
@@ -890,6 +897,19 @@ public class FnTransform extends BasicFunction {
 
     private static class ErrorListenerLog4jAdapter implements ErrorListener {
         private final Logger logger;
+        private Optional<TransformerException> lastError;
+        private Optional<TransformerException> lastFatal;
+
+        public void clear() {
+            lastError = Optional.empty();
+            lastFatal = Optional.empty();
+        }
+
+        public Optional<TransformerException> getWorst() {
+            if (lastFatal.isPresent()) return lastFatal;
+            if (lastError.isPresent()) return lastError;
+            return Optional.empty();
+        }
 
         public ErrorListenerLog4jAdapter(final Logger logger) {
             this.logger = logger;
@@ -902,11 +922,13 @@ public class FnTransform extends BasicFunction {
 
         @Override
         public void error(final TransformerException e) {
+            lastError = Optional.of(e);
             logger.error(e.getMessage(), e);
         }
 
         @Override
         public void fatalError(final TransformerException e) {
+            lastFatal = Optional.of(e);
             logger.fatal(e.getMessage(), e);
         }
     }
