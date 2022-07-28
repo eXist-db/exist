@@ -29,6 +29,7 @@ import io.lacuna.bifurcan.IEntry;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import net.sf.saxon.Configuration;
+import net.sf.saxon.expr.parser.RetainedStaticContext;
 import net.sf.saxon.functions.SystemProperty;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.serialize.SerializationProperties;
@@ -111,6 +112,14 @@ public class FnTransform extends BasicFunction {
     //TODO(AR) if you want Saxon-EE features we need to set those in the Configuration
     private static final Configuration SAXON_CONFIGURATION = new Configuration();
     private static final Processor SAXON_PROCESSOR = new Processor(FnTransform.SAXON_CONFIGURATION);
+
+    static class SystemProperties {
+        private static RetainedStaticContext retainedStaticContext = new RetainedStaticContext(SAXON_CONFIGURATION);
+
+        static String get(QName qName) {
+            return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);
+        }
+    }
 
     private static final Convert.ToSaxon toSaxon = new Convert.ToSaxon() {
         @Override
@@ -1065,6 +1074,8 @@ public class FnTransform extends BasicFunction {
             baseOutputURI = FnTransform.BASE_OUTPUT_URI.get(xsltVersion, options);
 
             serializationParams = FnTransform.SERIALIZATION_PARAMS.get(xsltVersion, options);
+
+            validateRequestedProperties(FnTransform.REQUESTED_PROPERTIES.get(xsltVersion, options).orElse(new MapType(context)));
         }
 
         private DeliveryFormat getDeliveryFormat(final float xsltVersion, final MapType options) throws XPathException {
@@ -1101,6 +1112,38 @@ public class FnTransform extends BasicFunction {
                 return TreeUtils.pathTo(stylesheetNode.get()).toString();
             }
             return "";
+        }
+
+        private void validateRequestedProperties(final MapType requestedProperties) throws XPathException {
+            for (final IEntry<AtomicValue, Sequence> entry : requestedProperties) {
+                final AtomicValue key = entry.key();
+                if (!Type.subTypeOf(key.getType(), Type.QNAME)) {
+                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties key: " + key.toString() + " is not a QName");
+                }
+                final Sequence value = entry.value();
+                if (!value.hasOne()) {
+                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties " + key.toString() + " does not have a single item value.");
+                }
+                final Item item = value.itemAt(0);
+                final String requiredPropertyValue;
+                if (Type.subTypeOf(item.getType(), Type.STRING)) {
+                    requiredPropertyValue = item.getStringValue();
+                } else if (Type.subTypeOf(item.getType(), Type.BOOLEAN)) {
+                    requiredPropertyValue = ((BooleanValue) item).getValue() ? "yes" : "no";
+                } else {
+                    throw new XPathException(ErrorCodes.XPTY0004,
+                            "Type error: requested-properties " + key +
+                                    " is not a " + Type.getTypeName(Type.STRING) +
+                                    " or a " + Type.getTypeName(Type.BOOLEAN));
+                }
+                final String actualPropertyValue = SystemProperties.get(((QNameValue) key).getQName());
+                if (!actualPropertyValue.equalsIgnoreCase(requiredPropertyValue)) {
+                    throw new XPathException(ErrorCodes.FOXT0001,
+                            "The XSLT processor cannot provide the requested-property: " + key +
+                                    " requested: " + requiredPropertyValue +
+                                    ", actual: " + actualPropertyValue);
+                }
+            }
         }
     }
 
