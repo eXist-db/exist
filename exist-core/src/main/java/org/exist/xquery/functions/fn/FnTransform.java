@@ -25,6 +25,7 @@ package org.exist.xquery.functions.fn;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.krukow.clj_lang.PersistentTreeMap;
 import io.lacuna.bifurcan.IEntry;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
@@ -516,12 +517,13 @@ public class FnTransform extends BasicFunction {
             outputKey = new StringValue("output");
         }
 
-        final Sequence primaryValue = convertToDeliveryFormat(options, delivery);
+        final Sequence primaryValue = postProcess(outputKey, convertToDeliveryFormat(options, delivery), options.postProcess);
         outputMap.add(outputKey, primaryValue);
 
         for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
-            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue());
-            outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
+            final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
+            final Sequence value = postProcess(key, convertToDeliveryFormat(options, resultDocument.getValue()), options.postProcess);
+            outputMap.add(key, value);
         }
 
         return outputMap;
@@ -537,14 +539,24 @@ public class FnTransform extends BasicFunction {
             outputKey = new StringValue("output");
         }
 
-        outputMap.add(outputKey, rawPrimaryOutput);
+        outputMap.add(outputKey, postProcess(outputKey, rawPrimaryOutput, options.postProcess));
 
         for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
-            final Sequence value = convertToDeliveryFormat(options, resultDocument.getValue());
-            outputMap.add(new AnyURIValue(resultDocument.getKey()), value);
+            final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
+            final Sequence value = postProcess(key, convertToDeliveryFormat(options, resultDocument.getValue()), options.postProcess);
+            outputMap.add(key, value);
         }
 
         return outputMap;
+    }
+
+    private Sequence postProcess(final AtomicValue key, final Sequence before, final Optional<FunctionReference> postProcessingFunction) throws XPathException {
+        if (postProcessingFunction.isPresent()) {
+            FunctionReference functionReference = postProcessingFunction.get();
+            return functionReference.evalFunction(null, null, new Sequence[]{key, before});
+        } else {
+            return before;
+        }
     }
 
     private Sequence convertToDeliveryFormat(final Options options, final Delivery delivery) throws XPathException {
@@ -1041,6 +1053,8 @@ public class FnTransform extends BasicFunction {
         final Optional<Long> sourceTextChecksum;
         final String stylesheetNodeDocumentPath;
 
+        final Optional<FunctionReference> postProcess;
+
         Options(final MapType options) throws XPathException {
             xsltSource = getStylesheet(options);
 
@@ -1107,6 +1121,8 @@ public class FnTransform extends BasicFunction {
             serializationParams = FnTransform.SERIALIZATION_PARAMS.get(xsltVersion, options);
 
             validateRequestedProperties(FnTransform.REQUESTED_PROPERTIES.get(xsltVersion, options).orElse(new MapType(context)));
+
+            postProcess = FnTransform.POST_PROCESS.get(xsltVersion, options);
         }
 
         private DeliveryFormat getDeliveryFormat(final float xsltVersion, final MapType options) throws XPathException {
