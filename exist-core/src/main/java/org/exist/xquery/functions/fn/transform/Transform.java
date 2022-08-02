@@ -393,18 +393,19 @@ public class Transform {
         }
     }
 
-    private MapType makeResultMap(final Options options, final Delivery delivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
+    private MapType makeResultMap(final Options options, final Delivery primaryDelivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
 
         final MapType outputMap = new MapType(context);
         final AtomicValue outputKey;
         outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
 
-        final Sequence primaryValue = postProcess(outputKey, delivery.convert(), options.postProcess);
+        final Sequence primaryValue = postProcess(outputKey, primaryDelivery.convert(), options.postProcess);
         outputMap.add(outputKey, primaryValue);
 
         for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
             final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
-            final Sequence value = postProcess(key, delivery.convert(), options.postProcess);
+            final Delivery secondaryDelivery = resultDocument.getValue();
+            final Sequence value = postProcess(key, secondaryDelivery.convert(), options.postProcess);
             outputMap.add(key, value);
         }
 
