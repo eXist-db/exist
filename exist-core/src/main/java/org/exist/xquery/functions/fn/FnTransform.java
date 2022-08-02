@@ -382,13 +382,9 @@ public class FnTransform extends BasicFunction {
             } else {
                 throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Error - transform using XSLT 3.0 option initial-function, but the corresponding option function-params was not supplied.");
             }
-            if (options.deliveryFormat == DeliveryFormat.RAW) {
-                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callFunction(qName, functionParams));
-                return makeResultMap(options, existValue, resultDocuments);
-            } else {
-                xslt30Transformer.callFunction(qName, functionParams, destination);
-                return makeResultMap(options, delivery.getDocument(), resultDocuments);
-            }
+
+            xslt30Transformer.callFunction(qName, functionParams, destination);
+            return makeResultMap(options, delivery, resultDocuments);
         }
 
         private MapType invokeCallTemplate() throws XPathException, SaxonApiException {
@@ -398,20 +394,14 @@ public class FnTransform extends BasicFunction {
                                 "AND " + INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
             }
 
-            final QName qName = options.initialTemplate.get().getQName();
             //TODO (AP) - Implement complete conversion in the {@link Convert} class
             //TODO (AP) - The saxDestination conversion loses type information in some cases
             //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
             //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
-            if (options.deliveryFormat == DeliveryFormat.RAW) {
-                final Sequence existValue = Convert.ToExist.of(xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName)));
-                return makeResultMap(options, existValue, resultDocuments);
-            } else {
-                //TODO (AP) - The saxDestination conversion loses type information in some cases
-                //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
-                xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), destination);
-                return makeResultMap(options, delivery, resultDocuments);
-            }
+
+            final QName qName = options.initialTemplate.get().getQName();
+            xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), destination);
+            return makeResultMap(options, delivery, resultDocuments);
         }
 
         private MapType invokeApplyTemplates() throws XPathException, SaxonApiException {
@@ -420,25 +410,12 @@ public class FnTransform extends BasicFunction {
                 final Item item = initialMatchSelection.itemAt(0);
                 if (item instanceof Document) {
                     final Source sourceIMS = new DOMSource((Document)item, context.getBaseURI().getStringValue());
-                    if (options.deliveryFormat == DeliveryFormat.RAW) {
-                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceIMS));
-                        return makeResultMap(options, existValue, resultDocuments);
-                    }
                     xslt30Transformer.applyTemplates(sourceIMS, destination);
                 } else {
                     final XdmValue selection = toSaxon.of(initialMatchSelection);
-                    if (options.deliveryFormat == DeliveryFormat.RAW) {
-                        final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(selection));
-                        return makeResultMap(options, existValue, resultDocuments);
-                    }
                     xslt30Transformer.applyTemplates(selection, destination);
                 }
             } else if (sourceNode.isPresent()) {
-                if (options.deliveryFormat == DeliveryFormat.RAW) {
-                    xslt30Transformer.applyTemplates(sourceNode.get(), destination);
-                    final Sequence existValue = Convert.ToExist.of(delivery.getXdmValue());
-                    return makeResultMap(options, existValue, resultDocuments);
-                }
                 xslt30Transformer.applyTemplates(sourceNode.get(), destination);
             } else {
                 throw new XPathException(FnTransform.this,
@@ -542,27 +519,6 @@ public class FnTransform extends BasicFunction {
 
         final Sequence primaryValue = postProcess(outputKey, convertToDeliveryFormat(options, delivery), options.postProcess);
         outputMap.add(outputKey, primaryValue);
-
-        for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
-            final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
-            final Sequence value = postProcess(key, convertToDeliveryFormat(options, resultDocument.getValue()), options.postProcess);
-            outputMap.add(key, value);
-        }
-
-        return outputMap;
-    }
-
-    private MapType makeResultMap(final Options options, final Sequence rawPrimaryOutput, final Map<URI, Delivery> resultDocuments) throws XPathException {
-
-        final MapType outputMap = new MapType(context);
-        final AtomicValue outputKey;
-        if (options.baseOutputURI.isPresent()) {
-            outputKey = options.baseOutputURI.get();
-        } else {
-            outputKey = new StringValue("output");
-        }
-
-        outputMap.add(outputKey, postProcess(outputKey, rawPrimaryOutput, options.postProcess));
 
         for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
             final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
