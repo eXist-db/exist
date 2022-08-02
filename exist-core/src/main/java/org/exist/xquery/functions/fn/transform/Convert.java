@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.xquery.functions.fn;
+package org.exist.xquery.functions.fn.transform;
 
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.type.BuiltInAtomicType;
@@ -29,6 +29,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.fn.FnTransform;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

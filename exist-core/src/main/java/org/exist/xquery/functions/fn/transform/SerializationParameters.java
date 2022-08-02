@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.exist.xquery.functions.fn;
+package org.exist.xquery.functions.fn.transform;
 
 import com.evolvedbinary.j8fu.tuple.Tuple3;
 import io.lacuna.bifurcan.IEntry;
@@ -214,7 +214,7 @@ class SerializationParameters {
 
     /**
      * {@link CharacterMap} doesn't provide a method of naming a combined map
-     *
+     * <p></p>
      * We need our combined map to have a name to find it in a {@link CharacterMapIndex}
      */
     static class NamedCombinedCharacterMap extends CharacterMap {
@@ -236,18 +236,18 @@ class SerializationParameters {
      * with the serialization properties supplied as parameters to fn:transform
      * so that a serializer can be configured to serialize using the correct combination
      * of both sets of parameters.
-     *
+     * <p></p>
      * There is an explicit step to combine character maps, which doesn't happen
      * using the raw {@link SerializationProperties#combineWith(SerializationProperties)} method.
-     *
+     * <p></p>
      * This has to be done as a separate step because the fn:transform serialization properties
      * are read before compilation, during the initial phase of reading parameters.
      * We have to wait to compile the stylesheet before we can get its serialization properties.
-     *
+     * <p></p>
      * That order could be changed for the fn:transform serialization property parameters..
      *
-     * @param baseProperties
-     * @param overrideProperties
+     * @param baseProperties properties and character map keys used when not overridden
+     * @param overrideProperties properties and character map keys which take priority if present
      *
      * @return the carefully combined properties
      */
