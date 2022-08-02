@@ -106,12 +106,12 @@ public class EXistOutputKeys {
     public final static String XDM_SERIALIZATION = "xdm-serialization";
 
     /**
-     * Enforce newline at the end of an XML document.
+     * Enforce newline at the end of JSON and XML documents.
      *
-     * Since a lot of editors set this enforcing it on
-     * serialization out of exist-db will lead to less
-     * meaningless changes in git and tools like diff will
-     * be able to provide more meaningful as well.
+     * It is common for editor software to enforce a newline at the end of non-
+     * binary resources. This setting will do the same for serialization out of
+     * exist-db and will lead to less meaningless changes in git and  tools
+     * like diff will be able to provide more meaningful information as well.
      */
     public final static String INSERT_FINAL_NEWLINE = "insert-final-newline";
 }
