@@ -79,6 +79,8 @@ class Convert {
                 final BuiltInAtomicType atomicType = atomicValue.getPrimitiveType();
                 if (atomicType == BuiltInAtomicType.INTEGER) {
                     return new IntegerValue(atomicValue.getStringValue());
+                } else if (atomicType == BuiltInAtomicType.DOUBLE) {
+                    return new DoubleValue(atomicValue.getStringValue());
                 } else {
                     // TODO (AP)
                     throw new XPathException(ErrorCodes.XPTY0004,

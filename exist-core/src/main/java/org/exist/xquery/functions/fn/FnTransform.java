@@ -335,13 +335,16 @@ public class FnTransform extends BasicFunction {
                     xslt30Transformer.setGlobalContextItem(null);
                 }
 
-                return new TemplateInvocation(options, sourceNode, delivery, xslt30Transformer, resultDocuments).invoke();
+                final TemplateInvocation invocation = new TemplateInvocation(
+                        options, sourceNode, delivery, xslt30Transformer, resultDocuments);
+                return invocation.invoke();
 
             } catch (final SaxonApiException e) {
                 if (e.getErrorCode() != null) {
                     final QName errorQn = QName.fromJavaQName(e.getErrorCode().getStructuredQName().toJaxpQName());
                     throw new XPathException(this, new ErrorCodes.ErrorCode(errorQn, e.getMessage()), e.getMessage());
                 } else {
+                    throwOriginalXPathException(e, ErrorCodes.FOXT0003);
                     throw new XPathException(this, ErrorCodes.FOXT0003, e.getMessage());
                 }
             } catch (final UncheckedXPathException e) {
@@ -432,7 +435,8 @@ public class FnTransform extends BasicFunction {
                 }
             } else if (sourceNode.isPresent()) {
                 if (options.deliveryFormat == DeliveryFormat.RAW) {
-                    final Sequence existValue = Convert.ToExist.of(xslt30Transformer.applyTemplates(sourceNode.get()));
+                    xslt30Transformer.applyTemplates(sourceNode.get(), destination);
+                    final Sequence existValue = Convert.ToExist.of(delivery.getXdmValue());
                     return makeResultMap(options, existValue, resultDocuments);
                 }
                 xslt30Transformer.applyTemplates(sourceNode.get(), destination);
@@ -465,6 +469,8 @@ public class FnTransform extends BasicFunction {
         MemTreeBuilder builder;
         StringWriter stringWriter;
 
+        RawDestination rawDestination;
+
         Delivery(final DeliveryFormat format, final SerializationProperties serializationProperties) {
             this.format = format;
             this.serializationProperties = serializationProperties;
@@ -493,17 +499,34 @@ public class FnTransform extends BasicFunction {
                     stringWriter = new StringWriter();
                     serializer.setOutputWriter(stringWriter);
                     return serializer;
+                case RAW:
+                    this.rawDestination = new RawDestination();
+                    return rawDestination;
                 default:
                     return null;
             }
         }
 
         final String getSerializedString() {
+
+            if (stringWriter == null) {
+                return null;
+            }
             return stringWriter.getBuffer().toString();
         }
 
         final DocumentImpl getDocument() {
+            if (builder == null) {
+                return null;
+            }
             return builder.getDocument();
+        }
+
+        final XdmValue getXdmValue() {
+            if (rawDestination == null) {
+                return null;
+            }
+            return rawDestination.getXdmValue();
         }
    }
 
@@ -565,7 +588,13 @@ public class FnTransform extends BasicFunction {
             case SERIALIZED:
                 return new StringValue(delivery.getSerializedString());
             case RAW:
-                return rawOutput(delivery.getDocument());
+                //TODO (AP) rawOutput and mediation via document when the Xdm value is complex, is a hack
+                final XdmValue xdmValue = delivery.getXdmValue();
+                if (xdmValue != null) {
+                    return Convert.ToExist.of(xdmValue);
+                } else {
+                    return rawOutput(delivery.getDocument());
+                }
             case DOCUMENT:
             default:
                 return delivery.getDocument();
