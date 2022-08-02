@@ -42,14 +42,27 @@ declare variable $testTransform:transform-66-xsl := document {
         </xsl:stylesheet> };
 
 declare
-    %test:assertEquals("ekofisk")
-function testTransform:transform-66() {
+    %test:assertTrue
+function testTransform:transform-66-green() {
     let $xsl := $testTransform:transform-66-xsl
     let $result := fn:transform(map{
         "stylesheet-node":$xsl,
         "initial-template": fn:QName('','main'),
                     "delivery-format" : "serialized",
                     "serialization-params": map{'suppress-indentation': (QName('http://www.w3.org/fots/fn/transform/myfunctions','c'), QName('', 'c'))}})
-    return $result?output
+    return contains($result("output"), "><t>green</t><")
+};
+
+
+declare
+    %test:assertTrue
+function testTransform:transform-66-black() {
+    let $xsl := $testTransform:transform-66-xsl
+    let $result := fn:transform(map{
+        "stylesheet-node":$xsl,
+        "initial-template": fn:QName('','main'),
+                    "delivery-format" : "serialized",
+                    "serialization-params": map{'suppress-indentation': (QName('http://www.w3.org/fots/fn/transform/myfunctions','c'), QName('', 'c'))}})
+    return matches($result("output"), ">\s+<t>black</t>\s+<")
 };
 

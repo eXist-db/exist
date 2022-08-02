@@ -101,7 +101,7 @@ function testTransform:transform-68-vendor-empty() {
 };
 
 declare
-    %test:assertTrue
+     %test:assertError("FOXT0001")
 function testTransform:transform-68-unknown-property() {
     let $xsl := $testTransform:transform-68-xsl-text
     let $result := fn:transform(map{
