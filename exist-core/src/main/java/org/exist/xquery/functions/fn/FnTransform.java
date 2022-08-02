@@ -25,7 +25,6 @@ package org.exist.xquery.functions.fn;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.krukow.clj_lang.PersistentTreeMap;
 import io.lacuna.bifurcan.IEntry;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
@@ -116,7 +115,7 @@ public class FnTransform extends BasicFunction {
     private static final Processor SAXON_PROCESSOR = new Processor(FnTransform.SAXON_CONFIGURATION);
 
     static class SystemProperties {
-        private static RetainedStaticContext retainedStaticContext = new RetainedStaticContext(SAXON_CONFIGURATION);
+        private static final RetainedStaticContext retainedStaticContext = new RetainedStaticContext(SAXON_CONFIGURATION);
 
         static String get(QName qName) {
             return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);
@@ -252,9 +251,7 @@ public class FnTransform extends BasicFunction {
                 options.stylesheetNodeDocumentPath,
                 options.stylesheetNodeDocumentPath).toString();
 
-        final String hash = Tuple(locationHash, paramHash).toString();
-
-        return hash;
+        return Tuple(locationHash, paramHash).toString();
     }
 
     @Override
@@ -284,6 +281,9 @@ public class FnTransform extends BasicFunction {
                 if (compileException.value != null) {
                     // if we could not compile the xslt, rethrow the error
                     throw compileException.value;
+                }
+                if (xsltExecutable == null) {
+                    throw new XPathException(this, ErrorCodes.FOXT0003, "Unable to compile stylesheet (No error returned from compilation)");
                 }
 
                 final Xslt30Transformer xslt30Transformer = xsltExecutable.load30();
@@ -365,7 +365,7 @@ public class FnTransform extends BasicFunction {
         final Xslt30Transformer xslt30Transformer;
         final Map<URI, Delivery> resultDocuments;
 
-        TemplateInvocation(final Options options, final Optional<Source> sourceNode, final Delivery delivery, final Xslt30Transformer xslt30Transformer, final Map<URI, Delivery> resultDocuments) throws XPathException {
+        TemplateInvocation(final Options options, final Optional<Source> sourceNode, final Delivery delivery, final Xslt30Transformer xslt30Transformer, final Map<URI, Delivery> resultDocuments) {
             this.options = options;
             this.sourceNode = sourceNode;
             this.delivery = delivery;
@@ -511,11 +511,7 @@ public class FnTransform extends BasicFunction {
 
         final MapType outputMap = new MapType(context);
         final AtomicValue outputKey;
-        if (options.baseOutputURI.isPresent()) {
-            outputKey = options.baseOutputURI.get();
-        } else {
-            outputKey = new StringValue("output");
-        }
+        outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
 
         final Sequence primaryValue = postProcess(outputKey, convertToDeliveryFormat(options, delivery), options.postProcess);
         outputMap.add(outputKey, primaryValue);
@@ -548,9 +544,12 @@ public class FnTransform extends BasicFunction {
                 final XdmValue xdmValue = delivery.getXdmValue();
                 if (xdmValue != null) {
                     return Convert.ToExist.of(xdmValue);
-                } else {
+                }
+                final DocumentImpl document = delivery.getDocument();
+                if (document != null) {
                     return rawOutput(delivery.getDocument());
                 }
+                throw new XPathException(ErrorCodes.FOXT0003, "No RAW output has been constructed by the transformation.");
             case DOCUMENT:
             default:
                 return delivery.getDocument();
@@ -612,13 +611,13 @@ public class FnTransform extends BasicFunction {
     /**
      * Resolve an absolute stylesheet location
      *
-     * @param location
-     * @return
-     * @throws XPathException
+     * @param location of the stylesheet
+     * @return the resolved stylesheet as a source
+     * @throws XPathException if the item does not exist, or is not a document
      */
     private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
 
-        Sequence document = null;
+        Sequence document;
         try {
             document = DocUtils.getDocument(context, location);
         } catch (final PermissionDeniedException e) {
@@ -653,7 +652,6 @@ public class FnTransform extends BasicFunction {
         } else {
             return new AnyURIValue(baseURI.resolve(relativeURI));
         }
-
     }
 
     /**
@@ -677,9 +675,7 @@ public class FnTransform extends BasicFunction {
         }
 
         final Optional<String> stylesheetText = FnTransform.STYLESHEET_TEXT.get(options).map(StringValue::getStringValue);
-        if (stylesheetText.isPresent()) {
-            results.add(Tuple("", new StringSource(stylesheetText.get())));
-        }
+        stylesheetText.ifPresent(s -> results.add(Tuple("", new StringSource(s))));
 
         if (results.size() > 1) {
             throw new XPathException(this, ErrorCodes.FOXT0002, "More than one of stylesheet-location, stylesheet-node, and stylesheet-text was set");
@@ -944,8 +940,7 @@ public class FnTransform extends BasicFunction {
 
         public Optional<TransformerException> getWorst() {
             if (lastFatal.isPresent()) return lastFatal;
-            if (lastError.isPresent()) return lastError;
-            return Optional.empty();
+            return lastError;
         }
 
         public ErrorListenerLog4jAdapter(final Logger logger) {
@@ -986,13 +981,12 @@ public class FnTransform extends BasicFunction {
     private enum DeliveryFormat {
         DOCUMENT,
         SERIALIZED,
-        RAW;
-
+        RAW
     }
 
     /**
      * Read options into class values in a single place.
-     *
+     * <p></p>
      * This is a bit clearer where we need an option several times,
      * we know we have read it up front.
      */
@@ -1008,7 +1002,7 @@ public class FnTransform extends BasicFunction {
                 if (!(key instanceof QNameValue)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:qname: " + entry);
                 }
-                if (!(entry.value() instanceof Sequence)) {
+                if (entry.value() == null) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:sequence: " + entry);
                 }
                 result.put(Convert.ToSaxon.of((QNameValue) key), toSaxon.of(entry.value()));
@@ -1048,7 +1042,7 @@ public class FnTransform extends BasicFunction {
                 if (!(entry.key() instanceof QNameValue)) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:qname: " + entry);
                 }
-                if (!(entry.value() instanceof Sequence)) {
+                if (entry.value() == null) {
                     throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied stylesheet-param is not a valid xs:sequence: " + entry);
                 }
             }
@@ -1140,21 +1134,18 @@ public class FnTransform extends BasicFunction {
 
         private String getStylesheetNodeDocumentPath(final MapType options) throws XPathException {
             final Optional<Node> stylesheetNode = FnTransform.STYLESHEET_NODE.get(options).map(NodeValue::getNode);
-            if (stylesheetNode.isPresent()) {
-                return TreeUtils.pathTo(stylesheetNode.get()).toString();
-            }
-            return "";
+            return stylesheetNode.map(node -> TreeUtils.pathTo(node).toString()).orElse("");
         }
 
         private void validateRequestedProperties(final MapType requestedProperties) throws XPathException {
             for (final IEntry<AtomicValue, Sequence> entry : requestedProperties) {
                 final AtomicValue key = entry.key();
                 if (!Type.subTypeOf(key.getType(), Type.QNAME)) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties key: " + key.toString() + " is not a QName");
+                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties key: " + key + " is not a QName");
                 }
                 final Sequence value = entry.value();
                 if (!value.hasOne()) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties " + key.toString() + " does not have a single item value.");
+                    throw new XPathException(ErrorCodes.XPTY0004, "Type error: requested-properties " + key + " does not have a single item value.");
                 }
                 final Item item = value.itemAt(0);
                 final String requiredPropertyValue;
