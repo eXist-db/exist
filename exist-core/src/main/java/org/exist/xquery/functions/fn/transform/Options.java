@@ -420,6 +420,8 @@ class Options {
                 if (item0 != null) {
                     if (Type.subTypeOf(item0.getType(), itemSubtype)) {
                         return Optional.of((T) item0);
+                    } else if (itemSubtype == Type.STRING && Type.subTypeOf(item0.getType(), Type.ATOMIC)) {
+                        return Optional.of((T)new StringValue(item0.getStringValue()));
                     } else {
                         throw new XPathException(
                                 ErrorCodes.XPTY0004, "Type error: expected " + Type.getTypeName(itemSubtype) + ", got " + Type.getTypeName(item0.getType()));
