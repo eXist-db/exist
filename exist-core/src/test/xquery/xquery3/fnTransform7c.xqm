@@ -30,9 +30,9 @@ declare variable $testTransform:transform-7c-xsl := "<out xmlns:xsl='http://www.
                          </out>";
 
 declare
-    %test:assertTrue
+    %test:assertEquals('<out>this</out>')
 function testTransform:transform-7c() {
     let $style := $testTransform:transform-7c-xsl
-    let $result := transform(map{"stylesheet-node":parse-xml($style)/*, "source-node":parse-xml("<doc>this</doc>") })
-   return $result
+    let $result := fn:transform(map{"stylesheet-node":parse-xml($style)/*, "source-node":parse-xml("<doc>this</doc>") })
+   return $result?output
 };

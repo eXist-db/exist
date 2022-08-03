@@ -36,7 +36,7 @@ declare variable $testTransform:transform-84-xsl := document {
 
 declare
     %test:assertEquals(1,4,9,16,25)
-function testTransform:transform-err-18() {
+function testTransform:transform-84() {
     let $xsl := $testTransform:transform-84-xsl
     let $result := fn:transform(map{"stylesheet-node":$xsl,
                                "delivery-format" : "raw",

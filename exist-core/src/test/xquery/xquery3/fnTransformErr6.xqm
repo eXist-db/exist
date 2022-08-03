@@ -38,7 +38,7 @@ declare variable $testTransform:transform-err-6-xsl := document {
                 </xsl:stylesheet> };
 
 declare
-    %test:assertEquals("Peppa pig")
+    %test:assertError("FOXT0002")
 function testTransform:transform-err-6() {
     let $xsl := $testTransform:transform-err-6-xsl
     let $result := fn:transform(map{"stylesheet-node":$xsl, "source-node":parse-xml("<doc>this</doc>"), "initial-mode": fn:QName('','main'), "initial-template": fn:QName('','start') })

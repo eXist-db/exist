@@ -36,7 +36,7 @@ declare variable $testTransform:transform-82e-xsl := "<xsl:stylesheet version='3
 </xsl:stylesheet>";
 
 declare
-    %test:assertEquals(2)
+    %test:assertEquals('&lt;out root-is-doc="false" this-is-doc="false" xslt-version="3.0"&gt;dummy&lt;/out&gt;')
 function testTransform:transform-82e() {
     let $xsl := parse-xml($testTransform:transform-82e-xsl)
     let $in := parse-xml("<dummy/>")

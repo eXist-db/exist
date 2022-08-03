@@ -19,24 +19,19 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
-
 xquery version "3.1";
 
 module namespace testTransform="http://exist-db.org/xquery/test/function_transform";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $testTransform:transform-22-xsl := document {
-    <xsl:stylesheet version='2.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-                        <xsl:include href='transform/staticbaseuri.xsl'/>
-                        </xsl:stylesheet> };
-
 declare
-    %test:assertContains("fn/transform/staticbaseuri.xsl")
-function testTransform:transform-22-xsl() {
-    let $xsl := $testTransform:transform-22-xsl
-    let $result := fn:transform(map {"stylesheet-node" : $xsl,
-        "initial-template" : QName('','main'),
-        "stylesheet-base-uri": string(static-base-uri())})
-    return $result?output/x
+    %test:assertEquals('<out>this</out>')
+function testTransform:transform-7e() {
+    let $src := parse-xml-fragment("<doc>this</doc>
+                         <out xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xsl:version='2.0'>
+                          <xsl:value-of select='/doc' />
+                         </out>")
+    let $result := transform(map{"stylesheet-node":$src/out, "source-node":$src })
+    return $result?output
 };

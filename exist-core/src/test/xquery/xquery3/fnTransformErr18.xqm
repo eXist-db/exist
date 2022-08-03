@@ -40,7 +40,7 @@ declare variable $testTransform:transform-67-xsl := document {
             </xsl:stylesheet> };
 
 declare
-    %test:assertEquals("Peppa pig")
+    %test:assertError("FOXT0002")
 function testTransform:transform-err-18() {
     let $xsl := $testTransform:transform-67-xsl
     let $result := fn:transform(map {"stylesheet-node":$xsl,
