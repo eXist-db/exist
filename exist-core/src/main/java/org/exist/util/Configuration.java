@@ -471,10 +471,10 @@ public class Configuration implements ErrorHandler
                         // Get class of module
                         final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
-                        // Store class if thw module class actually exists
-                        if( moduleClass != null && (load == null || "always".equals(load))) {
+                        // Store class if the module class actually exists
+                        if(moduleClass != null && (load == null || "always".equals(load))) {
                             eagerModuleClassMap.put(uri, moduleClass);
-                        }else if(moduleClass != null) {
+                        } else if(moduleClass != null) {
                             lazyModuleClassMap.put(uri, moduleClass);
                         }
                         if(LOG.isDebugEnabled()) {
