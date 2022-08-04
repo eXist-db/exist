@@ -393,7 +393,7 @@ public class RESTServer {
         // Process the request
         LockedDocument lockedDocument = null;
         DocumentImpl resource = null;
-        final XmldbURI pathUri = XmldbURI.createInternal(path);
+        final XmldbURI pathUri = XmldbURI.create(path);
         try {
             // check if path leads to an XQuery resource
             final String xquery_mime_type = MimeType.XQUERY_TYPE.getName();
@@ -545,7 +545,7 @@ public class RESTServer {
             throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
 
-        final XmldbURI pathUri = XmldbURI.createInternal(path);
+        final XmldbURI pathUri = XmldbURI.create(path);
         if (checkForXQueryTarget(broker, transaction, pathUri, request, response)) {
             return;
         }
@@ -623,7 +623,7 @@ public class RESTServer {
         }
 
         final Properties outputProperties = new Properties(defaultOutputKeysProperties);
-        final XmldbURI pathUri = XmldbURI.createInternal(path);
+        final XmldbURI pathUri = XmldbURI.create(path);
         LockedDocument lockedDocument = null;
         DocumentImpl resource = null;
 
@@ -1134,7 +1134,7 @@ public class RESTServer {
 
     public void doDelete(final DBBroker broker, final Txn transaction, final String path, final HttpServletRequest request, final HttpServletResponse response)
             throws PermissionDeniedException, NotFoundException, IOException, BadRequestException {
-        final XmldbURI pathURI = XmldbURI.createInternal(path);
+        final XmldbURI pathURI = XmldbURI.create(path);
         if (checkForXQueryTarget(broker, transaction, pathURI, request, response)) {
             return;
         }
@@ -1322,7 +1322,7 @@ public class RESTServer {
             }
         }
 
-        final XmldbURI pathUri = XmldbURI.createInternal(path);
+        final XmldbURI pathUri = XmldbURI.create(path);
         final Source source = new StringSource(query);
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = null;
