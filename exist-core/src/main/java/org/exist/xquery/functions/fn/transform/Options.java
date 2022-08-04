@@ -215,12 +215,6 @@ class Options {
             throw new XPathException(fnTransform, ErrorCodes.FOXT0002,
                     ": \"" + string + "\" is not a valid " + Options.DELIVERY_FORMAT.name);
         }
-            /* TODO (AP) it's unclear (spec vs XQTS) if this is meant to happen, or not ??
-            if (deliveryFormat == DeliveryFormat.RAW && xsltVersion < 3.0f) {
-                throw new XPathException(FnTransform.this, ErrorCodes.FOXT0002, "Supplied " + FnTransform.DELIVERY_FORMAT.name +
-                        " is not valid when using XSLT version " + xsltVersion);
-            }
-             */
         return deliveryFormat;
     }
 
