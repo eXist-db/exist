@@ -27,17 +27,13 @@ import net.sf.saxon.serialize.SerializationProperties;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.StringWriter;
+import java.util.Objects;
 
 class Delivery {
 
@@ -120,47 +116,10 @@ class Delivery {
             case SERIALIZED:
                 return new StringValue(getSerializedString());
             case RAW:
-                //TODO (AP) rawOutput and mediation via document when the Xdm value is complex, is a hack
-                final XdmValue xdmValue = getXdmValue();
-                if (xdmValue != null) {
-                    return Convert.ToExist.of(xdmValue);
-                }
-                final DocumentImpl document = getDocument();
-                if (document != null) {
-                    return rawOutput(getDocument());
-                }
-                throw new XPathException(ErrorCodes.FOXT0003, "No RAW output has been constructed by the transformation.");
+                return Convert.ToExist.of(Objects.requireNonNull(getXdmValue()));
             case DOCUMENT:
             default:
                 return getDocument();
         }
     }
-
-    private static Sequence rawOutput(final NodeValue outputDocument) throws XPathException {
-        final Node node = outputDocument.getNode();
-        if (node != null) {
-            final NodeList children = node.getChildNodes();
-            final int length = children.getLength();
-            if (length == 0) {
-                return Sequence.EMPTY_SEQUENCE;
-            } else if (length == 1) {
-                final Node item = children.item(0);
-                if (item instanceof NodeValue) {
-                    return (NodeValue)item;
-                }
-            } else {
-                final ValueSequence valueSequence = new ValueSequence();
-                for (int i = 0; i < children.getLength(); i++) {
-                    final Node child = children.item(i);
-                    if (child instanceof NodeValue) {
-                        valueSequence.add((NodeValue)child);
-                    }
-                }
-                return valueSequence;
-            }
-            throw new XPathException(ErrorCodes.XPTY0004, "Unable to produce raw output from contents of: " + outputDocument);
-        }
-        return Sequence.EMPTY_SEQUENCE;
-    }
-
 }
