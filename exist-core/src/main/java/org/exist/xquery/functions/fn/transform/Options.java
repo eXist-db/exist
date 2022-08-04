@@ -122,6 +122,19 @@ class Options {
     final Optional<StringValue> baseOutputURI;
     final Optional<MapType> serializationParams;
 
+    final Optional<BooleanValue> enableAssertions;
+    final Optional<BooleanValue> enableMessages;
+    final Optional<BooleanValue> enableTrace;
+
+    final Optional<StringValue> packageName;
+    final Optional<StringValue> packageVersion;
+    final Optional<StringValue> packageText;
+    final Optional<NodeValue> packageNode;
+    final Optional<StringValue> packageLocation;
+
+    final Optional<MapType> vendorOptions;
+
+
     final Optional<Long> sourceTextChecksum;
     final String stylesheetNodeDocumentPath;
 
@@ -204,18 +217,30 @@ class Options {
         validateRequestedProperties(Options.REQUESTED_PROPERTIES.get(xsltVersion, options).orElse(new MapType(context)));
 
         postProcess = Options.POST_PROCESS.get(xsltVersion, options);
+
+        enableAssertions = Options.ENABLE_ASSERTIONS.get(xsltVersion, options);
+        enableMessages = Options.ENABLE_MESSAGES.get(xsltVersion, options);
+        enableTrace = Options.ENABLE_TRACE.get(xsltVersion, options);
+
+        packageName = Options.PACKAGE_NAME.get(xsltVersion, options);
+        packageVersion = Options.PACKAGE_VERSION.get(xsltVersion, options);
+        packageText = Options.PACKAGE_TEXT.get(xsltVersion, options);
+        packageNode = Options.PACKAGE_NODE.get(xsltVersion, options);
+        packageLocation = Options.PACKAGE_LOCATION.get(xsltVersion, options);
+
+        vendorOptions = Options.VENDOR_OPTIONS.get(xsltVersion, options);
     }
 
     private Delivery.Format getDeliveryFormat(final float xsltVersion, final MapType options) throws XPathException {
-        final String string = Options.DELIVERY_FORMAT.get(xsltVersion, options).get().getStringValue().toUpperCase();
-        final Delivery.Format deliveryFormat;
+        final String deliveryFormatString = Options.DELIVERY_FORMAT.get(xsltVersion, options).orElse(new StringValue(Delivery.Format.DOCUMENT.name())).getStringValue().toUpperCase();
+        final Delivery.Format format;
         try {
-            deliveryFormat = Delivery.Format.valueOf(string);
+            format = Delivery.Format.valueOf(deliveryFormatString);
         } catch (final IllegalArgumentException ie) {
             throw new XPathException(fnTransform, ErrorCodes.FOXT0002,
-                    ": \"" + string + "\" is not a valid " + Options.DELIVERY_FORMAT.name);
+                    ": \"" + deliveryFormatString + "\" is not a valid " + Options.DELIVERY_FORMAT.name);
         }
-        return deliveryFormat;
+        return format;
     }
 
     private Optional<Long> getSourceTextChecksum(final MapType options) throws XPathException {
@@ -611,6 +636,7 @@ class Options {
     }
 
     private static class StringSource extends StreamSource {
+
         private final String string;
 
         public StringSource(final String string) {
@@ -624,6 +650,11 @@ class Options {
     }
 
     static class SystemProperties {
+
+        private SystemProperties() {
+            super();
+        }
+
         private static final RetainedStaticContext retainedStaticContext = new RetainedStaticContext(SAXON_CONFIGURATION);
 
         static String get(org.exist.dom.QName qName) {

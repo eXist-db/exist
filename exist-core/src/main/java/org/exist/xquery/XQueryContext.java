@@ -3466,9 +3466,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("dynamicTextResources: {");
         if (dynamicTextResources != null) {
-            for (final Tuple2<String, Charset> key : dynamicTextResources.keySet()) {
-                sb.append(key).append("-> ");
-                sb.append(dynamicTextResources.get(key));
+            for (final Map.Entry<Tuple2<String, Charset>,  QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }
         sb.append('}');
@@ -3476,9 +3475,9 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("dynamicCollections: {");
         if (dynamicCollections != null) {
-            for (final String key : dynamicCollections.keySet()) {
-                sb.append(key).append("-> ");
-                sb.append(dynamicCollections.get(key));
+            for (final Map.Entry<String,
+                    TriFunctionE<DBBroker, Txn, String, Sequence, XPathException>> entry : dynamicCollections.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }
         sb.append('}');
@@ -3493,9 +3492,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("inScopePrefixes: {");
         if (inScopePrefixes != null) {
-            for (final String key : inScopePrefixes.keySet()) {
-                sb.append(key).append("-> ");
-                sb.append(inScopePrefixes.get(key));
+            for (final Map.Entry<String, String> entry : inScopePrefixes.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }
         sb.append('}');
@@ -3503,9 +3501,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("inScopeNamespaces: {");
         if (inScopeNamespaces != null) {
-            for (final String key : inScopeNamespaces.keySet()) {
-                sb.append(key).append("-> ");
-                sb.append(inScopeNamespaces.get(key));
+            for (final Map.Entry<String, String> entry : inScopeNamespaces.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
             }
         }
         sb.append('}');
@@ -3513,9 +3510,9 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("modules: {");
         if (modules != null) {
-            for (final String key : modules.keySet()) {
-                sb.append(key).append("-> ");
-                for (final Module module : modules.get(key)) {
+            for (final Map.Entry<String, Module[]> entry : modules.entrySet()) {
+                sb.append(entry.getKey()).append("-> ");
+                for (final Module module : modules.get(entry.getKey())) {
                     sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
                     sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
                     sb.append("description: ").append(module.getDescription()).append('\n');
@@ -3531,9 +3528,9 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         sb.append("allModules: {");
         if (allModules != null) {
-            for (final String key : allModules.keySet()) {
-                sb.append(key).append("-> ");
-                for (final Module module : allModules.get(key)) {
+            for (final Map.Entry<String, Module[]> entry : allModules.entrySet()) {
+                sb.append(entry.getKey()).append("-> ");
+                for (final Module module : allModules.get(entry.getKey())) {
                     sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
                     sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
                     sb.append("description: ").append(module.getDescription()).append('\n');

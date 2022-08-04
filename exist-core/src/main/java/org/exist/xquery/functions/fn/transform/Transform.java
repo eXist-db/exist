@@ -45,6 +45,7 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -251,9 +252,9 @@ public class Transform {
      *
      * @param e the top of the exception stack
      * @param defaultErrorCode use this code and its description to fill in blanks in what we finally throw
-     * @throws XPathException the eventual eXist exception we may throw
+     * @returns XPathException the eventual eXist exception which the caller is expected to throw
      */
-    private XPathException originalXPathException(final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
+    private XPathException originalXPathException(@Nonnull final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
         Throwable cause = e;
         while (cause != null) {
             if (cause instanceof XPathException) {
@@ -395,21 +396,22 @@ public class Transform {
 
     private MapType makeResultMap(final Options options, final Delivery primaryDelivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
 
-        final MapType outputMap = new MapType(context);
-        final AtomicValue outputKey;
-        outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
+        try (final MapType outputMap = new MapType(context)) {
+            final AtomicValue outputKey;
+            outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
 
-        final Sequence primaryValue = postProcess(outputKey, primaryDelivery.convert(), options.postProcess);
-        outputMap.add(outputKey, primaryValue);
+            final Sequence primaryValue = postProcess(outputKey, primaryDelivery.convert(), options.postProcess);
+            outputMap.add(outputKey, primaryValue);
 
-        for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
-            final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
-            final Delivery secondaryDelivery = resultDocument.getValue();
-            final Sequence value = postProcess(key, secondaryDelivery.convert(), options.postProcess);
-            outputMap.add(key, value);
+            for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
+                final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
+                final Delivery secondaryDelivery = resultDocument.getValue();
+                final Sequence value = postProcess(key, secondaryDelivery.convert(), options.postProcess);
+                outputMap.add(key, value);
+            }
+
+            return outputMap;
         }
-
-        return outputMap;
     }
 
     private Sequence postProcess(final AtomicValue key, final Sequence before, final Optional<FunctionReference> postProcessingFunction) throws XPathException {

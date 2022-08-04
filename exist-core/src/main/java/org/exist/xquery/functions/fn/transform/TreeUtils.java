@@ -31,6 +31,10 @@ import java.util.List;
 
 public class TreeUtils {
 
+    private TreeUtils() {
+        super();
+    }
+
     static StringBuilder pathTo(final Node node) {
         final List<Node> priors = new ArrayList<>();
         Node prev = node;
@@ -79,7 +83,6 @@ public class TreeUtils {
                     return xdmNodeAtIndex(child, index.subList(1,index.size()));
                 }
             }
-            //return xdmNodeAtIndex((XdmNode) xdmNode.itemAt(index.get(0)), index.subList(1,index.size()));
         }
         return null;
     }

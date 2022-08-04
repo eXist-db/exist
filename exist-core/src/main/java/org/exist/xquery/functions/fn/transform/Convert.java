@@ -58,6 +58,10 @@ import java.util.List;
  */
 class Convert {
 
+    private Convert() {
+        super();
+    }
+
     static class ToExist {
 
         static Sequence of(final XdmValue xdmValue) throws XPathException {
