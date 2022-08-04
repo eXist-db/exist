@@ -47,6 +47,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -589,6 +590,9 @@ class Options {
     private float staxExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
         try {
             final XMLInputFactory factory = XMLInputFactory.newInstance();
+            // Sonartype checker needs this https://rules.sonarsource.com/java/RSPEC-2755
+            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+
             final XMLEventReader eventReader =
                     factory.createXMLEventReader(xsltStylesheet);
 
