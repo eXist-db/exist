@@ -153,6 +153,9 @@ class Options {
             } catch (final XPathException e) {
                 throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied xslt-version is not a valid xs:decimal: " + e.getMessage(), explicitXsltVersion.get(), e);
             }
+            if (xsltVersion != v1_0 && xsltVersion != v2_0 && xsltVersion != v3_0) {
+                throw new XPathException(fnTransform, ErrorCodes.FOXT0001, "Supplied xslt-version is an unknown XSLT version: " + explicitXsltVersion.get());
+            }
         } else {
             xsltVersion = getXsltVersion(xsltSource._2);
         }

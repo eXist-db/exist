@@ -44,3 +44,14 @@ function testTransform:transform-84() {
                                })
     return $result?output
 };
+
+declare
+    %test:assertEquals(1,4,9,16,25)
+function testTransform:transform-84-seq-params() {
+    let $xsl := $testTransform:transform-84-xsl
+    let $result := fn:transform(map{"stylesheet-node":$xsl,
+                               "delivery-format" : "raw",
+                               "initial-match-selection": (1,2,3,4,5)
+                               })
+    return $result?output
+};
