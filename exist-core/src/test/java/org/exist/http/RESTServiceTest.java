@@ -1087,7 +1087,7 @@ try {
             String response = readResponse(connect.getInputStream());
 
             //readResponse is appending \r\n to each line that's why its added the expected content
-            assertEquals("Server returned document content " + response,"<foo/>\r\n",response);
+            assertEquals("Server returned document content " + response,"<foobar/>\r\n",response);
         } finally {
             connect.disconnect();
         }
