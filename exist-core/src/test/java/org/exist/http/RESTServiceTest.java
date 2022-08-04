@@ -254,7 +254,6 @@ public class RESTServiceTest {
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
         badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
 
-        //TODO create collection /db/AéB and store doc AéB.xml
         final XmldbURI TEST_XML_DOC_URI = XmldbURI.create("AéB.xml");
         final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/AéB");
         final String TEST_XML_DOC = "<foo/>";
