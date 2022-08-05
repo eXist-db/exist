@@ -203,6 +203,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     private XMLGregorianCalendar calendar = null;
     private TimeZone implicitTimeZone = null;
 
+    private final Map<String, Sequence> cachedUriCollectionResults = new HashMap<>();
+
     /**
      * the watchdog object assigned to this query.
      */
@@ -1402,6 +1404,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         fragmentStack = new ArrayDeque<>();
         callStack.clear();
         protectedDocuments = null;
+
+        cachedUriCollectionResults.clear();
 
         if (!keepGlobals) {
             globalVariables.clear();
@@ -2788,6 +2792,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public void setStaticDecimalFormat(final QName qnDecimalFormat, final DecimalFormat decimalFormat) {
         staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
+    }
+
+    public Map<String, Sequence> getCachedUriCollectionResults() {
+        return cachedUriCollectionResults;
     }
 
     /**

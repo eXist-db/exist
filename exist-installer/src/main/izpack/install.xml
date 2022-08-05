@@ -146,7 +146,7 @@
             <executable os="unix" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <executable os="unix" targetfile="$INSTALL_PATH/bin/jsvc-linux-x86_64"/>
-            <executable os="unix" targetfile="$INSTALL_PATH/bin/jsvc-mac-x86_64"/>
+            <executable os="unix" targetfile="$INSTALL_PATH/bin/jsvc-mac"/>
             <fileset os="windows" targetdir="$INSTALL_PATH/bin" dir="bin">
                 <include name="*.bat"/>
                 <include name="*.exe"/>
