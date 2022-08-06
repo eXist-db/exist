@@ -295,6 +295,9 @@ public class Field extends BasicFunction {
             case Type.DATE_TIME:
                 return DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
 
+            case Type.DATE_TIME_STAMP:
+                return DateTimeStampValue.deserialize(ByteBuffer.wrap(field.bytes));
+
             case Type.DATE:
                 return DateValue.deserialize(ByteBuffer.wrap(field.bytes));
             case Type.INTEGER:
@@ -326,6 +329,8 @@ public class Field extends BasicFunction {
                 return new TimeValue(value);
             case Type.DATE_TIME:
                 return new DateTimeValue(value);
+            case Type.DATE_TIME_STAMP:
+                return new DateTimeStampValue(value);
             case Type.DATE:
                 return new DateValue(value);
             case Type.INTEGER:
@@ -357,6 +362,8 @@ public class Field extends BasicFunction {
                 return new TimeValue(calendar);
             case Type.DATE_TIME:
                 throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
+            case Type.DATE_TIME_STAMP:
+                throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTimeStamp");
             case Type.DATE:
                 final long dl = value.longValue();
                 final int year = (int)(dl >> 16) & 0xFFFF;

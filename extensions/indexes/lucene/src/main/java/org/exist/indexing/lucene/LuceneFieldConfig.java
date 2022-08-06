@@ -242,6 +242,10 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                     final DateTimeValue dateTimeValue = new DateTimeValue(content);
                     return new BinaryDocValuesField(fieldName, new BytesRef(dateTimeValue.toJavaObject(byte[].class)));
 
+                case Type.DATE_TIME_STAMP:
+                    final DateTimeStampValue dateTimeStampValue = new DateTimeStampValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dateTimeStampValue.toJavaObject(byte[].class)));
+
                 case Type.DATE:
                     final DateValue dateValue = new DateValue(content);
                     return new BinaryDocValuesField(fieldName, new BytesRef(dateValue.toJavaObject(byte[].class)));
