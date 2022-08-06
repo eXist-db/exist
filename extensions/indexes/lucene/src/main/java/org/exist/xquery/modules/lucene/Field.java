@@ -335,7 +335,7 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                return new IntegerValue(value);
+                return new IntegerValue(value, type);
             case Type.DOUBLE:
                 return new DoubleValue(value);
             case Type.FLOAT:
@@ -374,7 +374,7 @@ public class Field extends BasicFunction {
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                return new IntegerValue(value.longValue());
+                return new IntegerValue(value.longValue(), type);
             case Type.DOUBLE:
                 return new DoubleValue(value.doubleValue());
             case Type.FLOAT:
