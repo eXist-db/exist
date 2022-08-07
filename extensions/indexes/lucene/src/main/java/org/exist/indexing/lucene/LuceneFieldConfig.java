@@ -168,7 +168,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
-            final Field field = binary ? convertToDocValue(text) : convertToField(text);
+            final Field field = binary ? convertToDocValue(text) : convertToField(type, fieldName, text, store);
             if (field != null) {
                 luceneDoc.add(field);
             }
@@ -181,14 +181,14 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         if (binary) {
             field = convertToDocValue(text.toString());
         } else {
-            field = convertToField(text.toString());
+            field = convertToField(type, fieldName, text.toString(), store);
         }
         if (field != null) {
             luceneDoc.add(field);
         }
     }
 
-    private Field convertToField(String content) {
+    static Field convertToField(final int type, final String fieldName, final String content, final boolean store) {
         try {
             switch (type) {
                 case Type.INTEGER:
@@ -283,12 +283,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
     }
 
-    private static long dateToLong(DateValue date) {
+    static long dateToLong(DateValue date) {
         final XMLGregorianCalendar utccal = date.calendar.normalize();
         return ((long)utccal.getYear() << 16) + ((long)utccal.getMonth() << 8) + ((long)utccal.getDay());
     }
 
-    private static long timeToLong(TimeValue time) {
+    static long timeToLong(TimeValue time) {
         return time.getTimeInMillis();
     }
 
