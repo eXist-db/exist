@@ -292,7 +292,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         return time.getTimeInMillis();
     }
 
-    private static String dateTimeToString(DateTimeValue dtv) {
+    static String dateTimeToString(DateTimeValue dtv) {
         final XMLGregorianCalendar utccal = dtv.calendar.normalize();
         final StringBuilder sb = new StringBuilder();
         formatNumber(utccal.getMillisecond(), 3, sb);
