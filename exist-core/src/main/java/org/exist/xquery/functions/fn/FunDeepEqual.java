@@ -55,6 +55,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -130,7 +131,7 @@ public class FunDeepEqual extends CollatingFunction {
         return result;
     }
 
-    public static boolean deepEqualsSeq(Sequence sa, Sequence sb, Collator collator) {
+    public static boolean deepEqualsSeq(final Sequence sa, final Sequence sb, @Nullable final Collator collator) {
         final int length = sa.getItemCount();
         if (length != sb.getItemCount()) {
             return false;
@@ -144,7 +145,7 @@ public class FunDeepEqual extends CollatingFunction {
         }
     }
 
-    public static boolean deepEquals(Item a, Item b, Collator collator) {
+    public static boolean deepEquals(final Item a, final Item b, @Nullable final Collator collator) {
         try {
             if (a.getType() == Type.ARRAY_ITEM || b.getType() == Type.ARRAY_ITEM) {
                 if (a.getType() != b.getType()) {
@@ -222,24 +223,24 @@ public class FunDeepEqual extends CollatingFunction {
                 // NodeValue.getNode() doesn't seem to work for document nodes
                 na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
                 nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
-                return compareContents(na, nb);
+                return compareContents(na, nb, collator);
             case Type.ELEMENT:
                 na = nva.getNode();
                 nb = nvb.getNode();
-                return compareElements(na, nb);
+                return compareElements(na, nb, collator);
             case Type.ATTRIBUTE:
                 na = nva.getNode();
                 nb = nvb.getNode();
                 return compareNames(na, nb)
-                    && safeEquals(na.getNodeValue(), nb.getNodeValue());
+                    && safeEquals(na.getNodeValue(), nb.getNodeValue(), collator);
             case Type.PROCESSING_INSTRUCTION:
             case Type.NAMESPACE:
                 na = nva.getNode(); nb = nvb.getNode();
-                return safeEquals(na.getNodeName(), nb.getNodeName()) &&
-                    safeEquals(nva.getStringValue(), nvb.getStringValue());
+                return safeEquals(na.getNodeName(), nb.getNodeName(), collator) &&
+                    safeEquals(nva.getStringValue(), nvb.getStringValue(), collator);
             case Type.TEXT:
             case Type.COMMENT:
-                return safeEquals(nva.getStringValue(), nvb.getStringValue());
+                return safeEquals(nva.getStringValue(), nvb.getStringValue(), collator);
             default:
                 throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
             }
@@ -250,42 +251,47 @@ public class FunDeepEqual extends CollatingFunction {
         }
     }
 
-    private static boolean compareElements(Node a, Node b) {
-        return compareNames(a, b) && compareAttributes(a, b) &&
-            compareContents(a, b);
+    private static boolean compareElements(final Node a, final Node b, @Nullable final Collator collator) {
+        return compareNames(a, b) && compareAttributes(a, b, collator) && compareContents(a, b, collator);
     }
 
-    private static boolean compareContents(Node a, Node b) {
+    private static boolean compareContents(Node a, Node b, @Nullable final Collator collator) {
         a = findNextTextOrElementNode(a.getFirstChild());
         b = findNextTextOrElementNode(b.getFirstChild());
         while (!(a == null || b == null)) {
             final int nodeTypeA = getEffectiveNodeType(a);
             final int nodeTypeB = getEffectiveNodeType(b);
-            if (nodeTypeA != nodeTypeB)
-                {return false;}
+            if (nodeTypeA != nodeTypeB) {
+                return false;
+            }
             switch (nodeTypeA) {
             case Node.TEXT_NODE:
                 if (a.getNodeType() == NodeImpl.REFERENCE_NODE &&
                         b.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
-                            ((ReferenceNode)b).getReference().getNodeValue()))
-                        {return false;}
+                            ((ReferenceNode)b).getReference().getNodeValue(), collator)) {
+                        return false;
+                    }
                 } else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
-                            b.getNodeValue()))
-                        {return false;}
+                            b.getNodeValue(), collator)) {
+                        return false;
+                    }
                 } else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
                     if (!safeEquals(a.getNodeValue(), 
-                            ((ReferenceNode)b).getReference().getNodeValue()))
-                        {return false;}
+                            ((ReferenceNode)b).getReference().getNodeValue(), collator)) {
+                        return false;
+                    }
                 } else {
-                    if (!safeEquals(a.getNodeValue(), b.getNodeValue()))
-                        {return false;}
+                    if (!safeEquals(a.getNodeValue(), b.getNodeValue(), collator)) {
+                        return false;
+                    }
                 }
                 break;
             case Node.ELEMENT_NODE:
-                if (!compareElements(a, b))
-                    {return false;}
+                if (!compareElements(a, b, collator)) {
+                    return false;
+                }
                 break;
             default:
                 throw new RuntimeException("unexpected node type " + nodeTypeA);
@@ -315,7 +321,7 @@ public class FunDeepEqual extends CollatingFunction {
         return nodeType;
     }
 
-    private static boolean compareAttributes(Node a, Node b) {
+    private static boolean compareAttributes(final Node a, final Node b, @Nullable final Collator collator) {
         final NamedNodeMap nnma = a.getAttributes();
         final NamedNodeMap nnmb = b.getAttributes();
         if (getAttrCount(nnma) != getAttrCount(nnmb)) {return false;}
@@ -328,7 +334,7 @@ public class FunDeepEqual extends CollatingFunction {
             final Node tb = ta.getLocalName() == null ?
                 nnmb.getNamedItem(ta.getNodeName()) :
                 nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
-            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue())) {
+            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue(), collator)) {
                 return false;
             }
         }
@@ -339,9 +345,9 @@ public class FunDeepEqual extends CollatingFunction {
      * Return the number of real attributes in the map. Filter out
      * xmlns namespace attributes.
      */
-    private static int getAttrCount(NamedNodeMap nnm) {
+    private static int getAttrCount(final NamedNodeMap nnm) {
         int count = 0;
-        for (int i=0; i<nnm.getLength(); i++) {
+        for (int i = 0; i < nnm.getLength(); i++) {
             final Node n = nnm.item(i);
             final String ns = n.getNamespaceURI();
             if (ns == null || !Namespaces.XMLNS_NS.equals(ns)) {
@@ -351,16 +357,20 @@ public class FunDeepEqual extends CollatingFunction {
         return count;
     }
 
-    private static boolean compareNames(Node a, Node b) {
+    private static boolean compareNames(final Node a, final Node b) {
         if (a.getLocalName() != null || b.getLocalName() != null) {
-            return safeEquals(a.getNamespaceURI(), b.getNamespaceURI()) &&
-                safeEquals(a.getLocalName(), b.getLocalName());
+            return safeEquals(a.getNamespaceURI(), b.getNamespaceURI(), null) &&
+                safeEquals(a.getLocalName(), b.getLocalName(), null);
         }
-        return safeEquals(a.getNodeName(), b.getNodeName());
+        return safeEquals(a.getNodeName(), b.getNodeName(), null);
     }
 
-    private static boolean safeEquals(Object a, Object b) {
-        return Objects.equals(a, b);
+    private static boolean safeEquals(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
+        if (collator == null || a == null || b == null) {
+            return Objects.equals(a, b);
+        } else {
+            return collator.equals(a, b);
+        }
     }
 
 }
