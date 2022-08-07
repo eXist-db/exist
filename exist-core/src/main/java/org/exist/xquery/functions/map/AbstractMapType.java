@@ -27,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.fn.FunCodepointEqual;
+import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
@@ -39,6 +41,7 @@ import java.util.function.BinaryOperator;
  * call.
  *
  * @author Wolfgang Meier
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractMapType extends FunctionReference
         implements IEntry<AtomicValue, Sequence>, Iterable<IEntry<AtomicValue, Sequence>>,
@@ -140,15 +143,84 @@ public abstract class AbstractMapType extends FunctionReference
         getAccessorFunc().resetState(postOptimization);
     }
 
-    protected static boolean keysEqual(@Nullable final Collator collator, final AtomicValue k1, final AtomicValue k2) {
+    /**
+     * Implementation of <a href="https://www.w3.org/TR/xpath-functions-31/#func-same-key">op:same-key</a>
+     *
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     * @param k1 the first key to be compared.
+     * @param k2 the second key to be compared.
+     *
+     * @return true if the keys are equal according to the rules of op:same-key, false otherwise.
+     */
+    protected static boolean sameKey(@Nullable final Collator collator, final AtomicValue k1, final AtomicValue k2) {
+        final int k1Type = k1.getType();
+        final int k2Type = k2.getType();
+
         try {
-            return ValueComparison.compareAtomic(collator, k1, k2, Constants.StringTruncationOperator.NONE, Constants.Comparison.EQ);
+
+            // $k1 is an instance of xs:string, xs:anyURI, or xs:untypedAtomic
+            // $k2 is an instance of xs:string, xs:anyURI, or xs:untypedAtomic
+            // fn:codepoint-equal($k1, $k2)
+            if ((Type.subTypeOf(k1Type, Type.STRING) || k1Type == Type.ANY_URI || k1Type ==Type.UNTYPED_ATOMIC)
+                    && (Type.subTypeOf(k2Type, Type.STRING) || k2Type == Type.ANY_URI || k2Type == Type.UNTYPED_ATOMIC)
+                    && FunCodepointEqual.codepointEqual(k1, k2, collator)) {
+                return true;
+            }
+
+            // $k1 is an instance of xs:decimal, xs:double, or xs:float
+            // $k2 is an instance of xs:decimal, xs:double, or xs:float
+            if ((Type.subTypeOf(k1Type, Type.DECIMAL) || k1Type == Type.DOUBLE || k1Type == Type.FLOAT)
+                    && (Type.subTypeOf(k2Type, Type.DECIMAL) || k2Type == Type.DOUBLE || k2Type == Type.FLOAT)) {
+
+                // Both $k1 and $k2 are NaN
+                // Note: xs:double('NaN') is the same key as xs:float('NaN')
+                if (((NumericValue) k1).isNaN() && ((NumericValue) k2).isNaN()) {
+                    return true;
+                }
+
+                // Both $k1 and $k2 are positive infinity
+                // Note: xs:double('INF') is the same key as xs:float('INF')
+                if (((NumericValue) k1).isPositiveInfinity() && ((NumericValue) k2).isPositiveInfinity()) {
+                    return true;
+                }
+
+                // Both $k1 and $k2 are negative infinity
+                // Note: xs:double('-INF') is the same key as xs:float('-INF')
+                if (((NumericValue) k1).isNegativeInfinity() && ((NumericValue) k2).isNegative()) {
+                    return true;
+                }
+
+                // $k1 and $k2 when converted to decimal numbers with no rounding or loss of precision are mathematically equal.
+                if (((NumericValue) k1).convertTo(Type.DECIMAL).equals(((NumericValue) k2).convertTo(Type.DECIMAL))) {
+                    return true;
+                }
+            }
+
+            // $k1 is an instance of xs:date, xs:time, xs:dateTime, xs:gYear, xs:gYearMonth, xs:gMonth, xs:gMonthDay, or xs:gDay
+            // $k2 is an instance of xs:date, xs:time, xs:dateTime, xs:gYear, xs:gYearMonth, xs:gMonth, xs:gMonthDay, or xs:gDay
+            // Both $k1 and $k2 have a timezone, OR Neither $k1 nor $k2 has a timezone
+            // fn:deep-equal($k1, $k2)
+            if ((k1Type == Type.DATE || k1Type == Type.TIME || Type.subTypeOf(k1Type, Type.DATE_TIME) || k1Type == Type.G_YEAR || k1Type == Type.G_YEAR_MONTH || k1Type == Type.G_MONTH || k1Type == Type.G_MONTH_DAY || k1Type == Type.G_DAY)
+                    && (k2Type == Type.DATE || k2Type == Type.TIME || Type.subTypeOf(k2Type, Type.DATE_TIME) || k2Type == Type.G_YEAR || k2Type == Type.G_YEAR_MONTH || k2Type == Type.G_MONTH || k2Type == Type.G_MONTH_DAY || k2Type == Type.G_DAY)
+                    && (((AbstractDateTimeValue) k1).hasTimezone() == ((AbstractDateTimeValue) k2).hasTimezone())
+                    && FunDeepEqual.deepEquals(k1, k2, collator)) {
+                return true;
+            }
+
+            // $k1 is an instance of xs:boolean, xs:hexBinary, xs:base64Binary, xs:duration, xs:QName, or xs:NOTATION
+            // $k2 is an instance of xs:boolean, xs:hexBinary, xs:base64Binary, xs:duration, xs:QName, or xs:NOTATION
+            // fn:deep-equal($k1, $k2)
+            if ((k1Type == Type.BOOLEAN || k1Type == Type.HEX_BINARY || k1Type == Type.BASE64_BINARY || Type.subTypeOf(k1Type, Type.DURATION) || k1Type == Type.QNAME || k1Type == Type.NOTATION)
+                    && (k2Type == Type.BOOLEAN || k2Type == Type.HEX_BINARY || k2Type == Type.BASE64_BINARY || Type.subTypeOf(k2Type, Type.DURATION) || k2Type == Type.QNAME || k2Type == Type.NOTATION)
+                    && FunDeepEqual.deepEquals(k1, k2, collator)) {
+                return true;
+            }
+
         } catch (final XPathException e) {
-            LOG.warn("Unable to compare with collation '{}', will fallback to non-collation comparision. Error: {}", collator, e.getMessage(), e);
+            LOG.warn("Unable to compare k1={} with k2={}, using collation '{}'. Error: {}", k1, k2, collator, e.getMessage(), e);
         }
 
-        // fallback
-        return k1.equals(k2);
+        return false;
     }
 
     @Override

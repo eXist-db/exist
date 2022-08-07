@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.BasicFunction;
@@ -35,9 +36,12 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -79,13 +83,29 @@ public class FunCodepointEqual extends BasicFunction {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             result = new BooleanValue(this,
-                    Collations.compare(context.getDefaultCollator(), args[0].itemAt(0).getStringValue(), args[1].itemAt(0).getStringValue()) == Constants.EQUAL
+                    codepointEqual(args[0].itemAt(0), args[1].itemAt(0), context.getDefaultCollator())
             );
+
         }
 
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
 
         return result;
+    }
+
+    /**
+     * Apply fn:codepoint-equal logic to the provided items.
+     *
+     * @param item1 the first Item to be compared.
+     * @param item2 the second Item to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return true if the items are codepoint equal, false otherwise.
+     *
+     * @throws XPathException if atomisation fails.
+     */
+    public static boolean codepointEqual(final Item item1, final Item item2, @Nullable final Collator collator) throws XPathException {
+        return Collations.compare(collator, item1.getStringValue(), item2.getStringValue()) == Constants.EQUAL;
     }
 }

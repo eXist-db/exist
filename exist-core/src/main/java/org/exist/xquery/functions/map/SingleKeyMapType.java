@@ -67,7 +67,7 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public Sequence get(final AtomicValue key) {
-        if (keysEqual(collator, this.key, key)) {
+        if (sameKey(collator, this.key, key)) {
             return this.value;
         }
         return null;
@@ -105,7 +105,7 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public boolean contains(final AtomicValue key) {
-        return keysEqual(collator, this.key, key);
+        return sameKey(collator, this.key, key);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) throws XPathException {
         for (final AtomicValue key: keysAtomicValues) {
-            if (keysEqual(collator, key, this.key)) {
+            if (sameKey(collator, key, this.key)) {
                 // single key map, and we matched on our key... return an empty map!
                 return new MapType(getExpression(), context);
             }
