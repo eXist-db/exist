@@ -1391,25 +1391,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            // docId and nodeId are stored as doc value
+            // eXist-db Document ID and Node ID are stored as Lucene document fields
             NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(LuceneUtil.FIELD_NODE_ID, new BytesRef(8));
-            // docId also needs to be indexed
+            // eXist-db Document ID also needs to be indexed
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
 
             for (PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
 
-
+                // add facets to Lucene document
                 List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
                 facetConfigs.forEach(config ->
                     config.build(broker, currentDoc, pending.nodeId, doc, pending.text)
                 );
 
+                // store the eXist-db Document ID in a Lucene Document field
                 fDocId.setLongValue(currentDoc.getDocId());
                 doc.add(fDocId);
 
-                // store the node id
+                // store the eXist-db Node ID in a Lucene Document field
                 int nodeIdLen = pending.nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
                 ByteConversion.shortToByte((short) pending.nodeId.units(), data, 0);
@@ -1417,7 +1418,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 fNodeId.setBytesValue(data);
                 doc.add(fNodeId);
 
-                // add separate index for node id
+                // add a separate Lucene Document Indexed Field for eXist-db Node ID
                 BinaryTokenStream bts = new BinaryTokenStream(new BytesRef(data));
                 Field fNodeIdIdx = new Field(LuceneUtil.FIELD_NODE_ID, bts, TYPE_NODE_ID);
                 doc.add(fNodeIdIdx);
@@ -1442,6 +1443,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     doc.add(fld);
                 }
 
+                // add a separate Lucene Document Indexed Field for eXist-db Document ID
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
 
