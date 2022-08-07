@@ -507,6 +507,11 @@ public class DeepEqualTest {
         assertEquals("false", rs.getResource(2).getContent());
     }
 
+    @Test
+    public void notDeepEqual() throws XMLDBException {
+        assertQuery(true, "not(deep-equal((true(), 2, 3), (1, 2, 3)))");
+    }
+
     private void assertQuery(boolean expected, String q) throws XMLDBException {
         ResourceSet rs = query.query(q);
         assertEquals(1, rs.getSize());
