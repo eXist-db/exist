@@ -23,11 +23,11 @@ package org.exist.xquery;
 
 import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
+import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Implements a "group by" clause inside a FLWOR.
@@ -48,23 +48,14 @@ public class GroupByClause extends AbstractFLWORClause {
      * would overwrite data.
      */
     private static class GroupByData {
-
-        private Map<List<AtomicValue>, Tuple> groupedMap = null;
-        private Map<QName, LocalVariable> variables = null;
-        private List<LocalVariable> groupingVars = null;
+        private final Map<Sequence, Tuple> groupedMap;
+        private final Map<QName, LocalVariable> variables = new HashMap<>();
+        private final List<LocalVariable> groupingVars = new ArrayList<>();
 
         private boolean initialized = false;
 
-        public GroupByData(final boolean useDefaultCollator, final Comparator<List<AtomicValue>> keyComparator) {
-            // check if we can use a hash map
-            if (useDefaultCollator) {
-                groupedMap = new HashMap<>();
-            } else {
-                // non-default collation: must use tree map
-                groupedMap = new TreeMap<>(keyComparator);
-            }
-            variables = new HashMap<>();
-            groupingVars = new ArrayList<>();
+        public GroupByData(final Comparator<Sequence> keyComparator) {
+            this.groupedMap = new TreeMap<>(keyComparator);
         }
     }
 
@@ -79,7 +70,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        stack.push(new GroupByData(usesDefaultCollator(), this::compareKeys));
+        stack.push(new GroupByData(this::compareKeys));
         return super.preEval(seq);
     }
 
@@ -89,7 +80,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
         // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
-        final List<AtomicValue> groupingKeys = new ArrayList<>();
+        final Sequence groupingKeys = new ArrayListValueSequence();
         for (final GroupSpec spec: groupSpecs) {
             final Sequence groupingSeq = spec.getGroupExpression().eval(null, null);
             if (groupingSeq.getItemCount() > 1) {
@@ -276,31 +267,30 @@ public class GroupByClause extends AbstractFLWORClause {
     /**
      * Compare keys using the collator given in the group spec. Used to
      * sort keys into the grouping map.
+     *
+     * @param s1 the keys in the n group entry
+     * @param s2 the keys in the n+1 group entry
+     *
+     * @return a negative integer, zero, or a positive integer as the first argument is less than,
+     *         equal to, or greater than the second.
      */
-    private int compareKeys(final List<AtomicValue> s1, final List<AtomicValue> s2) {
-        final int c1 = s1.size();
-        final int c2 = s2.size();
+    private int compareKeys(final Sequence s1, final Sequence s2) {
+        final int c1 = s1.getItemCount();
+        final int c2 = s2.getItemCount();
         if (c1 == c2) {
-            try {
-                for (int i = 0; i < c1; i++) {
-                    final AtomicValue v1 = s1.get(i);
-                    final AtomicValue v2 = s2.get(i);
-                    final Collator collator = groupSpecs[i].getCollator();
-                    final int r = v1.compareTo(collator, v2);
-                    if (r != Constants.EQUAL) {
-                        return r;
-                    }
+            for (int i = 0; i < c1; i++) {
+                final Item v1 = s1.itemAt(i);
+                final Item v2 = s2.itemAt(i);
+                final Collator collator = groupSpecs[i].getCollator();
+
+                final int comparison = FunDeepEqual.deepCompare(v1, v2, collator);
+                if (comparison != Constants.EQUAL) {
+                    return comparison;
                 }
-                return Constants.EQUAL;
-            } catch (XPathException e) {
-                return Constants.INFERIOR;
             }
+            return Constants.EQUAL;
         }
         return c1 < c2 ? Constants.INFERIOR : Constants.SUPERIOR;
-    }
-
-    private boolean usesDefaultCollator() {
-        return Stream.of(groupSpecs).allMatch(spec -> spec.getCollator() == null);
     }
 
     static class Tuple extends HashMap<QName, Sequence> {
