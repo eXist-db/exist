@@ -150,8 +150,11 @@ public class FloatValue extends NumericValue {
     @Override
     protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
         final IntSupplier comparison;
-
-        if (isInfinite() && other.isInfinite() && isPositive() == other.isPositive()) {
+        if (isNaN()) {
+            comparison = () -> Constants.INFERIOR;
+        } else if (other.isNaN()) {
+            comparison = () -> Constants.SUPERIOR;
+        } else if (isInfinite() && other.isInfinite() && isPositive() == other.isPositive()) {
             comparison = () -> Constants.EQUAL;
         } else if (other instanceof IntegerValue) {
             comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
