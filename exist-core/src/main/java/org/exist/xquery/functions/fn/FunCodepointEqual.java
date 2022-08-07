@@ -74,21 +74,18 @@ public class FunCodepointEqual extends BasicFunction {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                 "CONTEXT SEQUENCE", contextSequence);}
         }
-        Sequence result;
-        if (args[0].isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else if (args[1].isEmpty())
-            {result =  Sequence.EMPTY_SEQUENCE;}
-        else {
-            result = new BooleanValue(this, Collations.compare(
-                //TODO : how ugly ! We should be able to use Collations.UNICODE_CODEPOINT_COLLATION_URI here ! -pb
-                context.getDefaultCollator(),
-                getArgument(0).eval(contextSequence, null).getStringValue(),
-                getArgument(1).eval(contextSequence, null).getStringValue())
-                == Constants.EQUAL);
+        final Sequence result;
+        if (args[0].isEmpty() || args[1].isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            result = new BooleanValue(this,
+                    Collations.compare(context.getDefaultCollator(), args[0].itemAt(0).getStringValue(), args[1].itemAt(0).getStringValue()) == Constants.EQUAL
+            );
         }
-        if (context.getProfiler().isEnabled()) 
+
+        if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
+
         return result;
     }
 }
