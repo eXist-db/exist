@@ -70,7 +70,7 @@ public class MapType extends AbstractMapType {
     private int keyType = UNKNOWN_KEY_TYPE;
 
     private static IMap<AtomicValue, Sequence> newMap(@Nullable final Collator collator) {
-        return new Map<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
+        return new Map<>(KEY_HASH_FN, (k1, k2) -> sameKey(collator, k1, k2));
     }
 
     /**
@@ -85,7 +85,7 @@ public class MapType extends AbstractMapType {
      * @return A mutable-map on which {@link IMap#forked()} can be called to produce an immutable map. 
      */
     public static <V> IMap<AtomicValue, V> newLinearMap(@Nullable final Collator collator) {
-        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> keysEqual(collator, k1, k2));
+        return new LinearMap<>(KEY_HASH_FN, (k1, k2) -> sameKey(collator, k1, k2));
     }
 
     public MapType(final XQueryContext context) {

@@ -512,6 +512,36 @@ public class DeepEqualTest {
         assertQuery(true, "not(deep-equal((true(), 2, 3), (1, 2, 3)))");
     }
 
+    @Test
+    public void fnDeepEqualMaps7() throws XMLDBException {
+        assertQuery(true, "fn:deep-equal(map{xs:double('NaN'):true()}, map{xs:double('NaN'):true()})");
+    }
+
+    @Test
+    public void fnDeepEqualMaps8() throws XMLDBException {
+        assertQuery(true, "fn:deep-equal(map{xs:double('NaN'):true()}, map{xs:float('NaN'):true()})");
+    }
+
+    @Test
+    public void fnDeepEqualMixArgs020() throws XMLDBException {
+        assertQuery(true, "fn:deep-equal(xs:float('INF'), xs:double('INF'))");
+    }
+
+    @Test
+    public void fnDeepEqualMixArgs021() throws XMLDBException {
+        assertQuery(true, "fn:deep-equal(xs:float('-INF'), xs:double('-INF'))");
+    }
+
+    @Test
+    public void fnDeepEqualEquivalentIntAndString() throws XMLDBException {
+        assertQuery(false, "fn:deep-equal(xs:integer(1), xs:string('1'))");
+    }
+
+    @Test
+    public void fnDeepEqualEquivalentStringAndInt() throws XMLDBException {
+        assertQuery(false, "fn:deep-equal(xs:string('1'), xs:integer(1))");
+    }
+
     private void assertQuery(boolean expected, String q) throws XMLDBException {
         ResourceSet rs = query.query(q);
         assertEquals(1, rs.getSize());

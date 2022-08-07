@@ -292,6 +292,15 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
     }
 
+    /**
+     * Returns true if a timezone is defined.
+     *
+     * @return true if a timezone is defined.
+     */
+    public boolean hasTimezone() {
+        return calendar.getTimezone() !=  DatatypeConstants.FIELD_UNDEFINED;
+    }
+
     protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
         final Duration tz = offset.duration;
         final Number secs = tz.getField(DatatypeConstants.SECONDS);
