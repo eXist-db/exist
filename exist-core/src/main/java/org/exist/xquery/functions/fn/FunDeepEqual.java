@@ -31,8 +31,7 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.Constants.StringTruncationOperator;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -56,12 +55,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
 
 /**
  * Implements the fn:deep-equal library function.
  *
- * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FunDeepEqual extends CollatingFunction {
 
@@ -131,166 +129,260 @@ public class FunDeepEqual extends CollatingFunction {
         return result;
     }
 
-    public static boolean deepEqualsSeq(final Sequence sa, final Sequence sb, @Nullable final Collator collator) {
-        final int length = sa.getItemCount();
-        if (length != sb.getItemCount()) {
-            return false;
-        } else {
-            for (int i = 0; i < length; i++) {
-                if (!deepEquals(sa.itemAt(i), sb.itemAt(i), collator)) {
-                    return false;
+    /**
+     * Deep comparison of two Sequences according to the rules of fn:deep-equals.
+     *
+     * @param sequence1 the first Sequence to be compared.
+     * @param sequence2 the second Sequence to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return a negative integer, zero, or a positive integer, if the first argument is less than, equal to, or greater than the second.
+     */
+    public static int deepCompareSeq(final Sequence sequence1, final Sequence sequence2, @Nullable final Collator collator) {
+        if (sequence1 == sequence2) {
+            return Constants.EQUAL;
+        }
+
+        final int sequence1Count = sequence1.getItemCount();
+        final int sequence2Count = sequence2.getItemCount();
+        if (sequence1Count == sequence2Count) {
+            for (int i = 0; i < sequence1Count; i++) {
+                final Item item1 = sequence1.itemAt(i);
+                final Item item2 = sequence2.itemAt(i);
+
+                final int comparison = deepCompare(item1, item2, collator);
+                if (comparison != Constants.EQUAL) {
+                    return comparison;
                 }
             }
-            return true;
+            return Constants.EQUAL;
+        } else {
+            return sequence1Count < sequence2Count ? Constants.INFERIOR : Constants.SUPERIOR;
         }
     }
 
-    public static boolean deepEquals(final Item a, final Item b, @Nullable final Collator collator) {
+    /**
+     * Deep comparison of two Items according to the rules of fn:deep-equals.
+     *
+     * @param item1 the first Item to be compared.
+     * @param item2 the second Item to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return a negative integer, zero, or a positive integer, if the first argument is less than, equal to, or greater than the second.
+     */
+    public static int deepCompare(final Item item1, final Item item2, @Nullable final Collator collator) {
+        if (item1 == item2) {
+            return Constants.EQUAL;
+        }
+
         try {
-            if (a.getType() == Type.ARRAY_ITEM || b.getType() == Type.ARRAY_ITEM) {
-                if (a.getType() != b.getType()) {
-                    return false;
+            if (item1.getType() == Type.ARRAY_ITEM || item2.getType() == Type.ARRAY_ITEM) {
+                if (item1.getType() != item2.getType()) {
+                    return Constants.INFERIOR;
                 }
-                final ArrayType ar = (ArrayType) a;
-                final ArrayType br = (ArrayType) b;
-                if (ar.getSize() != br.getSize()) {
-                    return false;
-                }
-                for (int i = 0; i < ar.getSize(); i++) {
-                    if (!deepEqualsSeq(ar.get(i), br.get(i), collator)) {
-                        return false;
+                final ArrayType array1 = (ArrayType) item1;
+                final ArrayType array2 = (ArrayType) item2;
+                final int array1Size = array1.getSize();
+                final int array2Size = array2.getSize();
+                if (array1Size == array2Size) {
+                    for (int i = 0; i < array1.getSize(); i++) {
+                        final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator);
+                        if (comparison != Constants.EQUAL) {
+                            return comparison;
+                        }
                     }
+                    return Constants.EQUAL;
+                } else {
+                    return array1Size < array2Size ? Constants.INFERIOR : Constants.SUPERIOR;
                 }
-                return true;
             }
-            if (a.getType() == Type.MAP_ITEM || b.getType() == Type.MAP_ITEM) {
-                if (a.getType() != b.getType()) {
-                    return false;
+
+            if (item1.getType() == Type.MAP_ITEM || item2.getType() == Type.MAP_ITEM) {
+                if (item1.getType() != item2.getType()) {
+                    return Constants.INFERIOR;
                 }
-                final AbstractMapType amap = (AbstractMapType) a;
-                final AbstractMapType bmap = (AbstractMapType) b;
-                if (amap.size() != bmap.size()) {
-                    return false;
-                }
-                for (final IEntry<AtomicValue, Sequence> aentry: amap) {
-                    if (!bmap.contains(aentry.key())) {
-                        return false;
+                final AbstractMapType map1 = (AbstractMapType) item1;
+                final AbstractMapType map2 = (AbstractMapType) item2;
+                final int map1Size = map1.size();
+                final int map2Size = map2.size();
+
+                if (map1Size == map2Size) {
+                    for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
+                        if (!map2.contains(entry1.key())) {
+                            return Constants.SUPERIOR;
+                        }
+
+                        final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator);
+                        if (comparison != Constants.EQUAL) {
+                            return comparison;
+                        }
                     }
-                    if (!deepEqualsSeq(aentry.value(), bmap.get(aentry.key()), collator)) {
-                        return false;
-                    }
+                    return Constants.EQUAL;
+                } else {
+                    return map1Size < map2Size ? Constants.INFERIOR : Constants.SUPERIOR;
                 }
-                return true;
             }
-            final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ANY_ATOMIC_TYPE);
-            final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ANY_ATOMIC_TYPE);
-            if (aAtomic || bAtomic) {
-                if (!aAtomic || !bAtomic)
-                    {return false;}
+
+            final boolean item1IsAtomic = Type.subTypeOf(item1.getType(), Type.ANY_ATOMIC_TYPE);
+            final boolean item2IsAtomic = Type.subTypeOf(item2.getType(), Type.ANY_ATOMIC_TYPE);
+            if (item1IsAtomic || item2IsAtomic) {
+                if (!item1IsAtomic) {
+                    return Constants.SUPERIOR;
+                }
+
+                if (!item2IsAtomic) {
+                    return Constants.INFERIOR;
+                }
+
                 try {
-                    final AtomicValue av = (AtomicValue) a;
-                    final AtomicValue bv = (AtomicValue) b;
+                    final AtomicValue av = (AtomicValue) item1;
+                    final AtomicValue bv = (AtomicValue) item2;
                     if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC) &&
-                        Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)) {
+                            Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)) {
                         //or if both values are NaN
-                        if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
-                            {return true;}
+                        if (((NumericValue) item1).isNaN() && ((NumericValue) item2).isNaN()) {
+                            return Constants.EQUAL;
+                        }
                     }
-                    return ValueComparison.compareAtomic(collator, av, bv,
-                            StringTruncationOperator.NONE, Comparison.EQ);
+
+                    final int comparison = ValueComparison.compareAtomic(collator, av, bv);
+                    return comparison;
                 } catch (final XPathException e) {
-                    return false;
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(e.getMessage());
+                    }
+                    return Constants.INFERIOR;
                 }
             }
-            if (a.getType() != b.getType())
-                {return false;}
-            final NodeValue nva = (NodeValue) a;
-            final NodeValue nvb = (NodeValue) b;
-            if (nva == nvb) {return true;}
+
+            if (item1.getType() != item2.getType()) {
+                return Constants.INFERIOR;
+            }
+            final NodeValue nva = (NodeValue) item1;
+            final NodeValue nvb = (NodeValue) item2;
+            if (nva == nvb) {
+                return Constants.EQUAL;
+            }
+
             try {
                 //Don't use this shortcut for in-memory nodes
                 //since the symbol table is ignored.
                 if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE &&
-                    nva.equals(nvb))
-                    {return true;} // shortcut!
+                        nva.equals(nvb)) {
+                    return Constants.EQUAL;  // shortcut!
+                }
             } catch (final XPathException e) {
                 // apparently incompatible values, do manual comparison
             }
-            final Node na;
-            final Node nb;
-            switch(a.getType()) {
-            case Type.DOCUMENT:
-                // NodeValue.getNode() doesn't seem to work for document nodes
-                na = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
-                nb = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
-                return compareContents(na, nb, collator);
-            case Type.ELEMENT:
-                na = nva.getNode();
-                nb = nvb.getNode();
-                return compareElements(na, nb, collator);
-            case Type.ATTRIBUTE:
-                na = nva.getNode();
-                nb = nvb.getNode();
-                return compareNames(na, nb)
-                    && safeEquals(na.getNodeValue(), nb.getNodeValue(), collator);
-            case Type.PROCESSING_INSTRUCTION:
-            case Type.NAMESPACE:
-                na = nva.getNode(); nb = nvb.getNode();
-                return safeEquals(na.getNodeName(), nb.getNodeName(), collator) &&
-                    safeEquals(nva.getStringValue(), nvb.getStringValue(), collator);
-            case Type.TEXT:
-            case Type.COMMENT:
-                return safeEquals(nva.getStringValue(), nvb.getStringValue(), collator);
-            default:
-                throw new RuntimeException("unexpected item type " + Type.getTypeName(a.getType()));
+
+            final Node node1;
+            final Node node2;
+            switch (item1.getType()) {
+                case Type.DOCUMENT:
+                    node1 = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
+                    node2 = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
+                    return compareContents(node1, node2, collator);
+
+                case Type.ELEMENT:
+                    node1 = nva.getNode();
+                    node2 = nvb.getNode();
+                    return compareElements(node1, node2, collator);
+
+                case Type.ATTRIBUTE:
+                    node1 = nva.getNode();
+                    node2 = nvb.getNode();
+                    final int attributeNameComparison = compareNames(node1, node2);
+                    if (attributeNameComparison != Constants.EQUAL) {
+                        return attributeNameComparison;
+                    }
+                    return safeCompare(node1.getNodeValue(), node2.getNodeValue(), collator);
+
+                case Type.PROCESSING_INSTRUCTION:
+                case Type.NAMESPACE:
+                    node1 = nva.getNode();
+                    node2 = nvb.getNode();
+                    final int nameComparison = safeCompare(node1.getNodeName(), node2.getNodeName(), null);
+                    if (nameComparison != Constants.EQUAL) {
+                        return nameComparison;
+                    }
+                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+
+                case Type.TEXT:
+                case Type.COMMENT:
+                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+
+                default:
+                    throw new RuntimeException("unexpected item type " + Type.getTypeName(item1.getType()));
             }
         } catch (final XPathException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
-            return false;
+            logger.error(e.getMessage(), e);
+            return Constants.INFERIOR;
         }
     }
 
-    private static boolean compareElements(final Node a, final Node b, @Nullable final Collator collator) {
-        return compareNames(a, b) && compareAttributes(a, b, collator) && compareContents(a, b, collator);
+
+    /**
+     * Deep equality of two Sequences according to the rules of fn:deep-equals.
+     *
+     * @param sequence1 the first Sequence to be compared.
+     * @param sequence2 the second Sequence to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return true if the Sequences are equal according to the rules of fn:deep-equals, false otherwise.
+     */
+    public static boolean deepEqualsSeq(final Sequence sequence1, final Sequence sequence2, @Nullable final Collator collator) {
+        return deepCompareSeq(sequence1, sequence2, collator) == Constants.EQUAL;
     }
 
-    private static boolean compareContents(Node a, Node b, @Nullable final Collator collator) {
+    /**
+     * Deep equality of two Items according to the rules of fn:deep-equals.
+     *
+     * @param item1 the first Item to be compared.
+     * @param item2 the second Item to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return true if the Items are equal according to the rules of fn:deep-equals, false otherwise.
+     */
+    public static boolean deepEquals(final Item item1, final Item item2, @Nullable final Collator collator) {
+        return deepCompare(item1, item2, collator) == Constants.EQUAL;
+    }
+
+    private static int compareElements(final Node a, final Node b, @Nullable final Collator collator) {
+        int comparison = compareNames(a, b);
+        if (comparison != Constants.EQUAL) {
+            return comparison;
+        }
+
+        comparison = compareAttributes(a, b, collator);
+        if (comparison != Constants.EQUAL) {
+            return comparison;
+        }
+
+        return compareContents(a, b, collator);
+    }
+
+    private static int compareContents(Node a, Node b, @Nullable final Collator collator) {
         a = findNextTextOrElementNode(a.getFirstChild());
         b = findNextTextOrElementNode(b.getFirstChild());
         while (!(a == null || b == null)) {
             final int nodeTypeA = getEffectiveNodeType(a);
             final int nodeTypeB = getEffectiveNodeType(b);
             if (nodeTypeA != nodeTypeB) {
-                return false;
+                return Constants.INFERIOR;
             }
             switch (nodeTypeA) {
             case Node.TEXT_NODE:
-                if (a.getNodeType() == NodeImpl.REFERENCE_NODE &&
-                        b.getNodeType() == NodeImpl.REFERENCE_NODE) {
-                    if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
-                            ((ReferenceNode)b).getReference().getNodeValue(), collator)) {
-                        return false;
-                    }
-                } else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
-                    if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(),
-                            b.getNodeValue(), collator)) {
-                        return false;
-                    }
-                } else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
-                    if (!safeEquals(a.getNodeValue(), 
-                            ((ReferenceNode)b).getReference().getNodeValue(), collator)) {
-                        return false;
-                    }
-                } else {
-                    if (!safeEquals(a.getNodeValue(), b.getNodeValue(), collator)) {
-                        return false;
-                    }
+                final String nodeValueA = getNodeValue(a);
+                final String nodeValueB = getNodeValue(b);
+                final int textComparison = safeCompare(nodeValueA, nodeValueB, collator);
+                if (textComparison != Constants.EQUAL) {
+                    return textComparison;
                 }
                 break;
             case Node.ELEMENT_NODE:
-                if (!compareElements(a, b, collator)) {
-                    return false;
+                final int elementComparison = compareElements(a, b, collator);
+                if (elementComparison != Constants.EQUAL) {
+                    return elementComparison;
                 }
                 break;
             default:
@@ -299,21 +391,38 @@ public class FunDeepEqual extends CollatingFunction {
             a = findNextTextOrElementNode(a.getNextSibling());
             b = findNextTextOrElementNode(b.getNextSibling());
         }
-        return a == b; // both null
+
+        if (a == b) {
+            return Constants.EQUAL; // both null
+        } else if (a == null) {
+            return Constants.INFERIOR;
+        } else {
+            return Constants.SUPERIOR;
+        }
+    }
+
+    private static String getNodeValue(final Node n) {
+        if (n.getNodeType() == NodeImpl.REFERENCE_NODE) {
+           return ((ReferenceNode)n).getReference().getNodeValue();
+        } else {
+            return n.getNodeValue();
+        }
     }
 
     private static Node findNextTextOrElementNode(Node n) {
         for(;;) {
-            if (n == null)
-                {return null;}
+            if (n == null) {
+                return null;
+            }
             final int nodeType = getEffectiveNodeType(n);
-            if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE)
-                {return n;}
+            if (nodeType == Node.ELEMENT_NODE || nodeType == Node.TEXT_NODE) {
+                return n;
+            }
             n = n.getNextSibling();
         }
     }
 
-    private static int getEffectiveNodeType(Node n) {
+    private static int getEffectiveNodeType(final Node n) {
         int nodeType = n.getNodeType();
         if (nodeType == NodeImpl.REFERENCE_NODE) {
             nodeType = ((ReferenceNode) n).getReference().getNode().getNodeType();
@@ -321,24 +430,34 @@ public class FunDeepEqual extends CollatingFunction {
         return nodeType;
     }
 
-    private static boolean compareAttributes(final Node a, final Node b, @Nullable final Collator collator) {
+    private static int compareAttributes(final Node a, final Node b, @Nullable final Collator collator) {
         final NamedNodeMap nnma = a.getAttributes();
         final NamedNodeMap nnmb = b.getAttributes();
-        if (getAttrCount(nnma) != getAttrCount(nnmb)) {return false;}
-        for (int i = 0; i < nnma.getLength(); i++) {
-            final Node ta = nnma.item(i);
-            final String nsA = ta.getNamespaceURI();
-            if (nsA != null && Namespaces.XMLNS_NS.equals(nsA)) {
-                continue;
+
+        final int aCount = getAttrCount(nnma);
+        final int bCount = getAttrCount(nnmb);
+
+        if (aCount == bCount) {
+            for (int i = 0; i < nnma.getLength(); i++) {
+                final Node ta = nnma.item(i);
+                final String nsA = ta.getNamespaceURI();
+                if (nsA != null && Namespaces.XMLNS_NS.equals(nsA)) {
+                    continue;
+                }
+                final Node tb = ta.getLocalName() == null ? nnmb.getNamedItem(ta.getNodeName()) : nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
+                if (tb == null) {
+                    return Constants.SUPERIOR;
+                }
+                final int comparison = safeCompare(ta.getNodeValue(), tb.getNodeValue(), collator);
+                if (comparison != Constants.EQUAL) {
+                    return comparison;
+                }
             }
-            final Node tb = ta.getLocalName() == null ?
-                nnmb.getNamedItem(ta.getNodeName()) :
-                nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());
-            if (tb == null || !safeEquals(ta.getNodeValue(), tb.getNodeValue(), collator)) {
-                return false;
-            }
+
+            return Constants.EQUAL;
+        } else {
+            return aCount < bCount ? Constants.INFERIOR : Constants.SUPERIOR;
         }
-        return true;
     }
 
     /**
@@ -357,20 +476,34 @@ public class FunDeepEqual extends CollatingFunction {
         return count;
     }
 
-    private static boolean compareNames(final Node a, final Node b) {
+    private static int compareNames(final Node a, final Node b) {
         if (a.getLocalName() != null || b.getLocalName() != null) {
-            return safeEquals(a.getNamespaceURI(), b.getNamespaceURI(), null) &&
-                safeEquals(a.getLocalName(), b.getLocalName(), null);
+            final int nsComparison = safeCompare(a.getNamespaceURI(), b.getNamespaceURI(), null);
+            if (nsComparison != Constants.EQUAL) {
+                return nsComparison;
+            }
+            return safeCompare(a.getLocalName(), b.getLocalName(), null);
         }
-        return safeEquals(a.getNodeName(), b.getNodeName(), null);
+        return safeCompare(a.getNodeName(), b.getNodeName(), null);
     }
 
-    private static boolean safeEquals(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
-        if (collator == null || a == null || b == null) {
-            return Objects.equals(a, b);
+    private static int safeCompare(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
+        if (a == b) {
+            return Constants.EQUAL;
+        }
+
+        if (a == null) {
+            return Constants.INFERIOR;
+        }
+
+        if (b == null) {
+            return Constants.SUPERIOR;
+        }
+
+        if (collator != null) {
+            return collator.compare(a, b);
         } else {
-            return collator.equals(a, b);
+            return a.compareTo(b);
         }
     }
-
 }
