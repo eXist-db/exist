@@ -194,7 +194,7 @@ public class Transform {
                 return invocation.invoke();
 
             } catch (final SaxonApiException | UncheckedXPathException e) {
-                throw originalXPathException(e, ErrorCodes.FOXT0003);
+                throw originalXPathException("Could not transform input: ", e, ErrorCodes.FOXT0003);
             }
 
         } else {
@@ -205,7 +205,8 @@ public class Transform {
 
     private XsltExecutable compileExecutable(final Options options) throws XPathException {
         final XsltCompiler xsltCompiler = org.exist.xquery.functions.fn.transform.Transform.SAXON_PROCESSOR.newXsltCompiler();
-        xsltCompiler.setErrorListener(org.exist.xquery.functions.fn.transform.Transform.ERROR_LISTENER);
+        final SingleRequestErrorListener errorListener = new SingleRequestErrorListener(Transform.ERROR_LISTENER);
+        xsltCompiler.setErrorListener(errorListener);
 
         for (final Map.Entry<net.sf.saxon.s9api.QName, XdmValue> entry : options.staticParams.entrySet()) {
             xsltCompiler.setParameter(entry.getKey(), entry.getValue());
@@ -237,11 +238,10 @@ public class Transform {
 
         try {
             options.resolvedStylesheetBaseURI.ifPresent(anyURIValue -> options.xsltSource._2.setSystemId(anyURIValue.getStringValue()));
-            Transform.ERROR_LISTENER.clear();
             return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
         } catch (final SaxonApiException e) {
-            final Optional<Exception> compilerException = Transform.ERROR_LISTENER.getWorst().map(e1 -> e1);
-            throw originalXPathException(compilerException.orElse(e), ErrorCodes.FOXT0003);
+            final Optional<Exception> compilerException = errorListener.getWorst().map(e1 -> e1);
+            throw originalXPathException("Could not compile stylesheet: ", compilerException.orElse(e), ErrorCodes.FOXT0003);
         }
     }
 
@@ -254,11 +254,11 @@ public class Transform {
      * @param defaultErrorCode use this code and its description to fill in blanks in what we finally throw
      * @returns XPathException the eventual eXist exception which the caller is expected to throw
      */
-    private XPathException originalXPathException(@Nonnull final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
+    private XPathException originalXPathException(final String prefix, @Nonnull final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
         Throwable cause = e;
         while (cause != null) {
             if (cause instanceof XPathException) {
-                return (XPathException) cause;
+                return new XPathException(fnTransform, ((XPathException) cause).getErrorCode(), prefix + cause.getMessage());
             }
             cause = cause.getCause();
         }
@@ -271,15 +271,15 @@ public class Transform {
                 if (from != null) {
                     final QName errorCodeQName = new QName(from.getLocalPart(), from.getURI(), from.getPrefix());
                     final ErrorCodes.ErrorCode errorCode = new ErrorCodes.ErrorCode(errorCodeQName, cause.getMessage());
-                    return new XPathException(errorCode, cause.getMessage());
+                    return new XPathException(fnTransform, errorCode, prefix + cause.getMessage());
                 } else {
-                    return new XPathException(fnTransform, defaultErrorCode, cause.getMessage());
+                    return new XPathException(fnTransform, defaultErrorCode, prefix + cause.getMessage());
                 }
             }
             cause = cause.getCause();
         }
 
-        return new XPathException(fnTransform, defaultErrorCode, e.getMessage());
+        return new XPathException(fnTransform, defaultErrorCode, prefix + e.getMessage());
     }
 
     /**
@@ -429,18 +429,6 @@ public class Transform {
 
     private static class ErrorListenerLog4jAdapter implements ErrorListener {
         private final Logger logger;
-        private Optional<TransformerException> lastError;
-        private Optional<TransformerException> lastFatal;
-
-        public void clear() {
-            lastError = Optional.empty();
-            lastFatal = Optional.empty();
-        }
-
-        public Optional<TransformerException> getWorst() {
-            if (lastFatal.isPresent()) return lastFatal;
-            return lastError;
-        }
 
         public ErrorListenerLog4jAdapter(final Logger logger) {
             this.logger = logger;
@@ -453,14 +441,45 @@ public class Transform {
 
         @Override
         public void error(final TransformerException e) {
-            lastError = Optional.of(e);
             logger.error(e.getMessage(), e);
         }
 
         @Override
         public void fatalError(final TransformerException e) {
-            lastFatal = Optional.of(e);
             logger.fatal(e.getMessage(), e);
+        }
+    }
+
+    private static class SingleRequestErrorListener implements ErrorListener {
+
+        private Optional<TransformerException> lastError;
+        private Optional<TransformerException> lastFatal;
+
+        public Optional<TransformerException> getWorst() {
+            if (lastFatal.isPresent()) return lastFatal;
+            return lastError;
+        }
+
+        private final ErrorListener global;
+        SingleRequestErrorListener(ErrorListener global) {
+            this.global = global;
+        }
+
+        @Override
+        public void warning(TransformerException exception) throws TransformerException {
+            global.warning(exception);
+        }
+
+        @Override
+        public void error(TransformerException exception) throws TransformerException {
+            lastError = Optional.of(exception);
+            global.error(exception);
+        }
+
+        @Override
+        public void fatalError(TransformerException exception) throws TransformerException {
+            lastFatal = Optional.of(exception);
+            global.fatalError(exception);
         }
     }
 }
