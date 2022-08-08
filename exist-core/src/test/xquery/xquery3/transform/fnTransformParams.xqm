@@ -109,6 +109,17 @@ function testTransform:transform-stylesheet-invalid-xslt-version() {
     return (contains(string-join(map:keys($result)),"section2"))
 };
 
+declare
+    %test:assertError("err:FOXT0002")
+function testTransform:transform-stylesheet-source-node-and-initial-match() {
+    let $xsl := $testTransform:transform-33-xsl
+    let $xml := $testTransform:transform-33-xml
+    let $result := fn:transform(map {"stylesheet-text": $xsl, "source-node": parse-xml($xml),
+                "initial-match-selection" : 1 to 5,
+                "delivery-format":"serialized"})
+    return (contains(string-join(map:keys($result)),"section2"))
+};
+
 (: cannot have stylesheet-node and stylesheet-text :)
 declare
     %test:assertError("err:FOXT0002")
@@ -130,3 +141,31 @@ function testTransform:transform-stylesheet-not-provided() {
                                                    "stylesheet-base-uri": "http://www.example.com"})
     return $result?output
 };
+
+(: a bad requested property type :)
+declare
+    %test:assertError("err:XPTY0004")
+function testTransform:transform-stylesheet-bad-delivery() {
+    let $xsl := $testTransform:transform-33-xsl
+    let $xml := $testTransform:transform-33-xml
+    let $result := fn:transform(map {"stylesheet-text": $xsl, "source-node": parse-xml($xml),
+                "base-output-uri" : resolve-uri("transform/sandbox/fn-transform-33.xml", "http://www.w3.org/fots/fn/transform/staticbaseuri.xsl"),
+                "requested-properties" : map{fn:QName('http://www.w3.org/1999/XSL/Transform','supports-dynamic-evaluation'): 2.5 }})
+    return (contains(string-join(map:keys($result)),"section2"))
+};
+
+
+(: a bad requested property key :)
+declare
+    %test:assertError("err:XPTY0004")
+function testTransform:transform-stylesheet-bad-delivery-key-not-qname() {
+    let $xsl := $testTransform:transform-33-xsl
+    let $xml := $testTransform:transform-33-xml
+    let $result := fn:transform(map {"stylesheet-text": $xsl, "source-node": parse-xml($xml),
+                "base-output-uri" : resolve-uri("transform/sandbox/fn-transform-33.xml", "http://www.w3.org/fots/fn/transform/staticbaseuri.xsl"),
+                "requested-properties" : map{'supports-dynamic-evaluation': false() }})
+    return (contains(string-join(map:keys($result)),"section2"))
+};
+
+
+
