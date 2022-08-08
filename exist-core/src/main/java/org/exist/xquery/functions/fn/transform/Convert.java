@@ -40,9 +40,6 @@ import java.util.List;
 
 /**
  * Type conversion to and from Saxon
- * <p>
- * TODO (AP) not yet remotely complete.
- * /p>
  *
  * <p>
  *     Used to convert values to/from Saxon when we use Saxon as the XSLT transformer
@@ -63,6 +60,8 @@ class Convert {
     }
 
     static class ToExist {
+
+        private ToExist() { super(); }
 
         static Sequence of(final XdmValue xdmValue) throws XPathException {
             if (xdmValue.size() == 0) {
@@ -87,27 +86,25 @@ class Convert {
                 } else if (atomicType == BuiltInAtomicType.DOUBLE) {
                     return new DoubleValue(atomicValue.getStringValue());
                 } else {
-                    // TODO (AP)
                     throw new XPathException(ErrorCodes.XPTY0004,
-                            "net.sf.saxon.value.AtomicValue " + atomicValue +
-                                    " could not be converted to an eXist Sequence");
+                            "net.sf.saxon.value.AtomicValue " + atomicValue + COULD_NOT_BE_CONVERTED + "atomic value");
                 }
             } else if (xdmItem instanceof XdmNode) {
                 return ToExist.ofNode((XdmNode)xdmItem);
             }
 
             throw new XPathException(ErrorCodes.XPTY0004,
-                    "XdmItem " + xdmItem +
-                            " could not be converted to an eXist Sequence");
+                    "XdmItem " + xdmItem + COULD_NOT_BE_CONVERTED + "Sequence");
         }
 
         static NodeValue ofNode(final XdmNode xdmNode) throws XPathException {
 
             throw new XPathException(ErrorCodes.XPTY0004,
-                    "XdmNode " + xdmNode +
-                            " could not be converted to an eXist Node, Not yet implemented");
+                    "XdmNode " + xdmNode + COULD_NOT_BE_CONVERTED + " Node");
         }
     }
+
+    static final private String COULD_NOT_BE_CONVERTED = " could not be converted to an eXist ";
 
     abstract static class ToSaxon {
 
@@ -129,8 +126,7 @@ class Convert {
                 return ofNode((Node) item);
             }
             throw new XPathException(ErrorCodes.XPTY0004,
-                    "Item " + item + " of type " + Type.getTypeName(itemType) +
-                            " could not be converted to an XdmValue");
+                    "Item " + item + " of type " + Type.getTypeName(itemType) + COULD_NOT_BE_CONVERTED + "XdmValue");
         }
 
         static private XdmValue ofAtomic(final AtomicValue atomicValue) throws XPathException {
@@ -147,7 +143,7 @@ class Convert {
 
             throw new XPathException(ErrorCodes.XPTY0004,
                     "Atomic value " + atomicValue + " of type " + Type.getTypeName(itemType) +
-                            " could not be converted to an XdmValue");
+                            COULD_NOT_BE_CONVERTED + "XdmValue");
         }
 
         private XdmValue ofNode(final Node node) throws XPathException {
@@ -158,18 +154,16 @@ class Convert {
                     return sourceBuilder.build(new DOMSource(node));
                 } else {
                     //The source must be part of a document
-                    //TODO AP If it isn't, we don't know how to convert it
                     final Document document = node.getOwnerDocument();
                     if (document == null) {
-                        throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + " could not be converted to an XdmValue, as it is not part of a document.");
+                        throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + COULD_NOT_BE_CONVERTED + "XdmValue, as it is not part of a document.");
                     }
                     final List<Integer> nodeIndex = TreeUtils.treeIndex(node);
                     final XdmNode xdmDocument = sourceBuilder.build(new DOMSource(document));
-                    final XdmNode xdmNode = TreeUtils.xdmNodeAtIndex(xdmDocument, nodeIndex);
-                    return xdmNode;
+                    return TreeUtils.xdmNodeAtIndex(xdmDocument, nodeIndex);
                 }
             } catch (final SaxonApiException e) {
-                throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + " could not be converted to an XdmValue", e);
+                throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + COULD_NOT_BE_CONVERTED + "XdmValue", e);
             }
         }
 

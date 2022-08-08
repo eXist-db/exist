@@ -30,7 +30,6 @@ import org.exist.xquery.functions.fn.transform.Transform;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
-import static org.exist.Namespaces.XSL_NS;
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.returnsOptMany;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;

@@ -40,7 +40,7 @@ import java.util.function.BiFunction;
 
 class SerializationParameters {
 
-    static private class ParameterInfo {
+    private static class ParameterInfo {
         final String defaultValue;
         final boolean hasMany;
         final List<Integer> types;
@@ -84,26 +84,33 @@ class SerializationParameters {
         }
     }
 
+    static final String ABSENT = "absent";
+    static final String NONE = "none";
+    static final String YES = "yes";
+    static final String NO = "no";
+
+    static final String USE_CHARACTER_MAPS = "use-character-maps";
+
     enum Param {
-        ALLOW_DUPLICATE_NAMES(Type.BOOLEAN, "no"),
-        BYTE_ORDER_MARK(Type.BOOLEAN, "no"),
+        ALLOW_DUPLICATE_NAMES(Type.BOOLEAN, NO),
+        BYTE_ORDER_MARK(Type.BOOLEAN, NO),
         CDATA_SECTION_ELEMENTS(Type.QNAME, "()", true),
-        DOCTYPE_PUBLIC(Type.STRING, "absent"),
-        DOCTYPE_SYSTEM(Type.STRING, "absent"),
+        DOCTYPE_PUBLIC(Type.STRING, ABSENT),
+        DOCTYPE_SYSTEM(Type.STRING, ABSENT),
         ENCODING(Type.STRING,"utf-8"),
-        ESCAPE_URI_ATTRIBUTES(Type.BOOLEAN, "yes"),
+        ESCAPE_URI_ATTRIBUTES(Type.BOOLEAN, YES),
         HTML_VERSION(Type.DECIMAL, "5"),
-        INCLUDE_CONTENT_TYPE(Type.BOOLEAN, "yes"),
-        INDENT(Type.BOOLEAN, "no"),
-        ITEM_SEPARATOR(Type.STRING, "absent"),
+        INCLUDE_CONTENT_TYPE(Type.BOOLEAN, YES),
+        INDENT(Type.BOOLEAN, NO),
+        ITEM_SEPARATOR(Type.STRING, ABSENT),
         //JSON_NODE_OUTPUT_METHOD
         MEDIA_TYPE(Type.STRING, ""),
         METHOD(Type.STRING, "xml"),
-        NORMALIZATION_FORM(Type.STRING, "none"),
-        OMIT_XML_DECLARATION(Type.BOOLEAN, "yes"),
+        NORMALIZATION_FORM(Type.STRING, NONE),
+        OMIT_XML_DECLARATION(Type.BOOLEAN, YES),
         STANDALONE(Type.BOOLEAN, "omit"),
         SUPPRESS_INDENTATION(Type.QNAME, "()", true),
-        UNDECLARE_PREFIXES(Type.BOOLEAN, "no"),
+        UNDECLARE_PREFIXES(Type.BOOLEAN, NO),
         USE_CHARACTER_MAPS(Type.MAP, "map{}"),
         VERSION(Type.STRING, "1.0");
 
@@ -120,7 +127,7 @@ class SerializationParameters {
         }
     }
 
-    static private String getKeyValue(final IEntry<AtomicValue, Sequence> entry,
+    private static String getKeyValue(final IEntry<AtomicValue, Sequence> entry,
                                       final BiFunction<ErrorCodes.ErrorCode, String, XPathException> errorBuilder) throws XPathException {
         if (!Type.subTypeOf(entry.key().getType(), Type.STRING)) {
             throw errorBuilder.apply(ErrorCodes.XPTY0004,
@@ -129,7 +136,7 @@ class SerializationParameters {
         return entry.key().getStringValue();
     }
 
-    static private Sequence getEntryValue(final IEntry<AtomicValue, Sequence> entry,
+    private static Sequence getEntryValue(final IEntry<AtomicValue, Sequence> entry,
                                           final ParameterInfo parameterInfo,
                                           final BiFunction<ErrorCodes.ErrorCode, String, XPathException> errorBuilder) throws XPathException {
 
@@ -160,7 +167,7 @@ class SerializationParameters {
                 "The value: " + entry.key() + " has multiple values in the sequence, and is required to have none or one.");
     }
 
-    static private Tuple3<String, Sequence, Param> getEntry(
+    private static Tuple3<String, Sequence, Param> getEntry(
             final IEntry<AtomicValue, Sequence> entry,
             final BiFunction<ErrorCodes.ErrorCode, String, XPathException> errorBuilder) throws XPathException {
 
@@ -258,7 +265,7 @@ class SerializationParameters {
         final SerializationProperties combinedProperties = overrideProperties.combineWith(baseProperties);
 
         final List<String> baseCharacterMapKeys = new ArrayList<>();
-        final Optional<String[]> baseCharacterMapString = Optional.ofNullable(baseProperties.getProperty("use-character-maps")).map(s -> s.split(" "));
+        final Optional<String[]> baseCharacterMapString = Optional.ofNullable(baseProperties.getProperty(USE_CHARACTER_MAPS)).map(s -> s.split(" "));
         if (baseCharacterMapString.isPresent()) {
             for (final String s : baseCharacterMapString.get()) {
                 if (!s.isEmpty()) {
@@ -267,7 +274,7 @@ class SerializationParameters {
             }
         }
 
-        final Optional<String> combinedCharacterMapKey = Optional.ofNullable(combinedProperties.getProperty("use-character-maps")).map(String::trim);
+        final Optional<String> combinedCharacterMapKey = Optional.ofNullable(combinedProperties.getProperty(USE_CHARACTER_MAPS)).map(String::trim);
         if (combinedCharacterMapKey.isPresent()) {
             final List<CharacterMap> allMaps = new ArrayList<>();
             for (final String baseCharacterMapKey : baseCharacterMapKeys) {
@@ -280,7 +287,7 @@ class SerializationParameters {
             combinedProperties.getCharacterMapIndex().putCharacterMap(
                     qNameCharacterMap,
                     repairedCombinedMap);
-            combinedProperties.setProperty("use-character-maps", qNameCharacterMap.getClarkName());
+            combinedProperties.setProperty(USE_CHARACTER_MAPS, qNameCharacterMap.getClarkName());
         }
 
         return combinedProperties;

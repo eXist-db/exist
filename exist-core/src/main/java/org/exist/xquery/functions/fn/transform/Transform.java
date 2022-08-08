@@ -81,7 +81,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  */
 public class Transform {
 
-    private static final Logger LOGGER =  LogManager.getLogger(org.exist.xquery.functions.fn.FnTransform.class);
+    private static final Logger LOGGER =  LogManager.getLogger(org.exist.xquery.functions.fn.transform.Transform.class);
     private static final org.exist.xquery.functions.fn.transform.Transform.ErrorListenerLog4jAdapter ERROR_LISTENER = new Transform.ErrorListenerLog4jAdapter(Transform.LOGGER);
 
     //TODO(AR) if you want Saxon-EE features we need to set those in the Configuration
@@ -238,7 +238,7 @@ public class Transform {
 
         try {
             options.resolvedStylesheetBaseURI.ifPresent(anyURIValue -> options.xsltSource._2.setSystemId(anyURIValue.getStringValue()));
-            return xsltCompiler.compile(options.xsltSource._2); // .compilePackage //TODO(AR) need to implement support for xslt-packages
+            return xsltCompiler.compile(options.xsltSource._2); //TODO(AR) need to implement support for xslt-packages
         } catch (final SaxonApiException e) {
             final Optional<Exception> compilerException = errorListener.getWorst().map(e1 -> e1);
             throw originalXPathException("Could not compile stylesheet: ", compilerException.orElse(e), ErrorCodes.FOXT0003);
@@ -349,10 +349,10 @@ public class Transform {
                                 "AND " + Options.INITIAL_TEMPLATE.name + " supplied indicating call-template invocation.");
             }
 
-            //TODO (AP) - Implement complete conversion in the {@link Convert} class
-            //TODO (AP) - The saxDestination conversion loses type information in some cases
-            //TODO (AP) - e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
-            //TODO (AP) - which alongside "delivery-format":"raw" fails to deliver an int
+            // Convert using our own {@link Convert} class
+            // The saxDestination conversion loses type information in some cases
+            // e.g. fn-transform-63 from XQTS has a <xsl:template name='main' as='xs:integer'>
+            // which alongside "delivery-format":"raw" fails to deliver an int
 
             final QName qName = options.initialTemplate.get().getQName();
             xslt30Transformer.callTemplate(Convert.ToSaxon.of(qName), destination);
@@ -392,29 +392,29 @@ public class Transform {
                 return invokeApplyTemplates();
             }
         }
-    }
 
-    private MapType makeResultMap(final Options options, final Delivery primaryDelivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
+        private MapType makeResultMap(final Options options, final Delivery primaryDelivery, final Map<URI, Delivery> resultDocuments) throws XPathException {
 
-        try (final MapType outputMap = new MapType(context)) {
-            final AtomicValue outputKey;
-            outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
+            try (final MapType outputMap = new MapType(context)) {
+                final AtomicValue outputKey;
+                outputKey = options.baseOutputURI.orElseGet(() -> new StringValue("output"));
 
-            final Sequence primaryValue = postProcess(outputKey, primaryDelivery.convert(), options.postProcess);
-            outputMap.add(outputKey, primaryValue);
+                final Sequence primaryValue = postProcess(outputKey, primaryDelivery.convert(), options.postProcess);
+                outputMap.add(outputKey, primaryValue);
 
-            for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
-                final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
-                final Delivery secondaryDelivery = resultDocument.getValue();
-                final Sequence value = postProcess(key, secondaryDelivery.convert(), options.postProcess);
-                outputMap.add(key, value);
+                for (final Map.Entry<URI, Delivery> resultDocument : resultDocuments.entrySet()) {
+                    final AnyURIValue key = new AnyURIValue(resultDocument.getKey());
+                    final Delivery secondaryDelivery = resultDocument.getValue();
+                    final Sequence value = postProcess(key, secondaryDelivery.convert(), options.postProcess);
+                    outputMap.add(key, value);
+                }
+
+                return outputMap;
             }
-
-            return outputMap;
         }
     }
 
-    private Sequence postProcess(final AtomicValue key, final Sequence before, final Optional<FunctionReference> postProcessingFunction) throws XPathException {
+     private Sequence postProcess(final AtomicValue key, final Sequence before, final Optional<FunctionReference> postProcessingFunction) throws XPathException {
         if (postProcessingFunction.isPresent()) {
             FunctionReference functionReference = postProcessingFunction.get();
             return functionReference.evalFunction(null, null, new Sequence[]{key, before});
