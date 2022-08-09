@@ -40,11 +40,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
+
 /**
- *
  * @author perig
  * @author ljo
- *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FunCompare extends CollatingFunction {
 
@@ -113,17 +114,23 @@ public class FunCompare extends CollatingFunction {
         if (seq1.isEmpty() || seq2.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
+
             final Collator collator = getCollator(contextSequence, contextItem, 3);		
-            final int comparison = Collations.compare(collator, seq1.getStringValue(), seq2.getStringValue());
-            if (comparison == Constants.EQUAL) 
-                {result = new IntegerValue(this, Constants.EQUAL);}
-            else if (comparison < 0)
-                {result = new IntegerValue(this, Constants.INFERIOR);}
-            else 
-                {result = new IntegerValue(this, Constants.SUPERIOR);}
+            result = new IntegerValue(this, compare(seq1.itemAt(0), seq2.itemAt(0), collator));
         }
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);}
         return result;
 	}
+
+    static int compare(final Item item1, final Item item2, @Nullable final Collator collator) throws XPathException {
+        final int comparison = Collations.compare(collator, item1.getStringValue(), item2.getStringValue());
+        if (comparison == Constants.EQUAL) {
+            return Constants.EQUAL;
+        } else if (comparison < 0) {
+            return Constants.INFERIOR;
+        } else {
+            return Constants.SUPERIOR;
+        }
+    }
 }
