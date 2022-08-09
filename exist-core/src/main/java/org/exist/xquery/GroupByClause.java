@@ -22,12 +22,23 @@
 package org.exist.xquery;
 
 import com.ibm.icu.text.Collator;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.Hash.Strategy;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMap;
 import org.exist.dom.QName;
 import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implements a "group by" clause inside a FLWOR.
@@ -48,14 +59,14 @@ public class GroupByClause extends AbstractFLWORClause {
      * would overwrite data.
      */
     private static class GroupByData {
-        private final Map<Sequence, Tuple> groupedMap;
+        private final Object2ObjectSortedMap<Sequence, Tuple> groupedMap;
         private final Map<QName, LocalVariable> variables = new HashMap<>();
         private final List<LocalVariable> groupingVars = new ArrayList<>();
 
         private boolean initialized = false;
 
-        public GroupByData(final Comparator<Sequence> keyComparator) {
-            this.groupedMap = new TreeMap<>(keyComparator);
+        public GroupByData(final Strategy<Sequence> keyHashStrategy) {
+            this.groupedMap = new Object2ObjectLinkedOpenCustomHashMap<>(8, Hash.FAST_LOAD_FACTOR, keyHashStrategy);
         }
     }
 
@@ -70,7 +81,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        stack.push(new GroupByData(this::compareKeys));
+        stack.push(new GroupByData(new DeepEqualKeysHashStrategy(groupSpecs)));
         return super.preEval(seq);
     }
 
@@ -265,32 +276,70 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     /**
-     * Compare keys using the collator given in the group spec. Used to
-     * sort keys into the grouping map.
-     *
-     * @param s1 the keys in the n group entry
-     * @param s2 the keys in the n+1 group entry
-     *
-     * @return a negative integer, zero, or a positive integer as the first argument is less than,
-     *         equal to, or greater than the second.
+     * Compare map keys using the collator given in the group spec.
      */
-    private int compareKeys(final Sequence s1, final Sequence s2) {
-        final int c1 = s1.getItemCount();
-        final int c2 = s2.getItemCount();
-        if (c1 == c2) {
-            for (int i = 0; i < c1; i++) {
-                final Item v1 = s1.itemAt(i);
-                final Item v2 = s2.itemAt(i);
+    private static class DeepEqualKeysHashStrategy implements Strategy<Sequence> {
+        private final GroupSpec[] groupSpecs;
+
+        public DeepEqualKeysHashStrategy(final GroupSpec[] groupSpecs) {
+            this.groupSpecs = groupSpecs;
+        }
+
+        @Override
+        public boolean equals(final Sequence s1, final Sequence s2) {
+            if (s1 == s2) {
+                return true;
+            }
+
+            final int c1 = s1 != null ? s1.getItemCount() : -1;
+            final int c2 = s2 != null ? s2.getItemCount() : -1;
+            if (c1 == c2) {
+                for (int i = 0; i < c1; i++) {
+                    final Item v1 = s1.itemAt(i);
+                    final Item v2 = s2.itemAt(i);
+                    final Collator collator = groupSpecs[i].getCollator();
+
+                    final int comparison = FunDeepEqual.deepCompare(v1, v2, collator);
+                    if (comparison != Constants.EQUAL) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode(final Sequence s) {
+            if (s == null) {
+                return 0;
+            }
+
+            int hashCode = 1;
+
+            final int c = s.getItemCount();
+            for (int i = 0; i < c; i++) {
+                final Item v = s.itemAt(i);
+
                 final Collator collator = groupSpecs[i].getCollator();
 
-                final int comparison = FunDeepEqual.deepCompare(v1, v2, collator);
-                if (comparison != Constants.EQUAL) {
-                    return comparison;
+                if (v.getType() == Type.STRING && collator != null) {
+                    hashCode = 31 * hashCode + collator.getCollationKey(((StringValue) v).getStringValue()).hashCode();
+
+                } else if (v.getType() == Type.UNTYPED_ATOMIC && collator != null) {
+                    try {
+                        hashCode = 31 * hashCode + collator.getCollationKey(v.getStringValue()).hashCode();
+                    } catch (final XPathException e) {
+                        hashCode = 31 * hashCode + v.hashCode();  // best attempt fallback?
+                    }
+
+                } else {
+                    hashCode = 31 * hashCode + v.hashCode();
                 }
             }
-            return Constants.EQUAL;
+
+            return hashCode;
         }
-        return c1 < c2 ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 
     static class Tuple extends HashMap<QName, Sequence> {

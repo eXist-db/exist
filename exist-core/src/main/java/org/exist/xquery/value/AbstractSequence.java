@@ -288,4 +288,19 @@ public abstract class AbstractSequence implements Sequence {
     public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // do nothing by default
     }
+
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+        try {
+            final SequenceIterator iterator = iterate();
+            while (iterator.hasNext()) {
+                final Item item = iterator.nextItem();
+                hashCode = 31 * hashCode + item.hashCode();
+            }
+        } catch (final XPathException e) {
+            hashCode = super.hashCode();  // best fallback option?
+        }
+        return hashCode;
+    }
 }
