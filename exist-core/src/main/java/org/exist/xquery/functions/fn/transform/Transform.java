@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.xquery.functions.fn.transform.Options.Option.*;
 
 /**
  * Implementation of fn:transform.
@@ -115,7 +116,7 @@ public class Transform {
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
         final Optional<Source> sourceNode = Transform.getSourceNode(options.sourceNode, context.getBaseURI());
 
-        if (options.xsltVersion == 1.0f || options.xsltVersion == 2.0f || options.xsltVersion == 3.0f) {
+        if (options.xsltVersion.equals(V1_0) || options.xsltVersion.equals(V2_0) || options.xsltVersion.equals(V3_0)) {
             try {
                 final Holder<XPathException> compileException = new Holder<>();
                 final XsltExecutable xsltExecutable;
@@ -252,7 +253,7 @@ public class Transform {
      *
      * @param e the top of the exception stack
      * @param defaultErrorCode use this code and its description to fill in blanks in what we finally throw
-     * @returns XPathException the eventual eXist exception which the caller is expected to throw
+     * @return XPathException the eventual eXist exception which the caller is expected to throw
      */
     private XPathException originalXPathException(final String prefix, @Nonnull final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
         Throwable cause = e;
@@ -330,6 +331,7 @@ public class Transform {
         }
 
         private MapType invokeCallFunction() throws XPathException, SaxonApiException {
+            assert options.initialFunction.isPresent();
             final net.sf.saxon.s9api.QName qName = Convert.ToSaxon.of(options.initialFunction.get().getQName());
             final XdmValue[] functionParams;
             if (options.functionParams.isPresent()) {
@@ -343,6 +345,7 @@ public class Transform {
         }
 
         private MapType invokeCallTemplate() throws XPathException, SaxonApiException {
+            assert options.initialTemplate.isPresent();
             if (options.initialMode.isPresent()) {
                 throw new XPathException(fnTransform, ErrorCodes.FOXT0002,
                         Options.INITIAL_MODE.name + " supplied indicating apply-templates invocation, " +
@@ -480,6 +483,19 @@ public class Transform {
         public void fatalError(TransformerException exception) throws TransformerException {
             lastFatal = Optional.of(exception);
             global.fatalError(exception);
+        }
+    }
+
+    /**
+     * A convenience for throwing a checked exception within fn:transform support code,
+     * without the {@link XQueryContext} necessary for an immediate XPathException.
+     *
+     * Useful in a static helper class, for instance.
+     */
+    static class PendingException extends Exception {
+
+        public PendingException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

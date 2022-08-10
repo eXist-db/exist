@@ -59,6 +59,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import java.io.Reader;
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -84,28 +86,11 @@ class Options {
     private static final long XXHASH64_SEED = 0x2245a28e;
     private static final XXHash64 XX_HASH_64 = XXHashFactory.fastestInstance().hash64();
 
-    private Map<QName, XdmValue> readParamsMap(final Optional<MapType> option, final String name) throws XPathException {
-
-        final Map<net.sf.saxon.s9api.QName, XdmValue> result = new HashMap<>();
-
-        final MapType paramsMap = option.orElse(new MapType(context));
-        for (final IEntry<AtomicValue, Sequence> entry : paramsMap) {
-            final AtomicValue key = entry.key();
-            if (!(key instanceof QNameValue)) {
-                throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:qname: " + entry);
-            }
-            if (entry.value() == null) {
-                throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:sequence: " + entry);
-            }
-            result.put(Convert.ToSaxon.of((QNameValue) key), toSaxon.of(entry.value()));
-        }
-        return result;
-    }
 
     final Tuple2<String, Source> xsltSource;
     final MapType stylesheetParams;
     final Map<net.sf.saxon.s9api.QName, XdmValue> staticParams;
-    final float xsltVersion;
+    final XSLTVersion xsltVersion;
     final Optional<AnyURIValue> resolvedStylesheetBaseURI;
     final Optional<QNameValue> initialFunction;
     final Optional<ArrayType> functionParams;
@@ -161,11 +146,11 @@ class Options {
         final Optional<DecimalValue> explicitXsltVersion = Options.XSLT_VERSION.get(options);
         if (explicitXsltVersion.isPresent()) {
             try {
-                xsltVersion = explicitXsltVersion.get().getFloat();
-            } catch (final XPathException e) {
-                throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied xslt-version is not a valid xs:decimal: " + e.getMessage(), explicitXsltVersion.get(), e);
-            }
-            if (xsltVersion != V1_0 && xsltVersion != V2_0 && xsltVersion != V3_0) {
+                xsltVersion = XSLTVersion.fromDecimal(explicitXsltVersion.get().getValue());
+                if (xsltVersion.equals(V1_0) && xsltVersion.equals(V2_0) && xsltVersion.equals(V3_0)) {
+                    throw new XPathException(fnTransform, ErrorCodes.FOXT0001, "Supplied xslt-version is an unknown XSLT version: " + explicitXsltVersion.get());
+                }
+            } catch (final Transform.PendingException pe) {
                 throw new XPathException(fnTransform, ErrorCodes.FOXT0001, "Supplied xslt-version is an unknown XSLT version: " + explicitXsltVersion.get());
             }
         } else {
@@ -230,7 +215,25 @@ class Options {
         vendorOptions = Options.VENDOR_OPTIONS.get(xsltVersion, options);
     }
 
-    private Delivery.Format getDeliveryFormat(final float xsltVersion, final MapType options) throws XPathException {
+    private Map<QName, XdmValue> readParamsMap(final Optional<MapType> option, final String name) throws XPathException {
+
+        final Map<net.sf.saxon.s9api.QName, XdmValue> result = new HashMap<>();
+
+        final MapType paramsMap = option.orElse(new MapType(context));
+        for (final IEntry<AtomicValue, Sequence> entry : paramsMap) {
+            final AtomicValue key = entry.key();
+            if (!(key instanceof QNameValue)) {
+                throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:qname: " + entry);
+            }
+            if (entry.value() == null) {
+                throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Supplied " + name + " is not a valid xs:sequence: " + entry);
+            }
+            result.put(Convert.ToSaxon.of((QNameValue) key), toSaxon.of(entry.value()));
+        }
+        return result;
+    }
+
+    private Delivery.Format getDeliveryFormat(final XSLTVersion xsltVersion, final MapType options) throws XPathException {
         final String deliveryFormatString = Options.DELIVERY_FORMAT.get(xsltVersion, options).orElse(new StringValue(Delivery.Format.DOCUMENT.name())).getStringValue().toUpperCase();
         final Delivery.Format format;
         try {
@@ -352,16 +355,16 @@ class Options {
             Type.DECIMAL,"xslt-version", V1_0, V2_0, V3_0);
 
     abstract static class Option<T> {
-        public static final float V1_0 = 1.0f;
-        public static final float V2_0 = 2.0f;
-        public static final float V3_0 = 3.0f;
+        public static final XSLTVersion V1_0 = new XSLTVersion(1,0);
+        public static final XSLTVersion V2_0 = new XSLTVersion(2,0);
+        public static final XSLTVersion V3_0 = new XSLTVersion(3,0);
 
         protected final StringValue name;
         protected final Optional<T> defaultValue;
-        protected final float[] appliesToVersions;
+        protected final XSLTVersion[] appliesToVersions;
         protected final int itemSubtype;
 
-        private Option(final int itemSubtype, final String name, final Optional<T> defaultValue, final float... appliesToVersions) {
+        private Option(final int itemSubtype, final String name, final Optional<T> defaultValue, final XSLTVersion... appliesToVersions) {
             this.name = new StringValue(name);
             this.defaultValue = defaultValue;
             this.appliesToVersions = appliesToVersions;
@@ -370,16 +373,16 @@ class Options {
 
         public abstract Optional<T> get(final MapType options) throws XPathException;
 
-        private boolean notApplicableToVersion(final float xsltVersion) {
-            for (final float appliesToVersion : appliesToVersions) {
-                if (xsltVersion == appliesToVersion) {
+        private boolean notApplicableToVersion(final XSLTVersion xsltVersion) {
+            for (final XSLTVersion appliesToVersion : appliesToVersions) {
+                if (xsltVersion.equals(appliesToVersion)) {
                     return false;
                 }
             }
             return true;
         }
 
-        public Optional<T> get(final float xsltVersion, final MapType options) throws XPathException {
+        public Optional<T> get(final XSLTVersion xsltVersion, final MapType options) throws XPathException {
             if (notApplicableToVersion(xsltVersion)) {
                 return Optional.empty();
             }
@@ -392,12 +395,12 @@ class Options {
 
         private final int sequenceSubtype;
 
-        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, final float... appliesToVersions) {
+        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, final XSLTVersion... appliesToVersions) {
             super(itemSubtype, name, Optional.empty(), appliesToVersions);
             this.sequenceSubtype = sequenceSubtype;
         }
 
-        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
+        public SequenceOption(final int sequenceSubtype, final int itemSubtype, final String name, @Nullable final T defaultValue, final XSLTVersion... appliesToVersions) {
             super(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
             this.sequenceSubtype = sequenceSubtype;
         }
@@ -425,11 +428,11 @@ class Options {
 
     static class ItemOption<T extends Item> extends Option<T> {
 
-        public ItemOption(final int itemSubtype, final String name, final float... appliesToVersions) {
+        public ItemOption(final int itemSubtype, final String name, final XSLTVersion... appliesToVersions) {
             super(itemSubtype, name, Optional.empty(), appliesToVersions);
         }
 
-        public ItemOption(final int itemSubtype, final String name, @Nullable final T defaultValue, final float... appliesToVersions) {
+        public ItemOption(final int itemSubtype, final String name, @Nullable final T defaultValue, final XSLTVersion... appliesToVersions) {
             super(itemSubtype, name, Optional.ofNullable(defaultValue), appliesToVersions);
         }
 
@@ -553,7 +556,7 @@ class Options {
         }
     }
 
-    private float getXsltVersion(final Source xsltStylesheet) throws XPathException {
+    private XSLTVersion getXsltVersion(final Source xsltStylesheet) throws XPathException {
 
         if (xsltStylesheet instanceof DOMSource) {
             return domExtractXsltVersion(xsltStylesheet);
@@ -564,7 +567,7 @@ class Options {
         throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Unable to extract version from XSLT, unrecognised source");
     }
 
-    private float domExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
+    private XSLTVersion domExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
 
         Node node = ((DOMSource) xsltStylesheet).getNode();
         if (node instanceof Document) {
@@ -600,13 +603,13 @@ class Options {
         }
 
         try {
-            return Float.parseFloat(version);
-        } catch (final NumberFormatException nfe) {
-            throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via DOM. Value: " + version + " : " + nfe.getMessage());
+            return XSLTVersion.fromDecimal(new BigDecimal(version));
+        } catch (final Transform.PendingException pe) {
+            throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via DOM. Value: " + version + " : " + pe.getMessage());
         }
     }
 
-    private float staxExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
+    private XSLTVersion staxExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
         try {
             final XMLInputFactory factory = XMLInputFactory.newInstance();
             // Sonartype checker needs this https://rules.sonarsource.com/java/RSPEC-2755
@@ -621,11 +624,11 @@ class Options {
                     final StartElement startElement = event.asStartElement();
                     if (Options.QN_XSL_STYLESHEET.equals(startElement.getName())) {
                         final Attribute version = startElement.getAttributeByName(Options.QN_VERSION);
-                        return Float.parseFloat(version.getValue());
+                        return XSLTVersion.fromDecimal(new BigDecimal(version.getValue()));
                     }
                 }
             }
-        } catch (final XMLStreamException e) {
+        } catch (final XMLStreamException | Transform.PendingException e) {
             throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "Unable to extract version from XSLT via STaX: " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
         }
 
@@ -656,6 +659,43 @@ class Options {
 
         static String get(org.exist.dom.QName qName) {
             return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);
+        }
+    }
+
+    static class XSLTVersion {
+        final int major;
+        final int minor;
+
+        XSLTVersion(final int major, final int minor) {
+            this.major = major;
+            this.minor = minor;
+        }
+
+        public static XSLTVersion fromDecimal(final BigDecimal decimal) throws Transform.PendingException {
+            final BigDecimal major = decimal.setScale(0, RoundingMode.FLOOR);
+            final BigDecimal minor = decimal.subtract(major).multiply(BigDecimal.TEN);
+            try {
+                return new XSLTVersion(major.intValueExact(), minor.intValueExact());
+            } catch (final ArithmeticException ae) {
+                throw new Transform.PendingException("XSLT Version is not an exact X.Y value: " + decimal, ae);
+            }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            XSLTVersion version = (XSLTVersion) o;
+            return major == version.major && minor == version.minor;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(major, minor);
+        }
+
+        @Override public String toString() {
+            return major + "." + minor;
         }
     }
 }
