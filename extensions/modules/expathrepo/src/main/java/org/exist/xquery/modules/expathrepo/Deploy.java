@@ -31,7 +31,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
@@ -280,7 +280,7 @@ public class Deploy extends BasicFunction {
         @Override
         public XarSource load(final String name, final Version version) throws IOException {
             String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
-                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
+                "&processor=" + ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "2.2.0");
             if (version != null) {
                 if (version.getMin() != null) {
                     pkgURL += "&semver-min=" + version.getMin();

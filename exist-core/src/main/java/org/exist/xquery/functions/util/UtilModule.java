@@ -24,9 +24,15 @@ package org.exist.xquery.functions.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
+import io.lacuna.bifurcan.IMap;
+import io.lacuna.bifurcan.ISet;
 import org.exist.dom.QName;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.AccessUtil;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -37,7 +43,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
- * @author <a href="mailto:adam@evolvedbinary.com">Adam retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
  */
 public class UtilModule extends AbstractInternalModule {
 
@@ -98,7 +104,8 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(ExclusiveLockFunction.signature, ExclusiveLockFunction.class),
             new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class),
             new FunctionDef(Collations.signature, Collations.class),
-            new FunctionDef(SystemProperty.signature, SystemProperty.class),
+            new FunctionDef(SystemProperty.FS_AVAILABLE_SYSTEM_PROPERTIES, SystemProperty.class),
+            new FunctionDef(SystemProperty.FS_SYSTEM_PROPERTY, SystemProperty.class),
             new FunctionDef(FunctionFunction.signature, FunctionFunction.class),
             new FunctionDef(CallFunction.signature, CallFunction.class),
             new FunctionDef(NodeId.signature, NodeId.class),
@@ -165,6 +172,11 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
+    private static final Pattern PTN_SYSTEM_PROPERTY_ACCESS = PatternFactory.getInstance().getPattern("systemPropertyAccess\\.([^=\\00])+\\.requires((?:Group)|(?:User))");
+
+    private IMap<String, ISet<String>> systemPropertyAccessGroups = null;
+    private IMap<String, ISet<String>> systemPropertyAccessUsers = null;
+
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
 
@@ -215,6 +227,34 @@ public class UtilModule extends AbstractInternalModule {
             mGlobalVariables.clear();
         }
         super.reset(xqueryContext, keepGlobals);
+    }
+
+    /**
+     * Get the system property names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the system property name, and the value is a set of group names.
+     */
+    IMap<String, ISet<String>> getSystemPropertyAccessGroups() {
+        if (systemPropertyAccessGroups == null) {
+            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
+            this.systemPropertyAccessGroups = accessRules._1;
+            this.systemPropertyAccessUsers = accessRules._2;
+        }
+        return systemPropertyAccessGroups;
+    }
+
+    /**
+     * Get the system property names and users that are allowed to access them.
+     *
+     * @return a map where the key is the system property name, and the value is a set of usernames.
+     */
+    IMap<String, ISet<String>> getSystemPropertyAccessUsers() {
+        if (systemPropertyAccessUsers == null) {
+            final Tuple2<IMap<String, ISet<String>>, IMap<String, ISet<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
+            this.systemPropertyAccessGroups = accessRules._1;
+            this.systemPropertyAccessUsers = accessRules._2;
+        }
+        return systemPropertyAccessUsers;
     }
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
