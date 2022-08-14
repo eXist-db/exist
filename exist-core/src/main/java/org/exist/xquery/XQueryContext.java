@@ -3453,4 +3453,109 @@ public class XQueryContext implements BinaryValueManager, Context {
             return new HttpContext(request, response, newSession);
         }
     }
+
+    @Override public String toString() {
+        return getStringValue();
+    }
+
+    public String getStringValue() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append('{');
+
+        sb.append("dynamicDocuments: {");
+        if (dynamicDocuments != null) {
+            for (final String key : dynamicDocuments.keySet()) {
+                sb.append(key).append("-> ");
+                sb.append(dynamicDocuments.get(key));
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("dynamicTextResources: {");
+        if (dynamicTextResources != null) {
+            for (final Map.Entry<Tuple2<String, Charset>,  QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("dynamicCollections: {");
+        if (dynamicCollections != null) {
+            for (final Map.Entry<String,
+                    TriFunctionE<DBBroker, Txn, String, Sequence, XPathException>> entry : dynamicCollections.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("baseURI: ");
+        try {
+            sb.append(getBaseURI()).append('\n');
+        } catch (final XPathException e) {
+            sb.append("?");
+        }
+
+        sb.append("inScopePrefixes: {");
+        if (inScopePrefixes != null) {
+            for (final Map.Entry<String, String> entry : inScopePrefixes.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("inScopeNamespaces: {");
+        if (inScopeNamespaces != null) {
+            for (final Map.Entry<String, String> entry : inScopeNamespaces.entrySet()) {
+                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("modules: {");
+        if (modules != null) {
+            for (final Map.Entry<String, Module[]> entry : modules.entrySet()) {
+                sb.append(entry.getKey()).append("-> ");
+                for (final Module module : modules.get(entry.getKey())) {
+                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                    sb.append("description: ").append(module.getDescription()).append('\n');
+                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                        final QName qName = it.next();
+                        sb.append(qName).append(';');
+                    }
+                }
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append("allModules: {");
+        if (allModules != null) {
+            for (final Map.Entry<String, Module[]> entry : allModules.entrySet()) {
+                sb.append(entry.getKey()).append("-> ");
+                for (final Module module : allModules.get(entry.getKey())) {
+                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                    sb.append("description: ").append(module.getDescription()).append('\n');
+                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                        final QName qName = it.next();
+                        sb.append(qName).append(';');
+                    }
+                }
+            }
+        }
+        sb.append('}');
+        sb.append('\n');
+
+        sb.append('}');
+
+        return sb.toString();
+    }
+
+
 }
