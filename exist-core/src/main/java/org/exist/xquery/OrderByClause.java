@@ -21,14 +21,13 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.Sequence;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents an "order by" clause within a FLWOR expression.
@@ -134,5 +133,17 @@ public class OrderByClause extends AbstractFLWORClause {
         super.resetState(postOptimization);
         returnExpr.resetState(postOptimization);
         stack.clear();
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }

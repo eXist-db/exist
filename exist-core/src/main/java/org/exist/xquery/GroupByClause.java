@@ -31,14 +31,7 @@ import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Implements a "group by" clause inside a FLWOR.
@@ -196,11 +189,31 @@ public class GroupByClause extends AbstractFLWORClause {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
+
+        final Set<QName> preGroupingTupleVariables = new HashSet<>();
+        FLWORClause prevClause = getPreviousClause();
+        while (prevClause != null) {
+            rootClause = prevClause;
+            preGroupingTupleVariables.addAll(prevClause.getTupleStreamVariables());
+            prevClause = prevClause.getPreviousClause();
+        }
+
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             if (groupSpecs != null) {
                 for (final GroupSpec spec : groupSpecs) {
-                    final LocalVariable groupKeyVar = new LocalVariable(spec.getKeyVarName());
+                    final QName keyVarName = spec.getKeyVarName();
+
+                    if (spec.getGroupExpression() instanceof VariableReference) {
+                        final VariableReference groupExpressionVariableRef = ((VariableReference) spec.getGroupExpression());
+                        if (groupExpressionVariableRef.getName().equals(keyVarName)) {
+                            if (!preGroupingTupleVariables.contains(keyVarName)) {
+                                throw new XPathException(this, ErrorCodes.XQST0094, "Undeclared grouping variable: $" + keyVarName);
+                            }
+                        }
+                    }
+
+                    final LocalVariable groupKeyVar = new LocalVariable(keyVarName);
                     context.declareVariableBinding(groupKeyVar);
                 }
             }
@@ -215,12 +228,6 @@ public class GroupByClause extends AbstractFLWORClause {
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
-        }
-
-        FLWORClause prevClause = getPreviousClause();
-        while (prevClause != null) {
-            rootClause = prevClause;
-            prevClause = prevClause.getPreviousClause();
         }
     }
 
@@ -361,5 +368,24 @@ public class GroupByClause extends AbstractFLWORClause {
                 seq.addAll(val);
             }
         }
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        if (groupSpecs != null) {
+            for (final GroupSpec spec : groupSpecs) {
+                final QName keyVarName = spec.getKeyVarName();
+                vars.add(keyVarName);
+            }
+        }
+
+        return vars;
     }
 }

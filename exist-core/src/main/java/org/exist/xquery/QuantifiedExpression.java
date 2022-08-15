@@ -21,12 +21,16 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a quantified expression: "some ... in ... satisfies", 
@@ -194,6 +198,23 @@ public class QuantifiedExpression extends BindingExpression {
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+	}
+
+	@Override
+	public Set<QName> getTupleStreamVariables() {
+		final Set<QName> vars = new HashSet<>();
+
+		final QName var = getVariable();
+		if (var != null) {
+			vars.add(var);
+		}
+
+		final LocalVariable startVar = getStartVariable();
+		if (startVar != null) {
+			vars.add(startVar.getQName());
+		}
+
+		return vars;
 	}
 
 }

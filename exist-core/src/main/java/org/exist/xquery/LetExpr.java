@@ -27,6 +27,9 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Implements an XQuery let-expression.
  * 
@@ -228,5 +231,20 @@ public class LetExpr extends BindingExpression {
     @Override
     public boolean allowMixedNodesInReturn() {
         return true;
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final QName var = getVariable();
+        vars.add(var);
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }

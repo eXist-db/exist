@@ -27,6 +27,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="adam@evolvedbinary.com">Adam Retter</a>
@@ -571,5 +573,47 @@ public class WindowExpr extends BindingExpression {
                 currentItem.destroy(context, contextSequence);
             }
         }
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+        if (varName != null) {
+            vars.add(varName);
+        }
+
+        if (windowStartCondition.getPreviousItem() != null) {
+            vars.add(windowStartCondition.getPreviousItem());
+        }
+        if (windowStartCondition.getCurrentItem() != null) {
+            vars.add(windowStartCondition.getCurrentItem());
+        }
+        if (windowStartCondition.getNextItem() != null) {
+            vars.add(windowStartCondition.getNextItem());
+        }
+
+        if (windowEndCondition != null) {
+            if (windowEndCondition.getPreviousItem() != null) {
+                vars.add(windowEndCondition.getPreviousItem());
+            }
+            if (windowEndCondition.getCurrentItem() != null) {
+                vars.add(windowEndCondition.getCurrentItem());
+            }
+            if (windowEndCondition.getNextItem() != null) {
+                vars.add(windowEndCondition.getNextItem());
+            }
+        }
+
+        final QName var = getVariable();
+        if (var != null) {
+            vars.add(var);
+        }
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }
