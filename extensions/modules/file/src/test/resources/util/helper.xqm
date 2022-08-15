@@ -29,6 +29,8 @@ import module namespace util="http://exist-db.org/xquery/util";
 
 declare variable $helper:error := xs:QName("helper:assert-sync-error");
 
+declare variable $helper:path-separator := util:system-property("file.separator");
+
 (:
 /db
     /file-module-test
@@ -56,10 +58,7 @@ declare function helper:clear-db() {
 };
 
 declare function helper:create-db-resource($collection as xs:string, $resource as xs:string, $content as item()) as empty-sequence() {
-    let $_ := (
-        xmldb:store($collection, $resource, $content),
-        xmldb:touch($collection, $resource, $fixtures:mod-date)
-    )
+    let $_ := xmldb:store($collection, $resource, $content)
     return ()
 };
 
@@ -69,10 +68,12 @@ declare function helper:modify-db-resource($collection as xs:string, $resource a
 };
 
 declare function helper:clear-suite-fs ($suite as xs:string) as empty-sequence() {
-    let $_ := helper:glue-path((
-        util:system-property("java.io.tmpdir"),
-        $suite
-    ))
+    let $_ :=
+        helper:glue-path((
+            util:system-property("java.io.tmpdir"),
+            $suite
+        ))
+        => file:delete()
     return ()
 };
 
@@ -90,7 +91,7 @@ declare function helper:get-test-directory ($suite as xs:string) as xs:string {
 };
 
 declare function helper:glue-path ($parts as xs:string+) as xs:string {
-    string-join($parts, "/")
+    string-join($parts, $helper:path-separator)
 };
 
 (:
@@ -99,17 +100,16 @@ declare function helper:glue-path ($parts as xs:string+) as xs:string {
  :)
 declare function helper:setup-fs-extra ($directory as xs:string) as xs:string {
     let $action1 := file:mkdirs($directory)
-    let $action2 := file:mkdirs($directory || "/test")
+    let $action2 := file:mkdirs(helper:glue-path(($directory, "test")))
     let $action3 := (
         (: cannot use fixtures here because this will lead to consumed input streams! :)
         file:serialize-binary(
             util:string-to-binary("SERVER_SECRET=123!"),
-            $directory || "/.env"),
+            helper:glue-path(($directory, ".env"))),
         file:serialize-binary(
             util:string-to-binary("..."),
-            $directory || "/test/three.s")
+            helper:glue-path(($directory, "test", "three.s")))
     )
-
     return $directory
 };
 
@@ -139,22 +139,29 @@ declare function helper:assert-sync-result (
 ) as xs:boolean {
     helper:assert-permutation-of(
         $expected?updated,
-        helper:get-updated-from-sync-result($result/*)
+        helper:get-updated-from-sync-result($result/*),
+        "updated"
     )
     and
     helper:assert-permutation-of(
         $expected?deleted,
-        helper:get-deleted-from-sync-result($result/*)
+        helper:get-deleted-from-sync-result($result/*),
+        "deleted"
     )
     and
     helper:assert-permutation-of(
         $expected?fs,
         helper:get-dir-from-sync-result($result/*)
-        => helper:list-files-and-directories()
+        => helper:list-files-and-directories(),
+        "filesystem"
     )
 };
 
-declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $actual as xs:anyAtomicType*) as xs:boolean {
+declare function helper:assert-permutation-of(
+    $expected as xs:anyAtomicType*,
+    $actual as xs:anyAtomicType*,
+    $label as xs:string
+) as xs:boolean {
     let $test := fold-left(
         $expected,
         [true(), $actual],
@@ -162,9 +169,13 @@ declare function helper:assert-permutation-of($expected as xs:anyAtomicType*, $a
     )
 
     return
-        if (not($test?1 or exists($test?2)))
+        if (empty($expected) and not(empty($actual)))
         then error($helper:error,
-        "Assertion failed: expected permutation of " ||
+            "Assertion failed (" || $label || "): expected empty sequence" ||
+               " but got (" || string-join($actual, ", ") || ")")
+        else if (not($test?1 or exists($test?2)))
+        then error($helper:error,
+            "Assertion failed (" || $label || "): expected permutation of " ||
                "(" || string-join($expected, ", ") || ")" ||
                " but got (" || string-join($actual, ", ") || ")")
         else true()
@@ -187,4 +198,22 @@ declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType
         subsequence($sequence, $index + 1)
     )
     else $sequence (: do nothing - will be handled later :)
+};
+
+declare function helper:assert-file-contents($expected as xs:string, $path-parts as xs:string+) as xs:boolean {
+    let $path := helper:glue-path($path-parts)
+    let $actual := file:read($path)
+
+    return
+        if (
+            exists($actual) and
+            count($actual) = 1 and
+            $actual eq $expected)
+        then true()
+        else error(
+            $helper:error,
+            "File Content Assertion failed:&#10;expected file " || $path || "&#10;" ||
+             "to contain string&#10;" || "<[" || $expected || "]>" ||
+             " but was&#10;<["  || $actual || "]>"
+        )
 };

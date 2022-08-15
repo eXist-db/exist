@@ -35,6 +35,7 @@ import org.exist.xquery.NodeTest; // Needed by Eclipse to disambiguate
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -281,14 +282,14 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
                                     }
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null) {
-                                        throw new XPathException("Internal error: nodeId == null");
+                                        throw new XPathException(node == null ? null : node.getExpression(), "Internal error: nodeId == null");
                                     }
                                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                                         nodeId = rootId;
                                     } else {
                                         nodeId = rootId.append(nodeId);
                                     }
-                                    final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                    final NodeProxy p = new NodeProxy(node == null ? null : node.getExpression(), newDoc, nodeId, node.getNodeType());
                                     // replace the node by the NodeProxy
                                     values[j] = p;
                                 }
@@ -305,7 +306,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             return set;
         } else {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -316,13 +317,13 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             return MemoryNodeSet.EMPTY;
         }
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (int i = 0; i <= size; i++) {
             final NodeValue v = (NodeValue) values[i];
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                throw new XPathException("Type error: the sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains nodes from stored resources.");
             }
         }
@@ -385,16 +386,27 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         holderVar = null;
         for (int i = 0; i <= size; i++) {
             values[i].destroy(context, contextSequence);
         }
     }
 
-    public boolean containsValue(final AtomicValue value) {
+    @Override
+    public boolean containsReference(final Item item) {
         for (int i = 0; i <= size; i++) {
-            if (values[i] == value) {
+            if (values[i] == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (int i = 0; i <= size; i++) {
+            if (values[i].equals(item)) {
                 return true;
             }
         }

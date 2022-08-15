@@ -30,6 +30,8 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.annotation.Nullable;
+
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
  * 
@@ -118,14 +120,14 @@ public class VariableImpl implements Variable {
                 else {actualCardinality = Cardinality.EXACTLY_ONE;}
             	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
         		if (!getSequenceType().getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
-    				{throw new XPathException("XPTY0004: Invalid cardinality for variable $" + getQName() +
+    				{throw new XPathException(getValue(), "XPTY0004: Invalid cardinality for variable $" + getQName() +
     						". Expected " +
     						getSequenceType().getCardinality().getHumanDescription() +
     						", got " + actualCardinality.getHumanDescription());}
         		//TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
         		if (!Type.subTypeOf(getSequenceType().getPrimaryType(), Type.NODE)) {
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException(getValue(), "XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
         						", got " +Type.getTypeName(getValue().getItemType()));}
@@ -133,7 +135,7 @@ public class VariableImpl implements Variable {
         		} else {
         			//Same as above : we probably may factorize 
             		if (!getValue().isEmpty() && !Type.subTypeOf(getValue().getItemType(), getSequenceType().getPrimaryType()))
-        				{throw new XPathException("XPTY0004: Invalid type for variable $" + getQName() +
+        				{throw new XPathException(getValue(), "XPTY0004: Invalid type for variable $" + getQName() +
         						". Expected " +
         						Type.getTypeName(getSequenceType().getPrimaryType()) +
         						", got " +Type.getTypeName(getValue().getItemType()));}
@@ -164,9 +166,10 @@ public class VariableImpl implements Variable {
         this.initialized = initialized;
     }
 
-    public void destroy(XQueryContext context, Sequence contextSequence) {
-        if (value != null)
-            {value.destroy(context, contextSequence);}
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
+        if (value != null) {
+			value.destroy(context, contextSequence);
+		}
     }
 
     @Override
@@ -255,8 +258,8 @@ public class VariableImpl implements Variable {
 				}
 			}
 
-        	throw new XPathException(
-        			Messages.getMessage(Error.VAR_TYPE_MISMATCH,
+        	throw new XPathException(getValue(),
+					Messages.getMessage(Error.VAR_TYPE_MISMATCH,
 							toString(),
 							type.toString(),
 							valueType.toString()

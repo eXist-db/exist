@@ -70,12 +70,6 @@
 
         <!-- test -->
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -153,7 +147,6 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-compression:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on Compression Module -->
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-expathrepo-trigger-test:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for resolving the XAR for PackageTriggerTest -->
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

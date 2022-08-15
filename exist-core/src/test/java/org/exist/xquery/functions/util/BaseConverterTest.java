@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
 
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XPathException;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;

@@ -25,11 +25,13 @@ import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 /**
@@ -40,6 +42,13 @@ import java.util.Properties;
  * @author wolf
  */
 public interface Item {
+
+    /**
+     * Return the expression from which this item derives.
+     *
+     * @return  the expression from which this item derives
+     */
+    Expression getExpression();
 
     /**
      * Return the type of this item according to the type constants defined in class
@@ -70,7 +79,7 @@ public interface Item {
      * @param context current context
      * @param contextSequence the sequence to clean up
      */
-    void destroy(XQueryContext context, Sequence contextSequence);
+    void destroy(XQueryContext context, @Nullable Sequence contextSequence);
 
     /**
      * Convert this item into an atomic value, whose type corresponds to

@@ -189,7 +189,7 @@ public class Deploy extends BasicFunction {
                     transaction.commit();
                 }
 	        }
-	        target.orElseThrow(() -> new XPathException("expath repository is not available."));
+	        target.orElseThrow(() -> new XPathException(this, "expath repository is not available."));
             return statusReport(target);
         } catch (PackageException e) {
             throw new XPathException(this, EXPathErrorCode.EXPDY001, e.getMessage(), args[0], e);
@@ -221,12 +221,12 @@ public class Deploy extends BasicFunction {
         final XmldbURI docPath = XmldbURI.createInternal(path);
         try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(docPath, LockMode.READ_LOCK)) {
             if(lockedDoc == null) {
-                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " no such .xar", new StringValue(path));
+                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " no such .xar", new StringValue(this, path));
             }
 
             final DocumentImpl doc = lockedDoc.getDocument();
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE) {
-                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(path));
+                throw new XPathException(this, EXPathErrorCode.EXPDY001, path + " is not a valid .xar", new StringValue(this, path));
             }
 
             RepoPackageLoader loader = null;
@@ -239,7 +239,7 @@ public class Deploy extends BasicFunction {
             return deployment.installAndDeploy(context.getBroker(), transaction, xarSource, loader);
         } catch (PackageException | IOException | PermissionDeniedException e) {
             LOG.error(e.getMessage(), e);
-            throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(e.getMessage()));
+            throw new XPathException(this, EXPathErrorCode.EXPDY007, "Package installation failed: " + e.getMessage(), new StringValue(this, e.getMessage()));
         }
     }
 

@@ -305,7 +305,7 @@ public class ArrayFunction extends BasicFunction {
                 final ArrayType array = (ArrayType) args[0].itemAt(0);
                 switch (called) {
                     case SIZE:
-                        return new IntegerValue(array.getSize());
+                        return new IntegerValue(this, array.getSize());
                     case GET:
                         final IntegerValue index = (IntegerValue) args[1].itemAt(0);
                         return array.get(index);
@@ -400,7 +400,7 @@ public class ArrayFunction extends BasicFunction {
                             }
 
                             //by default use fn:data#1 as the key function
-                            final FunctionReference keyFun = new FunctionReference(NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
+                            final FunctionReference keyFun = new FunctionReference(this, NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
                             return array.sort(collator, keyFun);
 
                         } else if (args.length == 3) {

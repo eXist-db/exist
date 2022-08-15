@@ -211,7 +211,7 @@ public class ContentFunctions extends BasicFunction {
             paths[i] = new NodePath(mappings, path, false);
         }
 
-        ContentReceiver receiver = new ContentReceiver(context, paths, ref, data);
+        ContentReceiver receiver = new ContentReceiver(this, context, paths, ref, data);
 
         try {
             ce.extractContentAndMetadata(binary, receiver);

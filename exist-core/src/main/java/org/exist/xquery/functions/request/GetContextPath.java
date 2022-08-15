@@ -61,9 +61,9 @@ public class GetContextPath extends StrictRequestFunction {
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
 		if (isCalledAs("get-context-path")) {
-			return new StringValue(request.getContextPath());
+			return new StringValue(this, request.getContextPath());
 		} else {
-			return new StringValue(request.getServletPath());
+			return new StringValue(this, request.getServletPath());
 		}
 	}
 }

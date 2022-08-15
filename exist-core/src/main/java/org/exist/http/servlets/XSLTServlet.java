@@ -65,6 +65,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.zip.GZIPInputStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * eXist-db servlet for XSLT transformations.
  *
@@ -87,7 +89,7 @@ public class XSLTServlet extends HttpServlet {
         new XSLTErrorsListener<ServletException>(true, false) {
 
             @Override
-            protected void raiseError(String error, Exception ex) throws ServletException {
+            protected void raiseError(final String error, final TransformerException ex) throws ServletException {
                 throw new ServletException(error, ex);
             }
         };
@@ -194,7 +196,7 @@ public class XSLTServlet extends HttpServlet {
 
             String encoding = properties.getProperty("encoding");
             if (encoding == null) {
-                encoding = "UTF-8";
+                encoding = UTF_8.name();
             }
             response.setCharacterEncoding(encoding);
 

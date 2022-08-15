@@ -110,7 +110,7 @@ public class ExtCollection extends Function {
                 } else {
                     final MutableDocumentSet ndocs = new DefaultDocumentSet();
                     for (final String next : args) {
-                        final XmldbURI uri = new AnyURIValue(next).toXmldbURI();
+                        final XmldbURI uri = new AnyURIValue(this, next).toXmldbURI();
                         try (final Collection coll = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
                             if (coll == null) {
                                 if (context.isRaiseErrorOnFailedRetrieval()) {
@@ -221,7 +221,7 @@ public class ExtCollection extends Function {
                     if (!context.inProtectedMode()) {
                         dlock = lockManager.acquireDocumentReadLock(doc.getURI());
                     }
-                    result.add(new NodeProxy(doc));
+                    result.add(new NodeProxy(null, doc));
                 } catch (final LockException e) {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
                 } finally {

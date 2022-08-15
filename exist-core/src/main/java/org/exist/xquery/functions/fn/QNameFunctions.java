@@ -101,15 +101,15 @@ public class QNameFunctions extends BasicFunction {
     			if (prefix == null || prefix.isEmpty())
                     {result = Sequence.EMPTY_SEQUENCE;}
     			else
-                    {result = new StringValue(prefix, Type.NCNAME);}
+                    {result = new StringValue(this, prefix, Type.NCNAME);}
     		} else if (isCalledAs("local-name-from-QName"))
-                {result = new StringValue(qname.getLocalPart(), Type.NCNAME);}
+                {result = new StringValue(this, qname.getLocalPart(), Type.NCNAME);}
     		else {
                 // fn:namespace-uri-from-QName
     			String uri = qname.getNamespaceURI();
     			if (uri == null)
     				{uri = "";}    			
-                result = new AnyURIValue(uri);
+                result = new AnyURIValue(this, uri);
     		}
         }
         

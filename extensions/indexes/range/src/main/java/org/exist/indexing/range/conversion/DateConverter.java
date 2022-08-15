@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
 import org.exist.indexing.range.RangeIndexConfigElement;
-import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.TimeUtils;
 

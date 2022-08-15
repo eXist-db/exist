@@ -23,6 +23,8 @@ package org.exist.xquery.functions.request;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
+
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,6 +49,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import javax.annotation.Nonnull;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -75,9 +79,15 @@ public class GetData extends StrictRequestFunction {
     public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
             throws XPathException {
 
-        //if the content length is unknown or 0, return
+        // if the content length is unknown or 0, and this is not chunked transfer encoding, return
         if (request.getContentLength() <= 0) {
-            return Sequence.EMPTY_SEQUENCE;
+            final boolean isChunkedTransferEncoding = Optional.ofNullable(request.getHeader("Transfer-Encoding"))
+                    .filter(str -> !str.trim().isEmpty())
+                    .map(str -> "chunked".equals(str)).orElse(false);
+
+            if (!isChunkedTransferEncoding) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
 
         InputStream isRequest = null;
@@ -100,7 +110,7 @@ public class GetData extends StrictRequestFunction {
                     if (mimeType != null && !mimeType.isXMLType()) {
 
                         //binary data
-                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), isRequest);
+                        result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), isRequest, this);
                     }
                 }
 
@@ -126,7 +136,7 @@ public class GetData extends StrictRequestFunction {
                             // 3) not a valid XML document, return a string representation of the document
                             String encoding = request.getCharacterEncoding();
                             if (encoding == null) {
-                                encoding = "UTF-8";
+                                encoding = UTF_8.name();
                             }
 
                             try {
@@ -181,7 +191,7 @@ public class GetData extends StrictRequestFunction {
 
             reader = context.getBroker().getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder, true);
             reader.setContentHandler(receiver);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, receiver);
             reader.parse(src);
@@ -204,7 +214,7 @@ public class GetData extends StrictRequestFunction {
     private Sequence parseAsString(InputStream is, String encoding) throws IOException {
         try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream()) {
             bos.write(is);
-            return new StringValue(bos.toString(encoding));
+            return new StringValue(this, bos.toString(encoding));
         }
     }
 }

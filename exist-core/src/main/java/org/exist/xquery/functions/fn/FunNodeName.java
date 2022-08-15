@@ -121,7 +121,7 @@ public class FunNodeName extends Function {
                 if (qn.equals(QName.EMPTY_QNAME)) {
                     result = Sequence.EMPTY_SEQUENCE;
                 } else {
-                    result = new QNameValue(context, qn);
+                    result = new QNameValue(this, context, qn);
                 }
                 //For other kinds of nodes it returns the empty sequence.
             } else {

@@ -35,7 +35,7 @@ import java.util.Map;
  * Document triggers may have two roles:
  * 
  * <ol>
- *  <li>before the document is stored, updated or removed, the trigger's {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)}
+ *  <li>before the document is stored, updated or removed, the trigger's {@link org.exist.collections.triggers.XQueryTrigger#prepare(TriggerEvent, DBBroker, Txn, XmldbURI, XmldbURI, boolean)}
  *  method is called. The trigger code may take any action desired, for example, to ensure referential
  *  integrity on the database, issue XUpdate commands on other documents in the database...</li>
  *  <li>the trigger also functions as a filter: the trigger interface extends SAX {@link org.xml.sax.ContentHandler content handler} and
@@ -46,8 +46,8 @@ import java.util.Map;
  * </ol>
  * 
  * The DocumentTrigger interface is also called for binary resources. However, in this case, the trigger can not function as
- * a filter and the SAX-related methods are useless. Only {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} and
- * {@link  org.exist.collections.triggers.XQueryTrigger#finish(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} will be called. To determine if the document is a binary resource,
+ * a filter and the SAX-related methods are useless. Only {@link org.exist.collections.triggers.XQueryTrigger#prepare(TriggerEvent, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} and
+ * {@link  org.exist.collections.triggers.XQueryTrigger#finish(TriggerEvent, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} will be called. To determine if the document is a binary resource,
  * call {@link org.exist.dom.persistent.DocumentImpl#getResourceType()}.
  * 
  * The general contract for a trigger is as follows:
@@ -57,7 +57,7 @@ import java.util.Map;
  *  {@link org.exist.collections.triggers.XQueryTrigger#configure(DBBroker, Txn, Collection, Map)} method
  *  will be called once.</li>
  *  <li>pre-parse phase: before parsing the source document, the collection will call the trigger's
- *  {@link org.exist.collections.triggers.XQueryTrigger#prepare(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean) prepare}
+ *  {@link org.exist.collections.triggers.XQueryTrigger#prepare(TriggerEvent, DBBroker, Txn, XmldbURI, XmldbURI, boolean)}  prepare}
  *  method once for each document to be stored, removed or updated. The trigger may
  *  throw a TriggerException if the current action should be aborted.</li>
  *  <li>validation phase: during the validation phase, the document is parsed once by the SAX parser. During this
@@ -66,7 +66,7 @@ import java.util.Map;
  *  <li>storage phase: the document is again parsed by the SAX parser. The trigger will still receive all SAX events,
  *  but it is not allowed to throw an exception. Throwing an exception during the storage phase will result in an
  *  invalid document in the database.</li>
- *  <li>finalization: the method {@link org.exist.collections.triggers.XQueryTrigger#finish(int, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} is called. At this point, the document
+ *  <li>finalization: the method {@link org.exist.collections.triggers.XQueryTrigger#finish(TriggerEvent, DBBroker, Txn, XmldbURI, XmldbURI, boolean)} is called. At this point, the document
  *  has already been stored and is ready to be used or - for {@link #REMOVE_DOCUMENT_EVENT} - has been removed.
  *  </li>
  * </ol>

@@ -78,7 +78,7 @@ public class XMLDBMatchCollection extends BasicFunction {
         final ValueSequence seq = new ValueSequence(collectionNames.size());
         
         for(final String collectionName : collectionNames) {
-            seq.add(new StringValue(collectionName));
+            seq.add(new StringValue(this, collectionName));
         }
         
         return seq;

@@ -92,7 +92,7 @@ public class FileRead extends BasicFunction {
 		}
 
 		final String inputPath = args[0].getStringValue();
-		final Path file = FileModuleHelper.getFile(inputPath);
+		final Path file = FileModuleHelper.getFile(inputPath, this);
 
 		final Charset encoding;
 		if(args.length == 2) {
@@ -102,7 +102,7 @@ public class FileRead extends BasicFunction {
 		}
 
 		try {
-            return new StringValue(new String(Files.readAllBytes(file), encoding));
+            return new StringValue(this, new String(Files.readAllBytes(file), encoding));
 		} catch(final IOException e ) {
 			throw new XPathException(this, e);	
 		}

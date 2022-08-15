@@ -83,9 +83,9 @@ public class FunUpperOrLowerCase extends Function {
         else {
     		final String value = seq.getStringValue();
     		if(isCalledAs("upper-case"))
-                {result = new StringValue(value.toUpperCase());}
+                {result = new StringValue(this, value.toUpperCase());}
     		else
-                {result = new StringValue(value.toLowerCase());}
+                {result = new StringValue(this, value.toLowerCase());}
         }
 
         if (context.getProfiler().isEnabled()) 

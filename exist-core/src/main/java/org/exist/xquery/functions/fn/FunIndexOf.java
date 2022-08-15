@@ -138,7 +138,7 @@ public class FunIndexOf extends BasicFunction {
     			final AtomicValue next = i.nextItem().atomize();
     			try {
 	    			if (ValueComparison.compareAtomic(collator, next, srch, StringTruncationOperator.NONE, Comparison.EQ))
-	    				{result.add(new IntegerValue(j));}
+	    				{result.add(new IntegerValue(this, j));}
     			} catch (final XPathException e) {
     				//Ignore me : values can not be compared
     			}

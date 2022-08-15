@@ -24,9 +24,12 @@ package org.exist.xquery;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.source.Source;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -49,7 +52,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(String message) {
+    public XPathException(final String message) {
         super();
         this.message = message;
     }
@@ -61,21 +64,21 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(int line, int column, String message) {
+    public XPathException(final int line, final int column, final String message) {
         super();
         this.message = message;
         this.line = line;
         this.column = column;
     }
-    
-    public XPathException(ErrorCode errorCode, int line, int column) {
+
+    public XPathException(final ErrorCode errorCode, final int line, final int column) {
         super();
         this.errorCode = errorCode;
         this.line = line;
         this.column = column;
     }
 
-    public XPathException(int line, int column, ErrorCode errorCode, String message) {
+    public XPathException(final int line, final int column, final ErrorCode errorCode, final String message) {
         super();
         this.errorCode = errorCode;
         this.message = message;
@@ -90,40 +93,70 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(Expression expr, String message) {
+    public XPathException(final Expression expr, final String message) {
         super();
         this.message = message;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
-    
-    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc) {
+
+    @Deprecated
+    public XPathException(final Sequence sequence, final String message) {
+        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, message);
+    }
+
+    @Deprecated
+    public XPathException(final Item item, final String message) {
+        this((item != null) ? item.getExpression() : null, message);
+    }
+
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc) {
         super();
         this.errorCode = errorCode;
         this.message = errorDesc;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, String errorDesc, Sequence errorVal) {
+    public XPathException(final Sequence sequence, final ErrorCode errorCode, final String message) {
+        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, errorCode, message);
+    }
+
+    public XPathException(final Item item, final ErrorCode errorCode, final String message) {
+        this((item != null) ? item.getExpression() : null, errorCode, message);
+    }
+
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {
+        this(null, errorCode, errorDesc, errorVal);
+    }
+
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {
         super();
         this.errorCode = errorCode;
         this.message = errorDesc;
         this.errorVal = errorVal;
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
-    public XPathException(Expression expr, ErrorCode errorCode, Throwable cause) {
+    public XPathException(final Expression expr, final ErrorCode errorCode, final Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
         this.message = cause.getMessage();
-        this.line = expr.getLine();
-        this.column = expr.getColumn();
-        this.source = expr.getSource();
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
+        }
     }
 
     /**
@@ -132,7 +165,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      * @deprecated Use a constructor with errorCode
      */
     @Deprecated
-    public XPathException(XQueryAST ast, String message) {
+    public XPathException(final XQueryAST ast, final String message) {
         super();
         this.message = message;
         if(ast != null) {
@@ -141,7 +174,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
     }
 
-    public XPathException(XQueryAST ast, ErrorCode errorCode, String message) {
+    public XPathException(final XQueryAST ast, final ErrorCode errorCode, final String message) {
         super();
         this.errorCode=errorCode;
         this.message = message;
@@ -158,7 +191,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
     @Deprecated
     public XPathException(final Throwable cause) {
         super(cause);
-        if(cause instanceof XPathErrorProvider) {
+        if (cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
         }
     }
@@ -170,10 +203,20 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Deprecated
     public XPathException(final String message, final Throwable cause) {
+        this((Expression) null, message, cause);
+    }
+
+    public XPathException(final Expression expr, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
-        if(cause instanceof XPathErrorProvider) {
+        if (cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        }
+
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
         }
     }
 
@@ -184,61 +227,67 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Deprecated
     public XPathException(final Expression expr, final Throwable cause) {
-        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause.getMessage(), null, cause);
-    }
-
-    /**
-     * @param expr expression causing the error
-     * @param message error message
-     * @param cause the cause throwable
-     * @deprecated Use a constructor with errorCode
-     */
-    @Deprecated
-    public XPathException(final Expression expr, final String message, final Throwable cause) {
-        this(expr, cause instanceof  XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, message, null, cause);
-    }
-
-    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
-        this(expr.getLine(), expr.getColumn(), errorDesc, cause);
-        this.errorCode = errorCode;
-        this.errorVal = errorVal;
-    }
-    
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal) {
-        this(errorCode, errorDesc);
-        this.errorVal = errorVal;
+        this(expr, cause instanceof XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause == null ? "" : cause.getMessage(), null, cause);
     }
 
     /**
      *  Constructor.
-     * 
+     *
      * @param errorCode Xquery errorcode
      * @param errorDesc Error code. When Null the ErrorCode text will be used.
-     * 
+     *
      */
-    public XPathException(ErrorCode errorCode, String errorDesc) {
+    public XPathException(final ErrorCode errorCode, final String errorDesc) {
         this.errorCode = errorCode;
 
         if(errorDesc == null){
-            this.message = errorCode.toString();
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
         } else {
             this.message = errorDesc;
         }
     }
-    
-    public XPathException(ErrorCode errorCode, String errorDesc, Sequence errorVal, Throwable cause) {
+
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
         this(errorCode, errorDesc, cause);
         this.errorVal = errorVal;
     }
-    
-    public XPathException(ErrorCode errorCode, String errorDesc, Throwable cause) {
+
+    public XPathException(final ErrorCode errorCode, final String errorDesc, final Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
 
         if(errorDesc == null){
-            this.message = errorCode.toString();
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
         } else {
             this.message = errorDesc;
+        }
+    }
+
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Sequence errorVal, final Throwable cause) {
+        this(expr, errorCode, errorDesc, cause);
+        this.errorVal = errorVal;
+    }
+
+    public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc, final Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+
+        if(errorDesc == null){
+            if (errorCode != null) {
+                this.message = errorCode.toString();
+            }
+        } else {
+            this.message = errorDesc;
+        }
+
+        if (expr != null) {
+            this.line = expr.getLine();
+            this.column = expr.getColumn();
+            this.source = expr.getSource();
         }
     }
 
@@ -255,7 +304,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.message = message;
         this.line = line;
         this.column = column;
-        if(cause instanceof XPathErrorProvider) {
+        if (cause instanceof XPathErrorProvider) {
             this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
         }
     }
@@ -298,16 +347,16 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      * Get the xquery error code. Use getErroCode instead.
-     * 
+     *
      * @return The error code or ErrorCode#Error when not available.
      *
      * @deprecated Use {@link #getErrorCode()}
      */
     @Deprecated
     public ErrorCode getCode() {
-    	return errorCode;
+        return errorCode;
     }
-    
+
     public Source getSource() {
         return source;
     }
@@ -318,7 +367,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
         }
         callStack.add(new FunctionStackElement(def, def.getSource().pathOrShortIdentifier(), call.getLine(), call.getColumn()));
     }
-    
+
     public List<FunctionStackElement> getCallStack() {
         return callStack;
     }
@@ -337,23 +386,23 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Override
     public String getMessage() {
-        
+
         final StringBuilder buf = new StringBuilder();
-        
+
         if(message == null) {
             message = "";
         }
-        
+
         if(errorCode != null) {
             buf.append(errorCode.getErrorQName()); //TODO consider also displaying the W3C message by calling errorCode.toString()
             buf.append(" ");
-            
+
             if(message.isEmpty()) {
                 message = errorCode.getDescription();
             }
         }
         buf.append(message);
-        
+
         // Append location details
         if(getLine() > 0 || source != null) {
             buf.append(" [");
@@ -371,7 +420,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
             }
             buf.append("]");
         }
-        
+
         // Append function stack trace
         if(callStack != null) {
             buf.append("\nIn function:\n");
@@ -383,14 +432,14 @@ public class XPathException extends Exception implements XPathErrorProvider {
                 }
             }
         }
-        
+
         return buf.toString();
     }
 
     /**
      * Returns just the error message, not including
      * line numbers or the call stack.
-     * 
+     *
      * @return error message
      */
     public String getDetailMessage() {
@@ -433,7 +482,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     /**
      *  Get the xquery error value.
-     * 
+     *
      * @return Error value as sequence
      */
     public Sequence getErrorVal() {
@@ -473,6 +522,34 @@ public class XPathException extends Exception implements XPathErrorProvider {
         @Override
         public String toString() {
             return function + " [" + line + ":" + column + ":" + file + ']';
+        }
+    }
+
+    /**
+     * Executes the function, and if the function raises an XPathException
+     * and the error information is missing from the exception, it will be added
+     * from the calling expression.
+     *
+     * @param <T> the return type of the function.
+     *
+     * @param callingExpression the calling expression.
+     * @param function the function execute.
+     *
+     * @return the result of the calling function
+     * @throws XPathException if the function throws an XPathException
+     */
+    public static <T> T execAndAddErrorIfMissing(final Expression callingExpression, final SupplierE<T, XPathException> function) throws XPathException {
+        try {
+            return function.get();
+        } catch (final XPathException e) {
+            if (e.getLine() == 0) {
+                if (callingExpression.getSource() != null) {
+                    e.setLocation(callingExpression.getLine(), callingExpression.getColumn(), callingExpression.getSource());
+                } else {
+                    e.setLocation(callingExpression.getLine(), callingExpression.getColumn());
+                }
+            }
+            throw e;
         }
     }
 }

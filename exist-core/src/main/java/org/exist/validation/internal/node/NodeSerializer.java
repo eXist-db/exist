@@ -35,6 +35,8 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.value.NodeValue;
 import org.xml.sax.SAXException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Node serializer.
  *
@@ -50,7 +52,7 @@ public class NodeSerializer {
         LOG.debug("Serializing started.");
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
             try (Writer writer = new OutputStreamWriter(os, encoding)) {
                 sax.setOutput(writer, outputProperties);
                 

@@ -438,7 +438,7 @@ public class PersistentDomTest {
             serializer.setProperties(outputProperties);
             serializer.setSAXHandlers(sax, sax);
 
-            serializer.toSAX(new NodeProxy((NodeHandle)node));
+            serializer.toSAX(new NodeProxy(null, (NodeHandle)node));
 
             return writer.toString();
 

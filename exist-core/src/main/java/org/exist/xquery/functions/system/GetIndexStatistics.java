@@ -60,7 +60,7 @@ public class GetIndexStatistics extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        final SAXAdapter adapter = new SAXAdapter(context);
+        final SAXAdapter adapter = new SAXAdapter(this, context);
         try {
             adapter.startDocument();
             index.toSAX(adapter);

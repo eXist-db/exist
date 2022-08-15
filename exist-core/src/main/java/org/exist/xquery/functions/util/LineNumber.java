@@ -45,6 +45,6 @@ public class LineNumber extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence)
             throws XPathException {
-        return new IntegerValue(getLine());
+        return new IntegerValue(this, getLine());
     }
 }

@@ -80,8 +80,8 @@ public class SequenceConstructor extends PathExpr {
             context.pushDocumentContext();
             try {
                 final Sequence temp = step.eval(contextSequence, contextItem);
-                if(temp != null && !temp.isEmpty()) {
-                      result.addAll(temp);
+                if (temp != null && !temp.isEmpty()) {
+                    result.addAll(temp);
                 }
             } finally {
                 context.popDocumentContext();

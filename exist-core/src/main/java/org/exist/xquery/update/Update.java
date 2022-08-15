@@ -111,9 +111,9 @@ public class Update extends Modification {
             if(ctxVarObj == null) {
                 prevUpdateErrors = new ValueSequence();
             } else {
-                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
             }
-            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
             if(!inSeq.isEmpty()) {
@@ -146,7 +146,7 @@ public class Update extends Modification {
                                 if (Type.subTypeOf(next.getType(), Type.NODE)) {
                                     content.add(((NodeValue) next).getNode());
                                 } else {
-                                    final TextImpl text = new TextImpl(next.getStringValue());
+                                    final TextImpl text = new TextImpl(node.getExpression(), next.getStringValue());
                                     content.add(text);
                                 }
                             }
@@ -155,7 +155,7 @@ public class Update extends Modification {
 
                         case Node.TEXT_NODE:
                             final ElementImpl textParent = (ElementImpl) node.getParentNode();
-                            final TextImpl text = new TextImpl(contentSeq.getStringValue());
+                            final TextImpl text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
                             text.setOwnerDocument(doc);
                             textParent.updateChild(transaction, node, text);
                             break;
@@ -167,7 +167,7 @@ public class Update extends Modification {
                                 break;
                             }
                             final AttrImpl attr = (AttrImpl) node;
-                            final AttrImpl attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
+                            final AttrImpl attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
                             attribute.setOwnerDocument(doc);
                             attrParent.updateChild(transaction, node, attribute);
                             break;

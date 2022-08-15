@@ -128,7 +128,7 @@ public class MailFolderFunctions extends BasicFunction
 		
 		// save the folder and return the handle of the folder
 			
-		return( new IntegerValue( MailModule.storeFolder( context, folder ) ) );
+		return( new IntegerValue( this, MailModule.storeFolder( context, folder ) ) );
 	}
 	
 	private Sequence closeMailFolder( Sequence[] args, Sequence contextSequence ) throws XPathException

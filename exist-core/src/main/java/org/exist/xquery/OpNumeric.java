@@ -78,7 +78,11 @@ public class OpNumeric extends BinaryOp {
             } else if (ltype == Type.NUMBER || rtype == Type.NUMBER) {
                 // if one of both operands returns a number, we can safely assume
                 // the return type of the whole expression will be a number
-                returnType = Type.NUMBER;
+                if(operator == ArithmeticOperator.DIVISION) {
+                    returnType = Type.DECIMAL;
+                }else {
+                    returnType = Type.NUMBER;
+                }
             }
         }
         add(left);
@@ -229,6 +233,10 @@ public class OpNumeric extends BinaryOp {
         new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.DATE_TIME,             Type.DATE_TIME),
         new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME),
         new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DATE_TIME,             Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE_TIME_STAMP,       Type.YEAR_MONTH_DURATION,   Type.DATE_TIME_STAMP),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.DATE_TIME_STAMP,       Type.DATE_TIME_STAMP),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DATE_TIME_STAMP,       Type.DAY_TIME_DURATION,     Type.DATE_TIME_STAMP),
+        new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DATE_TIME_STAMP,       Type.DATE_TIME_STAMP),
         new OpEntry(ArithmeticOperator.ADDITION,     Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION),
         new OpEntry(ArithmeticOperator.ADDITION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION),
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.NUMBER,                Type.NUMBER,                Type.NUMBER),
@@ -240,6 +248,9 @@ public class OpNumeric extends BinaryOp {
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.DATE_TIME,             Type.DAY_TIME_DURATION),
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.YEAR_MONTH_DURATION,   Type.DATE_TIME),
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME,             Type.DAY_TIME_DURATION,     Type.DATE_TIME),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME_STAMP,       Type.DATE_TIME_STAMP,       Type.DAY_TIME_DURATION),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME_STAMP,       Type.YEAR_MONTH_DURATION,   Type.DATE_TIME_STAMP),
+        new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DATE_TIME_STAMP,       Type.DAY_TIME_DURATION,     Type.DATE_TIME_STAMP),
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION,   Type.YEAR_MONTH_DURATION),
         new OpEntry(ArithmeticOperator.SUBTRACTION,    Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION,     Type.DAY_TIME_DURATION),
         new OpEntry(ArithmeticOperator.MULTIPLICATION,     Type.NUMBER,                Type.NUMBER,                Type.NUMBER),

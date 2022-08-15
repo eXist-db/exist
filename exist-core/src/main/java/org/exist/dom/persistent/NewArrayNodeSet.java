@@ -23,6 +23,7 @@ package org.exist.dom.persistent;
 
 import org.exist.collections.Collection;
 import org.exist.collections.ManagedLocks;
+import org.exist.dom.INode;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockManager;
@@ -36,8 +37,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -457,7 +460,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         while(mid > documentNodesOffset[docIdx] && nodes[mid - 1].getNodeId().compareTo(ancestorId) >= 0) {
             --mid;
         }
-        final NodeProxy ancestor = new NodeProxy(nodes[documentNodesOffset[docIdx]].getOwnerDocument(),
+        final NodeProxy ancestor = new NodeProxy(null, nodes[documentNodesOffset[docIdx]].getOwnerDocument(),
             ancestorId, Node.ELEMENT_NODE);
         // we need to check if self should be included
         boolean foundOne = false;
@@ -1099,6 +1102,72 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     @Override
+    public boolean containsReference(final Item item) {
+        sort();
+        if (item instanceof Node) {
+            @Nullable final Document doc;
+            if (item instanceof Document) {
+                doc = (Document) item;
+            } else {
+                doc = ((Node) item).getOwnerDocument();
+            }
+
+            if (doc == null || !(doc instanceof DocumentImpl || doc instanceof org.exist.dom.memtree.DocumentImpl)) {
+                return false;
+            }
+
+            final int docId;
+            if (doc instanceof DocumentImpl) {
+                docId = ((DocumentImpl) doc).getDocId();
+            } else {
+                docId = (int) ((org.exist.dom.memtree.DocumentImpl) doc).getDocId();
+            }
+
+            final int idx = findDoc(docId);
+            if (idx < 0) {
+                return false;
+            }
+
+            return get(idx, ((INode) item).getNodeId()) == item;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        sort();
+        if (item instanceof Node) {
+            @Nullable final Document doc;
+            if (item instanceof Document) {
+                doc = (Document) item;
+            } else {
+                doc = ((Node) item).getOwnerDocument();
+            }
+
+            if (doc == null || !(doc instanceof DocumentImpl || doc instanceof org.exist.dom.memtree.DocumentImpl)) {
+                return false;
+            }
+
+            final int docId;
+            if (doc instanceof DocumentImpl) {
+                docId = ((DocumentImpl) doc).getDocId();
+            } else {
+                docId = (int) ((org.exist.dom.memtree.DocumentImpl) doc).getDocId();
+            }
+
+            final int idx = findDoc(docId);
+            if (idx < 0) {
+                return false;
+            }
+
+            return get(idx, ((INode) item).getNodeId()).equals(item);
+        }
+
+        return false;
+    }
+
+    @Override
     public NodeSet docsToNodeSet() {
         sort();
         final NodeSet result = new NewArrayNodeSet();
@@ -1106,7 +1175,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         for(int i = 0; i < documentCount; i++) {
             doc = nodes[documentNodesOffset[i]].getOwnerDocument();
             if(doc.getResourceType() == DocumentImpl.XML_FILE) { // skip binary resources
-                result.add(new NodeProxy(doc, NodeId.DOCUMENT_NODE));
+                result.add(new NodeProxy(null, doc, NodeId.DOCUMENT_NODE));
             }
         }
         return result;

@@ -105,7 +105,7 @@ public class NamedFunctionReference extends AbstractExpression {
 	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
-		return new FunctionReference(resolvedFunction);
+		return new FunctionReference(this, resolvedFunction);
 	}
 
 	@Override

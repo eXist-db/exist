@@ -39,6 +39,8 @@ import java.net.URLDecoder;
 
 import java.util.regex.Pattern;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A utility class for xmldb URis. Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
  *
@@ -452,7 +454,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         try {
 
             //TODO: we might want to cache this value
-            return URLDecoder.decode(encodedCollectionPath, "UTF-8");
+            return URLDecoder.decode(encodedCollectionPath, UTF_8.name());
         } catch (final UnsupportedEncodingException e) {
             //Should never happen
             throw new IllegalArgumentException(encodedCollectionPath + " can not be properly escaped");

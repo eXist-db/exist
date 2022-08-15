@@ -30,8 +30,6 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
-
 /**
  * Represents an enclosed expression <code>{expr}</code> inside element
  * content. Enclosed expressions within attribute values are processed by
@@ -86,7 +84,7 @@ public class EnclosedExpr extends PathExpr {
 
             // create the output
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
             receiver.setCheckNS(true);
             try {
                 // flatten all arrays in the input sequence
@@ -98,8 +96,8 @@ public class EnclosedExpr extends PathExpr {
                 while (next != null) {
                     context.proceed(this, builder);
                     if (Type.subTypeOf(next.getType(), Type.FUNCTION_REFERENCE)) {
-                        throw new XPathException(this, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
-
+                        final Expression expression = ((FunctionReference) next).getExpression();
+                        throw new XPathException((expression == null) ? this : expression, ErrorCodes.XQTY0105, "Enclosed expression contains function item");
                         // if item is an atomic value, collect the string values of all
                         // following atomic values and separate them by a space.
                     } else if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
@@ -192,4 +190,8 @@ public class EnclosedExpr extends PathExpr {
         return this;
     }
 
+    @Override
+    public boolean evalNextExpressionOnEmptyContextSequence() {
+        return true;
+    }
 }

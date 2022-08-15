@@ -955,7 +955,10 @@
                 <parameter name="evalDisabled" value="false"/>
             </module>
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule"/>
-            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
+            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule">
+                <!-- set to false to disable the use of xs:anyURI as a $contents value for xmldb:store and xmldb:store-as-binary function -->
+                <parameter name="allowAnyUri" value="false"/>
+            </module>
 
 
             <!-- 

@@ -50,6 +50,16 @@
         <expected>true</expected>
     </test>
     <test output="text">
+        <task>fn:matches-using-hyphen-postfix</task>
+        <code>fn:matches('aww he--', '[l-]')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:matches-using-hyphen-prefix</task>
+        <code>fn:matches('aww he--', '[-l]')</code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
         <task>fn:matches-xflag-1</task>
         <code>fn:matches('helloworld', 'hello world', 'x')</code>
         <expected>true</expected>
@@ -77,6 +87,12 @@
     <test output="text">
         <task>fn:matches-iqflags-1</task>
         <code>fn:matches("Mr. B. Obama", "B. OBAMA", "iq")</code>
+        <expected>true</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:matches-jflags-1</task>
+        <code>fn:matches("(", "\p{javaMirrored}", ";j")</code>
         <expected>true</expected>
     </test>
 

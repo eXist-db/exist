@@ -89,9 +89,9 @@ public class FunTranslate extends Function {
 		if(seq.isEmpty())
             {result = StringValue.EMPTY_STRING;}
         else {
-    		final ValueSequence arg = FunStringToCodepoints.getCodePoints(seq.getStringValue());
-    		final ValueSequence mapStr = FunStringToCodepoints.getCodePoints(getArgument(1).eval(contextSequence).getStringValue());
-            final ValueSequence transStr = FunStringToCodepoints.getCodePoints(getArgument(2).eval(contextSequence).getStringValue());
+    		final ValueSequence arg = FunStringToCodepoints.getCodePoints(this, seq.getStringValue());
+    		final ValueSequence mapStr = FunStringToCodepoints.getCodePoints(this, getArgument(1).eval(contextSequence).getStringValue());
+            final ValueSequence transStr = FunStringToCodepoints.getCodePoints(this, getArgument(2).eval(contextSequence).getStringValue());
     		int p;
     		IntegerValue ch;
     		final StringBuilder buf = new StringBuilder(arg.getItemCount());
@@ -105,7 +105,7 @@ public class FunTranslate extends Function {
     					{buf.append(FunStringToCodepoints.codePointToString((IntegerValue) transStr.itemAt(p)));}
     			}
     		}
-            result = new StringValue(buf.toString());
+            result = new StringValue(this, buf.toString());
         }
 
         if (context.getProfiler().isEnabled()) 

@@ -338,7 +338,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             if(typedValue instanceof org.exquery.xdm.type.StringTypedValue) {
                 value = new StringValue(((org.exquery.xdm.type.StringTypedValue)typedValue).getValue());
             } else if(typedValue instanceof org.exquery.xdm.type.Base64BinaryTypedValue) {
-                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue());
+                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue(), null);
             } else {
                 value = (Item)typedValue.getValue();
             }

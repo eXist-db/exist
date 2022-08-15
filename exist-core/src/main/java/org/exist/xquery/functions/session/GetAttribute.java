@@ -70,6 +70,6 @@ public class GetAttribute extends SessionFunction {
         }
 
         final Object o = maybeAttributeValue.get();
-        return XPathUtil.javaObjectToXPath(o, context);
+        return XPathUtil.javaObjectToXPath(o, context, this);
     }
 }

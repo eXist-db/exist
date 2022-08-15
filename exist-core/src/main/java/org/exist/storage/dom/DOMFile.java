@@ -1308,7 +1308,7 @@ public class DOMFile extends BTree implements Lockable {
                 final int thisLevel = nodeID.getTreeLevel();
                 Integer childLevel = null; // lazily initialized below
 
-                final NodeProxy parent = new NodeProxy(doc, nodeID, parentPointer);
+                final NodeProxy parent = new NodeProxy(null, doc, nodeID, parentPointer);
                 final EmbeddedXMLStreamReader reader = (EmbeddedXMLStreamReader)broker.getXMLStreamReader(parent, true);
 
                 while (reader.hasNext()) {
@@ -1962,7 +1962,7 @@ public class DOMFile extends BTree implements Lockable {
             if (recordPos == null) {
                 // fallback to a BTree lookup if the node could not be found
                 // by its storage address
-                address = findValue(broker, new NodeProxy(node));
+                address = findValue(broker, new NodeProxy(null, node));
                 if (address == BTree.KEY_NOT_FOUND) {
                     LOG.error("Node value not found: {}", node);
                     //TODO : throw exception ? -pb

@@ -179,7 +179,12 @@ public abstract class DBBroker implements AutoCloseable {
         if(LOG.isTraceEnabled()) {
             subjectChangeTrace.add(TraceableSubjectChange.push(subject, getId()));
         }
-        this.subject.addFirst(subject);
+        if (subject == null) {
+            //TODO (AP) this is a workaround - what is the root cause ?
+            LOG.warn("Attempt to push null subject ignored.");
+        } else {
+            this.subject.addFirst(subject);
+        }
     }
 
     /**

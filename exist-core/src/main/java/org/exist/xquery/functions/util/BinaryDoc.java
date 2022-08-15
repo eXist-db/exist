@@ -127,7 +127,7 @@ public class BinaryDoc extends BasicFunction {
                 try (final Txn transaction = context.getBroker().continueOrBeginTransaction()) {
                     final BinaryDocument bin = (BinaryDocument) doc;
                     final InputStream is = context.getBroker().getBinaryResource(transaction, bin);
-                    final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is);
+                    final Base64BinaryDocument b64doc = Base64BinaryDocument.getInstance(context, is, this);
                     b64doc.setUrl(path);
 
                     transaction.commit();
@@ -148,7 +148,7 @@ public class BinaryDoc extends BasicFunction {
                     final MessageDigest messageDigest = context.getBroker().getBinaryResourceContentDigest(transaction, bin, digestType);
 
                     final InputStream is = new UnsynchronizedByteArrayInputStream(messageDigest.getValue());
-                    final Sequence result = BinaryValueFromInputStream.getInstance(context, new HexBinaryValueType(), is);
+                    final Sequence result = BinaryValueFromInputStream.getInstance(context, new HexBinaryValueType(), is, this);
 
                     transaction.commit();
 

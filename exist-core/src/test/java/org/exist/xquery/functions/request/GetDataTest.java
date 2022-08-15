@@ -21,13 +21,17 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
+import java.io.InputStream;
+
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
 import org.junit.AfterClass;
@@ -84,23 +88,97 @@ public class GetDataTest extends RESTTest {
     }
     
     @Test
-    public void retrieveBinary() throws IOException {
+    public void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_0_9)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
+
+        final HttpResponse response = post.execute().returnResponse();
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void retrieveBinaryHttp10() throws IOException {
+        final String testData = "12345";
+
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_1_0)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
         testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
     }
 
     @Test
-    public void retrieveXml() throws IOException {
+    public void retrieveBinaryHttp11() throws IOException {
+        final String testData = "12345";
+
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_1_1)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
+
+        testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
+    }
+
+    @Test
+    public void retrieveBinaryHttp11ChunkedTransferEncoding() throws IOException {
+        final String testData = "12345";
+
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
+            final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                    .version(HttpVersion.HTTP_1_1)
+                    .bodyStream(is, ContentType.APPLICATION_OCTET_STREAM);
+
+            testRequest(post, wrapInElement(encodeBase64String(testData.getBytes(UTF_8)).trim()).getBytes());
+        }
+    }
+
+    @Test
+    public void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_0_9)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
+
+        final HttpResponse response = post.execute().returnResponse();
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
+    }
+
+    @Test
+    public void retrieveXmlHttp10() throws IOException {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_1_0)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+    }
+
+    @Test
+    public void retrieveXmlHttp11() throws IOException {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                .version(HttpVersion.HTTP_1_1)
+                .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
+
+        testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+    }
+
+    @Test
+    public void retrieveXmlHttp11ChunkedTransferEncoding() throws IOException {
+        final String testData = "<a><b><c>hello</c></b></a>";
+
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
+            final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+                    .version(HttpVersion.HTTP_1_1)
+                    .bodyStream(is, ContentType.TEXT_XML);
+
+            testRequest(post, wrapInElement("\n\t" + testData + "\n").getBytes(), true);
+        }
     }
 
     @Test

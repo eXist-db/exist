@@ -94,6 +94,6 @@ public class GetMemory extends BasicFunction
 			memory = rt.freeMemory();
 		}
 		
-		return new IntegerValue(memory, Type.LONG);
+		return new IntegerValue(this, memory, Type.LONG);
 	}
 }

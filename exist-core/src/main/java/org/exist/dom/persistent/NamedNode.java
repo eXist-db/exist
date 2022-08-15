@@ -23,6 +23,7 @@ package org.exist.dom.persistent;
 
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 
 /**
@@ -34,30 +35,46 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
     protected QName nodeName = null;
 
-    public NamedNode(final short nodeType) {
-        super(nodeType);
+    protected NamedNode(final short nodeType) {
+        this(null, nodeType);
     }
 
-    public NamedNode(final short nodeType, final QName qname) {
-        super(nodeType);
+    protected NamedNode(final Expression expression, final short nodeType) {
+        super(expression, nodeType);
+    }
+
+    protected NamedNode(final short nodeType, final QName qname) {
+        this(null, nodeType, qname);
+    }
+
+    protected NamedNode(final Expression expression, final short nodeType, final QName qname) {
+        super(expression, nodeType);
         this.nodeName = qname;
     }
 
     protected NamedNode(final short nodeType, final NodeId nodeId, final QName qname) {
-        super(nodeType, nodeId);
+        this(null, nodeType, nodeId, qname);
+    }
+
+    protected NamedNode(final Expression expression, final short nodeType, final NodeId nodeId, final QName qname) {
+        super(expression, nodeType, nodeId);
         this.nodeName = qname;
     }
 
-    protected NamedNode(final NamedNode other) {
-        super(other);
+    protected NamedNode(final NamedNode<T> other) {
+        this(null, other);
+    }
+
+    protected NamedNode(final Expression expression, final NamedNode<T> other) {
+        super(expression, other);
         this.nodeName = other.nodeName;
     }
 
     /**
      * Extracts just the details of the NamedNode
      */
-    public NamedNode extract() {
-        return new NamedNode(this) {
+    public NamedNode<T> extract() {
+        return new NamedNode<T>(getExpression(), this) {
         };
     }
 

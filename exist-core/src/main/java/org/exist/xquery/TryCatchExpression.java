@@ -232,7 +232,7 @@ public class TryCatchExpression extends AbstractExpression {
                         throw throwable;
                     } else {
                         LOG.error(throwable);
-                        throw new XPathException(throwable);
+                        throw new XPathException(this, throwable);
                     }
                 }
 
@@ -271,7 +271,7 @@ public class TryCatchExpression extends AbstractExpression {
 
         final Sequence colNum;
         if (t != null && t instanceof XPathException) {
-            colNum = new IntegerValue(((XPathException)t).getColumn());
+            colNum = new IntegerValue(this, ((XPathException)t).getColumn());
         } else {
             colNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -290,7 +290,7 @@ public class TryCatchExpression extends AbstractExpression {
 
         final Sequence lineNum;
         if (t != null && t instanceof XPathException) {
-            lineNum = new IntegerValue(((XPathException)t).getLine());
+            lineNum = new IntegerValue(this, ((XPathException)t).getLine());
         } else {
             lineNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -309,7 +309,7 @@ public class TryCatchExpression extends AbstractExpression {
 
         final Sequence module;
         if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
-            module = new StringValue(((XPathException)t).getSource().pathOrShortIdentifier());
+            module = new StringValue(this, ((XPathException)t).getSource().pathOrShortIdentifier());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }
@@ -350,11 +350,12 @@ public class TryCatchExpression extends AbstractExpression {
     private void addErrDescription(final Throwable t, final ErrorCode errorCode) throws XPathException {
         final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
         final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException ? ((XPathException) t).getDetailMessage() : t.getMessage());
+        final Expression expression = this;
         final Sequence description = errorDesc
                 .<Sequence>map(
-                    d -> new StringValue(throwableDesc.filter(td -> !td.equals(d)).map(td -> d + (d.endsWith(".") ? " " : ". ") + td).orElse(d))
+                    d -> new StringValue(expression, throwableDesc.filter(td -> !td.equals(d)).map(td -> d + (d.endsWith(".") ? " " : ". ") + td).orElse(d))
                 ).orElse(
-                        errorDesc.<Sequence>map(StringValue::new).orElse(Sequence.EMPTY_SEQUENCE)
+                        errorDesc.<Sequence>map(d -> new StringValue(expression, "")).orElse(Sequence.EMPTY_SEQUENCE)
                 );
 
         final LocalVariable err_description = new LocalVariable(QN_DESCRIPTION);
@@ -368,7 +369,7 @@ public class TryCatchExpression extends AbstractExpression {
     private void addErrCode(final QName errorCodeQname) throws XPathException {
         final LocalVariable err_code = new LocalVariable(QN_CODE);
         err_code.setSequenceType(new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE));
-        err_code.setValue(new QNameValue(context, errorCodeQname));
+        err_code.setValue(new QNameValue(this, context, errorCodeQname));
         context.declareVariableBinding(err_code);
     }
 
@@ -514,7 +515,7 @@ public class TryCatchExpression extends AbstractExpression {
 			} else {
 				final Sequence result = new ValueSequence();
 				for(final XPathException.FunctionStackElement elt : callStack){
-					result.add(new StringValue("at " + elt.toString()) );
+					result.add(new StringValue(this, "at " + elt.toString()) );
 				}
 				trace = result;
 			}
@@ -547,9 +548,9 @@ public class TryCatchExpression extends AbstractExpression {
     // Local recursive function
     private void addJavaTrace(final Throwable t, final Sequence result) throws XPathException {
         final StackTraceElement[] elements = t.getStackTrace();
-        result.add(new StringValue("Caused by: " + t.toString()));
+        result.add(new StringValue(this, "Caused by: " + t.toString()));
         for (final StackTraceElement elt : elements) {
-            result.add(new StringValue("at " + elt.toString()));
+            result.add(new StringValue(this, "at " + elt.toString()));
         }
 
         final Throwable cause = t.getCause();

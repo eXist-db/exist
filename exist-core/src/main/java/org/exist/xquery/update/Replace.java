@@ -104,9 +104,9 @@ public class Replace extends Modification {
             }
             else
             {
-                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
+                prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context, this);
             }
-            prevUpdateErrors.add(new StringValue(xpe.getMessage()));
+            prevUpdateErrors.add(new StringValue(this, xpe.getMessage()));
             context.setAttribute(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 
             if(!inSeq.isEmpty()) {
@@ -154,13 +154,13 @@ public class Replace extends Modification {
                         parent.replaceChild(transaction, ((NodeValue) temp).getNode(), node);
                         break;
                     case Node.TEXT_NODE:
-                        text = new TextImpl(contentSeq.getStringValue());
+                        text = new TextImpl(node.getExpression(), contentSeq.getStringValue());
                         text.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, text);
                         break;
                     case Node.ATTRIBUTE_NODE:
                         final AttrImpl attr = (AttrImpl) node;
-                        attribute = new AttrImpl(attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
+                        attribute = new AttrImpl(node.getExpression(), attr.getQName(), contentSeq.getStringValue(), context.getBroker().getBrokerPool().getSymbols());
                         attribute.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, attribute);
                         break;

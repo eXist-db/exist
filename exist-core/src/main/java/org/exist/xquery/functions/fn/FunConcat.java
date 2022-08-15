@@ -131,7 +131,7 @@ public class FunConcat extends Function {
        for (int i = 0; i < getArgumentCount(); i++) {
             concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
        }
-       final Sequence result = new StringValue(concat.toString());
+       final Sequence result = new StringValue(this, concat.toString());
         if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
         return result;

@@ -27,11 +27,9 @@ import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -171,7 +169,7 @@ public abstract class AbstractSequence implements Sequence {
             if (OLD_EXIST_VERSION_COMPATIBILITY) {
                 return true;
             } else {
-                throw new XPathException(ErrorCodes.FORG0006,
+                throw new XPathException((Expression) null, ErrorCodes.FORG0006,
                         "effectiveBooleanValue: first item of '" +
                                 (toString().length() < 20 ? toString() : toString().substring(0, 20) + "...") +
                                 "' is not a node, and sequence length > 1");
@@ -287,7 +285,7 @@ public abstract class AbstractSequence implements Sequence {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // do nothing by default
     }
 }

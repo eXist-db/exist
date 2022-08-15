@@ -129,7 +129,7 @@ public class FunNormalizeSpace extends Function {
         if (value == null) {
             result = StringValue.EMPTY_STRING;
         } else {
-            result = new StringValue(normalize(value));
+            result = new StringValue(this, normalize(value));
         }
 
         if (context.getProfiler().isEnabled()) {

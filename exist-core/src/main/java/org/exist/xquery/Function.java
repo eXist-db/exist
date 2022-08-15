@@ -305,7 +305,7 @@ public abstract class Function extends PathExpr {
                     //Because () is seen as a node
                     (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
                 LOG.debug(ExpressionDumper.dump(argument));
-                throw new XPathException(this, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
+                throw new XPathException(this, ErrorCodes.XPTY0004, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
                         String.valueOf(argPosition), mySignature, argType.toString(), Type.getTypeName(returnType)));
             }
         }

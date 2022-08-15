@@ -118,7 +118,7 @@ public class MarshallerTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             DocumentImpl doc = (DocumentImpl) broker.getXMLResource(TEST_COLLECTION_URI.append("test.xml"));
-            NodeProxy p = new NodeProxy(doc, pool.getNodeFactory().createFromString("1.1"));
+            NodeProxy p = new NodeProxy(null, doc, pool.getNodeFactory().createFromString("1.1"));
 
             StringWriter writer = new StringWriter();
             SAXSerializer serializer = new SAXSerializer(writer, new Properties());

@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -38,7 +39,11 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     private final String name;
 
     public DocumentTypeImpl(final String name, final String publicId, final String systemId) {
-        super(Node.DOCUMENT_TYPE_NODE);
+        this(null, name, publicId, systemId);
+    }
+
+    public DocumentTypeImpl(final Expression expression, final String name, final String publicId, final String systemId) {
+        super(expression, Node.DOCUMENT_TYPE_NODE);
         this.name = name;
         this.publicId = publicId;
         this.systemId = systemId;
@@ -91,7 +96,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
             publicId = null;
         }
 
-        return new DocumentTypeImpl(name, publicId, systemId);
+        return new DocumentTypeImpl(null, name, publicId, systemId);
     }
 
     @Override

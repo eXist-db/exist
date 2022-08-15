@@ -75,6 +75,7 @@ import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -755,7 +756,7 @@ public class Configurator {
             reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             reader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             reader.setContentHandler(adapter);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);

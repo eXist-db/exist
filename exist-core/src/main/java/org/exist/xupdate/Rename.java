@@ -79,11 +79,11 @@ public class Rename extends Modification {
                 final NamedNode newNode;
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
-                        newNode = new ElementImpl((ElementImpl) node);
+                        newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
                         break;
 
                     case Node.ATTRIBUTE_NODE:
-                        newNode = new AttrImpl((AttrImpl) node);
+                        newNode = new AttrImpl(node.getExpression(), (AttrImpl) node);
                         break;
 
                     default:

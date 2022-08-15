@@ -75,6 +75,6 @@ public class Score extends BasicFunction {
             }
             match = match.getNextMatch();
         }
-        return new FloatValue(score);
+        return new FloatValue(this, score);
     }
 }

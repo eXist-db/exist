@@ -23,8 +23,8 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
-import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -56,25 +56,40 @@ public class DecimalValue extends NumericValue {
     private static Method stripTrailingZerosMethod = null;
     final BigDecimal value;
 
-    public DecimalValue(BigDecimal decimal) {
+    public DecimalValue(final BigDecimal decimal) {
+        this(null, decimal);
+    }
+
+    public DecimalValue(final Expression expression, BigDecimal decimal) {
+        super(expression);
         this.value = stripTrailingZeros(decimal);
     }
 
-    public DecimalValue(String str) throws XPathException {
+    public DecimalValue(final String str) throws XPathException {
+        this(null, str);
+    }
+
+    public DecimalValue(final Expression expression, String str) throws XPathException {
+        super(expression);
         str = StringValue.trimWhitespace(str);
         try {
             if (!decimalPattern.matcher(str).matches()) {
-                throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                         " from \"" + str + "\"");
             }
             value = stripTrailingZeros(new BigDecimal(str));
         } catch (final NumberFormatException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + getStringValue() + "\"");
         }
     }
 
-    public DecimalValue(double doubleValue) {
+    public DecimalValue(final double doubleValue) {
+        this(null, doubleValue);
+    }
+
+    public DecimalValue(final Expression expression, double doubleValue) {
+        super(expression);
         value = stripTrailingZeros(new BigDecimal(doubleValue));
     }
 
@@ -210,6 +225,7 @@ public class DecimalValue extends NumericValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
+    @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ATOMIC:
@@ -218,13 +234,13 @@ public class DecimalValue extends NumericValue {
             case Type.DECIMAL:
                 return this;
             case Type.DOUBLE:
-                return new DoubleValue(value.doubleValue());
+                return new DoubleValue(getExpression(), value.doubleValue());
             case Type.FLOAT:
-                return new FloatValue(value.floatValue());
+                return new FloatValue(getExpression(), value.floatValue());
             case Type.STRING:
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
             case Type.NEGATIVE_INTEGER:
@@ -238,11 +254,11 @@ public class DecimalValue extends NumericValue {
             case Type.UNSIGNED_SHORT:
             case Type.UNSIGNED_BYTE:
             case Type.POSITIVE_INTEGER:
-                return new IntegerValue(value.longValue(), requiredType);
+                return new IntegerValue(getExpression(), value.longValue(), requiredType);
             case Type.BOOLEAN:
                 return value.signum() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "cannot convert  '"
                                 + Type.getTypeName(this.getType())
                                 + " ("
@@ -283,7 +299,8 @@ public class DecimalValue extends NumericValue {
         } else if (other instanceof DoubleValue) {
             comparison = () -> value.compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
         } else if (other instanceof FloatValue) {
-            comparison = () -> value.compareTo(BigDecimal.valueOf(((FloatValue)other).value));
+            final BigDecimal otherPromoted = new BigDecimal(Float.toString(((FloatValue)other).value));
+            comparison = () -> value.compareTo(otherPromoted);
         } else {
             return null;
         }
@@ -294,21 +311,21 @@ public class DecimalValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#negate()
      */
     public NumericValue negate() throws XPathException {
-        return new DecimalValue(value.negate());
+        return new DecimalValue(getExpression(), value.negate());
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#ceiling()
      */
     public NumericValue ceiling() throws XPathException {
-        return new DecimalValue(value.setScale(0, RoundingMode.CEILING));
+        return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.CEILING));
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#floor()
      */
     public NumericValue floor() throws XPathException {
-        return new DecimalValue(value.setScale(0, RoundingMode.FLOOR));
+        return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.FLOOR));
     }
 
     /* (non-Javadoc)
@@ -317,11 +334,11 @@ public class DecimalValue extends NumericValue {
     public NumericValue round() throws XPathException {
         switch (value.signum()) {
             case -1:
-                return new DecimalValue(value.setScale(0, RoundingMode.HALF_DOWN));
+                return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_DOWN));
             case 0:
                 return this;
             case 1:
-                return new DecimalValue(value.setScale(0, RoundingMode.HALF_UP));
+                return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_UP));
             default:
                 return this;
         }
@@ -330,12 +347,12 @@ public class DecimalValue extends NumericValue {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
      */
-    public NumericValue round(IntegerValue precision) throws XPathException {
+    public NumericValue round(final IntegerValue precision, final RoundingMode roundingMode) throws XPathException {
         if (value.signum() == 0) {
             return this;
         }
 
-        int pre;
+        final int pre;
         if (precision == null) {
             pre = 0;
         } else {
@@ -343,22 +360,29 @@ public class DecimalValue extends NumericValue {
         }
 
         if (pre >= 0) {
-            return new DecimalValue(value.setScale(pre, RoundingMode.HALF_EVEN));
+            return new DecimalValue(getExpression(), value.setScale(pre, roundingMode));
         } else {
-            return new DecimalValue(
+            return new DecimalValue(getExpression(),
                     value.movePointRight(pre).
-                            setScale(0, RoundingMode.HALF_EVEN).
+                            setScale(0, roundingMode).
                             movePointLeft(pre));
         }
     }
 
+    protected static final RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.HALF_EVEN;
+
     /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#minus(org.exist.xquery.value.NumericValue)
+     * @see org.exist.xquery.value.NumericValue#round(org.exist.xquery.value.IntegerValue)
      */
-    public ComputableValue minus(ComputableValue other) throws XPathException {
+    public NumericValue round(final IntegerValue precision) throws XPathException {
+        return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
+    }
+
+    @Override
+    public ComputableValue minus(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DECIMAL:
-                return new DecimalValue(value.subtract(((DecimalValue) other).value));
+                return new DecimalValue(getExpression(), value.subtract(((DecimalValue) other).value));
             case Type.INTEGER:
                 return minus((ComputableValue) other.convertTo(getType()));
             default:
@@ -366,13 +390,11 @@ public class DecimalValue extends NumericValue {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.NumericValue#plus(org.exist.xquery.value.NumericValue)
-     */
-    public ComputableValue plus(ComputableValue other) throws XPathException {
+    @Override
+    public ComputableValue plus(final ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DECIMAL:
-                return new DecimalValue(value.add(((DecimalValue) other).value));
+                return new DecimalValue(getExpression(), value.add(((DecimalValue) other).value));
             case Type.INTEGER:
                 return plus((ComputableValue) other.convertTo(getType()));
             default:
@@ -386,7 +408,7 @@ public class DecimalValue extends NumericValue {
     public ComputableValue mult(ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DECIMAL:
-                return new DecimalValue(value.multiply(((DecimalValue) other).value));
+                return new DecimalValue(getExpression(), value.multiply(((DecimalValue) other).value));
             case Type.INTEGER:
                 return mult((ComputableValue) other.convertTo(getType()));
             case Type.DAY_TIME_DURATION:
@@ -412,25 +434,25 @@ public class DecimalValue extends NumericValue {
                     return n.div(other);
                 }
                 if (((DecimalValue) other).isZero()) {
-                    throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+                    throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
                 }
 
                 //Copied from Saxon 8.6.1
                 final int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue) other).value.scale()));
                 final BigDecimal result = value.divide(((DecimalValue) other).value, scale, RoundingMode.HALF_DOWN);
-                return new DecimalValue(result);
+                return new DecimalValue(getExpression(), result);
             //End of copy
         }
     }
 
     public IntegerValue idiv(NumericValue other) throws XPathException {
         if (other.isZero()) {
-            throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+            throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
         }
 
         final DecimalValue dv = (DecimalValue) other.convertTo(Type.DECIMAL);
         final BigInteger quot = value.divide(dv.value, 0, RoundingMode.DOWN).toBigInteger();
-        return new IntegerValue(quot);
+        return new IntegerValue(getExpression(), quot);
     }
 
     /* (non-Javadoc)
@@ -439,12 +461,12 @@ public class DecimalValue extends NumericValue {
     public NumericValue mod(NumericValue other) throws XPathException {
         if (other.getType() == Type.DECIMAL) {
             if (other.isZero()) {
-                throw new XPathException(ErrorCodes.FOAR0001, "division by zero");
+                throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
             }
 
             final BigDecimal quotient = value.divide(((DecimalValue) other).value, 0, RoundingMode.DOWN);
             final BigDecimal remainder = value.subtract(quotient.setScale(0, RoundingMode.DOWN).multiply(((DecimalValue) other).value));
-            return new DecimalValue(remainder);
+            return new DecimalValue(getExpression(), remainder);
         } else {
             return ((NumericValue) convertTo(other.getType())).mod(other);
         }
@@ -454,7 +476,7 @@ public class DecimalValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#abs(org.exist.xquery.value.NumericValue)
      */
     public NumericValue abs() throws XPathException {
-        return new DecimalValue(value.abs());
+        return new DecimalValue(getExpression(), value.abs());
     }
 
     /* (non-Javadoc)
@@ -462,18 +484,18 @@ public class DecimalValue extends NumericValue {
      */
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.DECIMAL) {
-            return new DecimalValue(value.max(((DecimalValue) other).value));
+            return new DecimalValue(getExpression(), value.max(((DecimalValue) other).value));
         } else {
-            return new DecimalValue(
+            return new DecimalValue(getExpression(),
                     value.max(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
         }
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.DECIMAL) {
-            return new DecimalValue(value.min(((DecimalValue) other).value));
+            return new DecimalValue(getExpression(), value.min(((DecimalValue) other).value));
         } else {
-            return new DecimalValue(
+            return new DecimalValue(getExpression(),
                     value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
         }
     }
@@ -572,7 +594,7 @@ public class DecimalValue extends NumericValue {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         }
 
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "

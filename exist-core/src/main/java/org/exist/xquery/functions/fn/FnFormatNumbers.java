@@ -156,9 +156,9 @@ public class FnFormatNumbers extends BasicFunction {
 
         final NumericValue number;
         if (args[0].isEmpty()) {
-            number = new DoubleValue(Double.NaN);
+            number = new DoubleValue(this, Double.NaN);
         } else if (context.isBackwardsCompatible() && !Type.subTypeOfUnion(args[0].getItemType(), Type.NUMBER)) {
-            number = new DoubleValue(Double.NaN);
+            number = new DoubleValue(this, Double.NaN);
         } else {
             number = (NumericValue) args[0].itemAt(0);
         }
@@ -167,7 +167,7 @@ public class FnFormatNumbers extends BasicFunction {
 
         final Tuple2<SubPicture, Optional<SubPicture>> subPictures = analyzePictureString(decimalFormat, pictureString);
         final String value = format(number, decimalFormat, subPictures);
-        return new StringValue(value);
+        return new StringValue(this, value);
     }
 
     enum AnalyzeState {
@@ -567,9 +567,9 @@ public class FnFormatNumbers extends BasicFunction {
         // Rule 3: adjust for percent or permille
         NumericValue adjustedNumber;
         if (subPicture.hasPercent()) {
-            adjustedNumber = (NumericValue) number.mult(new IntegerValue(100));
+            adjustedNumber = (NumericValue) number.mult(new IntegerValue(this, 100));
         } else if(subPicture.hasPerMille()) {
-            adjustedNumber = (NumericValue) number.mult(new IntegerValue(1000));
+            adjustedNumber = (NumericValue) number.mult(new IntegerValue(this, 1000));
         } else {
             adjustedNumber = number;
         }
@@ -597,11 +597,11 @@ public class FnFormatNumbers extends BasicFunction {
             exp = scl - subPicture.getScalingFactor();
             if (exp != 0) {
                 final BigDecimal n = BigDecimal.TEN.pow(Math.abs(exp));
-                adjustedNumber = (NumericValue) adjustedNumber.mult(new DecimalValue(exp > 0 ? BigDecimal.ONE.divide(n, MathContext.DECIMAL64) : n));
+                adjustedNumber = (NumericValue) adjustedNumber.mult(new DecimalValue(this, exp > 0 ? BigDecimal.ONE.divide(n, MathContext.DECIMAL64) : n));
             }
         }
 
-        adjustedNumber = new DecimalValue(adjustedNumber.convertTo(Type.DECIMAL).toJavaObject(BigDecimal.class).multiply(BigDecimal.ONE, MathContext.DECIMAL64)).round(new IntegerValue(subPicture.getMaximumFractionalPartSize())).abs();
+        adjustedNumber = new DecimalValue(this, adjustedNumber.convertTo(Type.DECIMAL).toJavaObject(BigDecimal.class).multiply(BigDecimal.ONE, MathContext.DECIMAL64)).round(new IntegerValue(this, subPicture.getMaximumFractionalPartSize())).abs();
 
         /* we can now start formatting for display */
 

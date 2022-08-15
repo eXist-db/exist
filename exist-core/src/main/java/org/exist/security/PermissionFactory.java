@@ -41,6 +41,7 @@ import org.exist.storage.txn.Txn;
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import static org.exist.security.AbstractUnixStylePermission.SIMPLE_SYMBOLIC_MODE_PATTERN;
@@ -143,7 +144,7 @@ public class PermissionFactory {
                     try(final LockedDocument lockedDoc = broker.getXMLResource(pathUri, LockMode.WRITE_LOCK)) {
 
                         if (lockedDoc == null) {
-                            throw new XPathException("Resource or collection '" + pathUri.toString() + "' does not exist.");
+                            throw new XPathException((Expression) null, "Resource or collection '" + pathUri.toString() + "' does not exist.");
                         }
 
                         final DocumentImpl doc = lockedDoc.getDocument();

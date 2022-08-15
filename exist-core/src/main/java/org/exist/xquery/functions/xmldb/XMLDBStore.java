@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +43,8 @@ import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.EXistResource;
+import org.exist.xquery.Expression;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -63,6 +66,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
 import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
@@ -127,11 +131,13 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
     @Override
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
 
+        final Expression expression = this;
         String docName = args[1].isEmpty() ? null : args[1].getStringValue();
         if (docName != null && docName.isEmpty()) {
             docName = null;
         } else if (docName != null) {
-            docName = new AnyURIValue(docName).toXmldbURI().toString();
+            final String localDocName = docName;
+            docName = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, localDocName).toXmldbURI().toString());
         }
 
         final Item item = args[2].itemAt(0);
@@ -168,6 +174,11 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
                 }
 
             } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
+                final boolean allowAnyUri = ((XMLDBModule) getParentModule()).isAllowAnyUri();
+                if(!allowAnyUri) {
+                    throw new XPathException(ErrorCodes.ERROR, "xs:anyURI as $contents value for xmldb:store and xmldb:store-as-binary " +
+                            "function has been disabled by the eXist administrator in conf.xml");
+                }
                 try {
                     final URI uri = new URI(item.getStringValue());
                     resource = loadFromURI(collection, uri, docName, mimeType);
@@ -231,7 +242,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         } else {
             try {
                 //TODO : use dedicated function in XmldbURI
-                return new StringValue(collection.getName() + "/" + resource.getId());
+                return new StringValue(this, collection.getName() + "/" + resource.getId());
             } catch (final XMLDBException e) {
                 LOGGER.error(e.getMessage());
                 throw new XPathException(this, "XMLDB reported an exception while retrieving the "
@@ -261,7 +272,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             try {
                 temp = temporaryFileManager.getTemporaryFile();
                 try(final InputStream is = uri.toURL().openStream()) {
-                    Files.copy(is, temp);
+                    Files.copy(is, temp, StandardCopyOption.REPLACE_EXISTING); //REPLACE_EXISTING because getTemporaryFile always create file on filesystem.
                     resource = loadFromFile(collection, temp, docName, mimeType);
                 } finally {
                     if(temp != null) {

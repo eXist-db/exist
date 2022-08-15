@@ -92,7 +92,7 @@ public class Update extends Modification {
                     case Node.TEXT_NODE:
                         final ElementImpl textParent = (ElementImpl) node.getParentNode();
                         final Node textTemp = children.item(0);
-                        final TextImpl text = new TextImpl(textTemp.getNodeValue());
+                        final TextImpl text = new TextImpl(node.getExpression(), textTemp.getNodeValue());
                         modifications = 1;
                         text.setOwnerDocument(doc);
                         textParent.updateChild(transaction, node, text);
@@ -106,7 +106,7 @@ public class Update extends Modification {
                         }
                         final AttrImpl attr = (AttrImpl) node;
                         final Node attrTemp = children.item(0);
-                        final AttrImpl attribute = new AttrImpl(attr.getQName(), attrTemp.getNodeValue(), broker.getBrokerPool().getSymbols());
+                        final AttrImpl attribute = new AttrImpl(node.getExpression(), attr.getQName(), attrTemp.getNodeValue(), broker.getBrokerPool().getSymbols());
                         attribute.setOwnerDocument(doc);
                         attrParent.updateChild(transaction, node, attribute);
                         break;

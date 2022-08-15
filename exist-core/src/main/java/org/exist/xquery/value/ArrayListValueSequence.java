@@ -40,6 +40,7 @@ import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -239,7 +240,23 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public boolean containsReference(final Item item) {
+        for (final Iterator<Item> it = values.iterator(); it.hasNext(); ) {
+            final Item value = it.next();
+            if (value == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return values.contains(item);
+    }
+
+    @Override
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         for (final Item value : values) {
             value.destroy(context, contextSequence);
         }
@@ -362,14 +379,14 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
                                     }
                                     NodeId nodeId = node.getNodeId();
                                     if (nodeId == null) {
-                                        throw new XPathException("Internal error: nodeId == null");
+                                        throw new XPathException((Expression) null, "Internal error: nodeId == null");
                                     }
                                     if (node.getNodeType() == Node.DOCUMENT_NODE) {
                                         nodeId = rootId;
                                     } else {
                                         nodeId = rootId.append(nodeId);
                                     }
-                                    final NodeProxy p = new NodeProxy(newDoc, nodeId, node.getNodeType());
+                                    final NodeProxy p = new NodeProxy(node.getExpression(), newDoc, nodeId, node.getNodeType());
                                     // replace the node by the NodeProxy
                                     values.set(j, p);
 
@@ -388,7 +405,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
 //            }
             return set;
         } else {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -400,13 +417,13 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
         }
 
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException("Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (final Item value : values) {
             final NodeValue v = (NodeValue) value;
             if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                throw new XPathException("Type error: the sequence cannot be converted into" +
+                throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains nodes from stored resources.");
             }
         }

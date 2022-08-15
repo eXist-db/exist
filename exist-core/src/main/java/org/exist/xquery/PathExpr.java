@@ -229,7 +229,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //TODO : let the parser do it ? -pb
             boolean gotAtomicResult = false;
             Expression prev = null;
-            for (Expression step : steps) {
+            for (int stepIdx = 0; stepIdx < steps.size(); stepIdx++) {
+                final Expression step = steps.get(stepIdx);
                 prev = expr;
                 expr = step;
                 context.getWatchDog().proceed(expr);
@@ -282,6 +283,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         if (ex.getLine() < 1 || ex.getColumn() < 1) {
                             ex.setLocation(expr.getLine(), expr.getColumn());
                         }
+                        if (ex.getLine() < 1 || ex.getColumn() < 1) {
+                            ex.setLocation(getLine(), getColumn());
+                        }
                         throw ex;
                     }
                 }
@@ -299,7 +303,22 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         // expression with more than one step
                         result.removeDuplicates();
                     }
+
+                    /**
+                     * If the result is an Empty Sequence, we don't need to process
+                     * any more steps as there is no Context Sequence for the next step!
+                     *
+                     * There is one exception to this rule, which is a TextConstructor
+                     * expression that only contains whitespace but has been configured
+                     * to strip-whitespace. In this instance the TextConstructor will
+                     * return true when {@link Expression#evalNextExpressionOnEmptyContextSequence()}
+                     * is called to indicate that.
+                     */
+                    if (result.isEmpty() && stepIdx < steps.size() - 1 && !step.evalNextExpressionOnEmptyContextSequence()) {
+                        break;
+                    }
                 }
+
                 if (!staticContext) {
                     currentContext = result;
                 }
@@ -499,7 +518,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public int getLine() {
-        if (line < 0 && steps.size() > 0) {
+        if (line <= 0 && !steps.isEmpty()) {
             return steps.get(0).getLine();
         }
         return line;
@@ -507,7 +526,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public int getColumn() {
-        if (column < 0 && steps.size() > 0) {
+        if (column <= 0 && !steps.isEmpty()) {
             return steps.get(0).getColumn();
         }
         return column;

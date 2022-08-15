@@ -108,7 +108,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 		        if (occur.length == 0)
 		        	{result= Sequence.EMPTY_SEQUENCE;}
 		        else
-		        	{result = new IntegerValue(occur[0].getOccurrences());}
+		        	{result = new IntegerValue(this, occur[0].getOccurrences());}
 	        } else {
 	        	ValueOccurrences[] occur = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) (args[1].itemAt(0)));
 		        if (occur.length == 0)
@@ -116,7 +116,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 		        if (occur.length == 0)
                     {result = Sequence.EMPTY_SEQUENCE;}
                 else
-                    {result = new IntegerValue(occur[0].getOccurrences());}
+                    {result = new IntegerValue(this, occur[0].getOccurrences());}
 	        }
     	}
     	

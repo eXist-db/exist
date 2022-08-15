@@ -21,6 +21,7 @@
  */
 package org.exist.dom.memtree;
 
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
@@ -32,7 +33,11 @@ import org.w3c.dom.Node;
 public abstract class AbstractCharacterData extends NodeImpl implements CharacterData {
 
     public AbstractCharacterData(final DocumentImpl doc, final int nodeNumber) {
-        super(doc, nodeNumber);
+        this(null, doc, nodeNumber);
+    }
+
+    public AbstractCharacterData(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        super(expression, doc, nodeNumber);
     }
 
     @Override

@@ -59,9 +59,9 @@ public class IsAuthenticatedFunction extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (getSignature() == FNS_IS_EXTERNALLY_AUTHENTICATED) {
-            return new BooleanValue(context.getRealUser().isExternallyAuthenticated());
+            return new BooleanValue(this, context.getRealUser().isExternallyAuthenticated());
         } else {
-            return new BooleanValue(context.getRealUser().isAuthenticated());
+            return new BooleanValue(this, context.getRealUser().isAuthenticated());
         }
     }
 }

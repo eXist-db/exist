@@ -24,10 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -37,6 +34,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -73,8 +72,9 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
+		final Expression expression = this;
 		if(getSignature().getArgumentCount() == 2) {
-			final String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
+			final String doc = execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].itemAt(0).getStringValue()).toXmldbURI().toString());
 			try {
 				final Resource resource = collection.getResource(doc);
 				if (resource == null) {

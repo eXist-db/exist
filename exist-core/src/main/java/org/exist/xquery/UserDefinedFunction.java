@@ -70,13 +70,13 @@ public class UserDefinedFunction extends Function implements Cloneable {
 			final QName qname = QName.parse(context, varName, null);
 			addVariable(qname);
 		} catch (final QName.IllegalQNameException e) {
-			throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
+			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
 		}
 	}
 	
     public void addVariable(QName varName) throws XPathException {
     	if (parameters.contains(varName))
-			{throw new XPathException("XQST0039: function " + getName() + " is already have parameter with the name "+varName);}
+			{throw new XPathException(this, "XQST0039: function " + getName() + " is already have parameter with the name "+varName);}
 
 		parameters.add(varName);
     }

@@ -52,6 +52,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunCeiling.signature, FunCeiling.class),
         new FunctionDef(FunCodepointEqual.signature, FunCodepointEqual.class),
         new FunctionDef(FunCodepointsToString.signature, FunCodepointsToString.class),
+        new FunctionDef(FunCollationKey.FS_COLLATION_KEY_SIGNATURES[0], FunCollationKey.class),
+        new FunctionDef(FunCollationKey.FS_COLLATION_KEY_SIGNATURES[1], FunCollationKey.class),
         new FunctionDef(FunCompare.signatures[0], FunCompare.class),
         new FunctionDef(FunCompare.signatures[1], FunCompare.class),
         new FunctionDef(FunConcat.signature, FunConcat.class),
@@ -67,12 +69,15 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunDeepEqual.signatures[0], FunDeepEqual.class),
         new FunctionDef(FunDeepEqual.signatures[1], FunDeepEqual.class),
         new FunctionDef(FunDefaultCollation.signature, FunDefaultCollation.class),
+        new FunctionDef(FnDefaultLanguage.FS_DEFAULT_LANGUAGE, FnDefaultLanguage.class),
         new FunctionDef(FunDistinctValues.signatures[0], FunDistinctValues.class),
         new FunctionDef(FunDistinctValues.signatures[1], FunDistinctValues.class),
         new FunctionDef(FunDoc.signature, FunDoc.class),
         new FunctionDef(FunDocAvailable.signature, FunDocAvailable.class),
         new FunctionDef(FunDocumentURI.FS_DOCUMENT_URI_0, FunDocumentURI.class),
         new FunctionDef(FunDocumentURI.FS_DOCUMENT_URI_1, FunDocumentURI.class),
+        new FunctionDef(FunElementWithId.FS_ELEMENT_WITH_ID_SIGNATURES[0], FunElementWithId.class),
+        new FunctionDef(FunElementWithId.FS_ELEMENT_WITH_ID_SIGNATURES[1], FunElementWithId.class),
         new FunctionDef(FunEmpty.signature, FunEmpty.class),
         new FunctionDef(FunEncodeForURI.signature, FunEncodeForURI.class),
         new FunctionDef(FunEndsWith.signatures[0], FunEndsWith.class),
@@ -92,6 +97,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FnFormatDates.FNS_FORMAT_DATE_5, FnFormatDates.class),
         new FunctionDef(FnFormatDates.FNS_FORMAT_TIME_2, FnFormatDates.class),
         new FunctionDef(FnFormatDates.FNS_FORMAT_TIME_5, FnFormatDates.class),
+        new FunctionDef(FnFormatIntegers.FS_FORMAT_INTEGER[0], FnFormatIntegers.class),
+        new FunctionDef(FnFormatIntegers.FS_FORMAT_INTEGER[1], FnFormatIntegers.class),
         new FunctionDef(FnFormatNumbers.FS_FORMAT_NUMBER[0], FnFormatNumbers.class),
         new FunctionDef(FnFormatNumbers.FS_FORMAT_NUMBER[1], FnFormatNumbers.class),
         new FunctionDef(FunGenerateId.signatures[0], FunGenerateId.class),
@@ -158,7 +165,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunNamespaceURI.signatures[0], FunNamespaceURI.class),
         new FunctionDef(FunNamespaceURI.signatures[1], FunNamespaceURI.class),
         new FunctionDef(FunNamespaceURIForPrefix.signature, FunNamespaceURIForPrefix.class),
-        new FunctionDef(FunNilled.signature, FunNilled.class),
+        new FunctionDef(FunNilled.FUNCTION_SIGNATURES_NILLED[0], FunNilled.class),
+        new FunctionDef(FunNilled.FUNCTION_SIGNATURES_NILLED[1], FunNilled.class),
         new FunctionDef(FunNormalizeSpace.signatures[0], FunNormalizeSpace.class),
         new FunctionDef(FunNormalizeSpace.signatures[1], FunNormalizeSpace.class),
         new FunctionDef(FunNormalizeUnicode.signatures[0], FunNormalizeUnicode.class),
@@ -168,6 +176,8 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunNumber.signatures[1], FunNumber.class),
         new FunctionDef(FunOneOrMore.signature, FunOneOrMore.class),
         new FunctionDef(FnOuterMost.FNS_OUTERMOST, FnOuterMost.class),
+        new FunctionDef(FunPath.FS_PATH_SIGNATURES[0], FunPath.class),
+        new FunctionDef(FunPath.FS_PATH_SIGNATURES[1], FunPath.class),
         new FunctionDef(FunPosition.signature, FunPosition.class),
         new FunctionDef(FunQName.signature, FunQName.class),
         new FunctionDef(FunRemove.signature, FunRemove.class),
@@ -178,9 +188,10 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunResolveURI.signatures[1], FunResolveURI.class),
         new FunctionDef(FunRoot.signatures[0], FunRoot.class),
         new FunctionDef(FunRoot.signatures[1], FunRoot.class),
-        new FunctionDef(FunRound.signature, FunRound.class),
-        new FunctionDef(FunRoundHalfToEven.signatures[0], FunRoundHalfToEven.class),
-        new FunctionDef(FunRoundHalfToEven.signatures[1], FunRoundHalfToEven.class),
+        new FunctionDef(FunRound.FN_ROUND_SIGNATURES[0], FunRound.class),
+        new FunctionDef(FunRound.FN_ROUND_SIGNATURES[1], FunRound.class),
+        new FunctionDef(FunRoundHalfToEven.FN_ROUND_HALF_TO_EVEN_SIGNATURES[0], FunRoundHalfToEven.class),
+        new FunctionDef(FunRoundHalfToEven.FN_ROUND_HALF_TO_EVEN_SIGNATURES[1], FunRoundHalfToEven.class),
         new FunctionDef(FunSerialize.signatures[0], FunSerialize.class),
         new FunctionDef(FunSerialize.signatures[1], FunSerialize.class),
         new FunctionDef(FunStartsWith.signatures[0], FunStartsWith.class),
@@ -207,11 +218,14 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunTokenize.FS_TOKENIZE[2], FunTokenize.class),
         new FunctionDef(FunTrace.FS_TRACE1, FunTrace.class),
         new FunctionDef(FunTrace.FS_TRACE2, FunTrace.class),
+        new FunctionDef(FnTransform.FS_TRANSFORM, FnTransform.class),
         new FunctionDef(FunTranslate.signature, FunTranslate.class),
         new FunctionDef(FunTrueOrFalse.fnTrue, FunTrueOrFalse.class),
         new FunctionDef(FunTrueOrFalse.fnFalse, FunTrueOrFalse.class),
         new FunctionDef(FunUpperOrLowerCase.fnLowerCase, FunUpperOrLowerCase.class),
         new FunctionDef(FunUpperOrLowerCase.fnUpperCase, FunUpperOrLowerCase.class),
+        new FunctionDef(FunUriCollection.FS_URI_COLLECTION_SIGNATURES[0], FunUriCollection.class),
+        new FunctionDef(FunUriCollection.FS_URI_COLLECTION_SIGNATURES[1], FunUriCollection.class),
         new FunctionDef(FunXmlToJson.FS_XML_TO_JSON[0], FunXmlToJson.class),
         new FunctionDef(FunXmlToJson.FS_XML_TO_JSON[1], FunXmlToJson.class),
         new FunctionDef(FunZeroOrOne.signature, FunZeroOrOne.class),
@@ -237,12 +251,12 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FunEnvironment.signature[1], FunEnvironment.class),
         new FunctionDef(ParsingFunctions.signatures[0], ParsingFunctions.class),
         new FunctionDef(ParsingFunctions.signatures[1], ParsingFunctions.class),
-        new FunctionDef(JSON.signatures[0], JSON.class),
-        new FunctionDef(JSON.signatures[1], JSON.class),
-        new FunctionDef(JSON.signatures[2], JSON.class),
-        new FunctionDef(JSON.signatures[3], JSON.class),
-        new FunctionDef(JSON.signatures[4], JSON.class),
-        new FunctionDef(JSON.signatures[5], JSON.class),
+        new FunctionDef(JSON.FS_PARSE_JSON[0], JSON.class),
+        new FunctionDef(JSON.FS_PARSE_JSON[1], JSON.class),
+        new FunctionDef(JSON.FS_JSON_DOC[0], JSON.class),
+        new FunctionDef(JSON.FS_JSON_DOC[1], JSON.class),
+        new FunctionDef(JSON.FS_JSON_TO_XML[0], JSON.class),
+        new FunctionDef(JSON.FS_JSON_TO_XML[1], JSON.class),
         new FunctionDef(LoadXQueryModule.LOAD_XQUERY_MODULE_1, LoadXQueryModule.class),
         new FunctionDef(LoadXQueryModule.LOAD_XQUERY_MODULE_2, LoadXQueryModule.class),
         new FunctionDef(FunSort.signatures[0], FunSort.class),
@@ -272,37 +286,35 @@ public class FnModule extends AbstractInternalModule {
         super(functions, parameters, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDescription()
-     */
+    @Override
     public String getDescription() {
         return "A module with the XQuery/XPath Core Library Functions";
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getNamespaceURI()
-     */
+    @Override
     public String getNamespaceURI() {
         return Function.BUILTIN_FUNCTION_NS;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.Module#getDefaultPrefix()
-     */
+    @Override
     public String getDefaultPrefix() {
         return PREFIX;
     }
 
+    @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
 
-    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
-        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, paramTypes);
+    static FunctionSignature functionSignature(final String name, final String description,
+            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description,
+                returnType, paramTypes);
     }
 
-    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, variableParamTypes);
+    static FunctionSignature[] functionSignatures(final String name, final String description,
+            final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, Function.BUILTIN_FUNCTION_NS), description,
+                returnType, variableParamTypes);
     }
-
 }

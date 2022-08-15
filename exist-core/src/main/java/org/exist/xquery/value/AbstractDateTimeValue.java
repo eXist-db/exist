@@ -28,6 +28,7 @@ import org.apache.xerces.util.DatatypeMessageFormatter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -74,11 +75,21 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      *
      * @param calendar the calendar to wrap into an XPath value
      */
-    protected AbstractDateTimeValue(XMLGregorianCalendar calendar) {
+    protected AbstractDateTimeValue(final XMLGregorianCalendar calendar) {
+        this(null, calendar);
+    }
+
+    protected AbstractDateTimeValue(final Expression expression, XMLGregorianCalendar calendar) {
+        super(expression);
         this.calendar = calendar;
     }
 
-    protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
+    protected AbstractDateTimeValue(final String lexicalValue) throws XPathException {
+        this(null, lexicalValue);
+    }
+
+    protected AbstractDateTimeValue(final Expression expression, String lexicalValue) throws XPathException {
+        super(expression);
         lexicalValue = StringValue.trimWhitespace(lexicalValue);
 
         //lexicalValue = normalizeDate(lexicalValue);
@@ -86,7 +97,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         try {
             calendar = parse(lexicalValue);
         } catch (final IllegalArgumentException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
         }
     }
 
@@ -249,7 +260,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006, "effective boolean value invalid operand type: " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006, "effective boolean value invalid operand type: " + Type.getTypeName(getType()));
     }
 
     public abstract AtomicValue convertTo(int requiredType) throws XPathException;
@@ -284,20 +295,20 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         final Duration tz = offset.duration;
         final Number secs = tz.getField(DatatypeConstants.SECONDS);
         if (secs != null && ((BigDecimal) secs).compareTo(BigDecimal.valueOf(0)) != 0) {
-            throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
+            throw new XPathException(getExpression(), ErrorCodes.FODT0003, "duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
         }
         if (!(
                 tz.equals(tzLowerBound) ||
                         tz.equals(tzUpperBound) ||
                         (tz.isLongerThan(tzLowerBound) && tz.isShorterThan(tzUpperBound))
         )) {
-            throw new XPathException(ErrorCodes.FODT0003, "duration " + offset + " outside valid timezone offset range");
+            throw new XPathException(getExpression(), ErrorCodes.FODT0003, "duration " + offset + " outside valid timezone offset range");
         }
     }
 
     public AbstractDateTimeValue adjustedToTimezone(DayTimeDurationValue offset) throws XPathException {
         if (offset == null) {
-            offset = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
+            offset = new DayTimeDurationValue(getExpression(), TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
         }
         validateTimezone(offset);
         XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
@@ -311,7 +322,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         try {
             xgc.setTimezone((int) (offset.getValue() / 60));
         } catch (final IllegalArgumentException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
         }
         return createSameKind(xgc);
     }
@@ -327,7 +338,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         if (tz == DatatypeConstants.FIELD_UNDEFINED) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        return new DayTimeDurationValue(tz * 60000L);
+        return new DayTimeDurationValue(getExpression(), tz * 60000L);
     }
 
     @Override
@@ -347,7 +358,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             case GTEQ:
                 return cmp >= 0;
             default:
-                throw new XPathException("Unknown operator type in comparison");
+                throw new XPathException(getExpression(), "Unknown operator type in comparison");
         }
     }
 
@@ -360,7 +371,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             }
             return r;
         }
-        throw new XPathException(ErrorCodes.XPTY0004, "Type error: cannot compare " + Type.getTypeName(getType())
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot compare " + Type.getTypeName(getType())
                 + " to " + Type.getTypeName(other.getType()));
     }
 
@@ -381,18 +392,18 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             case Type.DAY_TIME_DURATION:
                 return other.plus(this);
             default:
-                throw new XPathException(
+                throw new XPathException(getExpression(), 
                         "Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        throw new XPathException("multiplication is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), "multiplication is not supported for type " + Type.getTypeName(getType()));
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
-        throw new XPathException("division is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), "division is not supported for type " + Type.getTypeName(getType()));
     }
 
     public int conversionPreference(Class<?> javaClass) {
@@ -423,7 +434,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             return (T) calendar.toGregorianCalendar().getTime();
         }
 
-        throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+        throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 
     /* (non-Javadoc)

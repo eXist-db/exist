@@ -112,7 +112,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 		    {date = ((EXistResource)resource).getCreationTime();}
             }
 
-	    return new DateTimeValue(date);
+	    return new DateTimeValue(this, date);
 
 	} catch(final XMLDBException e) {
 	    logger.error("Failed to retrieve creation date or modification time of specified resource or creation date of collection");

@@ -60,8 +60,8 @@ public class DocumentBuilderReceiverTest {
         
         replay(mockContext);
         
-        MemTreeBuilder builder = new MemTreeBuilder(mockContext);
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+        MemTreeBuilder builder = new MemTreeBuilder(null, mockContext);
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(null, builder, true);
         
         builder.startDocument();
         
@@ -103,9 +103,9 @@ public class DocumentBuilderReceiverTest {
 
         replay(mockContext);
 
-        MemTreeBuilder builder = new MemTreeBuilder(mockContext);
+        MemTreeBuilder builder = new MemTreeBuilder(null, mockContext);
 
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(null, builder, true);
 
         builder.startDocument();
 
@@ -138,9 +138,9 @@ public class DocumentBuilderReceiverTest {
 
         replay(mockContext);
 
-        MemTreeBuilder builder = new MemTreeBuilder(mockContext);
+        MemTreeBuilder builder = new MemTreeBuilder(null, mockContext);
 
-        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(null, builder, true);
 
         builder.startDocument();
 

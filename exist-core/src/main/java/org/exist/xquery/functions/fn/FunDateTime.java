@@ -108,25 +108,25 @@ public class FunDateTime extends BasicFunction {
             
             if (dv.getTimezone().isEmpty()) {
                 dtv = dtv.substring(0, dtv.length() - 8);
-                result = new DateTimeValue(dtv + tv.getStringValue());
+                result = new DateTimeValue(this, dtv + tv.getStringValue());
             
             } else if ("PT0S".equals(((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue())) {
                 dtv = dtv.substring(0, dtv.length() - 9);
                 if (tv.getTimezone().isEmpty()) {
-                    result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
+                    result = new DateTimeValue(this, dtv + tv.getStringValue() + "Z");
                 } else {
-                    result = new DateTimeValue(dtv + tv.getStringValue());
+                    result = new DateTimeValue(this, dtv + tv.getStringValue());
                 }
             
             } else {
                 if (tv.getTimezone().isEmpty()) {
                     final String tz = dtv.substring(19);
                     dtv = dtv.substring(0, dtv.length() - 14);
-                    result = new DateTimeValue(dtv + tv.getStringValue() + tz);
+                    result = new DateTimeValue(this, dtv + tv.getStringValue() + tz);
 
                 } else {
                     dtv = dtv.substring(0, dtv.length() - 14);
-                    result = new DateTimeValue(dtv + tv.getStringValue());
+                    result = new DateTimeValue(this, dtv + tv.getStringValue());
                 }
             }
         }

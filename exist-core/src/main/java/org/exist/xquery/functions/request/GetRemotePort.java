@@ -54,6 +54,6 @@ public class GetRemotePort extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new IntegerValue(request.getRemotePort());
+		return new IntegerValue(this, request.getRemotePort());
 	}
 }

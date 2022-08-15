@@ -127,7 +127,7 @@ public class FunId extends Function {
                 contextSequence = node;
             } else if (contextSequence == null) {
                 logger.error("{} No context item specified", ErrorCodes.XPDY0002);
-                throw new XPathException(this, ErrorCodes.XPDY0002, "No context item specified");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "No context item specified");
            } else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
                 logger.error("{} Context item is not a node", ErrorCodes.XPTY0004);
     			throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node", contextSequence);
@@ -180,10 +180,10 @@ public class FunId extends Function {
 	}
 
 	private void getId(NodeSet result, DocumentSet docs, String id) throws XPathException {
-		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(id, Type.ID));
+		final NodeSet attribs = context.getBroker().getValueIndex().find(context.getWatchDog(), Comparison.EQ, docs, null, -1, null, new StringValue(this, id, Type.ID));
 		NodeProxy p;
 		for (final NodeProxy n : attribs) {
-			p = new NodeProxy(n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
+			p = new NodeProxy(n.getExpression(), n.getOwnerDocument(), n.getNodeId().getParentId(), Node.ELEMENT_NODE);
 			result.add(p);
 		}
 	}

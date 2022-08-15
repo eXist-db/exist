@@ -58,7 +58,7 @@ public class GetQueryString extends StrictRequestFunction {
 			throws XPathException {
 		final String queryString = request.getQueryString();
 		if(queryString != null) {
-			return new StringValue(queryString);
+			return new StringValue(this, queryString);
 		} else {
 			return Sequence.EMPTY_SEQUENCE;
 		}

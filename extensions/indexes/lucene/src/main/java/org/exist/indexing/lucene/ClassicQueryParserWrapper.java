@@ -31,6 +31,7 @@ import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.lang.invoke.LambdaMetafactory;
@@ -86,7 +87,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
         try {
             return parser.parse(query);
         } catch (ParseException e) {
-            throw new XPathException("Syntax error in Lucene query string: " + e.getMessage());
+            throw new XPathException((Expression) null, "Syntax error in Lucene query string: " + e.getMessage());
         }
     }
 

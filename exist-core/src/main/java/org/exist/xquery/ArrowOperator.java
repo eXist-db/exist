@@ -59,7 +59,7 @@ public class ArrowOperator extends AbstractExpression {
             this.parameters = params;
             // defer resolving the function to analyze to make sure all functions are known
         } catch (final IllegalQNameException e) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + fname);
+            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + fname);
         }
     }
 
@@ -97,7 +97,7 @@ public class ArrowOperator extends AbstractExpression {
 
         final FunctionReference fref;
         if (fcall != null) {
-            fref = new FunctionReference(fcall);
+            fref = new FunctionReference(this, fcall);
         } else {
             final Sequence funcSeq = funcSpec.eval(contextSequence, contextItem);
             if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)

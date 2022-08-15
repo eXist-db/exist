@@ -347,14 +347,13 @@ function sync:prunes-a-directory() {
             map{ "prune": true(), "excludes": ".*" }
         )
         => helper:assert-sync-result(map {
-            "updated": (),
+            "updated": $fixtures:ALL-UPDATED,
             "deleted": ("test", "three.s"),
             "fs": ($fixtures:ROOT-FS, ".env")
         })
 };
 
 declare
-    %test:pending
     %test:assertTrue
 function sync:prunes-a-file() {
     let $directory := helper:get-test-directory($sync:suite)
@@ -364,11 +363,61 @@ function sync:prunes-a-file() {
         file:sync(
             $fixtures:collection,
             $directory,
-            map{ "prune": true(), "excludes": "test/*" }
+            map{ "prune": true(), "excludes": "test" || $helper:path-separator || "*" }
+        )
+        => helper:assert-sync-result(map {
+            "updated": $fixtures:ALL-UPDATED,
+            "deleted": (".env"),
+            "fs": ($fixtures:ROOT-FS, "test")
+        })
+};
+
+declare
+    %test:assertTrue
+function sync:prunes-with-multiple-excludes() {
+    let $directory := helper:get-test-directory($sync:suite)
+    let $_ := helper:setup-fs-extra($directory)
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            map{
+                "prune": true(),
+                "excludes": (".env", "**" || $helper:path-separator || "three.?")
+            }
+        )
+        => helper:assert-sync-result(map {
+            "updated": $fixtures:ALL-UPDATED,
+            "deleted": (),
+            "fs": ($fixtures:ROOT-FS, ".env", "test")
+        })
+};
+
+declare
+    %test:assertTrue
+function sync:twice() {
+    let $directory := helper:get-test-directory($sync:suite)
+    (:
+     : ensure that files on disk are always recognized as newer by waiting one second until
+     : syncing to disk, see https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8177809
+     :)
+    let $_ := util:wait(1000)
+    let $_ := file:sync(
+        $fixtures:collection,
+        $directory,
+        ()
+    )
+
+    return
+        file:sync(
+            $fixtures:collection,
+            $directory,
+            ()
         )
         => helper:assert-sync-result(map {
             "updated": (),
-            "deleted": (".env"),
-            "fs": ($fixtures:ROOT-FS, "test")
+            "deleted": (),
+            "fs": $fixtures:ROOT-FS
         })
 };

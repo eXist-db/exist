@@ -96,7 +96,7 @@ public class RangeIndexAnalyzer extends Analyzer {
 
     public void addCollation(String uri) throws DatabaseConfigurationException {
         try {
-            collator = Collations.getCollationFromURI(uri);
+            collator = Collations.getCollationFromURI(uri, null);
         } catch (XPathException e) {
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }

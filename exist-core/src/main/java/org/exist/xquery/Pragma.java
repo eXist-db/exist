@@ -29,10 +29,20 @@ public abstract class Pragma {
 
     private QName qname;
     private String contents;
+    private Expression expression;
     
     public Pragma(QName qname, String contents) throws XPathException {
+        this(null, qname, contents);
+    }
+    
+    public Pragma(final Expression expression, QName qname, String contents) throws XPathException {
+        this.expression = expression;
         this.qname = qname;
         this.contents = contents;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
@@ -43,9 +53,13 @@ public abstract class Pragma {
         return null;
     }
     
-    public abstract void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException;
+    public abstract void before(XQueryContext context, Sequence contextSequence) throws XPathException;
     
-    public abstract void after(XQueryContext context, Expression expression) throws XPathException;
+    public abstract void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException;
+    
+    public abstract void after(XQueryContext context) throws XPathException;
+    
+    public abstract void after(XQueryContext context, final Expression expression) throws XPathException;
 
     protected String getContents() {
         return contents;

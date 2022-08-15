@@ -130,7 +130,7 @@ public class FunAvg extends Function {
                     throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage());
                 }
             }
-            result = sum.div(new IntegerValue(inner.getItemCount()));
+            result = sum.div(new IntegerValue(this, inner.getItemCount()));
         }
         if (!gotInfinity) {
             if (Type.subTypeOfUnion(result.getItemType(), Type.NUMBER) &&

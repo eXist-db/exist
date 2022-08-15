@@ -79,7 +79,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getCurrentSubject();
         if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
-            throw new XPathException("You must be an authenticated user");
+            throw new XPathException(this, "You must be an authenticated user");
         }
 
         final SecurityManager securityManager = broker.getBrokerPool().getSecurityManager();
@@ -106,7 +106,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
             }
             
             if(!valid) {
-                throw new XPathException("The metadata attribute key '" + metadataAttributeNamespace + "' is not valid on a group.");
+                throw new XPathException(this, "The metadata attribute key '" + metadataAttributeNamespace + "' is not valid on a group.");
             }
             
             final Group group = securityManager.getGroup(strPrincipal);
@@ -130,7 +130,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
         }
         
         if(schemaType == null) {
-            throw new XPathException("Unknown metadata attribute key: " + metadataAttributeNamespace);
+            throw new XPathException(this, "Unknown metadata attribute key: " + metadataAttributeNamespace);
         }
         
         principal.setMetadataValue(schemaType, value);

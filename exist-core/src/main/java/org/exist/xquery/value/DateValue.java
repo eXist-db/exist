@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -36,22 +37,34 @@ import java.util.GregorianCalendar;
 public class DateValue extends AbstractDateTimeValue {
 
     public DateValue() throws XPathException {
-        super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+        super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
     }
 
-    public DateValue(String dateString) throws XPathException {
-        super(dateString);
+    public DateValue(final Expression expression) throws XPathException {
+        super(expression, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
+    }
+
+    public DateValue(final String dateString) throws XPathException {
+        this(null, dateString);
+    }
+
+    public DateValue(final Expression expression, String dateString) throws XPathException {
+        super(expression, dateString);
         try {
             if (calendar.getXMLSchemaType() != DatatypeConstants.DATE) {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException("xs:date must not have hour, minute or second fields set");
+            throw new XPathException(getExpression(), "xs:date must not have hour, minute or second fields set");
         }
     }
 
-    public DateValue(XMLGregorianCalendar calendar) throws XPathException {
-        super(stripCalendar(cloneXMLGregorianCalendar(calendar)));
+    public DateValue(final XMLGregorianCalendar calendar) throws XPathException {
+        this(null, calendar);
+    }
+
+    public DateValue(final Expression expression, XMLGregorianCalendar calendar) throws XPathException {
+        super(expression, stripCalendar(cloneXMLGregorianCalendar(calendar)));
     }
 
     private static XMLGregorianCalendar stripCalendar(XMLGregorianCalendar calendar) {
@@ -63,7 +76,7 @@ public class DateValue extends AbstractDateTimeValue {
     }
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException {
-        return new DateValue(cal);
+        return new DateValue(getExpression(), cal);
     }
 
     protected QName getXMLSchemaType() {
@@ -81,27 +94,27 @@ public class DateValue extends AbstractDateTimeValue {
             case Type.ITEM:
                 return this;
             case Type.DATE_TIME:
-                return new DateTimeValue(calendar);
+                return new DateTimeValue(getExpression(), calendar);
             case Type.GYEAR:
-                return new GYearValue(this.calendar);
+                return new GYearValue(getExpression(), this.calendar);
             case Type.GYEARMONTH:
-                return new GYearMonthValue(calendar);
+                return new GYearMonthValue(getExpression(), calendar);
             case Type.GMONTHDAY:
-                return new GMonthDayValue(calendar);
+                return new GMonthDayValue(getExpression(), calendar);
             case Type.GDAY:
-                return new GDayValue(calendar);
+                return new GDayValue(getExpression(), calendar);
             case Type.GMONTH:
-                return new GMonthValue(calendar);
+                return new GMonthValue(getExpression(), calendar);
             case Type.UNTYPED_ATOMIC: {
-                final DateValue dv = new DateValue(getStringValue());
-                return new UntypedAtomicValue(dv.getStringValue());
+                final DateValue dv = new DateValue(getExpression(), getStringValue());
+                return new UntypedAtomicValue(getExpression(), dv.getStringValue());
             }
             case Type.STRING: {
-                final DateValue dv = new DateValue(calendar);
-                return new StringValue(dv.getStringValue());
+                final DateValue dv = new DateValue(getExpression(), calendar);
+                return new StringValue(getExpression(), dv.getStringValue());
             }
             default:
-                throw new XPathException(ErrorCodes.FORG0001, "can not convert " +
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
                         Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
                         Type.getTypeName(requiredType));
         }
@@ -110,13 +123,13 @@ public class DateValue extends AbstractDateTimeValue {
     public ComputableValue minus(ComputableValue other) throws XPathException {
         switch (other.getType()) {
             case Type.DATE:
-                return new DayTimeDurationValue(getTimeInMillis() - ((DateValue) other).getTimeInMillis());
+                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateValue) other).getTimeInMillis());
             case Type.YEAR_MONTH_DURATION:
                 return ((YearMonthDurationValue) other).negate().plus(this);
             case Type.DAY_TIME_DURATION:
                 return ((DayTimeDurationValue) other).negate().plus(this);
             default:
-                throw new XPathException(
+                throw new XPathException(getExpression(), 
                         "Operand to minus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }

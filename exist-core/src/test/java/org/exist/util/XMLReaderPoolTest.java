@@ -24,13 +24,14 @@ package org.exist.util;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.exist.Namespaces;
+import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
+import org.xmlresolver.Resolver;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -200,7 +201,7 @@ public class XMLReaderPoolTest {
 
     @Test
     public void xmlReaderWithResolver() throws SAXNotSupportedException, SAXNotRecognizedException {
-        final eXistXMLCatalogResolver mockResolver = createMock(eXistXMLCatalogResolver.class);
+        final Resolver mockResolver = createMock(Resolver.class);
 
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
@@ -219,7 +220,9 @@ public class XMLReaderPoolTest {
         final XMLReader xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertInstanceOf(XercesXmlResolverAdapter.class, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            final XercesXmlResolverAdapter xercesXmlResolverAdapter = (XercesXmlResolverAdapter) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER);
+            assertSame(mockResolver, xercesXmlResolverAdapter.getResolver());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -631,7 +634,7 @@ public class XMLReaderPoolTest {
 
     @Test
     public void reusedXmlReaderStillHasResolver() throws SAXNotSupportedException, SAXNotRecognizedException {
-        final eXistXMLCatalogResolver mockResolver = createMock(eXistXMLCatalogResolver.class);
+        final Resolver mockResolver = createMock(Resolver.class);
 
         final Configuration mockConfiguration = createMock(Configuration.class);
         expect(mockConfiguration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL)).andReturn(null);
@@ -661,7 +664,9 @@ public class XMLReaderPoolTest {
         xmlreader = xmlReaderPool.borrowXMLReader();
         assertNotNull(xmlreader);
         try {
-            assertSame(mockResolver, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            assertInstanceOf(XercesXmlResolverAdapter.class, xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER));
+            final XercesXmlResolverAdapter xercesXmlResolverAdapter = (XercesXmlResolverAdapter) xmlreader.getProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER);
+            assertSame(mockResolver, xercesXmlResolverAdapter.getResolver());
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }
@@ -689,8 +694,8 @@ public class XMLReaderPoolTest {
         assertNotNull(xmlreader);
         try {
             // explicitly enable the resolver
-            final eXistXMLCatalogResolver mockResolver = createMock(eXistXMLCatalogResolver.class);
-            xmlreader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_ENTITYRESOLVER, mockResolver);
+            final Resolver mockResolver = createMock(Resolver.class);
+            XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlreader, mockResolver);
         } finally {
             xmlReaderPool.returnXMLReader(xmlreader);
         }

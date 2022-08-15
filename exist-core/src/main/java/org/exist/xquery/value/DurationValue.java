@@ -25,6 +25,7 @@ import com.ibm.icu.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -56,15 +57,25 @@ public class DurationValue extends ComputableValue {
     protected final Duration duration;
     private Duration canonicalDuration;
 
-    public DurationValue(Duration duration) {
+    public DurationValue(final Duration duration) {
+        this(null, duration);
+    }
+
+    public DurationValue(final Expression expression, Duration duration) {
+        super(expression);
         this.duration = duration;
     }
 
-    public DurationValue(String str) throws XPathException {
+    public DurationValue(final String str) throws XPathException {
+        this(null, str);
+    }
+
+    public DurationValue(final Expression expression, String str) throws XPathException {
+        super(expression);
         try {
             this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
         } catch (final IllegalArgumentException e) {
-            throw new XPathException(ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + str + "\"");
         }
     }
@@ -141,7 +152,7 @@ public class DurationValue extends ComputableValue {
     }
 
     protected DurationValue createSameKind(Duration d) throws XPathException {
-        return new DurationValue(d);
+        return new DurationValue(getExpression(), d);
     }
 
     public DurationValue negate() throws XPathException {
@@ -267,23 +278,23 @@ public class DurationValue extends ComputableValue {
             case Type.ITEM:
             case Type.ATOMIC:
             case Type.DURATION:
-                return new DurationValue(canonicalDuration);
+                return new DurationValue(getExpression(), canonicalDuration);
             case Type.YEAR_MONTH_DURATION:
                 if (canonicalDuration.getField(DatatypeConstants.YEARS) != null ||
                         canonicalDuration.getField(DatatypeConstants.MONTHS) != null) {
-                    return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+                    return new YearMonthDurationValue(getExpression(), TimeUtils.getInstance().newDurationYearMonth(
                             canonicalDuration.getSign() >= 0,
                             (BigInteger) canonicalDuration.getField(DatatypeConstants.YEARS),
                             (BigInteger) canonicalDuration.getField(DatatypeConstants.MONTHS)));
                 } else {
-                    return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);
+                    return new YearMonthDurationValue(getExpression(), YearMonthDurationValue.CANONICAL_ZERO_DURATION);
                 }
             case Type.DAY_TIME_DURATION:
                 if (canonicalDuration.isSet(DatatypeConstants.DAYS) ||
                         canonicalDuration.isSet(DatatypeConstants.HOURS) ||
                         canonicalDuration.isSet(DatatypeConstants.MINUTES) ||
                         canonicalDuration.isSet(DatatypeConstants.SECONDS)) {
-                    return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+                    return new DayTimeDurationValue(getExpression(), TimeUtils.getInstance().newDuration(
                             canonicalDuration.getSign() >= 0,
                             null,
                             null,
@@ -292,16 +303,16 @@ public class DurationValue extends ComputableValue {
                             (BigInteger) canonicalDuration.getField(DatatypeConstants.MINUTES),
                             (BigDecimal) canonicalDuration.getField(DatatypeConstants.SECONDS)));
                 } else {
-                    return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);
+                    return new DayTimeDurationValue(getExpression(), DayTimeDurationValue.CANONICAL_ZERO_DURATION);
                 }
             case Type.STRING:
                 canonicalize();
-                return new StringValue(getStringValue());
+                return new StringValue(getExpression(), getStringValue());
             case Type.UNTYPED_ATOMIC:
                 canonicalize();
-                return new UntypedAtomicValue(getStringValue());
+                return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "Type error: cannot cast ' + Type.getTypeName(getType()) 'to "
                                 + Type.getTypeName(requiredType));
         }
@@ -312,7 +323,7 @@ public class DurationValue extends ComputableValue {
         switch (operator) {
             case EQ: {
                 if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
                 }
                 //TODO : upgrade so that P365D is *not* equal to P1Y
                 boolean r = duration.equals(((DurationValue) other).duration);
@@ -324,7 +335,7 @@ public class DurationValue extends ComputableValue {
             }
             case NEQ: {
                 if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
-                    throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
                 }
                 //TODO : upgrade so that P365D is *not* equal to P1Y
                 boolean r = duration.equals(((DurationValue) other).duration);
@@ -338,7 +349,7 @@ public class DurationValue extends ComputableValue {
             case LTEQ:
             case GT:
             case GTEQ:
-                throw new XPathException(ErrorCodes.XPTY0004, Type.getTypeName(other.getType()) + " type can not be ordered");
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, Type.getTypeName(other.getType()) + " type can not be ordered");
             default:
                 throw new IllegalArgumentException("Unknown comparison operator");
         }
@@ -346,34 +357,34 @@ public class DurationValue extends ComputableValue {
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
         if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
-            throw new XPathException(ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
         }
         //TODO : what to do with the collator ?
         return duration.compare(((DurationValue) other).duration);
     }
 
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public ComputableValue plus(ComputableValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
-        throw new XPathException(ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public int conversionPreference(Class<?> target) {
@@ -393,11 +404,11 @@ public class DurationValue extends ComputableValue {
         } else if (target.isAssignableFrom(Duration.class)) {
             return (T) duration;
         }
-        throw new XPathException(ErrorCodes.XPTY0004, "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006, "value of type " + Type.getTypeName(getType()) +
                 " has no boolean value.");
     }
 

@@ -56,6 +56,6 @@ public class IsMultiPartContent extends StrictRequestFunction {
     @Override
     public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
             throws XPathException {
-        return new BooleanValue(request.isMultipartContent());
+        return new BooleanValue(this, request.isMultipartContent());
     }
 }

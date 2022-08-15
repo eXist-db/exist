@@ -183,7 +183,7 @@ public abstract class Modification extends AbstractExpression
     protected Sequence deepCopy(Sequence inSeq) throws XPathException {
         context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();
-        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
         final Serializer serializer = context.getBroker().borrowSerializer();
         serializer.setReceiver(receiver);
 
@@ -194,7 +194,7 @@ public abstract class Modification extends AbstractExpression
                 if (item.getType() == Type.DOCUMENT) {
                     if (((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         final NodeHandle root = (NodeHandle) ((NodeProxy)item).getOwnerDocument().getDocumentElement();
-                        item = new NodeProxy(root);
+                        item = new NodeProxy(this, root);
                     } else {
                         item = (Item)((Document)item).getDocumentElement();
                     }

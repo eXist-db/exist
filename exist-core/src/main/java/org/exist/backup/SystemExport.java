@@ -56,6 +56,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.URIUtils;
@@ -133,7 +134,7 @@ public class SystemExport {
         this.chainFactory = chainFactory;
 
         defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
-        defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
         defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
@@ -375,7 +376,7 @@ public class SystemExport {
 //        }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw (new TerminatedException((Expression) null, "system export terminated by db"));
         }
 
 //        if( !current.getURI().equalsInternal( XmldbURI.ROOT_COLLECTION_URI ) ) {
@@ -484,7 +485,7 @@ public class SystemExport {
         }
 
         if ((monitor != null) && !monitor.proceed()) {
-            throw (new TerminatedException("system export terminated by db"));
+            throw new TerminatedException((Expression) null, "system export terminated by db");
         }
         final boolean needsBackup = (prevBackup == null) || (date.getTime() < doc.getLastModified());
 

@@ -176,10 +176,10 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
         if (oldToken != null && oldToken.equals(newToken)) {
             args[0] = Sequence.EMPTY_SEQUENCE;
         } else {
-            args[0] = new StringValue(newToken);
+            args[0] = new StringValue(this, newToken);
         }
-        args[1] = new StringValue(details.getUser());
-        args[2] = new StringValue(details.getPassword());
+        args[1] = new StringValue(this, details.getUser());
+        args[2] = new StringValue(this, details.getPassword());
         args[3] = details.getTimeToLive();
 
         func.analyze(cachedContextInfo);

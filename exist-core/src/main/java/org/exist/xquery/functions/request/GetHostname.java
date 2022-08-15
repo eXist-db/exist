@@ -54,6 +54,6 @@ public class GetHostname extends StrictRequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, @Nonnull final RequestWrapper request)
 			throws XPathException {
-		return new StringValue(request.getRemoteHost());
+		return new StringValue(this, request.getRemoteHost());
 	}
 }

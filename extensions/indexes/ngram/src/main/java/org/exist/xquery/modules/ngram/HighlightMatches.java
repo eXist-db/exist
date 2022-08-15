@@ -84,7 +84,7 @@ public class HighlightMatches extends BasicFunction {
         try (FunctionReference func = (FunctionReference) args[1].itemAt(0)) {
             MemTreeBuilder builder = context.getDocumentBuilder();
             NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
-            DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(builder);
+            DocumentBuilderReceiver docBuilder = new DocumentBuilderReceiver(this, builder);
             MatchCallback matchCb = new MatchCallback(func, docBuilder);
             ValueSequence result = new ValueSequence();
             for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {

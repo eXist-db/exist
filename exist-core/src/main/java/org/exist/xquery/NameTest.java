@@ -21,12 +21,15 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.INode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
@@ -41,7 +44,7 @@ public class NameTest extends TypeTest {
         super(type);
 
         if(name.isValid(true) != QName.Validity.VALID.val) {
-            throw new XPathException(ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getStringValue());
+            throw new XPathException((Expression) null, ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getStringValue());
         }
 
         nodeName = name;
@@ -94,6 +97,16 @@ public class NameTest extends TypeTest {
 
         if (nodeName == QName.WildcardQName.getInstance()) {
             return true;
+        }
+
+        if (nodeType == Type.DOCUMENT && other.getNodeType() == Node.DOCUMENT_NODE) {
+            final Element otherElement = ((Document) other).getDocumentElement();
+            if (otherElement != null) {
+                final QName otherQName = ((INode) otherElement).getQName();
+                if (nodeName.equals(otherQName)) {
+                    return true;
+                }
+            }
         }
 
         if (!(nodeName instanceof QName.WildcardNamespaceURIQName)) {

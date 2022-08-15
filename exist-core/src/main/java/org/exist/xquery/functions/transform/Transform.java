@@ -188,7 +188,7 @@ public class Transform extends BasicFunction {
         final XSLTErrorsListener<XPathException> errorListener =
             new XSLTErrorsListener<XPathException>(stopOnError, stopOnWarn) {
                 @Override
-                protected void raiseError(String error, Exception ex) throws XPathException {
+                protected void raiseError(final String error, final TransformerException ex) throws XPathException {
                     throw new XPathException(Transform.this, error, ex);
                 }
             };
@@ -205,7 +205,7 @@ public class Transform extends BasicFunction {
 
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(builder, true);
+                final DocumentBuilderReceiver builderReceiver = new DocumentBuilderReceiver(this, builder, true);
                 final SAXResult result = new SAXResult(builderReceiver);
                 result.setLexicalHandler(builderReceiver);        //preserve comments etc... from xslt output
                 handler.setResult(result);

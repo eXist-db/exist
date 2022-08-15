@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
@@ -91,6 +92,7 @@ public class Type {
     public final static int GDAY = 58;
     public final static int GYEARMONTH = 59;
     public final static int GMONTHDAY = 71;
+    public final static int DATE_TIME_STAMP = 72;
     public final static int TOKEN = 60;
     public final static int NORMALIZED_STRING = 61;
     public final static int LANGUAGE = 62;
@@ -158,7 +160,7 @@ public class Type {
         defineSubType(ATOMIC, UNTYPED_ATOMIC);
 
         // DATE_TIME sub-types
-        //defineSubType(DATE_TIME, DATE_TIME_STAMP);
+        defineSubType(DATE_TIME, DATE_TIME_STAMP);
 
         // DURATION sub-types
         defineSubType(DURATION, DAY_TIME_DURATION);
@@ -285,8 +287,7 @@ public class Type {
         defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         defineBuiltInType(NOTATION, "xs:NOTATION");
 
-        //TODO add handling for xs:dateTimeStamp
-        //defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
+        defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
         defineBuiltInType(DATE_TIME, "xs:dateTime");
         defineBuiltInType(DATE, "xs:date");
         defineBuiltInType(TIME, "xs:time");
@@ -355,7 +356,7 @@ public class Type {
                 DAY_TIME_DURATION
         });
         definePrimitiveType(DATE_TIME, new int[] {
-                //DATE_TIME_STAMP
+                DATE_TIME_STAMP
         });
         definePrimitiveType(TIME);
         definePrimitiveType(DATE);
@@ -462,7 +463,7 @@ public class Type {
     public static int getType(final String name) throws XPathException {
         final int code = typeCodes.getInt(name);
         if (code == NO_SUCH_VALUE) {
-            throw new XPathException("Type: " + name + " is not defined");
+            throw new XPathException((Expression) null, "Type: " + name + " is not defined");
         }
         return code;
     }

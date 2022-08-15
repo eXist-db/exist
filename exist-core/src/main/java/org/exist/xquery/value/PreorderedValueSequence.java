@@ -53,7 +53,7 @@ public class PreorderedValueSequence extends AbstractSequence {
         int j = 0;
         for (final SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
             final NodeProxy p = (NodeProxy) i.nextItem();
-            nodes[j] = new OrderedNodeProxy(p);
+            nodes[j] = new OrderedNodeProxy(null, p);
             p.addContextNode(contextId, nodes[j]);
         }
         processAll();
@@ -139,6 +139,28 @@ public class PreorderedValueSequence extends AbstractSequence {
         // TODO: is this ever relevant?
     }
 
+    @Override
+    public boolean containsReference(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        for (final SequenceIterator it = iterate(); it.hasNext(); ) {
+            final Item i = it.nextItem();
+            if (i.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void sort() {
         Arrays.sort(nodes, new OrderedComparator());
     }
@@ -184,7 +206,11 @@ public class PreorderedValueSequence extends AbstractSequence {
         final AtomicValue[] values;
 
         public OrderedNodeProxy(final NodeProxy p) {
-            super(p);
+            this(null, p);
+        }
+
+        public OrderedNodeProxy(final Expression expression, final NodeProxy p) {
+            super(expression, p);
             this.values = new AtomicValue[orderSpecs.length];
             for (int i = 0; i < values.length; i++) {
                 values[i] = AtomicValue.EMPTY_VALUE;

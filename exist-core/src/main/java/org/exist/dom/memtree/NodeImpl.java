@@ -42,6 +42,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.util.Iterator;
 import java.util.Properties;
@@ -54,10 +55,20 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     protected int nodeNumber;
     protected DocumentImpl document;
+    private final Expression expression;
 
     public NodeImpl(final DocumentImpl doc, final int nodeNumber) {
+        this(null, doc, nodeNumber);
+    }
+
+    public NodeImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+        this.expression = expression;
         this.document = doc;
         this.nodeNumber = nodeNumber;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     public int getNodeNumber() {
@@ -270,13 +281,23 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public Node getParentNode() {
         int next = document.next[nodeNumber];
-        while(next > nodeNumber) {
+        while (next > nodeNumber) {
             next = document.next[next];
         }
-        if(next < 0) {
+        if (next < 0) {
             return null;
         }
-        return document.getNode(next);
+        final NodeImpl parent = document.getNode(next);
+        if (parent.getNodeType() == DOCUMENT_NODE && !((DocumentImpl) parent).isExplicitlyCreated()) {
+            /*
+                All nodes in the MemTree will return an Owner document due to how the MemTree is implemented,
+                however the explicitlyCreated flag tells us whether there "really" was a Document Node or not.
+                See https://github.com/eXist-db/exist/issues/1463
+             */
+            return null;
+        } else {
+            return parent;
+        }
     }
 
     public Node selectParentNode() {
@@ -325,7 +346,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public boolean after(final NodeValue other, final boolean isFollowing) throws XPathException {
         if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
-            throw new XPathException("cannot compare persistent node with in-memory node");
+            throw new XPathException(getExpression(), "cannot compare persistent node with in-memory node");
         }
         return nodeNumber > ((NodeImpl) other).nodeNumber;
     }
@@ -333,7 +354,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     @Override
     public boolean before(final NodeValue other, final boolean isPreceding) throws XPathException {
         if(other.getImplementationType() != NodeValue.IN_MEMORY_NODE) {
-            throw new XPathException("cannot compare persistent node with in-memory node");
+            throw new XPathException(getExpression(), "cannot compare persistent node with in-memory node");
         }
         return nodeNumber < ((NodeImpl)other).nodeNumber;
     }
@@ -554,7 +575,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        return UntypedAtomicValue.convertTo(null, getStringValue(), requiredType);
+        return UntypedAtomicValue.convertTo(null, getStringValue(), requiredType, null);
     }
 
     @Override
@@ -742,7 +763,17 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public boolean containsReference(final Item item) {
+        return this == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return equals(item);
+    }
+
+    @Override
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
     }
 
 

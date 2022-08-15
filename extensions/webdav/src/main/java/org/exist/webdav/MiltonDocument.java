@@ -430,7 +430,7 @@ public class MiltonDocument extends MiltonResource
             existDocument.resourceCopyMove(destCollection, newName, Mode.MOVE);
 
         } catch (EXistException ex) {
-            throw new ConflictException(this);
+            throw new ConflictException(this, "Move '" + getXmldbUri() + "' to '" + destCollection.append(newName) + "' failed: " + ex.getMessage());
         }
     }
 

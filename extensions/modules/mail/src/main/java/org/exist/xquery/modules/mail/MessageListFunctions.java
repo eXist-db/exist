@@ -207,7 +207,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( MailModule.storeMessageList( context, msgList, folderHandle ) ) );
+		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ) ) );
 	}
 
 	private Sequence searchMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -239,7 +239,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( MailModule.storeMessageList( context, msgList, folderHandle ) ) );
+		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ) ) );
 	}
 
 	private void prefetchMessages( Folder folder, Message[] msgList ) throws MessagingException

@@ -38,6 +38,7 @@ import org.exist.util.hashtable.NamePool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -48,6 +49,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -152,7 +154,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
 
     public DocumentImpl(final XQueryContext context, final boolean explicitlyCreated) {
-        super(null, 0);
+        this(null, context, explicitlyCreated);
+    }
+
+
+    public DocumentImpl(final Expression expression, final XQueryContext context, final boolean explicitlyCreated) {
+        super(expression, null, 0);
         this.context = context;
         this.explicitlyCreated = explicitlyCreated;
         this.docId = nextDocId.incrementAndGet();
@@ -209,6 +216,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     public long getDocId() {
         return docId;
+    }
+
+    public boolean isExplicitlyCreated() {
+        return explicitlyCreated;
     }
 
     public int addNode(final short kind, final short level, final QName qname) {
@@ -494,11 +505,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     public NodeImpl getAttribute(final int nodeNum) throws DOMException {
-        return new AttrImpl(this, nodeNum);
+        return new AttrImpl(getExpression(), this, nodeNum);
     }
 
     public NodeImpl getNamespaceNode(final int nodeNum) throws DOMException {
-        return new NamespaceNode(this, nodeNum);
+        return new NamespaceNode(getExpression(), this, nodeNum);
     }
 
     public NodeImpl getNode(final int nodeNum) throws DOMException {
@@ -511,22 +522,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         final NodeImpl node;
         switch(nodeKind[nodeNum]) {
             case Node.ELEMENT_NODE:
-                node = new ElementImpl(this, nodeNum);
+                node = new ElementImpl(getExpression(), this, nodeNum);
                 break;
             case Node.TEXT_NODE:
-                node = new TextImpl(this, nodeNum);
+                node = new TextImpl(getExpression(), this, nodeNum);
                 break;
             case Node.COMMENT_NODE:
-                node = new CommentImpl(this, nodeNum);
+                node = new CommentImpl(getExpression(), this, nodeNum);
                 break;
             case Node.PROCESSING_INSTRUCTION_NODE:
-                node = new ProcessingInstructionImpl(this, nodeNum);
+                node = new ProcessingInstructionImpl(getExpression(), this, nodeNum);
                 break;
             case Node.CDATA_SECTION_NODE:
-                node = new CDATASectionImpl(this, nodeNum);
+                node = new CDATASectionImpl(getExpression(), this, nodeNum);
                 break;
             case NodeImpl.REFERENCE_NODE:
-                node = new ReferenceNode(this, nodeNum);
+                node = new ReferenceNode(getExpression(), this, nodeNum);
                 break;
             default:
                 throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
@@ -538,7 +549,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nextAttr == 0) {
             return null;
         }
-        return new AttrImpl(this, nextAttr - 1);
+        return new AttrImpl(getExpression(), this, nextAttr - 1);
     }
 
     @Override
@@ -553,7 +564,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public DOMImplementation getImplementation() {
-        return new DOMImplementationImpl();
+        return new DOMImplementationImpl(getExpression());
     }
 
     @Override
@@ -696,21 +707,49 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
     }
 
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id  the ID of the node to select
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
     public NodeImpl selectById(final String id) {
+        return selectById(id, false);
+    }
+
+    /**
+     * Gets a specified node of this document.
+     *
+     * @param   id              the ID of the node to select
+     * @param   typeConsidered  if true, this method should consider node
+     *                          type attributes (i.e. <code>xsi:type="xs:ID"</code>);
+     *                          if false, this method should not consider
+     *                          node type attributes
+     * @return  the specified node of this document, or null if this document
+     *          does not have the specified node
+     */
+    public NodeImpl selectById(final String id, final boolean typeConsidered) {
         if(size == 1) {
             return null;
         }
         expand();
         final ElementImpl root = (ElementImpl) getDocumentElement();
-        if(hasIdAttribute(root.getNodeNumber(), id)) {
+        if (hasIdAttribute(root.getNodeNumber(), id)) {
             return root;
         }
         final int treeLevel = this.treeLevel[root.getNodeNumber()];
         int nextNode = root.getNodeNumber();
         while((++nextNode < document.size) && (document.treeLevel[nextNode] > treeLevel)) {
-            if((document.nodeKind[nextNode] == Node.ELEMENT_NODE) &&
-                hasIdAttribute(nextNode, id)) {
-                return getNode(nextNode);
+            if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
+                if (hasIdAttribute(nextNode, id)) {
+                    return getNode(nextNode);
+                } else if (hasIdTypeAttribute(nextNode, id)) {
+                    return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
+                } else if (getNode(nextNode).getNodeName().equalsIgnoreCase("id") &&
+                        getNode(nextNode).getStringValue().equals(id)) {
+                    return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
+                }
             }
         }
         return null;
@@ -744,7 +783,25 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(-1 < attr) {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 if((document.attrType[attr] == AttrImpl.ATTR_ID_TYPE) &&
-                    id.equals(document.attrValue[attr])) {
+                        id.equals(document.attrValue[attr])) {
+                    return true;
+                } else if (document.attrName[attr].getLocalPart().equals("id") &&
+                           Objects.equals(document.attrValue[attr], id)) {
+                    return true;
+                }
+                ++attr;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasIdTypeAttribute(final int nodeNumber, final String id) {
+        int attr = document.alpha[nodeNumber];
+        if(-1 < attr) {
+            while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
+                if (document.attrName[attr].getStringValue().equals(Namespaces.XSI_TYPE_QNAME.getStringValue()) &&
+                        document.attrValue[attr].equals(Namespaces.XS_ID_QNAME.getStringValue()) &&
+                        document.getNode(nodeNumber).getStringValue().equals(id)) {
                     return true;
                 }
                 ++attr;
@@ -759,7 +816,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 if((document.attrType[attr] == AttrImpl.ATTR_IDREF_TYPE) &&
                     id.equals(document.attrValue[attr])) {
-                    return new AttrImpl(this, attr);
+                    return new AttrImpl(getExpression(), this, attr);
                 }
                 ++attr;
             }
@@ -840,7 +897,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
-        return new ElementImpl(this, nodeNum);
+        return new ElementImpl(getExpression(), this, nodeNum);
     }
 
     @Override
@@ -871,12 +928,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         final int nodeNum = addNode(Node.ELEMENT_NODE, (short) 1, qname);
-        return new ElementImpl(this, nodeNum);
+        return new ElementImpl(getExpression(), this, nodeNum);
     }
 
     @Override
     public DocumentFragment createDocumentFragment() {
-        return new DocumentFragmentImpl();
+        return new DocumentFragmentImpl(getExpression());
     }
 
     @Override
@@ -1056,7 +1113,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 nextNode = (NodeImpl) node.getFirstChild();
             }
             while(nextNode == null) {
-                copyEndNode(node, receiver);
+                if (node != null) {
+                    copyEndNode(node, receiver);
+                }
                 if((top != null) && (top.nodeNumber == node.nodeNumber)) {
                     break;
                 }
@@ -1065,7 +1124,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 if(nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
                     if((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
-                        copyEndNode(node, receiver);
+                        if (node != null) {
+                            copyEndNode(node, receiver);
+                        }
                         break;
                     }
                 }
@@ -1171,8 +1232,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 computeNodeIds();
                 return this;
             }
-            final MemTreeBuilder builder = new MemTreeBuilder(context);
-            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+            final MemTreeBuilder builder = new MemTreeBuilder(getExpression(), context);
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(getExpression(), builder);
             try {
                 builder.startDocument();
                 NodeImpl node = (rootNode == null) ? (NodeImpl) getFirstChild() : rootNode;
@@ -1304,7 +1365,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 if(nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
                     if((node == null) || ((top != null) && (top.nodeNumber == node.nodeNumber))) {
-                        endNode(node, receiver);
+                        if (node != null) {
+                            endNode(node, receiver);
+                        }
                         break;
                     }
                 }

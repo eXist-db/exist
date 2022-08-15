@@ -31,10 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
@@ -151,7 +148,7 @@ public class CollectionTest {
             }
             return saxAdapter.getDocument();
         } catch (final ParserConfigurationException | SAXException | IOException e) {
-            throw new XPathException("Unable to parse document", e);
+            throw new XPathException((Expression) null, "Unable to parse document", e);
         }
     }
 }

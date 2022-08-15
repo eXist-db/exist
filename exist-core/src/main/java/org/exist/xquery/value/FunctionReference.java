@@ -36,12 +36,20 @@ import java.util.List;
  */
 public class FunctionReference extends AtomicValue implements AutoCloseable {
 
+    /** the expression from which this type derives */
+    private Expression expression;
+
     private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
 
-    protected FunctionCall functionCall;
+    protected final FunctionCall functionCall;
 
-    public FunctionReference(FunctionCall fcall) {
-        this.functionCall = fcall;
+    public FunctionReference(final FunctionCall functionCall) {
+        this(null, functionCall);
+    }
+
+    public FunctionReference(final Expression expression, final FunctionCall functionCall) {
+        super(expression);
+        this.functionCall = functionCall;
     }
 
     public FunctionCall getCall() {
@@ -55,6 +63,25 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      */
     public FunctionSignature getSignature() {
         return functionCall.getSignature();
+    }
+
+    /**
+     * Gets the expression from which this type derives.
+     *
+     * @return  the expression from which this type derives
+     */
+    @Override
+    public Expression getExpression() {
+        return expression;
+    }
+
+    /**
+     * Sets the expression from which this type derives.
+     *
+     * @param   expression  the expression to use
+     */
+    public void setExpression(final Expression expression) {
+        this.expression = expression;
     }
 
     /**
@@ -84,6 +111,18 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
         return functionCall.eval(contextSequence);
+    }
+
+    /**
+     * Calls {@link FunctionCall#eval(Sequence, Item)}.
+     *
+     * @param contextSequence the input sequence
+     * @param contextItem optional: the current context item
+     * @return evaluation result of the function call
+     * @throws XPathException in case of dynamic error
+     */
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        return functionCall.eval(contextSequence, contextItem);
     }
 
     /**
@@ -138,36 +177,41 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         if (requiredType == Type.FUNCTION_REFERENCE) {
             return this;
         }
-        throw new XPathException(ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));
+        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));
     }
 
     public boolean effectiveBooleanValue() throws XPathException {
-        throw new XPathException(ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
+        throw new XPathException(getExpression(), ErrorCodes.FORG0006, "Effective boolean value is not defined for a FunctionReference");
     }
 
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
+        throw new XPathException(getExpression(), "cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
     public int compareTo(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("cannot compare function reference to " + Type.getTypeName(other.getType()));
+        throw new XPathException(getExpression(), "cannot compare function reference to " + Type.getTypeName(other.getType()));
     }
 
     public AtomicValue max(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare function references");
     }
 
     public AtomicValue min(Collator collator, AtomicValue other)
             throws XPathException {
-        throw new XPathException("Invalid argument to aggregate function: cannot compare function references");
+        throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare function references");
     }
 
     @Override
     public AtomicValue atomize() throws XPathException {
-        throw new XPathException(ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
+        throw new XPathException(getExpression(), ErrorCodes.FOTY0013, "A function item other than an array cannot be atomized");
+    }
+
+    @Override
+    public String toString() {
+        return "anonymous-function#" + functionCall.getArgumentCount();
     }
 }

@@ -55,6 +55,7 @@
         <module>exist-service</module>
         <module>exist-start</module>
         <module>extensions</module>
+        <module>exist-xqts</module>
     </modules>
 
     <build>

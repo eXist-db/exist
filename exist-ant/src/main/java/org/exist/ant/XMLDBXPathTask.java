@@ -102,7 +102,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
 
                 // set pretty-printing on
                 service.setProperty(OutputKeys.INDENT, "yes");
-                service.setProperty(OutputKeys.ENCODING, "UTF-8");
+                service.setProperty(OutputKeys.ENCODING, UTF_8.name());
 
                 if (namespace != null) {
                     log("Using namespace: " + namespace, Project.MSG_DEBUG);

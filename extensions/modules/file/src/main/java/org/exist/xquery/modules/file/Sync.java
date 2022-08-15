@@ -67,6 +67,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.AbstractMapType;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
@@ -121,7 +122,10 @@ public class Sync extends BasicFunction {
         DEFAULT_PROPERTIES.put(OutputKeys.INDENT, "yes");
         DEFAULT_PROPERTIES.put(OutputKeys.OMIT_XML_DECLARATION, "no");
         DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        DEFAULT_PROPERTIES.put(OutputKeys.ENCODING, "UTF-8");
     }
+
+    private Properties outputProperties = new Properties();
 
     public Sync(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -144,10 +148,11 @@ public class Sync extends BasicFunction {
     private Map<String, Sequence> getOptions(final Sequence parameter) throws XPathException {
         final Map<String, Sequence> options = new HashMap<>();
         options.put(AFTER_OPT, Sequence.EMPTY_SEQUENCE);
-        options.put(PRUNE_OPT, new BooleanValue(false));
+        options.put(PRUNE_OPT, new BooleanValue(this, false));
         options.put(EXCLUDES_OPT, Sequence.EMPTY_SEQUENCE);
 
         if (parameter.isEmpty()) {
+            outputProperties = DEFAULT_PROPERTIES;
             return options;
         }
 
@@ -156,7 +161,16 @@ public class Sync extends BasicFunction {
         if (item.getType() == Type.MAP) {
             final AbstractMapType optionsMap = (AbstractMapType) item;
 
-            final Sequence seq = optionsMap.get(new StringValue(EXCLUDES_OPT));
+            outputProperties = SerializerUtils.getSerializationOptions(this, optionsMap);
+
+            // override defaults set in SerializerUtils
+            for(String p : DEFAULT_PROPERTIES.stringPropertyNames()) {
+                if (optionsMap.get(new StringValue(this, p)).isEmpty()) {
+                    outputProperties.setProperty(p, DEFAULT_PROPERTIES.getProperty(p));
+                }
+            }
+
+            final Sequence seq = optionsMap.get(new StringValue(this, EXCLUDES_OPT));
             if (!seq.isEmpty() && seq.getItemType() != Type.STRING) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Invalid value for option \"excludes\", expected xs:string* got " +
@@ -181,13 +195,13 @@ public class Sync extends BasicFunction {
             final int expectedType,
             final Map<String, Sequence> options
     ) throws XPathException {
-        final Sequence p = optionsMap.get(new StringValue(name));
+        final Sequence p = optionsMap.get(new StringValue(this, name));
 
         if (p.isEmpty()) {
             return; // nothing to do, continue
         }
 
-        if (p.hasMany() || p.getItemType() != expectedType) {
+        if (p.hasMany() || !Type.subTypeOf(p.getItemType(),expectedType)) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Invalid value type for option \"" + name + "\", expected " +
                             Type.getTypeName(expectedType) + " got " +
@@ -211,7 +225,7 @@ public class Sync extends BasicFunction {
             excludes.add(si.nextItem().getStringValue());
         }
 
-        final Path p = FileModuleHelper.getFile(target);
+        final Path p = FileModuleHelper.getFile(target, this);
         context.pushDocumentContext();
         final MemTreeBuilder output = context.getDocumentBuilder();
         final Path targetDir;
@@ -357,27 +371,30 @@ public class Sync extends BasicFunction {
     }
 
     private void saveFile(final Path targetFile, final DocumentImpl doc, final Date startDate, final MemTreeBuilder output) throws LockException {
+        // the resource has not changed in the selected period
+        if (startDate != null && doc.getLastModified() <= startDate.getTime()) {
+            return;
+        }
         try (final ManagedLock<MultiLock[]> lock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())) {
-            if (startDate == null || (
-                    doc.getLastModified() > startDate.getTime() && (
-                            !Files.exists(targetFile) ||
-                                    Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0
-                    ))) {
-                output.startElement(FILE_UPDATE_ELEMENT, null);
-                output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
-                output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
-                output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
-                output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
+            // the file on the disk appears to be up-to-date
+            if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0) {
+                return;
+            }
 
-                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    output.addAttribute(TYPE_ATTRIBUTE, "binary");
-                    output.endElement();
-                    saveBinary(targetFile, (BinaryDocument) doc, output);
-                } else {
-                    output.addAttribute(TYPE_ATTRIBUTE, "xml");
-                    output.endElement();
-                    saveXML(targetFile, doc, output);
-                }
+            output.startElement(FILE_UPDATE_ELEMENT, null);
+            output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
+            output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
+            output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
+            output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(this, new Date(doc.getLastModified())).getStringValue());
+
+            if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                output.addAttribute(TYPE_ATTRIBUTE, "binary");
+                output.endElement();
+                saveBinary(targetFile, (BinaryDocument) doc, output);
+            } else {
+                output.addAttribute(TYPE_ATTRIBUTE, "xml");
+                output.endElement();
+                saveXML(targetFile, doc, output);
             }
         } catch (final XPathException e) {
             reportError(output, e.getMessage());
@@ -396,8 +413,8 @@ public class Sync extends BasicFunction {
             } else {
                 final Serializer serializer = context.getBroker().borrowSerializer();
                 try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
-                    sax.setOutput(writer, DEFAULT_PROPERTIES);
-                    serializer.setProperties(DEFAULT_PROPERTIES);
+                    sax.setOutput(writer, outputProperties);
+                    serializer.setProperties(outputProperties);
 
                     serializer.setSAXHandlers(sax, sax);
                     serializer.toSAX(doc);
@@ -425,7 +442,7 @@ public class Sync extends BasicFunction {
             final Serializer serializer = context.getBroker().borrowSerializer();
 
             try (final Writer writer = new OutputStreamWriter(new BufferedOutputStream(Files.newOutputStream(targetFile)), StandardCharsets.UTF_8)) {
-                sax.setOutput(writer, DEFAULT_PROPERTIES);
+                sax.setOutput(writer, outputProperties);
 
                 final StreamSource styleSource = new StreamSource(Sync.class.getResourceAsStream("repo.xsl"));
 
@@ -435,7 +452,7 @@ public class Sync extends BasicFunction {
                 handler.setResult(new SAXResult(sax));
 
                 serializer.reset();
-                serializer.setProperties(DEFAULT_PROPERTIES);
+                serializer.setProperties(outputProperties);
                 serializer.setSAXHandlers(handler, handler);
 
                 serializer.toSAX(doc);

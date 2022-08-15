@@ -85,7 +85,7 @@ public class CollectionName extends BasicFunction {
                 {throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");}
             final Collection collection = (Collection)o;
             try {
-				return new StringValue(collection.getName());
+				return new StringValue(this, collection.getName());
 			} catch (final XMLDBException e) {
 				throw new XPathException(this, "Failed to retrieve collection name", e);
 			}
@@ -93,7 +93,7 @@ public class CollectionName extends BasicFunction {
             final String path = item.getStringValue();
             try {
                 final XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
-                return new StringValue(uri.toString());
+                return new StringValue(this, uri.toString());
             } catch (final URISyntaxException e) {
                 throw new XPathException(this, "Illegal URI for resource path: " + path);
             }
@@ -102,7 +102,7 @@ public class CollectionName extends BasicFunction {
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				final NodeProxy p = (NodeProxy) node;
 				//TODO: use xmldbUri
-				return new StringValue(p.getOwnerDocument().getCollection().getURI().toString());
+				return new StringValue(this, p.getOwnerDocument().getCollection().getURI().toString());
 			}
 		} else
 			{throw new XPathException(this, "First argument to util:collection-name should be either " +

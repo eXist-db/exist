@@ -48,6 +48,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Restore 
  *
@@ -87,7 +89,7 @@ public class SystemImport {
 	            while(!descriptors.isEmpty()) {
 	                final BackupDescriptor descriptor = descriptors.pop();
 	                final EXistInputSource is = descriptor.getInputSource();
-	                is.setEncoding( "UTF-8" );
+	                is.setEncoding( UTF_8.name() );
 	
 	                final SystemImportHandler handler = new SystemImportHandler(broker, transaction, descriptor, listener);
 	                

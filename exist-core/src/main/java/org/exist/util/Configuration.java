@@ -21,6 +21,7 @@
  */
 package org.exist.util;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -28,9 +29,11 @@ import org.exist.backup.SystemExport;
 import org.exist.collections.CollectionCache;
 import org.exist.repo.Deployment;
 
+import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
+import org.exist.xquery.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,12 +62,7 @@ import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.CustomMatchListenerFactory;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.DatabaseImpl;
-import org.exist.xquery.FunctionFactory;
-import org.exist.xquery.PerformanceStats;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XQueryWatchDog;
 import org.exist.xslt.TransformerFactoryAllocator;
 
 import java.io.IOException;
@@ -72,11 +70,20 @@ import java.io.InputStream;
 
 import java.net.MalformedURLException;
 
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
@@ -85,8 +92,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.exist.Namespaces;
 import org.exist.scheduler.JobType;
-import org.exist.xquery.Module;
+import org.xmlresolver.Resolver;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 
@@ -203,7 +211,7 @@ public class Configuration implements ErrorHandler
             reader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             reader.setFeature(FEATURE_SECURE_PROCESSING, true);
 
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             reader.setContentHandler(adapter);
             reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
             reader.parse(src);
@@ -279,7 +287,7 @@ public class Configuration implements ErrorHandler
             //Validation
             final NodeList validations = doc.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME);
             if(validations.getLength() > 0) {
-                configureValidation(existHomeDirname, doc, (Element)validations.item(0));
+                configureValidation(existHomeDirname, (Element)validations.item(0));
             }
 
         }
@@ -488,7 +496,7 @@ public class Configuration implements ErrorHandler
         try {
             mClass = Class.forName( clazz );
 
-            if( !( Module.class.isAssignableFrom( mClass ) ) ) {
+            if( !( org.exist.xquery.Module.class.isAssignableFrom( mClass ) ) ) {
                 throw( new DatabaseConfigurationException( "Failed to load module: " + uri
                         + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
             }
@@ -1412,34 +1420,27 @@ public class Configuration implements ErrorHandler
     }
 
 
-    private void configureValidation( final Optional<Path> dbHome, Document doc, Element validation ) throws DatabaseConfigurationException
-    {
+    private void configureValidation(final Optional<Path> dbHome, final Element validation) throws DatabaseConfigurationException {
         // Determine validation mode
-        final String mode = getConfigAttributeValue( validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE );
-
-        if( mode != null ) {
-            config.put( XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, mode );
-            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE + ": {}", config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE));
+        final String mode = getConfigAttributeValue(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE);
+        if (mode != null) {
+            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, mode);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE + ": {}", config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE));
+            }
         }
 
+        // Configure the Entity Resolver
+        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
+        if (entityResolver.getLength() > 0) {
+            LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
 
-        // Extract catalogs
-        LOG.debug( "Creating eXist catalog resolver" );
-        final eXistXMLCatalogResolver resolver       = new eXistXMLCatalogResolver();
-
-        final NodeList                entityResolver = validation.getElementsByTagName( XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME );
-
-        if( entityResolver.getLength() > 0 ) {
-            final Element  r        = (Element)entityResolver.item( 0 );
-            final NodeList catalogs = r.getElementsByTagName( XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME );
-
-            LOG.debug("Found {} catalog uri entries.", catalogs.getLength());
-            LOG.debug("Using dbHome={}", dbHome);
+            final Element elemEntityResolver = (Element) entityResolver.item(0);
+            final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
 
             // Determine webapps directory. SingleInstanceConfiguration cannot
-            // be used at this phase. Trick is to check wether dbHOME is
-            // pointing to a WEB-INF directory, meaning inside war file)
-
+            // be used at this phase. Trick is to check whether dbHOME is
+            // pointing to a WEB-INF directory, meaning inside the war file.
             final Path webappHome = dbHome.map(h -> {
                 if(FileUtils.fileName(h).endsWith("WEB-INF")) {
                     return h.getParent().toAbsolutePath();
@@ -1448,44 +1449,48 @@ public class Configuration implements ErrorHandler
                 }
             }).orElse(Paths.get("webapp").toAbsolutePath());
 
-            LOG.debug("using webappHome={}", webappHome.toString());
-
-            // Get and store all URIs
-            final List<String> allURIs = new ArrayList<>();
-
-            for( int i = 0; i < catalogs.getLength(); i++ ) {
-                String uri = ( (Element)catalogs.item( i ) ).getAttribute( "uri" );
-
-                if( uri != null ) { // when uri attribute is filled in
-
-                    // Substitute string, creating an uri from a local file
-                    if(uri.contains("${WEBAPP_HOME}")) {
-                        uri = uri.replaceAll( "\\$\\{WEBAPP_HOME\\}", webappHome.toUri().toString() );
-                    }
-                    if(uri.contains("${EXIST_HOME}")) {
-                        uri = uri.replaceAll( "\\$\\{EXIST_HOME\\}", dbHome.toString() );
-                    }
-
-                    // Add uri to confiuration
-                    LOG.info("Add catalog uri {}", uri);
-                    allURIs.add( uri );
-                }
-
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
+                LOG.debug("Using dbHome=" + dbHome);
+                LOG.debug("using webappHome=" + webappHome.toString());
             }
-            resolver.setCatalogs( allURIs );
+
+            // Get the Catalog URIs
+            final List<String> catalogUris = new ArrayList<>();
+            for (int i = 0; i < nlCatalogs.getLength(); i++) {
+                String uri = ((Element) nlCatalogs.item(i)).getAttribute("uri");
+
+                if (uri != null) {
+                    // Substitute string, creating an uri from a local file
+                    if (uri.indexOf("${WEBAPP_HOME}") != -1) {
+                        uri = uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toUri().toString());
+                    }
+                    if (uri.indexOf("${EXIST_HOME}") != -1) {
+                        uri = uri.replaceAll("\\$\\{EXIST_HOME\\}", dbHome.toString());
+                    }
+
+                    // Add uri to configuration
+                    LOG.info("Adding Catalog URI: " + uri);
+                    catalogUris.add(uri);
+                }
+            }
 
             // Store all configured URIs
-            config.put( XMLReaderObjectFactory.CATALOG_URIS, allURIs );
+            config.put(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
 
+            // Create and Store the resolver
+            try {
+                final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream().map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty())).collect(Collectors.toList());
+                final Resolver resolver = ResolverFactory.newResolver(catalogs);
+                config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
+            } catch (final URISyntaxException e) {
+                LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
+            }
         }
-
-        // Store resolver
-        config.put( XMLReaderObjectFactory.CATALOG_RESOLVER, resolver );
 
         // cache
         final GrammarPool gp = new GrammarPool();
-        config.put( XMLReaderObjectFactory.GRAMMAR_POOL, gp );
-
+        config.put( XMLReaderObjectFactory.GRAMMAR_POOL, gp);
     }
     
      /**

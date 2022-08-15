@@ -135,7 +135,7 @@ public class FunNamespaceURI extends Function {
             if (ns == null) {
                 ns = XMLConstants.NULL_NS_URI;
             }
-            result = new AnyURIValue(ns);
+            result = new AnyURIValue(this, ns);
         }
 
         if (context.getProfiler().isEnabled()) {

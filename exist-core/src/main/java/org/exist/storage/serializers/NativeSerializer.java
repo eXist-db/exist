@@ -128,7 +128,7 @@ public class NativeSerializer extends Serializer {
             final IStoredNode<?> node = (IStoredNode<?>) children.item(i);
             try(final INodeIterator domIter = broker.getNodeIterator(node)) {
                 domIter.next();
-                final NodeProxy p = new NodeProxy(node);
+                final NodeProxy p = new NodeProxy(null, node);
                 serializeToReceiver(node, domIter, (DocumentImpl) node.getOwnerDocument(),
                         true, p.getMatches(), new TreeSet<>());
             } catch(final IOException ioe) {

@@ -41,6 +41,7 @@ import org.exist.util.StringInputSource;
 import org.exist.util.XMLReaderPool;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Expression;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -152,7 +153,7 @@ public class CollectionConfigurationManager implements BrokerPoolService {
      */
     public void testConfiguration(DBBroker broker, String config) throws CollectionConfigurationException {
         try {
-            final SAXAdapter adapter = new SAXAdapter();
+            final SAXAdapter adapter = new SAXAdapter((Expression) null);
             final InputSource src = new InputSource(new StringReader(config));
             final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
             XMLReader reader = null;

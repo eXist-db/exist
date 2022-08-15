@@ -26,6 +26,7 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.DOMException;
@@ -49,17 +50,30 @@ public class MemTreeBuilder {
     private short level = 1;
     private int[] prevNodeInLevel;
     private String defaultNamespaceURI = XMLConstants.NULL_NS_URI;
+    private final Expression expression;
 
     public MemTreeBuilder() {
-        this(null);
+        this((Expression) null);
     }
 
+    public MemTreeBuilder(final Expression expression) {
+        this(expression, null);
+    }
 
     public MemTreeBuilder(final XQueryContext context) {
+        this(null, context);
+    }
+
+    public MemTreeBuilder(final Expression expression, final XQueryContext context) {
+        this.expression = expression;
         this.context = context;
         prevNodeInLevel = new int[15];
         Arrays.fill(prevNodeInLevel, -1);
         prevNodeInLevel[0] = 0;
+    }
+
+    public Expression getExpression() {
+        return expression;
     }
 
     public void reset(@Nullable final XQueryContext context) {
@@ -96,7 +110,7 @@ public class MemTreeBuilder {
      * Start building the document.
      */
     public void startDocument() {
-        this.doc = new DocumentImpl(context, false);
+        this.doc = new DocumentImpl(expression, context, false);
     }
 
 
@@ -106,7 +120,7 @@ public class MemTreeBuilder {
      * @param explicitCreation DOCUMENT ME!
      */
     public void startDocument(final boolean explicitCreation) {
-        this.doc = new DocumentImpl(context, explicitCreation);
+        this.doc = new DocumentImpl(expression, context, explicitCreation);
     }
 
 

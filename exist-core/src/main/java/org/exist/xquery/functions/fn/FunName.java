@@ -133,7 +133,7 @@ public class FunName extends Function {
             //TODO : how to improve performance ?
             final Node n = ((NodeValue) item).getNode();
             if (n instanceof INode) {
-                result = new StringValue(((INode) n).getQName().getStringValue());
+                result = new StringValue(this, ((INode) n).getQName().getStringValue());
             } else {
                 result = StringValue.EMPTY_STRING;
             }

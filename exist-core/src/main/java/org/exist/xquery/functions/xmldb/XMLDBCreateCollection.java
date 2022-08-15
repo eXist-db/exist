@@ -78,7 +78,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	    if (newCollection == null)
 		{return Sequence.EMPTY_SEQUENCE;}
 	    else
-		{return new StringValue(newCollection.getName());}
+		{return new StringValue(this, newCollection.getName());}
 
 	} catch (final XMLDBException e) {
         logger.error("Unable to create new collection {}", collectionName, e);

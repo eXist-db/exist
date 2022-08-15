@@ -70,8 +70,12 @@ public abstract class AbstractMapType extends FunctionReference
 
     protected XQueryContext context;
 
-    public AbstractMapType(XQueryContext context) {
-        super(null);
+    protected AbstractMapType(XQueryContext context) {
+        this(null, context);
+    }
+
+    protected AbstractMapType(final Expression expression, XQueryContext context) {
+        super(expression, null);
         this.context = context;
     }
 
@@ -109,6 +113,11 @@ public abstract class AbstractMapType extends FunctionReference
     @Override
     public Sequence eval(Sequence contextSequence) throws XPathException {
         return getAccessorFunc().eval(contextSequence);
+    }
+
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        return getAccessorFunc().eval(contextSequence, contextItem);
     }
 
     @Override

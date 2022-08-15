@@ -33,15 +33,13 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Indexable;
 import org.exist.storage.ValueIndexFactory;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
+import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -57,6 +55,21 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * An empty atomic value
      */
     public static final AtomicValue EMPTY_VALUE = new EmptyValue();
+
+    /** the expression from which this value derives, or null */
+    private Expression expression;
+
+    /**
+     * Gets the expression from which this value derives.
+     *
+     * @return the expression from which this value derives, or null
+     */
+    @Override
+    public Expression getExpression() { return expression; }
+
+    protected AtomicValue() { this(null); }
+
+    protected AtomicValue(final Expression expression) { this.expression = expression; }
 
     @Override
     public int getType() {
@@ -90,7 +103,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * @throws XPathException if this is not a string.
      */
     public boolean startsWith(final Collator collator, final AtomicValue other) throws XPathException {
-        throw new XPathException("Cannot call starts-with on value of type " +
+        throw new XPathException(getExpression(), "Cannot call starts-with on value of type " +
                 Type.getTypeName(getType()));
     }
 
@@ -104,7 +117,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * @throws XPathException if this is not a string.
      */
     public boolean endsWith(final Collator collator, final AtomicValue other) throws XPathException {
-        throw new XPathException("Cannot call ends-with on value of type " +
+        throw new XPathException(getExpression(), "Cannot call ends-with on value of type " +
                 Type.getTypeName(getType()));
     }
 
@@ -118,7 +131,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * @return true if the value contains the passed in value
      */
     public boolean contains(final Collator collator, final AtomicValue other) throws XPathException {
-        throw new XPathException("Cannot call contains on value of type " +
+        throw new XPathException(getExpression(), "Cannot call contains on value of type " +
                 Type.getTypeName(getType()));
     }
 
@@ -217,14 +230,14 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		if (!effectiveBooleanValue())
 			return NodeSet.EMPTY_SET;
 		*/
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
                         + " to a node set");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
                         + " to a node set");
     }
@@ -280,7 +293,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
-        throw new XPathException(
+        throw new XPathException(getExpression(), 
                 "cannot convert value of type "
                         + Type.getTypeName(getType())
                         + " to Java object of type "
@@ -352,7 +365,17 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     }
 
     @Override
-    public void destroy(final XQueryContext context, final Sequence contextSequence) {
+    public boolean containsReference(final Item item) {
+        return this == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        return equals(item);
+    }
+
+    @Override
+    public void destroy(final XQueryContext context, @Nullable final Sequence contextSequence) {
         // nothing to be done by default
     }
 
@@ -389,7 +412,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                 case Type.ID:
                 case Type.IDREF:
                 case Type.ENTITY:
-                    return new StringValue("", requiredType);
+                    return new StringValue(getExpression(), "", requiredType);
                 case Type.ANY_URI:
                     return AnyURIValue.EMPTY_URI;
                 case Type.BOOLEAN:
@@ -444,7 +467,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                 //case Type.UNTYPED_ATOMIC :
                 //return new UntypedAtomicValue(getStringValue());
                 default:
-                    throw new XPathException("cannot convert empty value to " + requiredType);
+                    throw new XPathException(getExpression(), "cannot convert empty value to " + requiredType);
             }
         }
 
@@ -498,7 +521,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
         @Override
         public <T> T toJavaObject(final Class<T> target) throws XPathException {
-            throw new XPathException(
+            throw new XPathException(getExpression(), 
                     "cannot convert value of type "
                             + Type.getTypeName(getType())
                             + " to Java object of type "

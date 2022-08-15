@@ -66,7 +66,7 @@ public class GetUptime extends BasicFunction {
         final XMLGregorianCalendar xmlNow = context.getCalendar();
         final Calendar now = xmlNow.toGregorianCalendar();
         final long duration = now.getTimeInMillis() - startupTime.getTimeInMillis();
-        return new DayTimeDurationValue(duration);
+        return new DayTimeDurationValue(this, duration);
 
     }
 }

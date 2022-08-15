@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.13.1</version>
+            <version>2.13.3</version>
         </dependency>
 
         <!-- dependency>
@@ -94,7 +94,7 @@
             <groupId>com.siemens.ct.exi</groupId>
             <artifactId>exificient</artifactId>
             <exclusions>
-                <exclusion> <!-- conflicts with xerces 2.12.0 -->
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
                 </exclusion>
@@ -114,9 +114,9 @@
         <dependency>
             <groupId>org.relaxng</groupId>
             <artifactId>jing</artifactId>
-            <version>20181222</version>
+            <version>20220510</version>
             <exclusions>
-                <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                <exclusion> <!-- conflicts with xerces 2.12.2 dependency on xml-apis version 1.4.01 -->
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
@@ -270,7 +270,7 @@
         <dependency>
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.1</version>
+            <version>2.12.2</version>
             <classifier>xml-schema-1.1</classifier>
         </dependency>
 
@@ -280,7 +280,7 @@
             <version>1.9.22</version>
             <scope>runtime</scope>  <!-- default for util:parse-html -->
             <exclusions>
-                <exclusion>  <!-- conflicts with eXist-db's xercesImpl 2.12.0 dependency -->
+                <exclusion>  <!-- conflicts with eXist-db's xercesImpl 2.12.2 dependency -->
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
                 </exclusion>
@@ -303,6 +303,20 @@
             <groupId>xml-resolver</groupId>
             <artifactId>xml-resolver</artifactId>
             <version>1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+            <classifier>data</classifier>
             <scope>runtime</scope>
         </dependency>
 
@@ -405,7 +419,7 @@
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
-            <version>3.1.6</version>
+            <version>3.2.0</version>
         </dependency>
 
         <dependency>
@@ -484,11 +498,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
@@ -519,16 +528,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-client</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -639,10 +638,13 @@
                                 <exclude>src/test/resources/**/*.xar</exclude>
                                 <exclude>src/test/resources/**/*.bin</exclude>
                                 <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
+                                <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
 
                                 <!--
                                     Already under LGPL 2.1, but with a different Copyright
                                 -->
+                                <exclude>src/main/java/org/exist/resolver/ResolverFactory.java</exclude>
+                                <exclude>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</exclude>
                                 <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/MoveCollectionTest.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/blob/**</exclude>
@@ -702,6 +704,7 @@
                                 <exclude>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/util/URIUtilsTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
@@ -789,6 +792,8 @@ The original license statement is also included below.]]></preamble>
                             -->
                             <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
+                                <include>src/main/java/org/exist/resolver/ResolverFactory.java</include>
+                                <include>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</include>
                                 <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
                                 <include>src/main/java/org/exist/storage/blob/**</include>
                                 <include>src/test/java/org/exist/storage/blob/**</include>
@@ -847,6 +852,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
+                                <include>src/test/java/org/exist/xquery/util/URIUtilsTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
@@ -921,6 +927,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
@@ -928,8 +935,6 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
-
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -1046,6 +1051,11 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <artifactId>junit-vintage-engine</artifactId>
                         <version>${junit.vintage.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.objenesis</groupId>
+                        <artifactId>objenesis</artifactId>
+                        <version>${objenesis.version}</version>
+                    </dependency>
                 </dependencies>
                 <configuration>
                     <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding}</argLine>
@@ -1113,6 +1123,11 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <groupId>org.junit.vintage</groupId>
                                 <artifactId>junit-vintage-engine</artifactId>
                                 <version>${junit.vintage.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.objenesis</groupId>
+                                <artifactId>objenesis</artifactId>
+                                <version>${objenesis.version}</version>
                             </dependency>
                         </dependencies>
                         <configuration>

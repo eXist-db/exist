@@ -98,7 +98,7 @@ public class Directory extends BasicFunction {
 
         
         final String inputPath = args[0].getStringValue();
-        final Path directoryPath = FileModuleHelper.getFile(inputPath);
+        final Path directoryPath = FileModuleHelper.getFile(inputPath, this);
 		
         if (logger.isDebugEnabled()) {
             logger.debug("Listing matching files in directory: {}", directoryPath.toAbsolutePath().toString());
@@ -144,16 +144,16 @@ public class Directory extends BasicFunction {
                     }
 
                     builder.addAttribute(new QName("modified", null, null),
-                            new DateTimeValue(new Date(Files.getLastModifiedTime(entry).toMillis())).getStringValue());
+                            new DateTimeValue(this, new Date(Files.getLastModifiedTime(entry).toMillis())).getStringValue());
 
                     builder.addAttribute(new QName("hidden", null, null),
-                            new BooleanValue(Files.isHidden(entry)).getStringValue());
+                            new BooleanValue(this, Files.isHidden(entry)).getStringValue());
 
                     builder.addAttribute(new QName("canRead", null, null),
-                            new BooleanValue(Files.isReadable(entry)).getStringValue());
+                            new BooleanValue(this, Files.isReadable(entry)).getStringValue());
 
                     builder.addAttribute(new QName("canWrite", null, null),
-                            new BooleanValue(Files.isWritable(entry)).getStringValue());
+                            new BooleanValue(this, Files.isWritable(entry)).getStringValue());
                 } catch (final IOException | XPathException ioe) {
                     LOG.warn(ioe);
                 }

@@ -39,6 +39,7 @@ import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.pool.NodePool;
+import org.exist.xquery.Expression;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
@@ -73,9 +74,9 @@ public class DOMIndexer {
     private final Deque<ElementImpl> stack = new ArrayDeque<>();
     private StoredNode prevNode = null;
 
-    private final TextImpl text = new TextImpl();
-    private final CommentImpl comment = new CommentImpl();
-    private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
+    private final TextImpl text = new TextImpl((Expression) null);
+    private final CommentImpl comment = new CommentImpl((Expression) null);
+    private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(null);
 
     public DOMIndexer(final DBBroker broker, final Txn transaction, final DocumentImpl doc,
                       final org.exist.dom.persistent.DocumentImpl targetDoc) {
@@ -98,7 +99,7 @@ public class DOMIndexer {
      */
     public void scan() throws EXistException {
         //Creates a dummy DOCTYPE
-        final DocumentTypeImpl dt = new DocumentTypeImpl("temp", null, "");
+        final DocumentTypeImpl dt = new DocumentTypeImpl((doc != null) ? doc.getExpression() : null, "temp", null, "");
         targetDoc.setDocumentType(dt);
     }
 
@@ -107,7 +108,7 @@ public class DOMIndexer {
      */
     public void store() {
         //Create a wrapper element as root node
-        final ElementImpl elem = new ElementImpl(ROOT_QNAME, broker.getBrokerPool().getSymbols());
+        final ElementImpl elem = new ElementImpl(null, ROOT_QNAME, broker.getBrokerPool().getSymbols());
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
         elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());

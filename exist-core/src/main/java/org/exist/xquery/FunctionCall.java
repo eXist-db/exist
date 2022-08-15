@@ -435,7 +435,16 @@ public class FunctionCall extends Function {
                 context.popDocumentContext();
             }
         }
-        
+
+        @Override
+        public boolean containsReference(final Item item) {
+            return this == item;
+        }
+
+        @Override
+        public boolean contains(final Item item) {
+            return this.equals(item);
+        }
     }
     
     protected void setRecursive(boolean recursive) {

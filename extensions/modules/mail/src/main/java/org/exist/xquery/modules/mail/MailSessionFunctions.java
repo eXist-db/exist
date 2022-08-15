@@ -90,6 +90,6 @@ public class MailSessionFunctions extends BasicFunction
 		
 		// store the session and return the handle of the session
 
-        return new IntegerValue( MailModule.storeSession( context, session ) );
+        return new IntegerValue( this, MailModule.storeSession( context, session ) );
 	}
 }

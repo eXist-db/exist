@@ -28,17 +28,18 @@ import org.exist.security.Account;
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.test.ExistWebServer;
+import org.exist.util.MimeType;
 import org.exist.xmldb.*;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -64,6 +65,17 @@ public class XMLDBRestoreTest {
 
     private static final String PORT_PLACEHOLDER = "${PORT}";
 
+    private static final String COLLECTION1_NAME = "col1";
+    private static final DocInfo[] BACKUP_DOCS = {
+            new DocInfo("doc1.xml", MimeType.XML, "application/xml", "<doc1/>"),
+            new DocInfo("doc2.xml", MimeType.XML, "application/xml", "<doc2/>"),
+            new DocInfo("doc3.svg", MimeType.XML, "image/svg+xml", "<svg height=\"100\" width=\"100\"><circle cx=\"50\" cy=\"50\" r=\"40\" stroke=\"black\" stroke-width=\"3\" fill=\"red\" />Sorry, your browser does not support inline SVG.</svg>"),
+            new DocInfo("doc4.html", MimeType.BINARY, "text/html", "<html><body><h1>BinaryResource</h1></body></html>"),
+            new DocInfo("doc5.html", MimeType.XML, "text/html", "<html><body><h1>XMLResource</h1></body></html>"),
+            new DocInfo("doc6.xml", MimeType.XML, "<doc6/>"),
+            new DocInfo("doc7.bin", MimeType.BINARY, "1234567")
+    };
+
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -81,7 +93,7 @@ public class XMLDBRestoreTest {
     @Parameterized.Parameter(value = 1)
     public String baseUri;
 
-    private final String getBaseUri() {
+    private String getBaseUri() {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
@@ -93,9 +105,13 @@ public class XMLDBRestoreTest {
 
         restoreBackup(rootUri, zipFile, null, listener);
 
-        assertEquals(5, listener.restored.size());
-        assertEquals(0, listener.warnings.size());
+        assertEquals(9, listener.restored.size());
+        assertEquals(2, listener.warnings.size());
         assertEquals(0, listener.errors.size());
+
+        for (final DocInfo backupDocInfo : BACKUP_DOCS) {
+            checkMediaType(XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION1_NAME), backupDocInfo);
+        }
     }
 
     @Test
@@ -106,9 +122,13 @@ public class XMLDBRestoreTest {
 
         restoreBackup(rootUri, contentsFile, null, listener);
 
-        assertEquals(5, listener.restored.size());
-        assertEquals(0, listener.warnings.size());
+        assertEquals(9, listener.restored.size());
+        assertEquals(2, listener.warnings.size());
         assertEquals(0, listener.errors.size());
+
+        for (final DocInfo backupDocInfo : BACKUP_DOCS) {
+            checkMediaType(XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION1_NAME), backupDocInfo);
+        }
     }
 
     @Test
@@ -165,7 +185,7 @@ public class XMLDBRestoreTest {
 
     @Test
     public void restoreUserWithoutGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserWithoutPrimaryGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -181,12 +201,12 @@ public class XMLDBRestoreTest {
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(SecurityManager.UNKNOWN_GROUP, account.getPrimaryGroup());
-        assertArrayEquals(new String[] { SecurityManager.UNKNOWN_GROUP }, account.getGroups());
+        assertArrayEquals(new String[]{SecurityManager.UNKNOWN_GROUP}, account.getGroups());
     }
 
     @Test
     public void restoreUserWithNoSuchGroupIsPlacedInNoGroup() throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final Path contentsFile = createBackupWithUserInNoSuchGroup(username);
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
@@ -202,7 +222,7 @@ public class XMLDBRestoreTest {
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(SecurityManager.UNKNOWN_GROUP, account.getPrimaryGroup());
-        assertArrayEquals(new String[] { SecurityManager.UNKNOWN_GROUP }, account.getGroups());
+        assertArrayEquals(new String[]{SecurityManager.UNKNOWN_GROUP}, account.getGroups());
     }
 
     /**
@@ -249,11 +269,11 @@ public class XMLDBRestoreTest {
     }
 
     private void restoreUserWithGroups(final Path backupPath, final Path restorePath, final int expectedRestoredCount) throws IOException, XMLDBException {
-        final String username = UUID.randomUUID().toString() + "-user";
+        final String username = UUID.randomUUID() + "-user";
         final String primaryGroup = username;  // personal group
-        final String group1 =  UUID.randomUUID().toString() + "-group-1";
-        final String group2 =  UUID.randomUUID().toString() + "-group-2";
-        final String group3 =  UUID.randomUUID().toString() + "-group-3";
+        final String group1 = UUID.randomUUID() + "-group-1";
+        final String group2 = UUID.randomUUID() + "-group-2";
+        final String group3 = UUID.randomUUID() + "-group-3";
         final TestRestoreListener listener = new TestRestoreListener();
         final XmldbURI rootUri = XmldbURI.create(getBaseUri()).append(XmldbURI.ROOT_COLLECTION_URI);
 
@@ -269,13 +289,28 @@ public class XMLDBRestoreTest {
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(primaryGroup, account.getPrimaryGroup());
-        assertArrayEquals(new String[] { primaryGroup, group1, group2, group3 }, account.getGroups());
+        assertArrayEquals(new String[]{primaryGroup, group1, group2, group3}, account.getGroups());
     }
 
     private static void restoreBackup(final XmldbURI uri, final Path backup, @Nullable final String backupPassword, final RestoreServiceTaskListener listener) throws XMLDBException {
         final Collection collection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
         restoreService.restore(backup.normalize().toAbsolutePath().toString(), backupPassword, listener, false);
+    }
+
+    private void checkMediaType(final XmldbURI collectionUri, final DocInfo backupDocInfo) throws XMLDBException {
+        final Collection collection = DatabaseManager.getCollection(XmldbURI.create(getBaseUri()).append(collectionUri).toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final Resource resource = collection.getResource(backupDocInfo.name);
+        if (backupDocInfo.type == MimeType.XML) {
+            assertTrue(resource instanceof XMLResource);
+        } else {
+            assertTrue(resource instanceof BinaryResource);
+        }
+        if (backupDocInfo.mediaType != null) {
+            assertEquals(backupDocInfo.mediaType, ((EXistResource) resource).getMimeType());
+        } else {
+            assertEquals(backupDocInfo.type == MimeType.XML ? MimeType.XML_TYPE.getName() : MimeType.BINARY_TYPE.getName(), ((EXistResource) resource).getMimeType());
+        }
     }
 
     private static Path createZipBackupWithValidContent() throws IOException {
@@ -285,40 +320,33 @@ public class XMLDBRestoreTest {
     }
 
     private static Path createBackupWithValidContent() throws IOException {
+
         final Path backupDir = tempFolder.newFolder().toPath();
         final Path db = Files.createDirectories(backupDir.resolve("db"));
-        final Path col1 = Files.createDirectories(db.resolve("col1"));
+        final Path col1 = Files.createDirectories(db.resolve(COLLECTION1_NAME));
 
         final String dbContents =
                 "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db\" owner=\"SYSTEM\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" version=\"1\">\n" +
                         "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <subcollection name=\"col1\" filename=\"col1\"/>\n" +
+                        "    <subcollection name=\"" + COLLECTION1_NAME + "\" filename=\"" + COLLECTION1_NAME + "\"/>\n" +
                         "</collection>";
 
 
-        final String col1Contents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/col1\" owner=\"admin\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc1.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc1.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc2.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc2.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc3.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:49.618+04:00\" modified=\"2019-05-15T15:58:49.618+04:00\" filename=\"doc3.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "</collection>";
-
-        final String doc1 = "<doc1/>";
-        final String doc2 = "<doc2/>";
-        final String doc3 = "<doc3/>";
+        final StringBuilder col1Contents = new StringBuilder();
+        col1Contents.append("<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/").append(COLLECTION1_NAME).append("\" owner=\"admin\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n");
+        col1Contents.append("    <acl entries=\"0\" version=\"1\"/>\n");
+        for (final DocInfo backupDocInfo : BACKUP_DOCS) {
+            col1Contents.append("    <resource type=\"").append(backupDocInfo.type == MimeType.XML ? "XMLResource" : "BinaryResource").append("\" name=\"").append(backupDocInfo.name).append("\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"").append(backupDocInfo.name).append(backupDocInfo.mediaType != null ? "\" mimetype=\"" + backupDocInfo.mediaType + "\">\n" : "\">\n");
+            col1Contents.append("        <acl entries=\"0\" version=\"1\"/>\n");
+            col1Contents.append("    </resource>\n");
+        }
+        col1Contents.append("</collection>");
 
         final Path dbContentsFile = Files.write(db.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path col1ContentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.getBytes(UTF_8));
-        Files.write(col1.resolve("doc1.xml"),  doc1.getBytes(UTF_8));
-        Files.write(col1.resolve("doc2.xml"),  doc2.getBytes(UTF_8));
-        Files.write(col1.resolve("doc3.xml"),  doc3.getBytes(UTF_8));
+        final Path col1ContentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
+        for (final DocInfo backupDocInfo : BACKUP_DOCS) {
+            Files.write(col1.resolve(backupDocInfo.name), backupDocInfo.content.getBytes(UTF_8));
+        }
 
         return dbContentsFile;
     }
@@ -335,26 +363,26 @@ public class XMLDBRestoreTest {
 
         final String contents =
                 "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/col1\" owner=\"admin\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
-                "    <acl entries=\"0\" version=\"1\"/>\n" +
-                "    <resource type=\"XMLResource\" name=\"doc1.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc1.xml\" mimetype=\"application/xml\">\n" +
-                "        <acl entries=\"0\" version=\"1\"/>\n" +
-                "    </resource>\n" +
-                "    <resource type=\"XMLResource\" name=\"doc2.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc2.xml\" mimetype=\"application/xml\">\n" +
-                "        <acl entries=\"0\" version=\"1\"/>\n" +
-                "    </resource>\n" +
-                "    <resource type=\"XMLResource\" name=\"doc3.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:49.618+04:00\" modified=\"2019-05-15T15:58:49.618+04:00\" filename=\"doc3.xml\" mimetype=\"application/xml\">\n" +
-                "        <acl entries=\"0\" version=\"1\"/>\n" +
-                "    </resource>\n" +
-                "</collection>";
+                        "    <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    <resource type=\"XMLResource\" name=\"doc1.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc1.xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>\n" +
+                        "    <resource type=\"XMLResource\" name=\"doc2.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc2.xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>\n" +
+                        "    <resource type=\"XMLResource\" name=\"doc3.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:49.618+04:00\" modified=\"2019-05-15T15:58:49.618+04:00\" filename=\"doc3.xml\" mimetype=\"application/xml\">\n" +
+                        "        <acl entries=\"0\" version=\"1\"/>\n" +
+                        "    </resource>\n" +
+                        "</collection>";
 
         final String doc1 = "<doc1/>";
         final String doc2 = "<doc2>invalid";
         final String doc3 = "<doc3/>";
 
         final Path contentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(col1.resolve("doc1.xml"),  doc1.getBytes(UTF_8));
-        Files.write(col1.resolve("doc2.xml"),  doc2.getBytes(UTF_8));
-        Files.write(col1.resolve("doc3.xml"),  doc3.getBytes(UTF_8));
+        Files.write(col1.resolve("doc1.xml"), doc1.getBytes(UTF_8));
+        Files.write(col1.resolve("doc2.xml"), doc2.getBytes(UTF_8));
+        Files.write(col1.resolve("doc3.xml"), doc3.getBytes(UTF_8));
 
         return contentsFile;
     }
@@ -417,10 +445,10 @@ public class XMLDBRestoreTest {
                         "<enabled>true</enabled>\n" +
                         "<umask>022</umask>\n" +
                         "<name>" + username + "</name>\n" +
-                "</account>";
+                        "</account>";
 
         final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(accountsCol.resolve(username + ".xml"),  invalidUserDoc.getBytes(UTF_8));
+        Files.write(accountsCol.resolve(username + ".xml"), invalidUserDoc.getBytes(UTF_8));
 
         return contentsFile;
     }
@@ -449,10 +477,10 @@ public class XMLDBRestoreTest {
                         "<enabled>true</enabled>\n" +
                         "<umask>022</umask>\n" +
                         "<name>" + username + "</name>\n" +
-                "</account>\n";
+                        "</account>\n";
 
         final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(accountsCol.resolve(username + ".xml"),  invalidUserDoc.getBytes(UTF_8));
+        Files.write(accountsCol.resolve(username + ".xml"), invalidUserDoc.getBytes(UTF_8));
 
         return contentsFile;
     }
@@ -497,11 +525,11 @@ public class XMLDBRestoreTest {
         for (final String groupName : groupNames) {
             groupsContents.append(
                     "    <resource type=\"XMLResource\" name=\"" + groupName + ".xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"" + groupName + ".xml\" mimetype=\"application/xml\">\n" +
-                    "        <acl entries=\"0\" version=\"1\"/>\n" +
-                    "    </resource>\n");
+                            "        <acl entries=\"0\" version=\"1\"/>\n" +
+                            "    </resource>\n");
         }
         groupsContents.append(
-            "</collection>");
+                "</collection>");
 
         final String accountsContents =
                 "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist/accounts\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
@@ -520,14 +548,14 @@ public class XMLDBRestoreTest {
                         "<digestPassword>" + backupPasswordDigest + "</digestPassword>\n");
         for (final String groupName : groupNames) {
             userDoc.append(
-                        "<group name=\"" + groupName + "\"/>\n");
+                    "<group name=\"" + groupName + "\"/>\n");
         }
         userDoc.append(
-                        "<expired>false</expired>\n" +
+                "<expired>false</expired>\n" +
                         "<enabled>true</enabled>\n" +
                         "<umask>022</umask>\n" +
                         "<name>" + username + "</name>\n" +
-                "</account>\n");
+                        "</account>\n");
 
         final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
         final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
@@ -540,15 +568,15 @@ public class XMLDBRestoreTest {
         for (final String groupName : groupNames) {
             final String groupDoc =
                     "<group xmlns=\"http://exist-db.org/Configuration\" id=\"" + (groupId++) + "\">\n" +
-                    "    <manager name=\"admin\"/>\n" +
-                    "    <metadata key=\"http://exist-db.org/security/description\">Group named: " + groupName + "</metadata>\n" +
-                    "    <name>" + groupName + "</name>\n" +
-                    "</group>";
+                            "    <manager name=\"admin\"/>\n" +
+                            "    <metadata key=\"http://exist-db.org/security/description\">Group named: " + groupName + "</metadata>\n" +
+                            "    <name>" + groupName + "</name>\n" +
+                            "</group>";
 
             Files.write(groupsCol.resolve(groupName + ".xml"), groupDoc.getBytes(UTF_8));
         }
 
-        Files.write(accountsCol.resolve(username + ".xml"),  userDoc.toString().getBytes(UTF_8));
+        Files.write(accountsCol.resolve(username + ".xml"), userDoc.toString().getBytes(UTF_8));
     }
 
     private static byte[] ripemd160(final String s) {
@@ -609,6 +637,24 @@ public class XMLDBRestoreTest {
         @Override
         public void error(final String message) {
             errors.add(message);
+        }
+    }
+
+    private static class DocInfo {
+        final String name;
+        final int type;
+        @Nullable final String mediaType;
+        final String content;
+
+        private DocInfo(final String name, final int type, final String content) {
+            this(name, type, null, content);
+        }
+
+        private DocInfo(final String name, final int type, final String mediaType, final String content) {
+            this.name = name;
+            this.type = type;
+            this.mediaType = mediaType;
+            this.content = content;
         }
     }
 }

@@ -32,6 +32,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
+import java.math.BigInteger;
+
 public class RangeSequence extends AbstractSequence {
 
     private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
@@ -46,12 +48,12 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public void add(final Item item) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException(item, "Internal error: adding to an immutable sequence");
     }
 
     @Override
     public void addAll(final Sequence other) throws XPathException {
-        throw new XPathException("Internal error: adding to an immutable sequence");
+        throw new XPathException(other, "Internal error: adding to an immutable sequence");
     }
 
     public int getItemType() {
@@ -194,18 +196,38 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public NodeSet toNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
                 " a node set. Item type is xs:integer");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException("Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
                 " a memory node set. Item type is xs:integer");
     }
 
     @Override
     public void removeDuplicates() {
+    }
+
+    @Override
+    public boolean containsReference(final Item item) {
+        return start == item || end == item;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        if (item instanceof IntegerValue) {
+            try {
+                final BigInteger other = item.toJavaObject(BigInteger.class);
+                return other.compareTo(start.toJavaObject(BigInteger.class)) >= 0
+                        && other.compareTo(end.toJavaObject(BigInteger.class)) <= 0;
+            } catch (final XPathException e) {
+                LOG.warn(e.getMessage(), e);
+                return false;
+            }
+        }
+        return false;
     }
 
 	/**

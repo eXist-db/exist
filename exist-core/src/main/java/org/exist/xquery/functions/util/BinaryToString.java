@@ -44,6 +44,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class BinaryToString extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(BinaryToString.class);
@@ -99,7 +101,7 @@ public class BinaryToString extends BasicFunction {
         if(args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        String encoding = "UTF-8";
+        String encoding = UTF_8.name();
         if(args.length == 2) {
             encoding = args[1].getStringValue();
         }
@@ -113,7 +115,7 @@ public class BinaryToString extends BasicFunction {
     protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
         try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             binary.streamBinaryTo(os);
-            return new StringValue(os.toString(encoding));
+            return new StringValue(this, os.toString(encoding));
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe);
         }
@@ -121,7 +123,7 @@ public class BinaryToString extends BasicFunction {
 
     protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
         try {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)));
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)), this);
         } catch(final UnsupportedEncodingException e) {
             throw new XPathException(this, "Unsupported encoding: " + encoding);
         }

@@ -70,12 +70,12 @@ public class BaseConversionFunctions extends BasicFunction {
         if(isCalledAs(qnIntToOctal.getLocalPart())) {
             final int i = args[0].toJavaObject(Integer.class);
             final String octal = i == 0 ? "0" : "0" + Integer.toOctalString(i);
-            return new StringValue(octal);
+            return new StringValue(this, octal);
         } else if(isCalledAs(qnOctalToInt.getLocalPart())) {
             final String octal = args[0].toString();
-            return new IntegerValue(Integer.parseInt(octal, 8));
+            return new IntegerValue(this, Integer.parseInt(octal, 8));
         } else {
-            throw new XPathException("Unknown function call: " + getSignature());
+            throw new XPathException(this, "Unknown function call: " + getSignature());
         }
     }
 }
