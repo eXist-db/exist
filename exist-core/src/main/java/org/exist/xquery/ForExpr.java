@@ -26,6 +26,11 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Represents an XQuery "for" expression.
  * 
@@ -326,5 +331,25 @@ public class ForExpr extends BindingExpression {
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitForExpression(this);
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+        if (positionalVariable != null) {
+            vars.add(positionalVariable);
+        }
+
+        final QName var = getVariable();
+        if (var != null) {
+            vars.add(var);
+        }
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }
