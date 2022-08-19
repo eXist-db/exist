@@ -46,6 +46,10 @@ public abstract class NumericValue extends ComputableValue {
         return ((DoubleValue) convertTo(Type.DOUBLE)).getValue();
     }
 
+    public float getFloat() throws XPathException {
+        return ((FloatValue) convertTo(Type.FLOAT)).getValue();
+    }
+
     public long getLong() throws XPathException {
         return ((IntegerValue) convertTo(Type.INTEGER)).getValue();
     }

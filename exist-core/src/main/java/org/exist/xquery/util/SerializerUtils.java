@@ -163,7 +163,8 @@ public class SerializerUtils {
         JSON_IGNORE_WHITE_SPACE_TEXT_NODES("json-ignore-whitespace-text-nodes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
-        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none"));
+        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
+        ADD_NEWLINE_AT_EOF(EXistOutputKeys.INSERT_FINAL_NEWLINE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE);
 
 
         private final QName parameterName;

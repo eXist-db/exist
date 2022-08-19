@@ -117,7 +117,7 @@
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <saxon.version>9.9.1-8</saxon.version>
-        <xmlresolver.version>4.4.3</xmlresolver.version>
+        <xmlresolver.version>4.5.0</xmlresolver.version>
         <xmlunit.version>2.9.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.9.0</junit.jupiter.version>
@@ -678,7 +678,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.4.1</version>
                     <configuration>
                         <source>${project.build.source}</source>
                         <archive>
@@ -785,7 +785,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.4.1</version>
                     <configuration>
                         <dependencyDetailsEnabled>false</dependencyDetailsEnabled>  <!-- TODO(AR) disabled due to slow `mvn site` build times -->
                     </configuration>
@@ -798,7 +798,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.12.0</version>
+                    <version>3.12.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
