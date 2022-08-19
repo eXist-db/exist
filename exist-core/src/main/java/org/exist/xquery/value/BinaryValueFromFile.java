@@ -48,6 +48,7 @@ import java.util.function.BiConsumer;
 public class BinaryValueFromFile extends BinaryValue {
 
     private final Path file;
+    private final RandomAccessFile fileHandle;
     private final FileChannel channel;
     private final MappedByteBuffer buf;
     private final Optional<BiConsumer<Boolean, Path>> closeListener;
@@ -56,7 +57,8 @@ public class BinaryValueFromFile extends BinaryValue {
         super(manager, binaryValueType);
         try {
             this.file = file;
-            this.channel = new RandomAccessFile(file.toFile(), "r").getChannel();
+            this.fileHandle = new RandomAccessFile(file.toFile(), "r");
+            this.channel = fileHandle.getChannel();
             this.buf = channel.map(MapMode.READ_ONLY, 0, channel.size());
             this.closeListener = closeListener;
         } catch (final IOException ioe) {
@@ -116,6 +118,7 @@ public class BinaryValueFromFile extends BinaryValue {
         boolean closed = false;
         try {
             channel.close();
+            fileHandle.close();
             closed = true;
         } finally {
             final boolean finalClosed = closed;
