@@ -97,9 +97,17 @@ public class WindowExpr extends BindingExpression {
             windowVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(windowVar);
 
-            // Declare WindowCondition variables
+            // Declare start WindowCondition variables
             declareWindowConditionVariables(true, windowStartCondition);
+            final AnalyzeContextInfo startWhenContextInfo = new AnalyzeContextInfo(contextInfo);
+            windowStartCondition.getWhenExpression().analyze(startWhenContextInfo);
+
+            // Declare end WindowCondition variables
             declareWindowConditionVariables(true, windowEndCondition);
+            final AnalyzeContextInfo endWhenContextInfo = new AnalyzeContextInfo(contextInfo);
+            if (windowEndCondition != null) {
+                windowEndCondition.getWhenExpression().analyze(endWhenContextInfo);
+            }
 
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 //            newContextInfo.addFlag(SINGLE_STEP_EXECUTION);  // TODO(AR) is this correct
