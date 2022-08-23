@@ -337,11 +337,19 @@ public class GroupByClause extends AbstractFLWORClause {
                     try {
                         hashCode = 31 * hashCode + collator.getCollationKey(v.getStringValue()).hashCode();
                     } catch (final XPathException e) {
-                        hashCode = 31 * hashCode + v.hashCode();  // best attempt fallback?
+                        if (v instanceof AbstractDateTimeValue) {
+                            hashCode = 31 * hashCode + ((AbstractDateTimeValue)v).hashCodeWithTimeZone();  // best attempt fallback?
+                        } else {
+                            hashCode = 31 * hashCode + v.hashCode();  // best attempt fallback?
+                        }
                     }
 
                 } else {
-                    hashCode = 31 * hashCode + v.hashCode();
+                    if (v instanceof AbstractDateTimeValue) {
+                        hashCode = 31 * hashCode + ((AbstractDateTimeValue)v).hashCodeWithTimeZone();
+                    } else {
+                        hashCode = 31 * hashCode + v.hashCode();
+                    }
                 }
             }
 
