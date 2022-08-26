@@ -300,12 +300,13 @@ public class WindowExpr extends BindingExpression {
                     }
                 }
 
-                if (windowType == WindowType.SLIDING_WINDOW && window == null && windowStartIdx > 0) {
+                if (windowType == WindowType.SLIDING_WINDOW && window == null && windowStartIdx > -1) {
                     previousItem = in.itemAt(windowStartIdx);
+                    windowStartIdx = -1;
                 } else {
                     previousItem = currentItem;
                 }
-            }
+            }  // end for loop
 
             if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
                 // output the remaining binding sequence as a final window
@@ -328,6 +329,7 @@ public class WindowExpr extends BindingExpression {
                     windowStartMark = null;
 
                     window = null;
+                    windowStartIdx = -1;
                 }
             }
 
