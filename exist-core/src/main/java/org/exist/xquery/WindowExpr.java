@@ -110,7 +110,6 @@ public class WindowExpr extends BindingExpression {
             }
 
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-//            newContextInfo.addFlag(SINGLE_STEP_EXECUTION);  // TODO(AR) is this correct
             returnExpr.analyze(newContextInfo);
 
         } finally {
@@ -139,61 +138,67 @@ public class WindowExpr extends BindingExpression {
 
         context.expressionStart(this);
 
-        Sequence in;
-
-        // Save the local variable stack
-//        final LocalVariable mark = context.markLocalVariables(false);
         Sequence resultSequence = new ValueSequence(unordered);
-        try {
-            in = inputSequence.eval(contextSequence, contextItem);
+        Sequence in = inputSequence.eval(contextSequence, contextItem);
 
-            registerUpdateListener(in);
+        registerUpdateListener(in);
 
-            //TODO(AR) is this required?
-//            //Type.EMPTY is *not* a subtype of other types ;
-//            //the tests below would fail without this prior cardinality check
-//            if (in.isEmpty() && sequenceType != null &&
-//                    !sequenceType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE)) {
-//                throw new XPathException(this, ErrorCodes.XPTY0004,
-//                        "Invalid cardinality for variable $" + varName +
-//                                ". Expected " + sequenceType.getCardinality().getHumanDescription() +
-//                                ", got " + in.getCardinality().getHumanDescription());
-//            }
+        // pre-eval the return expr if it is a FLWORClause and we are the outer for-loop
+        if (isOuterFor) {
+            if (returnExpr instanceof FLWORClause) {
+                in = ((FLWORClause) returnExpr).preEval(in);
+            }
+        }
 
-            // pre-eval the return expr if it is a FLWORClause and we are the outer for-loop
-            if (isOuterFor) {
-                if (returnExpr instanceof FLWORClause) {
-                    in = ((FLWORClause) returnExpr).preEval(in);
+
+        // when `window` is not null, we have started
+        Sequence window = null;
+        int windowStartIdx = -1;
+
+        LocalVariable windowStartMark = null;
+        WindowConditionVariables windowStartConditionVariables = null;
+
+        LocalVariable windowEndMark = null;
+        WindowConditionVariables windowEndConditionVariables = null;
+
+        Item previousItem = null;
+
+        final int inCount = in.getItemCount();
+        for (int i = 0; i < inCount; i++) {
+
+            final Item currentItem = in.itemAt(i);
+            final Item nextItem;
+            if (i + 1 <= inCount - 1) {
+                nextItem = in.itemAt(i + 1);
+            } else {
+                nextItem = null;
+            }
+
+            // if we have NOT started, check if the start-when condition is true
+            if (window == null) {
+
+                // Save the local variable stack
+                windowStartMark = context.markLocalVariables(false);
+
+                // Declare Window Start Condition variables
+                windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
+                setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
+
+                // check if the start-when condition is true
+                final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
+                if (startWhen.effectiveBooleanValue()) {
+
+                    // signal we have started
+                    window = new ValueSequence(false);
+                    windowStartIdx = i;
                 }
             }
 
+            if (window != null) {
+                // if we have started...
 
-            // when `window` is not null, we have started
-            Sequence window = null;
-            int windowStartIdx = -1;
-
-            LocalVariable windowStartMark = null;
-            WindowConditionVariables windowStartConditionVariables = null;
-
-            LocalVariable windowEndMark = null;
-            WindowConditionVariables windowEndConditionVariables = null;
-
-            Item previousItem = null;
-
-            final int inCount = in.getItemCount();
-            for (int i = 0; i < inCount; i++) {
-
-                final Item currentItem = in.itemAt(i);
-                final Item nextItem;
-                if (i + 1 <= inCount - 1) {
-                    nextItem = in.itemAt(i + 1);
-                } else {
-                    nextItem = null;
-                }
-
-                // if we have NOT started, check if the start-when condition is true
-                if (window == null) {
-
+                // if there is no end-when condition and we are after the start-item, check if the start-when condition is true
+                if (windowEndCondition == null && i > windowStartIdx) {
                     // Save the local variable stack
                     windowStartMark = context.markLocalVariables(false);
 
@@ -201,171 +206,118 @@ public class WindowExpr extends BindingExpression {
                     windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
                     setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
 
-                    // check if the start-when condition is true
-                    final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
-                    if (startWhen.effectiveBooleanValue()) {
+                    final boolean endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
+                    if (endWhen) {
+                        // eval the return expression on the window binding
+                        returnEvalWindowBinding(in, window, resultSequence);
 
-                        // signal we have started
+                        // reset the window
+                        if (windowEndMark != null) {
+                            context.popLocalVariables(windowEndMark, resultSequence);
+                            windowEndConditionVariables.destroy(context, resultSequence);
+                            windowEndConditionVariables = null;
+                            windowEndMark = null;
+
+                        }
+                        if (windowStartMark != null) {
+                            context.popLocalVariables(windowStartMark, resultSequence);
+                            windowStartConditionVariables.destroy(context, resultSequence);
+                            windowStartConditionVariables = null;
+                            windowStartMark = null;
+                        }
+
+                        // signal the start of a new window
                         window = new ValueSequence(false);
                         windowStartIdx = i;
                     }
                 }
 
-                if (window != null) {
-                    // if we have started...
+                // add the currentItem to the Window
+                window.add(currentItem);
 
-                    // if there is no end-when condition and we are after the start-item, check if the start-when condition is true
-                    if (windowEndCondition == null && i > windowStartIdx) {
-                        // Save the local variable stack
-                        windowStartMark = context.markLocalVariables(false);
+                // Declare Window End Condition variables
+                if (windowEndCondition != null) {
+                    // Save the local variable stack
+                    windowEndMark = context.markLocalVariables(false);
 
-                        // Declare Window Start Condition variables
-                        windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
-                        setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
-
-                        final boolean endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                        if (endWhen) {
-                            // eval the return expression on the window binding
-                            returnEvalWindowBinding(in, window, resultSequence);
-
-                            // reset the window
-                            if (windowEndMark != null) {
-                                context.popLocalVariables(windowEndMark, resultSequence);
-                                windowEndConditionVariables.destroy(context, resultSequence);
-                                windowEndConditionVariables = null;
-                                windowEndMark = null;
-
-                            }
-                            if (windowStartMark != null) {
-                                context.popLocalVariables(windowStartMark, resultSequence);
-                                windowStartConditionVariables.destroy(context, resultSequence);
-                                windowStartConditionVariables = null;
-                                windowStartMark = null;
-                            }
-
-                            // signal the start of a new window
-                            window = new ValueSequence(false);
-                            windowStartIdx = i;
-                        }
-                    }
-
-                    // add the currentItem to the Window
-                    window.add(currentItem);
-
-                    // Declare Window End Condition variables
-                    if (windowEndCondition != null) {
-                        // Save the local variable stack
-                        windowEndMark = context.markLocalVariables(false);
-
-                        windowEndConditionVariables = declareWindowConditionVariables(false, windowEndCondition);
-                        if (windowEndConditionVariables != null) {
-                            setWindowConditionVariables(windowEndConditionVariables, currentItem, i, previousItem, nextItem);
-                        }
-                    }
-
-                    // check if the end-when condition is true
-                    final boolean endWhen;
-                    if (windowEndCondition != null) {
-                        endWhen = windowEndCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                    } else {
-                        endWhen = false;
-                    }
-                    if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (!windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
-
-                        if (window != null) {
-                            // eval the return expression on the window binding
-                            returnEvalWindowBinding(in, window, resultSequence);
-
-                            // reset the window
-                            if (windowEndMark != null) {
-                                context.popLocalVariables(windowEndMark, resultSequence);
-                                windowEndConditionVariables.destroy(context, resultSequence);
-                                windowEndConditionVariables = null;
-                                windowEndMark = null;
-
-                            }
-                            if (windowStartMark != null) {
-                                context.popLocalVariables(windowStartMark, resultSequence);
-                                windowStartConditionVariables.destroy(context, resultSequence);
-                                windowStartConditionVariables = null;
-                                windowStartMark = null;
-                            }
-                            window = null;
-
-                            if (windowType == WindowType.SLIDING_WINDOW) {
-                                // return to the start of the window, so that when we next come around the loop we start examining a new window immediately after the start of the previous window
-                                i = windowStartIdx;
-                            }
-                        }
+                    windowEndConditionVariables = declareWindowConditionVariables(false, windowEndCondition);
+                    if (windowEndConditionVariables != null) {
+                        setWindowConditionVariables(windowEndConditionVariables, currentItem, i, previousItem, nextItem);
                     }
                 }
 
-                if (windowType == WindowType.SLIDING_WINDOW && window == null && windowStartIdx > -1) {
-                    previousItem = in.itemAt(windowStartIdx);
-                    windowStartIdx = -1;
+                // check if the end-when condition is true
+                final boolean endWhen;
+                if (windowEndCondition != null) {
+                    endWhen = windowEndCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
                 } else {
-                    previousItem = currentItem;
+                    endWhen = false;
                 }
-            }  // end for loop
+                if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (!windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
 
-            if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
-                // output the remaining binding sequence as a final window
+                    if (window != null) {
+                        // eval the return expression on the window binding
+                        returnEvalWindowBinding(in, window, resultSequence);
 
-                // eval the return expression on the window binding
-                returnEvalWindowBinding(in, window, resultSequence);
+                        // reset the window
+                        if (windowEndMark != null) {
+                            context.popLocalVariables(windowEndMark, resultSequence);
+                            windowEndConditionVariables.destroy(context, resultSequence);
+                            windowEndConditionVariables = null;
+                            windowEndMark = null;
 
-                // reset the window
-                if (windowEndMark != null) {
-                    context.popLocalVariables(windowEndMark, resultSequence);
-                    windowEndConditionVariables.destroy(context, resultSequence);
-                    windowEndConditionVariables = null;
-                    windowEndMark = null;
+                        }
+                        if (windowStartMark != null) {
+                            context.popLocalVariables(windowStartMark, resultSequence);
+                            windowStartConditionVariables.destroy(context, resultSequence);
+                            windowStartConditionVariables = null;
+                            windowStartMark = null;
+                        }
+                        window = null;
 
-                }
-                if (windowStartMark != null) {
-                    context.popLocalVariables(windowStartMark, resultSequence);
-                    windowStartConditionVariables.destroy(context, resultSequence);
-                    windowStartConditionVariables = null;
-                    windowStartMark = null;
-
-                    window = null;
-                    windowStartIdx = -1;
+                        if (windowType == WindowType.SLIDING_WINDOW) {
+                            // return to the start of the window, so that when we next come around the loop we start examining a new window immediately after the start of the previous window
+                            i = windowStartIdx;
+                        }
+                    }
                 }
             }
 
-        } finally {
-            // restore the local variable stack
-//            context.popLocalVariables(mark, resultSequence);
+            if (windowType == WindowType.SLIDING_WINDOW && window == null && windowStartIdx > -1) {
+                previousItem = in.itemAt(windowStartIdx);
+                windowStartIdx = -1;
+            } else {
+                previousItem = currentItem;
+            }
+        }  // end for loop
+
+        if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
+            // output the remaining binding sequence as a final window
+
+            // eval the return expression on the window binding
+            returnEvalWindowBinding(in, window, resultSequence);
+
+            // reset the window
+            if (windowEndMark != null) {
+                context.popLocalVariables(windowEndMark, resultSequence);
+                windowEndConditionVariables.destroy(context, resultSequence);
+                windowEndConditionVariables = null;
+                windowEndMark = null;
+
+            }
+            if (windowStartMark != null) {
+                context.popLocalVariables(windowStartMark, resultSequence);
+                windowStartConditionVariables.destroy(context, resultSequence);
+                windowStartConditionVariables = null;
+                windowStartMark = null;
+
+                window = null;
+                windowStartIdx = -1;
+            }
         }
 
         clearContext(getExpressionId(), in);
 
-        //TODO(AR) is this needed - borrowed from ForExpr.java eval
-//        if (sequenceType != null) {
-//            //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-//            //only a check on empty sequence is accurate here
-//            if (resultSequence.isEmpty() &&
-//                    !sequenceType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE)) {
-//                throw new XPathException(this, ErrorCodes.XPTY0004,
-//                    "Invalid cardinality for variable $" + varName + ". Expected " +
-//                            sequenceType.getCardinality().getHumanDescription() +
-//                            ", got " + Cardinality.EMPTY_SEQUENCE.getHumanDescription());
-//            }
-//            //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-//            if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-//                if (!resultSequence.isEmpty() &&
-//                        !Type.subTypeOf(resultSequence.getItemType(),
-//                                sequenceType.getPrimaryType())){
-//                    throw new XPathException(this, ErrorCodes.XPTY0004,
-//                        "Invalid type for variable $" + varName +
-//                                ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
-//                                ", got " +Type.getTypeName(resultSequence.getItemType()));
-//                }
-//                //trigger the old behaviour
-//            } else {
-//                var.checkType();
-//            }
-//        }
         setActualReturnType(resultSequence.getItemType());
 
         if (callPostEval()) {
@@ -469,7 +421,7 @@ public class WindowExpr extends BindingExpression {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
-        result.append(this.getWindowType() == WindowType.TUMBLING_WINDOW ? "tumbling window " : "sliding window ");
+        result.append(this.getWindowType() == WindowType.TUMBLING_WINDOW ? "tumbling" : "sliding").append(" window ");
         result.append("$").append(varName);
         if (sequenceType != null) {
             result.append(" as ").append(sequenceType);
