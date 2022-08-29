@@ -33,7 +33,7 @@ import org.exist.xquery.value.*;
  */
 public class ForExpr extends BindingExpression {
 
-    private String positionalVariable = null;
+    private QName positionalVariable = null;
     private boolean allowEmpty = false;
     private boolean isOuterFor = true;
 
@@ -53,7 +53,7 @@ public class ForExpr extends BindingExpression {
      * 
      * @param var the name of the variable to set
      */
-    public void setPositionalVariable(String var) {
+    public void setPositionalVariable(final QName var) {
         positionalVariable = var;
     }
 
@@ -69,7 +69,7 @@ public class ForExpr extends BindingExpression {
             final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
             // Declare the iteration variable
-            final LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+            final LocalVariable inVar = new LocalVariable(varName);
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
@@ -80,7 +80,7 @@ public class ForExpr extends BindingExpression {
                     throw new XPathException(this, ErrorCodes.XQST0089,
                             "bound variable and positional variable have the same name");
                 }
-                final LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
+                final LocalVariable posVar = new LocalVariable(positionalVariable);
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
                 context.declareVariableBinding(posVar);
@@ -89,8 +89,6 @@ public class ForExpr extends BindingExpression {
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
             newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
             returnExpr.analyze(newContextInfo);
-        } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix");
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
@@ -135,7 +133,7 @@ public class ForExpr extends BindingExpression {
             // Declare positional variable
             LocalVariable at = null;
             if (positionalVariable != null) {
-                at = new LocalVariable(QName.parse(context, positionalVariable, null));
+                at = new LocalVariable(positionalVariable);
                 at.setSequenceType(POSITIONAL_VAR_TYPE);
                 context.declareVariableBinding(at);
             }
@@ -187,8 +185,6 @@ public class ForExpr extends BindingExpression {
                     processItem(var, i.nextItem(), in, resultSequence, at, p);
                 }
             }
-        } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + positionalVariable);
         } finally {
             // restore the local variable stack 
             context.popLocalVariables(mark, resultSequence);

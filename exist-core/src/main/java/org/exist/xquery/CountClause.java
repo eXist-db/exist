@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -33,11 +34,11 @@ import org.exist.xquery.value.Sequence;
  */
 public class CountClause extends AbstractFLWORClause {
 
-    final String varName;
+    final QName varName;
 
-    public CountClause(final XQueryContext context, final String countName) {
+    public CountClause(final XQueryContext context, final QName varName) {
         super(context);
-        this.varName = countName;
+        this.varName = varName;
     }
 
     @Override
@@ -45,7 +46,7 @@ public class CountClause extends AbstractFLWORClause {
         return ClauseType.COUNT;
     }
 
-    public String getVarName() {
+    public QName getVarName() {
         return varName;
     }
 

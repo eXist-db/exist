@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
@@ -41,7 +42,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
     protected final static SequenceType POSITIONAL_VAR_TYPE = 
         new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE);
     
-	protected String varName;
+	protected QName varName;
 	protected SequenceType sequenceType = null;
 	protected Expression inputSequence;
 
@@ -52,11 +53,11 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 		super(context);
 	}
 
-	public void setVariable(String qname) {
-		varName = qname;
+	public void setVariable(final QName varName) {
+		this.varName = varName;
 	}
 
-    public String getVariable() {
+    public QName getVariable() {
         return this.varName;
     }
 

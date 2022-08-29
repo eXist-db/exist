@@ -128,9 +128,9 @@ options {
 
     private static class ForLetClause {
         XQueryAST ast;
-        String varName;
+        QName varName;
         SequenceType sequenceType= null;
-        String posVar= null;
+        QName posVar = null;
         Expression inputSequence;
         Expression action;
         FLWORClause.ClauseType type = FLWORClause.ClauseType.FOR;
@@ -1398,7 +1398,11 @@ throws PermissionDeniedException, EXistException, XPathException
                 )?
                 step=expr[inputSequence]
                 {
-                    clause.varName= someVarName.getText();
+                    try {
+                        clause.varName = QName.parse(staticContext, someVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(someVarName.getLine(), someVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + someVarName.getText());
+                    }
                     clause.inputSequence= inputSequence;
                     clauses.add(clause);
                 }
@@ -1449,7 +1453,11 @@ throws PermissionDeniedException, EXistException, XPathException
                 )?
                 step=expr[inputSequence]
                 {
-                    clause.varName= everyVarName.getText();
+                    try {
+                        clause.varName = QName.parse(staticContext, everyVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(everyVarName.getLine(), everyVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + everyVarName.getText());
+                    }
                     clause.inputSequence= inputSequence;
                     clauses.add(clause);
                 }
@@ -1585,11 +1593,21 @@ throws PermissionDeniedException, EXistException, XPathException
                         )?
                         (
                             posVar:POSITIONAL_VAR
-                            { clause.posVar= posVar.getText(); }
+                            {
+                                try {
+                                    clause.posVar = QName.parse(staticContext, posVar.getText(), null);
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + posVar.getText());
+                                }
+                            }
                         )?
                         step=expr [inputSequence]
                         {
-                            clause.varName= varName.getText();
+                            try {
+                                clause.varName = QName.parse(staticContext, varName.getText(), null);
+                            } catch (final IllegalQNameException iqe) {
+                                throw new XPathException(varName.getLine(), varName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + varName.getText());
+                            }
                             clause.inputSequence= inputSequence;
                             clauses.add(clause);
                         }
@@ -1618,7 +1636,11 @@ throws PermissionDeniedException, EXistException, XPathException
                         )?
                         step=expr [inputSequence]
                         {
-                            clause.varName= letVarName.getText();
+                            try {
+                                clause.varName = QName.parse(staticContext, letVarName.getText(), null);
+                            } catch (final IllegalQNameException iqe) {
+                                throw new XPathException(letVarName.getLine(), letVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + letVarName.getText());
+                            }
                             clause.inputSequence= inputSequence;
                             clauses.add(clause);
                         }
@@ -1759,7 +1781,11 @@ throws PermissionDeniedException, EXistException, XPathException
                 {
                     ForLetClause clause = new ForLetClause();
                     clause.ast = co;
-                    clause.varName = countVarName.getText();
+                    try {
+                        clause.varName = QName.parse(staticContext, countVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(countVarName.getLine(), countVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + countVarName.getText());
+                    }
                     clause.type = FLWORClause.ClauseType.COUNT;
                     clause.inputSequence = null;
                     clauses.add(clause);
