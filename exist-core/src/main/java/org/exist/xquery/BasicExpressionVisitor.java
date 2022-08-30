@@ -181,6 +181,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
+    public void visitCountClause(final CountClause count) {
+        // Nothing to do
+    }
+
+    @Override
     public void visitGroupByClause(final GroupByClause groupBy) {
         // Nothing to do
     }

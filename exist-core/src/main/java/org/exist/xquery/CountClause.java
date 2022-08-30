@@ -23,8 +23,12 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * Implements a count clause inside a FLWOR expressions.
@@ -34,7 +38,13 @@ import org.exist.xquery.value.Sequence;
  */
 public class CountClause extends AbstractFLWORClause {
 
+    private static final SequenceType countVarType = new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE);
+
     final QName varName;
+
+    // the count itself
+    private long count = 0;
+    private int step = 1;
 
     public CountClause(final XQueryContext context, final QName varName) {
         super(context);
@@ -52,12 +62,131 @@ public class CountClause extends AbstractFLWORClause {
 
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.setParent(this);
+        unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
+        // Save the local variable stack
+        final LocalVariable mark = context.markLocalVariables(false);
+        try {
+            final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+
+            // Declare the count variable
+            final LocalVariable countVar = new LocalVariable(varName);
+            countVar.setSequenceType(countVarType);
+            countVar.setStaticType(varContextInfo.getStaticReturnType());
+            context.declareVariableBinding(countVar);
+
+            // analyze the return expression
+            final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+            returnExpr.analyze(newContextInfo);
+
+        } finally {
+            // restore the local variable stack
+            context.popLocalVariables(mark);
+        }
+    }
+
+    @Override
+    public Sequence preEval(final Sequence seq) throws XPathException {
+        // determine whether to count down or up
+        this.step = hasPreviousOrderByDescending() ? -1 : 1;
+
+        // get the count start position
+        if (this.step == 1) {
+            this.count = 0;
+        } else {
+            this.count = seq.getItemCountLong() + 1;
+        }
+
+        return super.preEval(seq);
+    }
+
+    private boolean hasPreviousOrderByDescending() {
+        FLWORClause prev = getPreviousClause();
+        while (prev != null) {
+            switch (prev.getType()) {
+                case LET:
+                case GROUPBY:
+                case FOR:
+                    return false;
+                case ORDERBY:
+                   return isDescending(((OrderByClause) prev).getOrderSpecs());
+            }
+            prev = prev.getPreviousClause();
+        }
+        return true;
+    }
+    private boolean isDescending(final OrderSpec[] orderSpecs) {
+        for (final OrderSpec orderSpec : orderSpecs) {
+            if ((orderSpec.getModifiers() & OrderSpec.DESCENDING_ORDER) == OrderSpec.DESCENDING_ORDER) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        return null;
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                    "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                        "CONTEXT ITEM", contextItem.toSequence());
+            }
+        }
+
+        context.expressionStart(this);
+
+        final Sequence resultSequence = new ValueSequence(unordered);
+
+        // update the count
+        count = count + step;
+
+        // Save the local variable stack
+        final LocalVariable mark = context.markLocalVariables(false);
+        try {
+
+            // Declare the count variable
+            final LocalVariable countVar = createVariable(varName);
+            countVar.setSequenceType(countVarType);
+            context.declareVariableBinding(countVar);
+
+            // set the binding for the count
+            countVar.setValue(new IntegerValue(count));
+
+            // eval the return expression on the window binding
+            resultSequence.addAll(returnExpr.eval(null, null));
+
+            // free resources
+            countVar.destroy(context, resultSequence);
+
+        } finally {
+            // restore the local variable stack
+            context.popLocalVariables(mark, resultSequence);
+        }
+
+        setActualReturnType(resultSequence.getItemType());
+
+        context.expressionEnd(this);
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", resultSequence);
+        }
+
+        return resultSequence;
+    }
+
+    @Override
+    public Sequence postEval(Sequence seq) throws XPathException {
+        if (returnExpr instanceof FLWORClause) {
+            seq = ((FLWORClause)returnExpr).postEval(seq);
+        }
+        return super.postEval(seq);
     }
 
     @Override
@@ -66,5 +195,10 @@ public class CountClause extends AbstractFLWORClause {
         dumper.startIndent();
         dumper.display(this.varName);
         dumper.endIndent().nl();
+    }
+
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
+        visitor.visitCountClause(this);
     }
 }
