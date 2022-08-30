@@ -128,3 +128,57 @@ function swt:all-vars() {
   return
     <window s="{$s}" x="{$x}" sp="{$sp}" sn="{$sn}" e="{$e}" y="{$y}" ep="{$ep}" en="{$en}">{ $w }</window>
 };
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-sliding() {
+  <x/>/@sliding
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-window() {
+  <x/>/@window
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-start() {
+  <x/>/@start
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-end() {
+  <x/>/@end
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-previous() {
+  <x/>/@previous
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-next() {
+  <x/>/@next
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-at() {
+  <x/>/@at
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-in() {
+  <x/>/@in
+};
+
+declare
+  %test:assertEmpty
+function swt:reserved-word-when() {
+  <x/>/@when
+};
