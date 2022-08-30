@@ -178,7 +178,8 @@ public class SerializerUtils {
         JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
         ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         // default of 4 corresponds to the existing eXist default, although 3 is in the spec
-        INDENT_SPACES("indent-spaces", Type.INTEGER, Cardinality.ZERO_OR_ONE, new IntegerValue(4));
+        INDENT_SPACES("indent-spaces", Type.INTEGER, Cardinality.ZERO_OR_ONE, new IntegerValue(4)),
+        INSERT_FINAL_NEWLINE(EXistOutputKeys.INSERT_FINAL_NEWLINE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE);
 
         private final QName parameterName;
         private final int type;
