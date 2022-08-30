@@ -2290,6 +2290,8 @@ reservedKeywords returns [String name]
 	"previous" { name = "previous"; }
 	|
 	"next" { name = "next"; }
+	|
+	"when" { name = "when"; }
 	;
 
 

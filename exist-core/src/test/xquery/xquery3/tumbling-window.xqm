@@ -102,3 +102,78 @@ function twt:single-step-window-var-in-end-condition() {
   return
     <window>{$w}</window>
 };
+
+declare
+    %test:assertEquals(
+      '<window start-current-item="a" start-position="4" start-previous-item="a" start-next-item="test">a test of</window>',
+      '<window start-current-item="of" start-position="7" start-previous-item="of" start-next-item="windowing">of windowing</window>'
+    )
+function twt:jw-duplicate-words() {
+  let $sentence := "This is a a test of of windowing"
+  let $words := fn:tokenize($sentence, " ")
+  for tumbling window $window in $words
+      start $start-current-item at $start-position previous $start-previous-item next $start-next-item
+      when $start-previous-item eq $start-current-item
+  return
+    <window start-current-item="{$start-current-item}" start-position="{$start-position}" start-previous-item="{$start-previous-item}" start-next-item="{$start-next-item}">{ $window }</window>
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-tumbling() {
+  <x/>/@tumbling
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-window() {
+  <x/>/@window
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-start() {
+  <x/>/@start
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-end() {
+  <x/>/@end
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-previous() {
+  <x/>/@previous
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-next() {
+  <x/>/@next
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-at() {
+  <x/>/@at
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-in() {
+  <x/>/@in
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-when() {
+  <x/>/@when
+};
+
+declare
+  %test:assertEmpty
+function twt:reserved-word-only() {
+  <x/>/@only
+};
