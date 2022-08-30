@@ -47,7 +47,7 @@ public class IndentingXMLWriter extends XMLWriter {
     private boolean afterTag = false;
     private boolean sameline = false;
     private boolean whitespacePreserve = false;
-    private Deque<Integer> whitespacePreserveStack = new ArrayDeque<>();
+    private final Deque<Integer> whitespacePreserveStack = new ArrayDeque<>();
 
     public IndentingXMLWriter() {
         super();
@@ -168,7 +168,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     @Override
-    public void attribute(final String qname, final String value) throws TransformerException {
+    public void attribute(final String qname, final CharSequence value) throws TransformerException {
         if ("xml:space".equals(qname)) {
             pushWhitespacePreserve(value);
         }
@@ -176,7 +176,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     @Override
-    public void attribute(final QName qname, final String value)
+    public void attribute(final QName qname, final CharSequence value)
             throws TransformerException {
         if ("xml".equals(qname.getPrefix()) && "space".equals(qname.getLocalPart())) {
             pushWhitespacePreserve(value);
@@ -184,7 +184,7 @@ public class IndentingXMLWriter extends XMLWriter {
         super.attribute(qname, value);
     }
 
-    protected void pushWhitespacePreserve(final String value) {
+    protected void pushWhitespacePreserve(final CharSequence value) {
         if (value.equals("preserve")) {
             whitespacePreserve = true;
             whitespacePreserveStack.push(-level);

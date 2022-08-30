@@ -114,4 +114,6 @@ public class EXistOutputKeys {
      * like diff will be able to provide more meaningful information as well.
      */
     public final static String INSERT_FINAL_NEWLINE = "insert-final-newline";
+
+    public final static String USE_CHARACTER_MAPS = "use-character-maps";
 }

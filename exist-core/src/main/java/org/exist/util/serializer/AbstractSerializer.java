@@ -23,9 +23,11 @@ package org.exist.util.serializer;
 
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.json.JSONWriter;
+import org.exist.xquery.util.SerializerUtils;
 
 import javax.xml.transform.OutputKeys;
 import java.io.Writer;
+import java.util.Map;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,14 +45,17 @@ public abstract class AbstractSerializer {
     protected final static int MICRO_XML_WRITER = 5;
     protected final static int HTML5_WRITER = 6;
 
-    protected XMLWriter[] writers = {
+    protected final static int CHARACTER_MAPPING_WRITER = 7;
+
+    protected SerializerWriter[] writers = {
         new IndentingXMLWriter(),
         new XHTMLWriter(),
         new TEXTWriter(),
         new JSONWriter(),
         new XHTML5Writer(),
         new MicroXmlWriter(),
-        new HTML5Writer()
+        new HTML5Writer(),
+        new CharacterMappingWriter()
     };
 
     protected final static Properties defaultProperties = new Properties();
@@ -61,14 +66,14 @@ public abstract class AbstractSerializer {
     }
 
     protected Properties outputProperties;
-    protected XMLWriter receiver;
+    protected SerializerWriter receiver;
 
     public AbstractSerializer() {
         super();
         receiver = getDefaultWriter();
     }
 
-    protected XMLWriter getDefaultWriter() {
+    protected SerializerWriter getDefaultWriter() {
         return writers[XML_WRITER];
     }
 
@@ -88,38 +93,59 @@ public abstract class AbstractSerializer {
             htmlVersion = 1.0;
         }
 
+        final SerializerWriter baseSerializerWriter = getBaseSerializerWriter(method, htmlVersion);
+
+        final SerializerWriter serializerWriter;
+        final CharacterMappingWriter characterMappingWriter = getCharacterMappingWriter();
+        characterMappingWriter.setWrappedSerializerWriter(baseSerializerWriter);
+        final Map<Integer, String> characterMap = SerializerUtils.GetCharacterMap(outputProperties);
+        if (characterMap == null || characterMap.size() == 0) {
+            serializerWriter = baseSerializerWriter;
+        } else {
+            serializerWriter = characterMappingWriter;
+        }
+
+        serializerWriter.setWriter(writer);
+        serializerWriter.setOutputProperties(outputProperties);
+
+        receiver = serializerWriter;
+    }
+
+    private CharacterMappingWriter getCharacterMappingWriter() {
+        return (CharacterMappingWriter) writers[CHARACTER_MAPPING_WRITER];
+    }
+
+    private SerializerWriter getBaseSerializerWriter(final String method, final double htmlVersion) {
+
         if ("xhtml".equalsIgnoreCase(method)) {
             if (htmlVersion < 5.0) {
-                receiver = writers[XHTML_WRITER];
+                return writers[XHTML_WRITER];
             } else {
-                receiver = writers[XHTML5_WRITER];
+                return writers[XHTML5_WRITER];
             }
         } else if ("html".equals(method)) {
             if (htmlVersion < 5.0) {
-                receiver = writers[XHTML_WRITER];
+                return writers[XHTML_WRITER];
             } else {
-                receiver = writers[HTML5_WRITER];
+                return writers[HTML5_WRITER];
             }
         } else if("text".equalsIgnoreCase(method)) {
-            receiver = writers[TEXT_WRITER];
+            return writers[TEXT_WRITER];
         } else if ("json".equalsIgnoreCase(method)) {
-            receiver = writers[JSON_WRITER];
+            return writers[JSON_WRITER];
         } else if ("xhtml5".equalsIgnoreCase(method)) {
-            receiver = writers[XHTML5_WRITER];
+            return writers[XHTML5_WRITER];
         } else if ("html5".equalsIgnoreCase(method)) {
-            receiver = writers[HTML5_WRITER];
+            return writers[HTML5_WRITER];
         } else if("microxml".equalsIgnoreCase(method)) {
-            receiver = writers[MICRO_XML_WRITER];
+            return writers[MICRO_XML_WRITER];
         } else {
-            receiver = writers[XML_WRITER];
+            return writers[XML_WRITER];
         }
-
-        receiver.setWriter(writer);
-        receiver.setOutputProperties(outputProperties);
     }
 
     public void reset() {
-        for (XMLWriter writer : writers) {
+        for (SerializerWriter writer : writers) {
             writer.reset();
         }
     }

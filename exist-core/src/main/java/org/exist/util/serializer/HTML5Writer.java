@@ -38,13 +38,13 @@ public class HTML5Writer extends XHTML5Writer {
 
     /**
      * Holds the names of the attributes that are considered boolean
-     * according to http://www.w3.org/TR/html51/single-page.html.
-     * 
+     * according to {@link <a href="http://www.w3.org/TR/html51/single-page.html">...</a>}
+     *
      * The value of these attributes are written if they equal the
      * name of the attribute. For example: checked="checked" will be
      * written as checked.
-     * 
-     * See https://github.com/eXist-db/exist/issues/777 for details. 
+     *
+     * See <a href="https://github.com/eXist-db/exist/issues/777">...</a> for details.
      */
     private static final ObjectSet<String> BOOLEAN_ATTRIBUTE_NAMES = new ObjectOpenHashSet<>(68);
     static {
@@ -174,7 +174,7 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
-    public void attribute(String qname, String value) throws TransformerException {
+    public void attribute(String qname, CharSequence value) throws TransformerException {
         try {
             if(!tagIsOpen) {
                 characters(value);
@@ -183,7 +183,7 @@ public class HTML5Writer extends XHTML5Writer {
             final Writer writer = getWriter();
             writer.write(' ');
             writer.write(qname);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(qname) && qname.equals(value))) {
+            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(qname) && qname.contentEquals(value))) {
                 writer.write("=\"");
                 writeChars(value, true);
                 writer.write('"');
@@ -194,7 +194,7 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
-    public void attribute(QName qname, String value) throws TransformerException {
+    public void attribute(QName qname, CharSequence value) throws TransformerException {
         try {
             if(!tagIsOpen) {
                 characters(value);
@@ -210,7 +210,7 @@ public class HTML5Writer extends XHTML5Writer {
             }
             final String localPart = qname.getLocalPart();
             writer.write(localPart);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(localPart) && localPart.equals(value))) {
+            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(localPart) && localPart.contentEquals(value))) {
                 writer.write("=\"");
                 writeChars(value, true);
                 writer.write('"');

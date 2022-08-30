@@ -22,6 +22,7 @@
 package org.exist.util.serializer;
 
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,6 +32,7 @@ import org.exist.Namespaces;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.CharSlice;
 import org.exist.util.XMLString;
 import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
@@ -69,7 +71,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         return receiver.getWriter();
     }
 
-    public void setReceiver(final XMLWriter receiver) {
+    public void setReceiver(final SerializerWriter receiver) {
         this.receiver = receiver;
     }
 

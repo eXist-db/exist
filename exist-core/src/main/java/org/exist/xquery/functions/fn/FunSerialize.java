@@ -128,7 +128,7 @@ public class FunSerialize extends BasicFunction {
 
     /**
      * Sequence normalization as described in
-     * http://www.w3.org/TR/xslt-xquery-serialization-30/#serdm
+     * <a href="http://www.w3.org/TR/xslt-xquery-serialization-30/#serdm">...</a>
      *
      * @param input non-normalized sequence
      * @param context current context

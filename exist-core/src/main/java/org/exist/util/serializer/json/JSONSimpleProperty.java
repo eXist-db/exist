@@ -35,11 +35,11 @@ public class JSONSimpleProperty extends JSONNode {
 
     private final String value;
 
-    public JSONSimpleProperty(final String name, final String value) {
+    public JSONSimpleProperty(final String name, final CharSequence value) {
         this(name, value, false);
     }
 
-    public JSONSimpleProperty(final String name, final String value, final boolean isLiteral) {
+    public JSONSimpleProperty(final String name, final CharSequence value, final boolean isLiteral) {
         super(Type.SIMPLE_PROPERTY_TYPE, name);
         this.value = JSONValue.escape(value);
         if(isLiteral) {
