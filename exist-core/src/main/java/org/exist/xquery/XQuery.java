@@ -224,10 +224,18 @@ public class XQuery {
             } else {
                 parser.xpath();
             }
-            
-            if(parser.foundErrors()) {
-            	LOG.debug(parser.getErrorMessage());
-            	throw new StaticXQueryException(context.getRootExpression(), parser.getErrorMessage());
+
+            if (parser.foundErrors()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(parser.getErrorMessage());
+                }
+                final Exception lastException = parser.getLastException();
+                if (lastException != null && lastException instanceof XPathException) {
+                    final XPathException xpe = (XPathException) lastException;
+                    throw new StaticXQueryException(xpe.getColumn(), xpe.getLine(), parser.getErrorMessage(), xpe);
+                } else {
+                    throw new StaticXQueryException(context.getRootExpression(), parser.getErrorMessage());
+                }
             }
 
             final AST ast = parser.getAST();
