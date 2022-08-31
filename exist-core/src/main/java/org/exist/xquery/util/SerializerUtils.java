@@ -238,6 +238,7 @@ public class SerializerUtils {
      */
     public static void getSerializationOptions(final Expression parent, final NodeValue parameters, final Properties serializationProperties) throws XPathException {
         try {
+            final Properties propertiesInXML = new Properties();
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
             while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
                 /* advance to the first starting element (root node) of the options */
@@ -256,14 +257,14 @@ public class SerializerUtils {
                     final javax.xml.namespace.QName key = reader.getName();
                     final String local = key.getLocalPart();
                     final String prefix = key.getPrefix();
-                    if (serializationProperties.containsKey(local)) {
+                    if (propertiesInXML.containsKey(local)) {
                         throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
                     }
                     if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
                         throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
                     }
 
-                    readSerializationProperty(reader, local, serializationProperties);
+                    readSerializationProperty(reader, local, propertiesInXML);
 
                 } else if(status == XMLStreamReader.END_ELEMENT) {
                     final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
@@ -274,6 +275,10 @@ public class SerializerUtils {
                     }
                 }
             }
+            
+            // Update properties with all the new ones
+            serializationProperties.putAll(propertiesInXML);
+            
         } catch (final XMLStreamException | IOException e) {
             throw new XPathException(parent, ErrorCodes.EXXQDY0001, e.getMessage());
         }
