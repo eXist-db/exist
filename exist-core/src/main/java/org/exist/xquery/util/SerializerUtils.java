@@ -57,6 +57,21 @@ public class SerializerUtils {
     public final static String CHARACTER_MAP_ELEMENT_KEY = "character-map";
     public final static String CHARACTER_ATTR_KEY = "character";
     public final static String MAP_STRING_ATTR_KEY = "map-string";
+
+    private static final Set<String> W3CParameterConventionKeys = new HashSet<>();
+    static {
+        for (W3CParameterConvention convention : W3CParameterConvention.values()) {
+            W3CParameterConventionKeys.add(convention.getParameterName());
+        }
+    }
+
+    private static final java.util.Map<String, ParameterConvention<String>> W3C_PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
+    static {
+        for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
+            W3C_PARAMETER_CONVENTIONS_BY_NAME.put(w3cParameterConvention.getParameterName(), w3cParameterConvention);
+        }
+    }
+
     public interface ParameterConvention<T> {
 
         /**
@@ -160,13 +175,6 @@ public class SerializerUtils {
         }
     }
 
-    private static final Set<String> W3CParameterConventionKeys = new HashSet<>();
-    static {
-        for (W3CParameterConvention convention : W3CParameterConvention.values()) {
-            W3CParameterConventionKeys.add(convention.getParameterName());
-        }
-    }
-
     /**
      * for Exist xquery specific functions
      */
@@ -216,13 +224,6 @@ public class SerializerUtils {
         @Override
         public Sequence getDefaultValue() {
             return defaultValue;
-        }
-    }
-
-    private static final java.util.Map<String, ParameterConvention<String>> W3C_PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
-    static {
-        for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
-            W3C_PARAMETER_CONVENTIONS_BY_NAME.put(w3cParameterConvention.getParameterName(), w3cParameterConvention);
         }
     }
 
@@ -278,7 +279,7 @@ public class SerializerUtils {
         }
     }
 
-    public static void SetCharacterMap(final Properties serializationProperties, final Map<Integer, String> characterMap) {
+    public static void setCharacterMap(final Properties serializationProperties, final Map<Integer, String> characterMap) {
         serializationProperties.put(EXistOutputKeys.USE_CHARACTER_MAPS, characterMap);
     }
 
@@ -294,7 +295,7 @@ public class SerializerUtils {
                 throw new XPathException(ErrorCodes.SEPM0017, "Attribute other than value in serialization parameter: " + key);
             }
             final Map<Integer, String> characterMap = readUseCharacterMaps(reader);
-            SetCharacterMap(serializationProperties, characterMap);
+            setCharacterMap(serializationProperties, characterMap);
         } else {
             String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
             if (value == null) {
@@ -567,7 +568,7 @@ public class SerializerUtils {
             case Type.MAP:
                 if (parameterConvention.getParameterName().equals(W3CParameterConvention.USE_CHARACTER_MAPS.parameterName)) {
                     final Map<Integer, String> characterMap = createCharacterMap((MapType) parameterValue, parameterConvention);
-                    SetCharacterMap(properties, characterMap);
+                    setCharacterMap(properties, characterMap);
                 } else {
                     // There should not be any such parameter, other than use-character-maps
                     throw new UnsupportedOperationException(

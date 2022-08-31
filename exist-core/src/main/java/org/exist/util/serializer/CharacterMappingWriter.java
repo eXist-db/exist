@@ -31,7 +31,6 @@ import java.io.Writer;
 import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -120,7 +119,7 @@ public class CharacterMappingWriter implements SerializerWriter {
     @Override
     public void attribute(final String qname, final CharSequence value) throws TransformerException {
         final StringBuilder sb = mapCodePoints(value, 0, value.length());
-        wrappedSerializerWriter.attribute(qname, value);
+        wrappedSerializerWriter.attribute(qname, sb);
     }
 
     @Override
@@ -156,16 +155,6 @@ public class CharacterMappingWriter implements SerializerWriter {
             }
         }
         return sb;
-    }
-
-    private void mapCodePoint(final int codePoint, final StringBuilder sb, final char[] useBuffer) {
-        final String content = characterMap.get(codePoint);
-        if (!StringUtils.isEmpty(content)) {
-            sb.append(content);
-        } else {
-            final int sz = Character.toChars(codePoint, useBuffer, 0);
-            sb.append(useBuffer, 0, sz);
-        }
     }
 
     @Override
