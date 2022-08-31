@@ -98,7 +98,7 @@ public abstract class AbstractSerializer {
         final SerializerWriter serializerWriter;
         final CharacterMappingWriter characterMappingWriter = getCharacterMappingWriter();
         characterMappingWriter.setWrappedSerializerWriter(baseSerializerWriter);
-        final Map<Integer, String> characterMap = SerializerUtils.GetCharacterMap(outputProperties);
+        final Map<Integer, String> characterMap = SerializerUtils.getCharacterMap(outputProperties);
         if (characterMap == null || characterMap.size() == 0) {
             serializerWriter = baseSerializerWriter;
         } else {

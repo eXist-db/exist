@@ -130,10 +130,11 @@ public class FunSerialize extends BasicFunction {
      * Sequence normalization as described in
      * <a href="http://www.w3.org/TR/xslt-xquery-serialization-30/#serdm">...</a>
      *
-     * @param input non-normalized sequence
-     * @param context current context
      * @param callingExpr the expression from which the function is called.
      *                    needed for error reporting
+     * @param context current context
+     * @param input non-normalized sequence
+     * @param itemSeparator placed between each item
      * @return normalized sequence
      * @throws XPathException in case of dynamic error
      */

@@ -44,7 +44,7 @@ public class CharacterMappingWriter implements SerializerWriter {
 
     @Override
     public void setOutputProperties(final Properties properties) {
-        final Map<Integer, String> readCharacterMap = SerializerUtils.GetCharacterMap(properties);
+        final Map<Integer, String> readCharacterMap = SerializerUtils.getCharacterMap(properties);
         if (readCharacterMap == null) {
             this.characterMap = new HashMap<>();
         } else {

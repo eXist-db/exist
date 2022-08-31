@@ -347,7 +347,7 @@ public interface Sequence {
      *
      * NOTE that comparison is done via object equality.
      *
-     * @return true if the item is within the sequence, false otherwise.
+     * @param item the item for which to search
      * @return true if the item is within the sequence, false otherwise.
      */
     boolean contains(Item item);

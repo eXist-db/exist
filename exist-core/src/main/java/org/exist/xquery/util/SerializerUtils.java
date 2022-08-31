@@ -38,6 +38,7 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.OutputKeys;
@@ -53,10 +54,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class SerializerUtils {
 
     // Constant strings
-    public final static String OUTPUT_NAMESPACE = "output";
-    public final static String CHARACTER_MAP_ELEMENT_KEY = "character-map";
-    public final static String CHARACTER_ATTR_KEY = "character";
-    public final static String MAP_STRING_ATTR_KEY = "map-string";
+    public static final String OUTPUT_NAMESPACE = "output";
+    public static final String CHARACTER_MAP_ELEMENT_KEY = "character-map";
+    public static final String CHARACTER_ATTR_KEY = "character";
+    public static final String MAP_STRING_ATTR_KEY = "map-string";
+
+    public static final String MSG_NON_VALUE_ATTRIBUTE = "Attribute other than value in serialization parameter";
+
+    public static final String MSG_UNSUPPORTED_TYPE = "Unsupported type ";
+    public static final String MSG_FOR_PARAMETER_VALUE =  " for parameter value";
 
     private static final Set<String> W3CParameterConventionKeys = new HashSet<>();
     static {
@@ -65,7 +71,7 @@ public class SerializerUtils {
         }
     }
 
-    private static final java.util.Map<String, ParameterConvention<String>> W3C_PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
+    private static final Map<String, ParameterConvention<String>> W3C_PARAMETER_CONVENTIONS_BY_NAME = new HashMap<>();
     static {
         for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
             W3C_PARAMETER_CONVENTIONS_BY_NAME.put(w3cParameterConvention.getParameterName(), w3cParameterConvention);
@@ -112,7 +118,7 @@ public class SerializerUtils {
     }
 
     /**
-     * See {@link <a href="https://www.w3.org/TR/xpath-functions-31/#func-serialize">...</a>}
+     * See <a href="https://www.w3.org/TR/xpath-functions-31/#func-serialize">fn:serialize</a>
      */
     public enum W3CParameterConvention implements ParameterConvention<String> {
         ALLOW_DUPLICATE_NAMES("allow-duplicate-names", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
@@ -240,8 +246,10 @@ public class SerializerUtils {
         try {
             final Properties propertiesInXML = new Properties();
             final XMLStreamReader reader = parent.getContext().getXMLStreamReader(parameters);
-            while (reader.hasNext() && (reader.next() != XMLStreamReader.START_ELEMENT)) {
+            while (reader.hasNext()) {
                 /* advance to the first starting element (root node) of the options */
+                final int status = reader.next();
+                if (status == XMLStreamConstants.START_ELEMENT) break;
             }
 
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
@@ -252,27 +260,11 @@ public class SerializerUtils {
 
             while (reader.hasNext()) {
                 final int status = reader.next();
-                if (status == XMLStreamReader.START_ELEMENT) {
-
-                    final javax.xml.namespace.QName key = reader.getName();
-                    final String local = key.getLocalPart();
-                    final String prefix = key.getPrefix();
-                    if (propertiesInXML.containsKey(local)) {
-                        throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
-                    }
-                    if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
-                        throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
-                    }
-
-                    readSerializationProperty(reader, local, propertiesInXML);
-
-                } else if(status == XMLStreamReader.END_ELEMENT) {
-                    final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
-                    final int otherLevel = otherId.getTreeLevel();
-                    if (otherLevel == thisLevel) {
-                        // finished `optRoot` element...
-                        break;  // exit-while
-                    }
+                if (status == XMLStreamConstants.START_ELEMENT) {
+                    readStartElement(parent, reader, propertiesInXML);
+                } else if(status == XMLStreamConstants.END_ELEMENT && readEndElementLevel(reader) == thisLevel) {
+                    // finished `optRoot` element ? exit-while
+                    break;
                 }
             }
             
@@ -284,11 +276,31 @@ public class SerializerUtils {
         }
     }
 
+    private static void readStartElement(final Expression parent, final XMLStreamReader reader, final Properties properties) throws XPathException, XMLStreamException {
+
+        final javax.xml.namespace.QName key = reader.getName();
+        final String local = key.getLocalPart();
+        final String prefix = key.getPrefix();
+        if (properties.containsKey(local)) {
+            throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
+        }
+        if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
+            throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
+        }
+
+        readSerializationProperty(reader, local, properties);
+    }
+
+    private static int readEndElementLevel(final XMLStreamReader reader) {
+        final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
+        return otherId.getTreeLevel();
+    }
+
     public static void setCharacterMap(final Properties serializationProperties, final Map<Integer, String> characterMap) {
         serializationProperties.put(EXistOutputKeys.USE_CHARACTER_MAPS, characterMap);
     }
 
-    public static Map<Integer, String> GetCharacterMap(final Properties serializationProperties) {
+    public static Map<Integer, String> getCharacterMap(final Properties serializationProperties) {
         return (Map<Integer, String>) serializationProperties.get(EXistOutputKeys.USE_CHARACTER_MAPS);
     }
 
@@ -297,7 +309,7 @@ public class SerializerUtils {
         final int attributeCount = reader.getAttributeCount();
         if (W3CParameterConvention.USE_CHARACTER_MAPS.parameterName.equals(key)) {
             if (attributeCount > 0) {
-                throw new XPathException(ErrorCodes.SEPM0017, "Attribute other than value in serialization parameter: " + key);
+                throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
             }
             final Map<Integer, String> characterMap = readUseCharacterMaps(reader);
             setCharacterMap(serializationProperties, characterMap);
@@ -305,13 +317,13 @@ public class SerializerUtils {
             String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
             if (value == null) {
                 if (attributeCount > 0) {
-                    throw new XPathException(ErrorCodes.SEPM0017, "Attribute other than value in serialization parameter: " + key);
+                    throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
                 }
                 // backwards compatibility: use element text as value
                 value = reader.getElementText();
             }
             if (attributeCount > 1) {
-                throw new XPathException(ErrorCodes.SEPM0017, "Attribute other than value in serialization parameter: " + key);
+                throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
             }
 
             setProperty(key, value, serializationProperties, reader.getNamespaceContext()::getNamespaceURI);
@@ -328,10 +340,10 @@ public class SerializerUtils {
         while (reader.hasNext()) {
             /* advance to the next child element, or the end, of the use-character-maps element */
             final int status = reader.next();
-            if (status == XMLStreamReader.START_ELEMENT) {
+            if (status == XMLStreamConstants.START_ELEMENT) {
                 depth += 1;
                 readCharacterMap(reader, characterMap);
-            } else if (status == XMLStreamReader.END_ELEMENT) {
+            } else if (status == XMLStreamConstants.END_ELEMENT) {
                 if (depth == 0) return characterMap;
                 depth -= 1;
             }
@@ -582,7 +594,7 @@ public class SerializerUtils {
                 break;
             default:
                 throw new UnsupportedOperationException(
-                        "Unsupported type " + Type.getTypeName(parameterConvention.getType()) + " for parameter value: " + localParameterName);
+                        MSG_UNSUPPORTED_TYPE + Type.getTypeName(parameterConvention.getType()) + MSG_FOR_PARAMETER_VALUE + ": " + localParameterName);
         }
     }
 
@@ -610,19 +622,19 @@ public class SerializerUtils {
             final AtomicValue key = entry.key();
             if (!Type.subTypeOf(key.getType(), Type.STRING)) {
                 throw new XPathException(ErrorCodes.XPTY0004,
-                        "Unsupported type " + Type.getTypeName(key.getType()) + " for parameter value: " + localParameterName +
+                        MSG_UNSUPPORTED_TYPE + Type.getTypeName(key.getType()) + MSG_FOR_PARAMETER_VALUE + ": " + localParameterName +
                                 ". Elements of the map for parameter value: " + localParameterName +
                                 " must have keys of type " + Type.getTypeName(Type.STRING));
             }
             final Sequence sequence = entry.value();
             if (sequence.isEmpty()) {
                 throw new XPathException(ErrorCodes.XPTY0004, "Character map entries cannot be empty, " +
-                        " for parameter value: " + localParameterName);
+                        MSG_FOR_PARAMETER_VALUE + ": " + localParameterName);
             }
             final Item value = sequence.itemAt(0);
             if (!Type.subTypeOf(value.getType(), Type.STRING)) {
                 throw new XPathException(ErrorCodes.XPTY0004,
-                        "Unsupported type " + Type.getTypeName(key.getType()) + " for parameter value: " + localParameterName +
+                        MSG_UNSUPPORTED_TYPE + Type.getTypeName(key.getType()) + MSG_FOR_PARAMETER_VALUE + ": " + localParameterName +
                                 ". Elements of the map for parameter value: " + localParameterName +
                                 " must have values of type " + Type.getTypeName(Type.STRING));
             }
