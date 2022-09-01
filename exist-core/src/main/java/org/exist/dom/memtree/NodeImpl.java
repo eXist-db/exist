@@ -48,7 +48,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 
-public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl, T>, NodeValue {
+public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentImpl, T>, NodeValue {
 
     public static final short REFERENCE_NODE = 100;
     public static final short NAMESPACE_NODE = 101;

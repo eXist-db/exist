@@ -22,10 +22,13 @@
 package org.exist.xquery.update;
 
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.NodeListImpl;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.NodeImpl;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -33,24 +36,17 @@ import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XPathUtil;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.Attr;
+import org.exist.xquery.value.*;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.XMLConstants;
+
 /**
  * @author wolf
  *
@@ -145,9 +141,11 @@ public class Insert extends Modification {
 
                     //update the document
                     if (mode == INSERT_APPEND) {
+                        validateNonDefaultNamespaces(contentList, node);
                         node.appendChildren(transaction, contentList, -1);
                     } else {
                         final NodeImpl parent = (NodeImpl) getParent(node);
+                        validateNonDefaultNamespaces(contentList, parent);
                         switch (mode) {
                             case INSERT_BEFORE:
                                 parent.insertBefore(transaction, contentList, node);
@@ -178,6 +176,64 @@ public class Insert extends Modification {
         }
         
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private QName nodeQName(Node node) {
+        final String ns = node.getNamespaceURI();
+        final String prefix = (Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : node.getPrefix());
+        String name = node.getLocalName();
+        if(name == null) {
+            name = node.getNodeName();
+        }
+        return new QName(name, ns, prefix);
+    }
+
+    /**
+     * Generate a namespace attribute as a companion to some other node (element or attribute)
+     * if the namespace of the other node is explicit
+     *
+     * @param parentElement target of the insertion (persistent)
+     * @param insertNode node to be inserted (in-memory)
+     * @throws XPathException on an unresolvable namespace conflict
+     */
+    private void validateNonDefaultNamespaceNode(final ElementImpl parentElement, final Node insertNode) throws XPathException {
+
+        final QName qName = nodeQName(insertNode);
+        final String prefix = qName.getPrefix();
+        if (prefix != null && qName.hasNamespace()) {
+            final String existingNamespaceURI = parentElement.lookupNamespaceURI(prefix);
+            if (!XMLConstants.NULL_NS_URI.equals(existingNamespaceURI) && !qName.getNamespaceURI().equals(existingNamespaceURI)) {
+                throw new XPathException(this, ErrorCodes.XUDY0023,
+                        "The namespace mapping of " + prefix + " -> " +
+                                qName.getNamespaceURI() +
+                                " would conflict with the existing namespace mapping of " +
+                                prefix + " -> " + existingNamespaceURI);
+            }
+        }
+
+        validateNonDefaultNamespaces(insertNode.getChildNodes(), parentElement);
+        final NamedNodeMap attributes = insertNode.getAttributes();
+        for (int i = 0; attributes != null && i < attributes.getLength(); i++) {
+            validateNonDefaultNamespaceNode(parentElement, attributes.item(i));
+        }
+    }
+
+    /**
+     * Validate that a list of nodes (intended for insertion) have no namespace conflicts
+     *
+     * @param nodeList nodes to check
+     * @param parent the position into which the nodes are being inserted
+     * @throws XPathException if a node has a namespace conflict
+     */
+    private void validateNonDefaultNamespaces(final NodeList nodeList, final NodeImpl parent) throws XPathException {
+        if (parent instanceof ElementImpl) {
+            final ElementImpl parentAsElement = (ElementImpl) parent;
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                final Node node = nodeList.item(i);
+
+                validateNonDefaultNamespaceNode(parentAsElement, node);
+            }
+        }
     }
 
     private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {

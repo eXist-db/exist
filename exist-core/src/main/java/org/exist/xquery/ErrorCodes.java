@@ -134,6 +134,8 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 
+    public static final ErrorCode XUDY0023 = new W3CErrorCode("XUDY0023", "It is a dynamic error if an insert, replace, or rename expression affects an element node by introducing a new namespace binding that conflicts with one of its existing namespace bindings.");
+
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
     public static final ErrorCode FOER0000 = new W3CErrorCode("FOER0000", "Unidentified error.");
     public static final ErrorCode FOAR0001 = new W3CErrorCode("FOAR0001", "Division by zero.");
