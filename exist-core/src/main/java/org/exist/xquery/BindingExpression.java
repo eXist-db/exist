@@ -30,7 +30,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.*;
 
 /**
- * Abstract superclass for the variable binding expressions "for" and "let".
+ * Abstract superclass for the variable binding expressions "for", "let", and "count".
  * 
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
@@ -45,11 +45,9 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	protected QName varName;
 	protected SequenceType sequenceType = null;
 	protected Expression inputSequence;
-
 	private ExprUpdateListener listener;
 
-
-    public BindingExpression(XQueryContext context) {
+    public BindingExpression(final XQueryContext context) {
 		super(context);
 	}
 
@@ -78,10 +76,8 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
         return this.inputSequence;
     }
 
-    /* (non-Javadoc)
-             * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
-             */
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
     }
 
@@ -93,37 +89,32 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
         return super.postEval(seq);
     }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#preselect(org.exist.dom.persistent.DocumentSet, org.exist.xquery.StaticContext)
-	 */
-	public DocumentSet preselect(DocumentSet in_docs) throws XPathException {
-		return in_docs;
+	public DocumentSet preselect(final DocumentSet docs) throws XPathException {
+		return docs;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.AbstractExpression#resetState()
-	 */
-	public void resetState(boolean postOptimization) {
+	@Override
+	public void resetState(final boolean postOptimization) {
 		super.resetState(postOptimization);
 		inputSequence.resetState(postOptimization);
 		returnExpr.resetState(postOptimization);
 	}
 	
-	public final static void setContext(int contextId, Sequence seq) throws XPathException {
+	public static void setContext(final int contextId, final Sequence seq) throws XPathException {
 		if (seq instanceof VirtualNodeSet) {
 			((VirtualNodeSet)seq).setInPredicate(true);
             ((VirtualNodeSet)seq).setSelfIsContext();
 		} else {
-			Item next;
-			for (final SequenceIterator i = seq.unorderedIterator(); i.hasNext();) {
-				next = i.nextItem(); 
-				if (next instanceof NodeProxy)
-					 {((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);}
+			for (final SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
+				final Item next = i.nextItem();
+				if (next instanceof NodeProxy) {
+					((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);
+				}
 			}
 		}
 	}
 	
-	public final static void clearContext(int contextId, Sequence seq) throws XPathException {
+	public final static void clearContext(final int contextId, final Sequence seq) throws XPathException {
 		if (seq != null && !(seq instanceof VirtualNodeSet)) {
             seq.clearContext(contextId);
 		}
@@ -133,27 +124,28 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
         if (listener == null) {
             listener = new ExprUpdateListener(sequence);
             context.registerUpdateListener(listener);
-        } else
-            {listener.setSequence(sequence);}
+        } else {
+			listener.setSequence(sequence);
+		}
     }
 
     private class ExprUpdateListener implements UpdateListener {
         private Sequence sequence;
 
-        public ExprUpdateListener(Sequence sequence) {
+        public ExprUpdateListener(final Sequence sequence) {
             this.sequence = sequence;
         }
 
-        public void setSequence(Sequence sequence) {
+        public void setSequence(final Sequence sequence) {
             this.sequence = sequence;
         }
         
         @Override
-        public void documentUpdated(DocumentImpl document, int event) {
+        public void documentUpdated(final DocumentImpl document, final int event) {
         }
 
         @Override
-        public void nodeMoved(NodeId oldNodeId, NodeHandle newNode) {
+        public void nodeMoved(final NodeId oldNodeId, final NodeHandle newNode) {
             sequence.nodeMoved(oldNodeId, newNode);
         }
 
@@ -179,11 +171,12 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	/* RewritableExpression API */
 	
 	@Override
-	public void replace(Expression oldExpr, Expression newExpr) {
-		if (inputSequence == oldExpr)
-			{inputSequence = newExpr;}
-		else if (returnExpr == oldExpr)
-			{returnExpr = newExpr;}
+	public void replace(final Expression oldExpr, final Expression newExpr) {
+		if (inputSequence == oldExpr) {
+			inputSequence = newExpr;
+		} else if (returnExpr == oldExpr) {
+			returnExpr = newExpr;
+		}
 	}
 	
 	@Override
@@ -197,7 +190,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	}
 	
 	@Override
-	public void remove(Expression oldExpr) throws XPathException {
+	public void remove(final Expression oldExpr) throws XPathException {
 	}
 	
 	/* END RewritableExpression API */
