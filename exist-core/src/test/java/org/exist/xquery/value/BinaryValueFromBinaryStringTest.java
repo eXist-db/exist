@@ -27,13 +27,17 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
 import java.io.IOException;
-import org.junit.Test;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
- * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BinaryValueFromBinaryStringTest {
 
@@ -43,10 +47,9 @@ public class BinaryValueFromBinaryStringTest {
         final String testData = "test data";
         final String base64TestData = Base64.encodeBase64String(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), base64TestData);
 
-
-        try (final InputStream is = binaryValue.getInputStream();
+        try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), base64TestData);
+             final InputStream is = binaryValue.getInputStream();
              final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             baos.write(is);
             assertArrayEquals(testData.getBytes(), baos.toByteArray());
@@ -54,27 +57,58 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void cast_base64_to_hexBinary() throws XPathException {
+    public void cast_base64_to_hexBinary() throws XPathException, IOException {
 
         final String testData = "testdata";
         final String expectedResult = Hex.encodeHexString(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(testData.getBytes()));
+        try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), Base64.encodeBase64String(testData.getBytes()))) {
 
-        final AtomicValue result = binaryValue.convertTo(new HexBinaryValueType());
+            final AtomicValue result = binaryValue.convertTo(new HexBinaryValueType());
 
-        assertEquals(expectedResult, result.getStringValue());
+            assertEquals(expectedResult, result.getStringValue());
+        }
     }
 
     @Test
-    public void cast_hexBinary_to_base64() throws XPathException {
+    public void cast_hexBinary_to_base64() throws XPathException, IOException {
         final String testData = "testdata";
         final String expectedResult = Base64.encodeBase64String(testData.getBytes()).trim();
 
-        BinaryValue binaryValue = new BinaryValueFromBinaryString(new HexBinaryValueType(), Hex.encodeHexString(testData.getBytes()));
+        try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new HexBinaryValueType(), Hex.encodeHexString(testData.getBytes()))) {
 
-        final AtomicValue result = binaryValue.convertTo(new Base64BinaryValueType());
+            final AtomicValue result = binaryValue.convertTo(new Base64BinaryValueType());
 
-        assertEquals(expectedResult, result.getStringValue());
+            assertEquals(expectedResult, result.getStringValue());
+        }
+    }
+
+    @Test
+    public void base64StreamBinaryTo() throws XPathException, IOException {
+        try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), "yv4=");
+            final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+
+            binaryValue.streamBinaryTo(baos);
+
+            final byte[] data = baos.toByteArray();
+            assertEquals(2, data.length);
+            assertEquals(0xCA, data[0] & 0xFF);
+            assertEquals(0xFE, data[1] & 0xFF);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CAFE", "cafe"})
+    public void hexStreamBinaryTo(final String hexString) throws XPathException, IOException {
+        try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new HexBinaryValueType(), hexString);
+             final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+
+            binaryValue.streamBinaryTo(baos);
+
+            final byte[] data = baos.toByteArray();
+            assertEquals(2, data.length);
+            assertEquals(0xCA, data[0] & 0xFF);
+            assertEquals(0xFE, data[1] & 0xFF);
+        }
     }
 }

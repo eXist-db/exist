@@ -39,9 +39,20 @@ public class HexOutputStream extends org.apache.commons.codec.binary.Base16Outpu
      * Creates a HexOutputStream such that all data written is Hex-encoded to the original provided OutputStream.
      *
      * @param out the OutputStream to wrap.
-     * @param doEncode true to encode
+     * @param doEncode true to encode.
      */
     public HexOutputStream(final OutputStream out, final boolean doEncode) {
-        super(out, doEncode, true, CodecPolicy.STRICT);
+        this(out, doEncode, true);
+    }
+
+    /**
+     * Creates a HexOutputStream such that all data written is Hex-encoded to the original provided OutputStream.
+     *
+     * @param out the OutputStream to wrap.
+     * @param doEncode true to encode.
+     * @param lowerCase true to use lower case, or false for upper case.
+     */
+    public HexOutputStream(final OutputStream out, final boolean doEncode, final boolean lowerCase) {
+        super(out, doEncode, lowerCase, CodecPolicy.STRICT);
     }
 }
