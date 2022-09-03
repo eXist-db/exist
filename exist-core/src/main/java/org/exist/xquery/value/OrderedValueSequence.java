@@ -28,6 +28,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
@@ -36,8 +37,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
@@ -333,7 +332,7 @@ public class OrderedValueSequence extends AbstractSequence {
                 if (seq.hasOne()) {
                     values[i] = seq.itemAt(0).atomize();
                 } else if (seq.hasMany()) {
-                    throw new XPathException((values[i] == null) ? null : values[i].getExpression(),
+                    throw new XPathException((values[i] == null) ? null : values[i].getExpression(), ErrorCodes.XPTY0004,
                             "expected a single value for order expression " +
                             ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
                             " ; found: " + seq.getItemCount());
