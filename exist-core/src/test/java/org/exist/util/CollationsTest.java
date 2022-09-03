@@ -23,6 +23,7 @@
 package org.exist.util;
 
 import com.ibm.icu.text.Collator;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ public class CollationsTest {
 
     @Test
     public void htmlAscii_contains() throws XPathException {
-        final Collator collator = Collations.getCollationFromURI(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI, null);
+        final Collator collator = Collations.getCollationFromURI(HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI, (Expression)null);
 
         assertTrue(Collations.contains(collator, "iNPut", "pu"));
         assertTrue(Collations.contains(collator, "iNPut", "PU"));
