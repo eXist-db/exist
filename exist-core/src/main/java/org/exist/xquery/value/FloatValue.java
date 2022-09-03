@@ -154,8 +154,16 @@ public class FloatValue extends NumericValue {
             comparison = () -> Constants.INFERIOR;
         } else if (other.isNaN()) {
             comparison = () -> Constants.SUPERIOR;
-        } else if (isInfinite() && other.isInfinite() && isPositive() == other.isPositive()) {
-            comparison = () -> Constants.EQUAL;
+        } else if (isPositiveInfinity()) {
+            // +INF
+            comparison = () -> other.isPositiveInfinity() ? Constants.EQUAL : Constants.SUPERIOR;
+        } else if (other.isPositiveInfinity()) {
+            comparison = () -> Constants.INFERIOR;
+        } else if (isNegativeInfinity()) {
+            // -INF
+            comparison = () -> other.isNegativeInfinity() ? Constants.EQUAL : Constants.INFERIOR;
+        } else if (other.isNegativeInfinity()) {
+            comparison = () -> Constants.SUPERIOR;
         } else if (other instanceof IntegerValue) {
             comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
         } else if (other instanceof DecimalValue) {
