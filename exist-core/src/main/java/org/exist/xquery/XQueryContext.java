@@ -1090,10 +1090,24 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public Collator getCollator(final String uri) throws XPathException {
+    public Collator getCollator(String uri) throws XPathException {
         if (uri == null) {
             return defaultCollator;
         }
+
+        // if the uri is relative, resolve it against the base uri
+        try {
+            final URI u = new AnyURIValue(uri).toURI();
+            if (!u.isAbsolute()) {
+                final URI uu = getBaseURI().toURI().resolve(u);
+                if (uu.isAbsolute()) {
+                    uri = uu.toString();
+                }
+            }
+        } catch (final XPathException e) {
+            // no-op
+        }
+
         return Collations.getCollationFromURI(uri, rootExpression);
     }
 
