@@ -262,7 +262,7 @@ public class SerializerUtils {
                 final int status = reader.next();
                 if (status == XMLStreamConstants.START_ELEMENT) {
                     readStartElement(parent, reader, propertiesInXML);
-                } else if(status == XMLStreamConstants.END_ELEMENT && readEndElementLevel(reader) == thisLevel) {
+                } else if (status == XMLStreamConstants.END_ELEMENT && readEndElementLevel(reader) == thisLevel) {
                     // finished `optRoot` element ? exit-while
                     break;
                 }

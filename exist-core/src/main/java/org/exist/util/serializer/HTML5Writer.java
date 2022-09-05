@@ -38,13 +38,13 @@ public class HTML5Writer extends XHTML5Writer {
 
     /**
      * Holds the names of the attributes that are considered boolean
-     * according to {@link <a href="http://www.w3.org/TR/html51/single-page.html">...</a>}
+     * according to <a href="http://www.w3.org/TR/html51/single-page.html">HTML Standard</a>
      *
      * The value of these attributes are written if they equal the
      * name of the attribute. For example: checked="checked" will be
      * written as checked.
      *
-     * See <a href="https://github.com/eXist-db/exist/issues/777">...</a> for details.
+     * See <a href="https://github.com/eXist-db/exist/issues/777">html5 method eating attribute value when value is eq to name</a> for details.
      */
     private static final ObjectSet<String> BOOLEAN_ATTRIBUTE_NAMES = new ObjectOpenHashSet<>(68);
     static {
