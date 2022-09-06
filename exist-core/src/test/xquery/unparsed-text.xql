@@ -150,7 +150,20 @@ function upt:invalid-uri2() {
 
 declare
     %test:assertError("FOUT1170")
-function upt:non-existant() {
+function upt:non-existent() {
+    unparsed-text-lines("https://www.w3.org/fots/unparsed-text/does-not-exist.txt")
+};
+
+(:~
+ : this test will fail as the server responds with a
+ : permanent redirect that is neither followed nor
+ : treated as an error
+ : @see https://github.com/eXist-db/exist/issues/4542
+ :)
+declare
+    %test:pending
+    %test:assertError("FOUT1170")
+function upt:non-existent-redirect() {
     unparsed-text-lines("http://www.w3.org/fots/unparsed-text/does-not-exist.txt")
 };
 
@@ -229,9 +242,22 @@ function upt:unparsed-text-available-invalid-uri2() {
     unparsed-text-available(":/")
 };
 
-declare 
+declare
     %test:assertFalse
-function upt:unparsed-text-available-non-existant() {
+function upt:unparsed-text-available-non-existent() {
+    unparsed-text-available("https://www.w3.org/fots/unparsed-text/does-not-exist.txt")
+};
+
+(:~
+ : this test will fail as the server responds with a
+ : permanent redirect that is neither followed nor
+ : treated as an error
+ : @see https://github.com/eXist-db/exist/issues/4542
+ :)
+declare
+    %test:pending
+    %test:assertFalse
+function upt:unparsed-text-available-non-existent-redirect() {
     unparsed-text-available("http://www.w3.org/fots/unparsed-text/does-not-exist.txt")
 };
 
