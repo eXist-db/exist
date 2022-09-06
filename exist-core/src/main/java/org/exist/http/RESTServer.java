@@ -252,6 +252,10 @@ public class RESTServer {
      * the returned XML.</li>
      * </ul>
      *
+     * <li>_output-doctype: if set to "yes", the returned XML will include
+     * a Document Type Declaration if one is present, if "no" the Document Type Declaration will be omitted.</li>
+     * </ul>
+     *
      * @param broker the database broker
      * @param transaction the database transaction
      * @param request the request
@@ -345,6 +349,14 @@ public class RESTServer {
         }
         if ((option = getParameter(request, Indent)) != null) {
             outputProperties.setProperty(OutputKeys.INDENT, option);
+        }
+        if ((option = getParameter(request, Output_Doctype)) != null) {
+            // take user query-string specified output-doctype setting
+            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, option);
+        } else {
+            // set output-doctype by configuration
+            final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "no");
+            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, outputDocType);
         }
         if ((option = getParameter(request, Source)) != null && !safeMode) {
             source = "yes".equals(option);

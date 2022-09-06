@@ -302,6 +302,7 @@
                             </xs:simpleType>
                         </xs:attribute>
                         <xs:attribute name="compress-output" type="yes_no" default="no"/>
+                        <xs:attribute name="output-doctype" type="yes_no" default="no"/>
                         <xs:attribute name="enable-xinclude" type="yes_no" default="yes"/>
                         <xs:attribute name="enable-xsl" type="yes_no" default="no"/>
                         <xs:attribute name="indent" type="yes_no" default="yes"/>
