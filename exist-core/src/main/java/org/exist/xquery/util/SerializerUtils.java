@@ -185,6 +185,7 @@ public class SerializerUtils {
      * for Exist xquery specific functions
      */
     public enum ExistParameterConvention implements ParameterConvention<QName> {
+        OUTPUT_DOCTYPE(EXistOutputKeys.OUTPUT_DOCTYPE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         EXPAND_XINCLUDE(EXistOutputKeys.EXPAND_XINCLUDES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         PROCESS_XSL_PI(EXistOutputKeys.PROCESS_XSL_PI, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         JSON_IGNORE_WHITE_SPACE_TEXT_NODES(EXistOutputKeys.JSON_IGNORE_WHITESPACE_TEXT_NODES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
