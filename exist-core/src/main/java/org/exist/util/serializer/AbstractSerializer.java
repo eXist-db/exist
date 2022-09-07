@@ -37,15 +37,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class AbstractSerializer {
 
-    protected final static int XML_WRITER = 0;
-    protected final static int XHTML_WRITER = 1;
-    protected final static int TEXT_WRITER = 2;
-    protected final static int JSON_WRITER = 3;
-    protected final static int XHTML5_WRITER = 4;
-    protected final static int MICRO_XML_WRITER = 5;
-    protected final static int HTML5_WRITER = 6;
+    protected static final int XML_WRITER = 0;
+    protected static final int XHTML_WRITER = 1;
+    protected static final int TEXT_WRITER = 2;
+    protected static final int JSON_WRITER = 3;
+    protected static final int XHTML5_WRITER = 4;
+    protected static final int MICRO_XML_WRITER = 5;
+    protected static final int HTML5_WRITER = 6;
 
-    protected final static int CHARACTER_MAPPING_WRITER = 7;
+    protected static final int CHARACTER_MAPPING_WRITER = 7;
 
     protected SerializerWriter[] writers = {
         new IndentingXMLWriter(),
@@ -58,7 +58,7 @@ public abstract class AbstractSerializer {
         new CharacterMappingWriter()
     };
 
-    protected final static Properties defaultProperties = new Properties();
+    protected static final Properties defaultProperties = new Properties();
 
     static {
         defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());

@@ -568,7 +568,7 @@ public class SerializerUtils {
                 if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
-                        final String existingValue = (String) properties.getProperty(localParameterName);
+                        final String existingValue = properties.getProperty(localParameterName);
                         final String nextValue = ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName();
 
                         if (existingValue == null || existingValue.isEmpty()) {

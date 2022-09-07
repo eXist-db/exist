@@ -26,73 +26,73 @@ public class EXistOutputKeys {
     /**
      * Parameter "item-separator" from the XQuery serialization spec 3.1
      */
-    public final static String ITEM_SEPARATOR = "item-separator";
+    public static final String ITEM_SEPARATOR = "item-separator";
 
-	public final static String OUTPUT_DOCTYPE = "output-doctype";
+	public static final String OUTPUT_DOCTYPE = "output-doctype";
 	 
-	public final static String EXPAND_XINCLUDES = "expand-xincludes";
+	public static final String EXPAND_XINCLUDES = "expand-xincludes";
 	
-	public final static String PROCESS_XSL_PI = "process-xsl-pi";
+	public static final String PROCESS_XSL_PI = "process-xsl-pi";
 	
-	public final static String HIGHLIGHT_MATCHES = "highlight-matches";
+	public static final String HIGHLIGHT_MATCHES = "highlight-matches";
 	
-	public final static String INDENT_SPACES = "indent-spaces";
+	public static final String INDENT_SPACES = "indent-spaces";
 	
-	public final static String STYLESHEET = "stylesheet";
+	public static final String STYLESHEET = "stylesheet";
 	
-	public final static String STYLESHEET_PARAM = "stylesheet-param";
+	public static final String STYLESHEET_PARAM = "stylesheet-param";
 	
-	public final static String COMPRESS_OUTPUT = "compress-output";
+	public static final String COMPRESS_OUTPUT = "compress-output";
 
-    public final static String ADD_EXIST_ID = "add-exist-id";
+    public static final String ADD_EXIST_ID = "add-exist-id";
 
-    public final static String XINCLUDE_PATH = "xinclude-path";
+    public static final String XINCLUDE_PATH = "xinclude-path";
     
     /**
      * Enforce XHTML namespace on elements with no namespace
      */
-    public final static String ENFORCE_XHTML = "enforce-xhtml";
+    public static final String ENFORCE_XHTML = "enforce-xhtml";
     
     /**
      * Applies to JSON serialization only: preserve namespace prefixes in JSON properties
      * by replacing ":" with "_", so element foo:bar becomes "foo_bar".
      */
-    public final static String JSON_OUTPUT_NS_PREFIX = "preserve-prefix";
+    public static final String JSON_OUTPUT_NS_PREFIX = "preserve-prefix";
     
     /**
      * Applies to JSON serialization only: sets the jsonp callback function
      */
-    public final static String JSONP = "jsonp";
+    public static final String JSONP = "jsonp";
 
     /**
      * JSON serialization: prefix XML attributes with a '@' when serializing
      * them as JSON properties
      */
-    public final static String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
+    public static final String JSON_PREFIX_ATTRIBUTES = "prefix-attributes";
 
     /**
      * JSON serialization: if text nodes are encountered which consist solely of whitespace then they
      * will be ignored by the serializer
      */
-    public final static String JSON_IGNORE_WHITESPACE_TEXT_NODES = "json-ignore-whitespace-text-nodes";
+    public static final String JSON_IGNORE_WHITESPACE_TEXT_NODES = "json-ignore-whitespace-text-nodes";
 
     /**
      * Defines the output method to be used for serializing nodes within json output.
      */
-    public final static String JSON_NODE_OUTPUT_METHOD = "json-node-output-method";
+    public static final String JSON_NODE_OUTPUT_METHOD = "json-node-output-method";
 
     /**
      * Defines the output for JSON serializing to array even if only one item.
      */
-    public final static String JSON_ARRAY_OUTPUT = "json-array-output";
+    public static final String JSON_ARRAY_OUTPUT = "json-array-output";
 
     /**
      * Determines whether the presence of multiple keys in a map item with the same string value
      * will or will not raise serialization error err:SERE0022.
      */
-    public final static String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
+    public static final String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
 
-    public final static String HTML_VERSION = "html-version";
+    public static final String HTML_VERSION = "html-version";
 
     /**
      * When serializing an XDM this should be used
@@ -103,7 +103,7 @@ public class EXistOutputKeys {
      *
      * Set to "yes" to enable xdm-serialization rules, false otherwise.
      */
-    public final static String XDM_SERIALIZATION = "xdm-serialization";
+    public static final String XDM_SERIALIZATION = "xdm-serialization";
 
     /**
      * Enforce newline at the end of JSON and XML documents.
@@ -113,7 +113,7 @@ public class EXistOutputKeys {
      * exist-db and will lead to less meaningless changes in git and  tools
      * like diff will be able to provide more meaningful information as well.
      */
-    public final static String INSERT_FINAL_NEWLINE = "insert-final-newline";
+    public static final String INSERT_FINAL_NEWLINE = "insert-final-newline";
 
-    public final static String USE_CHARACTER_MAPS = "use-character-maps";
+    public static final String USE_CHARACTER_MAPS = "use-character-maps";
 }
