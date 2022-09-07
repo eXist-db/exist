@@ -128,6 +128,7 @@ function upt:invalid-uri2() {
 };
 
 declare
+    %test:assumeInternetAccess("https://www.w3.org")
     %test:assertError("FOUT1170")
 function upt:non-existent() {
     unparsed-text-lines("https://www.w3.org/fots/unparsed-text/does-not-exist.txt")
@@ -141,6 +142,7 @@ function upt:non-existent() {
  :)
 declare
     %test:pending
+    %test:assumeInternetAccess("https://www.w3.org")
     %test:assertError("FOUT1170")
 function upt:non-existent-redirect() {
     unparsed-text-lines("http://www.w3.org/fots/unparsed-text/does-not-exist.txt")
@@ -222,6 +224,7 @@ function upt:unparsed-text-available-invalid-uri2() {
 };
 
 declare
+    %test:assumeInternetAccess("https://www.w3.org")
     %test:assertFalse
 function upt:unparsed-text-available-non-existent() {
     unparsed-text-available("https://www.w3.org/fots/unparsed-text/does-not-exist.txt")
@@ -235,6 +238,7 @@ function upt:unparsed-text-available-non-existent() {
  :)
 declare
     %test:pending
+    %test:assumeInternetAccess("https://www.w3.org")
     %test:assertFalse
 function upt:unparsed-text-available-non-existent-redirect() {
     fn:unparsed-text-available("surely-nobody-supports-this:/path.txt")
