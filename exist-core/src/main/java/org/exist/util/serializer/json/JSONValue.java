@@ -90,7 +90,7 @@ public class JSONValue extends JSONNode {
         }
     }
 
-    protected static String escape(final String str) {
+    protected static String escape(final CharSequence str) {
         final StringBuilder builder = new StringBuilder();
         for(int i = 0; i < str.length(); i++) {
             final char ch = str.charAt(i);

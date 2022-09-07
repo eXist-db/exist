@@ -215,7 +215,7 @@ public class JSONWriter extends XMLWriter {
     }
 
     @Override
-    public void attribute(final String qname, final String value) throws TransformerException {
+    public void attribute(final String qname, final CharSequence value) throws TransformerException {
         final JSONObject parent = stack.peek();
         switch (qname) {
             case JSON_ARRAY:
@@ -237,7 +237,7 @@ public class JSONWriter extends XMLWriter {
     }
 
     @Override
-    public void attribute(final QName qname, final String value) throws TransformerException {
+    public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         attribute(qname.toString(), value);
     }
 

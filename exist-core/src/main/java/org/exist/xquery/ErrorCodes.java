@@ -189,6 +189,8 @@ public class ErrorCodes {
     public static final ErrorCode SERE0014 = new W3CErrorCode("SERE0014", "It is an error to use the HTML output method when characters which are legal in XML but not in HTML, specifically the control characters #x7F-#x9F, appear in the instance of the data model.");
     public static final ErrorCode SERE0015 = new W3CErrorCode("SERE0015", "It is an error to use the HTML output method when > appears within a processing instruction in the data model instance being serialized.");
     public static final ErrorCode SEPM0016 = new W3CErrorCode("SEPM0016", "It is a an error if a parameter value is invalid for the defined domain.");
+    public static final ErrorCode SEPM0017 = new W3CErrorCode("SEPM0017", "It is an error if evaluating an expression in order to extract the setting of a serialization parameter from a data model instance would yield an error.");
+    public static final ErrorCode SEPM0018 = new W3CErrorCode("SEPM0018", "It is an error if evaluating an expression in order to extract the setting of the use-character-maps serialization parameter from a data model instance would yield a sequence of length greater than one.");
 
     /* XQuery 3.1 Serialization */
     public static final ErrorCodes.ErrorCode SERE0021 = new ErrorCodes.ErrorCode("SERE0021", "It is an error if a sequence being serialized using the JSON " +

@@ -102,14 +102,14 @@ public class MicroXmlWriter extends IndentingXMLWriter {
     }
 
     @Override
-    public void attribute(final String qname, final String value) throws TransformerException {
+    public void attribute(final String qname, final CharSequence value) throws TransformerException {
         if(qname != null && !qname.startsWith("xmlns")) {
             super.attribute(removePrefix(qname), removeRestrictedChars(value).toString());
         }
     }
 
     @Override
-    public void attribute(final QName qname, final String value) throws TransformerException {
+    public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         if(qname != null && (!qname.getLocalPart().startsWith("xmlns") || (qname.getPrefix() != null && !qname.getPrefix().startsWith("xmlns")))) {
             super.attribute(removePrefix(qname), removeRestrictedChars(value).toString());
         }

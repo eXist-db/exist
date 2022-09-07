@@ -47,7 +47,7 @@ public class TEXTWriter extends XMLWriter {
     
     protected final static Properties defaultProperties = new Properties();
     
-    private char[] charref = new char[10];
+    private final char[] charref = new char[10];
     
     public TEXTWriter() {
         // empty
@@ -59,7 +59,7 @@ public class TEXTWriter extends XMLWriter {
     }
     
     @Override
-    protected void reset() {
+    public void reset() {
         super.reset();
     }
     
@@ -121,12 +121,12 @@ public class TEXTWriter extends XMLWriter {
     }
     
     @Override
-    public void attribute(final String qname, final String value) throws TransformerException {
+    public void attribute(final String qname, final CharSequence value) throws TransformerException {
         // empty
     }
     
     @Override
-    public void attribute(final QName qname, final String value) throws TransformerException {
+    public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         // empty
     }
     

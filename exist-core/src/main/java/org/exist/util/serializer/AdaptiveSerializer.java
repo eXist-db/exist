@@ -57,7 +57,7 @@ public class AdaptiveSerializer extends AbstractSerializer {
         } else {
             outputProperties = properties;
         }
-        for (XMLWriter w: writers) {
+        for (SerializerWriter w: writers) {
             w.setWriter(writer);
             w.setOutputProperties(outputProperties);
         }
