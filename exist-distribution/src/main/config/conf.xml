@@ -815,7 +815,7 @@
             Set the parameter to "yes" to enable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" output-doctype="no" enable-xinclude="yes"
+    <serializer add-exist-id="none" compress-output="no" output-doctype="yes" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
         <!--

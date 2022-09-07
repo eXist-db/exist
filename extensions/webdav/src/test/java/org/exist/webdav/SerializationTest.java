@@ -101,6 +101,6 @@ public class SerializationTest {
         assertEquals("application/xml", ((File) resource).contentType);
         final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
         resource.downloadTo(tempRetrieveFile, null);
-        assertEquals("<bookmap id=\"bookmap-1\"/>", new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+        assertEquals(XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
     }
 }

@@ -355,7 +355,7 @@ public class RESTServer {
             outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, option);
         } else {
             // set output-doctype by configuration
-            final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "no");
+            final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
             outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, outputDocType);
         }
         if ((option = getParameter(request, Source)) != null && !safeMode) {

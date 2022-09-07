@@ -89,6 +89,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
         defaultProperties.setProperty(NORMALIZE_HTML, "no");
+        defaultProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
     }
 
     private final XmldbURI path;

@@ -171,7 +171,7 @@ public class SerializationTest {
 	@Test
 	public void getDocTypeDefault() throws XMLDBException {
 		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-		assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+		assertEquals(XML_WITH_DOCTYPE, res.getContent());
 	}
 
 	@Test

@@ -1243,7 +1243,8 @@ try {
 
             final String response = readResponse(connect.getInputStream());
 
-            assertEquals("<bookmap id=\"bookmap-1\"/>\r\n", response);
+            assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\r\n" +
+                    "<bookmap id=\"bookmap-1\"/>\r\n", response);
 
         } finally {
             connect.disconnect();
