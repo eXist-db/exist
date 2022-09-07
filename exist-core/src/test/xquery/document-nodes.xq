@@ -115,3 +115,75 @@ declare
 function dn:memtree-document-node-element-wrong-name() {
     document { element template {} } instance of document-node(element(wrong))
 };
+
+declare
+    %test:assertEmpty
+function dn:persistent-document-node-from-collection() {
+    collection($dn:TEST_COLLECTION)[1]/document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-doc() {
+    collection($dn:TEST_COLLECTION)[1]/doc(document-uri(.))
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-self-axis() {
+    collection($dn:TEST_COLLECTION)[1]/self::document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-ancestor-of-self-axis() {
+    collection($dn:TEST_COLLECTION)[1]/ancestor-or-self::document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-parent-axis-node() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/parent::node()
+};
+
+declare
+    %test:assertEmpty
+function dn:persistent-document-node-from-collection-via-parent-axis-wildcard() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/parent::*
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-parent-axis-document-node() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/parent::document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-parent-axis-document-element() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/parent::document-node(element(template))
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-ancestor-axis-document-node() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/ancestor::document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-ancestor-axis-document-element() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/ancestor::document-node(element(template))
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-ancestor-or-self-axis-document-node() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/ancestor-or-self::document-node()
+};
+
+declare
+    %test:assertExists
+function dn:persistent-document-node-from-collection-via-ancestor-or-self-axis-document-element() {
+    (collection($dn:TEST_COLLECTION)/template)[1]/ancestor-or-self::document-node(element(template))
+};
