@@ -84,6 +84,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import se.softhouse.jargo.ArgumentException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.storage.serializers.EXistOutputKeys.OUTPUT_DOCTYPE;
 
 /**
  * Command-line client based on the XML:DB API.
@@ -137,6 +138,7 @@ public class InteractiveClient {
         defaultProps.setProperty(USER, USER_DEFAULT);
         defaultProps.setProperty(EDITOR, EDIT_CMD);
         defaultProps.setProperty(INDENT, "true");
+        defaultProps.setProperty(OUTPUT_DOCTYPE, "true");
         defaultProps.setProperty(ENCODING, ENCODING_DEFAULT.name());
         defaultProps.setProperty(COLORS, "false");
         defaultProps.setProperty(PERMISSIONS, "false");

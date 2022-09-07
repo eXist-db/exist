@@ -23,6 +23,7 @@ package org.exist.xmldb;
 
 import org.exist.Namespaces;
 import org.exist.TestUtils;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
 import org.junit.After;
 import org.junit.Before;
@@ -77,7 +78,7 @@ public class SerializationTest {
 
 	private static final String EOL = System.getProperty("line.separator");
 
-	private static final String TEST_COLLECTION_NAME = "test";
+	private static final String TEST_COLLECTION_NAME = "xmlrpc-serialization-test";
 
 	private static final String XML_DOC_NAME = "defaultns.xml";
 	private static final String XML =
@@ -106,6 +107,12 @@ public class SerializationTest {
 		"	<entry>2</entry>" + EOL +
 		"	<entry xmlns=\"\" xml:id=\"aargh\"/>" + EOL +
 		"</root>";
+
+	private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
+
+	private static final String XML_WITH_DOCTYPE =
+			"<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
+			"<bookmap id=\"bookmap-1\"/>";
 
 	private Collection testCollection;
 
@@ -161,6 +168,40 @@ public class SerializationTest {
 		assertXMLEquals(XML_UPDATED_EXPECTED, onDiskResource);
 	}
 
+	@Test
+	public void getDocTypeDefault() throws XMLDBException {
+		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+		assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+	}
+
+	@Test
+	public void getDocTypeNo() throws XMLDBException {
+		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
+		try {
+			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "NO");
+			assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+		} finally {
+			if (prevOutputDocType != null) {
+				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
+			}
+		}
+	}
+
+	@Test
+	public void getDocTypeYes() throws XMLDBException {
+		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
+		try {
+			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
+			assertEquals(XML_WITH_DOCTYPE, res.getContent());
+		} finally {
+			if (prevOutputDocType != null) {
+				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
+			}
+		}
+	}
+
 	private static void assertXMLEquals(final String expected, final Resource actual) throws XMLDBException {
 		final Source srcExpected = Input.fromString(expected).build();
 		final Source srcActual = Input.fromString(actual.getContent().toString()).build();
@@ -182,6 +223,10 @@ public class SerializationTest {
         final XMLResource res = (XMLResource) testCollection.createResource(XML_DOC_NAME, "XMLResource");
         res.setContent(XML);
         testCollection.storeResource(res);
+
+		final XMLResource res1 = (XMLResource) testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), "XMLResource");
+		res1.setContent(XML_WITH_DOCTYPE);
+		testCollection.storeResource(res1);
     }
 
     @After
