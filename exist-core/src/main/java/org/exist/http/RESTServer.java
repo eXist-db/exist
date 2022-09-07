@@ -250,7 +250,6 @@ public class RESTServer {
      *
      * <li>_xsl: an URI pointing to an XSL stylesheet that will be applied to
      * the returned XML.</li>
-     * </ul>
      *
      * <li>_output-doctype: if set to "yes", the returned XML will include
      * a Document Type Declaration if one is present, if "no" the Document Type Declaration will be omitted.</li>
