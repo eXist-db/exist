@@ -132,12 +132,11 @@ public class ExistResourceFactory implements ResourceFactory {
         // Return appropriate resource
         switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT:
-                MiltonDocument doc = new MiltonDocument(host, xmldbUri, brokerPool);
-                doc.setSerializationConfiguration(webDavOptions);
+                MiltonDocument doc = new MiltonDocument(webDavOptions, host, xmldbUri, brokerPool);
                 return doc;
 
             case COLLECTION:
-                return new MiltonCollection(host, xmldbUri, brokerPool);
+                return new MiltonCollection(webDavOptions, host, xmldbUri, brokerPool);
 
             case IGNORABLE:
                 if (LOG.isDebugEnabled()) {
