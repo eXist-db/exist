@@ -62,6 +62,76 @@
             <artifactId>xml-apis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.lacuna</groupId>
+            <artifactId>bifurcan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <licenseSets>
+
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>src/main/java/org/exist/xquery/modules/xmldiff/Compare.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/modules/xmldiff/XmlDiffModule.java</exclude>
+                                <exclude>src/test/java/xquery/modules/xmldiff/XmlDiffTests.java</exclude>
+                                <exclude>src/test/xquery/modules/xmldiff/compare.xqm</exclude>
+                                <exclude>src/test/xquery/modules/xmldiff/diff.xqm</exclude>
+                            </excludes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code
+                            -->
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/xquery/modules/xmldiff/Compare.java</include>
+                                <include>src/main/java/org/exist/xquery/modules/xmldiff/XmlDiffModule.java</include>
+                                <include>src/test/java/xquery/modules/xmldiff/XmlDiffTests.java</include>
+                                <include>src/test/xquery/modules/xmldiff/compare.xqm</include>
+                                <include>src/test/xquery/modules/xmldiff/diff.xqm</include>
+                            </includes>
+
+                        </licenseSet>
+
+                    </licenseSets>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
