@@ -191,6 +191,7 @@ public abstract class Serializer implements XMLReader {
     protected Receiver receiver = null;
     protected SAXSerializer xmlout = null;
     protected LexicalHandler lexicalHandler = null;
+    protected Map<Integer, String> useCharacterMaps = null;
     protected Subject user = null;
     
     protected XQueryContext.HttpContext httpContext = null;
@@ -268,6 +269,8 @@ public abstract class Serializer implements XMLReader {
 		    key = (String)e.nextElement();
 		    if(key.equals(Namespaces.SAX_LEXICAL_HANDLER))
 		        {lexicalHandler = (LexicalHandler)properties.get(key);}
+		    else if (key.equals(EXistOutputKeys.USE_CHARACTER_MAPS))
+		        {useCharacterMaps = (Map<Integer, String>) properties.get(key);}
 		    else
 		        {setProperty(key, properties.getProperty(key));}
 		}

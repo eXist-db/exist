@@ -41,7 +41,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 
  * @author wolf
  */
-public class XMLWriter {
+public class XMLWriter implements SerializerWriter {
 
     private final static IllegalStateException EX_CHARSET_NULL = new IllegalStateException("Charset should never be null!");
     
@@ -53,7 +53,7 @@ public class XMLWriter {
 
     protected Writer writer = null;
 
-    protected CharacterSet charSet = null;
+    protected CharacterSet charSet;
 
     protected boolean tagIsOpen = false;
 
@@ -65,11 +65,11 @@ public class XMLWriter {
     
     protected Properties outputProperties;
 
-    private char[] charref = new char[10];
+    private final char[] charref = new char[10];
 
-    private static boolean[] textSpecialChars;
+    private static final boolean[] textSpecialChars;
 
-    private static boolean[] attrSpecialChars;
+    private static final boolean[] attrSpecialChars;
 
     private String defaultNamespace = "";
 
@@ -124,7 +124,7 @@ public class XMLWriter {
      */
     public void setOutputProperties(final Properties properties) {
         if(properties == null) {
-            outputProperties = defaultProperties;
+            outputProperties = new Properties(defaultProperties);
         } else {
             outputProperties = properties;
         }
@@ -151,7 +151,7 @@ public class XMLWriter {
         return qnames;
     }
 
-    protected void reset() {
+    public void reset() {
         writer = null;
         resetObjectState();
     }
@@ -175,7 +175,7 @@ public class XMLWriter {
         resetObjectState();
     }
     
-    protected Writer getWriter() {
+    public Writer getWriter() {
         return writer;
     }
 
@@ -315,7 +315,7 @@ public class XMLWriter {
         }
     }
 
-    public void attribute(String qname, String value) throws TransformerException {
+    public void attribute(String qname, CharSequence value) throws TransformerException {
         try {
             if(!tagIsOpen) {
                     characters(value);
@@ -333,7 +333,7 @@ public class XMLWriter {
         }
     }
 
-    public void attribute(final QName qname, final String value) throws TransformerException {
+    public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         try {
             if(!tagIsOpen) {
                 characters(value);
@@ -519,7 +519,7 @@ public class XMLWriter {
         }
 
         if(outputProperties == null) {
-            outputProperties = defaultProperties;
+            outputProperties = new Properties(defaultProperties);
         }
         declarationWritten = true;
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");

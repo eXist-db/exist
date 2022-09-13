@@ -56,11 +56,11 @@ import java.util.Properties;
  */
 public class AdaptiveWriter extends IndentingXMLWriter {
 
-    private final XMLWriter textWriter;
+    private final SerializerWriter textWriter;
     private final DBBroker broker;
 
     public AdaptiveWriter(final DBBroker broker, final Properties outputProperties,
-                          final XMLWriter textWriter) {
+                          final SerializerWriter textWriter) {
         this.broker = broker;
         this.textWriter = textWriter;
         setWriter(textWriter.getWriter());
@@ -189,7 +189,7 @@ public class AdaptiveWriter extends IndentingXMLWriter {
         writeText(sb);
     }
 
-    private void writeDouble(final DoubleValue item) throws XPathException, SAXException {
+    private void writeDouble(final DoubleValue item) throws SAXException {
         final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
         symbols.setExponentSeparator("e");
         final DecimalFormat df = new DecimalFormat("0.0##########################E0", symbols);
@@ -240,9 +240,8 @@ public class AdaptiveWriter extends IndentingXMLWriter {
         }
     }
 
-    private void writeFunctionItem(final FunctionReference item) throws XPathException, SAXException {
-        final FunctionReference ref = item;
-        final FunctionSignature signature = ref.getSignature();
+    private void writeFunctionItem(final FunctionReference item) throws SAXException {
+        final FunctionSignature signature = item.getSignature();
         final QName fn = signature.getName();
         final String name;
         if (fn == InlineFunction.INLINE_FUNCTION_QNAME) {

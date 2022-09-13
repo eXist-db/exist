@@ -21,12 +21,6 @@
  */
 package org.exist.util.serializer;
 
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import javax.xml.XMLConstants;
-import javax.xml.transform.TransformerException;
 import org.exist.Namespaces;
 import org.exist.dom.INodeHandle;
 import org.exist.dom.QName;
@@ -39,6 +33,13 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.TransformerException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class SAXSerializer extends AbstractSerializer implements ContentHandler, LexicalHandler, Receiver {
 
@@ -69,7 +70,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
         return receiver.getWriter();
     }
 
-    public void setReceiver(final XMLWriter receiver) {
+    public void setReceiver(final SerializerWriter receiver) {
         this.receiver = receiver;
     }
 

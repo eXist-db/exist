@@ -107,8 +107,8 @@ public abstract class JSONNode {
         return name;
     }
 
-    public void setName(final String name) {
-        this.name = name;
+    public void setName(final CharSequence name) {
+        this.name = name.toString();
     }
 
     public void setIndent(final boolean indent) {
