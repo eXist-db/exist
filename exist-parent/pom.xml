@@ -112,7 +112,7 @@
         <jansi.version>2.4.0</jansi.version>
         <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.2</jaxb.impl.version>
-        <jetty.version>9.4.48.v20220622</jetty.version>
+        <jetty.version>9.4.49.v20220914</jetty.version>
         <log4j.version>2.18.0</log4j.version>
         <log4j.slf4j.impl.version>2.0-alpha2</log4j.slf4j.impl.version>
         <lucene.version>4.10.4</lucene.version>
