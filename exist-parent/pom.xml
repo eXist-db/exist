@@ -92,8 +92,7 @@
     </mailingLists>
 
     <properties>
-        <project.build.source>11</project.build.source>
-        <project.build.target>11</project.build.target>
+        <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
@@ -624,8 +623,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.10.1</version>
                     <configuration>
-                        <source>${project.build.source}</source>
-                        <target>${project.build.target}</target>
+                        <release>${maven.compiler.release}</release>
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
