@@ -127,6 +127,7 @@ public class ValueIndexFactory {
         return serialize(value, offset, true);
     }
 
+    // TODO(AR) switch implementation to various serialize methods in the AtomicValues (requires major version bump)
     public final static byte[] serialize(final Indexable value, final int offset, final boolean caseSensitive) throws EXistException {
         /* xs:string */
         if (Type.subTypeOf(value.getType(), Type.STRING)) {

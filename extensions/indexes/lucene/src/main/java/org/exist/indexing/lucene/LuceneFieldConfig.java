@@ -24,6 +24,7 @@ package org.exist.indexing.lucene;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
+import org.apache.lucene.util.BytesRef;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
@@ -57,14 +58,16 @@ import java.util.Optional;
  */
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
-    private final static String ATTR_FIELD_NAME = "name";
-    private final static String ATTR_TYPE = "type";
-    private final static String ATTR_STORE = "store";
-    private final static String ATTR_ANALYZER = "analyzer";
-    private final static String ATTR_IF = "if";
+    private static final String ATTR_FIELD_NAME = "name";
+    private static final String ATTR_TYPE = "type";
+    private static final String ATTR_BINARY = "binary";
+    private static final String ATTR_STORE = "store";
+    private static final String ATTR_ANALYZER = "analyzer";
+    private static final String ATTR_IF = "if";
 
     protected String fieldName;
     protected int type = Type.STRING;
+    protected boolean binary = false;
     protected boolean store = true;
     protected Analyzer analyzer= null;
     protected Optional<String> condition = Optional.empty();
@@ -103,6 +106,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         final String cond = configElement.getAttribute(ATTR_IF);
         if (StringUtils.isNotEmpty(cond)) {
             this.condition = Optional.of(cond);
+        }
+
+        final String binaryStr = configElement.getAttribute(ATTR_BINARY);
+        if (StringUtils.isNotEmpty(binaryStr)) {
+            this.binary = StringUtils.equalsAnyIgnoreCase(binaryStr, "true", "yes");
         }
     }
 
@@ -160,7 +168,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     protected void processResult(Sequence result, Document luceneDoc) throws XPathException {
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String text = i.nextItem().getStringValue();
-            final Field field = convertToField(text);
+            final Field field = binary ? convertToDocValue(text) : convertToField(text);
             if (field != null) {
                 luceneDoc.add(field);
             }
@@ -169,7 +177,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     @Override
     protected void processText(CharSequence text, Document luceneDoc) {
-        final Field field = convertToField(text.toString());
+        final Field field;
+        if (binary) {
+            field = convertToDocValue(text.toString());
+        } else {
+            field = convertToField(text.toString());
+        }
         if (field != null) {
             luceneDoc.add(field);
         }
@@ -216,6 +229,54 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             LOG.trace("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
         }
         return null;
+    }
+
+    private Field convertToDocValue(final String content) {
+        try {
+            switch (type) {
+                case Type.TIME:
+                    final TimeValue timeValue = new TimeValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(timeValue.toJavaObject(byte[].class)));
+
+                case Type.DATE_TIME:
+                    final DateTimeValue dateTimeValue = new DateTimeValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dateTimeValue.toJavaObject(byte[].class)));
+
+                case Type.DATE:
+                    final DateValue dateValue = new DateValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dateValue.toJavaObject(byte[].class)));
+
+                case Type.INTEGER:
+                case Type.LONG:
+                case Type.UNSIGNED_LONG:
+                case Type.INT:
+                case Type.UNSIGNED_INT:
+                case Type.SHORT:
+                case Type.UNSIGNED_SHORT:
+                    final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(iv.serialize()));
+
+                case Type.DOUBLE:
+                    final DoubleValue dbv = new DoubleValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dbv.toJavaObject(byte[].class)));
+
+                case Type.FLOAT:
+                    final FloatValue fv = new FloatValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(fv.toJavaObject(byte[].class)));
+
+                case Type.DECIMAL:
+                    final DecimalValue dv = new DecimalValue(content);
+                    return new BinaryDocValuesField(fieldName, new BytesRef(dv.toJavaObject(byte[].class)));
+
+                // everything else treated as string
+                default:
+                    return new BinaryDocValuesField(fieldName, new BytesRef(content));
+            }
+        } catch (final NumberFormatException | XPathException e) {
+            // wrong type: ignore
+            LOG.error("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);
+            return null;
+        }
     }
 
     private static long dateToLong(DateValue date) {
