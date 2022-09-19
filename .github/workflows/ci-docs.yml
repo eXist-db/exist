@@ -8,7 +8,7 @@ jobs:
     name: ${{ matrix.jdk }} Javadocs 
     strategy:
       matrix: 
-        jdk: ['8','11', '16']
+        jdk: ['11', '16']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

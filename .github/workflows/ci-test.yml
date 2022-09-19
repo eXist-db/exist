@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        jdk: ['8', '11']
+        jdk: ['11']
         include:
           - os: ubuntu-latest
             jdk: '16'
