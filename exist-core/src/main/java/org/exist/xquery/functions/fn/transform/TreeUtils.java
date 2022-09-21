@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn.transform;
 
 import net.sf.saxon.s9api.XdmNode;
 import org.exist.xquery.value.NodeValue;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
@@ -36,6 +37,10 @@ public class TreeUtils {
     }
 
     static StringBuilder pathTo(final Node node) {
+        if (node instanceof Document) {
+            final Document document = (Document) node;
+            return new StringBuilder().append(document.getDocumentURI());
+        }
         final List<Node> priors = new ArrayList<>();
         Node prev = node;
         while (prev != null) {
@@ -44,7 +49,7 @@ public class TreeUtils {
         }
         final Node parent = priors.get(0).getParentNode();
         final StringBuilder sb;
-        if (parent == null) {
+        if (parent == null || parent instanceof Document) {
             sb = new StringBuilder();
         } else {
             sb = pathTo(parent).append('/');
