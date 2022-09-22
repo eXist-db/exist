@@ -166,6 +166,13 @@ public class RESTServiceTest {
                     "    <header>{request:get-header('Authorization')}</header>\n" +
                     "</authorization>\n";
 
+    private static final String XML_WITH_DOCTYPE =
+            "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
+            "<bookmap id=\"bookmap-1\"/>";
+
+    private static final XmldbURI TEST_DOCTYPE_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-doctype");
+    private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
+
     private static String credentials;
     private static String badCredentials;
 
@@ -187,6 +194,10 @@ public class RESTServiceTest {
 
     private static String getResourceUri() {
         return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test/test.xml";
+    }
+
+    private static String getResourceWithDocTypeUri() {
+        return getServerUri() + TEST_DOCTYPE_COLLECTION_URI.append(TEST_XML_DOC_WITH_DOCTYPE_URI);
     }
 
     /* About path components of URIs:
@@ -263,6 +274,11 @@ public class RESTServiceTest {
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             try (final Collection col = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
                 broker.storeDocument(transaction, TEST_XML_DOC_URI, new StringInputSource(TEST_XML_DOC), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_DOCTYPE_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XML_DOC_WITH_DOCTYPE_URI, new StringInputSource(XML_WITH_DOCTYPE), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 
@@ -1203,6 +1219,87 @@ try {
         }finally {
             connect.disconnect();
             getConnect.disconnect();
+        }
+    }
+
+    /**
+     * By default there should be NO doctype serialized.
+     */
+    @Test
+    public void getDocTypeDefault() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri());
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+
+            assertEquals("<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\r\n" +
+                    "<bookmap id=\"bookmap-1\"/>\r\n", response);
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void getDocTypeNo() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=no");
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+
+            assertEquals("<bookmap id=\"bookmap-1\"/>\r\n", response);
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void getDocTypeYes() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=yes");
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "application/xml", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+
+            assertEquals(
+                    "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\r\n" +
+                    "<bookmap id=\"bookmap-1\"/>\r\n", response);
+
+        } finally {
+            connect.disconnect();
         }
     }
 

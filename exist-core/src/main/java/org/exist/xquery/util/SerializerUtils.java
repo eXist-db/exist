@@ -185,15 +185,17 @@ public class SerializerUtils {
      * for Exist xquery specific functions
      */
     public enum ExistParameterConvention implements ParameterConvention<QName> {
-        EXPAND_XINCLUDE("expand-xincludes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
-        PROCESS_XSL_PI("process-xsl-pi", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
-        JSON_IGNORE_WHITE_SPACE_TEXT_NODES("json-ignore-whitespace-text-nodes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
-        HIGHLIGHT_MATCHES("highlight-matches", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
-        JSONP("jsonp", Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
-        ADD_EXIST_ID("add-exist-id", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
+        OUTPUT_DOCTYPE(EXistOutputKeys.OUTPUT_DOCTYPE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
+        EXPAND_XINCLUDE(EXistOutputKeys.EXPAND_XINCLUDES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        PROCESS_XSL_PI(EXistOutputKeys.PROCESS_XSL_PI, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        JSON_IGNORE_WHITE_SPACE_TEXT_NODES(EXistOutputKeys.JSON_IGNORE_WHITESPACE_TEXT_NODES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
+        HIGHLIGHT_MATCHES(EXistOutputKeys.HIGHLIGHT_MATCHES, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
+        JSONP(EXistOutputKeys.JSONP, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
+        ADD_EXIST_ID(EXistOutputKeys.ADD_EXIST_ID, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
         // default of 4 corresponds to the existing eXist default, although 3 is in the spec
         INDENT_SPACES("indent-spaces", Type.INTEGER, Cardinality.ZERO_OR_ONE, new IntegerValue(4)),
         INSERT_FINAL_NEWLINE(EXistOutputKeys.INSERT_FINAL_NEWLINE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE);
+
 
         private final QName parameterName;
         private final int type;

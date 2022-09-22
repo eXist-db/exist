@@ -131,12 +131,14 @@ public class FunSerialize extends BasicFunction {
      * <a href="http://www.w3.org/TR/xslt-xquery-serialization-30/#serdm">XSLT and XQuery Serialization 3.0 - Sequence Normalization</a>.
      *
      * @param callingExpr the expression from which the function is called.
-     *                    needed for error reporting
-     * @param context current context
-     * @param input non-normalized sequence
-     * @param itemSeparator placed between each item
-     * @return normalized sequence
-     * @throws XPathException in case of dynamic error
+     *                    Needed for error reporting
+     * @param context current context.
+     * @param input non-normalized sequence.
+     * @param itemSeparator the item separator placed between each item.
+     *
+     * @return normalized sequence.
+     *
+     * @throws XPathException in case of dynamic error.
      */
     public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input, final String itemSeparator) throws XPathException {
         if (input.isEmpty())

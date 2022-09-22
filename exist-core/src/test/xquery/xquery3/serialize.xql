@@ -132,6 +132,8 @@ declare variable $ser:test-xml := document {
     <elem a="abc"><!--comment--><b>123</b></elem>
 };
 
+declare variable $ser:test-xml-with-doctype := '<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd"><bookmap id="bookmap-1"/>';
+
 declare variable $ser:collection-name := "serialization-test";
 
 declare variable $ser:collection := "/db/" || $ser:collection-name;
@@ -142,7 +144,8 @@ function ser:setup() {
     xmldb:create-collection("/db", $ser:collection-name),
     xmldb:store($ser:collection, "test.xml", $ser:test-xml),
     xmldb:store($ser:collection, "test-xsl.xml", $ser:test-xsl),
-    xmldb:store($ser:collection, "test.xsl", $ser:xsl)
+    xmldb:store($ser:collection, "test.xsl", $ser:xsl),
+    xmldb:store($ser:collection, "test-with-doctype.xml", $ser:test-xml-with-doctype)
 };
 
 declare
@@ -699,6 +702,22 @@ function ser:adaptive-xs-strings-map-params() {
     let $input := (xs:normalizedString("en"), xs:token("en"), xs:language("en"), xs:ID("en"), xs:NCName("en"))
     return
         ser:adaptive-map-params($input, ",")
+};
+
+declare
+    %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
+function ser:exist-output-doctype-true() {
+    let $doc := doc($ser:collection || "/test-with-doctype.xml")
+    return
+        fn:serialize($doc, map { xs:QName("exist:output-doctype"): fn:true() })
+};
+
+declare
+    %test:assertXPath("not(contains($result, '-//OASIS//DTD DITA BookMap//EN')) and not(contains($result, 'bookmap.dtd'))")
+function ser:exist-output-doctype-false() {
+    let $doc := doc($ser:collection || "/test-with-doctype.xml")
+    return
+        fn:serialize($doc, map { xs:QName("exist:output-doctype"): fn:false() })
 };
 
 declare

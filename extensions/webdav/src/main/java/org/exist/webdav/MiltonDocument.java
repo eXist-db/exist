@@ -70,26 +70,27 @@ public class MiltonDocument extends MiltonResource
      * Constructor of representation of a Document in the Milton framework, without subject information.
      * To be called by the resource factory.
      *
+     * @param configuration any configuration properties.
      * @param host       FQ host name including port number.
      * @param uri        Path on server indicating path of resource
      * @param brokerPool Handle to Exist database.
      */
-    public MiltonDocument(String host, XmldbURI uri, BrokerPool brokerPool) {
-        this(host, uri, brokerPool, null);
+    public MiltonDocument(final Properties configuration, String host, XmldbURI uri, BrokerPool brokerPool) {
+        this(configuration, host, uri, brokerPool, null);
     }
 
     /**
      * Constructor of representation of a Document in the Milton framework, with subject information.
      * To be called by the resource factory.
      *
+     * @param configuration any configuration properties.
      * @param host    FQ host name including port number.
      * @param uri     Path on server indicating path of resource.
      * @param subject An Exist operation is performed with  User. Can be NULL.
      * @param pool    Handle to Exist database.
      */
-    public MiltonDocument(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
-
-        super();
+    public MiltonDocument(final Properties configuration, String host, XmldbURI uri, BrokerPool pool, Subject subject) {
+        super(configuration);
 
         if (userAgentHelper == null) {
             userAgentHelper = new DefaultUserAgentHelper();
@@ -103,7 +104,7 @@ public class MiltonDocument extends MiltonResource
         brokerPool = pool;
         this.host = host;
 
-        existDocument = new ExistDocument(uri, brokerPool);
+        existDocument = new ExistDocument(configuration, uri, brokerPool);
 
         // store simpler type
         existResource = existDocument;
@@ -483,15 +484,6 @@ public class MiltonDocument extends MiltonResource
     /* ================
      * StAX serializer
      * ================ */
-
-    /**
-     * Set specific WebDAV serialization options
-     *
-     * @param config XML serialization options
-     */
-    public void setSerializationConfiguration(Properties config) {
-        existDocument.setSerializationConfiguration(config);
-    }
 
     private enum SIZE_METHOD {NULL, EXACT, APPROXIMATE}
 }

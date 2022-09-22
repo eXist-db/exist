@@ -40,7 +40,6 @@ import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.webdav.exceptions.CollectionDoesNotExistException;
 import org.exist.webdav.exceptions.CollectionExistsException;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
@@ -51,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Class for accessing the Collection class of the exist-db native API.
@@ -65,13 +65,14 @@ public class ExistCollection extends ExistResource {
      * @param uri  URI of document
      * @param pool Reference to brokerpool
      */
-    public ExistCollection(XmldbURI uri, BrokerPool pool) {
+    public ExistCollection(final Properties configuration, final XmldbURI uri, final BrokerPool pool) {
+        super(configuration);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace("New collection object for {}", uri);
         }
 
-        brokerPool = pool;
+        this.brokerPool = pool;
         this.xmldbUri = uri;
     }
 

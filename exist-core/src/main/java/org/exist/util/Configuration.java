@@ -652,6 +652,12 @@ public class Configuration implements ErrorHandler
      */
     private void configureSerializer( Element serializer )
     {
+        final String outputDocType = getConfigAttributeValue( serializer, Serializer.OUTPUT_DOCTYPE_ATTRIBUTE );
+        if (outputDocType != null) {
+            config.put(Serializer.PROPERTY_OUTPUT_DOCTYPE, outputDocType);
+            LOG.debug(Serializer.PROPERTY_OUTPUT_DOCTYPE + ": {}", config.get(Serializer.PROPERTY_OUTPUT_DOCTYPE));
+        }
+
         final String xinclude = getConfigAttributeValue( serializer, Serializer.ENABLE_XINCLUDE_ATTRIBUTE );
 
         if( xinclude != null ) {

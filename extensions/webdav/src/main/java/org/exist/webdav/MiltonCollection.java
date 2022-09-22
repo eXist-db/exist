@@ -58,26 +58,27 @@ public class MiltonCollection extends MiltonResource
      * Constructor of representation of a Collection in the Milton framework, without subject information.
      * To be called by the resource factory.
      *
+     * @param configuration any configuration properties.
      * @param host FQ host name including port number.
      * @param uri  Path on server indicating path of resource
      * @param pool Handle to Exist database.
      */
-    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool) {
-        this(host, uri, pool, null);
+    public MiltonCollection(final Properties configuration, String host, XmldbURI uri, BrokerPool pool) {
+        this(configuration, host, uri, pool, null);
     }
 
     /**
      * Constructor of representation of a Document in the Milton framework, with subject information.
      * To be called by the resource factory.
      *
+     * @param configuration any configuration properties.
      * @param host    FQ host name including port number.
      * @param uri     Path on server indicating path of resource.
      * @param subject An Exist operation is performed with Subject. Can be NULL.
      * @param pool    Handle to Exist database.
      */
-    public MiltonCollection(String host, XmldbURI uri, BrokerPool pool, Subject subject) {
-
-        super();
+    public MiltonCollection(final Properties configuration, String host, XmldbURI uri, BrokerPool pool, Subject subject) {
+        super(configuration);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("COLLECTION={}", uri.toString());
@@ -87,7 +88,7 @@ public class MiltonCollection extends MiltonResource
         brokerPool = pool;
         this.host = host;
 
-        existCollection = new ExistCollection(uri, brokerPool);
+        existCollection = new ExistCollection(configuration, uri, brokerPool);
 
         // store simpler type
         existResource = existCollection;
@@ -129,7 +130,7 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonCollection> getCollectionResources() {
         List<MiltonCollection> allResources = new ArrayList<>();
         for (XmldbURI path : existCollection.getCollectionURIs()) {
-            allResources.add(new MiltonCollection(this.host, path, brokerPool, subject));
+            allResources.add(new MiltonCollection(configuration, this.host, path, brokerPool, subject));
         }
         return allResources;
     }
@@ -137,7 +138,7 @@ public class MiltonCollection extends MiltonResource
     private List<MiltonDocument> getDocumentResources() {
         List<MiltonDocument> allResources = new ArrayList<>();
         for (XmldbURI path : existCollection.getDocumentURIs()) {
-            MiltonDocument mdoc = new MiltonDocument(this.host, path, brokerPool, subject);
+            MiltonDocument mdoc = new MiltonDocument(configuration, this.host, path, brokerPool, subject);
             // Show (restimated) size for PROPFIND only
             mdoc.setIsPropFind(true);
             allResources.add(mdoc);
@@ -207,7 +208,7 @@ public class MiltonCollection extends MiltonResource
         CollectionResource collection = null;
         try {
             XmldbURI collectionURI = existCollection.createCollection(name);
-            collection = new MiltonCollection(host, collectionURI, brokerPool, subject);
+            collection = new MiltonCollection(configuration, host, collectionURI, brokerPool, subject);
 
         } catch (PermissionDeniedException ex) {
             LOG.debug(ex.getMessage());
@@ -239,7 +240,7 @@ public class MiltonCollection extends MiltonResource
             // submit
             XmldbURI resourceURI = existCollection.createFile(newName, is, length, contentType);
 
-            resource = new MiltonDocument(host, resourceURI, brokerPool, subject);
+            resource = new MiltonDocument(configuration, host, resourceURI, brokerPool, subject);
 
         } catch (PermissionDeniedException | CollectionDoesNotExistException | IOException e) {
             LOG.debug(e.getMessage());

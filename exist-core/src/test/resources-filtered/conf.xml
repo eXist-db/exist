@@ -739,6 +739,10 @@
            Remember to add a statement like this to your client code:
            service.setProperty("compress-output", "yes");
            to uncompress the retrieved result in the client too.
+
+        - output-doctype:
+            should the Doctype Declaration for a document be serialized
+            if it is present?
         
         - enable-xinclude: 
             should the database expand XInclude tags by default?
@@ -764,7 +768,7 @@
             Set the parameter to "yes" to enable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+    <serializer add-exist-id="none" compress-output="no" output-doctype="yes" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
         <!--

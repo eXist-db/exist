@@ -51,6 +51,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.util.Optional;
+import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -71,7 +72,8 @@ public class ExistDocument extends ExistResource {
      * @param uri  URI of document
      * @param pool Reference to brokerpool
      */
-    public ExistDocument(XmldbURI uri, BrokerPool pool) {
+    public ExistDocument(final Properties configuration, final XmldbURI uri, final BrokerPool pool) {
+        super(configuration);
 
         if (LOG.isTraceEnabled()) {
             LOG.trace("New document object for {}", uri);
@@ -169,7 +171,10 @@ public class ExistDocument extends ExistResource {
                     // Stream XML document
 
                     try {
-                        serialize(broker, document, os);
+                        // Set custom serialization options when available
+                        final Properties properties = configuration.isEmpty() ? new Properties() : configuration;
+
+                        serialize(broker, properties, document, os);
                         os.flush();
                     } catch (SAXException e) {
                         LOG.error(e);
@@ -198,20 +203,18 @@ public class ExistDocument extends ExistResource {
 
     }
 
-    private void serialize(final DBBroker broker, final DocumentImpl document, final OutputStream os) throws SAXException, IOException {
+    private void serialize(final DBBroker broker, final Properties properties, final DocumentImpl document, final OutputStream os) throws SAXException, IOException {
         final Serializer serializer = broker.borrowSerializer();
-        // Set custom serialization options when available
-        if (!configuration.isEmpty()) {
-            serializer.setProperties(configuration);
-        }
 
         SAXSerializer saxSerializer = null;
         try {
+            serializer.setUser(getUser());
+            serializer.setProperties(properties);
             saxSerializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             // Serialize document
             try (final Writer writer = new OutputStreamWriter(os, UTF_8)) {
-                saxSerializer.setOutput(writer, configuration.isEmpty() ? null : configuration);
+                saxSerializer.setOutput(writer, properties);
                 serializer.setSAXHandlers(saxSerializer, saxSerializer);
 
                 serializer.toSAX(document);
