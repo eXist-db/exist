@@ -54,6 +54,21 @@ function ca:test-fail-4() as item()* {
 };
 
 declare
+    %test:assertEquals("Custom message", "expected", "actual", "custom-assertion-failure")
+function ca:test-fail-fallback() as item()* {
+    try {
+        error($test:FAILURE, "Custom message", map {
+            "expected": "expected",
+            "actual": "actual",
+            "type": $test:CUSTOM_ASSERTION_FAILURE_TYPE
+        })
+    }
+    catch test:failure {
+        $err:description, $err:value?expected, $err:value?actual, $err:value?type
+    }
+};
+
+declare
     %test:assertTrue
 function ca:map-assertion-pass() as item()* {
     ca:map-assertion($ca:var, map {"b": 2, "a": 1})
