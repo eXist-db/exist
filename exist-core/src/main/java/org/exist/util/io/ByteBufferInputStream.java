@@ -28,6 +28,7 @@ package org.exist.util.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 
 /**
  * Implementation of an InputStream which reads from a ByteBuffer
@@ -51,7 +52,7 @@ public class ByteBufferInputStream extends InputStream {
         int available = 0;
 
         if(!closed) {
-            available = bufAccessor.getBuffer().capacity() - bufAccessor.getBuffer().position();
+            available = bufAccessor.getBuffer().capacity() - ((Buffer)bufAccessor.getBuffer()).position();
         }
 
         return available;
@@ -77,8 +78,8 @@ public class ByteBufferInputStream extends InputStream {
         } else if(b.length > available()) {
             return read(b, 0, available());
         } else {
-            final int currentPosition = bufAccessor.getBuffer().position();
-            return bufAccessor.getBuffer().get(b).position() - currentPosition;
+            final int currentPosition = ((Buffer)bufAccessor.getBuffer()).position();
+            return ((Buffer)bufAccessor.getBuffer().get(b)).position() - currentPosition;
         }
     }
 
@@ -94,8 +95,8 @@ public class ByteBufferInputStream extends InputStream {
             len = available();
         }
 
-        final int currentPosition = bufAccessor.getBuffer().position();
-        return bufAccessor.getBuffer().get(b, off, len).position() - currentPosition;
+        final int currentPosition = ((Buffer)bufAccessor.getBuffer()).position();
+        return ((Buffer)bufAccessor.getBuffer().get(b, off, len)).position() - currentPosition;
     }
 
     @Override
@@ -120,10 +121,10 @@ public class ByteBufferInputStream extends InputStream {
             l = available();
         }
 
-        long newPosition = bufAccessor.getBuffer().position();
+        long newPosition = ((Buffer)bufAccessor.getBuffer()).position();
         newPosition += l;
         try {
-            bufAccessor.getBuffer().position((int)newPosition);
+            ((Buffer)bufAccessor.getBuffer()).position((int)newPosition);
         } catch(final IllegalArgumentException iae) {
             throw new IOException("Unable to skip " + l + " bytes", iae);
         }

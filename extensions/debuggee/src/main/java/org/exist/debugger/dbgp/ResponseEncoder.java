@@ -42,7 +42,7 @@ public class ResponseEncoder extends ProtocolEncoderAdapter {
 		IoBuffer buffer = IoBuffer.allocate(response.length+1, false);
 		buffer.put(response);
 		buffer.put((byte)0);
-		buffer.flip();
+		((Buffer)buffer).flip();
 		
 		out.write(buffer);
 	}

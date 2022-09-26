@@ -30,6 +30,7 @@ import org.exist.util.ByteConversion;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -82,7 +83,7 @@ public class JournalReader implements AutoCloseable {
         // read the magic number
         final ByteBuffer buf = ByteBuffer.allocateDirect(JOURNAL_HEADER_LEN);
         fc.read(buf);
-        buf.flip();
+        ((Buffer)buf).flip();
 
         // check the magic number
         final boolean validMagic =
@@ -145,12 +146,12 @@ public class JournalReader implements AutoCloseable {
 
             // go back 8 bytes (checksum length) + 2 bytes (backLink length) and read the backLink (2 bytes) of the last entry
             fc.position(fc.position() - LOG_ENTRY_CHECKSUM_LEN - LOG_ENTRY_BACK_LINK_LEN);
-            header.clear().limit(LOG_ENTRY_BACK_LINK_LEN);
+            ((Buffer)header).clear().limit(LOG_ENTRY_BACK_LINK_LEN);
             final int read = fc.read(header);
             if (read != LOG_ENTRY_BACK_LINK_LEN) {
                 throw new LogException("Unable to read journal entry back-link!");
             }
-            header.flip();
+            ((Buffer)header).flip();
             final short backLink = header.getShort();
 
             // position the channel to the start of the previous entry and mark it
@@ -195,7 +196,7 @@ public class JournalReader implements AutoCloseable {
             final Lsn lsn = new Lsn(fileNumber, fc.position() + 1);
 
             // read the entry header
-            header.clear();
+            ((Buffer)header).clear();
             int read = fc.read(header);
             if (read <= 0) {
                 return null;
@@ -204,19 +205,19 @@ public class JournalReader implements AutoCloseable {
                 throw new LogException("Incomplete journal entry header found, expected  "
                         + LOG_ENTRY_HEADER_LEN + " bytes, but found " + read + " bytes");
             }
-            header.flip();
+            ((Buffer)header).flip();
 
             // prepare the checksum for the header
             xxHash64.reset();
             if (header.hasArray()) {
                 xxHash64.update(header.array(), 0, LOG_ENTRY_HEADER_LEN);
             } else {
-                final int mark = header.position();
-                header.position(0);
+                final int mark = ((Buffer)header).position();
+                ((Buffer)header).position(0);
                 final byte buf[] = new byte[LOG_ENTRY_HEADER_LEN];
                 header.get(buf);
                 xxHash64.update(buf, 0, LOG_ENTRY_HEADER_LEN);
-                header.position(mark);
+                ((Buffer)header).position(mark);
             }
 
             final byte entryType = header.get();
@@ -239,12 +240,12 @@ public class JournalReader implements AutoCloseable {
                 // resize the payload buffer
                 payload = ByteBuffer.allocateDirect(remainingEntryBytes);
             }
-            payload.clear().limit(remainingEntryBytes);
+            ((Buffer)payload).clear().limit(remainingEntryBytes);
             read = fc.read(payload);
             if (read < remainingEntryBytes) {
                 throw new LogException("Incomplete log entry found!");
             }
-            payload.flip();
+            ((Buffer)payload).flip();
 
             // read entry data
             loggable.read(payload);
@@ -260,12 +261,12 @@ public class JournalReader implements AutoCloseable {
             if (payload.hasArray()) {
                 xxHash64.update(payload.array(), 0, size + LOG_ENTRY_BACK_LINK_LEN);
             } else {
-                final int mark = payload.position();
-                payload.position(0);
+                final int mark = ((Buffer)payload).position();
+                ((Buffer)payload).position(0);
                 final byte buf[] = new byte[size + LOG_ENTRY_BACK_LINK_LEN];
                 payload.get(buf);
                 xxHash64.update(buf, 0, size + LOG_ENTRY_BACK_LINK_LEN);
-                payload.position(mark);
+                ((Buffer)payload).position(mark);
             }
 
             // read the entry checksum

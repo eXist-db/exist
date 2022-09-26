@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -117,7 +118,7 @@ public class BinaryValueFromFile extends BinaryValue {
             os.flush();
         } finally {
             //reset the buf
-            buf.position(0);
+            ((Buffer)buf).position(0);
         }
     }
 

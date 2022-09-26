@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.util.ArrayList;
@@ -136,14 +137,14 @@ public class DataGuide {
         final int nodeCount = root.getSize();
         final ByteBuffer buffer = ByteBuffer.allocate(nodeCount * BYTES_PER_NODE + 4);
         root.write(buffer, symbols);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         chan.write(buffer);
     }
 
     public void read(SeekableByteChannel chan, SymbolTable symbols) throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate((int) chan.size());
         chan.read(buffer);
-        buffer.flip();
+        ((Buffer)buffer).flip();
         root.read(buffer, symbols);
     }
 

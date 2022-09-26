@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import java.math.BigDecimal;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 import org.exist.EXistException;
@@ -113,7 +114,7 @@ public class ValueIndexFactoryTest {
     private ByteBuffer encode(final double number) {
         final ByteBuffer buf = ByteBuffer.allocate(8);
         buf.putDouble(number);
-        buf.flip();
+        ((Buffer)buf).flip();
         return buf;
     }
 }

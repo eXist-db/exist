@@ -60,6 +60,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -484,7 +485,7 @@ public class BlobStoreImpl implements BlobStore {
      */
     private void closeBlobStore() {
         if (buffer != null) {
-            buffer.clear();
+            ((Buffer)buffer).clear();
             buffer = null;
         }
 
@@ -563,18 +564,18 @@ public class BlobStoreImpl implements BlobStore {
         try (final SeekableByteChannel channel = Files.newByteChannel(persistentFile, READ)) {
 
             validateFileHeader(buffer, persistentFile, channel);
-            buffer.clear();
+            ((Buffer)buffer).clear();
 
             try (final SeekableByteChannel compactChannel = Files.newByteChannel(compactPersistentFile,
                     CREATE_NEW, APPEND)) {
 
                 writeFileHeader(buffer, compactChannel);
 
-                buffer.clear();
+                ((Buffer)buffer).clear();
 
                 while (channel.read(buffer) > -1) {
                     final byte[] id = new byte[digestType.getDigestLengthBytes()];
-                    buffer.flip();
+                    ((Buffer)buffer).flip();
                     buffer.get(id);
                     final BlobId blobId = new BlobId(id);
                     final int count = buffer.getInt();
@@ -586,11 +587,11 @@ public class BlobStoreImpl implements BlobStore {
 
                         compactReferences.put(blobId, new BlobReference(count, compactChannel.position()));
 
-                        buffer.flip();
+                        ((Buffer)buffer).flip();
                         compactChannel.write(buffer);
                     }
 
-                    buffer.clear();
+                    ((Buffer)buffer).clear();
                 }
             }
         }
@@ -617,11 +618,11 @@ public class BlobStoreImpl implements BlobStore {
     private long writeFileHeader(final ByteBuffer buffer, final SeekableByteChannel channel) throws IOException {
         final long start = channel.position();
 
-        buffer.clear();
+        ((Buffer)buffer).clear();
         writeFileHeader(buffer);
 
-        buffer.flip();
-        buffer.limit(BLOB_STORE_HEADER_LEN);
+        ((Buffer)buffer).flip();
+        ((Buffer)buffer).limit(BLOB_STORE_HEADER_LEN);
         channel.write(buffer);
 
         return channel.position() - start;
@@ -648,12 +649,12 @@ public class BlobStoreImpl implements BlobStore {
      */
     private void validateFileHeader(final ByteBuffer buffer, final Path file, final SeekableByteChannel channel)
             throws IOException {
-        buffer.clear();
-        buffer.limit(BLOB_STORE_HEADER_LEN);
+        ((Buffer)buffer).clear();
+        ((Buffer)buffer).limit(BLOB_STORE_HEADER_LEN);
 
         channel.read(buffer);
 
-        buffer.flip();
+        ((Buffer)buffer).flip();
 
         final boolean validMagic =
                 buffer.get() == BLOB_STORE_MAGIC_NUMBER[0]
@@ -1216,8 +1217,8 @@ public class BlobStoreImpl implements BlobStore {
      * @throws IOException if the blob's reference count cannot be set
      */
     private void updateBlogRefCount(final BlobId blobId, final int count) throws IOException {
-        buffer.clear();
-        buffer.limit(digestType.getDigestLengthBytes());  // we are only going to read the BlobIds
+        ((Buffer)buffer).clear();
+        ((Buffer)buffer).limit(digestType.getDigestLengthBytes());  // we are only going to read the BlobIds
 
         // start immediately after the file header
         channel.position(BLOB_STORE_HEADER_LEN);
@@ -1225,17 +1226,17 @@ public class BlobStoreImpl implements BlobStore {
         boolean updatedCount = false;
 
         while (channel.read(buffer) > 0) {
-            buffer.flip();
+            ((Buffer)buffer).flip();
             final byte[] id = new byte[digestType.getDigestLengthBytes()];
             buffer.get(id);
             final BlobId readBlobId = new BlobId(id);
 
             if (blobId.equals(readBlobId)) {
 
-                buffer.clear();
-                buffer.limit(REFERENCE_COUNT_LEN);
+                ((Buffer)buffer).clear();
+                ((Buffer)buffer).limit(REFERENCE_COUNT_LEN);
                 buffer.putInt(count);
-                buffer.flip();
+                ((Buffer)buffer).flip();
 
                 channel.write(buffer);
 
@@ -1254,11 +1255,11 @@ public class BlobStoreImpl implements BlobStore {
          * the next call to compactPersistentReferences
          */
         if (!updatedCount) {
-            buffer.clear();
+            ((Buffer)buffer).clear();
             buffer.put(blobId.getId());
             buffer.putInt(count);
 
-            buffer.flip();
+            ((Buffer)buffer).flip();
 
             channel.write(buffer);
         }
@@ -1617,10 +1618,10 @@ public class BlobStoreImpl implements BlobStore {
 
             channel.position(blobReference.persistentOffset);
 
-            buffer.clear();
+            ((Buffer)buffer).clear();
             buffer.put(blobId.getId());
             buffer.putInt(newCount);
-            buffer.flip();
+            ((Buffer)buffer).flip();
 
             channel.write(buffer);
         }

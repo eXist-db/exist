@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -264,8 +265,8 @@ public class JournalTest {
 
         final ByteBuffer writtenJournalHeader = captureByteBuffer.getValue();
         assertNotNull(writtenJournalHeader);
-        assertEquals(0, writtenJournalHeader.position());
-        assertEquals(Journal.JOURNAL_HEADER_LEN, writtenJournalHeader.limit());
+        assertEquals(0, ((Buffer)writtenJournalHeader).position());
+        assertEquals(Journal.JOURNAL_HEADER_LEN, ((Buffer)writtenJournalHeader).limit());
         final byte[] bufMagic = new byte[Journal.JOURNAL_MAGIC_NUMBER.length];
         writtenJournalHeader.get(bufMagic);
         assertArrayEquals(Journal.JOURNAL_MAGIC_NUMBER, bufMagic);
