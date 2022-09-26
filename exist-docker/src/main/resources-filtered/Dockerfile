@@ -20,59 +20,29 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
-FROM debian:stretch-slim as updated-jre
-RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y openjdk-8-jre-headless
-RUN apt-get install -y expat fontconfig     # Install tools required by FOP
+ARG DISTRO_TAG=latest
+FROM gcr.io/distroless/java11-debian11:${DISTRO_TAG}
 
-FROM gcr.io/distroless/java:8
-
-# Copy over updated JRE from Debian Stretch
-COPY --from=updated-jre /etc/java-8-openjdk /etc/java-8-openjdk
-COPY --from=updated-jre /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
-COPY --from=updated-jre /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64 /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64
-
-# Copy over dependencies for Apache FOP, missing from GCR's JRE
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
-
-# Copy dependencies for Apache Batik (used by Apache FOP to handle SVG rendering)
-COPY --from=updated-jre /etc/fonts /etc/fonts
-COPY --from=updated-jre /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
-COPY --from=updated-jre /usr/share/fontconfig /usr/share/fontconfig
-COPY --from=updated-jre /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
+ARG USR=root
 
 # Copy eXist-db
-COPY LICENSE /exist/LICENSE
-COPY autodeploy /exist/autodeploy
-COPY etc /exist/etc
-COPY lib /exist/lib
-COPY logs /exist/logs
+COPY --chown=${USR} dump/exist-distribution-*/LICENSE /exist/LICENSE
+COPY --chown=${USR} dump/exist-distribution-*/autodeploy /exist/autodeploy
+COPY --chown=${USR} dump/exist-distribution-*/etc /exist/etc
+COPY --chown=${USR} dump/exist-distribution-*/lib /exist/lib
+COPY --chown=${USR} log4j2.xml /exist/etc
 
-
-# Build-time metadata as defined at http://label-schema.org
-# and used by autobuilder @hooks/build
-LABEL org.label-schema.build-date=${build-tstamp} \
-      org.label-schema.description="${project.description}" \
-      org.label-schema.name="existdb" \
-      org.label-schema.schema-version="1.0" \
-      org.label-schema.url="${project.url}" \
-      org.label-schema.vcs-ref=${build-commit-abbrev} \
-      org.label-schema.vcs-url="${project.scm.url}" \
-      org.label-schema.vendor="existdb"
 
 EXPOSE 8080 8443
 
-# make CACHE_MEM, MAX_BROKER, and JVM_MAX_RAM_PERCENTAGE available to users
+# make CACHE_MEM and MAX_BROKER available to users
 ARG CACHE_MEM
 ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 
 ENV EXIST_HOME "/exist"
-ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
+ENV CLASSPATH=/exist/lib/*
+
 
 ENV JAVA_TOOL_OPTIONS \
   -Dfile.encoding=UTF8 \
@@ -85,11 +55,12 @@ ENV JAVA_TOOL_OPTIONS \
   -Dexist.configurationFile=/exist/etc/conf.xml \
   -Djetty.home=/exist \
   -Dexist.jetty.config=/exist/etc/jetty/standard.enabled-jetty-configs \
-  -XX:+UseG1GC \
   -XX:+UseStringDeduplication \
-  -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
+  -XX:MinRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
   -XX:+ExitOnOutOfMemoryError
+
+USER ${USR}
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
@@ -98,5 +69,4 @@ HEALTHCHECK CMD [ "java", \
     "--xpath", "system:get-version()" ]
 
 ENTRYPOINT [ "java", \
-    "org.exist.start.Main"]
-CMD ["jetty" ]
+    "org.exist.start.Main", "jetty" ]
