@@ -65,10 +65,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -1414,19 +1410,12 @@ public abstract class AbstractJournalTest<T> {
     /**
      * Check point's the journal, and forces switching to a new journal file.
      */
-    protected void checkpointJournalAndSwitchFile() throws NoSuchFieldException, IllegalAccessException, TransactionException {
+    protected void checkpointJournalAndSwitchFile() throws TransactionException {
+        final Journal journal = existEmbeddedServer.getBrokerPool().getJournalManager().get().journal;
 
         //set Journal#journalMinSize = 0, so that switch files will always happen
-        final Field fldMinReplace = Journal.class.getDeclaredField("journalSizeMin");
-        fldMinReplace.setAccessible(true);
-        final Field modifiersField = JDKCompatibility.getModifiersField();
-        modifiersField.setAccessible( true );
-        modifiersField.setInt( fldMinReplace, fldMinReplace.getModifiers() & ~Modifier.FINAL );
-        final Field fldJournal = JournalManager.class.getDeclaredField("journal");
-        fldJournal.setAccessible(true);
-        final Journal journal = (Journal)fldJournal.get(existEmbeddedServer.getBrokerPool().getJournalManager().get());
-        final long existingMinReplaceValue = fldMinReplace.getLong(journal);
-        fldMinReplace.setLong(journal, 0);
+        final long existingMinReplaceValue = journal.journalSizeMin;
+        journal.journalSizeMin = 0;
 
         // checkpoint the journal and switch file
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -1435,7 +1424,7 @@ public abstract class AbstractJournalTest<T> {
         }
 
         //restore the Journal#journalMinSize to its previous value
-        fldMinReplace.set(journal, existingMinReplaceValue);
+        journal.journalSizeMin = existingMinReplaceValue;
     }
 
     protected List<Loggable> readLatestJournalEntries() throws IOException, LogException {
