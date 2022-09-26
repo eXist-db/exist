@@ -32,6 +32,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.util.resource.PathResource;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
@@ -49,7 +51,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.Reader;
 import java.net.*;
@@ -234,15 +235,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             XmlConfiguration last = null;
             for(final Path confFile : configFiles) {
                 logger.info("[loading jetty configuration : {}]", confFile.toString());
-                try(final InputStream is = Files.newInputStream(confFile)) {
-                    final XmlConfiguration configuration = new XmlConfiguration(is);
-                    if (last != null) {
-                        configuration.getIdMap().putAll(last.getIdMap());
-                    }
-                    configuration.getProperties().putAll(configProperties);
-                    configuredObjects.add(configuration.configure());
-                    last = configuration;
+                final Resource resource = new PathResource(confFile);
+                final XmlConfiguration configuration = new XmlConfiguration(resource);
+                if (last != null) {
+                    configuration.getIdMap().putAll(last.getIdMap());
                 }
+                configuration.getProperties().putAll(configProperties);
+                configuredObjects.add(configuration.configure());
+                last = configuration;
             }
 
             // start Jetty
@@ -451,7 +451,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 }
 
                 //setup server shutdown
-                _server.addLifeCycleListener(this);
+                _server.addEventListener(this);
                 BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl(_server));
 
                 // register a shutdown hook for the server

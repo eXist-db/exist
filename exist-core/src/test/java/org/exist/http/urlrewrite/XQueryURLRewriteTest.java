@@ -26,7 +26,7 @@ import java.util.Map;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;

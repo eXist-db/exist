@@ -21,7 +21,7 @@
  */
 package org.exist.http.servlets;
 
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 public interface ExistExtensionServlet extends Servlet {
 

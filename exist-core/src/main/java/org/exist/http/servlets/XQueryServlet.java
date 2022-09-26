@@ -42,12 +42,12 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;

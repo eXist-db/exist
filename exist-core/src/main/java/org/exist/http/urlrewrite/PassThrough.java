@@ -23,9 +23,9 @@ package org.exist.http.urlrewrite;
 
 import org.w3c.dom.Element;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class PassThrough extends Forward {
     private final ServletConfig servletConfig;

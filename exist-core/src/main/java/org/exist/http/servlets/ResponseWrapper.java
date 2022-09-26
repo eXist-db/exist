@@ -31,7 +31,7 @@ public interface ResponseWrapper {
     /**
      * Forces any content in the buffer to be written to the client.
      *
-     * @see javax.servlet.ServletResponse#flushBuffer()
+     * @see jakarta.servlet.ServletResponse#flushBuffer()
      *
      * @throws IOException if an I/O error occurs.
      */
@@ -41,7 +41,7 @@ public interface ResponseWrapper {
      * Returns the name of the character encoding (MIME charset) used for the
      * body sent in this response.
      *
-     * @see javax.servlet.ServletResponse#getCharacterEncoding()
+     * @see jakarta.servlet.ServletResponse#getCharacterEncoding()
      *
      * @return a String specifying the name of the character encoding,
      *     for example, UTF-8.
@@ -52,7 +52,7 @@ public interface ResponseWrapper {
      * Returns the locale specified for this response using the
      * {@link #setLocale(Locale)} method.
      *
-     * @see javax.servlet.ServletResponse#getLocale()
+     * @see jakarta.servlet.ServletResponse#getLocale()
      *
      * @return the locale.
      */
@@ -61,7 +61,7 @@ public interface ResponseWrapper {
     /**
      * Sets the locale of the response, if the response has not been committed yet.
      *
-     * @see javax.servlet.ServletResponse#setLocale(Locale)
+     * @see jakarta.servlet.ServletResponse#setLocale(Locale)
      *
      * @param loc the locale of the response.
      */
@@ -71,7 +71,7 @@ public interface ResponseWrapper {
      * Sets the content type of the response being sent to the client, if the
      * response has not been committed yet.
      *
-     * @see javax.servlet.ServletResponse#setContentType(String)
+     * @see jakarta.servlet.ServletResponse#setContentType(String)
      *
      * @param type a String specifying the MIME type of the content.
      */
@@ -81,7 +81,7 @@ public interface ResponseWrapper {
      * Returns a ServletOutputStream suitable for writing binary data in the
      * response. The servlet container does not encode the binary data.
      *
-     * @see javax.servlet.ServletResponse#getOutputStream()
+     * @see jakarta.servlet.ServletResponse#getOutputStream()
      *
      * @return a ServletOutputStream for writing binary data.
      *
@@ -92,7 +92,7 @@ public interface ResponseWrapper {
     /**
      * Returns a boolean indicating if the response has been committed.
      *
-     * @see javax.servlet.ServletResponse#isCommitted()
+     * @see jakarta.servlet.ServletResponse#isCommitted()
      *
      * @return a boolean indicating if the response has been committed.
      */
@@ -140,7 +140,7 @@ public interface ResponseWrapper {
     /**
      * Sets a response header with the given name and date-value.
      *
-     * @see javax.servlet.http.HttpServletResponse#setDateHeader(String, long)
+     * @see jakarta.servlet.http.HttpServletResponse#setDateHeader(String, long)
      *
      * @param name the name of the header to set.
      * @param date the assigned date value.
@@ -150,7 +150,7 @@ public interface ResponseWrapper {
     /**
      * Adds a response header with the given name and date-value.
      *
-     * @see javax.servlet.http.HttpServletResponse#addDateHeader(String, long)
+     * @see jakarta.servlet.http.HttpServletResponse#addDateHeader(String, long)
      *
      * @param name the name of the header to set.
      * @param date the additional date value.
@@ -160,7 +160,7 @@ public interface ResponseWrapper {
     /**
      * Sets a response header with the given name and integer value.
      *
-     * @see javax.servlet.http.HttpServletResponse#setIntHeader(String, int)
+     * @see jakarta.servlet.http.HttpServletResponse#setIntHeader(String, int)
      *
      * @param name the name of the header.
      * @param value the assigned integer value.
@@ -170,7 +170,7 @@ public interface ResponseWrapper {
     /**
      * Adds a response header with the given name and integer value.
      *
-     * @see javax.servlet.http.HttpServletResponse#addIntHeader(String, int)
+     * @see jakarta.servlet.http.HttpServletResponse#addIntHeader(String, int)
      *
      * @param name the name of the header.
      * @param value the assigned integer value.
@@ -189,7 +189,7 @@ public interface ResponseWrapper {
      * Returns a boolean indicating whether the named response header
      * has already been set.
      *
-     * @see javax.servlet.http.HttpServletResponse#containsHeader(String)
+     * @see jakarta.servlet.http.HttpServletResponse#containsHeader(String)
      *
      * @param name the header name.
      *
@@ -201,7 +201,7 @@ public interface ResponseWrapper {
     /**
      * Sets a response header with the given name and value.
      *
-     * @see javax.servlet.http.HttpServletResponse#setHeader(String, String)
+     * @see jakarta.servlet.http.HttpServletResponse#setHeader(String, String)
      *
      * @param name the name of the header
      * @param value the header value If it contains octet string,
@@ -213,7 +213,7 @@ public interface ResponseWrapper {
      * Encodes the specified URL by including the session ID, or,
      * if encoding is not needed, returns the URL unchanged.
      *
-     * @see javax.servlet.http.HttpServletResponse#encodeURL(String)
+     * @see jakarta.servlet.http.HttpServletResponse#encodeURL(String)
      *
      * @param url the url to be encoded.
      *
@@ -226,7 +226,7 @@ public interface ResponseWrapper {
      * Sends a temporary redirect response to the client using the specified
      * redirect location URL and clears the buffer.
      *
-     * @see javax.servlet.http.HttpServletResponse#sendRedirect(String)
+     * @see jakarta.servlet.http.HttpServletResponse#sendRedirect(String)
      *
      * @param location the redirect location URL.
      *
@@ -238,7 +238,7 @@ public interface ResponseWrapper {
      * Sends an error response to the client using the specified status
      * code and clears the buffer.
      *
-     * @see javax.servlet.http.HttpServletResponse#sendError(int)
+     * @see jakarta.servlet.http.HttpServletResponse#sendError(int)
      *
      * @param sc the error status code.
      *
@@ -250,7 +250,7 @@ public interface ResponseWrapper {
      * Sends an error response to the client using the specified status code
      * and clears the buffer.
      *
-     * @see javax.servlet.http.HttpServletResponse#sendError(int, String)
+     * @see jakarta.servlet.http.HttpServletResponse#sendError(int, String)
      *
      * @param sc the error status code.
      * @param msg the descriptive message.

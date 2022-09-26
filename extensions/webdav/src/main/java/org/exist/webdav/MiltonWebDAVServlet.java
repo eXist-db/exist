@@ -26,8 +26,8 @@ import com.bradmcevoy.http.http11.DefaultHttp11ResponseHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;

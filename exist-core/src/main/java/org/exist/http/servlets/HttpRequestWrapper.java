@@ -21,26 +21,30 @@
  */
 package org.exist.http.servlets;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Part;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.exist.util.FileUtils;
+import org.exist.util.io.InputStreamUtil;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Principal;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
@@ -59,20 +63,25 @@ public class HttpRequestWrapper implements RequestWrapper {
     private static final Logger LOG = LogManager.getLogger(HttpRequestWrapper.class);
     
     private final HttpServletRequest servletRequest;
-    private final String formEncoding;
-    private String containerEncoding = null;
+    @Nullable private final String formEncoding;
+    @Nullable private String containerEncoding;
 
-    private String pathInfo = null;
-    private String servletPath = null;
+    @Nullable private String pathInfo;
+    @Nullable private String servletPath;
 
     private final boolean isMultipartContent;
 
-    // Use linkedhashmap to preserver order
+    // Use LinkedHashMap to preserver order
     // Object can be a single object, or a List of objects
     private final Map<String, Object> params = new LinkedHashMap<>();
 
-    // flag to administer wether multi-part formdata was processed
+    // flag to indicate whether multipart form data was processed
     private final boolean isFormDataParsed;
+
+    @Nullable private Map<Part, Path> temporaryUploadedFilesPathCache = null;
+
+    private boolean parsedQueryString = false;
+    @Nullable private Map<String, Object> queryStringParameters = null;
 
     /**
      * Constructs a wrapper for the given servlet request. multipart/form-data 
@@ -94,8 +103,8 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param formEncoding The encoding of the request's forms
      * @param containerEncoding The encoding of the servlet
      */
-    public HttpRequestWrapper(final HttpServletRequest servletRequest, final String formEncoding,
-            final String containerEncoding) {
+    public HttpRequestWrapper(final HttpServletRequest servletRequest,
+            @Nullable final String formEncoding, @Nullable final String containerEncoding) {
         this(servletRequest, formEncoding, containerEncoding, true);
     }
 
@@ -107,20 +116,20 @@ public class HttpRequestWrapper implements RequestWrapper {
      * @param containerEncoding The encoding of the servlet
      * @param parseMultipart Set to TRUE to enable parse multipart/form-data when available.
      */
-    public HttpRequestWrapper(final HttpServletRequest servletRequest, final String formEncoding,
-            final String containerEncoding, final boolean parseMultipart) {
+    public HttpRequestWrapper(final HttpServletRequest servletRequest,
+            @Nullable final String formEncoding,
+            @Nullable final String containerEncoding,
+            final boolean parseMultipart) {
         this.servletRequest = servletRequest;
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
         this.pathInfo = servletRequest.getPathInfo();
         this.servletPath = servletRequest.getServletPath();
 
-
-        // Get url-encoded parameters (url-ecoded from http GET and POST)
-        parseParameters();
-
         // Determine if request is a multipart
-        isMultipartContent = ServletFileUpload.isMultipartContent(servletRequest);
+
+        @Nullable final String contentType = servletRequest.getContentType();
+        isMultipartContent = servletRequest.getMethod().equalsIgnoreCase("POST") && contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
 
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so
@@ -129,10 +138,16 @@ public class HttpRequestWrapper implements RequestWrapper {
             // Formdata is actually parsed
             isFormDataParsed = true;
 
-            // Get multi-part formdata
+            // get only parameters from url query
+            parseQueryParameters();
+
+            // Get multipart form data
             parseMultipartContent();
         } else {
             isFormDataParsed = false;
+
+            // Get url query and form parameters from http GET and POST
+            parseAllParameters();
         }
 
         LOG.debug("Retrieved {} parameters.", params.size());
@@ -156,7 +171,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         return servletRequest.getCookies();
     }
 
-    private static void addParameter(final Map<String, Object> map, final String paramName, final Object value) {
+    private static void addParameter(final Map<String, Object> map, final String paramName, @Nullable final Object value) {
 
         final Object original = map.get(paramName);
 
@@ -185,73 +200,155 @@ public class HttpRequestWrapper implements RequestWrapper {
      * Parses multi-part requests in order to set the parameters. 
      */
     private void parseMultipartContent() {
-        // Create a factory for disk-based file items
-        final DiskFileItemFactory factory = new DiskFileItemFactory();
-
-        // Ensure small attachments are readable in XQuery context
-        factory.setSizeThreshold(0);
-
-        // Create a new file upload handler
-        final ServletFileUpload upload = new ServletFileUpload(factory);
-
         try {
+            final Collection<Part> parts = servletRequest.getParts();
 
-            final List<FileItem> items = upload.parseRequest(servletRequest);
-
-            // Iterate over all mult-part formdata items and
-            // add all data (field and files) to parmeters
-            for (final FileItem item : items) {
-                addParameter(params, item.getFieldName(), item);
+            // Iterate over all multipart form data items and
+            // add all data (field and files) to parameters
+            for (final Part part : parts) {
+                addParameter(params, part.getName(), part);
             }
 
-        } catch (final FileUploadException e) {
+        } catch (final IOException | ServletException e) {
             LOG.error(e);
         }
-
     }
 
     /**
-     * Parses the url-encoded parameters
+     * Parses the URL query parameters.
      */
-    private void parseParameters() {
-        final Map<String, String[]> map = servletRequest.getParameterMap();
-        for (final Map.Entry<String, String[]> param : map.entrySet()) {
+    private void parseQueryParameters() {
+       parseParameters(true);
+    }
 
-            // Write keys and values
-            for (final String value : param.getValue()) {
-                addParameter(params, param.getKey(), decode(value));
+    /**
+     * Parses the URL query, and form parameters.
+     */
+    private void parseAllParameters() {
+        parseParameters(false);
+    }
+
+    /**
+     * Parses the URL query, and form parameters.
+     *
+     * @param queryParametersOnly true if only the URL query parameters
+     *     should be parsed, false to include both query and form parameters.
+     */
+    private void parseParameters(final boolean queryParametersOnly) {
+        final Map<String, String[]> map = servletRequest.getParameterMap();
+        for (final Map.Entry<String, String[]> parameter : map.entrySet()) {
+
+            final String parameterName = parameter.getKey();
+
+            // Add keys and values
+            for (final String parameterValue : parameter.getValue()) {
+                if (!queryParametersOnly || isQueryParameter(parameterName, parameterValue)) {
+                    addParameter(params, parameterName, decode(parameterValue));
+                }
             }
         }
     }
 
+    private boolean isQueryParameter(final String parameterName, @Nullable final String parameterValue) {
+        if (!parsedQueryString) {
+            // lazy initialisation
+            this.queryStringParameters = parseQueryString(servletRequest.getQueryString(), formEncoding);
+            parsedQueryString = true;
+        }
+
+        if (queryStringParameters == null) {
+            return false;
+        }
+
+        @Nullable final Object queryStringParameterValue = queryStringParameters.get(parameterName);
+        if (queryStringParameterValue == null) {
+            return parameterValue == null;
+        }
+
+        if (queryStringParameterValue instanceof List) {
+            // Add value to existing List
+            return ((List) queryStringParameterValue).contains(parameterValue);
+        } else {
+            if (parameterValue == null) {
+                return false;
+            }
+            return parameterValue.equals(queryStringParameterValue);
+        }
+    }
+
+    private static @Nullable Map<String, Object> parseQueryString(@Nullable final String queryString, @Nullable String encoding) {
+        if (queryString == null) {
+            return null;
+        }
+
+        final String[] pairs = queryString.split("&");
+        if (pairs == null || pairs.length == 0) {
+            return null;
+        }
+
+        Map<String, Object> queryParameters = null;
+        for (final String pair : pairs) {
+            final String[] keyValue = pair.split("=");
+            if (keyValue == null || keyValue.length == 0) {
+                continue;
+            }
+
+            if (queryParameters == null) {
+                queryParameters = new LinkedHashMap<>();  // uses a LinkedHashMap to preserve order
+            }
+
+            if (encoding == null) {
+                encoding = ISO_8859_1.displayName();
+            }
+
+            try {
+                final String key = URLDecoder.decode(keyValue[0], encoding);
+                @Nullable final String value;
+                if (keyValue.length > 1) {
+                    value = URLDecoder.decode(keyValue[1], encoding);
+                } else {
+                    value = null;
+                }
+                addParameter(queryParameters, key, value);
+            } catch (final UnsupportedEncodingException e) {
+                LOG.warn("Unable to parse URL query keyValue pair: " + Arrays.toString(keyValue), e);
+            }
+        }
+
+        return queryParameters;
+    }
+
     /**
-     *  Convert object to FileItem, get FirstItem from list, or null
+     * Convert object to FileItem, get FirstItem from list, or null
      * if object or object in list is not a FileItem
      * 
-     * @param obj List or Fileitem
-     * @return First Fileitem in list or Fileitem.
+     * @param obj List or Part
+     * @return First Part in list or Part.
      */
-    private List<FileItem> getFileItem(final Object obj) {
+    private List<Part> getFileItem(final Object obj) {
 
-    	final List<FileItem> fileList = new LinkedList<>();
+    	final List<Part> partList = new LinkedList<>();
         if (obj instanceof List) {
             // Cast
             final List list = (List) obj;
-            // Return first FileItem object if present
+            // Return first Part object if present
             for(final Object listObject : list) {
-                if(listObject instanceof FileItem && !((FileItem) listObject).isFormField()){
-                    fileList.add((FileItem) listObject);
+                if (listObject instanceof Part && !isFormField(((Part) listObject))) {
+                    partList.add((Part) listObject);
                 }
             }           
 
-        } else if(obj instanceof FileItem && !((FileItem) obj).isFormField()) {
+        } else if(obj instanceof Part && !isFormField(((Part) obj))) {
             // Cast and return
-             fileList.add((FileItem) obj);
+             partList.add((Part) obj);
         }
 
-        // object did not represent a List of FileItem's or FileItem.
-        return fileList;
+        // object did not represent a List of Part's or Part.
+        return partList;
+    }
 
+    private static boolean isFormField(final Part part) {
+        return part.getSubmittedFileName() == null;
     }
 
     /**
@@ -283,7 +380,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getInputStream()
+     * @see jakarta.servlet.http.HttpServletRequest#getInputStream()
      */
     @Override
     public InputStream getInputStream() throws IOException {
@@ -291,7 +388,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
+     * @see jakarta.servlet.http.HttpServletRequest#getCharacterEncoding()
      */
     @Override
     public String getCharacterEncoding() {
@@ -299,7 +396,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContentLength()
+     * @see jakarta.servlet.http.HttpServletRequest#getContentLength()
      */
     @Override
     public long getContentLength() {
@@ -313,7 +410,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContentLengthLong()
+     * @see jakarta.servlet.http.HttpServletRequest#getContentLengthLong()
      */
     @Override
     public long getContentLengthLong() {
@@ -327,7 +424,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContentType()
+     * @see jakarta.servlet.http.HttpServletRequest#getContentType()
      */
     @Override
     public String getContentType() {
@@ -335,7 +432,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getContextPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getContextPath()
      */
     @Override
     public String getContextPath() {
@@ -343,7 +440,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getHeader(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeader(String)
      */
     @Override
     public String getHeader(final String name) {
@@ -351,7 +448,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
+     * @see jakarta.servlet.http.HttpServletRequest#getCharacterEncoding()
      * @return An enumeration of header names
      */
     @Override
@@ -360,7 +457,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaders(String)
      */
     @Override
     public Enumeration<String> getHeaders(final String name) {
@@ -368,7 +465,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getMethod()
+     * @see jakarta.servlet.http.HttpServletRequest#getMethod()
      */
     @Override
     public String getMethod() {
@@ -376,7 +473,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getParameter(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
     public String getParameter(final String name) {
@@ -394,20 +491,14 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         // If parameter is file item, convert to string
-        if (o instanceof FileItem) {
+        if (o instanceof Part) {
+            final Part fi = (Part) o;
 
-            final FileItem fi = (FileItem) o;
-            if (formEncoding == null) {
-                return fi.getString();
-
-            } else {
-                try {
-                    return fi.getString(formEncoding);
-
-                } catch (final UnsupportedEncodingException e) {
-                    LOG.warn(e);
-                    return null;
-                }
+            try {
+                return getPartContentAsString(fi, formEncoding);
+            } catch (final IOException e) {
+                LOG.warn(e);
+                return null;
             }
 
             // Return just a simple value
@@ -419,8 +510,19 @@ public class HttpRequestWrapper implements RequestWrapper {
 
     }
 
+    private static String getPartContentAsString(final Part part, @Nullable final String encoding) throws IOException {
+        try (final InputStream is = part.getInputStream()) {
+            final byte[] data = InputStreamUtil.readAll(is);
+            if (encoding != null) {
+                return new String(data, encoding);
+            } else {
+                return new String(data);
+            }
+        }
+    }
+
     /**
-     * @see javax.servlet.http.HttpServletRequest#getParameter(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
     public List<Path> getFileUploadParam(final String name) {
@@ -433,16 +535,33 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        final List<FileItem> items = getFileItem(o);
-        final List<Path> files = new ArrayList<>(items.size());
-        for (final FileItem item : items) {
-        	files.add(((DiskFileItem) item).getStoreLocation().toPath());
+        final List<Part> parts = getFileItem(o);
+        final List<Path> files = new ArrayList<>(parts.size());
+        for (final Part part : parts) {
+            Path temporaryUploadedFilePath = null;
+            if (temporaryUploadedFilesPathCache != null) {
+                temporaryUploadedFilePath = temporaryUploadedFilesPathCache.get(part);
+            }
+
+            if (temporaryUploadedFilePath == null) {
+                try {
+                    temporaryUploadedFilePath = Files.createTempFile(null, null);
+                    part.write(temporaryUploadedFilePath.toAbsolutePath().toString());
+                } catch (final IOException e) {
+                    LOG.warn(e);
+                    continue;
+                }
+
+                temporaryUploadedFilesPathCache.put(part, temporaryUploadedFilePath);
+            }
+
+        	files.add(temporaryUploadedFilePath);
         }
         return files;
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getParameter(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getParameter(String)
      */
     @Override
     public List<String> getUploadedFileName(final String name) {
@@ -455,16 +574,16 @@ public class HttpRequestWrapper implements RequestWrapper {
             return null;
         }
 
-        final List<FileItem> items = getFileItem(o);
-        final List<String> files = new ArrayList<>(items.size());
-        for (final FileItem item : items) {
-        	files.add(FilenameUtils.normalize(item.getName()));
+        final List<Part> parts = getFileItem(o);
+        final List<String> files = new ArrayList<>(parts.size());
+        for (final Part part : parts) {
+        	files.add(FilenameUtils.normalize(part.getSubmittedFileName()));
         }
         return files;
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getParameterNames()
+     * @see jakarta.servlet.http.HttpServletRequest#getParameterNames()
      */
     @Override
     public Enumeration<String> getParameterNames() {
@@ -472,7 +591,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getParameterValues(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getParameterValues(String)
      */
     @Override
     public String[] getParameterValues(final String name) {
@@ -504,15 +623,15 @@ public class HttpRequestWrapper implements RequestWrapper {
             for (final Object object : list) {
 
                 // Item is a FileItem
-                if (object instanceof FileItem) {
+                if (object instanceof Part) {
 
                     // Cast
-                    final FileItem item = (FileItem) object;
+                    final Part part = (Part) object;
 
                     // Get string representation of FileItem
                     try {
-                        values[position] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                    } catch (final UnsupportedEncodingException e) {
+                        values[position] = getPartContentAsString(part, formEncoding);
+                    } catch (final IOException e) {
                         LOG.warn(e);
                         e.printStackTrace();
                     }
@@ -531,11 +650,11 @@ public class HttpRequestWrapper implements RequestWrapper {
             values = new String[1];
 
             // Item is a FileItem
-            if (obj instanceof FileItem) {
-                final FileItem item = (FileItem) obj;
+            if (obj instanceof Part) {
+                final Part part = (Part) obj;
                 try {
-                    values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
-                } catch (final UnsupportedEncodingException e) {
+                    values[0] = getPartContentAsString(part, formEncoding);
+                } catch (final IOException e) {
                     LOG.warn(e);
                     e.printStackTrace();
                 }
@@ -552,7 +671,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
      */
     @Override
     public String getPathInfo() {
@@ -560,7 +679,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getPathTranslated()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathTranslated()
      */
     @Override
     public String getPathTranslated() {
@@ -568,7 +687,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getProtocol()
+     * @see jakarta.servlet.http.HttpServletRequest#getProtocol()
      */
     @Override
     public String getProtocol() {
@@ -576,7 +695,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getQueryString()
+     * @see jakarta.servlet.http.HttpServletRequest#getQueryString()
      */
     @Override
     public String getQueryString() {
@@ -584,7 +703,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRemoteAddr()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteAddr()
      */
     @Override
     public String getRemoteAddr() {
@@ -592,7 +711,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRemoteHost()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteHost()
      */
     @Override
     public String getRemoteHost() {
@@ -600,7 +719,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRemotePort()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemotePort()
      */
     @Override
     public int getRemotePort() {
@@ -608,7 +727,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteUser()
      */
     @Override
     public String getRemoteUser() {
@@ -616,7 +735,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRequestedSessionId()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestedSessionId()
      */
     @Override
     public String getRequestedSessionId() {
@@ -624,7 +743,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRequestURI()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestURI()
      */
     @Override
     public String getRequestURI() {
@@ -632,7 +751,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getRequestURL()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestURL()
      */
     @Override
     public StringBuffer getRequestURL() {
@@ -640,7 +759,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getScheme()
+     * @see jakarta.servlet.http.HttpServletRequest#getScheme()
      */
     @Override
     public String getScheme() {
@@ -648,7 +767,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getServerName()
+     * @see jakarta.servlet.http.HttpServletRequest#getServerName()
      */
     @Override
     public String getServerName() {
@@ -656,7 +775,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getServerPort()
+     * @see jakarta.servlet.http.HttpServletRequest#getServerPort()
      */
     @Override
     public int getServerPort() {
@@ -664,7 +783,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getServletPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getServletPath()
      */
     @Override
     public String getServletPath() {
@@ -672,7 +791,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getSession()
+     * @see jakarta.servlet.http.HttpServletRequest#getSession()
      */
     @Override
     public SessionWrapper getSession() {
@@ -685,7 +804,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getSession(boolean)
+     * @see jakarta.servlet.http.HttpServletRequest#getSession(boolean)
      */
     @Override
     public SessionWrapper getSession(final boolean create) {
@@ -698,7 +817,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
+     * @see jakarta.servlet.http.HttpServletRequest#getUserPrincipal()
      */
     @Override
     public Principal getUserPrincipal() {
@@ -706,7 +825,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
      */
     @Override
     public boolean isRequestedSessionIdFromCookie() {
@@ -714,7 +833,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
      */
     @Override
     public boolean isRequestedSessionIdFromURL() {
@@ -722,7 +841,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
      */
     @Override
     public boolean isRequestedSessionIdValid() {
@@ -730,7 +849,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#isSecure()
+     * @see jakarta.servlet.http.HttpServletRequest#isSecure()
      */
     @Override
     public boolean isSecure() {
@@ -738,7 +857,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
+     * @see jakarta.servlet.http.HttpServletRequest#isUserInRole(String)
      */
     @Override
     public boolean isUserInRole(final String role) {
@@ -746,7 +865,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#removeAttribute(String)
+     * @see jakarta.servlet.http.HttpServletRequest#removeAttribute(String)
      */
     @Override
     public void removeAttribute(final String name) {
@@ -754,7 +873,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#setAttribute(String, Object)
+     * @see jakarta.servlet.http.HttpServletRequest#setAttribute(String, Object)
      */
     @Override
     public void setAttribute(final String name, final Object o) {
@@ -762,7 +881,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
 
     /**
-     * @see javax.servlet.http.HttpServletRequest#setCharacterEncoding(String)
+     * @see jakarta.servlet.http.HttpServletRequest#setCharacterEncoding(String)
      */
     @Override
     public void setCharacterEncoding(final String env) throws UnsupportedEncodingException {
@@ -800,5 +919,24 @@ public class HttpRequestWrapper implements RequestWrapper {
     @Override
     public RequestDispatcher getRequestDispatcher(final String path) {
         return servletRequest.getRequestDispatcher(path);
+    }
+
+    @Override
+    protected void finalize() {
+        if (temporaryUploadedFilesPathCache == null) {
+            return;
+        }
+
+        for (final Map.Entry<Part, Path> temporaryUploadedFilePathCache : temporaryUploadedFilesPathCache.entrySet()) {
+            final Part part = temporaryUploadedFilePathCache.getKey();
+            try {
+                part.delete();
+            } catch (final IOException e) {
+                LOG.error("Unable to delete: {}", part.getSubmittedFileName(), e);
+            }
+
+            final Path temporaryFile = temporaryUploadedFilePathCache.getValue();
+            FileUtils.deleteQuietly(temporaryFile);
+        }
     }
 }

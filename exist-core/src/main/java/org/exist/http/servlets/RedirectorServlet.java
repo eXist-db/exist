@@ -40,11 +40,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -72,11 +72,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * (name as specified in web.xml). Alternatively, path can point to an arbitrary resource. It can be either absolute or relative.
  * Relative paths are resolved relative to the original request.
  *
- * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
+ * The request is forwarded via {@link jakarta.servlet.RequestDispatcher#forward(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
  *
- * When forwarding to other servlets, the fields in {@link javax.servlet.http.HttpServletRequest} will be
+ * When forwarding to other servlets, the fields in {@link jakarta.servlet.http.HttpServletRequest} will be
  * updated to point to the new, redirected URI. However, the original request URI is stored in the
  * request attribute org.exist.forward.request-uri.
  *
@@ -301,7 +301,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
         return LOG;
     }
 
-    private static class ModifiableRequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+    private static class ModifiableRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
 
         private final Map<String, String[]> addedParams = new HashMap<>();
 
