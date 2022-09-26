@@ -65,7 +65,8 @@ ENV JAVA_TOOL_OPTIONS \
   -Dexist.configurationFile=/exist/etc/conf.xml \
   -Djetty.home=/exist \
   -Dexist.jetty.config=/exist/etc/jetty/standard.enabled-jetty-configs \
-  -XX:+UseG1GC \
+  -XX:+UseNUMA \
+  -XX:+UseZGC \
   -XX:+UseStringDeduplication \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \

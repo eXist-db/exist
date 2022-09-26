@@ -776,12 +776,15 @@
                     </binFileExtensions>
                     <defaultJvmSettings>
                         <initialMemorySize>128m</initialMemorySize>
+                        <extraArguments>
+                            <extraArgument>-XX:+UseNUMA</extraArgument>
+                            <extraArgument>-XX:+UseZGC</extraArgument>
+                            <extraArgument>-XX:+UseStringDeduplication</extraArgument>
 
-                        <!-- Option to generate JDWP debuggable app -->
-                        <!-- extraArguments>
-                            <extraArgument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</extraArgument>
-                        </extraArguments -->
+                            <!-- Option to generate JDWP debuggable app -->
+                            <!-- extraArgument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</extraArgument -->
 
+                        </extraArguments>
                         <systemProperties>
                             <systemProperty>file.encoding=UTF-8</systemProperty>
                             <systemProperty>log4j.configurationFile=@BASEDIR@/etc/log4j2.xml</systemProperty>
