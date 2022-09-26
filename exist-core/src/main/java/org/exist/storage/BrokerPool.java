@@ -24,7 +24,6 @@ package org.exist.storage;
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
-import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,6 +86,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -249,7 +249,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * Indicates whether the database is operating in read-only mode
      */
-    @GuardedBy("itself") private Boolean readOnly = Boolean.FALSE;
+    private final AtomicBoolean readOnly = new AtomicBoolean();
 
     @ConfigurationFieldAsAttribute("pageSize")
     private final int pageSize;
@@ -451,10 +451,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             _initialize();
         } catch(final Throwable e) {
             // remove that file lock we may have acquired in canReadDataDir
-            synchronized(readOnly) {
-                if (dataLock != null && !readOnly) {
-                    dataLock.release();
-                }
+
+            if (dataLock != null && !readOnly.get()) {
+                dataLock.release();
             }
 
             if(e instanceof EXistException) {
@@ -975,29 +974,25 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * @return <code>true</code> if transactions can be handled
      */
     public boolean isRecoveryEnabled() {
-        synchronized(readOnly) {
-            return !readOnly && recoveryEnabled;
-        }
+        return !readOnly.get() && recoveryEnabled;
     }
 
     @Override
     public boolean isReadOnly() {
-        synchronized(readOnly) {
-            if(!readOnly) {
-                final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
-                if (freeSpace != -1 && freeSpace < diskSpaceMin) {
-                    LOG.fatal("Partition containing DATA_DIR: {} is running out of disk space [minimum: {} free: {}]. Switching eXist-db into read-only mode to prevent data loss!", dataLock.getFile().toAbsolutePath().toString(), diskSpaceMin, freeSpace);
-                    setReadOnly();
-                }
+        final boolean isReadOnly = readOnly.get();
+        if (!isReadOnly) {
+            final long freeSpace = FileUtils.measureFileStore(dataLock.getFile(), FileStore::getUsableSpace);
+            if (freeSpace != -1 && freeSpace < diskSpaceMin) {
+                LOG.fatal("Partition containing DATA_DIR: {} is running out of disk space [minimum: {} free: {}]. Switching eXist-db into read-only mode to prevent data loss!", dataLock.getFile().toAbsolutePath().toString(), diskSpaceMin, freeSpace);
+                setReadOnly();
             }
-            return readOnly;
         }
+        return readOnly.get();
     }
 
     public void setReadOnly() {
-        LOG.warn("Switching database into read-only mode!");
-        synchronized (readOnly) {
-            readOnly = true;
+        if (readOnly.compareAndSet(false, true)) {
+            LOG.warn("Switched database into read-only mode!");
         }
     }
 
@@ -1728,12 +1723,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     //Clear the living instances container
                     shutdownInstanceConsumer.accept(instanceName);
-
-                    synchronized (readOnly) {
-                        if (!readOnly) {
-                            // release the lock on the data directory
-                            dataLock.release();
-                        }
+                    if (!readOnly.get()) {
+                        // release the lock on the data directory
+                        dataLock.release();
                     }
 
                     //clearing additional resources, like ThreadLocal
