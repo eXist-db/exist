@@ -58,6 +58,7 @@ declare variable $test:UNKNOWN_ASSERTION := QName($test:TEST_NAMESPACE, "no-such
 declare variable $test:WRONG_ARG_COUNT := QName($test:TEST_NAMESPACE, "wrong-number-of-arguments");
 declare variable $test:TYPE_ERROR := QName($test:TEST_NAMESPACE, "type-error");
 declare variable $test:UNKNOWN_ANNOTATION_VALUE_TYPE := QName($test:TEST_NAMESPACE, "unknown-annotation-value-type");
+declare variable $test:FAILURE := QName($test:TEST_NAMESPACE, "failure");
 declare variable $test:CUSTOM_ASSERTION_FAILURE_TYPE := "custom-assertion-failure";
 
 (:~
@@ -150,7 +151,7 @@ declare function test:fail (
     $actual as item()*,
     $type as xs:string
 ) as empty-sequence() {
-    error(xs:QName("test:failure"), $message, map {
+    error($test:FAILURE, $message, map {
         "expected": $expected,
         "actual": $actual,
         "type": $type
