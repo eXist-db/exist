@@ -61,8 +61,8 @@ import static com.evolvedbinary.j8fu.Try.Try;
 /**
  * Utilities for XPath doc related functions
  *
- * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
- * @author Pierrick Brihaye</a>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
