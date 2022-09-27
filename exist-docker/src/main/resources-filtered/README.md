@@ -297,7 +297,7 @@ docker run -m 600m …
 ```
 
 Lastly, this image uses a new garbage collection mechanism 
-[The Z Garbage Collector (https://docs.oracle.com/en/java/javase/11/gctuning/z-garbage-collector1.html)] `-XX:+UseZGC`
+[The Z Garbage Collector](https://docs.oracle.com/en/java/javase/11/gctuning/z-garbage-collector1.html) `-XX:+UseZGC`
 and [string deduplication](http://openjdk.java.net/jeps/192) `-XX:+UseStringDeduplication` to improve performance.
 
 To disable or further tweak these features edit the relevant parts of the `Dockerfile`, or when running the image. 

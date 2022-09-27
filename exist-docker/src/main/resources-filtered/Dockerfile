@@ -26,7 +26,7 @@ RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get install -y openjdk-17-jre-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
 
-FROM gcr.io/distroless/java17
+FROM gcr.io/distroless/java17:latest
 
 # Copy over dependencies for Apache FOP, missing from GCR's JRE
 COPY --from=debian-slim /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
