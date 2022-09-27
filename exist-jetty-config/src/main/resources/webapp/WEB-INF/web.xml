@@ -6,9 +6,9 @@
     | XQueryURLRewrite servlet filter. See for details below.
     +-->
 <web-app 
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee https://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-app_4_0.xsd"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
     metadata-complete="false"
     version="5.0">
 

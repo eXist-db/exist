@@ -23,8 +23,8 @@
 
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xmlns:jee="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xmlns:jee="https://jakarta.ee/xml/ns/jakartaee"
     version="2.0">
     
     <xsl:output method="xml" indent="yes" omit-xml-declaration="no"/>
@@ -34,7 +34,7 @@
         
         <xsl:comment>
             Milton provides the WebDAV interface
-   </xsl:comment>
+        </xsl:comment>
         <servlet>
             <servlet-name>milton</servlet-name>
             <servlet-class>org.exist.webdav.MiltonWebDAVServlet</servlet-class>
