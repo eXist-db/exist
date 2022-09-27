@@ -152,7 +152,7 @@ public class SourceFactory {
     }
 
     private static Source getSource_fromClasspath(final String contextPath, final String location) throws IOException {
-        if (location.startsWith(ClassLoaderSource.PROTOCOL)) {
+        if (contextPath == null || location.startsWith(ClassLoaderSource.PROTOCOL)) {
             return new ClassLoaderSource(location);
         }
 
