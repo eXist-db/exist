@@ -29,7 +29,6 @@ package org.exist.util.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.Buffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -96,9 +95,9 @@ public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputS
         buf.force();
 
         //TODO revisit this based on the comment below, I now believe setting position in map does work, but you have to have the correct offset added in as well! Adam
-        final int position = ((Buffer)buf).position();
+        final int position = buf.position();
         buf = channel.map(FileChannel.MapMode.READ_WRITE, 0, buf.capacity() + (getMemoryMapSize() * factor));
-        ((Buffer)buf).position(position); //setting the position in the map() call above does not seem to work!
+        buf.position(position); //setting the position in the map() call above does not seem to work!
         //bufAccessor.refresh();
     }
 
@@ -149,11 +148,11 @@ public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputS
         }
 
         //get the current position
-        final int position = ((Buffer)buf).position();
+        final int position = buf.position();
 
         try {
             //move to the offset
-            ((Buffer)buf).position(cacheOffset);
+            buf.position(cacheOffset);
 
             //read the data;
             final byte[] data = new byte[len];
@@ -162,7 +161,7 @@ public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputS
             System.arraycopy(data, 0, b, off, len);
         } finally {
             //reset the position
-            ((Buffer)buf).position(position);
+            buf.position(position);
         }
     }
 

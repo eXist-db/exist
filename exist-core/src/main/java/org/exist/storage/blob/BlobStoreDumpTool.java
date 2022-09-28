@@ -43,7 +43,6 @@ import se.softhouse.jargo.ParsedArguments;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -128,19 +127,19 @@ public class BlobStoreDumpTool {
             // write a CSV table header
             printStream.println("blobId,referenceCount");
 
-            ((Buffer)buffer).clear();
+            buffer.clear();
 
             final byte[] id = new byte[digestBytesLen];
 
             while (channel.read(buffer) > -1) {
-                ((Buffer)buffer).flip();
+                buffer.flip();
                 buffer.get(id);
                 final BlobId blobId = new BlobId(id);
                 final int count = buffer.getInt();
 
                 printStream.println(blobId + "," + count);
 
-                ((Buffer)buffer).clear();
+                buffer.clear();
             }
         }
     }
@@ -157,12 +156,12 @@ public class BlobStoreDumpTool {
      */
     private static void dumpFileHeader(final PrintStream printStream, final ByteBuffer buffer, final Path persistentFile,
             final SeekableByteChannel channel) throws IOException {
-        ((Buffer)buffer).clear();
-        ((Buffer)buffer).limit(BLOB_STORE_HEADER_LEN);
+        buffer.clear();
+        buffer.limit(BLOB_STORE_HEADER_LEN);
 
         channel.read(buffer);
 
-        ((Buffer)buffer).flip();
+        buffer.flip();
 
         final boolean validMagic =
                 buffer.get() == BLOB_STORE_MAGIC_NUMBER[0]

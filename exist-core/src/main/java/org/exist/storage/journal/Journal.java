@@ -22,7 +22,6 @@
 package org.exist.storage.journal;
 
 import java.io.*;
-import java.nio.Buffer;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -353,14 +352,14 @@ public final class Journal implements Closeable {
             // TODO(AR) this is needed as the journal is initialised by starting a transaction for loading the SymbolTable... before recovery! which is likely wrong!!! as Recovery Cannot run if the Journal file has been switched!
             final long pos = channel != null ? channel.position() : 0;
 
-            currentLsn = new Lsn(currentJournalFileNumber, pos + ((Buffer)currentBuffer).position() + 1);
+            currentLsn = new Lsn(currentJournalFileNumber, pos + currentBuffer.position() + 1);
         } catch (final IOException e) {
             throw new JournalException("Unable to create LSN for: " + entry.dump());
         }
         entry.setLsn(currentLsn);
 
         try {
-            final int currentBufferEntryOffset = ((Buffer)currentBuffer).position();
+            final int currentBufferEntryOffset = currentBuffer.position();
 
             // write entryHeader
             currentBuffer.put(entry.getLogType());
@@ -374,7 +373,7 @@ public final class Journal implements Closeable {
             currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
 
             // write checksum
-            final long checksum = xxHash64.hash(currentBuffer, currentBufferEntryOffset, ((Buffer)currentBuffer).position() - currentBufferEntryOffset, XXHASH64_SEED);
+            final long checksum = xxHash64.hash(currentBuffer, currentBufferEntryOffset, currentBuffer.position() - currentBufferEntryOffset, XXHASH64_SEED);
             currentBuffer.putLong(checksum);
         } catch (final BufferOverflowException e) {
             throw new JournalException("Buffer overflow while writing log record: " + entry.dump(), e);
@@ -450,8 +449,8 @@ public final class Journal implements Closeable {
         }
 
         try {
-            if (((Buffer)currentBuffer).position() > 0) {
-                ((Buffer)currentBuffer).flip();
+            if (currentBuffer.position() > 0) {
+                currentBuffer.flip();
                 final int size = currentBuffer.remaining();
                 while (currentBuffer.hasRemaining()) {
                     channel.write(currentBuffer);
@@ -462,7 +461,7 @@ public final class Journal implements Closeable {
         } catch (final IOException e) {
             LOG.warn("Flushing log file failed!", e);
         } finally {
-            ((Buffer)currentBuffer).clear();
+            currentBuffer.clear();
         }
     }
 
@@ -600,7 +599,7 @@ public final class Journal implements Closeable {
         ByteConversion.shortToByteH(JOURNAL_VERSION, journalVersion, 0);
         buf.put(journalVersion);
 
-        ((Buffer)buf).flip();
+        buf.flip();
         channel.write(buf);
     }
 

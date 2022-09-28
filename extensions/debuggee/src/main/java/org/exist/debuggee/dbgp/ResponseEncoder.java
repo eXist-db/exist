@@ -51,7 +51,7 @@ public class ResponseEncoder extends ProtocolEncoderAdapter {
 		buffer.put((byte)0);
 		buffer.put(response);
 		buffer.put((byte)0);
-		((Buffer)buffer).flip();
+		buffer.flip();
 		
 		out.write(buffer);
 	}

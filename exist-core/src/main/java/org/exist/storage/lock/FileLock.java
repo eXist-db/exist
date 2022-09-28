@@ -28,7 +28,6 @@ import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -238,10 +237,10 @@ public class FileLock {
             }
             
             long now = System.currentTimeMillis();
-            ((Buffer)buf).clear();
+            buf.clear();
             buf.put(MAGIC);
             buf.putLong(now);
-            ((Buffer)buf).flip();
+            buf.flip();
             channel.position(0);
             channel.write(buf);
             //channel.force(true); //handled by SYNC on open option
@@ -262,9 +261,9 @@ public class FileLock {
         }
         
         channel.read(buf);
-        ((Buffer)buf).flip();
-        if (((Buffer)buf).limit() < 16) {
-            ((Buffer)buf).clear();
+        buf.flip();
+        if (buf.limit() < 16) {
+            buf.clear();
             throw new IOException(message("Could not read file lock.", null));
         }
         
@@ -275,7 +274,7 @@ public class FileLock {
         }
         
         lastHeartbeat = buf.getLong();
-        ((Buffer)buf).clear();
+        buf.clear();
         
         final DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
