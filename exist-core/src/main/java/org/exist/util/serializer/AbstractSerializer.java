@@ -62,8 +62,9 @@ public abstract class AbstractSerializer {
     protected static final Properties defaultProperties = new Properties();
 
     static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
-        defaultProperties.setProperty(OutputKeys.INDENT, "false");
+        defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
+        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
 
     protected Properties outputProperties;

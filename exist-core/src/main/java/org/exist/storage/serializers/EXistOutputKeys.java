@@ -28,7 +28,9 @@ public class EXistOutputKeys {
      */
     public static final String ITEM_SEPARATOR = "item-separator";
 
-	public static final String OUTPUT_DOCTYPE = "output-doctype";
+    public static final String OMIT_ORIGINAL_XML_DECLARATION = "omit-original-xml-declaration";
+
+    public static final String OUTPUT_DOCTYPE = "output-doctype";
 	 
 	public static final String EXPAND_XINCLUDES = "expand-xincludes";
 	

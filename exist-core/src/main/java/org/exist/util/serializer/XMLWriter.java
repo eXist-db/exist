@@ -48,9 +48,13 @@ public class XMLWriter implements SerializerWriter {
     
     protected final static Properties defaultProperties = new Properties();
     static {
+        defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
+
+    private static final String DEFAULT_XML_VERSION = "1.0";
+    private static final String DEFAULT_XML_ENCODING = UTF_8.name();
 
     protected Writer writer = null;
 
@@ -132,7 +136,7 @@ public class XMLWriter implements SerializerWriter {
             outputProperties = properties;
         }
 
-        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
+        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
         this.charSet = CharacterSet.getCharacterSet(encoding);
         if(this.charSet == null) {
             throw EX_CHARSET_NULL;
@@ -531,11 +535,28 @@ public class XMLWriter implements SerializerWriter {
             outputProperties = new Properties(defaultProperties);
         }
         declarationWritten = true;
+
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if("no".equals(omitXmlDecl)) {
-            final String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
-            final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
+        if ("no".equals(omitXmlDecl)) {
+
+            final String version;
+            final String encoding;
+            @Nullable final String standalone;
+
+            final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+            if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
+                // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
+                version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
+                encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
+                standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+
+            } else {
+                // get the fields of the declaration from the serialization properties
+                version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
+                encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
+                standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
+            }
+
             try {
                 writer.write("<?xml version=\"");
                 writer.write(version);
