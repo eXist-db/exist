@@ -191,7 +191,7 @@ public class ImplicitConnectionCloseIT {
                 final XQueryContext mainQueryContext = mainCompiledQuery.getContext();
 
                 // get the context of the library module
-                final Module[] libraryModules = mainQueryContext.getModules("http://mymodule.com");
+                final org.exist.xquery.Module[] libraryModules = mainQueryContext.getModules("http://mymodule.com");
                 assertEquals(1, libraryModules.length);
                 assertTrue(libraryModules[0] instanceof ExternalModule);
                 final ExternalModule libraryModule = (ExternalModule) libraryModules[0];
