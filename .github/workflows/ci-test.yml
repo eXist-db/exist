@@ -4,7 +4,7 @@ jobs:
   test:
     name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test
     env:
-      MAVEN_OPTS: --illegal-access=debug -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./
+      MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./
     strategy:
       fail-fast: false
       matrix:
