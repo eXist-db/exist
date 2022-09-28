@@ -49,7 +49,7 @@ public class XMLWriter implements SerializerWriter {
     protected final static Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
-        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
 
@@ -536,42 +536,44 @@ public class XMLWriter implements SerializerWriter {
         }
         declarationWritten = true;
 
+        final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+        if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
+            // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
+            final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
+            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+
+            writeDeclaration(version, encoding, standalone);
+
+            return;
+        }
+
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         if ("no".equals(omitXmlDecl)) {
+            // get the fields of the declaration from the serialization properties
+            final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
+            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
 
-            final String version;
-            final String encoding;
-            @Nullable final String standalone;
+            writeDeclaration(version, encoding, standalone);
+        }
+    }
 
-            final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
-            if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
-                // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
-                version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
-                encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
-                standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
-
-            } else {
-                // get the fields of the declaration from the serialization properties
-                version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
-                encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
-                standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-            }
-
-            try {
-                writer.write("<?xml version=\"");
-                writer.write(version);
-                writer.write("\" encoding=\"");
-                writer.write(encoding);
+    private void writeDeclaration(final String version, final String encoding, @Nullable final String standalone) throws TransformerException {
+        try {
+            writer.write("<?xml version=\"");
+            writer.write(version);
+            writer.write("\" encoding=\"");
+            writer.write(encoding);
+            writer.write('"');
+            if(standalone != null) {
+                writer.write(" standalone=\"");
+                writer.write(standalone);
                 writer.write('"');
-                if(standalone != null) {
-                    writer.write(" standalone=\"");
-                    writer.write(standalone);
-                    writer.write('"');
-                }
-                writer.write("?>\n");
-            } catch(final IOException ioe) {
-                throw new TransformerException(ioe.getMessage(), ioe);
             }
+            writer.write("?>\n");
+        } catch(final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
 

@@ -105,7 +105,7 @@ public class SerializationTest {
             assertEquals("application/xml", ((File) resource).contentType);
             final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
             resource.downloadTo(tempRetrieveFile, null);
-            assertEquals("<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" + XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+            assertEquals(XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
         }
     }
 

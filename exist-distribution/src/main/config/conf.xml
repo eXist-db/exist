@@ -793,7 +793,7 @@
 
         - omit-original-xml-declaration:
             should the original persisted XML Declaration for a document be serialized
-            if it is present? Requires omit-xml-declaration to also be set tp 'no'.
+            if it is present?
 
         - output-doctype:
             should the Doctype Declaration for a document be serialized
@@ -824,7 +824,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no"
-                omit-xml-declaration="no" omit-original-xml-declaration="no"
+                omit-xml-declaration="yes" omit-original-xml-declaration="no"
                 output-doctype="yes" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no"
                 match-tagging-elements="no">

@@ -129,7 +129,7 @@ public class RESTServer {
 
     static {
         defaultOutputKeysProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
-        defaultOutputKeysProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        defaultOutputKeysProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
                 MimeType.XML_TYPE.getName());
@@ -365,7 +365,7 @@ public class RESTServer {
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, option);
         } else {
             // set omit-xml-declaration by configuration
-            final String omitXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_XML_DECLARATION, "no");
+            final String omitXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_XML_DECLARATION, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDeclaration);
         }
         if ((option = getParameter(request, Omit_Original_Xml_Declaration)) != null) {

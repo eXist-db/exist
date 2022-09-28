@@ -43,7 +43,6 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 
 import java.util.Arrays;
@@ -177,31 +176,18 @@ public class SerializationTest {
 
 	@Test
 	public void getDocTypeDefault() throws XMLDBException {
-		final String prevOutputOmitXmlDecl = testCollection.getProperty(OutputKeys.OMIT_XML_DECLARATION);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			assertEquals(XML_WITH_DOCTYPE, res.getContent());
-		} finally {
-			if (prevOutputOmitXmlDecl != null) {
-				testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, prevOutputOmitXmlDecl);
-			}
-		}
+		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+		assertEquals(XML_WITH_DOCTYPE, res.getContent());
 	}
 
 	@Test
 	public void getDocTypeNo() throws XMLDBException {
-		final String prevOutputOmitXmlDecl = testCollection.getProperty(OutputKeys.OMIT_XML_DECLARATION);
 		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
 			assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
 		} finally {
-			if (prevOutputOmitXmlDecl != null) {
-				testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, prevOutputOmitXmlDecl);
-			}
 			if (prevOutputDocType != null) {
 				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
 			}
@@ -210,17 +196,12 @@ public class SerializationTest {
 
 	@Test
 	public void getDocTypeYes() throws XMLDBException {
-		final String prevOutputOmitXmlDecl = testCollection.getProperty(OutputKeys.OMIT_XML_DECLARATION);
 		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
 			assertEquals(XML_WITH_DOCTYPE, res.getContent());
 		} finally {
-			if (prevOutputOmitXmlDecl != null) {
-				testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, prevOutputOmitXmlDecl);
-			}
 			if (prevOutputDocType != null) {
 				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
 			}
@@ -235,17 +216,12 @@ public class SerializationTest {
 
 	@Test
 	public void getXmlDeclNo() throws XMLDBException {
-		final String prevOmitXmlDecl = testCollection.getProperty(OutputKeys.OMIT_XML_DECLARATION);
 		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
 			assertEquals(XML_WITH_XMLDECL, res.getContent());
 		} finally {
-			if (prevOmitXmlDecl != null) {
-				testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, prevOmitXmlDecl);
-			}
 			if (prevOmitOriginalXmlDecl != null) {
 				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
 			}
@@ -254,17 +230,12 @@ public class SerializationTest {
 
 	@Test
 	public void getXmlDeclYes() throws XMLDBException {
-		final String prevOmitXmlDecl = testCollection.getProperty(OutputKeys.OMIT_XML_DECLARATION);
 		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
 			assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
 		} finally {
-			if (prevOmitXmlDecl != null) {
-				testCollection.setProperty(OutputKeys.OMIT_XML_DECLARATION, prevOmitXmlDecl);
-			}
 			if (prevOmitOriginalXmlDecl != null) {
 				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
 			}

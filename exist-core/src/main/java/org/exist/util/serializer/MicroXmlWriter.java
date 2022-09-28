@@ -22,6 +22,7 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.QName;
+import org.exist.storage.serializers.EXistOutputKeys;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
@@ -168,7 +169,8 @@ public class MicroXmlWriter extends IndentingXMLWriter {
 
     @Override
     public void setOutputProperties(final Properties properties) {
+        properties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
         properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        super.setOutputProperties(properties);    //To change body of overridden methods use File | Settings | File Templates.
+        super.setOutputProperties(properties);
     }
 }
