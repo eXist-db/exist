@@ -107,6 +107,10 @@ public abstract class Serializer implements XMLReader {
     protected static final Logger LOG = LogManager.getLogger(Serializer.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
+    public static final String OMIT_XML_DECLARATION_ATTRIBUTE = "omit-xml-declaration";
+    public static final String PROPERTY_OMIT_XML_DECLARATION = "serialization.omit-xml-declaration";
+    public static final String OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE = "omit-original-xml-declaration";
+    public static final String PROPERTY_OMIT_ORIGINAL_XML_DECLARATION = "serialization.omit-original-xml-declaration";
     public static final String OUTPUT_DOCTYPE_ATTRIBUTE = "output-doctype";
     public static final String PROPERTY_OUTPUT_DOCTYPE = "serialization.output-doctype";
     public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";

@@ -357,7 +357,29 @@ enum RESTServerParameter {
      *
      * The value of the parameter should be either "yes" or "no".
      */
-    Output_Doctype;
+    Output_Doctype,
+
+    /**
+     * Can be used in the Query String of a GET request
+     * to indicate that the XML Declaration of an XML document should not
+     * be serialized if present.
+     *
+     * Contexts: GET
+     *
+     * The value of the parameter should be either "yes" or "no".
+     */
+    Omit_Xml_Declaration,
+
+    /**
+     * Can be used in the Query String of a GET request
+     * to indicate that the original persisted XML Declaration of an XML document should not
+     * be serialized if present.
+     *
+     * Contexts: GET
+     *
+     * The value of the parameter should be either "yes" or "no".
+     */
+    Omit_Original_Xml_Declaration;
 
     /**
      * Get the parameter key that is
