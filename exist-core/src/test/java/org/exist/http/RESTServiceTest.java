@@ -234,7 +234,7 @@ public class RESTServiceTest {
     }
 
     private static String getResourceWithDocTypeUri() {
-        return getServerUri() + TEST_DOCTYPE_COLLECTION_URI.append(TEST_XML_DOC_WITH_DOCTYPE_URI);
+        return getServerUri() + TEST_DOCTYPE_COLLECTION_URI.append(TEST_XML_DOC_WITH_DOCTYPE_URI) + "?_omit-xml-declaration=yes";
     }
 
     private static String getResourceWithXmlDeclUri() {
@@ -757,7 +757,7 @@ try {
 
         /* execute the stored xquery a few times */
         for (int i = 0; i < 5; i++) {
-            final HttpURLConnection connect = getConnection(getCollectionUri() + "/requestparameter.xql?doc=somedoc" + i);
+            final HttpURLConnection connect = getConnection(getCollectionUri() + "/requestparameter.xql?doc=somedoc" + i + "&_omit-xml-declaration=yes");
             try {
                 connect.setRequestProperty("Authorization", "Basic " + credentials);
                 connect.setRequestMethod("GET");
@@ -831,7 +831,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r-x");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
@@ -876,7 +876,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
@@ -922,7 +922,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwxrw-r--");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestProperty("Authorization", "bAsiC " + credentials);  // NOTE(AR): Intentional use of 'bAsiC' to test case-insensitive scheme matching
@@ -968,7 +968,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
@@ -1019,7 +1019,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
@@ -1088,7 +1088,7 @@ try {
         chmod(XmldbURI.ROOT_COLLECTION + "/test/auth.xq", "rwsr--r-x");
 
         // call the auth.xq
-        final String uri = getCollectionUri() + "/auth.xq";
+        final String uri = getCollectionUri() + "/auth.xq?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(uri);
         try {
             connect.setRequestMethod("GET");
@@ -1136,7 +1136,7 @@ try {
     // all the tests with EncodedPath in function declaration aim to test rest server ability to handle special characters
     @Test
     public void doGetEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(DOC_URI);
         try {
             connect.setRequestMethod("GET");
@@ -1177,7 +1177,7 @@ try {
 
     @Test
     public void doPutEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
+        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml?_omit-xml-declaration=yes";
         final HttpURLConnection connect = getConnection(DOC_URI);
         final HttpURLConnection getConnect = getConnection(DOC_URI);
         String data = "<foobar/>";
@@ -1305,7 +1305,7 @@ try {
 
     @Test
     public void getDocTypeNo() throws IOException {
-        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=no");
+        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "&_output-doctype=no");
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -1330,7 +1330,7 @@ try {
 
     @Test
     public void getDocTypeYes() throws IOException {
-        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "?_output-doctype=yes");
+        final HttpURLConnection connect = getConnection(getResourceWithDocTypeUri() + "&_output-doctype=yes");
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -1419,7 +1419,8 @@ try {
 
             final String response = readResponse(connect.getInputStream());
 
-            assertEquals("<bookmap id=\"bookmap-2\"/>\r\n", response);
+            assertEquals("<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\r\n" +
+                    "<bookmap id=\"bookmap-2\"/>\r\n", response);
 
         } finally {
             connect.disconnect();
@@ -1515,7 +1516,7 @@ try {
 
     private void doStoredQuery(final boolean cacheHeader, final boolean wrap) throws IOException {
 
-        String uri = getCollectionUri() + "/test.xq?p=Hello";
+        String uri = getCollectionUri() + "/test.xq?p=Hello&&_omit-xml-declaration=yes";
         if(wrap) {
             uri += "&_wrap=yes";
         }

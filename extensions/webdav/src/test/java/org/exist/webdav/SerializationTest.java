@@ -86,26 +86,27 @@ public class SerializationTest {
         final Host host = builder.buildHost();
 
         // workaround pre-emptive auth issues of Milton Client
-        final AbstractHttpClient httpClient = (AbstractHttpClient)host.getClient();
-        httpClient.addRequestInterceptor(new AlwaysBasicPreAuth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD));
+        try (final AbstractHttpClient httpClient = (AbstractHttpClient)host.getClient()) {
+            httpClient.addRequestInterceptor(new AlwaysBasicPreAuth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD));
 
-        final Folder folder = host.getFolder("/");
-        assertNotNull(folder);
+            final Folder folder = host.getFolder("/");
+            assertNotNull(folder);
 
-        // store document
-        final byte data[] = XML_WITH_DOCTYPE.getBytes(UTF_8);
-        final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
-        assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
+            // store document
+            final byte data[] = XML_WITH_DOCTYPE.getBytes(UTF_8);
+            final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
+            Files.write(tmpStoreFile.toPath(), data);
+            assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
-        // retrieve document
-        final Resource resource = folder.child(docName);
-        assertNotNull(resource);
-        assertTrue(resource instanceof File);
-        assertEquals("application/xml", ((File) resource).contentType);
-        final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
-        resource.downloadTo(tempRetrieveFile, null);
-        assertEquals(XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+            // retrieve document
+            final Resource resource = folder.child(docName);
+            assertNotNull(resource);
+            assertTrue(resource instanceof File);
+            assertEquals("application/xml", ((File) resource).contentType);
+            final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
+            resource.downloadTo(tempRetrieveFile, null);
+            assertEquals("<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" + XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+        }
     }
 
     @Test
@@ -119,25 +120,26 @@ public class SerializationTest {
         final Host host = builder.buildHost();
 
         // workaround pre-emptive auth issues of Milton Client
-        final AbstractHttpClient httpClient = (AbstractHttpClient)host.getClient();
-        httpClient.addRequestInterceptor(new AlwaysBasicPreAuth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD));
+        try (final AbstractHttpClient httpClient = (AbstractHttpClient)host.getClient()) {
+            httpClient.addRequestInterceptor(new AlwaysBasicPreAuth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD));
 
-        final Folder folder = host.getFolder("/");
-        assertNotNull(folder);
+            final Folder folder = host.getFolder("/");
+            assertNotNull(folder);
 
-        // store document
-        final byte data[] = XML_WITH_XMLDECL.getBytes(UTF_8);
-        final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
-        assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
+            // store document
+            final byte data[] = XML_WITH_XMLDECL.getBytes(UTF_8);
+            final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
+            Files.write(tmpStoreFile.toPath(), data);
+            assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
-        // retrieve document
-        final Resource resource = folder.child(docName);
-        assertNotNull(resource);
-        assertTrue(resource instanceof File);
-        assertEquals("application/xml", ((File) resource).contentType);
-        final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
-        resource.downloadTo(tempRetrieveFile, null);
-        assertEquals("<bookmap id=\"bookmap-2\"/>", new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+            // retrieve document
+            final Resource resource = folder.child(docName);
+            assertNotNull(resource);
+            assertTrue(resource instanceof File);
+            assertEquals("application/xml", ((File) resource).contentType);
+            final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
+            resource.downloadTo(tempRetrieveFile, null);
+            assertEquals(XML_WITH_XMLDECL, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+        }
     }
 }

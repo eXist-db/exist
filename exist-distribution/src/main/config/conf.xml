@@ -824,7 +824,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no"
-                omit-xml-declaration="yes" omit-original-xml-declaration="yes"
+                omit-xml-declaration="no" omit-original-xml-declaration="no"
                 output-doctype="yes" enable-xinclude="yes"
                 enable-xsl="no" indent="yes" match-tagging-attributes="no"
                 match-tagging-elements="no">

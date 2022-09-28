@@ -119,7 +119,12 @@ public class XMLDBBackupTest {
 
         final Resource doc1 = testCollection.getResource(DOC1_NAME);
         assertNotNull(doc1);
-        final Source expected = Input.fromString(doc1Content).build();
+
+        // NOTE(AR) that org.exist.backup.Backup calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        // NOTE(AR) that org.exist.backup.SystemExport also calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        // TODO(AR) consider whether the backup/export should be injecting a XML Declaration that was not previously present, or should default to EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION
+        final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + doc1Content).build();
+
         final Source actual = Input.fromString(doc1.getContent().toString()).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
