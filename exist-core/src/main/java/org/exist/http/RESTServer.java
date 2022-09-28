@@ -498,6 +498,11 @@ public class RESTServer {
             // found an XQuery or XProc resource, fixup request values
             final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
 
+            // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
+            outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
+            outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+
             // Should we display the source of the XQuery or XProc or execute it
             final Descriptor descriptor = Descriptor.getDescriptorSingleton();
             if (source) {
