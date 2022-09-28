@@ -49,6 +49,10 @@ public class SerializationTest {
             "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
             "<bookmap id=\"bookmap-1\"/>";
 
+    private static final String XML_WITH_XMLDECL =
+            "<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
+            "<bookmap id=\"bookmap-2\"/>";
+
     private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
 
     @ClassRule
@@ -102,5 +106,38 @@ public class SerializationTest {
         final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
         resource.downloadTo(tempRetrieveFile, null);
         assertEquals(XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+    }
+
+    @Test
+    public void getXmlDeclDefault() throws IOException, NotAuthorizedException, BadRequestException, HttpException, ConflictException, NotFoundException {
+        final String docName = "test-with-xmldecl.xml";
+        final HostBuilder builder = new HostBuilder();
+        builder.setServer("localhost");
+        final int port = EXIST_WEB_SERVER.getPort();
+        builder.setPort(port);
+        builder.setRootPath("webdav/db");
+        final Host host = builder.buildHost();
+
+        // workaround pre-emptive auth issues of Milton Client
+        final AbstractHttpClient httpClient = (AbstractHttpClient)host.getClient();
+        httpClient.addRequestInterceptor(new AlwaysBasicPreAuth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD));
+
+        final Folder folder = host.getFolder("/");
+        assertNotNull(folder);
+
+        // store document
+        final byte data[] = XML_WITH_XMLDECL.getBytes(UTF_8);
+        final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
+        Files.write(tmpStoreFile.toPath(), data);
+        assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
+
+        // retrieve document
+        final Resource resource = folder.child(docName);
+        assertNotNull(resource);
+        assertTrue(resource instanceof File);
+        assertEquals("application/xml", ((File) resource).contentType);
+        final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
+        resource.downloadTo(tempRetrieveFile, null);
+        assertEquals("<bookmap id=\"bookmap-2\"/>", new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
     }
 }
