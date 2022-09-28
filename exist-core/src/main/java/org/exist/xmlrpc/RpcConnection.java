@@ -663,6 +663,16 @@ public class RpcConnection implements RpcAPI {
     }
 
     private void serialize(final DBBroker broker, final Properties properties, final ConsumerE<Serializer, SAXException> toSaxFunction, final Writer writer) throws SAXException, IOException {
+        if (!properties.containsKey(OutputKeys.OMIT_XML_DECLARATION)) {
+            final String omitXmlDeclaration = broker.getConfiguration().getProperty(Serializer.OMIT_XML_DECLARATION_ATTRIBUTE, "yes");
+            properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDeclaration);
+        }
+
+        if (!properties.containsKey(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION)) {
+            final String omitOriginalXmlDeclaration = broker.getConfiguration().getProperty(Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE, "yes");
+            properties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
+        }
+
         if (!properties.containsKey(EXistOutputKeys.OUTPUT_DOCTYPE)) {
             final String outputDocType = broker.getConfiguration().getProperty(Serializer.PROPERTY_OUTPUT_DOCTYPE, "yes");
             properties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, outputDocType);
