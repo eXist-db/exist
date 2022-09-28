@@ -213,6 +213,15 @@ public class RESTServiceTest {
     private static String credentials;
     private static String badCredentials;
 
+    private static final String TEST_ENCODED_XML_DOC_CONTENT = "<foo/>";
+    private static final String ENCODED_NAME = "AéB";
+    private static final XmldbURI GET_METHOD_ENCODED_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-get-method-encoded").append(ENCODED_NAME);
+    private static final XmldbURI GET_METHOD_ENCODED_DOC_URI = GET_METHOD_ENCODED_COLLECTION_URI.append(ENCODED_NAME + ".xml");
+    private static final XmldbURI PUT_METHOD_ENCODED_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-put-method-encoded").append(ENCODED_NAME);
+    private static final XmldbURI PUT_METHOD_ENCODED_DOC_URI = PUT_METHOD_ENCODED_COLLECTION_URI.append(ENCODED_NAME + ".xml");
+    private static final XmldbURI DELETE_METHOD_ENCODED_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-delete-method-encoded").append(ENCODED_NAME);
+    private static final XmldbURI DELETE_METHOD_ENCODED_DOC_URI = DELETE_METHOD_ENCODED_COLLECTION_URI.append(ENCODED_NAME + ".xml");
+
     private static String getServerUri() {
         return "http://localhost:" + existWebServer.getPort() + "/rest";
     }
@@ -306,15 +315,17 @@ public class RESTServiceTest {
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
         badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
 
-        final XmldbURI TEST_XML_DOC_URI = XmldbURI.create("AéB.xml");
-        final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/AéB");
-        final String TEST_XML_DOC = "<foo/>";
-
         final BrokerPool pool =  existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
-            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI)) {
-                broker.storeDocument(transaction, TEST_XML_DOC_URI, new StringInputSource(TEST_XML_DOC), MimeType.XML_TYPE, col);
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, GET_METHOD_ENCODED_COLLECTION_URI)) {
+                broker.storeDocument(transaction, GET_METHOD_ENCODED_DOC_URI.lastSegment(), new StringInputSource(TEST_ENCODED_XML_DOC_CONTENT), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, DELETE_METHOD_ENCODED_COLLECTION_URI)) {
+                broker.storeDocument(transaction, DELETE_METHOD_ENCODED_DOC_URI.lastSegment(), new StringInputSource(TEST_ENCODED_XML_DOC_CONTENT), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 
@@ -1132,12 +1143,12 @@ try {
         }
     }
 
-    //test rest server ability to handle encoded characters
+    // test rest server ability to handle encoded characters
     // all the tests with EncodedPath in function declaration aim to test rest server ability to handle special characters
     @Test
     public void doGetEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
-        final HttpURLConnection connect = getConnection(DOC_URI);
+        final String docUri = getServerUri() + GET_METHOD_ENCODED_DOC_URI.getCollectionPath();
+        final HttpURLConnection connect = getConnection(docUri);
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -1151,10 +1162,10 @@ try {
             }
             assertEquals("Server returned content type " + contentType, "application/xml", contentType);
 
-            String response = readResponse(connect.getInputStream());
+            final String response = readResponse(connect.getInputStream());
 
             //readResponse is appending \r\n to each line that's why its added the expected content
-            assertEquals("Server returned document content " + response,"<foobar/>\r\n",response);
+            assertEquals("Server returned document content " + response,TEST_ENCODED_XML_DOC_CONTENT + "\r\n",response);
         } finally {
             connect.disconnect();
         }
@@ -1162,8 +1173,8 @@ try {
 
     @Test
     public void doHeadEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
-        final HttpURLConnection connect = getConnection(DOC_URI);
+        final String docUri = getServerUri() + GET_METHOD_ENCODED_DOC_URI.getCollectionPath();
+        final HttpURLConnection connect = getConnection(docUri);
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -1177,10 +1188,10 @@ try {
 
     @Test
     public void doPutEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
-        final HttpURLConnection connect = getConnection(DOC_URI);
-        final HttpURLConnection getConnect = getConnection(DOC_URI);
-        String data = "<foobar/>";
+        final String docUri = getServerUri() + PUT_METHOD_ENCODED_DOC_URI.getCollectionPath();
+        final HttpURLConnection connect = getConnection(docUri);
+        final HttpURLConnection getConnect = getConnection(docUri);
+        final String data = "<foobar/>";
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("PUT");
@@ -1201,10 +1212,10 @@ try {
             final int res_code = getConnect.getResponseCode();
             assertEquals("Server returned response code " + res_code, HttpStatus.OK_200, res_code);
 
-            String response = readResponse(getConnect.getInputStream());
+            final String response = readResponse(getConnect.getInputStream());
 
             //readResponse is appending \r\n to each line that's why its added the expected content
-            assertEquals("Server returned document content " + response,"<foobar/>\r\n",response);
+            assertEquals("Server returned document content " + response,data + "\r\n",response);
 
         } finally {
             connect.disconnect();
@@ -1214,10 +1225,10 @@ try {
 
     @Test
     public void doPostEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
-        final HttpURLConnection connect = getConnection(DOC_URI);
+        final String docUri = getServerUri() + GET_METHOD_ENCODED_COLLECTION_URI.getCollectionPath();
+        final HttpURLConnection connect = getConnection(docUri);
 
-        String data = "<query xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
+        final String data = "<query xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
                 "    <text>\n" +
                 "        //foo\n" +
                 "    </text>\n" +
@@ -1235,7 +1246,7 @@ try {
             final int r = connect.getResponseCode();
             assertEquals("doPut: Server returned response code " + r, HttpStatus.OK_200, r);
 
-            String response = readResponse(connect.getInputStream());
+            final String response = readResponse(connect.getInputStream());
 
             //readResponse is appending \r\n to each line that's why its added the expected content
             assertTrue("Server returned " + response,response.contains("exist:hits=\"1\""));
@@ -1247,9 +1258,9 @@ try {
 
     @Test
     public void doDeleteEncodedPath() throws IOException {
-        String DOC_URI = getServerUri() + XmldbURI.ROOT_COLLECTION + "/AéB/AéB.xml";
-        final HttpURLConnection connect = getConnection(DOC_URI);
-        final HttpURLConnection getConnect = getConnection(DOC_URI);
+        final String docUri = getServerUri() + DELETE_METHOD_ENCODED_DOC_URI.getCollectionPath();
+        final HttpURLConnection connect = getConnection(docUri);
+        final HttpURLConnection getConnect = getConnection(docUri);
 
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
