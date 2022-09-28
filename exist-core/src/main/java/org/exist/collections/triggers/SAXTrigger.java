@@ -36,6 +36,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.annotation.Nullable;
+
 /**
  * Abstract default implementation of a Trigger. This implementation just
  * forwards all SAX events to the output content handler.
@@ -87,6 +89,13 @@ public abstract class SAXTrigger implements DocumentTrigger, ContentHandler, Lex
     public void startDocument() throws SAXException {
         if (nextContentHandler != null)
             nextContentHandler.startDocument();
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        if (nextContentHandler != null) {
+            nextContentHandler.declaration(version, encoding, standalone);
+        }
     }
 
     @Override

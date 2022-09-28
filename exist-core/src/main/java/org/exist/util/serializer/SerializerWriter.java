@@ -24,6 +24,7 @@ package org.exist.util.serializer;
 
 import org.exist.dom.QName;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 import java.io.Writer;
 import java.util.Properties;
@@ -43,6 +44,8 @@ public interface SerializerWriter {
     void startDocument() throws TransformerException;
 
     void endDocument() throws TransformerException;
+
+    void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws TransformerException;
 
     void startElement(final String namespaceUri, final String localName, final String qname) throws TransformerException;
 

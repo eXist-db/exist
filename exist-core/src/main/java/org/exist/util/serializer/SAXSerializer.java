@@ -34,6 +34,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.NamespaceSupport;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.transform.TransformerException;
 import java.io.Writer;
@@ -100,6 +101,15 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
     public void endDocument() throws SAXException {
         try {
             receiver.endDocument();
+        } catch (final TransformerException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        try {
+            receiver.declaration(version, encoding, standalone);
         } catch (final TransformerException e) {
             throw new SAXException(e.getMessage(), e);
         }

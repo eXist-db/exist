@@ -271,7 +271,7 @@
             <groupId>org.exist-db.thirdparty.xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.2</version>
-            <classifier>xml-schema-1.1</classifier>
+            <classifier>jdk14-xml-schema-1.1</classifier>
             <exclusions>
                 <exclusion> <!-- conflicts with Java 17's javax.xml module -->
                     <groupId>xml-apis</groupId>

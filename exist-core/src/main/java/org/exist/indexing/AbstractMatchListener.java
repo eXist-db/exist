@@ -28,6 +28,8 @@ import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility implementation of interface {@link org.exist.indexing.MatchListener} which forwards all
  * events to a second receiver. Subclass this class and overwrite the methods you are interested in.
@@ -86,6 +88,13 @@ public class AbstractMatchListener implements MatchListener {
     @Override
     public void endDocument() throws SAXException {
         if (nextListener != null) {nextListener.endDocument();}
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        if (nextListener != null) {
+            nextListener.declaration(version, encoding, standalone);
+        }
     }
 
     @Override

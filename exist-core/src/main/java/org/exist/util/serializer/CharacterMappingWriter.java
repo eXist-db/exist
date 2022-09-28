@@ -87,6 +87,11 @@ public class CharacterMappingWriter implements SerializerWriter {
     }
 
     @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws TransformerException {
+        wrappedSerializerWriter.declaration(version, encoding, standalone);
+    }
+
+    @Override
     public void startElement(final String namespaceUri, final String localName, final String qname) throws TransformerException {
         wrappedSerializerWriter.startElement(namespaceUri, localName, qname);
     }

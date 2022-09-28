@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class CollectionStore extends BFile {
 
-    public static final short FILE_FORMAT_VERSION_ID = 16;
+    public static final short FILE_FORMAT_VERSION_ID = 17;
 
     public static final String FILE_NAME = "collections.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.collections";

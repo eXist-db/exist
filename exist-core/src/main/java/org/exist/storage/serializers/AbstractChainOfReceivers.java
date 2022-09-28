@@ -28,6 +28,8 @@ import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility implementation of interface {@link ChainOfReceivers} which forwards all
  * events to a second receiver. Subclass this class and overwrite the methods you are interested in.
@@ -88,6 +90,13 @@ public class AbstractChainOfReceivers implements ChainOfReceivers {
     public void endDocument() throws SAXException {
         if (next != null) {
             next.endDocument();
+        }
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        if (next != null) {
+            next.declaration(version, encoding, standalone);
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CDATASectionImpl;
 import org.exist.dom.persistent.CommentImpl;
@@ -34,9 +35,9 @@ import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.XMLDeclarationImpl;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
@@ -61,6 +62,8 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
+
+import javax.annotation.Nullable;
 
 /**
  * Parses a given input document via SAX, stores it to the database and handles
@@ -540,6 +543,12 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
          * considers the Document to be the first node with an id.
          */
         nodeFactoryInstanceCnt = 1;
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        final XMLDeclarationImpl xmlDecl = new XMLDeclarationImpl(version, encoding, standalone);
+        document.setXmlDeclaration(xmlDecl);
     }
 
     final boolean hasNormAttribute(final Attributes attributes) {

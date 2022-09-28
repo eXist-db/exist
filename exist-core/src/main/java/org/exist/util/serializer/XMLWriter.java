@@ -24,6 +24,7 @@ package org.exist.util.serializer;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
@@ -105,6 +106,8 @@ public class XMLWriter implements SerializerWriter {
         attrSpecialChars['"'] = true;
     }
 
+    @Nullable private XMLDeclaration originalXmlDecl;
+
     public XMLWriter() {
         charSet = CharacterSet.getCharacterSet(UTF_8.name());
         if(charSet == null) {
@@ -160,6 +163,7 @@ public class XMLWriter implements SerializerWriter {
         tagIsOpen = false;
         tagIsEmpty = true;
         declarationWritten = false;
+        originalXmlDecl = null;
         doctypeWritten = false;
         defaultNamespace = "";
         cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
@@ -189,6 +193,11 @@ public class XMLWriter implements SerializerWriter {
 	
     public void startDocument() throws TransformerException {
         resetObjectState();
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws TransformerException {
+        this.originalXmlDecl = new XMLDeclaration(version, encoding, standalone);
     }
 
     public void endDocument() throws TransformerException {
@@ -642,5 +651,17 @@ public class XMLWriter implements SerializerWriter {
         }
         charref[o++] = ';';
         writer.write(charref, 0, o);
+    }
+
+    private static class XMLDeclaration {
+        @Nullable final String version;
+        @Nullable final String encoding;
+        @Nullable final String standalone;
+
+        private XMLDeclaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) {
+            this.version = version;
+            this.encoding = encoding;
+            this.standalone = standalone;
+        }
     }
 }

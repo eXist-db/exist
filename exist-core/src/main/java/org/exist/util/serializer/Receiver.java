@@ -27,6 +27,8 @@ import org.exist.dom.QName;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 /**
  * A receiver is similar to the SAX content handler and lexical handler interfaces, but
  * uses some higher level types as arguments. For example, element names are internally
@@ -43,6 +45,8 @@ public interface Receiver<T extends INodeHandle> {
     void startDocument() throws SAXException;
 
 	void endDocument() throws SAXException;
+
+	void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException;
 
 	void startPrefixMapping(String prefix, String namespaceURI) throws SAXException;
 	
