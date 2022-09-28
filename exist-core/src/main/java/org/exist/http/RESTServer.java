@@ -120,7 +120,6 @@ public class RESTServer {
 
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
-        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
@@ -129,8 +128,9 @@ public class RESTServer {
     public final static Properties defaultOutputKeysProperties = new Properties();
 
     static {
+        defaultOutputKeysProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
+        defaultOutputKeysProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
-        defaultOutputKeysProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
                 MimeType.XML_TYPE.getName());
     }
@@ -141,6 +141,9 @@ public class RESTServer {
             + "h1 { color: #C0C0C0; }" + ".path {" + "  padding-bottom: 10px;"
             + "}" + ".high { " + "  color: #666699; " + "  font-weight: bold;"
             + "}" + "</style>" + "</head>" + "<body>" + "<h1>XQuery Error</h1>";
+
+    private static final String DEFAULT_ENCODING = UTF_8.name();
+
     private final String formEncoding; // TODO: we may be able to remove this
     // eventually, in favour of
     // HttpServletRequestWrapper being setup in
@@ -315,7 +318,7 @@ public class RESTServer {
             }
         } catch (final SAXException e) {
             final XPathException x = new XPathException(variables != null ? variables.getExpression() : null, e.toString());
-            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), query, path, x);
+            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, query, path, x);
         }
 
         if ((option = getParameter(request, HowMany)) != null) {
@@ -381,7 +384,7 @@ public class RESTServer {
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         } else {
-            encoding = UTF_8.name();
+            encoding = DEFAULT_ENCODING;
         }
 
         final String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
@@ -567,7 +570,7 @@ public class RESTServer {
         if ((encoding = getParameter(request, Encoding)) != null) {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         } else {
-            encoding = UTF_8.name();
+            encoding = DEFAULT_ENCODING;
         }
 
         try(final LockedDocument lockedDocument = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
@@ -638,7 +641,7 @@ public class RESTServer {
         LockedDocument lockedDocument = null;
         DocumentImpl resource = null;
 
-        final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+        final String encoding = getEncoding(outputProperties);
         String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
         try {
             // check if path leads to an XQuery resource.
@@ -1244,7 +1247,7 @@ public class RESTServer {
             executeXQuery(broker, transaction, resource, request, response,
                     outputProperties, servletPath.toString(), pathInfo);
         } catch (final XPathException e) {
-            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, UTF_8.name(), null, path.toString(), e);
+            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, DEFAULT_ENCODING, null, path.toString(), e);
         } finally {
             lockedDocument.close();
         }
@@ -1255,7 +1258,7 @@ public class RESTServer {
 
         String encoding = request.getCharacterEncoding();
         if (encoding == null) {
-            encoding = UTF_8.name();
+            encoding = DEFAULT_ENCODING;
         }
 
         final InputStream is = request.getInputStream();
@@ -2119,6 +2122,10 @@ public class RESTServer {
 
     }
 
+    private static String getEncoding(final Properties outputProperties) {
+        return outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_ENCODING);
+    }
+
     private void writeResultXML(final HttpServletResponse response,
         final DBBroker broker, final Sequence results, final int howmany,
         final int start, final boolean typed, final Properties outputProperties,
@@ -2129,7 +2136,7 @@ public class RESTServer {
         try {
 
             // set output headers
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+            final String encoding = getEncoding(outputProperties);
             if (!response.containsHeader("Content-Type")) {
                 String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
                 if (mimeType != null) {
@@ -2189,7 +2196,7 @@ public class RESTServer {
         outputProperties.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
         try {
             serializer.setProperties(outputProperties);
-            try (Writer writer = new OutputStreamWriter(response.getOutputStream(), outputProperties.getProperty(OutputKeys.ENCODING))) {
+            try (Writer writer = new OutputStreamWriter(response.getOutputStream(), getEncoding(outputProperties))) {
                 final JSONObject root = new JSONObject();
                 root.addObject(new JSONSimpleProperty("start", Integer.toString(start), true));
                 root.addObject(new JSONSimpleProperty("count", Integer.toString(howmany), true));
