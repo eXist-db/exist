@@ -61,7 +61,16 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class HttpRequestWrapper implements RequestWrapper {
 
     private static final Logger LOG = LogManager.getLogger(HttpRequestWrapper.class);
-    
+
+    private static final Path TMP_DIR;
+    static {
+        try {
+            TMP_DIR = Files.createTempDirectory("");
+        } catch (final IOException e) {
+            throw new RuntimeException("Unable to create temporary directory for HttpRequestWrapper", e);
+        }
+    }
+
     private final HttpServletRequest servletRequest;
     @Nullable private final String formEncoding;
     @Nullable private String containerEncoding;
@@ -545,11 +554,17 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             if (temporaryUploadedFilePath == null) {
                 try {
-                    temporaryUploadedFilePath = Files.createTempFile(null, null);
+                    final String tmpFilename = UUID.randomUUID().toString() + ".tmp";
+
+                    temporaryUploadedFilePath = TMP_DIR.resolve(tmpFilename);
                     part.write(temporaryUploadedFilePath.toAbsolutePath().toString());
                 } catch (final IOException e) {
                     LOG.warn(e);
                     continue;
+                }
+
+                if (temporaryUploadedFilesPathCache == null) {
+                    temporaryUploadedFilesPathCache = new HashMap<>();
                 }
 
                 temporaryUploadedFilesPathCache.put(part, temporaryUploadedFilePath);
