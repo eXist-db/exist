@@ -145,11 +145,10 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     private Optional<List<ACEAider>> getAces(@Nullable final Permission permission) {
         final Optional<List<ACEAider>> maybeAces;
-        if (permission != null && permission instanceof ACLPermission) {
-            final ACLPermission aclPerm = (ACLPermission)permission;
-            final List<ACEAider> aces = new ArrayList<>(aclPerm.getACECount());
-            for (int i = 0; i < aclPerm.getACECount(); i++) {
-                aces.add(new ACEAider(aclPerm.getACEAccessType(i), aclPerm.getACETarget(i), aclPerm.getACEWho(i), aclPerm.getACEMode(i)));
+        if (permission != null && permission instanceof ACLPermission aclPermission) {
+            final List<ACEAider> aces = new ArrayList<>(aclPermission.getACECount());
+            for (int i = 0; i < aclPermission.getACECount(); i++) {
+                aces.add(new ACEAider(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i)));
             }
             maybeAces = Optional.of(aces);
         } else {
@@ -312,16 +311,16 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     @Override
     public Permission getPermissions(final Collection coll) throws XMLDBException {
-        if(coll instanceof LocalCollection) {
-            return this.<Permission>read(((LocalCollection) coll).getPathURI()).apply((collection, broker, transaction) -> collection.getPermissionsNoLock());
+        if (coll instanceof LocalCollection localCollection) {
+            return this.<Permission>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> collection.getPermissionsNoLock());
         }
         return null;
     }
 
     @Override
     public Permission getSubCollectionPermissions(final Collection parent, final String name) throws XMLDBException {
-        if(parent instanceof LocalCollection) {
-            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
+        if (parent instanceof LocalCollection localCollection) {
+            return this.<Permission>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> collection.getChildCollectionEntry(broker, name).getPermissions());
         } else {
             return null;
         }
@@ -329,8 +328,8 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     @Override
     public Permission getSubResourcePermissions(final Collection parent, final String name) throws XMLDBException {
-        if(parent instanceof LocalCollection) {
-            return this.<Permission>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> collection.getResourceEntry(broker, name).getPermissions());
+        if (parent instanceof LocalCollection localCollection) {
+            return this.<Permission>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> collection.getResourceEntry(broker, name).getPermissions());
         } else {
             return null;
         }
@@ -338,8 +337,8 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     @Override
     public Date getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
-        if(parent instanceof LocalCollection) {
-            return this.<Date>read(((LocalCollection) parent).getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getChildCollectionEntry(broker, name).getCreated()));
+        if (parent instanceof LocalCollection localCollection) {
+            return this.<Date>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getChildCollectionEntry(broker, name).getCreated()));
         } else {
             return null;
         }

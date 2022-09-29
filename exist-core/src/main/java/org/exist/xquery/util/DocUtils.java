@@ -146,8 +146,8 @@ public class DocUtils {
             }
 
             try (final InputStream is = source.getInputStream()) {
-                if (source instanceof URLSource) {
-                    final int responseCode = ((URLSource) source).getResponseCode();
+                if (source instanceof URLSource urlSource) {
+                    final int responseCode = urlSource.getResponseCode();
                     if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                         // Special case: '404'
                         return Sequence.EMPTY_SEQUENCE;
