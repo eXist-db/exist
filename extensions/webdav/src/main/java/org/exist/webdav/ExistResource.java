@@ -54,7 +54,11 @@ public abstract class ExistResource {
     protected String ownerUser;
     protected String ownerGroup;
 
-    protected Properties configuration = new Properties();
+    protected final Properties configuration;
+
+    public ExistResource(final Properties configuration) {
+        this.configuration = configuration;
+    }
 
     abstract void initMetadata();
 
@@ -96,14 +100,6 @@ public abstract class ExistResource {
 
     public String getOwnerUser() {
         return ownerUser;
-    }
-
-    public Properties getSerializationConfiguration() {
-        return configuration;
-    }
-
-    public void setSerializationConfiguration(Properties config) {
-        configuration = config;
     }
 
     /**

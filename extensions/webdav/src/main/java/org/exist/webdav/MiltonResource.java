@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Properties;
 
 /**
  * Generic class representing a Milton Resource.
@@ -56,7 +57,11 @@ public class MiltonResource implements Resource {
     // Used for Long to DateTime conversion
     private DatatypeFactory datatypeFactory;
 
-    public MiltonResource() {
+    protected final Properties configuration;
+
+    public MiltonResource(final Properties configuration) {
+        this.configuration = configuration;
+
         if (datatypeFactory == null) {
             try {
                 datatypeFactory = DatatypeFactory.newInstance();

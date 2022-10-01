@@ -346,7 +346,18 @@ enum RESTServerParameter {
      * <exist:property name = string
      *  value = string/>
      */
-    Property;
+    Property,
+
+    /**
+     * Can be used in the Query String of a GET request
+     * to indicate that the doctype of an XML document should also
+     * be serialized if present.
+     *
+     * Contexts: GET
+     *
+     * The value of the parameter should be either "yes" or "no".
+     */
+    Output_Doctype;
 
     /**
      * Get the parameter key that is
@@ -366,6 +377,6 @@ enum RESTServerParameter {
      * @return The parameter key, suitable for use in an XML document
      */
     public String xmlKey() {
-        return name().toLowerCase();
+        return name().toLowerCase().replace('_', '-');
     }
 }

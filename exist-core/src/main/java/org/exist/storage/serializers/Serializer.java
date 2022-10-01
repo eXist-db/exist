@@ -118,6 +118,8 @@ public abstract class Serializer implements XMLReader {
 	protected final static Logger LOG = LogManager.getLogger(Serializer.class);
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
+	public static final String OUTPUT_DOCTYPE_ATTRIBUTE = "output-doctype";
+	public static final String PROPERTY_OUTPUT_DOCTYPE = "serialization.output-doctype";
 	public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";
 	public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
 	public static final String ENABLE_XSL_ATTRIBUTE = "enable-xsl";

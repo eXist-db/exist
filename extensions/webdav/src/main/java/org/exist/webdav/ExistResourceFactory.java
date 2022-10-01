@@ -71,8 +71,21 @@ public class ExistResourceFactory implements ResourceFactory {
 
         // load specific options
         try {
+            // 1) try and read default config from classpath
+            try (final InputStream is = getClass().getResourceAsStream("webdav.properties")) {
+                if (is != null) {
+                    LOG.info("Read default WebDAV configuration from classpath");
+                    webDavOptions.load(is);
+                } else {
+                    LOG.warn("Unable to read default WebDAV configuration from the classpath.");
+                }
+            }
+        } catch (final Throwable ex) {
+            LOG.error(ex.getMessage());
+        }
 
-            // Find right file
+        try {
+            // 2) try and find overridden config relative to EXIST_HOME/etc
             final Optional<Path> eXistHome = brokerPool.getConfiguration().getExistHome();
             final Path config = FileUtils.resolve(eXistHome, "etc").resolve("webdav.properties");
 
@@ -82,12 +95,8 @@ public class ExistResourceFactory implements ResourceFactory {
                 try (final InputStream is = Files.newInputStream(config)) {
                     webDavOptions.load(is);
                 }
-
-            } else {
-                LOG.info("Using eXist-db default serialization options.");
             }
-
-        } catch (Throwable ex) {
+        } catch (final Throwable ex) {
             LOG.error(ex.getMessage());
         }
 
@@ -132,12 +141,11 @@ public class ExistResourceFactory implements ResourceFactory {
         // Return appropriate resource
         switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT:
-                MiltonDocument doc = new MiltonDocument(host, xmldbUri, brokerPool);
-                doc.setSerializationConfiguration(webDavOptions);
+                MiltonDocument doc = new MiltonDocument(webDavOptions, host, xmldbUri, brokerPool);
                 return doc;
 
             case COLLECTION:
-                return new MiltonCollection(host, xmldbUri, brokerPool);
+                return new MiltonCollection(webDavOptions, host, xmldbUri, brokerPool);
 
             case IGNORABLE:
                 if (LOG.isDebugEnabled()) {
