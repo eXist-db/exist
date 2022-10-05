@@ -88,6 +88,7 @@ public class Query extends Function implements Optimizable {
                         "   <phrase-slop>number</phrase-slop>\n" +
                         "   <leading-wildcard>yes|no</leading-wildcard>\n" +
                         "   <filter-rewrite>yes|no</filter-rewrite>\n" +
+                        "   <lowercase-expanded-terms>yes|no</lowercase-expanded-terms>\n" +
                         "</options>")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,
