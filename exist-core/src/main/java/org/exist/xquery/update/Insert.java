@@ -130,10 +130,10 @@ public class Insert extends Modification {
 
             //start a transaction
             try (final Txn transaction = getTransaction()) {
-                final StoredNode[] ql = selectAndLock(transaction, inSeq);
+                final StoredNode<?>[] ql = selectAndLock(transaction, inSeq);
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 final NodeList contentList = seq2nodeList(contentSeq);
-                for (final StoredNode node : ql) {
+                for (final StoredNode<?> node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getSubject(), Permission.WRITE)) {
                         throw new PermissionDeniedException("User '" + context.getSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
@@ -144,7 +144,7 @@ public class Insert extends Modification {
                         validateNonDefaultNamespaces(contentList, node);
                         node.appendChildren(transaction, contentList, -1);
                     } else {
-                        final NodeImpl parent = (NodeImpl) getParent(node);
+                        final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
                         validateNonDefaultNamespaces(contentList, parent);
                         switch (mode) {
                             case INSERT_BEFORE:
@@ -225,7 +225,7 @@ public class Insert extends Modification {
      * @param parent the position into which the nodes are being inserted
      * @throws XPathException if a node has a namespace conflict
      */
-    private void validateNonDefaultNamespaces(final NodeList nodeList, final NodeImpl parent) throws XPathException {
+    private <T extends NodeImpl<T>> void validateNonDefaultNamespaces(final NodeList nodeList, final NodeImpl<T> parent) throws XPathException {
         if (parent instanceof ElementImpl) {
             final ElementImpl parentAsElement = (ElementImpl) parent;
             for (int i = 0; i < nodeList.getLength(); i++) {

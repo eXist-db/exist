@@ -835,7 +835,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                 for(int i = 0; i < childCount; i++) {
                     final IStoredNode next = iterator.next();
                     if (next == null) {
-                        LOG.warn("Miscounted getChildCount() index " + i + " was null of " + childCount);
+                        LOG.warn("Miscounted getChildCount() index: {} was null of: {}", i, childCount);
                         continue;
                     }
                     if(next.getNodeType() != Node.ATTRIBUTE_NODE) {
@@ -1350,7 +1350,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     public Iterator<String> getPrefixes() {
 
         if (namespaceMappings == null) {
-            return Collections.EMPTY_SET.iterator();
+            return Collections.<String>emptySet().iterator();
         }
         return namespaceMappings.keySet().iterator();
     }
