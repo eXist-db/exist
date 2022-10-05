@@ -373,8 +373,8 @@
                                                 <xs:attribute name="load" default="always">
                                                     <xs:simpleType>
                                                         <xs:restriction base="xs:string">
-                                                            <xs:enumeration value="always" />
-                                                            <xs:enumeration value="lazily" />
+                                                            <xs:enumeration value="eager" />
+                                                            <xs:enumeration value="lazy" />
                                                         </xs:restriction>
                                                     </xs:simpleType>
                                                 </xs:attribute>

@@ -948,21 +948,21 @@
             <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule"/>
             <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule"/>
             <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule"/>
-            <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule" load="lazy"/>
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
             <module uri="http://exist-db.org/xquery/request" class="org.exist.xquery.functions.request.RequestModule"/>
             <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule"/>
-            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule" load="lazy"/>
             <module uri="http://exist-db.org/xquery/session" class="org.exist.xquery.functions.session.SessionModule"/>
-            <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule" load="lazy"/>
             <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq"/>
-            <module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule" load="lazy"/>
             <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
                 <!-- set to true to disable the util:eval functions -->
                 <parameter name="evalDisabled" value="false"/>
             </module>
-            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" load="lazy"/>
             <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule">
                 <!-- set to false to disable the use of xs:anyURI as a $contents value for xmldb:store and xmldb:store-as-binary function -->
                 <parameter name="allowAnyUri" value="false"/>
@@ -972,10 +972,10 @@
             <!-- 
                 Extension Indexes
             -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule" load="lazy"/>
             <!--
             <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule"/>
             -->
@@ -984,23 +984,23 @@
             <!--
                 Extensions
             -->
-            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule" load="lazy"/>
             <!-- module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
                 <parameter name="perl-path" value="/usr/bin/perl" description="file system path to the perl executable"/>
                 <parameter name="exiftool-path" value="/usr/bin/exiftool" description="file system path to the exiftool perl script"/>
             </module -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" load="lazily"/>
-            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" load="lazily"/>
-            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule" load="lazily"/>
-            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule" load="lazily"/>
-            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" load="lazily"/>
+            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule" load="lazy"/>
+            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule" load="lazy"/>
+            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule" load="lazy"/>
+            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule" load="lazy"/>
+            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule" load="lazy"/>
 
 
             <!--
                 Extension Modules
             -->
-            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule" load="lazily">
+            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule" load="lazy">
                 <!--
                 If a named Cache does not exist it can be created lazily on-demand
                 when an operation is first performed upon it.
@@ -1025,21 +1025,21 @@
                 <parameter name="enableLazyCreation" value="true"/>
                 <parameter name="lazy.maximumSize" value="128"/>
             </module>
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule" load="lazy"/>
             <!-- module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule"/ -->
-            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule" load="lazy"/>
             <!-- module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule"/ -->
-            <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule" load="lazily"/>
-            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule" load="lazily">
+            <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule" load="lazy"/>
+            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule" load="lazy">
 
                 <!--
                 Connection Pools can be setup for SQL connections, for use with sql:get-connection-from-pool($pool-name)
@@ -1071,7 +1071,7 @@
                 <parameter name="pool.2.properties.registerMbeans" value="false"/>
                 -->
             </module>
-            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule" load="lazily"/>
+            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule" load="lazy"/>
             <!--
                 XSL:FO Transformation Module
                     Valid processor adapters are:
@@ -1079,7 +1079,7 @@
                         - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
                         - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
             -->
-            <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule" load="lazily">
+            <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule" load="lazy">
                 <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
             </module>
 

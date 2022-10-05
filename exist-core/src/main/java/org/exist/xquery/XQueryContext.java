@@ -127,6 +127,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static final String BUILT_IN_MODULE_CLASS_ATTRIBUTE = "class";
     public static final String BUILT_IN_MODULE_SOURCE_ATTRIBUTE = "src";
     public static final String BUILT_IN_MODULE_LOAD_ATTRIBUTE = "load";
+    public static final String BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER = "eager";
+    public static final String BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY = "lazy";
 
 
     public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";

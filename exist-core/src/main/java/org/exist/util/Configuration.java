@@ -452,8 +452,8 @@ public class Configuration implements ErrorHandler
                         throw(new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'" ));
                     }
 
-                    if(load != null && !("always".equals(load) || "lazily".equals(load))) {
-                        throw(new DatabaseConfigurationException("parameter 'load' on module can contains only 'always' and 'lazily' values"));
+                    if (load != null && !(XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER.equals(load) || XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY.equals(load))) {
+                        throw new DatabaseConfigurationException(String.format("parameter '{}' on module can only contain the value: '{}' or '{}'", XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE, XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER, XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY));
                     }
 
                     if(source != null) {
@@ -472,7 +472,7 @@ public class Configuration implements ErrorHandler
                         final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
                         // Store class if the module class actually exists
-                        if(moduleClass != null && (load == null || "always".equals(load))) {
+                        if(moduleClass != null && (load == null || BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER.equals(load))) {
                             eagerModuleClassMap.put(uri, moduleClass);
                         } else if(moduleClass != null) {
                             lazyModuleClassMap.put(uri, moduleClass);
