@@ -472,13 +472,16 @@ public class Configuration implements ErrorHandler
                         final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
                         // Store class if the module class actually exists
-                        if(moduleClass != null && (load == null || BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER.equals(load))) {
-                            eagerModuleClassMap.put(uri, moduleClass);
-                        } else if(moduleClass != null) {
-                            lazyModuleClassMap.put(uri, moduleClass);
-                        }
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                        if (moduleClass != null) {
+                            if (XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY.equals(load)) {
+                                lazyModuleClassMap.put(uri, moduleClass);
+                            } else {
+                                eagerModuleClassMap.put(uri, moduleClass);
+                            }
+
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                            }
                         }
                     }
 
