@@ -469,25 +469,9 @@ public abstract class Serializer implements XMLReader {
                 throw new SAXException(e.getMessage(), e);
             }
         }
-		if (templates != null)
-			{applyXSLHandler(writer);}
-		else {
-			//looking for serializer properties in <?exist-serialize?> 
-	    	final NodeList children = doc.getChildNodes();
-	    	for (int i = 0; i < children.getLength(); i++) {
-	    		final StoredNode node = (StoredNode) children.item(i);
-	    		if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE 
-	    				&& "exist-serialize".equals(node.getNodeName())) {
-
-	                final String params[] = ((ProcessingInstructionImpl)node).getData().split(" ");
-	                for(final String param : params) {
-	                    final String opt[] = Option.parseKeyValuePair(param);
-	                    if (opt != null)
-	                    	{outputProperties.setProperty(opt[0], opt[1]);}
-	                }
-	    		}
-	    	}
-
+		if (templates != null) {
+			applyXSLHandler(writer);
+		} else {
 			setPrettyPrinter(writer, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
                     null, true); //setPrettyPrinter(writer, false);
 		}
