@@ -78,7 +78,9 @@ public class OrderByClause extends AbstractFLWORClause {
         }
         final Sequence result = getReturnExpression().eval(contextSequence, contextItem);
         if (result != null) {
+            orderedResult.setContextSequence(contextSequence);
             orderedResult.addAll(result);
+            orderedResult.setContextSequence(null);
         }
         stack.push(orderedResult);
         return result;
