@@ -241,7 +241,13 @@ public class ForExpr extends BindingExpression {
         //Reset the context position
         context.setContextSequencePosition(0, null);
 
-        resultSequence.addAll(returnExpr.eval(null, null));
+        final Sequence returnExprResult;
+        if (returnExpr instanceof OrderByClause) {
+            returnExprResult = returnExpr.eval(contextSequence, null);
+        } else {
+            returnExprResult = returnExpr.eval(null, null);
+        }
+        resultSequence.addAll(returnExprResult);
 
         // free resources
         var.destroy(context, resultSequence);

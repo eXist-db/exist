@@ -36,6 +36,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 /**
@@ -57,6 +58,7 @@ public class OrderedValueSequence extends AbstractSequence {
 
     // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
+    private Sequence contextSequence;
 
     public OrderedValueSequence(final OrderSpec orderSpecs[], final int size) {
         this.orderSpecs = orderSpecs;
@@ -104,7 +106,7 @@ public class OrderedValueSequence extends AbstractSequence {
             System.arraycopy(items, 0, newItems, 0, count);
             items = newItems;
         }
-        items[count] = new Entry(item, count++);
+        items[count] = Entry.create(orderSpecs, item, count++, contextSequence);
         checkItemType(item.getType());
         setHasChanged();
     }
@@ -312,32 +314,70 @@ public class OrderedValueSequence extends AbstractSequence {
         return false;
     }
 
-    private class Entry implements Comparable<Entry> {
-        Item item;
-        AtomicValue values[];
+    /**
+     * Set the Context Sequence.
+     * This is useful if it is needed to evaluate the {@link #orderSpecs}.
+     *
+     * @param contextSequence the context sequence
+     */
+    public void setContextSequence(@Nullable final Sequence contextSequence) {
+        this.contextSequence = contextSequence;
+    }
+
+    private static class Entry implements Comparable<Entry> {
+        private final OrderSpec[] orderSpecs;
+        private Item item;
         private final int pos;
+        private AtomicValue[] values;
 
         /**
-         * @param item     the item in the sequence
-         * @param position the original position of the item in the result sequence
-         * @throws XPathException
+         * Private constructor, use {@link #create(OrderSpec[], Item, int, Sequence)} instead.
+         *
+         * @param item the item in the sequence.
+         * @param position the original position of the item in the result sequence.
+         * @param values the values for the entry.
          */
-        public Entry(final Item item, final int position) throws XPathException {
+        private Entry(final OrderSpec[] orderSpecs, final Item item, final int position, final AtomicValue[] values) {
+            this.orderSpecs = orderSpecs;
             this.item = item;
             this.pos = position;
-            values = new AtomicValue[orderSpecs.length];
+            this.values = values;
+        }
+
+        /**
+         * Create an Entry.
+         *
+         * @param orderSpecs the ordering specifications.
+         * @param item the item in the sequence.
+         * @param position the original position of the item in the result sequence.
+         * @param contextSequence the context sequence if required for evaluating the ordering specifications, else null.
+         *
+         * @throws XPathException thrown if the evaluation of an order spec raises an error.
+         */
+        public static Entry create(final OrderSpec[] orderSpecs, final Item item, final int position, @Nullable final Sequence contextSequence) throws XPathException {
+            AtomicValue[] values = null;
             for (int i = 0; i < orderSpecs.length; i++) {
-                final Sequence seq = orderSpecs[i].getSortExpression().eval(null, null);
+                final Sequence seq = orderSpecs[i].getSortExpression().eval(contextSequence, null);
                 values[i] = AtomicValue.EMPTY_VALUE;
                 if (seq.hasOne()) {
+                    if (values == null) {
+                        values = new AtomicValue[orderSpecs.length];
+                    }
                     values[i] = seq.itemAt(0).atomize();
                 } else if (seq.hasMany()) {
-                    throw new XPathException((values[i] == null) ? null : values[i].getExpression(), ErrorCodes.XPTY0004,
+                    throw new XPathException((values == null || values[i] == null) ? null : values[i].getExpression(), ErrorCodes.XPTY0004,
                             "expected a single value for order expression " +
-                            ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
-                            " ; found: " + seq.getItemCount());
+                                    ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
+                                    " ; found: " + seq.getItemCount());
+                } else {
+                    if (values == null) {
+                        values = new AtomicValue[orderSpecs.length];
+                    }
+                    values[i] = AtomicValue.EMPTY_VALUE;
                 }
             }
+
+            return new Entry(orderSpecs, item, position, values);
         }
 
         @Override
