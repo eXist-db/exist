@@ -26,6 +26,7 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
+import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.indexing.IndexController;
@@ -67,7 +68,7 @@ import static org.exist.dom.QName.Validity.ILLEGAL_FORMAT;
  *
  * @author Wolfgang Meier
  */
-public class ElementImpl extends NamedNode implements Element {
+public class ElementImpl extends NamedNode<ElementImpl> implements Element {
 
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
@@ -527,7 +528,7 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    private void appendAttributes(final Txn transaction, final NodeList attribs) throws DOMException {
+    private void appendAttributes(final Txn transaction, final NodeListImpl attribs) throws DOMException {
         final NodeList duplicateAttrs = findDupAttributes(attribs);
         removeAppendAttributes(transaction, duplicateAttrs, attribs);
     }
@@ -633,6 +634,16 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
+    private QName attrName(Attr attr) {
+        final String ns = attr.getNamespaceURI();
+        final String prefix = (Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : attr.getPrefix());
+        String name = attr.getLocalName();
+        if(name == null) {
+            name = attr.getName();
+        }
+        return new QName(name, ns, prefix);
+    }
+
     private Node appendChild(final Txn transaction, final NodeId newNodeId, final NodeImplRef last, final NodePath lastPath, final Node child, final StreamListener listener)
         throws DOMException {
         if(last == null || last.getNode() == null) {
@@ -725,17 +736,11 @@ public class ElementImpl extends NamedNode implements Element {
 
                 case Node.ATTRIBUTE_NODE:
                     final Attr attr = (Attr) child;
-                    final String ns = attr.getNamespaceURI();
-                    final String prefix = (Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : attr.getPrefix());
-                    String name = attr.getLocalName();
-                    if(name == null) {
-                        name = attr.getName();
-                    }
-                    final QName attrName = new QName(name, ns, prefix);
+                    final QName attrName = attrName(attr);
                     final AttrImpl attrib = new AttrImpl(getExpression(), attrName, attr.getValue(), broker.getBrokerPool().getSymbols());
                     attrib.setNodeId(newNodeId);
                     attrib.setOwnerDocument(owner);
-                    if(ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
+                    if(attrName.getNamespaceURI() != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
                         // an xml:id attribute. Normalize the attribute and set its type to ID
                         attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
                         attrib.setType(AttrImpl.ID);
@@ -829,6 +834,10 @@ public class ElementImpl extends NamedNode implements Element {
                 final int childCount = getChildCount();
                 for(int i = 0; i < childCount; i++) {
                     final IStoredNode next = iterator.next();
+                    if (next == null) {
+                        LOG.warn("Miscounted getChildCount() index: {} was null of: {}", i, childCount);
+                        continue;
+                    }
                     if(next.getNodeType() != Node.ATTRIBUTE_NODE) {
                         break;
                     }
@@ -1339,10 +1348,17 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     public Iterator<String> getPrefixes() {
+
+        if (namespaceMappings == null) {
+            return Collections.<String>emptySet().iterator();
+        }
         return namespaceMappings.keySet().iterator();
     }
 
     public String getNamespaceForPrefix(final String prefix) {
+        if (namespaceMappings == null) {
+            return null;
+        }
         return namespaceMappings.get(prefix);
     }
 
@@ -2038,5 +2054,20 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         return true;
+    }
+
+    @Override
+    public String lookupNamespaceURI(final String prefix) {
+
+        for (Node pathNode = this; pathNode != null; pathNode = pathNode.getParentNode()) {
+            if (pathNode instanceof ElementImpl) {
+                final String namespaceForPrefix = ((ElementImpl)pathNode).getNamespaceForPrefix(prefix);
+                if (namespaceForPrefix != null) {
+                    return namespaceForPrefix;
+                }
+            }
+        }
+
+        return XMLConstants.NULL_NS_URI;
     }
 }
