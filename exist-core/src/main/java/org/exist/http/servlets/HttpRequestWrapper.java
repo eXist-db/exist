@@ -188,6 +188,9 @@ public class HttpRequestWrapper implements RequestWrapper {
         // Create a factory for disk-based file items
         final DiskFileItemFactory factory = new DiskFileItemFactory();
 
+        // Ensure small attachments are readable in XQuery context
+        factory.setSizeThreshold(0);
+
         // Create a new file upload handler
         final ServletFileUpload upload = new ServletFileUpload(factory);
 
