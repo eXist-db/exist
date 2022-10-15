@@ -467,7 +467,8 @@ public class LocationStep extends Step {
                 if (nodeTestType == null) {
                     nodeTestType = test.getType();
                 }
-                if (nodeTestType != Type.NODE
+                if (nodeTestType != Type.DOCUMENT
+                        && nodeTestType != Type.NODE
                         && nodeTestType != Type.ELEMENT
                         && nodeTestType != Type.PROCESSING_INSTRUCTION) {
                     if (context.getProfiler().isEnabled()) {
@@ -1054,10 +1055,9 @@ public class LocationStep extends Step {
 
                 NodeId parentID = current.getNodeId().getParentId();
                 while (parentID != null) {
-                    ancestor = new NodeProxy(current.getOwnerDocument(), parentID, Node.ELEMENT_NODE);
+                    ancestor = new NodeProxy(current.getOwnerDocument(), parentID, parentID == NodeId.DOCUMENT_NODE ? Node.DOCUMENT_NODE : Node.ELEMENT_NODE);
                     // Filter out the temporary nodes wrapper element
-                    if (parentID != NodeId.DOCUMENT_NODE
-                            && !(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
+                    if (!(parentID.getTreeLevel() == 1 && current.getOwnerDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
                             final NodeProxy t = result.get(ancestor);
                             if (t == null) {
