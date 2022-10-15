@@ -532,10 +532,11 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @throws XPathException if the namespace URI is invalid (XQST0046),
      *     if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private Module resolveInEXPathRepository(final String namespace, final String prefix)
+    private @Nullable Module resolveInEXPathRepository(final String namespace, final String prefix)
             throws XPathException {
         // the repo and its eXist handler
         final Optional<ExistRepository> repo = getRepository();
+
         // try an internal module
         if (repo.isPresent()) {
             final Module jMod = repo.get().resolveJavaModule(namespace, this);
@@ -543,18 +544,20 @@ public class XQueryContext implements BinaryValueManager, Context {
                 return jMod;
             }
         }
+
         // try an eXist-specific module
-        Path resolved = null;
         if (repo.isPresent()) {
-            resolved = repo.get().resolveXQueryModule(namespace);
+            final Path resolved = repo.get().resolveXQueryModule(namespace);
+
             // use the resolved file or return null
-            if (resolved == null) {
-                return null;
+            if (resolved != null) {
+                // build a module object from the file
+                final Source src = new FileSource(resolved, false);
+                return compileOrBorrowModule(prefix, namespace, "", src);
             }
         }
-        // build a module object from the file
-        final Source src = new FileSource(resolved, false);
-        return compileOrBorrowModule(prefix, namespace, "", src);
+
+        return null;
     }
 
     /**
