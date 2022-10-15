@@ -97,6 +97,7 @@ import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
+import static com.evolvedbinary.j8fu.OptionalUtil.or;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.XMLNS_ATTRIBUTE;
 import static javax.xml.XMLConstants.XML_NS_PREFIX;
@@ -425,6 +426,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     private final Map<QName, DecimalFormat> staticDecimalFormats = HashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
 
     // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
+    private Optional<ExistRepository> testRepository = Optional.empty();
+
     public XQueryContext() {
         this(null, null, null);
     }
@@ -513,12 +516,25 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
+     * Set the EXPath repository used for testing,
+     * only should be called from {@link org.exist.test.runner.XQueryTestRunner}.
+     *
+     * @param testRepository the EXPath repository to use for test execution.
+     */
+    public void setTestRepository(final Optional<ExistRepository> testRepository) {
+        this.testRepository = testRepository;
+    }
+
+    /**
      * Get the EXPath repository configured for the BrokerPool, if present.
      *
-     * @return the EXPath respository if present.
+     * @return the EXPath repository if present.
      */
     public Optional<ExistRepository> getRepository() {
-        return Optional.ofNullable(getBroker()).map(DBBroker::getBrokerPool).flatMap(BrokerPool::getExpathRepo);
+        return or(
+                testRepository,
+            () -> Optional.ofNullable(getBroker()).map(DBBroker::getBrokerPool).flatMap(BrokerPool::getExpathRepo)
+        );
     }
 
     /**
