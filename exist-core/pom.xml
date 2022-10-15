@@ -693,6 +693,7 @@
                                 <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
                                 <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
                                 <exclude>src/main/java/org/exist/util/IPUtil.java</exclude>
+                                <exclude>src/main/java/org/exist/util/MapUtil.java</exclude>
                                 <exclude>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</exclude>
                                 <exclude>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
@@ -841,6 +842,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
                                 <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
                                 <include>src/main/java/org/exist/util/IPUtil.java</include>
+                                <include>src/main/java/org/exist/util/MapUtil.java</include>
                                 <include>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</include>
                                 <include>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>

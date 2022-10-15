@@ -103,6 +103,7 @@ import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static org.exist.Namespaces.XML_NS;
+import static org.exist.util.MapUtil.HashMap;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -419,36 +420,62 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     @Nullable
     private HttpContext httpContext = null;
-
-    private final Map<QName, DecimalFormat> staticDecimalFormats = new HashMap<>();
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
+    private final Map<QName, DecimalFormat> staticDecimalFormats = HashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
+
+    // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
     public XQueryContext() {
-        profiler = new Profiler(null);
-        staticDecimalFormats.put(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED);
+        this(null, null, null);
     }
 
     public XQueryContext(final Configuration configuration) {
-        this();
-        this.configuration = configuration;
-        loadDefaults(configuration);
+        this(null, configuration, null);
     }
 
     public XQueryContext(final Database db) {
-        this(db, new Profiler(db));
+        this(db, null, null);
     }
 
-    public XQueryContext(final Database db, Profiler profiler) {
-        this();
+    public XQueryContext(final Database db, final Profiler profiler) {
+        this(db, null, profiler);
+    }
+
+    private XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler) {
+        this(db, configuration, profiler, true);
+    }
+
+    protected XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler, final boolean loadDefaults) {
         this.db = db;
-        loadDefaults(db.getConfiguration());
-        this.profiler = profiler;
+
+        // if needed, fallback to db.getConfiguration
+        if (configuration != null) {
+            this.configuration = configuration;
+        } else if (db != null) {
+            this.configuration = db.getConfiguration();
+        } else {
+            this.configuration = null;
+        }
+
+        // if needed, fallback to profiler for the db, or default profiler
+        if (profiler != null) {
+            this.profiler = profiler;
+        } else if (db != null) {
+            this.profiler = new Profiler(db);
+        } else {
+            this.profiler = new Profiler(null);
+        }
+
+        this.watchdog = new XQueryWatchDog(this);
+
+        // load configuration defaults
+        if (loadDefaults) {
+            loadDefaults(this.configuration);
+        }
     }
 
     public XQueryContext(final XQueryContext copyFrom) {
-        this();
-        this.db = copyFrom.db;
-        loadDefaultNS();
+        this(copyFrom.db, copyFrom.configuration, copyFrom.profiler);
 
         for (final String prefix : copyFrom.staticNamespaces.keySet()) {
             if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
@@ -461,7 +488,6 @@ public class XQueryContext implements BinaryValueManager, Context {
                 ex.printStackTrace();
             }
         }
-        this.profiler = copyFrom.profiler;
     }
 
 
@@ -586,6 +612,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.dynamicOptions = from.dynamicOptions;
         this.staticOptions = from.staticOptions;
         this.db = from.db;
+        this.configuration = from.configuration;
         this.httpContext = from.httpContext;
     }
 
@@ -1652,7 +1679,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             //instantiateModule( namespaceURI, (Class<Module>)mClass );
             // INOTE: expathrepo
-            module = instantiateModule(namespaceURI, (Class<Module>) mClass, (Map<String, Map<String, List<? extends Object>>>) getBroker().getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+            module = instantiateModule(namespaceURI, (Class<Module>) mClass, (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("module {} loaded successfully.", module.getNamespaceURI());
             }
@@ -2041,9 +2068,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     public Configuration getConfiguration() {
-        if (db != null) {
-            return db.getConfiguration();
-        }
         return configuration;
     }
 
@@ -2584,7 +2608,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public String getModuleLocation(final String namespaceURI) {
         final Map<String, String> moduleMap =
-                (Map) getBroker().getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
+                (Map<String, String>) getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
         return moduleMap.get(namespaceURI);
     }
 
@@ -2592,7 +2616,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Iterator<String> getMappedModuleURIs() {
         final Map<String, String> moduleMap =
-                (Map) getBroker().getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
+                (Map<String, String>) getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
         return moduleMap.keySet().iterator();
     }
 
@@ -3018,12 +3042,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Load the default prefix/namespace mappings table and set up internal functions.
      *
-     * @param config the configuration
+     * @param config the configuration if available
      */
     @SuppressWarnings("unchecked")
-    void loadDefaults(final Configuration config) {
-        this.watchdog = new XQueryWatchDog(this);
-
+    void loadDefaults(@Nullable final Configuration config) {
         /*
         SymbolTable syms = broker.getSymbols();
         String[] pfx = syms.defaultPrefixList();
@@ -3039,57 +3061,59 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         loadDefaultNS();
 
-        // Switch: enable optimizer
-        Object param = config.getProperty(PROPERTY_ENABLE_QUERY_REWRITING);
-        enableOptimizer = (param != null) && "yes".equals(param.toString());
+        if (config != null) {
 
-        // Switch: Backward compatibility
-        param = config.getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
-        backwardsCompatible = (param == null) || "yes".equals(param.toString());
+            // Switch: enable optimizer
+            String param = config.getProperty(PROPERTY_ENABLE_QUERY_REWRITING, "no");
+            this.enableOptimizer = "yes".equals(param);
 
-        // Switch: raiseErrorOnFailedRetrieval
-        final Boolean option = ((Boolean) config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
-        raiseErrorOnFailedRetrieval = (option != null) && option;
+            // Switch: Backward compatibility
+            param = config.getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, "yes");
+            this.backwardsCompatible = "yes".equals(param);
 
-        // Get map of built-in modules
-        final Map<String, Class<Module>> builtInModules = (Map) config.getProperty(PROPERTY_BUILT_IN_MODULES);
+            // Switch: raiseErrorOnFailedRetrieval
+            final Boolean option = config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE);
+            this.raiseErrorOnFailedRetrieval = option;
 
-        if (builtInModules != null) {
+            // Get map of built-in modules
+            final Map<String, Class<Module>> builtInModules = (Map<String, Class<Module>>) config.getProperty(PROPERTY_BUILT_IN_MODULES);
+            if (builtInModules != null) {
 
-            // Iterate on all map entries
-            for (final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet()) {
+                // Iterate on all map entries
+                for (final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet()) {
 
-                // Get URI and class
-                final String namespaceURI = entry.getKey();
-                final Class<Module> moduleClass = entry.getValue();
+                    // Get URI and class
+                    final String namespaceURI = entry.getKey();
+                    final Class<Module> moduleClass = entry.getValue();
 
-                // first check if the module has already been loaded in the parent context
-                final Module[] modules = getModules(namespaceURI);
-                Module foundModule = null;
-                if (modules != null) {
-                    for (final Module module : modules) {
-                        if (moduleClass.equals(module.getClass())) {
-                            foundModule = module;
-                            break;
+                    // first check if the module has already been loaded in the parent context
+                    final Module[] modules = getModules(namespaceURI);
+                    Module foundModule = null;
+                    if (modules != null) {
+                        for (final Module module : modules) {
+                            if (moduleClass.equals(module.getClass())) {
+                                foundModule = module;
+                                break;
+                            }
                         }
                     }
-                }
 
 
-                if (foundModule == null) {
-                    // Module does not exist yet, instantiate
-                    instantiateModule(namespaceURI, moduleClass,
-                            (Map<String, Map<String, List<? extends Object>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
+                    if (foundModule == null) {
+                        // Module does not exist yet, instantiate
+                        instantiateModule(namespaceURI, moduleClass,
+                                (Map<String, Map<String, List<? extends Object>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
 
-                } else if (getPrefixForURI(namespaceURI) == null && !foundModule.getDefaultPrefix().isEmpty()) {
+                    } else if (getPrefixForURI(namespaceURI) == null && !foundModule.getDefaultPrefix().isEmpty()) {
 
-                    // make sure the namespaces of default modules are known,
-                    // even if they were imported in a parent context
-                    try {
-                        declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
+                        // make sure the namespaces of default modules are known,
+                        // even if they were imported in a parent context
+                        try {
+                            declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
 
-                    } catch (final XPathException e) {
-                        LOG.warn("Internal error while loading default modules: {}", e.getMessage(), e);
+                        } catch (final XPathException e) {
+                            LOG.warn("Internal error while loading default modules: {}", e.getMessage(), e);
+                        }
                     }
                 }
             }
@@ -3308,7 +3332,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public String getCacheClass() {
-        return (String) getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
+        return (String) getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY);
     }
 
     public void destroyBinaryValue(final BinaryValue value) {
