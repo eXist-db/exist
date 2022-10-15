@@ -78,6 +78,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.source.*;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock.LockMode;
@@ -478,8 +479,13 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.httpContext = httpContext;
     }
 
+    /**
+     * Get the EXPath repository configured for the BrokerPool, if present.
+     *
+     * @return the EXPath respository if present.
+     */
     public Optional<ExistRepository> getRepository() {
-        return getBroker().getBrokerPool().getExpathRepo();
+        return Optional.ofNullable(getBroker()).map(DBBroker::getBrokerPool).flatMap(BrokerPool::getExpathRepo);
     }
 
     /**
