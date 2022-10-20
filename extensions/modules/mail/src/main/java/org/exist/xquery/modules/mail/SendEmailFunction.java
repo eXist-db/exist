@@ -48,6 +48,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * eXist Mail Module Extension SendEmailFunction
@@ -69,6 +70,11 @@ public class SendEmailFunction extends BasicFunction {
     private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
 
     private final static int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
+
+    /**
+     * Regular expression for checking for an RFC 2045 non-token.
+     */
+    private static final Pattern NON_TOKEN_PATTERN = Pattern.compile("^.*[\\s\\p{Cntrl}()<>@,;:\\\"/\\[\\]?=].*$");
 
     private String charset;
 
@@ -568,10 +574,10 @@ public class SendEmailFunction extends BasicFunction {
             for (final Iterator<MailAttachment> itAttachment = aMail.attachmentIterator(); itAttachment.hasNext(); ) {
                 final MailAttachment ma = itAttachment.next();
 
-                out.print("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"" + eol);
+                out.print("Content-Type: " + ma.getMimeType() + "; name=" + parameterValue(ma.getFilename()) + eol);
                 out.print("Content-Transfer-Encoding: base64" + eol);
                 out.print("Content-Description: " + ma.getFilename() + eol);
-                out.print("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"" + eol);
+                out.print("Content-Disposition: attachment; filename=" + parameterValue(ma.getFilename()) + eol);
                 out.print(eol);
 
 
@@ -1329,5 +1335,34 @@ public class SendEmailFunction extends BasicFunction {
 
     private static boolean nonEmpty(@Nullable final String str) {
         return str != null && !str.isEmpty();
+    }
+
+    /**
+     * Creates a "quoted-string" of the parameter value
+     * if it contains a non-token value (See {@link #isNonToken(String)}),
+     * otherwise it returns the parameter value as is.
+     *
+     * @param value parameter value.
+     *
+     * @return the quoted string parameter value, or the parameter value as is.
+     */
+    private static String parameterValue(final String value) {
+        if (isNonToken(value)) {
+            return "\"" + value + "\"";
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * Determines if the string contains SPACE, CTLs, or `tspecial` (special token)
+     * according to <a href="https://www.rfc-editor.org/rfc/rfc2045#section-5">RFC 2045 - Section 5</a>.
+     *
+     * @param str the string to test
+     *
+     * @return true if the string contains a non-token, false otherwise.
+     */
+    private static boolean isNonToken(final String str) {
+        return NON_TOKEN_PATTERN.matcher(str).matches();
     }
 }
