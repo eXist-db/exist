@@ -743,6 +743,9 @@
 
         <builtin-modules>
 
+            <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule"/>
+            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
+
             <!-- Module under test -->
             <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
 
