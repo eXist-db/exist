@@ -51,18 +51,15 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * eXist Mail Module Extension SendEmailFunction
- * <p>
- * The email sending functionality of the eXist Mail Module Extension that
+ * eXist-db Mail Module Extension SendEmailFunction.
+ *
+ * The email sending functionality of the eXist-db Mail Module Extension that
  * allows email to be sent from XQuery using either SMTP or Sendmail.
  *
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:robert.walpole@devon.gov.uk">Robert Walpole</a>
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
- * @version 1.6
- * @serial 2011-08-02
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class SendEmailFunction extends BasicFunction {
 
@@ -1163,8 +1160,6 @@ public class SendEmailFunction extends BasicFunction {
      * members and get and set methods.
      *
      * Access is package-private for unit testing purposes.
-     *
-     * @version 1.2
      */
     static class MailAttachment {
         private final String filename;
@@ -1196,8 +1191,6 @@ public class SendEmailFunction extends BasicFunction {
      * members and get and set methods.
      *
      * Access is package-private for unit testing purposes.
-     *
-     * @version 1.2
      */
     static class Mail {
         private String from;                                                //Who is the mail from
