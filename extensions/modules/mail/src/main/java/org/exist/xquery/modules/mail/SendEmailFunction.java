@@ -344,6 +344,10 @@ public class SendEmailFunction extends BasicFunction {
                 sendMailResults[i] = mailResult;
             }
 
+            //all done, time to "QUIT"
+            smtpOut.print("QUIT\r\n");
+            smtpOut.flush();
+
         } catch (final IOException ioe) {
             LOGGER.error(ioe.getMessage(), ioe);
             throw new SMTPException(ioe);
