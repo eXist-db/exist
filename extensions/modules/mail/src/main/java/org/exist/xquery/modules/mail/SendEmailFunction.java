@@ -75,6 +75,8 @@ public class SendEmailFunction extends BasicFunction {
 
     static final String ERROR_MSG_NON_MIME_CLIENT = "Error your mail client is not MIME Compatible";
 
+    private static final Random RANDOM = new Random();
+
     public final static FunctionSignature deprecated = new FunctionSignature(
             new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
             "Sends an email through the SMTP Server.",
@@ -482,38 +484,42 @@ public class SendEmailFunction extends BasicFunction {
 
 
         boolean multipartAlternative = false;
-        String multipartBoundary = null;
+        int multipartInstanceCount = 0;
+        final Deque<String> multipartBoundary = new ArrayDeque<>();
 
         if (aMail.attachmentIterator().hasNext()) {
             // we have an attachment as well as text and/or html, so we need a multipart/mixed message
-            multipartBoundary = multipartBoundary(1);
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
         } else if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML())) {
             // we have text and html, so we need a multipart/alternative message and no attachment
             multipartAlternative = true;
-            multipartBoundary = multipartBoundary(1) + "_alt";
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
         }
 //        else {
 //            // we have either text or html and no attachment this message is not multipart
 //        }
 
         //content type
-        if (multipartBoundary != null) {
+        if (!multipartBoundary.isEmpty()) {
             //multipart message
 
-            out.print("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=" + parameterValue(multipartBoundary) + eol);
+            out.print("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=" + parameterValue(multipartBoundary.peekFirst()) + eol);
 
             //Mime warning
             out.print(eol);
             out.print(ERROR_MSG_NON_MIME_CLIENT + eol);
             out.print(eol);
 
-            out.print("--" + multipartBoundary + eol);
+            out.print("--" + multipartBoundary.peekFirst() + eol);
         }
 
         if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-            out.print("Content-Type: multipart/alternative; boundary=" + parameterValue(multipartBoundary(1) + "_alt") + eol);
+            // we are a multipart inside a multipart
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
+
+            out.print("Content-Type: multipart/alternative; boundary=" + parameterValue(multipartBoundary.peekFirst()) + eol);
             out.print(eol);
-            out.print("--" + multipartBoundary(1) + "_alt" + eol);
+            out.print("--" + multipartBoundary.peekFirst() + eol);
         }
 
         //text email
@@ -525,19 +531,13 @@ public class SendEmailFunction extends BasicFunction {
             out.print(eol);
             out.print(aMail.getText() + eol);
 
-            if (multipartBoundary != null) {
+            if (!multipartBoundary.isEmpty()) {
                 if (nonEmpty(aMail.getXHTML()) || aMail.attachmentIterator().hasNext()) {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + multipartBoundary(1) + "_alt" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + eol);
-                    }
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
                 } else {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + multipartBoundary(1) + "_alt--" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + "--" + eol);
-                    }
+                    // End multipart message
+                    out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                    multipartBoundary.removeFirst();
                 }
             }
         }
@@ -552,20 +552,20 @@ public class SendEmailFunction extends BasicFunction {
             out.print("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" + eol);
             out.print(aMail.getXHTML() + eol);
 
-            if (multipartBoundary != null) {
+            if (!multipartBoundary.isEmpty()) {
                 if (aMail.attachmentIterator().hasNext()) {
                     if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + multipartBoundary(1) + "_alt--" + eol);
-                        out.print("--" + multipartBoundary + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + eol);
+                        // End multipart message
+                        out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                        multipartBoundary.removeFirst();
                     }
+
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
+
                 } else {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + multipartBoundary(1) + "_alt--" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + "--" + eol);
-                    }
+                    // End multipart message
+                    out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                    multipartBoundary.removeFirst();
                 }
             }
         }
@@ -591,12 +591,13 @@ public class SendEmailFunction extends BasicFunction {
                 }
 
                 if (itAttachment.hasNext()) {
-                    out.print("--" + multipartBoundary + eol);
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
                 }
             }
 
-            //Emd multipart message
-            out.print("--" + multipartBoundary + "--" + eol);
+            // End multipart message
+            out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+            multipartBoundary.removeFirst();
         }
 
         //end the message, <cr><lf>.<cr><lf>
@@ -1382,9 +1383,29 @@ public class SendEmailFunction extends BasicFunction {
      *
      * @return the multi-part boundary string.
      */
-    static String multipartBoundary(final int multipartInstance) {
-        // Get the version of eXist-db
-        final String version = Version.getVersion();
-        return "eXist-db.multipart." + version + "_multipart_" + multipartInstance;
+    private static String multipartBoundary(final int multipartInstance) {
+        return multipartBoundaryPrefix(multipartInstance) + "_" + nextRandomPositiveInteger() + "." + System.currentTimeMillis();
+    }
+
+    /**
+     * Produce the prefix of a multi-part boundary string.
+     *
+     * Access is package-private for unit testing purposes.
+     *
+     * @param multipartInstance the number of this multipart instance.
+     *
+     * @return the multi-part boundary string prefix.
+     */
+    static String multipartBoundaryPrefix(final int multipartInstance) {
+        return "----=_mail.mime.boundary_" + multipartInstance;
+    }
+
+    /**
+     * Generates a positive random integer.
+     *
+     * @return the integer
+     */
+    private static int nextRandomPositiveInteger() {
+        return RANDOM.nextInt() & Integer.MAX_VALUE;
     }
 }
