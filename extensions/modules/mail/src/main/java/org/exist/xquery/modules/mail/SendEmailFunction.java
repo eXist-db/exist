@@ -508,13 +508,14 @@ public class SendEmailFunction extends BasicFunction {
             //Mime warning
             out.print(eol);
             out.print(ERROR_MSG_NON_MIME_CLIENT + eol);
+            out.print(eol);
 
             out.print("--" + multipartBoundary + eol);
         }
 
-        // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
         if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
             out.print("Content-Type: multipart/alternative; boundary=" + parameterValue(multipartBoundary(1) + "_alt") + eol);
+            out.print(eol);
             out.print("--" + multipartBoundary(1) + "_alt" + eol);
         }
 
