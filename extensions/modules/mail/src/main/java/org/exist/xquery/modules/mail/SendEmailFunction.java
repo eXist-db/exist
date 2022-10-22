@@ -48,20 +48,18 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
- * eXist Mail Module Extension SendEmailFunction
- * <p>
- * The email sending functionality of the eXist Mail Module Extension that
+ * eXist-db Mail Module Extension SendEmailFunction.
+ *
+ * The email sending functionality of the eXist-db Mail Module Extension that
  * allows email to be sent from XQuery using either SMTP or Sendmail.
  *
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:robert.walpole@devon.gov.uk">Robert Walpole</a>
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
- * @version 1.6
- * @serial 2011-08-02
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
 public class SendEmailFunction extends BasicFunction {
 
@@ -70,7 +68,14 @@ public class SendEmailFunction extends BasicFunction {
 
     private final static int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
 
-    private String charset;
+    /**
+     * Regular expression for checking for an RFC 2045 non-token.
+     */
+    private static final Pattern NON_TOKEN_PATTERN = Pattern.compile("^.*[\\s\\p{Cntrl}()<>@,;:\\\"/\\[\\]?=].*$");
+
+    static final String ERROR_MSG_NON_MIME_CLIENT = "Error your mail client is not MIME Compatible";
+
+    private static final Random RANDOM = new Random();
 
     public final static FunctionSignature deprecated = new FunctionSignature(
             new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
@@ -155,6 +160,7 @@ public class SendEmailFunction extends BasicFunction {
     public Sequence deprecatedSendEmail(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         try {
             //get the charset parameter, default to UTF-8
+            final String charset;
             if (!args[2].isEmpty()) {
                 charset = args[2].getStringValue();
             } else {
@@ -174,14 +180,14 @@ public class SendEmailFunction extends BasicFunction {
             //Send email with Sendmail or SMTP?
             if (!args[1].isEmpty()) {
                 //SMTP
-                final boolean[] mailResults = sendBySMTP(mails, args[1].getStringValue());
+                final boolean[] mailResults = sendBySMTP(mails, args[1].getStringValue(), charset);
 
                 for (final boolean mailResult : mailResults) {
                     results.add(BooleanValue.valueOf(mailResult));
                 }
             } else {
                 for (final Mail mail : mails) {
-                    final boolean result = sendBySendmail(mail);
+                    final boolean result = sendBySendmail(mail, charset);
                     results.add(BooleanValue.valueOf(result));
                 }
             }
@@ -208,9 +214,10 @@ public class SendEmailFunction extends BasicFunction {
      * Sends an email using the Operating Systems sendmail application
      *
      * @param mail representation of the email to send
+     * @param charset the character set
      * @return boolean value of true of false indicating success or failure to send email
      */
-    private boolean sendBySendmail(final Mail mail) {
+    private boolean sendBySendmail(final Mail mail, final String charset) {
 
         //Create a list of all Recipients, should include to, cc and bcc recipient
         final List<String> allrecipients = new ArrayList<>();
@@ -241,7 +248,7 @@ public class SendEmailFunction extends BasicFunction {
             //Get a Buffered Print Writer to the Processes stdOut
             try (final PrintWriter out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(), charset))) {
                 //Send the Message
-                writeMessage(out, mail, false);
+                writeMessage(out, mail, false, charset);
             }
         } catch (final IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -273,10 +280,11 @@ public class SendEmailFunction extends BasicFunction {
      *
      * @param mails         A list of mail object representing the email to send
      * @param smtpServerArg The SMTP Server to send the email through
+     * @param charset the character set
      * @return boolean value of true of false indicating success or failure to send email
      * @throws SMTPException if an I/O error occurs
      */
-    private boolean[] sendBySMTP(final Mail[] mails, final String smtpServerArg) throws SMTPException {
+    private boolean[] sendBySMTP(final Mail[] mails, final String smtpServerArg, final String charset) throws SMTPException {
         String smtpHost = "localhost";
         int smtpPort = 25;
 
@@ -332,9 +340,13 @@ public class SendEmailFunction extends BasicFunction {
 
             //write SMTP message(s)
             for (int i = 0; i < mails.length; i++) {
-                final boolean mailResult = writeSMTPMessage(mails[i], smtpOut, smtpIn);
+                final boolean mailResult = writeSMTPMessage(mails[i], smtpOut, smtpIn, charset);
                 sendMailResults[i] = mailResult;
             }
+
+            //all done, time to "QUIT"
+            smtpOut.print("QUIT\r\n");
+            smtpOut.flush();
 
         } catch (final IOException ioe) {
             LOGGER.error(ioe.getMessage(), ioe);
@@ -349,7 +361,7 @@ public class SendEmailFunction extends BasicFunction {
         return sendMailResults;
     }
 
-    private boolean writeSMTPMessage(final Mail mail, final PrintWriter smtpOut, final BufferedReader smtpIn) {
+    private boolean writeSMTPMessage(final Mail mail, final PrintWriter smtpOut, final BufferedReader smtpIn, final String charset) {
         try {
             String smtpResult;
 
@@ -415,7 +427,7 @@ public class SendEmailFunction extends BasicFunction {
             }
 
             //Send the Message
-            writeMessage(smtpOut, mail, true);
+            writeMessage(smtpOut, mail, true, charset);
 
             //Get end message response, should be "250 blah blah"
             smtpResult = smtpIn.readLine();
@@ -432,37 +444,37 @@ public class SendEmailFunction extends BasicFunction {
     }
 
     /**
-     * Writes an email payload (Headers + Body) from a mail object
+     * Writes an email payload (Headers + Body) from a mail object.
+     *
+     * Access is package-private for unit testing purposes.
      *
      * @param out   A PrintWriter to receive the email
      * @param aMail A mail object representing the email to write out
      * @param useCrLf true to use CRLF for line ending, false to use LF
+     * @param charset the character set
      * @throws IOException if an I/O error occurs
      */
-    private void writeMessage(final PrintWriter out, final Mail aMail, final boolean useCrLf) throws IOException {
-        final String version = Version.getVersion();                //Version of eXist
-        final String MultipartBoundary = "eXist.multipart." + version;    //Multipart Boundary
-
+    static void writeMessage(final PrintWriter out, final Mail aMail, final boolean useCrLf, final String charset) throws IOException {
         final String eol = useCrLf ? "\r\n" : "\n";
 
         //write the message headers
 
-        out.print("From: " + encode64Address(aMail.getFrom()) + eol);
+        out.print("From: " + encode64Address(aMail.getFrom(), charset) + eol);
 
         if (aMail.getReplyTo() != null) {
-            out.print("Reply-To: " + encode64Address(aMail.getReplyTo()) + eol);
+            out.print("Reply-To: " + encode64Address(aMail.getReplyTo(), charset) + eol);
         }
 
         for (int x = 0; x < aMail.countTo(); x++) {
-            out.print("To: " + encode64Address(aMail.getTo(x)) + eol);
+            out.print("To: " + encode64Address(aMail.getTo(x), charset) + eol);
         }
 
         for (int x = 0; x < aMail.countCC(); x++) {
-            out.print("CC: " + encode64Address(aMail.getCC(x)) + eol);
+            out.print("CC: " + encode64Address(aMail.getCC(x), charset) + eol);
         }
 
         for (int x = 0; x < aMail.countBCC(); x++) {
-            out.print("BCC: " + encode64Address(aMail.getBCC(x)) + eol);
+            out.print("BCC: " + encode64Address(aMail.getBCC(x), charset) + eol);
         }
 
         out.print("Date: " + getDateRFC822() + eol);
@@ -470,43 +482,48 @@ public class SendEmailFunction extends BasicFunction {
         if (subject == null) {
             subject = "";
         }
-        out.print("Subject: " + encode64(subject) + eol);
-        out.print("X-Mailer: eXist " + version + " mail:send-email()" + eol);
+        out.print("Subject: " + encode64(subject, charset) + eol);
+        out.print("X-Mailer: eXist-db " + Version.getVersion() + " mail:send-email()" + eol);
         out.print("MIME-Version: 1.0" + eol);
 
 
         boolean multipartAlternative = false;
-        String multipartBoundary = null;
+        int multipartInstanceCount = 0;
+        final Deque<String> multipartBoundary = new ArrayDeque<>();
 
         if (aMail.attachmentIterator().hasNext()) {
-            // we have an attachment as well as text and/or html so we need a multipart/mixed message
-            multipartBoundary = MultipartBoundary;
+            // we have an attachment as well as text and/or html, so we need a multipart/mixed message
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
         } else if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML())) {
             // we have text and html, so we need a multipart/alternative message and no attachment
             multipartAlternative = true;
-            multipartBoundary = MultipartBoundary + "_alt";
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
         }
 //        else {
 //            // we have either text or html and no attachment this message is not multipart
 //        }
 
         //content type
-        if (multipartBoundary != null) {
+        if (!multipartBoundary.isEmpty()) {
             //multipart message
 
-            out.print("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=\"" + multipartBoundary + "\";" + eol);
+            out.print("Content-Type: " + (multipartAlternative ? "multipart/alternative" : "multipart/mixed") + "; boundary=" + parameterValue(multipartBoundary.peekFirst()) + eol);
 
             //Mime warning
             out.print(eol);
-            out.print("Error your mail client is not MIME Compatible" + eol);
+            out.print(ERROR_MSG_NON_MIME_CLIENT + eol);
+            out.print(eol);
 
-            out.print("--" + multipartBoundary + eol);
+            out.print("--" + multipartBoundary.peekFirst() + eol);
         }
 
-        // TODO - need to put out a multipart/mixed boundary here when HTML, text and attachment present
         if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-            out.print("Content-Type: multipart/alternative; boundary=\"" + MultipartBoundary + "_alt\";" + eol);
-            out.print("--" + MultipartBoundary + "_alt" + eol);
+            // we are a multipart inside a multipart
+            multipartBoundary.addFirst(multipartBoundary(++multipartInstanceCount));
+
+            out.print("Content-Type: multipart/alternative; boundary=" + parameterValue(multipartBoundary.peekFirst()) + eol);
+            out.print(eol);
+            out.print("--" + multipartBoundary.peekFirst() + eol);
         }
 
         //text email
@@ -518,19 +535,13 @@ public class SendEmailFunction extends BasicFunction {
             out.print(eol);
             out.print(aMail.getText() + eol);
 
-            if (multipartBoundary != null) {
+            if (!multipartBoundary.isEmpty()) {
                 if (nonEmpty(aMail.getXHTML()) || aMail.attachmentIterator().hasNext()) {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + MultipartBoundary + "_alt" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + eol);
-                    }
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
                 } else {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + MultipartBoundary + "_alt--" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + "--" + eol);
-                    }
+                    // End multipart message
+                    out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                    multipartBoundary.removeFirst();
                 }
             }
         }
@@ -545,20 +556,20 @@ public class SendEmailFunction extends BasicFunction {
             out.print("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">" + eol);
             out.print(aMail.getXHTML() + eol);
 
-            if (multipartBoundary != null) {
+            if (!multipartBoundary.isEmpty()) {
                 if (aMail.attachmentIterator().hasNext()) {
                     if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + MultipartBoundary + "_alt--" + eol);
-                        out.print("--" + multipartBoundary + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + eol);
+                        // End multipart message
+                        out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                        multipartBoundary.removeFirst();
                     }
+
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
+
                 } else {
-                    if (nonEmpty(aMail.getText()) && nonEmpty(aMail.getXHTML()) && aMail.attachmentIterator().hasNext()) {
-                        out.print("--" + MultipartBoundary + "_alt--" + eol);
-                    } else {
-                        out.print("--" + multipartBoundary + "--" + eol);
-                    }
+                    // End multipart message
+                    out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+                    multipartBoundary.removeFirst();
                 }
             }
         }
@@ -568,10 +579,10 @@ public class SendEmailFunction extends BasicFunction {
             for (final Iterator<MailAttachment> itAttachment = aMail.attachmentIterator(); itAttachment.hasNext(); ) {
                 final MailAttachment ma = itAttachment.next();
 
-                out.print("Content-Type: " + ma.getMimeType() + "; name=\"" + ma.getFilename() + "\"" + eol);
+                out.print("Content-Type: " + ma.getMimeType() + "; name=" + parameterValue(ma.getFilename()) + eol);
                 out.print("Content-Transfer-Encoding: base64" + eol);
                 out.print("Content-Description: " + ma.getFilename() + eol);
-                out.print("Content-Disposition: attachment; filename=\"" + ma.getFilename() + "\"" + eol);
+                out.print("Content-Disposition: attachment; filename=" + parameterValue(ma.getFilename()) + eol);
                 out.print(eol);
 
 
@@ -584,12 +595,13 @@ public class SendEmailFunction extends BasicFunction {
                 }
 
                 if (itAttachment.hasNext()) {
-                    out.print("--" + multipartBoundary + eol);
+                    out.print("--" + multipartBoundary.peekFirst() + eol);
                 }
             }
 
-            //Emd multipart message
-            out.print("--" + multipartBoundary + "--" + eol);
+            // End multipart message
+            out.print("--" + multipartBoundary.peekFirst() + "--" + eol);
+            multipartBoundary.removeFirst();
         }
 
         //end the message, <cr><lf>.<cr><lf>
@@ -945,7 +957,7 @@ public class SendEmailFunction extends BasicFunction {
      *
      * @return RFC822 formated date and time as a String
      */
-    private String getDateRFC822() {
+    private static String getDateRFC822() {
         String dateString = "";
         final Calendar rightNow = Calendar.getInstance();
 
@@ -1110,13 +1122,15 @@ public class SendEmailFunction extends BasicFunction {
     }
 
     /**
-     * Base64 Encodes a string (used for message subject)
+     * Base64 Encodes a string (used for message subject).
+     *
+     * Access is package-private for unit testing purposes.
      *
      * @param str The String to encode
      * @throws java.io.UnsupportedEncodingException if the encocding is unsupported
      * @return The encoded String
      */
-    private String encode64(final String str) throws java.io.UnsupportedEncodingException {
+    static String encode64(final String str, final String charset) throws java.io.UnsupportedEncodingException {
         String result = Base64.encodeBase64String(str.getBytes(charset));
         result = result.replaceAll("\n", "?=\n =?" + charset + "?B?");
         result = "=?" + charset + "?B?" + result + "?=";
@@ -1127,15 +1141,16 @@ public class SendEmailFunction extends BasicFunction {
      * Base64 Encodes an email address
      *
      * @param str The email address as a String to encode
+     * @param charset the character set
      * @throws java.io.UnsupportedEncodingException if the encocding is unsupported
      * @return The encoded email address String
      */
-    private String encode64Address(final String str) throws java.io.UnsupportedEncodingException {
+    private static String encode64Address(final String str, final String charset) throws java.io.UnsupportedEncodingException {
         final int idx = str.indexOf("<");
 
         final String result;
         if (idx != -1) {
-            result = encode64(str.substring(0, idx)) + " " + str.substring(idx);
+            result = encode64(str.substring(0, idx), charset) + " " + str.substring(idx);
         } else {
             result = str;
         }
@@ -1144,13 +1159,14 @@ public class SendEmailFunction extends BasicFunction {
     }
 
     /**
-     * A simple data class to represent an email
-     * attachment. Just has private
-     * members and some get methods.
+     * A simple data class to represent an email attachment.
      *
-     * @version 1.2
+     * It doesn't do anything fancy, it just has private
+     * members and get and set methods.
+     *
+     * Access is package-private for unit testing purposes.
      */
-    private static class MailAttachment {
+    static class MailAttachment {
         private final String filename;
         private final String mimeType;
         private final String data;
@@ -1175,13 +1191,13 @@ public class SendEmailFunction extends BasicFunction {
     }
 
     /**
-     * A simple data class to represent an email
-     * doesnt do anything fancy just has private
-     * members and get and set methods
+     * A simple data class to represent an email.
+     * It doesn't do anything fancy, it just has private
+     * members and get and set methods.
      *
-     * @version 1.2
+     * Access is package-private for unit testing purposes.
      */
-    private static class Mail {
+    static class Mail {
         private String from;                                                //Who is the mail from
         private String replyTo;                                             //Who should you reply to
         private final List<String> to = new ArrayList<>(1);    //Who is the mail going to
@@ -1329,5 +1345,71 @@ public class SendEmailFunction extends BasicFunction {
 
     private static boolean nonEmpty(@Nullable final String str) {
         return str != null && !str.isEmpty();
+    }
+
+    /**
+     * Creates a "quoted-string" of the parameter value
+     * if it contains a non-token value (See {@link #isNonToken(String)}),
+     * otherwise it returns the parameter value as is.
+     *
+     * Access is package-private for unit testing purposes.
+     *
+     * @param value parameter value.
+     *
+     * @return the quoted string parameter value, or the parameter value as is.
+     */
+    static String parameterValue(final String value) {
+        if (isNonToken(value)) {
+            return "\"" + value + "\"";
+        } else {
+            return value;
+        }
+    }
+
+    /**
+     * Determines if the string contains SPACE, CTLs, or `tspecial` (special token)
+     * according to <a href="https://www.rfc-editor.org/rfc/rfc2045#section-5">RFC 2045 - Section 5</a>.
+     *
+     * @param str the string to test
+     *
+     * @return true if the string contains a non-token, false otherwise.
+     */
+    private static boolean isNonToken(final String str) {
+        return NON_TOKEN_PATTERN.matcher(str).matches();
+    }
+
+    /**
+     * Produce a multi-part boundary string.
+     *
+     * Access is package-private for unit testing purposes.
+     *
+     * @param multipartInstance the number of this multipart instance.
+     *
+     * @return the multi-part boundary string.
+     */
+    private static String multipartBoundary(final int multipartInstance) {
+        return multipartBoundaryPrefix(multipartInstance) + "_" + nextRandomPositiveInteger() + "." + System.currentTimeMillis();
+    }
+
+    /**
+     * Produce the prefix of a multi-part boundary string.
+     *
+     * Access is package-private for unit testing purposes.
+     *
+     * @param multipartInstance the number of this multipart instance.
+     *
+     * @return the multi-part boundary string prefix.
+     */
+    static String multipartBoundaryPrefix(final int multipartInstance) {
+        return "----=_mail.mime.boundary_" + multipartInstance;
+    }
+
+    /**
+     * Generates a positive random integer.
+     *
+     * @return the integer
+     */
+    private static int nextRandomPositiveInteger() {
+        return RANDOM.nextInt() & Integer.MAX_VALUE;
     }
 }
