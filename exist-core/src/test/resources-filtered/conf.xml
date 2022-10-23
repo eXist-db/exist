@@ -888,6 +888,10 @@
             raise-error-on-failed-retrieval="no">
         
         <builtin-modules>
+
+            <!-- XQSuite Test Framework for XQuery testing -->
+            <module uri="http://exist-db.org/xquery/xqsuite" src="resource:org/exist/xquery/lib/xqsuite/xqsuite.xql" />
+
             <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule" />
             <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
             <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />

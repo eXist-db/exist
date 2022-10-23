@@ -65,14 +65,18 @@ public class ModuleContext extends XQueryContext {
 
     public ModuleContext(final XQueryContext parentContext, final String modulePrefix, final String moduleNamespace,
             final String location) {
-        super();
+        super(parentContext != null ? parentContext.db : null,
+                parentContext != null ? parentContext.getConfiguration() : null,
+                null,
+                false);
+
         this.modulePrefix = modulePrefix;
         this.moduleNamespace = moduleNamespace;
         this.location = location;
+
         setParentContext(parentContext);
 
-        loadDefaults(getConfiguration());
-        this.profiler = new Profiler(getBroker() != null ? getBroker().getBrokerPool() : null);
+        loadDefaults(this.configuration);
     }
 
     @Override
@@ -103,7 +107,6 @@ public class ModuleContext extends XQueryContext {
         this.parentContext = parentContext;
         //XXX: raise error on null!
         if (parentContext != null) {
-            this.db = parentContext.db;
             this.baseURI = parentContext.baseURI;
             try {
                 if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) ||
@@ -181,11 +184,6 @@ public class ModuleContext extends XQueryContext {
             LOG.error(e);
         }
         return ctx;
-    }
-
-    @Override
-    public Configuration getConfiguration() {
-        return parentContext.getConfiguration();
     }
 
     @Override
