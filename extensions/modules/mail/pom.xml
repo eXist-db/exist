@@ -46,9 +46,10 @@
   </scm>
 
     <properties>
-        <jakarta.activation.version>2.0.1</jakarta.activation.version>
-        <jakarta.mail.version>2.0.1</jakarta.mail.version>
-        <greenmail.version>2.0.0</greenmail.version>
+        <jakarta.mail-api.version>2.1.1</jakarta.mail-api.version>
+        <eclipse.angus-mail.version>2.0.1</eclipse.angus-mail.version>
+        <jakarta.activation-api.version>2.1.1</jakarta.activation-api.version>
+        <greenmail.version>2.1.0-alpha-1</greenmail.version>
     </properties>
 
     <dependencies>
@@ -64,21 +65,27 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>${jakarta.mail.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
-            <version>${jakarta.activation.version}</version>
+            <version>${jakarta.activation-api.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>jakarta.mail</artifactId>
-            <version>${jakarta.mail.version}</version>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+            <version>${jakarta.mail-api.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>${eclipse.angus-mail.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -125,6 +132,18 @@
             <artifactId>greenmail</artifactId>
             <version>${greenmail.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- use newer Eclipse Angus Email -->
+                    <groupId>com.sun.mail</groupId>
+                    <artifactId>jakarta.mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- use newer Eclipse Angus Activation -->
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
@@ -154,7 +173,8 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>com.sun.mail:jakarta.mail:jar:${jakarta.mail.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-mail:jar:${eclipse.angus-mail.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
