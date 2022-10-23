@@ -507,7 +507,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.symbols = servicesManager.register(new SymbolTable());
 
-        this.expathRepo = Optional.ofNullable(new ExistRepository());
+        this.expathRepo = Optional.of(new ExistRepository());
         expathRepo.ifPresent(servicesManager::register);
         servicesManager.register(new ClasspathHelper());
 

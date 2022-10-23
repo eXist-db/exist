@@ -25,11 +25,13 @@ package org.exist.test.runner;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.dom.QName;
+import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.ClassLoaderSource;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.BrokerPoolServiceException;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
@@ -88,7 +90,17 @@ public class XQueryTestRunner extends AbstractTestRunner {
     private static XQueryTestInfo extractTestInfo(final Path path) throws InitializationError {
         try {
             final Configuration config = getConfiguration();
+
+            final ExistRepository expathRepo = new ExistRepository();
+            try {
+                expathRepo.configure(config);
+                expathRepo.prepare(null);
+            } catch (final BrokerPoolServiceException e) {
+                throw new InitializationError(e);
+            }
+
             final XQueryContext xqueryContext = new XQueryContext(config);
+            xqueryContext.setTestRepository(Optional.of(expathRepo));
 
             final Source xquerySource = new FileSource(path, UTF_8, false);
             final XQuery xquery = new XQuery();
