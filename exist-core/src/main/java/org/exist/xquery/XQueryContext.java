@@ -3233,8 +3233,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (updateListener != null) {
             final DBBroker broker = getBroker();
             broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
+            updateListener = null;
         }
-        updateListener = null;
     }
 
     @Override
@@ -3461,7 +3461,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         @Override
         public void unsubscribe() {
             List<UpdateListener> prev = listeners.get();
-            while (!listeners.compareAndSet(prev, new CopyOnWriteArrayList<>())) {
+            final List<UpdateListener> next = new CopyOnWriteArrayList<>();
+            while (!listeners.compareAndSet(prev, next)) {
                 prev = listeners.get();
             }
 
