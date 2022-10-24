@@ -3443,7 +3443,7 @@ public class XQueryContext implements BinaryValueManager, Context {
          *
          * The AtomicReference enables us to quickly clear the listeners
          * in #unsubscribe() and maintain happens-before integrity whilst
-         * unsubcribing them. The CopyOnWriteArrayList allows
+         * unsubscribing them. The CopyOnWriteArrayList allows
          * us to add listeners whilst iterating over a snapshot
          * of existing iterators in other methods.
          */

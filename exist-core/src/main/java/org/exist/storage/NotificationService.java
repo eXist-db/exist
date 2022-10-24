@@ -77,8 +77,8 @@ public class NotificationService implements BrokerPoolService {
      * Notify all subscribers that a document has been updated/removed or
      * a new document has been added.
      *
-     * @param document subscribers are listining to
-     * @param event that triggers the notify
+     * @param document subscribers are listening to
+     * @param event the event that triggers the notification
      */
     public synchronized void notifyUpdate(final DocumentImpl document, final int event) {
         listeners.keySet().forEach(listener -> listener.documentUpdated(document, event));
