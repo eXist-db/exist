@@ -148,54 +148,58 @@ public class LoadXQueryModule extends BasicFunction {
 
         // create temporary context so main context is not polluted
         final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
-        tempContext.setModuleLoadPath(context.getModuleLoadPath());
-        setExternalVars(externalVars, tempContext::declareGlobalVariable);
-        tempContext.prepareForExecution();
-
-        Module[] loadedModules = null;
         try {
-            loadedModules = tempContext.importModule(targetNamespace, null, locationHints);
+            tempContext.setModuleLoadPath(context.getModuleLoadPath());
+            setExternalVars(externalVars, tempContext::declareGlobalVariable);
+            tempContext.prepareForExecution();
 
-        } catch (final XPathException e) {
-            if (e.getErrorCode() == ErrorCodes.XQST0059) {
-                // importModule may throw exception if no location is given and module cannot be resolved
+            Module[] loadedModules = null;
+            try {
+                loadedModules = tempContext.importModule(targetNamespace, null, locationHints);
+
+            } catch (final XPathException e) {
+                if (e.getErrorCode() == ErrorCodes.XQST0059) {
+                    // importModule may throw exception if no location is given and module cannot be resolved
+                    throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
+                }
+                throw new XPathException(this, ErrorCodes.FOQM0003, "Error found when importing module: " + e.getMessage());
+            }
+
+            // not found, raise error
+            if (loadedModules == null || loadedModules.length == 0) {
                 throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
             }
-            throw new XPathException(this, ErrorCodes.FOQM0003, "Error found when importing module: " + e.getMessage());
-        }
 
-        // not found, raise error
-        if (loadedModules == null || loadedModules.length == 0) {
-            throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
-        }
-
-        if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
-            throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
-                    getXQueryVersion(tempContext.getXQueryVersion()));
-        }
-
-        final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
-        final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap(null);
-
-        for (final Module loadedModule : loadedModules) {
-            loadedModule.setContextItem(contextItem);
-            setExternalVars(externalVars, loadedModule::declareVariable);
-            if (!loadedModule.isInternalModule()) {
-                // ensure variable declarations in the imported module are analyzed.
-                // unlike when using a normal import statement, this is not done automatically
-                ((ExternalModule) loadedModule).analyzeGlobalVars();
+            if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
+                throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
+                        getXQueryVersion(tempContext.getXQueryVersion()));
             }
 
-            getModuleVariables(loadedModule, variables);
-            getModuleFunctions(loadedModule, tempContext, functions);
+            final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
+            final IMap<AtomicValue, IMap<AtomicValue, Sequence>> functions = newLinearMap(null);
+
+            for (final Module loadedModule : loadedModules) {
+                loadedModule.setContextItem(contextItem);
+                setExternalVars(externalVars, loadedModule::declareVariable);
+                if (!loadedModule.isInternalModule()) {
+                    // ensure variable declarations in the imported module are analyzed.
+                    // unlike when using a normal import statement, this is not done automatically
+                    ((ExternalModule) loadedModule).analyzeGlobalVars();
+                }
+
+                getModuleVariables(loadedModule, variables);
+                getModuleFunctions(loadedModule, tempContext, functions);
+            }
+
+            final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
+                    new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(this, context, functions.mapValues((k, v) -> (Sequence) new MapType(this, context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
+                    new Maps.Entry<>(RESULT_VARIABLES, new MapType(this, context, variables.forked(), Type.QNAME))
+            ));
+
+            return new MapType(this, context, result, Type.STRING);
+        } finally {
+            context.addImportedContext(tempContext);
         }
-
-        final IMap<AtomicValue, Sequence> result = Map.from(io.lacuna.bifurcan.List.of(
-                new Maps.Entry<>(RESULT_FUNCTIONS, new MapType(this, context, functions.mapValues((k, v) -> (Sequence)new MapType(this, context, v.forked(), Type.INTEGER)).forked(), Type.QNAME)),
-                new Maps.Entry<>(RESULT_VARIABLES, new MapType(this, context, variables.forked(), Type.QNAME))
-        ));
-
-        return new MapType(this, context, result, Type.STRING);
     }
 
     private void getModuleVariables(final Module module, final IMap<AtomicValue, Sequence> variables) throws XPathException {
