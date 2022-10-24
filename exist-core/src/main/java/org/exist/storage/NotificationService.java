@@ -100,4 +100,12 @@ public class NotificationService implements BrokerPoolService {
         }
         listeners.keySet().forEach(UpdateListener::debug);
     }
+
+    @Override
+    public void shutdown() {
+        synchronized (this) {
+            LOG.warn("Expected 0 listeners at shutdown, but {} listeners are still registered", listeners.size());
+        }
+        BrokerPoolService.super.shutdown();
+    }
 }
