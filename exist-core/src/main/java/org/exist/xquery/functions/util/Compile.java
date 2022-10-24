@@ -103,63 +103,69 @@ public class Compile extends BasicFunction {
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		
+
 		// get the query expression
 		final String expr = args[0].getStringValue();
 		if (expr.trim().isEmpty()) {
-		  return new EmptySequence();
+			return new EmptySequence();
 		}
 		context.pushNamespaceContext();
 		logger.debug("eval: {}", expr);
 		// TODO(pkaminsk2): why replicate XQuery.compile here?
-		
+
 		String error = null;
 		ErrorCodes.ErrorCode code = null;
 		int line = -1;
 		int column = -1;
-		
-		final XQueryContext pContext = 
-			new XQueryContext(context.getBroker().getBrokerPool());
-		if (getArgumentCount() == 2 && args[1].hasOne()) {
-			pContext.setModuleLoadPath(args[1].getStringValue());
-		}
-		final XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(expr));
-		final XQueryParser parser = new XQueryParser(lexer);
-		// shares the context of the outer expression
-		final XQueryTreeParser astParser = new XQueryTreeParser(pContext);
+
+		final XQueryContext pContext =
+				new XQueryContext(context.getBroker().getBrokerPool());
 		try {
-		    parser.xpath();
-			if(parser.foundErrors()) {
-				logger.debug(parser.getErrorMessage());
-				throw new XPathException(this, "error found while executing expression: " +
-					parser.getErrorMessage());
+			if (getArgumentCount() == 2 && args[1].hasOne()) {
+				pContext.setModuleLoadPath(args[1].getStringValue());
 			}
-			final AST ast = parser.getAST();
-			
-			final PathExpr path = new PathExpr(pContext);
-			astParser.xpath(ast, path);
-			if(astParser.foundErrors()) {
-				throw astParser.getLastException();
+			final XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(expr));
+			final XQueryParser parser = new XQueryParser(lexer);
+			// shares the context of the outer expression
+			final XQueryTreeParser astParser = new XQueryTreeParser(pContext);
+			try {
+				parser.xpath();
+				if (parser.foundErrors()) {
+					logger.debug(parser.getErrorMessage());
+					throw new XPathException(this, "error found while executing expression: " +
+							parser.getErrorMessage());
+				}
+				final AST ast = parser.getAST();
+
+				final PathExpr path = new PathExpr(pContext);
+				astParser.xpath(ast, path);
+				if (astParser.foundErrors()) {
+					throw astParser.getLastException();
+				}
+				path.analyze(new AnalyzeContextInfo());
+			} catch (final RecognitionException | TokenStreamException e) {
+				error = e.toString();
+			} catch (final XPathException e) {
+				line = e.getLine();
+				column = e.getColumn();
+				code = e.getCode();
+				error = e.getDetailMessage();
+			} catch (final Exception e) {
+				error = e.getMessage();
+			} finally {
+				context.popNamespaceContext();
+				pContext.reset(false);
+
 			}
-			path.analyze(new AnalyzeContextInfo());
-		} catch (final RecognitionException | TokenStreamException e) {
-			error = e.toString();
-		} catch (final XPathException e) {
-			line = e.getLine();
-			column = e.getColumn();
-			code = e.getCode();
-			error = e.getDetailMessage();
-		} catch (final Exception e) {
-			error = e.getMessage();
+
+			if (isCalledAs("compile")) {
+				return error == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, error);
+			} else {
+				return response(pContext, error, code, line, column);
+			}
+
 		} finally {
-			context.popNamespaceContext();
-            pContext.reset(false);
-		}
-		
-		if (isCalledAs("compile")) {
-			return error == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, error);
-		} else {
-			return response(pContext, error, code, line, column);
+			pContext.runCleanupTasks();
 		}
 	}
 

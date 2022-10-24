@@ -132,10 +132,10 @@ public class DatabaseResources {
         }
 
         Sequence result= null;
+        final XQueryContext context = new XQueryContext(brokerPool);
         try(final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
 
             final XQuery xquery = brokerPool.getXQueryService();
-            final XQueryContext context = new XQueryContext(brokerPool);
             
             if(collection!=null){
                 context.declareVariable(COLLECTION, collection);
@@ -160,6 +160,7 @@ public class DatabaseResources {
         } catch (final EXistException | XPathException | IOException | PermissionDeniedException ex) {
             logger.error("Problem executing xquery", ex);
             result= null;
+            context.runCleanupTasks();
             
         }
         return result;

@@ -697,6 +697,8 @@ public class Deployment {
             return xqs.execute(broker, compiled, null);
         } catch (final PermissionDeniedException e) {
             throw new PackageException(e.getMessage(), e);
+        } finally {
+            ctx.runCleanupTasks();
         }
     }
 
