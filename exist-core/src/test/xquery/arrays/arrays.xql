@@ -236,6 +236,13 @@ function arr:curly-constructor2($pos as xs:int) {
 };
 
 declare
+    %test:assertEmpty
+function arr:curly-constructor3() {
+    let $a := array {}
+    return $a?*
+};
+
+declare
     %test:assertTrue
 function arr:deep-equal1() {
     deep-equal([1, <node/>, "a", ["b", "c"]], [1, <node/>, "a", ["b", "c"]])

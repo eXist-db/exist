@@ -40,7 +40,7 @@ import javax.xml.XMLConstants;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class AttrImpl extends NamedNode implements Attr {
+public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
 
     public static final int LENGTH_NS_ID = 2; //sizeof short
     public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short

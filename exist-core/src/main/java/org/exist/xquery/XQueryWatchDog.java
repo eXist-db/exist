@@ -32,6 +32,8 @@ import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;
 
+import javax.annotation.Nullable;
+
 
 /**
  * @author wolf
@@ -86,17 +88,23 @@ public class XQueryWatchDog {
     }
 
     private void configureDefaults() {
-        final Configuration conf = context.getConfiguration();
-        Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
-        if(option != null)
-            {timeout = (Long) option;}
-        if(timeout <= 0)
-            {timeout = Long.MAX_VALUE;}
-        option = conf.getProperty(PROPERTY_OUTPUT_SIZE_LIMIT);
-        if(option != null)
-            {maxNodesLimit = (Integer) option;}
+        @Nullable final Configuration conf = context.getConfiguration();
+        if (conf != null) {
+            Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
+            if (option != null) {
+                timeout = (Long) option;
+            }
+            if (timeout <= 0) {
+                timeout = Long.MAX_VALUE;
+            }
+
+            option = conf.getProperty(PROPERTY_OUTPUT_SIZE_LIMIT);
+            if (option != null) {
+                maxNodesLimit = (Integer) option;
+            }
+        }
     }
-    
+
     public void setTimeoutFromOption(Option option) throws XPathException {
     	final String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
