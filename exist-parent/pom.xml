@@ -643,8 +643,9 @@
                                 <Build-Tag>${build-tag}</Build-Tag>
                                 <Git-Commit>${build-commit}</Git-Commit>
                                 <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
                                 <Build-Version>${build-version}</Build-Version>
-                                <Build-Timestamp>${build-tstamp}</Build-Timestamp>
+                                <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
                                 <Implementation-URL>${project.url}</Implementation-URL>
@@ -666,8 +667,9 @@
                                 <Build-Tag>${build-tag}</Build-Tag>
                                 <Git-Commit>${build-commit}</Git-Commit>
                                 <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
                                 <Build-Version>${build-version}</Build-Version>
-                                <Build-Timestamp>${build-tstamp}</Build-Timestamp>
+                                <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
                                 <Implementation-URL>${project.url}</Implementation-URL>
@@ -690,8 +692,9 @@
                                 <Build-Tag>${build-tag}</Build-Tag>
                                 <Git-Commit>${build-commit}</Git-Commit>
                                 <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
                                 <Build-Version>${build-version}</Build-Version>
-                                <Build-Timestamp>${build-tstamp}</Build-Timestamp>
+                                <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
                                 <Implementation-URL>${project.url}</Implementation-URL>
@@ -819,8 +822,9 @@
                                 <Build-Tag>${build-tag}</Build-Tag>
                                 <Git-Commit>${build-commit}</Git-Commit>
                                 <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
                                 <Build-Version>${build-version}</Build-Version>
-                                <Build-Timestamp>${build-tstamp}</Build-Timestamp>
+                                <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
                                 <Implementation-URL>${project.url}</Implementation-URL>
