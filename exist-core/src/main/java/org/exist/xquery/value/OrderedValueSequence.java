@@ -328,7 +328,7 @@ public class OrderedValueSequence extends AbstractSequence {
         private final OrderSpec[] orderSpecs;
         private Item item;
         private final int pos;
-        private AtomicValue[] values;
+        @Nullable private AtomicValue[] values;
 
         /**
          * Private constructor, use {@link #create(OrderSpec[], Item, int, Sequence)} instead.
@@ -433,17 +433,21 @@ public class OrderedValueSequence extends AbstractSequence {
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder();
-            builder.append(item);
-            builder.append(" [");
-            for (int i = 0; i < values.length; i++) {
-                if (i > 0) {
-                    builder.append(", ");
+            if (values == null) {
+                return item.toString();
+            } else {
+                final StringBuilder builder = new StringBuilder();
+                builder.append(item);
+                builder.append(" [");
+                for (int i = 0; i < values.length; i++) {
+                    if (i > 0) {
+                        builder.append(", ");
+                    }
+                    builder.append(values[i].toString());
                 }
-                builder.append(values[i].toString());
+                builder.append("]");
+                return builder.toString();
             }
-            builder.append("]");
-            return builder.toString();
         }
 
         public void clear() {
