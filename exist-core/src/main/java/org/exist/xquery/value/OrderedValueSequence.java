@@ -355,24 +355,18 @@ public class OrderedValueSequence extends AbstractSequence {
          * @throws XPathException thrown if the evaluation of an order spec raises an error.
          */
         public static Entry create(final OrderSpec[] orderSpecs, final Item item, final int position, @Nullable final Sequence contextSequence) throws XPathException {
-            AtomicValue[] values = null;
+            final AtomicValue[] values = new AtomicValue[orderSpecs.length];
             for (int i = 0; i < orderSpecs.length; i++) {
                 final Sequence seq = orderSpecs[i].getSortExpression().eval(contextSequence, null);
                 values[i] = AtomicValue.EMPTY_VALUE;
                 if (seq.hasOne()) {
-                    if (values == null) {
-                        values = new AtomicValue[orderSpecs.length];
-                    }
                     values[i] = seq.itemAt(0).atomize();
                 } else if (seq.hasMany()) {
-                    throw new XPathException((values == null || values[i] == null) ? null : values[i].getExpression(), ErrorCodes.XPTY0004,
+                    throw new XPathException(item.getExpression(), ErrorCodes.XPTY0004,
                             "expected a single value for order expression " +
                                     ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
                                     " ; found: " + seq.getItemCount());
                 } else {
-                    if (values == null) {
-                        values = new AtomicValue[orderSpecs.length];
-                    }
                     values[i] = AtomicValue.EMPTY_VALUE;
                 }
             }
