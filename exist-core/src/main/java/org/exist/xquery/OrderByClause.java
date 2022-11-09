@@ -96,7 +96,9 @@ public class OrderByClause extends AbstractFLWORClause {
             return seq;
         }
 
+        orderedResult.coerceTypesForOrderBy();
         orderedResult.sort();
+
         Sequence result = orderedResult;
 
         if (getReturnExpression() instanceof FLWORClause flworClause) {
