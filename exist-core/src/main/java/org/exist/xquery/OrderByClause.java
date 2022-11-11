@@ -71,11 +71,13 @@ public class OrderByClause extends AbstractFLWORClause {
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         OrderedValueSequence orderedResult = stack.pollFirst();
-        if (orderedResult == null) {
-            orderedResult = new OrderedValueSequence(orderSpecs, 100);
-        }
 
         final Sequence result = getReturnExpression().eval(contextSequence, contextItem);
+
+        if (orderedResult == null) {
+            orderedResult = new OrderedValueSequence(orderSpecs, result != null ? result.getItemCount() : 100);
+        }
+
         if (result != null) {
             orderedResult.setContextSequence(contextSequence);
             orderedResult.addAll(result);
