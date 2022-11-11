@@ -37,7 +37,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
@@ -51,7 +53,7 @@ import java.util.Arrays;
  */
 public class OrderedValueSequence extends AbstractSequence {
 
-    private final OrderSpec[] orderSpecs;
+    private final List<OrderSpec> orderSpecs;
     private Entry[] items;
     private int count = 0;
     private int state = 0;
@@ -60,7 +62,7 @@ public class OrderedValueSequence extends AbstractSequence {
     private int itemType = Type.ANY_TYPE;
     private Sequence contextSequence;
 
-    public OrderedValueSequence(final OrderSpec orderSpecs[], final int size) {
+    public OrderedValueSequence(final List<OrderSpec> orderSpecs, final int size) {
         this.orderSpecs = orderSpecs;
         this.items = new Entry[size == 0 ? 1 : size];
     }
@@ -325,19 +327,19 @@ public class OrderedValueSequence extends AbstractSequence {
     }
 
     private static class Entry implements Comparable<Entry> {
-        private final OrderSpec[] orderSpecs;
+        private final List<OrderSpec> orderSpecs;
         private Item item;
         private final int pos;
-        @Nullable private AtomicValue[] values;
+        @Nullable private List<AtomicValue> values;
 
         /**
-         * Private constructor, use {@link #create(OrderSpec[], Item, int, Sequence)} instead.
+         * Private constructor, use {@link #create(List, Item, int, Sequence)} instead.
          *
          * @param item the item in the sequence.
          * @param position the original position of the item in the result sequence.
          * @param values the values for the entry.
          */
-        private Entry(final OrderSpec[] orderSpecs, final Item item, final int position, final AtomicValue[] values) {
+        private Entry(final List<OrderSpec> orderSpecs, final Item item, final int position, final List<AtomicValue> values) {
             this.orderSpecs = orderSpecs;
             this.item = item;
             this.pos = position;
@@ -355,19 +357,19 @@ public class OrderedValueSequence extends AbstractSequence {
          * @throws XPathException thrown if the evaluation of an order spec raises an error.
          */
         public static Entry create(final OrderSpec[] orderSpecs, final Item item, final int position, @Nullable final Sequence contextSequence) throws XPathException {
-            final AtomicValue[] values = new AtomicValue[orderSpecs.length];
-            for (int i = 0; i < orderSpecs.length; i++) {
-                final Sequence seq = orderSpecs[i].getSortExpression().eval(contextSequence, null);
-                values[i] = AtomicValue.EMPTY_VALUE;
+            final List<AtomicValue> values = new ArrayList<>(orderSpecs.size());
+            for (final OrderSpec orderSpec : orderSpecs) {
+                final Expression sortExpression = orderSpec.getSortExpression();
+                final Sequence seq = sortExpression.eval(contextSequence, null);
                 if (seq.hasOne()) {
-                    values[i] = seq.itemAt(0).atomize();
+                    values.add(seq.itemAt(0).atomize());
                 } else if (seq.hasMany()) {
                     throw new XPathException(item.getExpression(), ErrorCodes.XPTY0004,
                             "expected a single value for order expression " +
-                                    ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
+                                    ExpressionDumper.dump(sortExpression) +
                                     " ; found: " + seq.getItemCount());
                 } else {
-                    values[i] = AtomicValue.EMPTY_VALUE;
+                    values.add(AtomicValue.EMPTY_VALUE);
                 }
             }
 
@@ -377,10 +379,10 @@ public class OrderedValueSequence extends AbstractSequence {
         @Override
         public int compareTo(final Entry other) {
             int cmp = 0;
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.size(); i++) {
                 try {
-                    final AtomicValue a = values[i];
-                    final AtomicValue b = other.values[i];
+                    final AtomicValue a = values.get(i);
+                    final AtomicValue b = other.values.get(i);
                     final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
                     final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
                     if (aIsEmpty) {
@@ -388,34 +390,34 @@ public class OrderedValueSequence extends AbstractSequence {
                         // both values are empty
                         {
                             return Constants.EQUAL;
-                        } else if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        } else if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.INFERIOR;
                         } else {
                             cmp = Constants.SUPERIOR;
                         }
                     } else if (bIsEmpty) {
                         // we don't need to check for equality since we know a is not empty
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.SUPERIOR;
                         } else {
                             cmp = Constants.INFERIOR;
                         }
                     } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.INFERIOR;
                         } else {
                             cmp = Constants.SUPERIOR;
                         }
                     } else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.SUPERIOR;
                         } else {
                             cmp = Constants.INFERIOR;
                         }
                     } else {
-                        cmp = a.compareTo(orderSpecs[i].getCollator(), b);
+                        cmp = a.compareTo(orderSpecs.get(i).getCollator(), b);
                     }
-                    if ((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0) {
+                    if ((orderSpecs.get(i).getModifiers() & OrderSpec.DESCENDING_ORDER) != 0) {
                         cmp = cmp * -1;
                     }
                     if (cmp != Constants.EQUAL) {
@@ -439,11 +441,11 @@ public class OrderedValueSequence extends AbstractSequence {
                 final StringBuilder builder = new StringBuilder();
                 builder.append(item);
                 builder.append(" [");
-                for (int i = 0; i < values.length; i++) {
+                for (int i = 0; i < values.size(); i++) {
                     if (i > 0) {
                         builder.append(", ");
                     }
-                    builder.append(values[i].toString());
+                    builder.append(values.get(i).toString());
                 }
                 builder.append("]");
                 return builder.toString();

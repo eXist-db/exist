@@ -34,18 +34,18 @@ import java.util.*;
  */
 public class OrderByClause extends AbstractFLWORClause {
 
-    protected OrderSpec[] orderSpecs = null;
+    private final List<OrderSpec> orderSpecs;
 
     /*  OrderByClause needs to keep state between calls to eval and postEval. We thus need
         to track state in a stack to avoid overwrites if we're called recursively. */
     private final Deque<OrderedValueSequence> stack = new ArrayDeque<>();
 
-    public OrderByClause(XQueryContext context, List<OrderSpec> orderSpecs) {
+    public OrderByClause(final XQueryContext context, final List<OrderSpec> orderSpecs) {
         super(context);
-        this.orderSpecs = orderSpecs.toArray(new OrderSpec[0]);
+        this.orderSpecs = orderSpecs;
     }
 
-    public OrderSpec[] getOrderSpecs() {
+    public List<OrderSpec> getOrderSpecs() {
         return orderSpecs;
     }
 
@@ -102,12 +102,13 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         dumper.display("order by ");
-        for (int i = 0; i < orderSpecs.length; i++) {
-            if (i > 0)
-            {dumper.display(", ");}
-            dumper.display(orderSpecs[i]);
+        for (int i = 0; i < orderSpecs.size(); i++) {
+            if (i > 0) {
+                dumper.display(", ");
+            }
+            dumper.display(orderSpecs.get(i));
         }
         dumper.nl();
     }
@@ -116,11 +117,11 @@ public class OrderByClause extends AbstractFLWORClause {
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append("order by ");
-        for (int i = 0; i < orderSpecs.length; i++) {
+        for (int i = 0; i < orderSpecs.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
             }
-            builder.append(orderSpecs[i]);
+            builder.append(orderSpecs.get(i));
         }
         return builder.toString();
     }

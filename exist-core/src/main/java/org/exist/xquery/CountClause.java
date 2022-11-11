@@ -31,6 +31,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -119,7 +120,7 @@ public class CountClause extends AbstractFLWORClause {
         }
         return true;
     }
-    private boolean isDescending(final OrderSpec[] orderSpecs) {
+    private boolean isDescending(final List<OrderSpec> orderSpecs) {
         for (final OrderSpec orderSpec : orderSpecs) {
             if ((orderSpec.getModifiers() & OrderSpec.DESCENDING_ORDER) == OrderSpec.DESCENDING_ORDER) {
                 return true;
