@@ -1,0 +1,148 @@
+(:
+ : Copyright (C) 2014, Evolved Binary Ltd
+ :
+ : This file was originally ported from FusionDB to eXist-db by
+ : Evolved Binary, for the benefit of the eXist-db Open Source community.
+ : Only the ported code as it appears in this file, at the time that
+ : it was contributed to eXist-db, was re-licensed under The GNU
+ : Lesser General Public License v2.1 only for use in eXist-db.
+ :
+ : This license grant applies only to a snapshot of the code as it
+ : appeared when ported, it does not offer or infer any rights to either
+ : updates of this source code or access to the original source code.
+ :
+ : The GNU Lesser General Public License v2.1 only license follows.
+ :
+ : ---------------------------------------------------------------------
+ :
+ : Copyright (C) 2014, Evolved Binary Ltd
+ :
+ : This library is free software; you can redistribute it and/or
+ : modify it under the terms of the GNU Lesser General Public
+ : License as published by the Free Software Foundation; version 2.1.
+ :
+ : This library is distributed in the hope that it will be useful,
+ : but WITHOUT ANY WARRANTY; without even the implied warranty of
+ : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ : Lesser General Public License for more details.
+ :
+ : You should have received a copy of the GNU Lesser General Public
+ : License along with this library; if not, write to the Free Software
+ : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ :)
+xquery version "3.1";
+
+(:~
+ : Resource functions for testing XQSuite assertions.
+ : These are utilised from: xqsuite-assertions-inline.xqm,
+ : and xqsuite-assertions-dynamic.xqm.
+ :
+ : @author Adam Retter
+ :)
+module namespace xqtares = "http://exist-db.org/xquery/xqsuite/test/assertions/resources";
+
+declare namespace test = "http://exist-db.org/xquery/xqsuite";
+
+declare
+    %test:assertTrue
+function xqtares:assertTrue-assertion-when-true() {
+    fn:true()
+};
+
+declare
+    %test:assertTrue
+function xqtares:assertTrue-assertion-when-false() {
+    fn:false()
+};
+
+declare
+    %test:assertTrue
+function xqtares:assertTrue-assertion-when-error() {
+    fn:error(xs:QName("xqtares:error1"))
+};
+
+declare
+    %test:assertFalse
+function xqtares:assertFalse-assertion-when-true() {
+    fn:true()
+};
+
+declare
+    %test:assertFalse
+function xqtares:assertFalse-assertion-when-false() {
+    fn:false()
+};
+
+declare
+    %test:assertFalse
+function xqtares:assertFalse-assertion-when-error() {
+    fn:error(xs:QName("xqtares:error1"))
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-error() {
+    fn:error(xs:QName("xqtares:error1"))
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-unexpected-error() {
+    fn:error(xs:QName("xqtares:error2"))
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function xqtares:assertError-assertion-when-expected-error() {
+    (: Should raise XPTY0004, currently returns ("x","b","c","d") :)
+    array:put(["a", "b", "c", "d"], 1.5, "x")?*
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-different-error() {
+    (: Should raise XPTY0004, currently returns ("x","b","c","d") :)
+    array:put(["a", "b", "c", "d"], 1.5, "x")?*
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-true() {
+    fn:true()
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-false() {
+    fn:false()
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-empty() {
+    ()
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-non-empty() {
+    (<non-error/>, "non-error", 123)
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-element() {
+    <non-error/>
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-string() {
+    "non-error"
+};
+
+declare
+    %test:assertError("xqtares:error1")
+function xqtares:assertError-assertion-when-integer() {
+    xs:integer(123)
+};
