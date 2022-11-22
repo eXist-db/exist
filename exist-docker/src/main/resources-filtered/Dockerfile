@@ -55,7 +55,7 @@ COPY logs /exist/logs
 
 # Build-time metadata as defined at http://label-schema.org
 # and used by autobuilder @hooks/build
-LABEL org.label-schema.build-date=${build-tstamp} \
+LABEL org.label-schema.build-date=${maven.build.timestamp} \
       org.label-schema.description="${project.description}" \
       org.label-schema.name="existdb" \
       org.label-schema.schema-version="1.0" \
