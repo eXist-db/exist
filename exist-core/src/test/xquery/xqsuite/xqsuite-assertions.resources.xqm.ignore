@@ -94,14 +94,12 @@ function xqtares:assertError-assertion-when-unexpected-error() {
 declare
     %test:assertError("err:XPTY0004")
 function xqtares:assertError-assertion-when-expected-error() {
-    (: Should raise XPTY0004, currently returns ("x","b","c","d") :)
     array:put(["a", "b", "c", "d"], 1.5, "x")?*
 };
 
 declare
     %test:assertError("xqtares:error1")
 function xqtares:assertError-assertion-when-different-error() {
-    (: Should raise XPTY0004, currently returns ("x","b","c","d") :)
     array:put(["a", "b", "c", "d"], 1.5, "x")?*
 };
 

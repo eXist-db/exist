@@ -1018,7 +1018,7 @@ function arr:put_pos_zero() {
 };
 
 declare
-    %test:assertError("err:FORG0006")
+    %test:assertError("err:XPTY0004")
 function arr:put_pos_double() {
     array:put(["a", "b", "c", "d"], 1.5, "x")?*
 };
