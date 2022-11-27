@@ -317,7 +317,7 @@ public class Type {
     }
 
     static {
-        defineUnionType(NUMBER, new int[]{ INTEGER, DECIMAL, FLOAT, DOUBLE });
+        defineUnionType(NUMBER, new int[]{ DECIMAL, FLOAT, DOUBLE });
     }
 
     // https://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
