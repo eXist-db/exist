@@ -976,3 +976,16 @@ function mt:immutable-merge-duplicates-then-merge() {
             $expected ne $result($mt:test-key-one)
         )
 };
+
+(:~
+ : ensure that empty options map is allowed and behaves like
+ : map:merge#1
+ :)
+declare
+    %test:assertTrue
+function mt:map-merge-2-empty-options-map() {
+    let $maps := (mt:getMapFixture(), map { "Su": "Sunnuntai" })
+    let $expected := map:merge($maps)
+    let $actual := map:merge($maps, map {})
+    return $expected?Su eq $actual?Su
+};

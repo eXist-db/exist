@@ -250,8 +250,10 @@ public class MapFunction extends BasicFunction {
 
         final MergeDuplicates mergeDuplicates;
         if (args.length == 2) {
-            final Sequence mapValue = ((MapType) args[1]).get(new StringValue(this, "duplicates"));
-            if (mapValue != null) {
+            final MapType map = (MapType) args[1];
+            final StringValue key = new StringValue(this, "duplicates");
+            if (map.contains(key)) {
+                final Sequence mapValue = map.get(key);
                 mergeDuplicates = MergeDuplicates.fromDuplicatesValue(mapValue.getStringValue());
                 if (mergeDuplicates == null) {
                     throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
