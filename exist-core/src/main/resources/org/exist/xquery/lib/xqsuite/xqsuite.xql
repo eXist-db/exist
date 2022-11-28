@@ -740,9 +740,9 @@ declare %private function test:check-assertions($assertions as element(annotatio
     return
         switch ($assert)
             case "assertEquals" return
-                test:assertEquals($annotation/value/string(), $result)
+                test:assertEquals($annotation/value, $result)
             case "assertEqualsPermutation" return
-                test:assertEqualsPermutation($annotation/value/string(), $result)
+                test:assertEqualsPermutation($annotation/value, $result)
             case "assertEmpty" return
                 test:assertEmpty($result)
             case "assertExists" return
@@ -763,9 +763,9 @@ declare %private function test:check-assertions($assertions as element(annotatio
  : Check for equality of the function's result with the value in the annotation.
  : This function transforms the result to a string before checking for equality.
  :)
-declare %private function test:assertEquals($values as item()*, $result as item()*) as element(report)? {
-    if (exists($values)) then
-        if (count($values) eq count($result)) then
+declare %private function test:assertEquals($values as element(value)*, $result as item()*) as element(report)? {
+    if (fn:exists($values)) then
+        if (fn:count($values) eq fn:count($result)) then
             let $tests := fn:for-each-pair($values, $result, test:equals#2)
             let $equal := every $test in $tests satisfies $test
             return
@@ -775,15 +775,15 @@ declare %private function test:assertEquals($values as item()*, $result as item(
                    <report>
                         <failure message="assertEquals failed."
                             type="failure-error-code-1">
-                        { $values }
+                        { $values ! test:xdm-value-from-annotation-value(.) }
                         </failure>
                         <output>{ $result }</output>
                     </report>
         else
             <report>
-                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
+                <failure message="assertEquals failed: wrong number of items returned by function. Expected: {fn:count($values)}. Got: {fn:count($result)}"
                     type="failure-error-code-1">
-                { $values }
+                { $values ! test:xdm-value-from-annotation-value(.) }
                 </failure>
                 <output>{ $result }</output>
             </report>
@@ -795,9 +795,9 @@ declare %private function test:assertEquals($values as item()*, $result as item(
  : Check for equality of the function's result with the value in the annotation.
  : This function transforms the result to a string before checking for equality.
  :)
-declare %private function test:assertEqualsPermutation($values as item()*, $result as item()*) as element(report)? {
-    if (exists($values)) then
-        if (count($values) eq count($result)) then
+declare %private function test:assertEqualsPermutation($values as element(value)*, $result as item()*) as element(report)? {
+    if (fn:exists($values)) then
+        if (fn:count($values) eq fn:count($result)) then
             let $tests :=
                 for $item in $result
                 return
@@ -810,15 +810,15 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
                    <report>
                         <failure message="assertEqualsPermutation failed."
                             type="failure-error-code-1">
-                        { $values }
+                        { $values ! test:xdm-value-from-annotation-value(.) }
                         </failure>
                         <output>{ $result }</output>
                     </report>
         else
             <report>
-                <failure message="assertEqualsPermutation failed: wrong number of items returned by function. Expected: {count($values)}. Got: {count($result)}"
+                <failure message="assertEqualsPermutation failed: wrong number of items returned by function. Expected: {fn:count($values)}. Got: {fn:count($result)}"
                     type="failure-error-code-1">
-                { $values }
+                { $values ! test:xdm-value-from-annotation-value(.) }
                 </failure>
                 <output>{ $result }</output>
             </report>
@@ -826,13 +826,14 @@ declare %private function test:assertEqualsPermutation($values as item()*, $resu
         ()
 };
 
-declare %private function test:equals($value as item(), $result as item()) as xs:boolean {
+declare %private function test:equals($annotation-value as element(value), $result as item()) as xs:boolean {
     let $normResult :=
         typeswitch ($result)
             case node() return
                 test:normalize($result)
             default return
                 $result
+    let $value := test:xdm-value-from-annotation-value($annotation-value)
     let $normValue := test:cast-to-type($value, $result)
     return
         typeswitch ($normResult)
