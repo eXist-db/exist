@@ -82,8 +82,9 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public AbstractMapType merge(final Iterable<AbstractMapType> others, final BinaryOperator<Sequence> mergeFn) {
-        final MapType map = new MapType(context, collator, key, value);
-        return map.merge(others, mergeFn);
+        try (final MapType map = new MapType(context, collator, key, value)) {
+            return map.merge(others, mergeFn);
+        }
     }
 
     @Override
