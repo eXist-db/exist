@@ -57,6 +57,7 @@ declare variable $test:TEST_NAMESPACE := "http://exist-db.org/xquery/xqsuite";
 declare variable $test:UNKNOWN_ASSERTION := QName($test:TEST_NAMESPACE, "no-such-assertion");
 declare variable $test:WRONG_ARG_COUNT := QName($test:TEST_NAMESPACE, "wrong-number-of-arguments");
 declare variable $test:TYPE_ERROR := QName($test:TEST_NAMESPACE, "type-error");
+declare variable $test:UNKNOWN_ANNOTATION_VALUE_TYPE := QName($test:TEST_NAMESPACE, "unknown-annotation-value-type");
 
 (:~
  : Main entry point into the module. Takes a sequence of function items.
@@ -456,7 +457,7 @@ declare %private function test:get-assertions($meta as element(function), $first
 (:~
  : Collect %test:arg and %test:args for the current run.
  :)
-declare %private function test:get-run-args($firstArg as element(annotation)?) {
+declare %private function test:get-run-args($firstArg as element(annotation)?) as element(annotation)* {
     if ($firstArg) then
         let $nextBlock :=
             $firstArg/following-sibling::annotation[matches(@name, ":args?")]
@@ -481,7 +482,7 @@ declare %private function test:get-run-args($firstArg as element(annotation)?) {
 declare %private function test:call-test($func as function(*), $meta as element(function), $args as element(annotation)*) {
     let $funArgs :=
         if ($args[1]/@name = "test:args") then
-            test:map-arguments($args/value/string(), $meta/argument)
+            test:map-arguments($args/value, $meta/argument)
         else
             test:map-named-arguments($meta/argument, $args)
     return
@@ -511,12 +512,12 @@ declare %private function test:map-named-arguments($funcArgs as element(argument
             $mappedArgs
 };
 
-declare %private function test:map-named-argument($testArgs as element(value)*, $funcArg as element(argument)) {
+declare %private function test:map-named-argument($test-args as element(value)*, $func-arg as element(argument)) {
     let $data :=
         try {
-            test:cast($testArgs, $funcArg)
+            test:cast($test-args, $func-arg)
         } catch * {
-            error($test:TYPE_ERROR, "Failed to cast annotation arguments to required target type " || $funcArg/@type)
+            fn:error($test:TYPE_ERROR, "Failed to cast annotation arguments to required target type " || $func-arg/@type)
         }
     return
         (: If we need to return a sequence of values, enclose them into a closure function :)
@@ -526,47 +527,135 @@ declare %private function test:map-named-argument($testArgs as element(value)*, 
 (:~
  : For %args: transform each annotation parameter into the type required for the function parameter.
  :)
-declare %private function test:map-arguments($testArgs as xs:string*, $funcArgs as element(argument)*) {
-    if (exists($testArgs)) then
-        if (count($testArgs) != count($funcArgs)) then
-            error(
+declare %private function test:map-arguments($test-args as element(value)*, $func-args as element(argument)*) {
+    if (fn:not(fn:empty($test-args))) then
+        if (fn:count($test-args) ne fn:count($func-args)) then
+            fn:error(
                 $test:WRONG_ARG_COUNT,
                 "The number of arguments specified in test:args must match the arguments of the function to test"
             )
         else
-            fn:for-each-pair($testArgs, $funcArgs, function($targ as xs:string, $farg as element(argument)) {
-                let $data := test:cast($targ, $farg)
-                return
-                    function() { $data }
+            fn:for-each-pair($test-args, $func-args, function($targ as element(value), $farg as element(argument)) {
+                function() {
+                    test:cast($targ, $farg)
+                }
             })
     else
         ()
 };
 
-declare %private function test:cast($targs as xs:string*, $farg as element(argument)) {
+
+(:~
+ : Convert an annotation value into an XDM value.
+ :
+ : Annotation values can only be one of the following types: xs:string, xs:integer, xs:decimal or xs:double.
+ :
+ : @param $annotation-value the annotation value element as returned by util:inspect-function
+ :
+ : @return the atomic value of the annotation
+ :)
+declare %private function test:xdm-value-from-annotation-value($annotation-value as element(value)) {
+    switch ($annotation-value/string(@type))
+        case "xs:string"
+        return
+            xs:string($annotation-value/text())
+
+        case "xs:integer"
+        return
+            xs:integer($annotation-value/text())
+
+        case "xs:decimal"
+        return
+            xs:decimal($annotation-value/text())
+
+        case "xs:double"
+        return
+            xs:double($annotation-value/text())
+
+        default
+        return
+            fn:error(
+                $test:UNKNOWN_ANNOTATION_VALUE_TYPE,
+                "The annotation value has an unknown type"
+            )
+};
+
+declare %private function test:cast($targs as element(value)*, $farg as element(argument)) {
     for $targ in $targs
+    let $varg := test:xdm-value-from-annotation-value($targ)
     return
         switch (string($farg/@type))
-            case "xs:string" return
-                string($targ)
-            case "xs:integer" case "xs:int" return
-                xs:integer($targ)
-            case "xs:decimal" return
-                xs:decimal($targ)
-            case "xs:float" case "xs:double" return
-                xs:double($targ)
-            case "xs:date" return
-                xs:date($targ)
-            case "xs:dateTime" return
-                xs:dateTime($targ)
-            case "xs:time" return
-                xs:time($targ)
-            case "element()" return
-                parse-xml($targ)/*
-            case "text()" return
-                text { string($targ) }
-            default return
-                $targ
+            case "xs:string"
+            return
+                if ($varg instance of xs:string)
+                then
+                    $varg
+                else
+                    string($varg)
+
+            case "xs:integer"
+            return
+                if ($varg instance of xs:integer)
+                then
+                    $varg
+                else
+                    xs:integer($varg)
+
+            case "xs:int"
+            return
+                xs:int($varg)
+
+            case "xs:decimal"
+            return
+                if ($varg instance of xs:decimal)
+                then
+                    $varg
+                else
+                    xs:decimal($varg)
+
+            case "xs:float"
+            return
+                xs:float($varg)
+
+            case "xs:double"
+            return
+                if ($varg instance of xs:decimal)
+                then
+                    $varg
+                else
+                    xs:double($varg)
+
+            case "xs:date"
+            return
+                xs:date($varg)
+
+            case "xs:dateTimeStamp"
+            return
+                xs:dateTimeStamp($varg)
+
+            case "xs:dateTime"
+            return
+                xs:dateTime($varg)
+
+            case "xs:time"
+            return
+                xs:time($varg)
+
+            case "element()"
+            return
+                fn:parse-xml($varg)/element()
+
+            case "text()"
+            return
+                if ($varg instance of xs:string)
+                then
+                    text { $varg }
+                else
+                    text { xs:string($varg) }
+
+            default
+            return
+                $varg
 };
 
 declare function test:apply($func as function(*), $meta as element(function), $args as item()*) {
