@@ -125,9 +125,9 @@ public class InspectFunctionHelper {
     }
 
     private static void writeAnnotations(final FunctionSignature signature, final MemTreeBuilder builder) throws XPathException {
-        final AttributesImpl attribs = new AttributesImpl();
         final Annotation[] annots = signature.getAnnotations();
         if (annots != null) {
+            final AttributesImpl attribs = new AttributesImpl();
             for (final Annotation annot : annots) {
                 attribs.clear();
                 attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
@@ -136,7 +136,9 @@ public class InspectFunctionHelper {
                 final LiteralValue[] value = annot.getValue();
                 if (value != null) {
                     for (final LiteralValue literal : value) {
-                        builder.startElement(ANNOTATION_VALUE_QNAME, null);
+                        attribs.clear();
+                        attribs.addAttribute(null, "type", "type", "CDATA", Type.getTypeName(literal.returnsType()));
+                        builder.startElement(ANNOTATION_VALUE_QNAME, attribs);
                         builder.characters(literal.getValue().getStringValue());
                         builder.endElement();
                     }
