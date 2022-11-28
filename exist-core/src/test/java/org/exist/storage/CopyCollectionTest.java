@@ -367,10 +367,12 @@ public class CopyCollectionTest {
                 final Txn transaction = pool.getTransactionManager().beginTransaction();
                 final Collection srcCol = broker.openCollection(src, LockMode.READ_LOCK);
                 final Collection destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK)) {
-
+            Thread.sleep(10);
             broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment(), preserve);
 
             transaction.commit();
+        } catch (InterruptedException e) {
+            throw new EXistException(e);
         }
 
         // basic shallow check that copy of the collection is the same as the original
