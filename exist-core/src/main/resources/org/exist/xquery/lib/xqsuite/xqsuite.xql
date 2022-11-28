@@ -801,7 +801,7 @@ declare %private function test:assertEqualsPermutation($values as element(value)
             let $tests :=
                 for $item in $result
                 return
-                    some $value in $values satisfies test:equals($item, $value)
+                    some $value in $values satisfies test:equals($value, $item)
             let $equal := every $test in $tests satisfies $test
             return
                 if ($equal) then
