@@ -25,7 +25,7 @@ xquery version "3.1";
  : Test conditions for complex range configuration elements.
  :
  :)
-module namespace ct="http://exist-db.org/xquery/range/conditions/test";
+module namespace ct="http://exist-db.org/xquery/range/test/conditions";
 
 import module namespace range="http://exist-db.org/xquery/range" at "java:org.exist.xquery.modules.range.RangeIndexModule";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";

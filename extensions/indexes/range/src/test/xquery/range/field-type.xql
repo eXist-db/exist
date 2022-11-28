@@ -21,7 +21,7 @@
  :)
 xquery version "3.1";
 
-module namespace rt="http://exist-db.org/xquery/range/combined-range-function-signature/test";
+module namespace rt="http://exist-db.org/xquery/range/test/combined-range-function-signature";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
