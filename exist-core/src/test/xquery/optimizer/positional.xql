@@ -76,7 +76,7 @@ declare variable $ot:SIBLINGS :=
         </test>
     };
 
-declare function ot:generate-words($count as xs:int) {
+declare function ot:generate-words($count as xs:integer) {
     for $i in (1 to $count) return <w xml:id="{$i}">{$i}</w>
 };
 

@@ -164,7 +164,7 @@ function c:exercise-expireAfterAccess() {
             c:_destroy(),
             c:_create-expireAfterAccess(),
             c:_populate(5),
-            util:wait($c:expireAfterAccess * 1.1),
+            util:wait(xs:integer(fn:ceiling($c:expireAfterAccess * 1.1))),
             c:_cleanup()
         )
     return

@@ -114,7 +114,7 @@ public class ExampleModuleTest {
     public void add() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
                 "declare namespace myjmod = \"https://my-organisation.com/exist-db/ns/app/my-java-module\";\n" +
-                        "myjmod:add(123, 456)";
+                        "myjmod:add(xs:int(123), xs:int(456))";
         final Sequence result = executeQuery(query);
 
         assertTrue(result.hasOne());

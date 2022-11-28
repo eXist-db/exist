@@ -45,9 +45,9 @@ declare variable $arr:SERIALIZE_JSON_INDENT :=
 declare variable $arr:COLLECTION_CONF :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
-            <create qname="a" type="xs:int"/>
+            <create qname="a" type="xs:integer"/>
             <range>
-                <create qname="b" type="xs:int"/>
+                <create qname="b" type="xs:integer"/>
             </range>
         </index>
     </collection>;
@@ -85,7 +85,7 @@ declare
     %test:assertEquals(13)
     %test:args(3)
     %test:assertEquals(14)
-function arr:function-item($pos as xs:int) {
+function arr:function-item($pos as xs:integer) {
     [13, 10, 14]($pos)
 };
 
@@ -94,7 +94,7 @@ declare
     %test:assertEquals(13)
     %test:args(3)
     %test:assertEquals(14)
-function arr:function-item2($pos as xs:int) {
+function arr:function-item2($pos as xs:integer) {
     let $a := [13, 10, 14]
     return
         $a($pos)
@@ -105,9 +105,9 @@ declare
     %test:assertEquals(13)
     %test:args(3)
     %test:assertEquals(14)
-function arr:function-item3($pos as xs:int) {
+function arr:function-item3($pos as xs:integer) {
     let $a := [13, 10, 14]
-    let $f := function($array as function(*), $position as xs:int) {
+    let $f := function($array as function(*), $position as xs:integer) {
         $array($position)
     }
     return
@@ -192,7 +192,7 @@ declare
     %test:assertEmpty
     %test:args(2)
     %test:assertEquals(27, 17, 0)
-function arr:square-constructor1($pos as xs:int) {
+function arr:square-constructor1($pos as xs:integer) {
     let $a := [(), (27, 17, 0)]
     return $a($pos)
 };
@@ -202,7 +202,7 @@ declare
     %test:assertEquals("<p>test</p>")
     %test:args(2)
     %test:assertEquals(55)
-function arr:square-constructor2($pos as xs:int) {
+function arr:square-constructor2($pos as xs:integer) {
     let $a := [<p>test</p>, 55]
     return $a($pos)
 };
@@ -219,7 +219,7 @@ declare
     %test:assertEquals(27)
     %test:args(2)
     %test:assertEquals(17)
-function arr:curly-constructor1($pos as xs:int) {
+function arr:curly-constructor1($pos as xs:integer) {
     let $x := (27, 17, 0)
     let $a := array { $x }
     return $a($pos)
@@ -230,7 +230,7 @@ declare
     %test:assertEquals(27)
     %test:args(2)
     %test:assertEquals(17)
-function arr:curly-constructor2($pos as xs:int) {
+function arr:curly-constructor2($pos as xs:integer) {
     let $a := array { (), (27, 17, 0) }
     return $a($pos)
 };
@@ -359,7 +359,7 @@ declare
     %test:assertEquals("b", "c", "d")
     %test:args(5)
     %test:assertEmpty
-function arr:subarray1($start as xs:int) {
+function arr:subarray1($start as xs:integer) {
     let $a := array:subarray(["a", "b", "c", "d"], $start)
     return
         $a?*
@@ -384,7 +384,7 @@ declare
     %test:assertError("FOAY0001")
     %test:args(1, "-1")
     %test:assertError("FOAY0002")
-function arr:subarray2($start as xs:int, $length as xs:int) {
+function arr:subarray2($start as xs:integer, $length as xs:integer) {
     let $a := array:subarray(["a", "b", "c", "d"], $start, $length)
     return
         $a?*
@@ -401,7 +401,7 @@ declare
     %test:assertError("FOAY0001")
     %test:args(5)
     %test:assertError("FOAY0001")
-function arr:remove1($pos as xs:int) {
+function arr:remove1($pos as xs:integer) {
     array:remove(["a", "b", "c", "d"], $pos)?*
 };
 
@@ -656,7 +656,7 @@ function arr:array-type1() {
 declare
     %test:assertEquals("<t>test</t>")
 function arr:apply-inline() {
-    let $fn := function($a as xs:string, $b as xs:int, $c as element()) {
+    let $fn := function($a as xs:string, $b as xs:integer, $c as element()) {
         $c
     }
     return
@@ -858,7 +858,7 @@ declare
     %test:assertTrue
     %test:args(7)
     %test:assertFalse
-function arr:general-comparison1($val as xs:int) {
+function arr:general-comparison1($val as xs:integer) {
     [1, 2, 3, [5, 6]] = $val
 };
 

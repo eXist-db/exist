@@ -251,10 +251,10 @@ function fd:grouping-fraction($number as xs:double, $picture) {
 };
 
 declare
-    %test:args("12345.6")
+    %test:args(12345.6)
     %test:args("#,###.##")
     %test:assertEquals("12,345.6")
-function fd:simple-number-1($number as numeric, $picture) {
+function fd:simple-number-1($number as xs:numeric, $picture) {
     format-number($number, $picture)
 };
 
@@ -262,7 +262,7 @@ declare
     %test:args(87504.4812)
     %test:args("000,000.000000")
     %test:assertEquals("087,504.481200")
-function fd:simple-number-2($number, $picture) {
+function fd:simple-number-2($number as xs:numeric, $picture) {
     format-number($number, $picture)
 };
 
@@ -270,7 +270,7 @@ declare
     %test:args(12345.6)
     %test:args("#.###,##")
     %test:assertEquals("12345.6")
-function fd:simple-number-3($number as numeric, $picture) {
+function fd:simple-number-3($number as xs:numeric, $picture) {
     format-number($number, $picture)
 };
 

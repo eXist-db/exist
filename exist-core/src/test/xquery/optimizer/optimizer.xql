@@ -353,7 +353,7 @@ declare
     %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 0]")
     %test:args(3, "Rudi Rüssel")
     %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 2]")
-function ot:optimize-switch($case as xs:int, $name as xs:string) {
+function ot:optimize-switch($case as xs:integer, $name as xs:string) {
     switch($case)
         case 1 return
             collection($ot:COLLECTION)//address[name = $name]/city/text()
