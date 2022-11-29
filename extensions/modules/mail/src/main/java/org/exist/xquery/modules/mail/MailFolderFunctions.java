@@ -63,7 +63,7 @@ public class MailFolderFunctions extends BasicFunction
 			"Opens a mail folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" ),
+				new FunctionParameterSequenceType( "mail-store-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" ),
 				new FunctionParameterSequenceType( "foldername", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the folder to open" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the folder handle." )
@@ -74,7 +74,7 @@ public class MailFolderFunctions extends BasicFunction
 			"Closes a mail folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
 				new FunctionParameterSequenceType( "expunge", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "A boolean that specifies whether to expunge the folder on close." )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
@@ -128,7 +128,7 @@ public class MailFolderFunctions extends BasicFunction
 		
 		// save the folder and return the handle of the folder
 			
-		return( new IntegerValue( this, MailModule.storeFolder( context, folder ) ) );
+		return( new IntegerValue( this, MailModule.storeFolder( context, folder ), Type.LONG ) );
 	}
 	
 	private Sequence closeMailFolder( Sequence[] args, Sequence contextSequence ) throws XPathException

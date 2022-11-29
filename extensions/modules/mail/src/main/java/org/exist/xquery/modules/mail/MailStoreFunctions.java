@@ -62,7 +62,7 @@ public class MailStoreFunctions extends BasicFunction
 			"Opens a mail store. Host/User/Password/Protocol values will be obtained from the session.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The JavaMail session handle retrieved from mail:get-mail-session()" )
+				new FunctionParameterSequenceType( "mail-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The JavaMail session handle retrieved from mail:get-mail-session()" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the store handle." )
 			),
@@ -72,7 +72,7 @@ public class MailStoreFunctions extends BasicFunction
 			"Closes a mail store.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-store-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" )
+				new FunctionParameterSequenceType( "mail-store-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The mail store handle retrieved from mail:get-mail-store()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 			)
@@ -128,7 +128,7 @@ public class MailStoreFunctions extends BasicFunction
 		
 		// save the store and return the handle of the store
 			
-		return( new IntegerValue( this, MailModule.storeStore( context, store ) ) );
+		return( new IntegerValue( this, MailModule.storeStore( context, store ), Type.LONG ) );
 	}
 
 	private Sequence closeMailStore( Sequence[] args, Sequence contextSequence ) throws XPathException

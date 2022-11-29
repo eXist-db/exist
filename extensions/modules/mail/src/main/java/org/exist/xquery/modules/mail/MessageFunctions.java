@@ -72,7 +72,7 @@ public class MessageFunctions extends BasicFunction {
                     new SequenceType[]
                             {
 
-                                    new FunctionParameterSequenceType("message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()"),
+                                    new FunctionParameterSequenceType("message-list-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()"),
                                     new FunctionParameterSequenceType("message-numbers", Type.INTEGER, Cardinality.ZERO_OR_MORE, "The messages to retrieve using the numbers from the message-list '//mail:message/@number' ")
 
                             },
