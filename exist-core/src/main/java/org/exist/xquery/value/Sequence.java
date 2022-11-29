@@ -29,6 +29,7 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
@@ -362,23 +363,23 @@ public interface Sequence {
     void destroy(final XQueryContext context, @Nullable final Sequence contextSequence);
 
     static Sequence of(@Nullable final XmldbURI... uris) throws XPathException {
-        if (uris == null || uris.length == 0 || (uris.length == 1 && uris[0] == null)) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-        return ValueSequence.of(FunctionE.<XmldbURI, Item, XPathException>lift(thing -> new StringValue(thing.toString())), uris);
+        final FunctionE liftedMapper = FunctionE.<XmldbURI, Item, XPathException>lift(
+                thing -> new StringValue(thing.toString()));
+        return of(liftedMapper, uris);
     }
 
     static Sequence of(@Nullable final Integer... ints) throws XPathException {
-        if (ints == null || ints.length == 0 || (ints.length == 1 && ints[0] == null)) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-        return ValueSequence.of(thing -> new IntegerValue(thing, Type.INT), ints);
+        return of(thing -> new IntegerValue(thing, Type.INT), ints);
     }
 
     static Sequence of(@Nullable final BigInteger... bigIntegers) throws XPathException {
-        if (bigIntegers == null || bigIntegers.length == 0 || (bigIntegers.length == 1 && bigIntegers[0] == null)) {
+        return of(thing -> new IntegerValue(thing.toString(), Type.INTEGER), bigIntegers);
+    }
+
+    static <T> Sequence of(final FunctionE<T, Item, XPathException> mapper, @Nullable final T... things) throws XPathException {
+        if (things == null || things.length == 0 || (things.length == 1 && things[0] == null)) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        return ValueSequence.of(thing -> new IntegerValue(thing.toString(), Type.INTEGER), bigIntegers);
+        return ValueSequence.of(mapper, things);
     }
 }
