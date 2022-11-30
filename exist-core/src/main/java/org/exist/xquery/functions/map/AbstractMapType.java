@@ -31,6 +31,7 @@ import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 /**
  * Abstract base class for map types. A map item is also a function item. This class thus extends
@@ -70,11 +71,11 @@ public abstract class AbstractMapType extends FunctionReference
 
     protected XQueryContext context;
 
-    protected AbstractMapType(XQueryContext context) {
+    protected AbstractMapType(final XQueryContext context) {
         this(null, context);
     }
 
-    protected AbstractMapType(final Expression expression, XQueryContext context) {
+    protected AbstractMapType(final Expression expression, final XQueryContext context) {
         super(expression, null);
         this.context = context;
     }
@@ -85,12 +86,15 @@ public abstract class AbstractMapType extends FunctionReference
 
     public abstract AbstractMapType merge(Iterable<AbstractMapType> others);
 
+    public abstract AbstractMapType merge(Iterable<AbstractMapType> others, BinaryOperator<Sequence> mergeFn);
+
     public abstract boolean contains(AtomicValue key);
 
     public abstract Sequence keys();
 
     public abstract AbstractMapType remove(AtomicValue[] keysAtomicValues) throws XPathException;
 
+    @SuppressWarnings("unused")
     public abstract int getKeyType();
 
     public abstract int size();
@@ -106,12 +110,12 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         getAccessorFunc().analyze(contextInfo);
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence contextSequence) throws XPathException {
         return getAccessorFunc().eval(contextSequence);
     }
 
@@ -127,12 +131,12 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
-    public void setArguments(List<Expression> arguments) throws XPathException {
+    public void setArguments(final List<Expression> arguments) throws XPathException {
         getAccessorFunc().setArguments(arguments);
     }
 
     @Override
-    public void resetState(boolean postOptimization) {
+    public void resetState(final boolean postOptimization) {
         getAccessorFunc().resetState(postOptimization);
     }
 
