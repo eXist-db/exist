@@ -368,9 +368,13 @@ public class CopyCollectionTest {
                 final Collection srcCol = broker.openCollection(src, LockMode.READ_LOCK);
                 final Collection destCol = broker.openCollection(dest.removeLastSegment(), LockMode.WRITE_LOCK)) {
 
+            // Wait a moment to ensure both resources have a different timestamp.
+            Thread.sleep(10);
             broker.copyCollection(transaction, srcCol, destCol, dest.lastSegment(), preserve);
 
             transaction.commit();
+        } catch (InterruptedException e) {
+            throw new EXistException(e);
         }
 
         // basic shallow check that copy of the collection is the same as the original
