@@ -168,9 +168,9 @@ public class AnalyzerConfig {
             // Classname is defined.
 
             // Probe class
-            Class<?> clazz = null;
+            final Class<?> untypedClazz;
             try {
-                clazz = Class.forName(className);
+                untypedClazz = Class.forName(className);
 
             } catch (ClassNotFoundException e) {
                 LOG.error(String.format("Lucene index: analyzer class %s not found. (%s)", className, e.getMessage()));
@@ -178,10 +178,12 @@ public class AnalyzerConfig {
             }
 
             // CHeck if class is an Analyzer
-            if (!Analyzer.class.isAssignableFrom(clazz)) {
+            if (!Analyzer.class.isAssignableFrom(untypedClazz)) {
                 LOG.error(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
                 return null;
             }
+
+            final Class<? extends Analyzer> clazz = (Class<? extends Analyzer>) untypedClazz;
 
             // Get list of parameters
             List<KeyTypedValue<?>> cParams;
@@ -216,7 +218,7 @@ public class AnalyzerConfig {
                 newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
 
             } else {
-                // Either no parameters have been provided or more than one parameter
+                // Either no parameters have been provided, or more than one parameter
 
                 // Extend arrays with (default) Version object info, add to front.
                 Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
@@ -252,7 +254,7 @@ public class AnalyzerConfig {
      * @param warnOnError true if an error should be treated as a warning
      * @return The lucene analyzer
      */
-    private static Analyzer createInstance(final Class<?> clazz, final Class<?>[] vcParamClasses,
+    static <T extends Analyzer> T createInstance(final Class<T> clazz, final Class<?>[] vcParamClasses,
         final Object[] vcParamValues, final boolean warnOnError) {
 
         final String className = clazz.getName();
@@ -267,7 +269,7 @@ public class AnalyzerConfig {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Using analyzer %s", className));
             }
-            return (Analyzer)methodHandle.invokeWithArguments(vcParamValues);
+            return (T) methodHandle.invokeWithArguments(vcParamValues);
         } catch (final NoSuchMethodException e) {
             final String message = String.format("Could not find matching analyzer class constructor %s: %s", className, e.getMessage());
             if (warnOnError) {
@@ -318,7 +320,7 @@ public class AnalyzerConfig {
      * @return List of triples key-value-valueType
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
-    private static List<KeyTypedValue<?>> getAllConstructorParameters(Element config) throws ParameterException {
+    static List<KeyTypedValue<?>> getAllConstructorParameters(Element config) throws ParameterException {
         final List<KeyTypedValue<?>> parameters = new ArrayList<>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
@@ -455,29 +457,43 @@ public class AnalyzerConfig {
                 }
 
                 case "java.lang.Integer":
-                case "int":
-
                     if (value == null) {
                         throw new ParameterException("The 'value' attribute must exist and must contain an integer value.");
                     }
-
                     try {
                         final Integer n = Integer.parseInt(value);
                         parameter = new KeyTypedValue<>(name, n, Integer.class);
-                    } catch (NumberFormatException ex) {
+                    } catch (final NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
                     }
                     break;
 
-                case "java.lang.Boolean":
-                case "boolean":
+                case "int":
+                    if (value == null) {
+                        throw new ParameterException("The 'value' attribute must exist and must contain an int value.");
+                    }
+                    try {
+                        final Integer n = Integer.parseInt(value);
+                        parameter = new KeyTypedValue<>(name, n.intValue(), int.class);
+                    } catch (final NumberFormatException ex) {
+                        LOG.error(String.format("Value %s could not be converted to an int. %s", value, ex.getMessage()));
+                    }
+                    break;
 
+                case "java.lang.Boolean":
+                    if (value == null) {
+                        throw new ParameterException("The 'value' attribute must exist and must contain a Boolean value.");
+                    }
+                    final Boolean b1 = Boolean.parseBoolean(value);
+                    parameter = new KeyTypedValue<>(name, b1, Boolean.class);
+                    break;
+
+                case "boolean":
                     if (value == null) {
                         throw new ParameterException("The 'value' attribute must exist and must contain a boolean value.");
                     }
-
-                    final boolean b = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue<>(name, b, boolean.class);
+                    final Boolean b2 = Boolean.parseBoolean(value);
+                    parameter = new KeyTypedValue<>(name, b2.booleanValue(), boolean.class);
                     break;
 
                 default:
