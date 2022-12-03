@@ -223,14 +223,19 @@ public class ModuleInfo extends BasicFunction {
 		} else {
 			final ValueSequence resultSeq = new ValueSequence();
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-			for(final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-				final Module module = i.next();
-				resultSeq.add(new StringValue(this, module.getNamespaceURI()));
-			}
-			if (tempContext.getRepository().isPresent()) {
-			    for (final URI uri : tempContext.getRepository().get().getJavaModules()) {
-				resultSeq.add(new StringValue(this, uri.toString()));
-			    }
+			try {
+				for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
+					final Module module = i.next();
+					resultSeq.add(new StringValue(this, module.getNamespaceURI()));
+				}
+				if (tempContext.getRepository().isPresent()) {
+					for (final URI uri : tempContext.getRepository().get().getJavaModules()) {
+						resultSeq.add(new StringValue(this, uri.toString()));
+					}
+				}
+			} finally {
+				tempContext.reset();
+				tempContext.runCleanupTasks();
 			}
 			return resultSeq;
 		}

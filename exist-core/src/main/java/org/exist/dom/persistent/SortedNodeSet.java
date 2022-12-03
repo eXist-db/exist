@@ -288,6 +288,9 @@ public class SortedNodeSet extends AbstractNodeSet {
                 value = buf.toString();
             } catch(final XPathException e) {
                 LOG.warn(e.getMessage(), e); //TODO : throw exception ! -pb
+            } finally {
+                expr.getContext().runCleanupTasks();
+                expr.getContext().reset();
             }
         }
 

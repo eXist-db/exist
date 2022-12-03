@@ -79,69 +79,73 @@ public class ModuleFunctions extends BasicFunction {
         final ValueSequence list = new ValueSequence();
         if (getArgumentCount() == 1) {
             final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool(), context.getProfiler());
-            tempContext.setModuleLoadPath(context.getModuleLoadPath());
-            tempContext.prepareForExecution();
-
-            final AnyURIValue uri = ((AnyURIValue) args[0].itemAt(0));
-
-            if (isCalledAs(FS_MODULE_FUNCTIONS_NAME)) {
-                try {
-                    final URI locationUri = uri.toURI();
-                    final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
-                    if (source != null) {
-                        tempContext.setSource(source);
-                    }
-                } catch (final IOException | PermissionDeniedException e) {
-                    throw new XPathException(this, ErrorCodes.XQST0059, e.getMessage());
-                }
-            }
-
-            // attempt to import the module
-            Module[] modules = null;
             try {
-                modules = tempContext.importModule(null, null, new AnyURIValue[]{ uri });
-            } catch (final XPathException e) {
-                /*
-                    Error Codes from Context#importModule can be either:
-                        XPST0003 - XPath/XQuery syntax error
-                        XQST0033 - namespace issue: multiple bindings for the same namespace prefix
-                        XQST0046 - namespace issue: invalid URI
-                        XQST0059 - no module with that target namespace
-                        XQST0070 - namespace issue: URI is bound to XML's namespace
-                        XQST0088 - namespace issue: import namespace URI or module declaration namespace URI is zero-length
-                        ERROR - other exceptional/undefined circumstance
+                tempContext.setModuleLoadPath(context.getModuleLoadPath());
+                tempContext.prepareForExecution();
 
-                    According to the description of the functions for this module, of a module cannot be found at the namespace/URI
-                    then an empty sequence is returned, therefore we can ignore error code XQST0059!
-                 */
+                final AnyURIValue uri = ((AnyURIValue) args[0].itemAt(0));
 
-                if (e.getErrorCode().equals(ErrorCodes.XQST0059)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Failed to import module: {}: {}", args[0].getStringValue(), e.getMessage(), e);
+                if (isCalledAs(FS_MODULE_FUNCTIONS_NAME)) {
+                    try {
+                        final URI locationUri = uri.toURI();
+                        final Source source = SourceFactory.getSource(context.getBroker(), tempContext.getModuleLoadPath(), locationUri.toString(), false);
+                        if (source != null) {
+                            tempContext.setSource(source);
+                        }
+                    } catch (final IOException | PermissionDeniedException e) {
+                        throw new XPathException(this, ErrorCodes.XQST0059, e.getMessage());
                     }
-                    modules = null;
-
-                } else {
-                    if (e.getLine() < 1) {
-                        e.setLocation(this.getLine(), this.getColumn(), this.getSource());
-                    }
-                    throw e;
                 }
-            }
 
-            if (modules == null || modules.length == 0) {
-                return Sequence.EMPTY_SEQUENCE;
-            }
+                // attempt to import the module
+                Module[] modules = null;
+                try {
+                    modules = tempContext.importModule(null, null, new AnyURIValue[]{ uri });
+                } catch (final XPathException e) {
+                    /*
+                        Error Codes from Context#importModule can be either:
+                            XPST0003 - XPath/XQuery syntax error
+                            XQST0033 - namespace issue: multiple bindings for the same namespace prefix
+                            XQST0046 - namespace issue: invalid URI
+                            XQST0059 - no module with that target namespace
+                            XQST0070 - namespace issue: URI is bound to XML's namespace
+                            XQST0088 - namespace issue: import namespace URI or module declaration namespace URI is zero-length
+                            ERROR - other exceptional/undefined circumstance
 
-            // there can be only one!
-            final Module module = modules[0];
+                        According to the description of the functions for this module, of a module cannot be found at the namespace/URI
+                        then an empty sequence is returned, therefore we can ignore error code XQST0059!
+                     */
 
-            if (!module.isInternalModule()) {
-                // ensure variable declarations in the imported module are analyzed.
-                // unlike when using a normal import statement, this is not done automatically
-                ((ExternalModule)module).analyzeGlobalVars();
+                    if (e.getErrorCode().equals(ErrorCodes.XQST0059)) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Failed to import module: {}: {}", args[0].getStringValue(), e.getMessage(), e);
+                        }
+                        modules = null;
+
+                    } else {
+                        if (e.getLine() < 1) {
+                            e.setLocation(this.getLine(), this.getColumn(), this.getSource());
+                        }
+                        throw e;
+                    }
+                }
+
+                if (modules == null || modules.length == 0) {
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+
+                // there can be only one!
+                final Module module = modules[0];
+
+                if (!module.isInternalModule()) {
+                    // ensure variable declarations in the imported module are analyzed.
+                    // unlike when using a normal import statement, this is not done automatically
+                    ((ExternalModule)module).analyzeGlobalVars();
+                }
+                LoadXQueryModule.addFunctionRefsFromModule(this, tempContext, list, module);
+            } finally {
+                context.addImportedContext(tempContext);
             }
-            LoadXQueryModule.addFunctionRefsFromModule(this, tempContext, list, module);
         } else {
             addFunctionRefsFromContext(list);
         }

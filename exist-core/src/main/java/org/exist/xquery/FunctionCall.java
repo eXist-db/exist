@@ -329,7 +329,7 @@ public class FunctionCall extends Function {
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        if(expression.needsReset() || postOptimization) {
+        if(expression != null && (expression.needsReset() || postOptimization)) {
             expression.resetState(postOptimization);
         }
     }

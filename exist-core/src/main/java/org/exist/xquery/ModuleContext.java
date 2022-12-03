@@ -485,6 +485,11 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
+    public void addImportedContext(final XQueryContext importedContext) {
+        parentContext.addImportedContext(importedContext);
+    }
+
+    @Override
     public void registerUpdateListener(final UpdateListener listener) {
         parentContext.registerUpdateListener(listener);
     }

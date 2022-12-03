@@ -786,8 +786,10 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		} catch (final XPathException e) {
 			throw new SAXException(e);
 		} finally {
-            if (context != null)
-                {context.reset(false);}
+            if (context != null) {
+				context.reset(false);
+				context.runCleanupTasks();
+			}
         }
 	}
 

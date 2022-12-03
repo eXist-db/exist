@@ -481,11 +481,23 @@ public class XQuery {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         final CompiledXQuery compiled = compile(context, expression);
         return execute(broker, compiled, contextSequence);
+        // NOTE(AR) we might consider the below cleanup, but what if a binary value is needed from the result sequence?
+//        try {
+//            return execute(broker, compiled, contextSequence);
+//        } finally {
+//            context.runCleanupTasks();
+//        }
     }
 	
     public Sequence execute(final DBBroker broker, File file, Sequence contextSequence) throws XPathException, IOException, PermissionDeniedException {
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         final CompiledXQuery compiled = compile(context, new FileSource(file.toPath(), true));
         return execute(broker, compiled, contextSequence);
+        // NOTE(AR) we might consider the below cleanup, but what if a binary value is needed from the result sequence?
+//        try {
+//            return execute(broker, compiled, contextSequence);
+//        } finally {
+//            context.runCleanupTasks();
+//        }
     }
 }

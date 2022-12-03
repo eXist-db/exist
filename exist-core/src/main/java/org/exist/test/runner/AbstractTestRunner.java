@@ -73,8 +73,8 @@ public abstract class AbstractTestRunner extends Runner {
             final XQueryPool queryPool = brokerPool.getXQueryPool();
             CompiledXQuery compiledQuery = queryPool.borrowCompiledXQuery(broker, query);
 
+            XQueryContext context = null;
             try {
-                XQueryContext context;
                 if (compiledQuery == null) {
                     context = new XQueryContext(broker.getBrokerPool());
                 } else {
@@ -112,6 +112,10 @@ public abstract class AbstractTestRunner extends Runner {
                 return xqueryService.execute(broker, compiledQuery, null);
 
             } finally {
+                if (context != null) {
+                    context.runCleanupTasks();
+                }
+
                 queryPool.returnCompiledXQuery(query, compiledQuery);
             }
         }

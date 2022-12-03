@@ -142,6 +142,7 @@ public class SMEvents implements Configurable {
             		pm.queryCompleted(context.getWatchDog());
             	}
             	compiled.reset();
+				context.runCleanupTasks();
         		context.reset();
             }
             

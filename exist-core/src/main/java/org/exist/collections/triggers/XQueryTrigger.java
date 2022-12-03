@@ -257,6 +257,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         } catch (final XPathException | PermissionDeniedException e) {
 			TriggerStatePerThread.clear();
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
+        } finally {
+        	context.runCleanupTasks();
         }
     }
     
@@ -299,6 +301,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         } catch (final PermissionDeniedException e) {
         	//Should never be reached
         	LOG.error(e);
+        } finally {
+        	context.runCleanupTasks();
         }
 
 		TriggerStatePerThread.clearIfFinished(TriggerPhase.AFTER);
@@ -455,6 +459,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
     		compiledQuery.reset();
+        	context.runCleanupTasks();
         }
 
 		TriggerStatePerThread.clearIfFinished(phase);

@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -427,6 +428,26 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
     private Optional<ExistRepository> testRepository = Optional.empty();
+
+    /**
+     * Holds a list of any new XQuery Contexts that
+     * were created by the XQuery (owning this XQuery Context)
+     * dynamically importing, compiling, and/or evaluating modules.
+     *
+     * NOTE(AR) - This is needed to ensure that these "imported contexts" are
+     * also correctly reset and cleaned up when this XQuery is finished.
+     */
+    private Set<XQueryContext> importedContexts = null;
+
+    /**
+     * Holds a list of the {@link #runCleanupTasks(Predicate)} functions
+     * of the {@link #importedContexts}.
+     *
+     * NOTE(AR) - This is needed to ensure that these the user call
+     * {@link #reset()} or {@link #runCleanupTasks(Predicate)}
+     * in any order.
+     */
+    private List<Consumer<Predicate<Object>>> importedContextsCleanupTasksFns = null;
 
     public XQueryContext() {
         this(null, null, null);
@@ -1409,6 +1430,13 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void reset(final boolean keepGlobals) {
+        if (importedContexts != null) {
+            for (final XQueryContext importedContext : importedContexts) {
+                importedContext.reset(keepGlobals);
+            }
+            importedContexts = null;
+        }
+
         setRealUser(null);
 
         if (this.pushedUserFromHttpSession) {
@@ -2848,6 +2876,25 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
+     * Add a reference to an additional XQuery Context that
+     * was created by the XQuery (owning this XQuery Context)
+     * dynamically importing, compiling, and/or evaluating modules.
+     *
+     * NOTE(AR) - This is needed to ensure that these "imported contexts" are
+     * also correctly reset and cleaned up when this XQuery is finished.
+     *
+     * @param importedContext the dynamically created content for importing a module.
+     */
+    public void addImportedContext(final XQueryContext importedContext) {
+        if (importedContexts == null) {
+            importedContexts = new HashSet<>();
+            importedContextsCleanupTasksFns = new ArrayList<>();
+        }
+        importedContexts.add(importedContext);
+        importedContextsCleanupTasksFns.add(importedContext::runCleanupTasks);
+    }
+
+    /**
      * Save state
      */
     private class SavedState {
@@ -3186,8 +3233,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (updateListener != null) {
             final DBBroker broker = getBroker();
             broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
+            updateListener = null;
         }
-        updateListener = null;
     }
 
     @Override
@@ -3396,7 +3443,7 @@ public class XQueryContext implements BinaryValueManager, Context {
          *
          * The AtomicReference enables us to quickly clear the listeners
          * in #unsubscribe() and maintain happens-before integrity whilst
-         * unsubcribing them. The CopyOnWriteArrayList allows
+         * unsubscribing them. The CopyOnWriteArrayList allows
          * us to add listeners whilst iterating over a snapshot
          * of existing iterators in other methods.
          */
@@ -3414,7 +3461,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         @Override
         public void unsubscribe() {
             List<UpdateListener> prev = listeners.get();
-            while (!listeners.compareAndSet(prev, new CopyOnWriteArrayList<>())) {
+            final List<UpdateListener> next = new CopyOnWriteArrayList<>();
+            while (!listeners.compareAndSet(prev, next)) {
                 prev = listeners.get();
             }
 
@@ -3448,6 +3496,13 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void runCleanupTasks(final Predicate<Object> predicate) {
+        if (importedContextsCleanupTasksFns != null) {
+            for (final Consumer<Predicate<Object>> importedContextsCleanupTasksFn : importedContextsCleanupTasksFns) {
+                importedContextsCleanupTasksFn.accept(predicate);
+            }
+            importedContextsCleanupTasksFns = null;
+        }
+
         for (final CleanupTask cleanupTask : cleanupTasks) {
             try {
                 cleanupTask.cleanup(this, predicate);
