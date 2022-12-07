@@ -48,7 +48,7 @@ public class RedirectTo extends StrictResponseFunction {
 		new FunctionSignature(
 			new QName("redirect-to", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
 			"Sends a HTTP redirect response (302) to the client.",
-			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
+			new SequenceType[] { new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.EXACTLY_ONE, "The URI to redirect the client to") },
 			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
 
     public RedirectTo(final XQueryContext context)
