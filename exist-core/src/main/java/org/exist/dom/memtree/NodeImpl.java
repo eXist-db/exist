@@ -21,8 +21,8 @@
  */
 package org.exist.dom.memtree;
 
-import org.apache.xml.utils.XML11Char;
-import org.apache.xml.utils.XMLChar;
+import org.apache.xerces.util.XML11Char;
+import org.apache.xerces.util.XMLChar;
 import org.exist.collections.Collection;
 import org.exist.dom.INode;
 import org.exist.dom.NodeListImpl;

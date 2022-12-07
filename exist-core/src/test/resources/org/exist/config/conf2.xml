@@ -73,8 +73,10 @@
     
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" enable-xsl="no" indent="yes" match-tagging-attributes="no" match-tagging-elements="no"/>
 
-    
-    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl"/>
+
+    <transformer class="net.sf.saxon.TransformerFactoryImpl" caching="yes">
+        <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+    </transformer>
 
     
     <validation mode="auto">

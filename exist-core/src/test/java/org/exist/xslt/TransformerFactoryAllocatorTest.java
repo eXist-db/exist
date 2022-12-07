@@ -48,8 +48,7 @@ public class TransformerFactoryAllocatorTest {
     @Parameters(name = "{0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { "net.sf.saxon.TransformerFactoryImpl" },
-            { "org.apache.xalan.processor.TransformerFactoryImpl" }
+            { "net.sf.saxon.TransformerFactoryImpl" }
         });
     }
 

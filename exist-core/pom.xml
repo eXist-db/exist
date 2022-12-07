@@ -386,24 +386,6 @@
         </dependency>
 
         <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>${xalan.version}</version> <!-- needed at compile time for various dependencies -->
-            <exclusions>
-                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>serializer</artifactId>
-            <version>${xalan.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
         </dependency>
@@ -1041,7 +1023,6 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jcl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>xalan:serializer:jar:${xalan.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
