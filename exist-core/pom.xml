@@ -391,6 +391,13 @@
             <artifactId>jetty-jaas</artifactId>
             <version>${jetty.version}</version>
             <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- conflicts with antlr 2.7.7 -->
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.antlr</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
