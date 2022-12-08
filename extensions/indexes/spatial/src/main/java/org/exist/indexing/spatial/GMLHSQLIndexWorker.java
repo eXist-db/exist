@@ -45,8 +45,8 @@ import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.ValueSequence;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryValueType;
