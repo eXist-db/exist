@@ -103,7 +103,7 @@
         <ant.version>1.10.12</ant.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
-        <apache.xmlrpc.version>4.0.0</apache.xmlrpc.version>
+        <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
         <appassembler.version>2.1.0</appassembler.version>
         <aspectj.version>1.9.8.M1</aspectj.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
