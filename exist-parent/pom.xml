@@ -761,7 +761,7 @@
                     </dependencies>
                     <configuration>
                         <forkCount>2C</forkCount>
-                        <!--  Setting `reuseForks` to `true` greatly speeds up execution of the the test suite.
+                        <!--  Setting `reuseForks` to `true` greatly speeds up execution of the test suite.
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>

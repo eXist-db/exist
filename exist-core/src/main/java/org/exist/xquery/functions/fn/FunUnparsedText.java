@@ -31,6 +31,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -78,14 +79,15 @@ public class FunUnparsedText extends BasicFunction {
 
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        final String encoding = args.length == 2 ? args[1].getStringValue() : null;
+        @Nullable final String encoding = args.length == 2 ? args[1].getStringValue() : null;
         if (!args[0].isEmpty()) {
+            final String href = args[0].getStringValue();
             if (isCalledAs("unparsed-text-lines")) {
-                return readLines(args[0].getStringValue(), encoding);
+                return readLines(href, encoding);
             } else if (isCalledAs("unparsed-text-available")) {
-                return BooleanValue.valueOf(contentAvailable(args[0].getStringValue(), encoding));
+                return BooleanValue.valueOf(contentAvailable(href, encoding));
             } else {
-                return new StringValue(this, readContent(args[0].getStringValue(), encoding));
+                return new StringValue(this, readContent(href, encoding));
             }
         }
         return Sequence.EMPTY_SEQUENCE;
