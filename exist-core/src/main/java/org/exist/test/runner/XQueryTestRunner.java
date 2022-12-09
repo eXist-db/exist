@@ -217,9 +217,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
     @Override
     public Description getDescription() {
         final String suiteName = checkDescription(this, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
+        final Description description = Description.createSuiteDescription(suiteName);
         for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName()), EMPTY_ANNOTATIONS));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName())));
         }
         return description;
     }

@@ -23,7 +23,6 @@
 package org.exist.test.runner;
 
 import org.exist.util.serializer.XQuerySerializer;
-import org.exist.xquery.Annotation;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
@@ -67,7 +66,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         final Sequence arg3 = getCurrentArguments()[2];
         final MapType actual = (MapType)arg3.itemAt(0);
 
-        final Description description = Description.createTestDescription(suiteName, name, new Annotation[0]);
+        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {

@@ -22,7 +22,6 @@
 
 package org.exist.test.runner;
 
-import org.exist.xquery.Annotation;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
@@ -56,7 +55,7 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
         final Sequence arg2 = getCurrentArguments().length == 2 ? getCurrentArguments()[1] : null;
         final MapType assumption = arg2 != null ? (MapType)arg2.itemAt(0) : null;
 
-        final Description description = Description.createTestDescription(suiteName, name, new Annotation[0]);
+        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {

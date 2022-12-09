@@ -22,7 +22,6 @@
 
 package org.exist.test.runner;
 
-import org.exist.xquery.Annotation;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -57,7 +56,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         final Sequence arg2 = getCurrentArguments().length == 2 ? getCurrentArguments()[1] : null;
         final MapType error = arg2 != null ? (MapType)arg2.itemAt(0) : null;
 
-        final Description description = Description.createTestDescription(suiteName, name, new Annotation[0]);
+        final Description description = createTestDescription(name);
 
         // notify JUnit
         try {

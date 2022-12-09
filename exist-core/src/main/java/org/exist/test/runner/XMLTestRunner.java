@@ -176,9 +176,9 @@ public class XMLTestRunner extends AbstractTestRunner {
     @Override
     public Description getDescription() {
         final String suiteName = checkDescription(info, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
+        final Description description = Description.createSuiteDescription(suiteName);
         for (final String childName : info.getChildNames()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName), EMPTY_ANNOTATIONS));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName)));
         }
         return description;
     }

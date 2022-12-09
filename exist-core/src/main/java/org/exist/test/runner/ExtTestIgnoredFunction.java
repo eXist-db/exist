@@ -22,7 +22,6 @@
 
 package org.exist.test.runner;
 
-import org.exist.xquery.Annotation;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
@@ -46,7 +45,8 @@ public class ExtTestIgnoredFunction extends JUnitIntegrationFunction {
         final String name = arg1.itemAt(0).getStringValue();
 
         // notify JUnit
-        notifier.fireTestIgnored(Description.createTestDescription(suiteName, name, new Annotation[0]));
+        final Description description = createTestDescription(name);
+        notifier.fireTestIgnored(description);
 
         return Sequence.EMPTY_SEQUENCE;
     }
