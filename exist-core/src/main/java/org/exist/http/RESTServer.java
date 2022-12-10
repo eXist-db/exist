@@ -537,9 +537,9 @@ public class RESTServer {
                         LOG.debug(e.getMessage(), e);
                     }
                     if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                        writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, query, path, e);
+                        writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query, path, e);
                     } else {
-                        writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, query,
+                        writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, query,
                                 path, e);
                     }
                 }
@@ -702,10 +702,10 @@ public class RESTServer {
 
                     } catch (final XPathException e) {
                         if (MimeType.XML_TYPE.getName().equals(mimeType)) {
-                            writeXPathException(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, null, path, e);
+                            writeXPathException(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path, e);
 
                         } else {
-                            writeXPathExceptionHtml(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, encoding, null, path, e);
+                            writeXPathExceptionHtml(response, HttpServletResponse.SC_BAD_REQUEST, encoding, null, path, e);
                         }
                     }
                     return;
