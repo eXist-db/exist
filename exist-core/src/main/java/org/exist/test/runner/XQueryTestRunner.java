@@ -118,6 +118,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                     final FunctionSignature localFunctionSignature = localFunction.getSignature();
 
                     String testName = null;
+                    int testArity = 0;
                     boolean isTest = false;
 
                     final Annotation[] annotations = localFunctionSignature.getAnnotations();
@@ -146,6 +147,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                     if (isTest) {
                         if (testName == null) {
                             testName = localFunctionSignature.getName().getLocalPart();
+                            testArity = localFunctionSignature.getArgumentCount();
                         }
 
                         if (moduleNsPrefix == null) {
@@ -155,7 +157,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                             moduleNsUri = localFunctionSignature.getName().getNamespaceURI();
                         }
 
-                        testFunctions.add(new XQueryTestInfo.TestFunctionDef(testName));
+                        testFunctions.add(new XQueryTestInfo.TestFunctionDef(testName, testArity));
                     }
                 } // end while
 
@@ -217,9 +219,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
     @Override
     public Description getDescription() {
         final String suiteName = checkDescription(this, getSuiteName());
-        final Description description = Description.createSuiteDescription(suiteName, EMPTY_ANNOTATIONS);
+        final Description description = Description.createSuiteDescription(suiteName);
         for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName()), EMPTY_ANNOTATIONS));
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName())));
         }
         return description;
     }
@@ -280,13 +282,19 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
         private static class TestFunctionDef {
             private final String localName;
+            private final int arity;
 
-            private TestFunctionDef(final String localName) {
+            private TestFunctionDef(final String localName, final int arity) {
                 this.localName = localName;
+                this.arity = arity;
             }
 
             public String getLocalName() {
                 return localName;
+            }
+
+            public int getArity() {
+                return arity;
             }
         }
     }

@@ -41,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.junit.runner.Runner;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,7 +56,6 @@ import static java.util.Objects.requireNonNull;
  * @author Adam Retter
  */
 public abstract class AbstractTestRunner extends Runner {
-    protected static final Annotation[] EMPTY_ANNOTATIONS = new Annotation[0];
 
     protected final Path path;
     protected final boolean parallel;

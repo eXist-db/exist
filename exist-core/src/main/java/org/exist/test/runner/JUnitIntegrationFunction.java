@@ -27,13 +27,10 @@ import org.exist.xquery.ExpressionVisitor;
 import org.exist.xquery.UserDefinedFunction;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
+import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 
 import javax.xml.XMLConstants;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.exist.xquery.FunctionDSL.functionSignature;
 import static org.exist.xquery.FunctionDSL.returnsNothing;
@@ -66,5 +63,16 @@ public abstract class JUnitIntegrationFunction extends UserDefinedFunction {
             return;
         }
         visited = true;
+    }
+
+    /**
+     * Create a JUnit description of the test.
+     *
+     * @param name the name of the test.
+     *
+     * @return the test description.
+     */
+    protected Description createTestDescription(final String name) {
+        return Description.createTestDescription(suiteName, name);
     }
 }
