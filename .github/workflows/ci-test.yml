@@ -33,8 +33,8 @@ jobs:
           BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
           CI_BUILD_NUMBER: ${{ github.run_id }}
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
-          COVERALLS_SECRET: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -V -B jacoco:report coveralls:report -DrepoToken=${{ secrets.COVERALLS_TOKEN }}
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: mvn -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v2
