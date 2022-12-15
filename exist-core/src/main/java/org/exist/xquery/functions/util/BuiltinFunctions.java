@@ -62,7 +62,7 @@ public class BuiltinFunctions extends BasicFunction {
 					new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 			new FunctionSignature(
 					new QName("declared-variables", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-					"Returns a sequence containing the QNames of all functions " +
+					"Returns a sequence containing the QNames of all variables " +
 							"declared in the module identified by the specified namespace URI. " +
 							"An error is raised if no module is found for the specified URI.",
 					new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
