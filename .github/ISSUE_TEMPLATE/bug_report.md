@@ -80,7 +80,7 @@ If the above isn't working, please tell us the exact steps you took when you enc
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Context (please always complete the following information):**
+**Context (please always complete the following information, you can past the output of `xst info` here):**
  - OS: [e.g. macOS 10.14.6]
  - eXist-db version: [e.g. 5.1.1]
  - Java Version [e.g. Java8u121]
