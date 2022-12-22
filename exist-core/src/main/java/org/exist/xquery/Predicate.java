@@ -37,6 +37,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -164,7 +165,7 @@ public class Predicate extends PathExpr {
 
             final Tuple2<ExecutionMode, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
             final ExecutionMode recomputedExecutionMode = recomputed._1;
-            Sequence innerSeq = recomputed._2;
+            @Nullable Sequence innerSeq = recomputed._2;
 
             switch (recomputedExecutionMode) {
                 case NODE:
