@@ -45,9 +45,10 @@
         <task>union operator: should select context node (not its child nodes)</task>
         <code><![CDATA[
           let $a := collection('/db/coll')/test
-          return $a/(.|..)
+          return
+            <result>{$a/(.|..)}</result>
         ]]></code>
-        <expected><test>this is text with an <el>embedded element</el></test></expected>
+        <expected><result><test>this is text with an <el>embedded element</el></test><test>this is text with an <el>embedded element</el></test></result></expected>
     </test>
     <test output="xml" ignore="yes">
         <task>comma operator: should remove duplicates (due to '/' operator)</task>
