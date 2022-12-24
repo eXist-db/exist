@@ -155,8 +155,8 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                 return (T) baos.toByteArray();
             } catch (final IOException ioe) {
                 LOG.error("Unable to Stream BinaryValue to byte[]: {}", ioe.getMessage(), ioe);
+                throw new XPathException(getExpression(), "Unable to Stream BinaryValue to byte[]: " + ioe.getMessage(), ioe);
             }
-
         }
 
         throw new XPathException(getExpression(), "Cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());

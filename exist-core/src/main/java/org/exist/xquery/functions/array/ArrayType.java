@@ -421,6 +421,27 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return false;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        if (vector.length() > 0) {
+            builder.append(' ');
+        }
+        for (int i = 0; i < vector.length(); i++) {
+            final Sequence value = vector.nth(i);
+            builder.append(value.toString());
+            if (i < vector.length() - 1) {
+                builder.append(", ");
+            }
+        }
+        if (vector.length() > 0) {
+            builder.append(' ');
+        }
+        builder.append(']');
+        return builder.toString();
+    }
+
     /**
      * The accessor function which will be evaluated if the map is called
      * as a function item.

@@ -37,6 +37,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -164,7 +165,7 @@ public class Predicate extends PathExpr {
 
             final Tuple2<ExecutionMode, Sequence> recomputed = recomputeExecutionMode(contextSequence, inner);
             final ExecutionMode recomputedExecutionMode = recomputed._1;
-            Sequence innerSeq = recomputed._2;
+            @Nullable Sequence innerSeq = recomputed._2;
 
             switch (recomputedExecutionMode) {
                 case NODE:
@@ -564,23 +565,55 @@ public class Predicate extends PathExpr {
                     Type.NODE) && (mode == Constants.ANCESTOR_AXIS ||
                     mode == Constants.ANCESTOR_SELF_AXIS || mode == Constants.PARENT_AXIS ||
                     mode == Constants.PRECEDING_AXIS || mode == Constants.PRECEDING_SIBLING_AXIS);
-            final Set<NumericValue> set = new TreeSet<>();
-            final ValueSequence result = new ValueSequence();
-            for (final SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
-                final NumericValue v = (NumericValue) i.nextItem();
+
+            Sequence result = Sequence.EMPTY_SEQUENCE;
+            if (innerSeq.hasOne()) {
+                // optimise for single position lookup
+                final NumericValue v = (NumericValue) innerSeq.itemAt(0);
                 // Non integers return... nothing, not even an error !
-                if (!v.hasFractionalPart() && !v.isZero()) {
-                    final int pos = (reverseAxis ? contextSequence.getItemCount()
-                            - v.getInt() : v.getInt() - 1);
+                if (isNonZeroInteger(v)) {
+                    final int pos = calculatePos(reverseAxis, contextSequence, v);
                     // Other positions are ignored
-                    if (pos >= 0 && pos < contextSequence.getItemCount() && !set.contains(v)) {
-                        result.add(contextSequence.itemAt(pos));
-                        set.add(v);
+                    if (withinBounds(contextSequence, pos)) {
+                        result = (Sequence) contextSequence.itemAt(pos);
+                    }
+                }
+            } else {
+                // multi-position lookup
+                Set<NumericValue> set = null;
+                for (final SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
+                    final NumericValue v = (NumericValue) i.nextItem();
+                    // Non integers return... nothing, not even an error !
+                    if (isNonZeroInteger(v)) {
+                        final int pos = calculatePos(reverseAxis, contextSequence, v);
+                        // Other positions are ignored
+                        if (withinBounds(contextSequence, pos) && (set == null || !set.contains(v))) {
+                            if (result == Sequence.EMPTY_SEQUENCE) {
+                                result = new ValueSequence();
+                            }
+                            result.add(contextSequence.itemAt(pos));
+                            if (set == null) {
+                                set = new TreeSet<>();
+                            }
+                            set.add(v);
+                        }
                     }
                 }
             }
             return result;
         }
+    }
+
+    private static boolean isNonZeroInteger(final NumericValue v) {
+        return !v.hasFractionalPart() && !v.isZero();
+    }
+
+    private static int calculatePos(final boolean reverseAxis, final Sequence contextSequence, final NumericValue v) throws XPathException {
+        return (reverseAxis ? contextSequence.getItemCount() - v.getInt() : v.getInt() - 1);
+    }
+
+    private static boolean withinBounds(final Sequence contextSequence, final int pos) {
+        return pos >= 0 && pos < contextSequence.getItemCount();
     }
 
     @Override

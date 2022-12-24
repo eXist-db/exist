@@ -1168,11 +1168,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     @Override
     public NodeSet getParents(final int contextId) {
         final NodeId pid = nodeId.getParentId();
-        if(pid == null || pid == NodeId.DOCUMENT_NODE) {
+        if (pid == null) {
             return NodeSet.EMPTY_SET;
         }
 
-        final NodeProxy parent = new NodeProxy(expression, doc, pid, Node.ELEMENT_NODE);
+        final NodeProxy parent = new NodeProxy(expression, doc, pid, pid == NodeId.DOCUMENT_NODE ? Node.DOCUMENT_NODE : Node.ELEMENT_NODE);
         if(contextId != Expression.NO_CONTEXT_ID) {
             parent.addContextNode(contextId, this);
         } else {
