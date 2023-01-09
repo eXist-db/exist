@@ -77,14 +77,20 @@ public class IdFunction extends BasicFunction {
 
             builder.startElement(new QName("id", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
 
-            builder.startElement(new QName("real", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-            subjectToXml(builder, context.getRealUser());
-            builder.endElement();
+            final Subject realUser = context.getRealUser();
+            if (realUser != null) {
+              builder.startElement(new QName("real", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
+              subjectToXml(builder, realUser);
+              builder.endElement();
+            }
 
-            if (!sameUserWithSameGroups(context.getRealUser(), context.getEffectiveUser())) {
-                builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
-                subjectToXml(builder, context.getEffectiveUser());
-                builder.endElement();
+            final Subject effectiveUser = context.getEffectiveUser();
+            if (effectiveUser != null) {
+              if (realUser == null || !sameUserWithSameGroups(realUser, effectiveUser)) {
+                  builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
+                  subjectToXml(builder, effectiveUser);
+                  builder.endElement();
+              }
             }
 
             builder.endElement();
