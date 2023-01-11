@@ -141,8 +141,6 @@ public class HTML5Writer extends XHTML5Writer {
     static {
         RAW_TEXT_ELEMENTS.add("script");
         RAW_TEXT_ELEMENTS.add("style");
-        RAW_TEXT_ELEMENTS.add("textarea");
-        RAW_TEXT_ELEMENTS.add("title");
     }
 
     public HTML5Writer() {

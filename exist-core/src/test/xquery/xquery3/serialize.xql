@@ -865,3 +865,65 @@ function ser:serialize-xml-134() {
     }
     return serialize((1 to 4)!text{.}, $params)
 };
+
+declare
+    %test:assertEquals('<!DOCTYPE html> <option selected></option>')
+function ser:serialize-html-5-boolean-attribute-names() {
+    let $params := map {
+        "method" : "html",
+        "html-version": 5.0
+    }
+    return
+        <option selected="selected"/>
+        => serialize($params)
+        => normalize-space()
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html> <br>')
+function ser:serialize-html-5-empty-tags() {
+    let $params := map {
+        "method" : "html",
+        "html-version": 5.0
+    }
+    return
+        <br/>
+        => serialize($params)
+        => normalize-space()
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html> <foo><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></foo>')
+function ser:serialize-html-5-raw-text-elements() {
+    let $params := map {
+        "method" : "html",
+        "html-version": 5.0
+    }
+    return
+        <foo>
+            <style>{``[ul > li { 
+                color:red; 
+            }]``}</style>
+            <script>{``[if (a < b) foo()]``}</script>
+        </foo>
+        => serialize($params)
+        => normalize-space()
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html> <foo><title>ul &amp;gt; li { color:red; }</title><textarea>if (a &amp;lt; b) foo()</textarea></foo>')
+function ser:serialize-html-5-needs-escape-elements() {
+    let $params := map {
+        "method" : "html",
+        "html-version": 5.0
+    }
+    return
+        <foo>
+            <title>{``[ul > li { 
+                color:red; 
+            }]``}</title>
+            <textarea>{``[if (a < b) foo()]``}</textarea>
+        </foo>
+        => serialize($params)
+        => normalize-space()
+};
