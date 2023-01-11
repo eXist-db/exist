@@ -121,6 +121,7 @@ public class Sync extends BasicFunction {
         DEFAULT_PROPERTIES.put(OutputKeys.INDENT, "yes");
         DEFAULT_PROPERTIES.put(OutputKeys.OMIT_XML_DECLARATION, "no");
         DEFAULT_PROPERTIES.put(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+        DEFAULT_PROPERTIES.put(OutputKeys.ENCODING, "UTF-8");
     }
 
     public Sync(final XQueryContext context, final FunctionSignature signature) {
@@ -357,27 +358,30 @@ public class Sync extends BasicFunction {
     }
 
     private void saveFile(final Path targetFile, final DocumentImpl doc, final Date startDate, final MemTreeBuilder output) throws LockException {
+        // the resource has not changed in the selected period
+        if (startDate != null && doc.getLastModified() <= startDate.getTime()) {
+            return;
+        }
         try (final ManagedLock<MultiLock[]> lock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())) {
-            if (startDate == null || (
-                    doc.getLastModified() > startDate.getTime() && (
-                            !Files.exists(targetFile) ||
-                                    Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0
-                    ))) {
-                output.startElement(FILE_UPDATE_ELEMENT, null);
-                output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
-                output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
-                output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
-                output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
+            // the file on the disk appears to be up-to-date
+            if (Files.exists(targetFile) && Files.getLastModifiedTime(targetFile).compareTo(FileTime.fromMillis(doc.getLastModified())) >= 0) {
+                return;
+            }
 
-                if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    output.addAttribute(TYPE_ATTRIBUTE, "binary");
-                    output.endElement();
-                    saveBinary(targetFile, (BinaryDocument) doc, output);
-                } else {
-                    output.addAttribute(TYPE_ATTRIBUTE, "xml");
-                    output.endElement();
-                    saveXML(targetFile, doc, output);
-                }
+            output.startElement(FILE_UPDATE_ELEMENT, null);
+            output.addAttribute(FILE_ATTRIBUTE, targetFile.toAbsolutePath().toString());
+            output.addAttribute(NAME_ATTRIBUTE, doc.getFileURI().toString());
+            output.addAttribute(COLLECTION_ATTRIBUTE, doc.getCollection().getURI().toString());
+            output.addAttribute(MODIFIED_ATTRIBUTE, new DateTimeValue(new Date(doc.getLastModified())).getStringValue());
+
+            if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                output.addAttribute(TYPE_ATTRIBUTE, "binary");
+                output.endElement();
+                saveBinary(targetFile, (BinaryDocument) doc, output);
+            } else {
+                output.addAttribute(TYPE_ATTRIBUTE, "xml");
+                output.endElement();
+                saveXML(targetFile, doc, output);
             }
         } catch (final XPathException e) {
             reportError(output, e.getMessage());

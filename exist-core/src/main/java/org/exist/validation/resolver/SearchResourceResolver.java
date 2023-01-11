@@ -63,6 +63,8 @@ import javax.xml.transform.OutputKeys;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * Resolve a resource by searching in database. Schema's are queried
  * directly, DTD are searched in catalog files.

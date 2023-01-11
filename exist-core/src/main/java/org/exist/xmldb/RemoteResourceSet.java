@@ -53,6 +53,8 @@ import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
@@ -177,7 +179,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
             final byte[] data = (byte[]) collection.execute("retrieveAll", params);
             String content;
             try {
-                content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
+                content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name()));
             } catch (final UnsupportedEncodingException ue) {
                 LOG.warn(ue);
                 content = new String(data);

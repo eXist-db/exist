@@ -48,6 +48,8 @@ import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Optional;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -56,7 +58,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 804071766041263220L;
 
-	public final static String DEFAULT_ENCODING = "UTF-8";
+	public final static String DEFAULT_ENCODING = UTF_8.name();
     
     private BrokerPool pool;
     private String formEncoding = DEFAULT_ENCODING;

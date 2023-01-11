@@ -27,6 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Response {
 	
 	private final static String stdHeaders = 
@@ -38,7 +40,7 @@ public class Response {
 	private String statusDesc = null;
 	private String content = null;
 	private byte[] binaryContent = null;
-	private String encoding = "UTF-8";
+	private String encoding = UTF_8.name();
 	private String contentType = MimeType.XML_TYPE.getName();
 	
 	public Response() {

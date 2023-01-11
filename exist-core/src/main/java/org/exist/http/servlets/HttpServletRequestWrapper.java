@@ -35,6 +35,8 @@ import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.*;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
@@ -260,7 +262,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     public BufferedReader getReader() throws IOException {
         String encoding = request.getCharacterEncoding();
         if (encoding == null) {
-            encoding = "UTF-8";
+            encoding = UTF_8.name();
         }
 
         try {

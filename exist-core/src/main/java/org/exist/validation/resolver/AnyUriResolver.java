@@ -35,6 +35,8 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  *  Resolve a resource specified by xs:anyURI. First time the
  * resource is resolved by the URL as specified in the constructor, 
@@ -123,7 +125,7 @@ public class AnyUriResolver implements XMLEntityResolver {
         }
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,
-                baseSystemId, is, "UTF-8");
+                baseSystemId, is, UTF_8.name());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("XMLInputSource: {}", getXisDetails(xis));
