@@ -22,8 +22,6 @@
     <property name="installer.scripts" value="installer/scripts"/>
     <property name="installer.mac.icon" value="${installer.scripts}/icon.icns"/>
 
-    <property file="installer/apps.properties"/>
-
 	<target name="commandline-installer">
     </target>
 
@@ -78,31 +76,16 @@
     <target name="download-xars" description="Download xars to include in installer"  depends="clean-installer-xars-dir">
         <mkdir dir="${apps.dir}"/>
         <echo message="Downloading xar packages to include in installer ..."/>
-        <foreach list="${apps}" target="download-xar" param="xar"></foreach>
 
-        <move todir="${apps.dir}">
-            <fileset dir="${apps.dir}">
-                <include name="shared*.xar"/>
+        <ant antfile="build/scripts/setup.xml" dir="." inheritall="false"/>
+
+        <!-- copy the xars to the location for the installer -->
+        <copy todir="${apps.dir}">
+            <fileset dir="${autodeploy.dir}">
+                <include name="*.xar"/>
             </fileset>
-            <mapper type="glob" from="*" to="00*"/>
-        </move>
-    </target>
+        </copy>
 
-    <target name="download-xar">
-        <!-- get dest="${apps.dir}" src="${apps.repo}/find?abbrev=${xar}&amp;processor=${project.version}"
-             verbose="on" maxtime="180" usetimestamp="true" tryGzipEncoding="true"/ -->
-
-        <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
-            <classpath>
-                <pathelement location="${asocat-exist.jar}"/>
-            </classpath>
-        </taskdef>
-        <fetch dest="${apps.dir}" url="${apps.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
-               failonerror="true" maxtime="180">
-            <patternset>
-                <include name="**/*.xar"/>
-            </patternset>
-        </fetch>
     </target>
 
     <target name="xars" depends="download-xars" description="Scan apps directory and include all .xar files into installer">
