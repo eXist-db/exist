@@ -21,15 +21,13 @@
 
   <property file="build.properties"/>
 
-  <property name="autostart-dir" value="autodeploy"/>
-
   <target name="prepare">
-    <mkdir dir="${autostart-dir}"/>
+    <mkdir dir="${autodeploy.dir}"/>
     <!--  Automatically download standard xar packages from public repository
         if autostart directory is empty.
   -->
     <path id="autostart-files">
-      <fileset dir="${autostart-dir}">
+      <fileset dir="${autodeploy.dir}">
         <include name="*.xar"/>
       </fileset>
     </path>
@@ -47,15 +45,24 @@
   <target name="setup" depends="prepare" description="Download standard xar packages.">
     <echo message="Downloading xar packages: ${autodeploy}..."/>
     <foreach list="${autodeploy}" target="download" param="xar"></foreach>
+
+    <!-- rename the shared-resources xar -->
+    <move todir="${autodeploy.dir}">
+      <fileset dir="${autodeploy.dir}">
+        <include name="shared*.xar"/>
+      </fileset>
+      <mapper type="glob" from="*" to="00*"/>
+    </move>
+
   </target>
 
   <target name="download">
     <pathconvert property="xar-installed" setonempty="false">
-        <fileset dir="${autostart-dir}">
+        <fileset dir="${autodeploy.dir}">
             <include name="${xar}-*.xar"/>
         </fileset>
     </pathconvert>
-    <condition property="xar-found-status" value="Existing copy of ${xar} found at ${xar-installed}. Download will be skipped." else="No copy of ${xar} found in ${autostart-dir}. Download will be attempted.">
+    <condition property="xar-found-status" value="Existing copy of ${xar} found at ${xar-installed}. Download will be skipped." else="No copy of ${xar} found in ${autodeploy.dir}. Download will be attempted.">
       <isset property="xar-installed"/>
     </condition>
     <echo message="${xar-found-status}"/>
@@ -63,7 +70,7 @@
   </target>
 
   <target name="download-xar" unless="xar-installed">
-    <!-- get dest="${autostart-dir}" src="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}"
+    <!-- get dest="${autodeploy.dir}" src="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}"
          verbose="on" maxtime="180" usetimestamp="true" tryGzipEncoding="true"/ -->
 
     <taskdef name="fetch" classname="nl.ow.dilemma.ant.fetch.FetchTask">
@@ -71,7 +78,7 @@
         <pathelement location="${asocat-exist.jar}"/>
       </classpath>
     </taskdef>
-    <fetch dest="${autostart-dir}" url="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
+    <fetch dest="${autodeploy.dir}" url="${autodeploy.repo}/find?abbrev=${xar}&amp;processor=${project.version}&amp;zip=yes"
         failonerror="true" failonzeroextracted="true" maxtime="180">
       <patternset>
         <include name="**/*.xar"/>
