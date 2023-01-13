@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.ConfigurationHelper;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,6 +39,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
@@ -48,6 +51,11 @@ import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MIN_MEM;
 
 @NotThreadSafe
 class WindowsServiceManager implements ServiceManager {
+
+    /**
+     * See <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/java.html#BABHDABI">Java - Non-Standard Options</a>.
+     */
+    private static final Pattern JAVA_CMDLINE_MEMORY_STRING = Pattern.compile("([0-9]+)(g|G|m|M|k|K)?.*");
 
     private static final Logger LOG = LogManager.getLogger(WindowsServiceManager.class);
     private static final String PROCRUN_SRV_EXE = "prunsrv-x86_64.exe";
@@ -86,8 +94,8 @@ class WindowsServiceManager implements ServiceManager {
                 .orElse(existHome.resolve("etc").resolve("conf.xml"));
 
         final Properties launcherProperties = ConfigurationUtility.loadProperties();
-        final Optional<String> maxMemory = Optional.ofNullable(launcherProperties.getProperty(LAUNCHER_PROPERTY_MAX_MEM)).map(s -> s + "m");
-        final String minMemory = launcherProperties.getProperty(LAUNCHER_PROPERTY_MIN_MEM, "128") + "m";
+        final Optional<String> maxMemory = Optional.ofNullable(launcherProperties.getProperty(LAUNCHER_PROPERTY_MAX_MEM)).flatMap(WindowsServiceManager::asJavaCmdlineMemoryString);
+        final Optional<String> minMemory = asJavaCmdlineMemoryString(launcherProperties.getProperty(LAUNCHER_PROPERTY_MIN_MEM, "128"));
 
         final StringBuilder jvmOptions = new StringBuilder();
         jvmOptions.append("-Dfile.encoding=UTF-8");
@@ -117,7 +125,6 @@ class WindowsServiceManager implements ServiceManager {
                 "--ServiceUser=LocalSystem",  // TODO(AR) this changed from `LocalSystem` to `NT Authority\LocalService` in procrun 1.2.0, however our service won't seem to start under that account... we need to investigate!
                 "--Jvm=" + findJvm().orElse("auto"),
                 "--Classpath=\"" + existHome.resolve("lib").toAbsolutePath().toString().replace('\\', '/') + "/*\"",
-                "--JvmMs=" + minMemory,
                 "--StartMode=jvm",
                 "--StartClass=org.exist.service.ExistDbDaemon",
                 "--StartMethod=start",
@@ -127,7 +134,8 @@ class WindowsServiceManager implements ServiceManager {
                 "--JvmOptions=\"" + jvmOptions + "\"",
                 "--StartParams=\"" + configFile.toAbsolutePath().toString() + "\""
         );
-        maxMemory.ifPresent(xmx -> args.add("--JvmMx=" + xmx));
+        minMemory.flatMap(WindowsServiceManager::asPrunSrvMemoryString).ifPresent(xms -> args.add("--JvmMs=" + xms));
+        maxMemory.flatMap(WindowsServiceManager::asPrunSrvMemoryString).ifPresent(xmx -> args.add("--JvmMx=" + xmx));
 
         try {
             final Tuple2<Integer, String> execResult = run(args, true);
@@ -366,5 +374,76 @@ class WindowsServiceManager implements ServiceManager {
         }
         final int exitValue = process.waitFor();
         return Tuple(exitValue, output.toString());
+    }
+
+    /**
+     * Transform the supplied memory string into a string
+     * that is compatible with the Java command line arguments for -Xms and -Xmx.
+     *
+     * See <a href="https://docs.oracle.com/javase/8/docs/technotes/tools/windows/java.html#BABHDABI">Java - Non-Standard Options</a>.
+     *
+     * @param memoryString the memory string.
+     *
+     * @return a memory string compatible with java.exe.
+     */
+    static Optional<String> asJavaCmdlineMemoryString(final String memoryString) {
+        // should optionally end in g|G|m|M|k|K
+        final Matcher mtcJavaCmdlineMemoryString = JAVA_CMDLINE_MEMORY_STRING.matcher(memoryString);
+        if (!mtcJavaCmdlineMemoryString.matches()) {
+            // invalid java cmdline memory string
+            return Optional.empty();
+        }
+
+        final String value = mtcJavaCmdlineMemoryString.group(1);
+        @Nullable final String mnemonic = mtcJavaCmdlineMemoryString.group(2);
+
+        if (mnemonic == null) {
+            // no mnemonic supplied, assume `m` for megabytes
+            return Optional.of(value + "m");
+        }
+
+        // valid mnemonic supplied, so return as is (excluding any additional cruft)
+        return Optional.of(value + mnemonic);
+    }
+
+    /**
+     * Converts a memory string for the Java command line arguments -Xms or -Xmx, into
+     * a memory string that is understood by prunsrv.exe.
+     * prunsrv.exe expects an integer in megabytes.
+     *
+     * @param javaCmdlineMemoryString the memory strig as would be given to the Java command line.
+     *
+     * @return a memory string suitable for use with prunsrv.exe.
+     */
+    static Optional<String> asPrunSrvMemoryString(final String javaCmdlineMemoryString) {
+        // should optionally end in g|G|m|M|k|K
+        final Matcher mtcJavaCmdlineMemoryString = JAVA_CMDLINE_MEMORY_STRING.matcher(javaCmdlineMemoryString);
+        if (!mtcJavaCmdlineMemoryString.matches()) {
+            // invalid java cmdline memory string
+            return Optional.empty();
+        }
+
+        long value = Integer.valueOf(mtcJavaCmdlineMemoryString.group(1)).longValue();
+        @Nullable String mnemonic = mtcJavaCmdlineMemoryString.group(2);
+        if (mnemonic == null) {
+            mnemonic = "m";
+        }
+
+        switch (mnemonic.toLowerCase()) {
+            case "k":
+                value = value / 1024;
+                break;
+
+            case "g":
+                value = value * 1024;
+                break;
+
+            case "m":
+            default:
+                // do nothing, megabytes is the default!
+                break;
+        }
+
+        return Optional.of(Long.toString(value));
     }
 }
