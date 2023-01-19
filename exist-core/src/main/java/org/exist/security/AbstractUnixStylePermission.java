@@ -23,6 +23,7 @@ package org.exist.security;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.SyntaxException;
@@ -40,7 +41,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
     /**
      * The symbolic mode is described by the following grammar:
-     *
+     * <p>
      * mode         ::= clause [, clause ...]
      * clause       ::= [who ...] [action ...] action
      * action       ::= op [perm ...]
@@ -54,15 +55,15 @@ public abstract class AbstractUnixStylePermission implements Permission {
         //TODO expand perm to full UNIX chmod i.e. perm ::= r | s | t | w | x | X | u | g | o
 
         final String[] clauses = symbolicMode.split(",");
-        for(final String clause : clauses) {
+        for (final String clause : clauses) {
             final String[] whoPerm = clause.split("[+\\-=]");
 
             int perm = 0;
             boolean uidgid = false;
             boolean sticky = false;
             //process the op first
-            for(final char c : whoPerm[1].toCharArray()) {
-                switch(c) {
+            for (final char c : whoPerm[1].toCharArray()) {
+                switch (c) {
                     case READ_CHAR:
                         perm |= READ;
                         break;
@@ -88,79 +89,79 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 }
             }
 
-            
+
             final char[] whoose;
-            if(!whoPerm[0].isEmpty()) {
+            if (!whoPerm[0].isEmpty()) {
                 whoose = whoPerm[0].toCharArray();
             } else {
-                whoose = new char[]{ ALL_CHAR };
+                whoose = new char[]{ALL_CHAR};
             }
-            
-            for(final char c: whoose) {
-                switch(c) {
+
+            for (final char c : whoose) {
+                switch (c) {
                     case ALL_CHAR:
                         final int newMode = (perm << 6) | (perm << 3) | perm | (sticky ? (STICKY << 9) : 0) | (uidgid ? ((SET_UID | SET_GID) << 9) : 0);
-                        if(clause.indexOf('+') > -1) {
+                        if (clause.indexOf('+') > -1) {
                             setMode(getMode() | newMode);
-                        } else if(clause.indexOf('-') > -1) {
+                        } else if (clause.indexOf('-') > -1) {
                             setMode(getMode() & ~newMode);
-                        } else if(clause.indexOf('=') > -1) {
+                        } else if (clause.indexOf('=') > -1) {
                             setMode(newMode);
                         }
                         break;
 
                     case USER_CHAR:
-                        if(clause.indexOf('+') > -1) {
+                        if (clause.indexOf('+') > -1) {
                             setOwnerMode(getOwnerMode() | perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetUid(true);
                             }
-                        } else if(clause.indexOf('-') > -1) {
+                        } else if (clause.indexOf('-') > -1) {
                             setOwnerMode(getOwnerMode() & ~perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetUid(false);
                             }
-                        } else if(clause.indexOf('=') > -1) {
+                        } else if (clause.indexOf('=') > -1) {
                             setOwnerMode(perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetUid(true);
                             }
                         }
                         break;
 
                     case GROUP_CHAR:
-                        if(clause.indexOf('+') > -1) {
+                        if (clause.indexOf('+') > -1) {
                             setGroupMode(getGroupMode() | perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetGid(true);
                             }
-                        } else if(clause.indexOf('-') > -1) {
+                        } else if (clause.indexOf('-') > -1) {
                             setGroupMode(getGroupMode() & ~perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetGid(false);
                             }
-                        } else if(clause.indexOf('=') > -1) {
+                        } else if (clause.indexOf('=') > -1) {
                             setGroupMode(perm);
-                            if(uidgid) {
+                            if (uidgid) {
                                 setSetGid(true);
                             }
                         }
                         break;
 
                     case OTHER_CHAR:
-                        if(clause.indexOf('+') > -1) {
+                        if (clause.indexOf('+') > -1) {
                             setOtherMode(getOtherMode() | perm);
-                            if(sticky) {
+                            if (sticky) {
                                 setSticky(true);
                             }
-                        } else if(clause.indexOf('-') > -1) {
+                        } else if (clause.indexOf('-') > -1) {
                             setOtherMode(getOtherMode() & ~perm);
-                            if(sticky) {
+                            if (sticky) {
                                 setSticky(false);
                             }
-                        } else if(clause.indexOf('=') > -1) {
+                        } else if (clause.indexOf('=') > -1) {
                             setOtherMode(perm);
-                            if(sticky) {
+                            if (sticky) {
                                 setSticky(true);
                             }
                         }
@@ -170,29 +171,24 @@ public abstract class AbstractUnixStylePermission implements Permission {
                         throw new SyntaxException("Unrecognised mode char '" + c + "'");
                 }
             }
-
-            perm = 0;
-            uidgid = false;
-            sticky = false;
         }
     }
 
     /**
      * Set mode using a string. The string has the
      * following syntax:
-     *
+     * <p>
      * [user|group|other]=[+|-][read|write|execute]
-     *
+     * <p>
      * For example, to set read and write mode for the group, but
      * not for others:
-     *
+     * <p>
      * group=+read,+write,other=-read,-write
-     *
+     * <p>
      * The new settings are or'ed with the existing settings.
      *
-     *@param  existSymbolicMode                  The new mode
-     *@throws  SyntaxException  Description of the Exception
-     *
+     * @param existSymbolicMode The new mode
+     * @throws SyntaxException Description of the Exception
      * @deprecated setUnixSymbolicMode should be used instead
      */
     @Deprecated
@@ -203,29 +199,29 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
         int shift = 0;
         int mode = getMode();
-        for(final String s : existSymbolicMode.toLowerCase().split("=|,")){
-            if(s.equalsIgnoreCase(USER_STRING)) {
+        for (final String s : existSymbolicMode.toLowerCase().split("[=,]")) {
+            if (s.equalsIgnoreCase(USER_STRING)) {
                 shift = 6;
-            } else if(s.equalsIgnoreCase(GROUP_STRING)) {
+            } else if (s.equalsIgnoreCase(GROUP_STRING)) {
                 shift = 3;
-            } else if(s.equalsIgnoreCase(OTHER_STRING)) {
+            } else if (s.equalsIgnoreCase(OTHER_STRING)) {
                 shift = 0;
             } else {
-                int perm = 0;
+                final int perm;
 
-                if(s.endsWith(READ_STRING.toLowerCase())) {
+                if (s.endsWith(READ_STRING.toLowerCase())) {
                     perm = READ;
-                } else if(s.endsWith(WRITE_STRING.toLowerCase())) {
+                } else if (s.endsWith(WRITE_STRING.toLowerCase())) {
                     perm = WRITE;
-                } else if(s.endsWith(EXECUTE_STRING.toLowerCase())) {
+                } else if (s.endsWith(EXECUTE_STRING.toLowerCase())) {
                     perm = EXECUTE;
                 } else {
                     throw new SyntaxException("Unrecognised mode char '" + s + "'");
                 }
 
-                if(s.startsWith("+")) {
+                if (s.startsWith("+")) {
                     mode |= (perm << shift);
-                } else if(s.startsWith("-")) {
+                } else if (s.startsWith("-")) {
                     mode &= (~(perm << shift));
                 } else {
                     throw new SyntaxException("Unrecognised mode char '" + s + "'");
@@ -252,28 +248,25 @@ public abstract class AbstractUnixStylePermission implements Permission {
      * because all of these methods delegate to the subclass implementation.
      *
      * @param modeStr The String representing a mode to set
-     *
-     * @throws org.exist.util.SyntaxException If the string syntax for the mode
-     * is not recognised. The following syntaxes are supported. Simple symbolic,
-     * Unix symbolic, eXist symbolic.
-     * 
-     * @throws org.exist.security.PermissionDeniedException If you do not have
-     * permission to set the mode
+     * @throws SyntaxException If the string syntax for the mode is not recognised.
+     *                         The following syntaxes are supported. Simple symbolic,
+     *                         Unix symbolic, eXist symbolic.
+     * @throws PermissionDeniedException If you do not have permission to set the mode
      */
     @Override
-    public final void setMode(final String modeStr) 
+    public final void setMode(final String modeStr)
             throws SyntaxException, PermissionDeniedException {
         final Matcher simpleSymbolicModeMatcher = SIMPLE_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
 
-        if(simpleSymbolicModeMatcher.matches()) {
+        if (simpleSymbolicModeMatcher.matches()) {
             setSimpleSymbolicMode(modeStr);
         } else {
             final Matcher unixSymbolicModeMatcher = UNIX_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
-            if(unixSymbolicModeMatcher.matches()){
+            if (unixSymbolicModeMatcher.matches()) {
                 setUnixSymbolicMode(modeStr);
             } else {
                 final Matcher existSymbolicModeMatcher = EXIST_SYMBOLIC_MODE_PATTERN.matcher(modeStr);
-                if(existSymbolicModeMatcher.matches()) {
+                if (existSymbolicModeMatcher.matches()) {
                     setExistSymbolicMode(modeStr);
                 } else {
                     throw new SyntaxException("Unknown mode String: " + modeStr);
@@ -281,17 +274,17 @@ public abstract class AbstractUnixStylePermission implements Permission {
             }
         }
     }
-    
+
     public static int simpleSymbolicModeToInt(final String simpleModeStr) throws SyntaxException {
         int mode = 0;
 
         final char[] modeArray = simpleModeStr.toCharArray();
-        for(int i = 0; i < modeArray.length; i++) {
+        for (int i = 0; i < modeArray.length; i++) {
 
             final char c = modeArray[i];
             final int shift = (i < 3 ? 6 : (i < 6 ? 3 : 0));
 
-            switch(c) {
+            switch (c) {
                 case READ_CHAR:
                     mode |= (READ << shift);
                     break;
@@ -303,12 +296,12 @@ public abstract class AbstractUnixStylePermission implements Permission {
                     break;
                 case SETUID_CHAR_NO_EXEC:
                 case SETUID_CHAR:
-                    if(i < 3) {
+                    if (i < 3) {
                         mode |= (SET_UID << 9);
                     } else {
                         mode |= (SET_GID << 9);
                     }
-                    if(c == SETUID_CHAR) {
+                    if (c == SETUID_CHAR) {
                         mode |= (EXECUTE << shift);
                     }
                     break;
@@ -327,27 +320,27 @@ public abstract class AbstractUnixStylePermission implements Permission {
                     throw new SyntaxException("Unrecognised mode char '" + c + "'");
             }
         }
-        
+
         return mode;
     }
-    
-    public static String modeToSimpleSymbolicMode(final int mode) {
-        final char[] ch = new char[] {
-            (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
-            (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
-            
-            (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
-            (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
 
-            (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
-            (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
-            (mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR
+    public static String modeToSimpleSymbolicMode(final int mode) {
+        final char[] ch = new char[]{
+                (mode & (READ << 6)) == 0 ? UNSET_CHAR : READ_CHAR,
+                (mode & (WRITE << 6)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+                (mode & (EXECUTE << 6)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
+
+                (mode & (READ << 3)) == 0 ? UNSET_CHAR : READ_CHAR,
+                (mode & (WRITE << 3)) == 0 ? UNSET_CHAR : WRITE_CHAR,
+                (mode & (EXECUTE << 3)) == 0 ? UNSET_CHAR : EXECUTE_CHAR,
+
+                (mode & READ) == 0 ? UNSET_CHAR : READ_CHAR,
+                (mode & WRITE) == 0 ? UNSET_CHAR : WRITE_CHAR,
+                (mode & EXECUTE) == 0 ? UNSET_CHAR : EXECUTE_CHAR
         };
         return String.valueOf(ch);
     }
-    
+
     /**
      * Utility function for external use
      *
@@ -356,65 +349,65 @@ public abstract class AbstractUnixStylePermission implements Permission {
      */
     public static String typesToString(final int types) {
         final StringBuilder builder = new StringBuilder();
-        
-        if((types >> 8) > 0) {
-            if(((types >> 8) & READ) == READ) {
+
+        if ((types >> 8) > 0) {
+            if (((types >> 8) & READ) == READ) {
                 builder.append(READ_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
 
-            if(((types >> 8) & WRITE) == WRITE) {
+            if (((types >> 8) & WRITE) == WRITE) {
                 builder.append(WRITE_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
 
-            if(((types >> 8) & EXECUTE) == EXECUTE) {
+            if (((types >> 8) & EXECUTE) == EXECUTE) {
                 builder.append(EXECUTE_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
         }
-        
-        if((types >> 4) > 0) {
-            if(((types >> 4) & READ) == READ) {
+
+        if ((types >> 4) > 0) {
+            if (((types >> 4) & READ) == READ) {
                 builder.append(READ_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
 
-            if(((types >> 4) & WRITE) == WRITE) {
+            if (((types >> 4) & WRITE) == WRITE) {
                 builder.append(WRITE_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
 
-            if(((types >> 4) & EXECUTE) == EXECUTE) {
+            if (((types >> 4) & EXECUTE) == EXECUTE) {
                 builder.append(EXECUTE_CHAR);
             } else {
                 builder.append(UNSET_CHAR);
             }
         }
-        
-        if((types & READ) == READ) {
+
+        if ((types & READ) == READ) {
             builder.append(READ_CHAR);
         } else {
             builder.append(UNSET_CHAR);
         }
-        
-        if((types & WRITE) == WRITE) {
+
+        if ((types & WRITE) == WRITE) {
             builder.append(WRITE_CHAR);
         } else {
             builder.append(UNSET_CHAR);
         }
-        
-        if((types & EXECUTE) == EXECUTE) {
+
+        if ((types & EXECUTE) == EXECUTE) {
             builder.append(EXECUTE_CHAR);
         } else {
             builder.append(UNSET_CHAR);
         }
-        
+
         return builder.toString();
     }
 
@@ -430,19 +423,19 @@ public abstract class AbstractUnixStylePermission implements Permission {
 
     static int noop = 0;
 
-    private static int setExecutableIfOtherCanReadOrWrite (final int mode) {
+    private static int setExecutableIfOtherCanReadOrWrite(final int mode) {
         final boolean canReadOrWrite = (mode & otherRead) + (mode & otherWrite) > 0;
 
         return canReadOrWrite ? otherExecute : noop;
     }
 
-    private static int setExecutableIfGroupCanReadOrWrite (final int mode) {
+    private static int setExecutableIfGroupCanReadOrWrite(final int mode) {
         final boolean canReadOrWrite = (mode & groupRead) + (mode & groupWrite) > 0;
 
         return canReadOrWrite ? groupExecute : noop;
     }
 
-    public static int safeSetExecutable (final int mode) {
+    public static int safeSetExecutable(final int mode) {
         return mode
                 | ownerExecute
                 | setExecutableIfGroupCanReadOrWrite(mode)
