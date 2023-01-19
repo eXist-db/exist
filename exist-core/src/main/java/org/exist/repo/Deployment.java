@@ -875,7 +875,7 @@ public class Deployment {
         }
 
         if (isCollection || (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))) {
-            mode = mode | 0111;     //TODO(AR) Whoever did this - this is a really bad idea. You are circumventing the security of the system
+            mode = UnixStylePermission.safeSetExecutable(mode);
         }
 
         PermissionFactory.chmod(broker, permission, Optional.of(mode), Optional.empty());
