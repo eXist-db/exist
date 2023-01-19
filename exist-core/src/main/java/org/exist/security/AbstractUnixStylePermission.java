@@ -417,4 +417,36 @@ public abstract class AbstractUnixStylePermission implements Permission {
         
         return builder.toString();
     }
+
+    static int ownerExecute = EXECUTE << 6;
+
+    static int groupRead = READ << 3;
+    static int groupWrite = WRITE << 3;
+    static int groupExecute = EXECUTE << 3;
+
+    static int otherRead = READ;
+    static int otherWrite = WRITE;
+    static int otherExecute = EXECUTE;
+
+    static int noop = 0;
+
+    private static int setExecutableIfOtherCanReadOrWrite (final int mode) {
+        final boolean canReadOrWrite = (mode & otherRead) + (mode & otherWrite) > 0;
+
+        return canReadOrWrite ? otherExecute : noop;
+    }
+
+    private static int setExecutableIfGroupCanReadOrWrite (final int mode) {
+        final boolean canReadOrWrite = (mode & groupRead) + (mode & groupWrite) > 0;
+
+        return canReadOrWrite ? groupExecute : noop;
+    }
+
+    public static int safeSetExecutable (final int mode) {
+        return mode
+                | ownerExecute
+                | setExecutableIfGroupCanReadOrWrite(mode)
+                | setExecutableIfOtherCanReadOrWrite(mode)
+                ;
+    }
 }
