@@ -23,6 +23,7 @@ package org.exist.security;
 
 import java.io.IOException;
 import java.util.Random;
+
 import static org.easymock.EasyMock.expect;
 
 import com.googlecode.junittoolbox.ParallelRunner;
@@ -44,6 +45,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
+@SuppressWarnings("OctalInteger")
 @RunWith(ParallelRunner.class)
 public class UnixStylePermissionTest {
 
@@ -272,7 +274,7 @@ public class UnixStylePermissionTest {
 
         final Subject mockUser = EasyMock.createMock(Subject.class);
         final int userId = RealmImpl.GUEST_ACCOUNT_ID;
-        final int userGroupIds[] = new int[] { RealmImpl.GUEST_GROUP_ID };
+        final int[] userGroupIds = new int[] { RealmImpl.GUEST_GROUP_ID };
 
         expect(mockUser.hasDbaRole()).andReturn(hasDbaRole);
         expect(mockUser.getId()).andReturn(userId);
@@ -358,6 +360,60 @@ public class UnixStylePermissionTest {
 
         permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0740);
         assertEquals("rwxr-----", permission.toString());
+    }
+
+    private void testSafeSetExecutable(final int inputMode, final int expectedMode) {
+        final int permission = UnixStylePermission.safeSetExecutable(inputMode);
+        final String message = Integer.toOctalString(expectedMode) + "<>" + Integer.toOctalString(permission);
+        assertEquals(message, expectedMode, permission);
+    }
+
+    @Test
+    public void permission_safeSetExecutable() {
+        testSafeSetExecutable(0100, 0100);
+        testSafeSetExecutable(0110, 0110);
+        testSafeSetExecutable(0111, 0111);
+        testSafeSetExecutable(0200, 0300);
+        testSafeSetExecutable(0220, 0330);
+        testSafeSetExecutable(0222, 0333);
+        testSafeSetExecutable(0300, 0300);
+        testSafeSetExecutable(0330, 0330);
+        testSafeSetExecutable(0333, 0333);
+        testSafeSetExecutable(0444, 0555);
+        testSafeSetExecutable(0440, 0550);
+        testSafeSetExecutable(0400, 0500);
+        testSafeSetExecutable(0555, 0555);
+        testSafeSetExecutable(0550, 0550);
+        testSafeSetExecutable(0500, 0500);
+        testSafeSetExecutable(0600, 0700);
+        testSafeSetExecutable(0620, 0730);
+        testSafeSetExecutable(0622, 0733);
+        testSafeSetExecutable(0621, 0731);
+        testSafeSetExecutable(0640, 0750);
+        testSafeSetExecutable(0642, 0753);
+        testSafeSetExecutable(0644, 0755);
+        testSafeSetExecutable(0655, 0755);
+        testSafeSetExecutable(0755, 0755);
+        testSafeSetExecutable(0777, 0777);
+        testSafeSetExecutable(0770, 0770);
+        testSafeSetExecutable(0700, 0700);
+        testSafeSetExecutable(0070, 0170);
+        testSafeSetExecutable(0007, 0107);
+
+        testSafeSetExecutable(07777,07777);
+        testSafeSetExecutable(04777, 04777);
+        testSafeSetExecutable(02777, 02777);
+        testSafeSetExecutable(01777, 01777);
+
+        testSafeSetExecutable(04666, 04777);
+        testSafeSetExecutable(02666, 02777);
+
+        testSafeSetExecutable(07111, 07111);
+        testSafeSetExecutable(07000, 07100);
+        testSafeSetExecutable(04000, 04100);
+
+        testSafeSetExecutable(04100, 04100);
+        testSafeSetExecutable(02010, 02110);
     }
 
     @Test
@@ -579,7 +635,7 @@ public class UnixStylePermissionTest {
         }
     }
 
-    public class TestableUnixStylePermission extends UnixStylePermission {
+    static class TestableUnixStylePermission extends UnixStylePermission {
 
         public TestableUnixStylePermission(final SecurityManager sm, final int ownerId, final int ownerGroupId, final int mode) {
             super(sm, ownerId, ownerGroupId, mode);
@@ -594,7 +650,7 @@ public class UnixStylePermissionTest {
         }
     }
 
-    public class TestableUnixStylePermissionWithCurrentSubject extends UnixStylePermission {
+    static class TestableUnixStylePermissionWithCurrentSubject extends UnixStylePermission {
 
         public TestableUnixStylePermissionWithCurrentSubject(final SecurityManager sm, final int ownerId, final int ownerGroupId, final int mode) {
             super(sm, ownerId, ownerGroupId, mode);
