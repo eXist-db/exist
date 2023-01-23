@@ -362,58 +362,58 @@ public class UnixStylePermissionTest {
         assertEquals("rwxr-----", permission.toString());
     }
 
-    private void testSafeSetExecutable(final int inputMode, final int expectedMode) {
+    private void assertTestSafeExecutable(final int inputMode, final int expectedMode) {
         final int permission = UnixStylePermission.safeSetExecutable(inputMode);
         final String message = Integer.toOctalString(expectedMode) + "<>" + Integer.toOctalString(permission);
         assertEquals(message, expectedMode, permission);
     }
 
     @Test
-    public void permission_safeSetExecutable() {
-        testSafeSetExecutable(0100, 0100);
-        testSafeSetExecutable(0110, 0110);
-        testSafeSetExecutable(0111, 0111);
-        testSafeSetExecutable(0200, 0300);
-        testSafeSetExecutable(0220, 0330);
-        testSafeSetExecutable(0222, 0333);
-        testSafeSetExecutable(0300, 0300);
-        testSafeSetExecutable(0330, 0330);
-        testSafeSetExecutable(0333, 0333);
-        testSafeSetExecutable(0444, 0555);
-        testSafeSetExecutable(0440, 0550);
-        testSafeSetExecutable(0400, 0500);
-        testSafeSetExecutable(0555, 0555);
-        testSafeSetExecutable(0550, 0550);
-        testSafeSetExecutable(0500, 0500);
-        testSafeSetExecutable(0600, 0700);
-        testSafeSetExecutable(0620, 0730);
-        testSafeSetExecutable(0622, 0733);
-        testSafeSetExecutable(0621, 0731);
-        testSafeSetExecutable(0640, 0750);
-        testSafeSetExecutable(0642, 0753);
-        testSafeSetExecutable(0644, 0755);
-        testSafeSetExecutable(0655, 0755);
-        testSafeSetExecutable(0755, 0755);
-        testSafeSetExecutable(0777, 0777);
-        testSafeSetExecutable(0770, 0770);
-        testSafeSetExecutable(0700, 0700);
-        testSafeSetExecutable(0070, 0170);
-        testSafeSetExecutable(0007, 0107);
+    public void testSafeSetExecutable() {
+        assertTestSafeExecutable(0100, 0100);
+        assertTestSafeExecutable(0110, 0110);
+        assertTestSafeExecutable(0111, 0111);
+        assertTestSafeExecutable(0200, 0300);
+        assertTestSafeExecutable(0220, 0330);
+        assertTestSafeExecutable(0222, 0333);
+        assertTestSafeExecutable(0300, 0300);
+        assertTestSafeExecutable(0330, 0330);
+        assertTestSafeExecutable(0333, 0333);
+        assertTestSafeExecutable(0444, 0555);
+        assertTestSafeExecutable(0440, 0550);
+        assertTestSafeExecutable(0400, 0500);
+        assertTestSafeExecutable(0555, 0555);
+        assertTestSafeExecutable(0550, 0550);
+        assertTestSafeExecutable(0500, 0500);
+        assertTestSafeExecutable(0600, 0700);
+        assertTestSafeExecutable(0620, 0730);
+        assertTestSafeExecutable(0622, 0733);
+        assertTestSafeExecutable(0621, 0731);
+        assertTestSafeExecutable(0640, 0750);
+        assertTestSafeExecutable(0642, 0753);
+        assertTestSafeExecutable(0644, 0755);
+        assertTestSafeExecutable(0655, 0755);
+        assertTestSafeExecutable(0755, 0755);
+        assertTestSafeExecutable(0777, 0777);
+        assertTestSafeExecutable(0770, 0770);
+        assertTestSafeExecutable(0700, 0700);
+        assertTestSafeExecutable(0070, 0170);
+        assertTestSafeExecutable(0007, 0107);
 
-        testSafeSetExecutable(07777,07777);
-        testSafeSetExecutable(04777, 04777);
-        testSafeSetExecutable(02777, 02777);
-        testSafeSetExecutable(01777, 01777);
+        assertTestSafeExecutable(07777,07777);
+        assertTestSafeExecutable(04777, 04777);
+        assertTestSafeExecutable(02777, 02777);
+        assertTestSafeExecutable(01777, 01777);
 
-        testSafeSetExecutable(04666, 04777);
-        testSafeSetExecutable(02666, 02777);
+        assertTestSafeExecutable(04666, 04777);
+        assertTestSafeExecutable(02666, 02777);
 
-        testSafeSetExecutable(07111, 07111);
-        testSafeSetExecutable(07000, 07100);
-        testSafeSetExecutable(04000, 04100);
+        assertTestSafeExecutable(07111, 07111);
+        assertTestSafeExecutable(07000, 07100);
+        assertTestSafeExecutable(04000, 04100);
 
-        testSafeSetExecutable(04100, 04100);
-        testSafeSetExecutable(02010, 02110);
+        assertTestSafeExecutable(04100, 04100);
+        assertTestSafeExecutable(02010, 02110);
     }
 
     @Test
