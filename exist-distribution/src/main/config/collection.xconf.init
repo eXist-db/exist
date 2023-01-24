@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <collection xmlns="http://exist-db.org/collection-config/1.0">
     <triggers>
-        <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
+        <!--
+            The global restXQ trigger is now disabled by default
+            you can re-enable it here or just add the trigger to your applications
+            collection.xconf.
+            This was done due to the negative impact of this trigger on overall
+            database performance and memory footprint when installing packages.
+        -->
+        <!--<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>-->
     </triggers>
 </collection>
