@@ -28,7 +28,8 @@ import org.junit.runner.RunWith;
 @XSuite.XSuiteFiles({
         "src/test/xquery/xquery3",
         "src/test/xquery/xquery3/transform",
-        //Reminder - add an individual test like this - "src/test/xquery/xquery3/transform/<test-file>.xqm",
+        // To add an individual test or only run a specific set of tests -
+//         "src/test/xquery/xquery3/serialize.xql",
 })
 public class XQuery3Tests {
 }

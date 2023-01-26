@@ -82,13 +82,16 @@ public class FunSerialize extends BasicFunction {
         try(final StringWriter writer = new StringWriter()) {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
 
-            Sequence seq = args[0];
+            final Sequence input = args[0];
             if (xqSerializer.normalize()) {
                 final String itemSeparator = outputProperties.getProperty(EXistOutputKeys.ITEM_SEPARATOR, DEFAULT_ITEM_SEPARATOR);
-                seq = normalize(this, context, seq, itemSeparator);
+                final Sequence normalized = normalize(this, context, input, itemSeparator);
+                xqSerializer.serialize(normalized);
+            }
+            else {
+                xqSerializer.serialize(input);
             }
 
-            xqSerializer.serialize(seq);
             return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
             throw new XPathException(this, FnModule.SENR0001, e.getMessage());
@@ -97,9 +100,9 @@ public class FunSerialize extends BasicFunction {
 
     public static Properties getSerializationProperties(final Expression callingExpr, final Item parametersItem) throws XPathException {
         final Properties outputProperties;
-        if(parametersItem.getType() == Type.MAP) {
+        if (parametersItem.getType() == Type.MAP) {
             outputProperties = SerializerUtils.getSerializationOptions(callingExpr, (AbstractMapType) parametersItem);
-        } else if(isSerializationParametersElement(parametersItem)) {
+        } else if (isSerializationParametersElement(parametersItem)) {
             outputProperties = new Properties();
             SerializerUtils.getSerializationOptions(callingExpr, (NodeValue) parametersItem, outputProperties);
         } else {
@@ -144,20 +147,33 @@ public class FunSerialize extends BasicFunction {
         if (input.isEmpty())
             // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
             {return StringValue.EMPTY_STRING;}
-        final String _separator = itemSeparator == null ? DEFAULT_ITEM_SEPARATOR : itemSeparator;
         final ValueSequence temp = new ValueSequence(input.getItemCount());
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item next = i.nextItem();
-            if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE || next.getType() == Type.FUNCTION_REFERENCE)
-                    {throw new XPathException(callingExpr, FnModule.SENR0001,
-                        "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");}
+            final int itemType = next.getType();
+            if (Type.subTypeOf(itemType, Type.NODE)) {
+                if (itemType == Type.ATTRIBUTE || itemType == Type.NAMESPACE || itemType == Type.FUNCTION_REFERENCE) {
+                    throw new XPathException(callingExpr, FnModule.SENR0001,
+                        "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
+                }
+//                if (itemType == Type.TEXT || itemType == Type.COMMENT) {
+//                    final StringValue stringRepresentation = new StringValue(callingExpr, next.getStringValue());
+//                    if (stringRepresentation.getStringValue().isEmpty()) {
+//                        continue;
+//                    }
+//                    temp.add(stringRepresentation);
+//                }
                 temp.add(next);
             } else {
                 // atomic value
                 // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
                 // casting it to an xs:string and copy the string representation to the new sequence;"
-                temp.add(new StringValue(callingExpr, next.getStringValue()));
+                final StringValue stringRepresentation = new StringValue(callingExpr, next.getStringValue());
+                // skip values that evaluate to an empty string
+                if (stringRepresentation.getStringValue().isEmpty()) {
+                    continue;
+                }
+                temp.add(stringRepresentation);
             }
         }
 
@@ -170,10 +186,12 @@ public class FunSerialize extends BasicFunction {
                 if (Type.subTypeOf(next.getType(), Type.NODE)) {
                     next.copyTo(context.getBroker(), receiver);
                 } else {
-                    receiver.characters(next.getStringValue());
+                    final String stringValue = next.getStringValue();
+                    receiver.characters(stringValue);
                 }
+                // add itemSeparator if there is a next item and the current item is not an empty string
                 if (i.hasNext()) {
-                    receiver.characters(_separator);
+                    receiver.characters(itemSeparator);
                 }
             }
             return (DocumentImpl)receiver.getDocument();
