@@ -144,6 +144,7 @@ public class FunSerialize extends BasicFunction {
         if (input.isEmpty())
             // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
             {return StringValue.EMPTY_STRING;}
+        final String _separator = itemSeparator == null ? DEFAULT_ITEM_SEPARATOR : itemSeparator;
         final ValueSequence temp = new ValueSequence(input.getItemCount());
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item next = i.nextItem();
@@ -151,25 +152,12 @@ public class FunSerialize extends BasicFunction {
                 if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE || next.getType() == Type.FUNCTION_REFERENCE)
                     {throw new XPathException(callingExpr, FnModule.SENR0001,
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");}
-                if (itemSeparator != null && itemSeparator.length() > 0 && !temp.isEmpty()) {
-                    temp.add(new StringValue(itemSeparator + next.getStringValue()));
-                } else {
-                    temp.add(next);
-                }
+                temp.add(next);
             } else {
                 // atomic value
-                Item last = null;
-                if (!temp.isEmpty())
-                    {last = temp.itemAt(temp.getItemCount() - 1);}
-                if (last != null && last.getType() == Type.STRING)
-                    // "For each subsequence of adjacent strings in S2, copy a single string to the new sequence
-                    // equal to the values of the strings in the subsequence concatenated in order, each separated
-                    // by a single space."
-                    {((StringValue)last).append((itemSeparator == null ? " " : itemSeparator) + next.getStringValue());}
-                else
-                    // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
-                    // casting it to an xs:string and copy the string representation to the new sequence;"
-                    {temp.add(new StringValue(callingExpr, next.getStringValue()));}
+                // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
+                // casting it to an xs:string and copy the string representation to the new sequence;"
+                temp.add(new StringValue(callingExpr, next.getStringValue()));
             }
         }
 
@@ -183,6 +171,9 @@ public class FunSerialize extends BasicFunction {
                     next.copyTo(context.getBroker(), receiver);
                 } else {
                     receiver.characters(next.getStringValue());
+                }
+                if (i.hasNext()) {
+                    receiver.characters(_separator);
                 }
             }
             return (DocumentImpl)receiver.getDocument();

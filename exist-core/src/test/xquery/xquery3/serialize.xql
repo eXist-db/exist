@@ -927,3 +927,11 @@ function ser:serialize-html-5-needs-escape-elements() {
         => serialize($params)
         => normalize-space()
 };
+
+(: test for https://github.com/eXist-db/exist/issues/4702 :)
+declare
+    %test:assertEquals("<a>foo</a> <b>bar</b>")
+function ser:sequence-of-nodes() {
+    (<a>foo</a>, <b>bar</b>) => serialize()
+};
+
