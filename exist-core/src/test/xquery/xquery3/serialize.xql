@@ -955,6 +955,13 @@ function ser:sequence-of-nodes() {
     (<a>foo</a>, <b>bar</b>) => serialize()
 };
 
+declare
+    %test:assertEquals("[|]")
+function ser:sequence-skip-empty-text-node() {
+    fn:serialize((<a>[</a>, <a>
+    </a>, <a>]</a>)/text(), map {"item-separator": "|"})
+};
+
 
 declare
     %test:assertEquals("foo")
