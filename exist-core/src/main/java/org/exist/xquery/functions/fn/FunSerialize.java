@@ -153,16 +153,13 @@ public class FunSerialize extends BasicFunction {
         final ValueSequence step1 = new ValueSequence();
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item next = i.nextItem();
-            if (next.getType() != Type.ARRAY) {
+            if (next.getType() == Type.ARRAY) {
+                final Sequence sequence = ArrayType.flatten(next);
+                for (final SequenceIterator si = sequence.iterate(); si.hasNext(); ) {
+                    step1.add(si.nextItem());
+                }
+            } else {
                 step1.add(next);
-                continue;
-            }
-            final Sequence sequence = ArrayType.flatten(next);
-            if (sequence.isEmpty()) {
-                continue;
-            }
-            for (final SequenceIterator si = sequence.iterate(); si.hasNext(); ) {
-                step1.add(si.nextItem());
             }
         }
 
