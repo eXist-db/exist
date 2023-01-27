@@ -993,3 +993,9 @@ declare
 function ser:sequence-of-empty-arrays-serializes-to-empty-string() {
     serialize(([],[]), map{"item-separator": "|"})
 };
+
+declare
+    %test:assertEquals("1|2")
+function ser:item-separator-applies-to-array-members() {
+    serialize(([1,2]), map{"item-separator":"|"})
+};

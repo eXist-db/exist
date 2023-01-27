@@ -145,11 +145,29 @@ public class FunSerialize extends BasicFunction {
      * @throws XPathException in case of dynamic error.
      */
     public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input, final String itemSeparator) throws XPathException {
-        if (input.isEmpty())
-            // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
-            {return StringValue.EMPTY_STRING;}
-        final ValueSequence temp = new ValueSequence(input.getItemCount());
+        // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
+        if (input.isEmpty()) {
+            return StringValue.EMPTY_STRING;
+        }
+        // flatten arrays
+        final ValueSequence step1 = new ValueSequence();
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
+            final Item next = i.nextItem();
+            if (next.getType() != Type.ARRAY) {
+                step1.add(next);
+                continue;
+            }
+            final Sequence sequence = ArrayType.flatten(next);
+            if (sequence.isEmpty()) {
+                continue;
+            }
+            for (final SequenceIterator si = sequence.iterate(); si.hasNext(); ) {
+                step1.add(si.nextItem());
+            }
+        }
+
+        final ValueSequence step2 = new ValueSequence(step1.getItemCount());
+        for (final SequenceIterator i = step1.iterate(); i.hasNext(); ) {
             final Item next = i.nextItem();
             final int itemType = next.getType();
             if (Type.subTypeOf(itemType, Type.NODE)) {
@@ -157,20 +175,13 @@ public class FunSerialize extends BasicFunction {
                     throw new XPathException(callingExpr, FnModule.SENR0001,
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
                 }
-                temp.add(next);
-            } else if (itemType == Type.ARRAY) {
-                 final Sequence sequence = ArrayType.flatten(next);
-                 if (sequence.isEmpty()) {
-                     continue;
-                 }
-                 temp.add(new StringValue(callingExpr, sequence.getStringValue()));
+                step2.add(next);
             } else {
                 // atomic value
                 // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
                 // casting it to an xs:string and copy the string representation to the new sequence;"
                 final StringValue stringRepresentation = new StringValue(callingExpr, next.getStringValue());
-                // skip values that evaluate to an empty string
-                temp.add(stringRepresentation);
+                step2.add(stringRepresentation);
             }
         }
 
@@ -178,7 +189,7 @@ public class FunSerialize extends BasicFunction {
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(callingExpr, builder, true);
-            for (final SequenceIterator i = temp.iterate(); i.hasNext(); ) {
+            for (final SequenceIterator i = step2.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();
                 if (Type.subTypeOf(next.getType(), Type.NODE)) {
                     next.copyTo(context.getBroker(), receiver);
