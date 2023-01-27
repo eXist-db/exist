@@ -989,7 +989,7 @@ function ser:array-with-members-serializes-to-empty-string() {
 };
 
 declare
-    %test:assertEquals("|")
+    %test:assertEquals("")
 function ser:sequence-of-empty-arrays-serializes-to-empty-string() {
     serialize(([],[]), map{"item-separator": "|"})
 };

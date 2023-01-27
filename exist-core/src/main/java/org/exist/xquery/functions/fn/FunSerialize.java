@@ -28,6 +28,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
@@ -157,6 +158,12 @@ public class FunSerialize extends BasicFunction {
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
                 }
                 temp.add(next);
+            } else if (itemType == Type.ARRAY) {
+                 final Sequence sequence = ArrayType.flatten(next);
+                 if (sequence.isEmpty()) {
+                     continue;
+                 }
+                 temp.add(new StringValue(callingExpr, sequence.getStringValue()));
             } else {
                 // atomic value
                 // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
