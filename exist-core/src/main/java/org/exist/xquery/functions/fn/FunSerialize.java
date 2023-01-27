@@ -156,13 +156,6 @@ public class FunSerialize extends BasicFunction {
                     throw new XPathException(callingExpr, FnModule.SENR0001,
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
                 }
-//                if (itemType == Type.TEXT || itemType == Type.COMMENT) {
-//                    final StringValue stringRepresentation = new StringValue(callingExpr, next.getStringValue());
-//                    if (stringRepresentation.getStringValue().isEmpty()) {
-//                        continue;
-//                    }
-//                    temp.add(stringRepresentation);
-//                }
                 temp.add(next);
             } else {
                 // atomic value
@@ -189,7 +182,7 @@ public class FunSerialize extends BasicFunction {
                     final String stringValue = next.getStringValue();
                     receiver.characters(stringValue);
                 }
-                // add itemSeparator if there is a next item and the current item is not an empty string
+                // add itemSeparator if there is a next item
                 if (i.hasNext()) {
                     receiver.characters(itemSeparator);
                 }
