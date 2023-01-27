@@ -958,31 +958,38 @@ function ser:sequence-of-nodes() {
 declare
     %test:assertEquals("[|]")
 function ser:sequence-skip-empty-text-node() {
-    fn:serialize((<a>[</a>, <a>
-    </a>, <a>]</a>)/text(), map {"item-separator": "|"})
+    (<a>[</a>, <a>
+        </a>, <a>]</a>)/text()
+    => serialize(map {"item-separator": "|"})
 };
 
+declare
+    %test:assertEquals("||")
+function ser:sequence-dont-skip-empty-string() {
+    serialize(("", "", ""), map {"item-separator": "|"})
+};
 
 declare
     %test:assertEquals("foo")
 function ser:skip-empty-no-separator() {
-    (<a>foo</a>, <b></b>)/text() => serialize(map{"item-separator": "!"})
+    (<a>foo</a>, <b></b>)/text()
+    => serialize(map{"item-separator": "!"})
 };
 
 declare
     %test:assertEquals("")
 function ser:empty-array-serializes-to-empty-string() {
-    [] => serialize()
+    serialize([])
 };
 
 declare
     %test:assertEquals("")
 function ser:array-with-members-serializes-to-empty-string() {
-    ["", ()] => serialize()
+    serialize(["", ()])
 };
 
 declare
-    %test:assertEquals("")
+    %test:assertEquals("|")
 function ser:sequence-of-empty-arrays-serializes-to-empty-string() {
-    ([],[]) => serialize()
+    serialize(([],[]), map{"item-separator": "|"})
 };

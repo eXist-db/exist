@@ -163,9 +163,6 @@ public class FunSerialize extends BasicFunction {
                 // casting it to an xs:string and copy the string representation to the new sequence;"
                 final StringValue stringRepresentation = new StringValue(callingExpr, next.getStringValue());
                 // skip values that evaluate to an empty string
-                if (stringRepresentation.getStringValue().isEmpty()) {
-                    continue;
-                }
                 temp.add(stringRepresentation);
             }
         }
