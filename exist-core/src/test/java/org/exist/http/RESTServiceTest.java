@@ -31,15 +31,27 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Optional;
 import javax.xml.parsers.ParserConfigurationException;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.http.HttpStatus;
+import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.ExistWebServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
@@ -157,6 +169,36 @@ public class RESTServiceTest {
                     "    <header>{request:get-header('Authorization')}</header>\n" +
                     "</authorization>\n";
 
+    private static final XmldbURI TEST_XSLPI_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xslpi");
+
+    private static final String XSLT_WITH_XSLPI =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" exclude-result-prefixes=\"xs\" version=\"2.0\">\n" +
+            "  <xsl:output method=\"xml\" indent=\"no\" media-type=\"application/xml\" omit-xml-declaration=\"yes\"/>\n" +
+            "  <xsl:template match=\"processing-instruction()\" priority=\"2\"/>\n" +
+            "  <xsl:template match=\"bookmap\">\n" +
+            "    <copied>\n" +
+            "      <xsl:copy>\n" +
+            "        <xsl:apply-templates select=\"node()|@*\"/>\n" +
+            "      </xsl:copy>\n" +
+            "    </copied>\n" +
+            "  </xsl:template>\n" +
+            "  <xsl:template match=\"node()|@*\">\n" +
+            "    <xsl:copy>\n" +
+            "      <xsl:apply-templates select=\"node()|@*\"/>\n" +
+            "    </xsl:copy>\n" +
+            "  </xsl:template>\n" +
+            "</xsl:stylesheet>";
+
+    private static final XmldbURI TEST_XSLT_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xslt");
+
+    private static final String XML_WITH_XSLPI =
+            "<?xml-stylesheet type=\"text/xsl\" href=\"" + TEST_XSLT_DOC_WITH_XSLPI_URI.lastSegmentString() + "\"?>\n" +
+            "<bookmap id=\"bookmap-1\"/>";
+
+    private static final XmldbURI TEST_XML_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xml");
+
+
     private static String credentials;
     private static String badCredentials;
 
@@ -237,11 +279,28 @@ public class RESTServiceTest {
         return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test//../test/A-Za-z0-9_~!$&'()*+,;=@%20%23%25%27%2F%3F%5B%5Däöü.xml";
     }
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
-    public static void createCredentials() {
+    public static void setup() throws PermissionDeniedException, IOException, TriggerException {
         credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
         badCredentials = Base64.encodeBase64String("johndoe:this pw should fail".getBytes(UTF_8));
+
+        final BrokerPool pool =  existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_XSLPI_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XSLT_DOC_WITH_XSLPI_URI, new StringInputSource(XSLT_WITH_XSLPI), MimeType.XML_TYPE, col);
+                broker.storeDocument(transaction, TEST_XML_DOC_WITH_XSLPI_URI, new StringInputSource(XML_WITH_XSLPI), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            transaction.commit();
+        } catch (EXistException | SAXException | LockException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -1022,6 +1081,45 @@ try {
                             "    </sm:id>\n" +
                             "    <header>Bearer some-token</header>\n" +
                             "</authorization>").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void getDocWithXslPi() throws IOException {
+        final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI);
+        final HttpURLConnection connect = getConnection(docWithXslPiUri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+
+            // NOTE(AR) At present the RESTServer will force XHTML with text/html mimetype and indenting if an xsl-pi is used... this should probably be improved in future!
+            assertEquals("Server returned content type " + contentType, "text/html", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<copied>\n" +
+                    "    <bookmap id=\"bookmap-1\"></bookmap>\n" +
+                    "</copied>\n").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
