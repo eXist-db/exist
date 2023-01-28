@@ -84,8 +84,6 @@ import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Serializer base class, used to serialize a document or document fragment
  * back to XML. A serializer may be obtained by calling DBBroker.getSerializer().
@@ -105,7 +103,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class Serializer implements XMLReader {
 
-    protected final static Logger LOG = LogManager.getLogger(Serializer.class);
+    protected static final Logger LOG = LogManager.getLogger(Serializer.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
     public static final String OUTPUT_DOCTYPE_ATTRIBUTE = "output-doctype";
@@ -127,46 +125,46 @@ public abstract class Serializer implements XMLReader {
     public static final String PROPERTY_SESSION_ID = "serialization.session-id";
 
     // constants to configure the highlighting of matches in text and attributes
-    public final static int TAG_NONE = 0x0;
-    public final static int TAG_ELEMENT_MATCHES = 0x1;
-    public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
-    public final static int TAG_BOTH = 0x3;
+    public static final int TAG_NONE = 0x0;
+    public static final int TAG_ELEMENT_MATCHES = 0x1;
+    public static final int TAG_ATTRIBUTE_MATCHES = 0x2;
+    public static final int TAG_BOTH = 0x3;
 
-    public final static int EXIST_ID_NONE = 0;
-    public final static int EXIST_ID_ELEMENT = 1;
-    public final static int EXIST_ID_ALL = 2;
+    public static final int EXIST_ID_NONE = 0;
+    public static final int EXIST_ID_ELEMENT = 1;
+    public static final int EXIST_ID_ALL = 2;
 
     protected int showId = EXIST_ID_NONE;
 
-    public final static String GENERATE_DOC_EVENTS = "sax-document-events";
-    public final static String ENCODING = "encoding";
+    public static final String GENERATE_DOC_EVENTS = "sax-document-events";
+    public static final String ENCODING = "encoding";
 
-    protected final static QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
-    protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_COMPILATION_TIME_QNAME = new QName("compilation-time", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_EXECUTION_TIME_QNAME = new QName("execution-time", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
-    protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
+    private static final QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_COMPILATION_TIME_QNAME = new QName("compilation-time", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_EXECUTION_TIME_QNAME = new QName("execution-time", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
+    private static final QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
 
     // required for XQJ/typed information implementation
     // -----------------------------------------
-    protected final static QName ELEM_DOC_QNAME = new QName("document", Namespaces.EXIST_NS, "exist");
-    protected final static QName ELEM_ATTR_QNAME = new QName("attribute", Namespaces.EXIST_NS, "exist");
-    protected final static QName ELEM_TEXT_QNAME = new QName("text", Namespaces.EXIST_NS, "exist");
+    private static final QName ELEM_DOC_QNAME = new QName("document", Namespaces.EXIST_NS, "exist");
+    private static final QName ELEM_ATTR_QNAME = new QName("attribute", Namespaces.EXIST_NS, "exist");
+    private static final QName ELEM_TEXT_QNAME = new QName("text", Namespaces.EXIST_NS, "exist");
 
-    protected final static QName ATTR_URI_QNAME = new QName("uri", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_TNS_QNAME = new QName("target-namespace", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_LOCAL_QNAME = new QName("local", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_PREFIX_QNAME = new QName("prefix", Namespaces.EXIST_NS, "exist");
-    protected final static QName ATTR_HAS_ELEMENT_QNAME = new QName("has-element", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_URI_QNAME = new QName("uri", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_TNS_QNAME = new QName("target-namespace", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_LOCAL_QNAME = new QName("local", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_PREFIX_QNAME = new QName("prefix", Namespaces.EXIST_NS, "exist");
+    private static final QName ATTR_HAS_ELEMENT_QNAME = new QName("has-element", Namespaces.EXIST_NS, "exist");
     // -----------------------------------------
 
 
     protected final DBBroker broker;
-    protected final String encoding = UTF_8.name();
+
     private @Nullable EntityResolver entityResolver = null;
 
     private @Nullable ErrorHandler errorHandler = null;
@@ -175,14 +173,14 @@ public abstract class Serializer implements XMLReader {
     protected boolean createContainerElements = false;
 
     protected final Properties outputProperties = new Properties();
-    protected @Nullable Templates templates = null;
-    protected @Nullable TransformerHandler xslHandler = null;
-    protected final XIncludeFilter xinclude;
-    protected final CustomMatchListenerFactory customMatchListeners;
+    private @Nullable Templates templates = null;
+    private @Nullable TransformerHandler xslHandler = null;
+    private final XIncludeFilter xinclude;
+    private final CustomMatchListenerFactory customMatchListeners;
     protected @Nullable Receiver receiver = null;
-    protected @Nullable LexicalHandler lexicalHandler = null;
-    protected @Nullable Map<Integer, String> useCharacterMaps = null;
-    protected @Nullable Subject user = null;
+    private @Nullable LexicalHandler lexicalHandler = null;
+    private @Nullable Map<Integer, String> useCharacterMaps = null;
+    private @Nullable Subject user = null;
 
     protected @Nullable XQueryContext.HttpContext httpContext = null;
 
