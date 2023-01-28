@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import com.evolvedbinary.j8fu.lazy.LazyVal;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -179,7 +180,7 @@ public abstract class Serializer implements XMLReader {
     private final CustomMatchListenerFactory customMatchListeners;
     protected @Nullable Receiver receiver = null;
     private @Nullable LexicalHandler lexicalHandler = null;
-    private @Nullable Map<Integer, String> useCharacterMaps = null;
+    private @Nullable Int2ObjectMap<String> useCharacterMaps = null;
     private @Nullable Subject user = null;
 
     protected @Nullable XQueryContext.HttpContext httpContext = null;
@@ -255,7 +256,7 @@ public abstract class Serializer implements XMLReader {
             if (key.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
                 lexicalHandler = (LexicalHandler) properties.get(key);
             } else if (key.equals(EXistOutputKeys.USE_CHARACTER_MAPS)) {
-                useCharacterMaps = (Map<Integer, String>) properties.get(key);
+                useCharacterMaps = (Int2ObjectMap<String>) properties.get(key);
             } else {
                 setProperty(key, properties.getProperty(key));
             }

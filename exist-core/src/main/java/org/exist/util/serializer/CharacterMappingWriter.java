@@ -22,15 +22,14 @@
 
 package org.exist.util.serializer;
 
-import org.apache.commons.lang3.StringUtils;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.exist.dom.QName;
 import org.exist.xquery.util.SerializerUtils;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.TransformerException;
 import java.io.Writer;
 import java.nio.CharBuffer;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -40,16 +39,12 @@ import java.util.Properties;
 public class CharacterMappingWriter implements SerializerWriter {
 
     private SerializerWriter wrappedSerializerWriter;
-    private Map<Integer, String> characterMap;
+    private @Nullable Int2ObjectMap<String> characterMap = null;
 
     @Override
     public void setOutputProperties(final Properties properties) {
-        final Map<Integer, String> readCharacterMap = SerializerUtils.getCharacterMap(properties);
-        if (readCharacterMap == null) {
-            this.characterMap = new HashMap<>();
-        } else {
-            this.characterMap = readCharacterMap;
-        }
+        this.characterMap = SerializerUtils.getCharacterMap(properties);
+
         if (wrappedSerializerWriter != null) {
             wrappedSerializerWriter.setOutputProperties(properties);
         }
@@ -141,17 +136,20 @@ public class CharacterMappingWriter implements SerializerWriter {
     }
 
     private StringBuilder mapCodePoints(final CharSequence charSequence, final int start, final int len) {
-        final char[] useBuffer = new char[2];
+        @Nullable char[] useBuffer = null;
         final StringBuilder sb = new StringBuilder();
         for (int i = start; i < len;) {
             final int codePoint = Character.codePointAt(charSequence, i);
             i += Character.charCount(codePoint);
-            final String content = characterMap.get(codePoint);
-            if (!StringUtils.isEmpty(content)) {
-                sb.append(content);
-            } else {
+            @Nullable final String content = characterMap == null ? null : characterMap.get(codePoint);
+            if (content == null || content.isEmpty()) {
+                if (useBuffer == null) {
+                    useBuffer = new char[2];
+                }
                 final int sz = Character.toChars(codePoint, useBuffer, 0);
                 sb.append(useBuffer, 0, sz);
+            } else {
+                sb.append(content);
             }
         }
         return sb;
@@ -199,7 +197,7 @@ public class CharacterMappingWriter implements SerializerWriter {
 
     @Override
     public void reset() {
-        characterMap = new HashMap<>();
+        this.characterMap = null;
         if (wrappedSerializerWriter != null) {
             wrappedSerializerWriter.reset();
         }

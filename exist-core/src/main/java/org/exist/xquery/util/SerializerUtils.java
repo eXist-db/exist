@@ -22,6 +22,9 @@
 package org.exist.xquery.util;
 
 import io.lacuna.bifurcan.IEntry;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -298,12 +301,12 @@ public class SerializerUtils {
         return otherId.getTreeLevel();
     }
 
-    public static void setCharacterMap(final Properties serializationProperties, final Map<Integer, String> characterMap) {
+    public static void setCharacterMap(final Properties serializationProperties, final Int2ObjectMap<String> characterMap) {
         serializationProperties.put(EXistOutputKeys.USE_CHARACTER_MAPS, characterMap);
     }
 
-    public static Map<Integer, String> getCharacterMap(final Properties serializationProperties) {
-        return (Map<Integer, String>) serializationProperties.get(EXistOutputKeys.USE_CHARACTER_MAPS);
+    public static Int2ObjectMap<String> getCharacterMap(final Properties serializationProperties) {
+        return (Int2ObjectMap<String>) serializationProperties.get(EXistOutputKeys.USE_CHARACTER_MAPS);
     }
 
     private static void readSerializationProperty(final XMLStreamReader reader, final String key, final Properties serializationProperties) throws XPathException, XMLStreamException {
@@ -313,7 +316,7 @@ public class SerializerUtils {
             if (attributeCount > 0) {
                 throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
             }
-            final Map<Integer, String> characterMap = readUseCharacterMaps(reader);
+            final Int2ObjectMap<String> characterMap = readUseCharacterMaps(reader);
             setCharacterMap(serializationProperties, characterMap);
         } else {
             String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
@@ -332,12 +335,12 @@ public class SerializerUtils {
         }
     }
 
-    private static Map<Integer, String> readUseCharacterMaps(final XMLStreamReader reader) throws XMLStreamException, XPathException {
-
+    private static Int2ObjectMap<String> readUseCharacterMaps(final XMLStreamReader reader) throws XMLStreamException, XPathException {
         if (reader.getAttributeCount() > 0) {
             throw new XPathException(ErrorCodes.SEPM0017, EXistOutputKeys.USE_CHARACTER_MAPS + " element has attributes. It should contain only character-map children");
         }
-        final Map<Integer, String> characterMap = new HashMap<>();
+
+        final Int2ObjectMap<String> characterMap = new Int2ObjectOpenHashMap(Hash.DEFAULT_INITIAL_SIZE, Hash.FAST_LOAD_FACTOR);
         int depth = 0;
         while (reader.hasNext()) {
             /* advance to the next child element, or the end, of the use-character-maps element */
@@ -360,7 +363,7 @@ public class SerializerUtils {
      *
      * @throws XPathException if the element has a bad prefix, or unrecognized attributes
      */
-    private static void readCharacterMap(final XMLStreamReader reader, final Map<Integer, String> characterMap) throws XPathException {
+    private static void readCharacterMap(final XMLStreamReader reader, final Int2ObjectMap<String> characterMap) throws XPathException {
 
         final javax.xml.namespace.QName qName = reader.getName();
         if (!qName.getPrefix().equals(OUTPUT_NAMESPACE)) {
@@ -376,11 +379,12 @@ public class SerializerUtils {
                         EXistOutputKeys.USE_CHARACTER_MAPS + " element character must be a single character string, was: " + character);
             }
 
-            final String mapString = readCharacterMapAttribute(reader, MAP_STRING_ATTR_KEY);
             final int mapKey = character.charAt(0);
             if (characterMap.containsKey(mapKey)) {
                 throw new XPathException(ErrorCodes.SEPM0018, "Duplicate character map entry for key: " + character);
             }
+
+            final String mapString = readCharacterMapAttribute(reader, MAP_STRING_ATTR_KEY);
             characterMap.put(mapKey, mapString);
         } else {
             throw new XPathException(ErrorCodes.SEPM0017, EXistOutputKeys.USE_CHARACTER_MAPS + " element must be character-map, was: " + qName);
@@ -586,7 +590,7 @@ public class SerializerUtils {
                 break;
             case Type.MAP:
                 if (parameterConvention.getParameterName().equals(W3CParameterConvention.USE_CHARACTER_MAPS.parameterName)) {
-                    final Map<Integer, String> characterMap = createCharacterMap((MapType) parameterValue, parameterConvention);
+                    final Int2ObjectMap<String> characterMap = createCharacterMap((MapType) parameterValue, parameterConvention);
                     setCharacterMap(properties, characterMap);
                 } else {
                     // There should not be any such parameter, other than use-character-maps
@@ -616,10 +620,10 @@ public class SerializerUtils {
         return false;
     }
 
-    private static Map<Integer, String> createCharacterMap(final MapType map, final ParameterConvention<?> parameterConvention) throws XPathException {
+    private static Int2ObjectMap<String> createCharacterMap(final MapType map, final ParameterConvention<?> parameterConvention) throws XPathException {
 
         final String localParameterName = parameterConvention.getLocalParameterName();
-        final Map<Integer, String> characterMap = new HashMap<>();
+        final Int2ObjectMap<String> characterMap = new Int2ObjectOpenHashMap<>(Hash.DEFAULT_INITIAL_SIZE, Hash.FAST_LOAD_FACTOR);
         for (final IEntry<AtomicValue, Sequence> entry : map) {
             final AtomicValue key = entry.key();
             if (!Type.subTypeOf(key.getType(), Type.STRING)) {
