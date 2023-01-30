@@ -173,6 +173,7 @@ public abstract class Serializer implements XMLReader {
     private final LazyVal<SAXTransformerFactory> factory;
     protected boolean createContainerElements = false;
 
+    private final Properties defaultOutputProperties = new Properties();
     protected final Properties outputProperties = new Properties();
     private @Nullable Templates templates = null;
     private @Nullable TransformerHandler xslHandler = null;
@@ -204,24 +205,24 @@ public abstract class Serializer implements XMLReader {
         this.customMatchListeners = new CustomMatchListenerFactory(broker, config, chainOfReceivers);
         this.receiver = xinclude;
 
-        outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, config.getProperty(PROPERTY_ENABLE_XSL, "no"));
+        defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, config.getProperty(PROPERTY_ENABLE_XSL, "no"));
 
         @Nullable String option = null;
 
         if ((option = (String) config.getProperty(PROPERTY_ENABLE_XINCLUDE)) != null) {
-            outputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
+            defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
         }
 
         if ((option = (String) config.getProperty(PROPERTY_INDENT)) != null) {
-            outputProperties.setProperty(OutputKeys.INDENT, option);
+            defaultOutputProperties.setProperty(OutputKeys.INDENT, option);
         }
 
         if ((option = (String) config.getProperty(PROPERTY_COMPRESS_OUTPUT)) != null) {
-            outputProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
+            defaultOutputProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
         }
 
         if ((option = (String) config.getProperty(PROPERTY_ADD_EXIST_ID)) != null) {
-            outputProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
+            defaultOutputProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
         }
 
         boolean tagElements = true, tagAttributes = false;
@@ -240,9 +241,12 @@ public abstract class Serializer implements XMLReader {
         } else {
             option = "none";
         }
-        outputProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
+        defaultOutputProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
 
-        outputProperties.setProperty(GENERATE_DOC_EVENTS, "true");
+        defaultOutputProperties.setProperty(GENERATE_DOC_EVENTS, "true");
+
+        // NOTE(AR) copy the default output properties to output properties (which is mutable!)
+        outputProperties.putAll(defaultOutputProperties);
     }
 
     public void setProperties(@Nullable Properties properties)
@@ -431,14 +435,21 @@ public abstract class Serializer implements XMLReader {
      * Reset the class to its initial state.
      */
     public void reset() {
-        receiver = xinclude;
-        xinclude.reset();
-        xslHandler = null;
-        templates = null;
-        outputProperties.clear();
-        showId = EXIST_ID_NONE;
-        httpContext = null;
-        documentStarted = false;
+        this.showId = EXIST_ID_NONE;
+        this.entityResolver = null;
+        this.errorHandler = null;
+        this.createContainerElements = false;
+        this.outputProperties.clear();
+        this.outputProperties.putAll(defaultOutputProperties);
+        this.templates = null;
+        this.xslHandler = null;
+        this.xinclude.reset();
+        this.receiver = xinclude;
+        this.lexicalHandler = null;
+        this.useCharacterMaps = null;
+        this.user = null;
+        this.httpContext = null;
+        this.documentStarted = false;
     }
 
     public String serialize(final DocumentImpl doc) throws SAXException {
