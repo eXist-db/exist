@@ -508,14 +508,23 @@ public abstract class Serializer implements XMLReader {
     }
 
     public void serialize(final NodeValue n, final Writer out) throws SAXException {
-        try {
-            if (n.getItemType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
-                setStylesheetFromProperties((Document) n);
-            } else {
-                setStylesheetFromProperties(n.getOwnerDocument());
+        serialize(n, out, true);
+    }
+
+    public void serialize(final NodeValue n, final Writer out, final boolean prepareStylesheet) throws SAXException {
+        final Document doc;
+        if (n.getItemType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
+            doc = (Document) n;
+        } else {
+            doc = n.getOwnerDocument();
+        }
+
+        if (prepareStylesheet) {
+            try {
+                prepareStylesheets(doc);
+            } catch (final TransformerConfigurationException e) {
+                throw new SAXException(e.getMessage(), e);
             }
-        } catch (final TransformerConfigurationException e) {
-            throw new SAXException(e.getMessage(), e);
         }
 
         final SAXSerializer prettyPrinter;
@@ -567,10 +576,16 @@ public abstract class Serializer implements XMLReader {
     }
 
     public void serialize(final NodeProxy p, final Writer out) throws SAXException {
-        try {
-            setStylesheetFromProperties(p.getOwnerDocument());
-        } catch (final TransformerConfigurationException e) {
-            throw new SAXException(e.getMessage(), e);
+        serialize(p, out, true);
+    }
+
+    public void serialize(final NodeProxy p, final Writer out, final boolean prepareStylesheet) throws SAXException {
+        if (prepareStylesheet) {
+            try {
+                prepareStylesheets(p.getOwnerDocument());
+            } catch (final TransformerConfigurationException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
         }
 
         final SAXSerializer prettyPrinter;
@@ -607,7 +622,7 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-    public void prepareStylesheets(final DocumentImpl doc) throws TransformerConfigurationException {
+    private void prepareStylesheets(final Document doc) throws TransformerConfigurationException {
         if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
             @Nullable final String stylesheet = hasXSLPi(doc);
             if (stylesheet != null) {
@@ -877,7 +892,7 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-    protected void setXSLHandler(final NodeProxy root, final boolean applyFilters) {
+    protected void setXSLHandler(@Nullable final NodeProxy root, final boolean applyFilters) {
         if (templates != null && xslHandler != null) {
             final SAXResult result = new SAXResult();
             final boolean processXInclude =
@@ -925,17 +940,8 @@ public abstract class Serializer implements XMLReader {
     }
 
     public void toSAX(final DocumentImpl doc) throws SAXException {
-        if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
-            final String stylesheet = hasXSLPi(doc);
-            if (stylesheet != null)
-                try {
-                    setStylesheet(doc, stylesheet);
-                } catch (final TransformerConfigurationException e) {
-                    throw new SAXException(e.getMessage(), e);
-                }
-        }
         try {
-            setStylesheetFromProperties(doc);
+            prepareStylesheets(doc);
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
