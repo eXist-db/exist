@@ -186,6 +186,7 @@ public class FunSerialize extends BasicFunction {
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(callingExpr, builder, true);
+            final String safeItemSeparator = itemSeparator == null ? "" : itemSeparator;
             for (final SequenceIterator i = step2.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();
                 if (Type.subTypeOf(next.getType(), Type.NODE)) {
@@ -196,7 +197,7 @@ public class FunSerialize extends BasicFunction {
                 }
                 // add itemSeparator if there is a next item
                 if (i.hasNext()) {
-                    receiver.characters(itemSeparator);
+                    receiver.characters(safeItemSeparator);
                 }
             }
             return (DocumentImpl)receiver.getDocument();
