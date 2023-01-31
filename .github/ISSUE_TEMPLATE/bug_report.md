@@ -80,10 +80,12 @@ If the above isn't working, please tell us the exact steps you took when you enc
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Context (please always complete the following information):**
- - OS: [e.g. macOS 10.14.6]
- - eXist-db version: [e.g. 5.1.1]
- - Java Version [e.g. Java8u121]
+**Context (please always complete the following information)**
+One option is to use [xst](https://www.npmjs.com/package/@existdb/xst), and copy and paste the output produced by running `xst info` here:**
+
+ - Build: [eXist-6.1.0]
+ - Java: [1.8.0_352]
+ - OS: [Mac OS X 12.6.2]
 
 **Additional context**
 - How is eXist-db installed? [e.g. JAR installer, DMG, … ]
