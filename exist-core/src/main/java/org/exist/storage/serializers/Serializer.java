@@ -432,18 +432,24 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-    /**
-     * Reset the class to its initial state.
-     */
-    public void reset() {
-        receiver = xinclude;
-        xinclude.reset();
-        xslHandler = null;
-        templates = null;
-        outputProperties.clear();
-        showId = EXIST_ID_NONE;
-        httpContext = null;
-    }
+	/**
+	 * Reset the class to its initial state.
+	 */
+	public void reset() {
+		this.showId = EXIST_ID_NONE;
+		this.entityResolver = null;
+		this.errorHandler = null;
+		this.createContainerElements = false;
+		this.outputProperties.clear();
+		this.outputProperties.putAll(defaultProperties);
+		this.templates = null;
+		this.xslHandler = null;
+		this.xinclude.reset();
+		this.receiver = xinclude;
+		this.lexicalHandler = null;
+		this.user = null;
+		this.httpContext = null;
+	}
 
     public String serialize(final DocumentImpl doc) throws SAXException {
         final StringWriter writer = new StringWriter();

@@ -1147,6 +1147,13 @@ try {
         }
     }
 
+    @Test
+    public void getDocWithXslPi_twice() throws IOException {
+        // NOTE(AR) doing this twice revealed an issue with the Serializer not being correctly reset
+        getDocWithXslPi();
+        getDocWithXslPi();
+    }
+
     private void chmod(final String resourcePath, final String mode) throws IOException {
         final String uri = getCollectionUri() +"?_query=" + URLEncoder.encode(
                 "sm:chmod(xs:anyURI('" + resourcePath + "'), '" + mode + "')",
