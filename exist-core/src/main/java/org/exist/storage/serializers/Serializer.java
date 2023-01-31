@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.storage.serializers;
@@ -95,48 +95,48 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
- * Serializer base class, used to serialize a document or document fragment 
+ * Serializer base class, used to serialize a document or document fragment
  * back to XML. A serializer may be obtained by calling DBBroker.getSerializer().
- *
- *  The class basically offers two overloaded methods: serialize()
- *  and toSAX(). serialize() returns the XML as a string, while
- *  toSAX() generates a stream of SAX events. The stream of SAX
- *  events is passed to the ContentHandler set by setContentHandler().
- *  
+ * <p>
+ * The class basically offers two overloaded methods: serialize()
+ * and toSAX(). serialize() returns the XML as a string, while
+ * toSAX() generates a stream of SAX events. The stream of SAX
+ * events is passed to the ContentHandler set by setContentHandler().
+ * <p>
  * Internally, both types of methods pass events to a {@link org.exist.util.serializer.Receiver}.
  * Subclasses thus have to implement the various serializeToReceiver() methods.
- *
- *  Output can be configured through properties. Property keys are defined in classes
+ * <p>
+ * Output can be configured through properties. Property keys are defined in classes
  * {@link javax.xml.transform.OutputKeys} and {@link org.exist.storage.serializers.EXistOutputKeys}
  *
- *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public abstract class Serializer implements XMLReader {
 
-	protected final static Logger LOG = LogManager.getLogger(Serializer.class);
-	
-	public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
-	public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";
-	public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
-	public static final String ENABLE_XSL_ATTRIBUTE = "enable-xsl";
-	public static final String PROPERTY_ENABLE_XSL = "serialization.enable-xsl";
-	public static final String INDENT_ATTRIBUTE = "indent";
-	public static final String PROPERTY_INDENT = "serialization.indent";
-	public static final String COMPRESS_OUTPUT_ATTRIBUTE = "compress-output";
-	public static final String PROPERTY_COMPRESS_OUTPUT = "serialization.compress-output";
-	public static final String ADD_EXIST_ID_ATTRIBUTE = "add-exist-id";
-	public static final String PROPERTY_ADD_EXIST_ID = "serialization.add-exist-id";
-	public static final String TAG_MATCHING_ELEMENTS_ATTRIBUTE = "match-tagging-elements";
-	public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
-	public static final String TAG_MATCHING_ATTRIBUTES_ATTRIBUTE = "match-tagging-attributes";
-	public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
+    protected final static Logger LOG = LogManager.getLogger(Serializer.class);
+
+    public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
+    public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";
+    public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
+    public static final String ENABLE_XSL_ATTRIBUTE = "enable-xsl";
+    public static final String PROPERTY_ENABLE_XSL = "serialization.enable-xsl";
+    public static final String INDENT_ATTRIBUTE = "indent";
+    public static final String PROPERTY_INDENT = "serialization.indent";
+    public static final String COMPRESS_OUTPUT_ATTRIBUTE = "compress-output";
+    public static final String PROPERTY_COMPRESS_OUTPUT = "serialization.compress-output";
+    public static final String ADD_EXIST_ID_ATTRIBUTE = "add-exist-id";
+    public static final String PROPERTY_ADD_EXIST_ID = "serialization.add-exist-id";
+    public static final String TAG_MATCHING_ELEMENTS_ATTRIBUTE = "match-tagging-elements";
+    public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
+    public static final String TAG_MATCHING_ATTRIBUTES_ATTRIBUTE = "match-tagging-attributes";
+    public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
     public static final String PROPERTY_SESSION_ID = "serialization.session-id";
 
     // constants to configure the highlighting of matches in text and attributes
-	public final static int TAG_NONE = 0x0;
-	public final static int TAG_ELEMENT_MATCHES = 0x1;
-	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
-	public final static int TAG_BOTH = 0x3;
+    public final static int TAG_NONE = 0x0;
+    public final static int TAG_ELEMENT_MATCHES = 0x1;
+    public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
+    public final static int TAG_BOTH = 0x3;
 
     public final static int EXIST_ID_NONE = 0;
     public final static int EXIST_ID_ELEMENT = 1;
@@ -146,14 +146,14 @@ public abstract class Serializer implements XMLReader {
 
     public final static String GENERATE_DOC_EVENTS = "sax-document-events";
     public final static String ENCODING = "encoding";
-    
+
     protected final static QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_SESSION_ID = new QName("session", Namespaces.EXIST_NS, "exist");
-	protected final static QName ATTR_COMPILATION_TIME_QNAME = new QName("compilation-time", Namespaces.EXIST_NS, "exist");
-	protected final static QName ATTR_EXECUTION_TIME_QNAME = new QName("execution-time", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_COMPILATION_TIME_QNAME = new QName("compilation-time", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_EXECUTION_TIME_QNAME = new QName("execution-time", Namespaces.EXIST_NS, "exist");
     protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
     protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
 
@@ -189,277 +189,278 @@ public abstract class Serializer implements XMLReader {
     protected @Nullable Receiver receiver = null;
     protected @Nullable LexicalHandler lexicalHandler = null;
     protected @Nullable Subject user = null;
-    
+
     protected @Nullable XQueryContext.HttpContext httpContext = null;
-    
+
     public void setHttpContext(final XQueryContext.HttpContext httpContext) {
-    	this.httpContext = httpContext;
+        this.httpContext = httpContext;
     }
-    
-    
+
+
     public Serializer(final DBBroker broker, final Configuration config) {
-		this(broker, config, null);
-	}
+        this(broker, config, null);
+    }
 
-	public Serializer(final DBBroker broker, final Configuration config, final List<String> chainOfReceivers) {
-		this.broker = broker;
-		this.factory = new LazyVal<>(() -> TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool()));
+    public Serializer(final DBBroker broker, final Configuration config, final List<String> chainOfReceivers) {
+        this.broker = broker;
+        this.factory = new LazyVal<>(() -> TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool()));
 
-		this.xinclude = new XIncludeFilter(this);
+        this.xinclude = new XIncludeFilter(this);
         this.customMatchListeners = new CustomMatchListenerFactory(broker, config, chainOfReceivers);
-		this.receiver = xinclude;
+        this.receiver = xinclude;
 
-		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, config.getProperty(PROPERTY_ENABLE_XSL, "no"));
+        defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, config.getProperty(PROPERTY_ENABLE_XSL, "no"));
 
-		@Nullable String option = null;
+        @Nullable String option = null;
 
-		if ((option = (String) config.getProperty(PROPERTY_ENABLE_XINCLUDE)) != null) {
-			defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
-		}
+        if ((option = (String) config.getProperty(PROPERTY_ENABLE_XINCLUDE)) != null) {
+            defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
+        }
 
-		if ((option = (String) config.getProperty(PROPERTY_INDENT)) != null) {
-			defaultProperties.setProperty(OutputKeys.INDENT, option);
-		}
+        if ((option = (String) config.getProperty(PROPERTY_INDENT)) != null) {
+            defaultProperties.setProperty(OutputKeys.INDENT, option);
+        }
 
-		if ((option = (String) config.getProperty(PROPERTY_COMPRESS_OUTPUT)) != null) {
-			defaultProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
-		}
+        if ((option = (String) config.getProperty(PROPERTY_COMPRESS_OUTPUT)) != null) {
+            defaultProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
+        }
 
         if ((option = (String) config.getProperty(PROPERTY_ADD_EXIST_ID)) != null) {
-			defaultProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
-		}
+            defaultProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
+        }
 
         boolean tagElements = true, tagAttributes = false;
-		if ((option = (String) config.getProperty(PROPERTY_TAG_MATCHING_ELEMENTS)) != null) {
-			tagElements = "yes".equals(option);
-		}
-		if ((option = (String) config.getProperty(PROPERTY_TAG_MATCHING_ATTRIBUTES)) != null) {
-			tagAttributes = "yes".equals(option);
-		}
-		if (tagElements && tagAttributes) {
-			option = "both";
-		} else if (tagElements) {
-			option = "elements";
-		} else if (tagAttributes) {
-			option = "attributes";
-		} else {
-			option = "none";
-		}
-		defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
-		defaultProperties.setProperty(GENERATE_DOC_EVENTS, "true");
+        if ((option = (String) config.getProperty(PROPERTY_TAG_MATCHING_ELEMENTS)) != null) {
+            tagElements = "yes".equals(option);
+        }
+        if ((option = (String) config.getProperty(PROPERTY_TAG_MATCHING_ATTRIBUTES)) != null) {
+            tagAttributes = "yes".equals(option);
+        }
+        if (tagElements && tagAttributes) {
+            option = "both";
+        } else if (tagElements) {
+            option = "elements";
+        } else if (tagAttributes) {
+            option = "attributes";
+        } else {
+            option = "none";
+        }
+        defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, option);
+        defaultProperties.setProperty(GENERATE_DOC_EVENTS, "true");
 
-		outputProperties.putAll(defaultProperties);
-	}
+        outputProperties.putAll(defaultProperties);
+    }
 
-	public void setProperties(@Nullable final Properties properties)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (properties == null) {
-			return;
-		}
+    public void setProperties(@Nullable final Properties properties)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (properties == null) {
+            return;
+        }
 
-		for (final Enumeration<?> e = properties.propertyNames(); e.hasMoreElements(); ) {
-			final String key = (String)e.nextElement();
-		    if (key.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
-				lexicalHandler = (LexicalHandler)properties.get(key);
-			} else {
-				setProperty(key, properties.getProperty(key));
-			}
-		}
-	}
+        for (final Enumeration<?> e = properties.propertyNames(); e.hasMoreElements(); ) {
+            final String key = (String) e.nextElement();
+            if (key.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
+                lexicalHandler = (LexicalHandler) properties.get(key);
+            } else {
+                setProperty(key, properties.getProperty(key));
+            }
+        }
+    }
 
-	public void setProperties(@Nullable  final HashMap<String, Object> table)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (table == null) {
-			return;
-		}
-		for (final Map.Entry<String, Object> entry : table.entrySet()) {
-			setProperty(entry.getKey(), entry.getValue().toString());
-		}
-	}
+    public void setProperties(@Nullable final HashMap<String, Object> table)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (table == null) {
+            return;
+        }
+        for (final Map.Entry<String, Object> entry : table.entrySet()) {
+            setProperty(entry.getKey(), entry.getValue().toString());
+        }
+    }
 
-	@Override
-	public void setProperty(final String prop, final Object value)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		switch (prop) {
-			case Namespaces.SAX_LEXICAL_HANDLER:
-				lexicalHandler = (LexicalHandler) value;
-				break;
-			case EXistOutputKeys.ADD_EXIST_ID:
-				if ("element".equals(value)) {
-					showId = EXIST_ID_ELEMENT;
-				} else if ("all".equals(value)) {
-					showId = EXIST_ID_ALL;
-				} else {
-					showId = EXIST_ID_NONE;
-				}
-				break;
-			default:
-				outputProperties.put(prop, value);
-				break;
-		}
+    @Override
+    public void setProperty(final String prop, final Object value)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        switch (prop) {
+            case Namespaces.SAX_LEXICAL_HANDLER:
+                lexicalHandler = (LexicalHandler) value;
+                break;
+            case EXistOutputKeys.ADD_EXIST_ID:
+                if ("element".equals(value)) {
+                    showId = EXIST_ID_ELEMENT;
+                } else if ("all".equals(value)) {
+                    showId = EXIST_ID_ALL;
+                } else {
+                    showId = EXIST_ID_NONE;
+                }
+                break;
+            default:
+                outputProperties.put(prop, value);
+                break;
+        }
 
-	}
+    }
 
-	public String getProperty(final String key, final String defaultValue) {
-		return outputProperties.getProperty(key, defaultValue);
-	}
-	
-	public boolean isStylesheetApplied() {
-		return templates != null;
-	}
-	
-	protected int getHighlightingMode() {
-		final String option =
-			getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-		if ("both".equals(option) || "all".equals(option)) {
-			return TAG_BOTH;
-		} else if ("elements".equals(option)) {
-			return TAG_ELEMENT_MATCHES;
-		} else if ("attributes".equals(option)) {
-			return TAG_ATTRIBUTE_MATCHES;
-		} else {
-			return TAG_NONE;
-		}
-	}
+    public String getProperty(final String key, final String defaultValue) {
+        return outputProperties.getProperty(key, defaultValue);
+    }
 
-	/**
-	 *  If an XSL stylesheet is present, plug it into
-	 *  the chain.
-	 */
-	protected void applyXSLHandler(final Writer writer) {
-		final StreamResult result = new StreamResult(writer);
-		xslHandler.setResult(result);
-		if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
-			xinclude.setReceiver(new ReceiverToSAX(xslHandler));
-			receiver = xinclude;
-		} else {
-			receiver = new ReceiverToSAX(xslHandler);
-		}
-	}
+    public boolean isStylesheetApplied() {
+        return templates != null;
+    }
 
-	/**
-	 *  Return my internal EntityResolver
-	 *
-	 *@return    The entityResolver value
-	 */
-	@Override
-	public @Nullable EntityResolver getEntityResolver() {
-		return entityResolver;
-	}
+    protected int getHighlightingMode() {
+        final String option =
+                getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
+        if ("both".equals(option) || "all".equals(option)) {
+            return TAG_BOTH;
+        } else if ("elements".equals(option)) {
+            return TAG_ELEMENT_MATCHES;
+        } else if ("attributes".equals(option)) {
+            return TAG_ATTRIBUTE_MATCHES;
+        } else {
+            return TAG_NONE;
+        }
+    }
 
-	@Override
-	@Nullable public ErrorHandler getErrorHandler() {
-		return errorHandler;
-	}
+    /**
+     * If an XSL stylesheet is present, plug it into
+     * the chain.
+     */
+    protected void applyXSLHandler(final Writer writer) {
+        final StreamResult result = new StreamResult(writer);
+        xslHandler.setResult(result);
+        if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
+            xinclude.setReceiver(new ReceiverToSAX(xslHandler));
+            receiver = xinclude;
+        } else {
+            receiver = new ReceiverToSAX(xslHandler);
+        }
+    }
 
-	/**
-	 * Set the current User. A valid user is required to
-	 * process XInclude elements.
-	 */
-	public void setUser(final Subject user) {
-		this.user = user;
-	}
+    /**
+     * Return my internal EntityResolver
+     *
+     * @return The entityResolver value
+     */
+    @Override
+    public @Nullable EntityResolver getEntityResolver() {
+        return entityResolver;
+    }
 
-	/**
-	 * Get the current User.
-	 */
-	public @Nullable Subject getUser() {
-		return user;
-	}
+    @Override
+    @Nullable
+    public ErrorHandler getErrorHandler() {
+        return errorHandler;
+    }
 
-	@Override
-	public boolean getFeature(final String name)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals(Namespaces.SAX_NAMESPACES)
-				|| name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
-			throw new SAXNotSupportedException(name);
-		}
-		throw new SAXNotRecognizedException(name);
-	}
+    /**
+     * Set the current User. A valid user is required to
+     * process XInclude elements.
+     */
+    public void setUser(final Subject user) {
+        this.user = user;
+    }
 
-	@Override
-	public Object getProperty(final String name)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
-			return lexicalHandler;
-		}
-		throw new SAXNotRecognizedException(name);
-	}
+    /**
+     * Get the current User.
+     */
+    public @Nullable Subject getUser() {
+        return user;
+    }
 
-	public @Nullable String getStylesheetProperty(final String name) {
-		if (xslHandler != null) {
-			return xslHandler.getTransformer().getOutputProperty(name);
-		}
-		return null;
-	}
+    @Override
+    public boolean getFeature(final String name)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (name.equals(Namespaces.SAX_NAMESPACES)
+                || name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
+            throw new SAXNotSupportedException(name);
+        }
+        throw new SAXNotRecognizedException(name);
+    }
 
-	@Override
-	public void parse(final InputSource input) throws IOException, SAXException {
-		// only system-ids are handled
-		final String doc = input.getSystemId();
-		if (doc == null) {
-			throw new SAXException("source is not an eXist document");
-		}
-		parse(doc);
-	}
+    @Override
+    public Object getProperty(final String name)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (name.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
+            return lexicalHandler;
+        }
+        throw new SAXNotRecognizedException(name);
+    }
 
-	protected void setDocument(final DocumentImpl doc) {
-		xinclude.setDocument(doc);
-	}
+    public @Nullable String getStylesheetProperty(final String name) {
+        if (xslHandler != null) {
+            return xslHandler.getTransformer().getOutputProperty(name);
+        }
+        return null;
+    }
+
+    @Override
+    public void parse(final InputSource input) throws IOException, SAXException {
+        // only system-ids are handled
+        final String doc = input.getSystemId();
+        if (doc == null) {
+            throw new SAXException("source is not an eXist document");
+        }
+        parse(doc);
+    }
+
+    protected void setDocument(final DocumentImpl doc) {
+        xinclude.setDocument(doc);
+    }
 
     protected void setXQueryContext(@Nullable final XQueryContext context) {
         if (context != null) {
-			xinclude.setModuleLoadPath(context.getModuleLoadPath());
-		}
+            xinclude.setModuleLoadPath(context.getModuleLoadPath());
+        }
     }
 
-	@Override
+    @Override
     public void parse(final String systemId) throws IOException, SAXException {
-		try {
-			// try to load document from eXist
-			//TODO: this systemId came from exist, so should be an unchecked create, right?
-			final DocumentImpl doc = broker.getResource(XmldbURI.create(systemId), Permission.READ);
-			if (doc == null) {
-				throw new SAXException("document " + systemId + " not found in database");
-			} else {
-				LOG.debug("serializing " + doc.getFileURI());
-			}
+        try {
+            // try to load document from eXist
+            //TODO: this systemId came from exist, so should be an unchecked create, right?
+            final DocumentImpl doc = broker.getResource(XmldbURI.create(systemId), Permission.READ);
+            if (doc == null) {
+                throw new SAXException("document " + systemId + " not found in database");
+            } else {
+                LOG.debug("serializing " + doc.getFileURI());
+            }
 
-			toSAX(doc);
-		} catch (final PermissionDeniedException e) {
-			throw new SAXException("permission denied");
-		}
-	}
+            toSAX(doc);
+        } catch (final PermissionDeniedException e) {
+            throw new SAXException("permission denied");
+        }
+    }
 
-	/**
-	 * Reset the class to its initial state.
-	 */
-	public void reset() {
-		receiver = xinclude;
+    /**
+     * Reset the class to its initial state.
+     */
+    public void reset() {
+        receiver = xinclude;
         xinclude.setModuleLoadPath(null);
-		xinclude.setReceiver(null);
-		xslHandler = null;
-		templates = null;
+        xinclude.setReceiver(null);
+        xslHandler = null;
+        templates = null;
         outputProperties.clear();
         showId = EXIST_ID_NONE;
         httpContext = null;
-	}
+    }
 
-	public String serialize(final DocumentImpl doc) throws SAXException {
-		final StringWriter writer = new StringWriter();
-		serialize(doc, writer);
-		return writer.toString();
-	}
-	
-	/**
-	 *  Serialize a document to the supplied writer.
-	 */
-	public void serialize(final DocumentImpl doc, final Writer writer) throws SAXException {
-		serialize(doc, writer, true);
-	}
-	
-	public void serialize(final DocumentImpl doc, final Writer writer, final boolean prepareStylesheet) throws SAXException {
-		if (prepareStylesheet) {
+    public String serialize(final DocumentImpl doc) throws SAXException {
+        final StringWriter writer = new StringWriter();
+        serialize(doc, writer);
+        return writer.toString();
+    }
+
+    /**
+     * Serialize a document to the supplied writer.
+     */
+    public void serialize(final DocumentImpl doc, final Writer writer) throws SAXException {
+        serialize(doc, writer, true);
+    }
+
+    public void serialize(final DocumentImpl doc, final Writer writer, final boolean prepareStylesheet) throws SAXException {
+        if (prepareStylesheet) {
             try {
                 prepareStylesheets(doc);
             } catch (final TransformerConfigurationException e) {
@@ -467,139 +468,139 @@ public abstract class Serializer implements XMLReader {
             }
         }
 
-		final SAXSerializer prettyPrinter;
-		if (templates != null) {
-			applyXSLHandler(writer);
-			prettyPrinter = null;
-		} else {
-			//looking for serializer properties in <?exist-serialize?> 
-	    	final NodeList children = doc.getChildNodes();
-	    	for (int i = 0; i < children.getLength(); i++) {
-	    		final StoredNode node = (StoredNode) children.item(i);
-	    		if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE 
-	    				&& "exist-serialize".equals(node.getNodeName())) {
+        final SAXSerializer prettyPrinter;
+        if (templates != null) {
+            applyXSLHandler(writer);
+            prettyPrinter = null;
+        } else {
+            //looking for serializer properties in <?exist-serialize?>
+            final NodeList children = doc.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                final StoredNode node = (StoredNode) children.item(i);
+                if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                        && "exist-serialize".equals(node.getNodeName())) {
 
-	                final String params[] = ((ProcessingInstructionImpl)node).getData().split(" ");
-	                for(final String param : params) {
-	                    final String opt[] = Option.parseKeyValuePair(param);
-	                    if (opt != null) {
-							outputProperties.setProperty(opt[0], opt[1]);
-						}
-	                }
-	    		}
-	    	}
+                    final String params[] = ((ProcessingInstructionImpl) node).getData().split(" ");
+                    for (final String param : params) {
+                        final String opt[] = Option.parseKeyValuePair(param);
+                        if (opt != null) {
+                            outputProperties.setProperty(opt[0], opt[1]);
+                        }
+                    }
+                }
+            }
 
-			prettyPrinter = setPrettyPrinter(writer, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
+            prettyPrinter = setPrettyPrinter(writer, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
                     null, true); //setPrettyPrinter(writer, false);
-		}
+        }
 
-		try {
-			serializeToReceiver(doc, true);
-		} finally {
-			if (prettyPrinter != null) {
-				releasePrettyPrinter(prettyPrinter);
-			}
-		}
-	}
+        try {
+            serializeToReceiver(doc, true);
+        } finally {
+            if (prettyPrinter != null) {
+                releasePrettyPrinter(prettyPrinter);
+            }
+        }
+    }
 
-	public String serialize(final NodeValue n) throws SAXException {
-		final StringWriter out = new StringWriter();
-		serialize(n,out);
-		return out.toString();
-	}
-	
-	public void serialize(final NodeValue n, final Writer out) throws SAXException {
-		try {
-			if (n.getItemType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
-				setStylesheetFromProperties((Document) n);
-			} else {
-				setStylesheetFromProperties(n.getOwnerDocument());
-			}
-		} catch (final TransformerConfigurationException e) {
-			throw new SAXException(e.getMessage(), e);
-		}
+    public String serialize(final NodeValue n) throws SAXException {
+        final StringWriter out = new StringWriter();
+        serialize(n, out);
+        return out.toString();
+    }
 
-		final SAXSerializer prettyPrinter;
-		if (templates != null) {
-			applyXSLHandler(out);
-			prettyPrinter = null;
-		} else {
-			prettyPrinter = setPrettyPrinter(out, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
-					n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy) n : null, false); //setPrettyPrinter(out, false);
-		}
+    public void serialize(final NodeValue n, final Writer out) throws SAXException {
+        try {
+            if (n.getItemType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
+                setStylesheetFromProperties((Document) n);
+            } else {
+                setStylesheetFromProperties(n.getOwnerDocument());
+            }
+        } catch (final TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
 
-		try {
-			serializeToReceiver(n, true);
-		} finally {
-			if (prettyPrinter != null) {
-				releasePrettyPrinter(prettyPrinter);
-			}
-		}
-	}
-	
-	/**
-	 *  Serialize a single NodeProxy.
-	 *
-	 *@param  p                 Description of the Parameter
-	 *@return                   Description of the Return Value
-	 *@exception  SAXException  Description of the Exception
-	 */
-	public String serialize(final NodeProxy p) throws SAXException {
-		final StringWriter out = new StringWriter();
-		serialize(p,out);
-		return out.toString();
-	}
-	
-	public void serialize(final NodeProxy p, final Writer out) throws SAXException {
+        final SAXSerializer prettyPrinter;
+        if (templates != null) {
+            applyXSLHandler(out);
+            prettyPrinter = null;
+        } else {
+            prettyPrinter = setPrettyPrinter(out, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
+                    n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy) n : null, false); //setPrettyPrinter(out, false);
+        }
+
+        try {
+            serializeToReceiver(n, true);
+        } finally {
+            if (prettyPrinter != null) {
+                releasePrettyPrinter(prettyPrinter);
+            }
+        }
+    }
+
+    /**
+     * Serialize a single NodeProxy.
+     *
+     * @param p Description of the Parameter
+     * @return Description of the Return Value
+     * @throws SAXException Description of the Exception
+     */
+    public String serialize(final NodeProxy p) throws SAXException {
+        final StringWriter out = new StringWriter();
+        serialize(p, out);
+        return out.toString();
+    }
+
+    public void serialize(final NodeProxy p, final Writer out) throws SAXException {
         try {
             setStylesheetFromProperties(p.getOwnerDocument());
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
 
-		final SAXSerializer prettyPrinter;
-		if (templates != null) {
-			applyXSLHandler(out);
-			prettyPrinter = null;
-		} else {
-			prettyPrinter = setPrettyPrinter(out, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
-					p, false); //setPrettyPrinter(out, false);
-		}
+        final SAXSerializer prettyPrinter;
+        if (templates != null) {
+            applyXSLHandler(out);
+            prettyPrinter = null;
+        } else {
+            prettyPrinter = setPrettyPrinter(out, "no".equals(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")),
+                    p, false); //setPrettyPrinter(out, false);
+        }
 
-		try {
-			serializeToReceiver(p, false);
-		} finally {
-			if (prettyPrinter != null) {
-				releasePrettyPrinter(prettyPrinter);
-			}
-		}
-	}
+        try {
+            serializeToReceiver(p, false);
+        } finally {
+            if (prettyPrinter != null) {
+                releasePrettyPrinter(prettyPrinter);
+            }
+        }
+    }
 
-	public void prepareStylesheets(final DocumentImpl doc) throws TransformerConfigurationException {
-		if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
-			@Nullable final String stylesheet = hasXSLPi(doc);
-			if (stylesheet != null) {
-				setStylesheet(doc, stylesheet);
-			}
-		}
-		setStylesheetFromProperties(doc);
-	}
-	
-	/**
-	 *  Set the ContentHandler to be used during serialization.
-	 *
-	 *@param  contentHandler  The new contentHandler value
-	 */
-	public void setSAXHandlers(final ContentHandler contentHandler, final LexicalHandler lexicalHandler) {
-		final ReceiverToSAX toSAX = new ReceiverToSAX(contentHandler);
-		toSAX.setLexicalHandler(lexicalHandler);
-		if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
-			xinclude.setReceiver(toSAX);
-			receiver = xinclude;
-		} else {
-			receiver = toSAX;
-		}
-	}
+    public void prepareStylesheets(final DocumentImpl doc) throws TransformerConfigurationException {
+        if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
+            @Nullable final String stylesheet = hasXSLPi(doc);
+            if (stylesheet != null) {
+                setStylesheet(doc, stylesheet);
+            }
+        }
+        setStylesheetFromProperties(doc);
+    }
+
+    /**
+     * Set the ContentHandler to be used during serialization.
+     *
+     * @param contentHandler The new contentHandler value
+     */
+    public void setSAXHandlers(final ContentHandler contentHandler, final LexicalHandler lexicalHandler) {
+        final ReceiverToSAX toSAX = new ReceiverToSAX(contentHandler);
+        toSAX.setLexicalHandler(lexicalHandler);
+        if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
+            xinclude.setReceiver(toSAX);
+            receiver = xinclude;
+        } else {
+            receiver = toSAX;
+        }
+    }
 
     public void setReceiver(final Receiver receiver) {
         this.receiver = receiver;
@@ -607,57 +608,58 @@ public abstract class Serializer implements XMLReader {
 
     public void setReceiver(final Receiver receiver, final boolean handleIncludes) {
         if (handleIncludes && "yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
-			xinclude.setReceiver(receiver);
-			this.receiver = xinclude;
-		} else
-			{this.receiver = receiver;}
+            xinclude.setReceiver(receiver);
+            this.receiver = xinclude;
+        } else {
+            this.receiver = receiver;
+        }
     }
 
     public XIncludeFilter getXIncludeFilter() {
         return xinclude;
     }
-    
-	@Override
-	public void setContentHandler(final ContentHandler handler) {
-		setSAXHandlers(handler, null);
-	}
-	
-	@Override
-	public @Nullable ContentHandler getContentHandler() {
-		return null;
-	}
-	
-	@Override
-	public void setEntityResolver(@Nullable final EntityResolver resolver) {
-		this.entityResolver = resolver;
-	}
 
-	@Override
-	public void setErrorHandler(@Nullable final ErrorHandler handler) {
-		this.errorHandler = handler;
-	}
+    @Override
+    public void setContentHandler(final ContentHandler handler) {
+        setSAXHandlers(handler, null);
+    }
 
-	@Override
-	public void setFeature(final String name, final boolean value)
-			throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals(Namespaces.SAX_NAMESPACES)
-				|| name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
-			throw new SAXNotSupportedException(name);
-		}
-		throw new SAXNotRecognizedException(name);
-	}
+    @Override
+    public @Nullable ContentHandler getContentHandler() {
+        return null;
+    }
 
-	protected SAXSerializer setPrettyPrinter(final Writer writer, final boolean xmlDecl, final NodeProxy root, final boolean applyFilters) {
-		outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, xmlDecl ? "no" : "yes");
-		final SAXSerializer xmlout = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-		xmlout.setOutput(writer, outputProperties);
+    @Override
+    public void setEntityResolver(@Nullable final EntityResolver resolver) {
+        this.entityResolver = resolver;
+    }
 
-		if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
-			xinclude.setReceiver(xmlout);
-			receiver = xinclude;
-		} else {
-			receiver = xmlout;
-		}
+    @Override
+    public void setErrorHandler(@Nullable final ErrorHandler handler) {
+        this.errorHandler = handler;
+    }
+
+    @Override
+    public void setFeature(final String name, final boolean value)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        if (name.equals(Namespaces.SAX_NAMESPACES)
+                || name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
+            throw new SAXNotSupportedException(name);
+        }
+        throw new SAXNotRecognizedException(name);
+    }
+
+    protected SAXSerializer setPrettyPrinter(final Writer writer, final boolean xmlDecl, final NodeProxy root, final boolean applyFilters) {
+        outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, xmlDecl ? "no" : "yes");
+        final SAXSerializer xmlout = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        xmlout.setOutput(writer, outputProperties);
+
+        if ("yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"))) {
+            xinclude.setReceiver(xmlout);
+            receiver = xinclude;
+        } else {
+            receiver = xmlout;
+        }
 
         if (root != null && getHighlightingMode() != TAG_NONE) {
             final IndexController controller = broker.getIndexController();
@@ -674,7 +676,7 @@ public abstract class Serializer implements XMLReader {
             receiver = customMatchListeners.getFirst();
         }
 
-		return xmlout;
+        return xmlout;
     }
 
     protected Receiver setupMatchListeners(final NodeProxy p) {
@@ -690,53 +692,53 @@ public abstract class Serializer implements XMLReader {
         }
         return oldReceiver;
     }
-    
+
     protected void releasePrettyPrinter(final SAXSerializer prettyPrinter) {
-		SerializerPool.getInstance().returnObject(prettyPrinter);
-	}
+        SerializerPool.getInstance().returnObject(prettyPrinter);
+    }
 
-	protected void setStylesheetFromProperties(final Document doc) throws TransformerConfigurationException {
-		if (templates != null) {
-			return;
-		}
+    protected void setStylesheetFromProperties(final Document doc) throws TransformerConfigurationException {
+        if (templates != null) {
+            return;
+        }
 
-		@Nullable final String stylesheet = outputProperties.getProperty(EXistOutputKeys.STYLESHEET);
-		if (stylesheet != null) {
-			if (doc instanceof DocumentImpl) {
-				setStylesheet((DocumentImpl)doc, stylesheet);
-			} else {
-				setStylesheet(null, stylesheet);
-			}
-		}
-	}
-	
-	protected void checkStylesheetParams() {
-		if (xslHandler == null) {
-			return;
-		}
+        @Nullable final String stylesheet = outputProperties.getProperty(EXistOutputKeys.STYLESHEET);
+        if (stylesheet != null) {
+            if (doc instanceof DocumentImpl) {
+                setStylesheet((DocumentImpl) doc, stylesheet);
+            } else {
+                setStylesheet(null, stylesheet);
+            }
+        }
+    }
 
-		for (final Enumeration<?> e = outputProperties.propertyNames(); e.hasMoreElements(); ) {
-			String property = (String)e.nextElement();
-			if (property.startsWith(EXistOutputKeys.STYLESHEET_PARAM)) {
-				final String value = outputProperties.getProperty(property);
-				property = property.substring(EXistOutputKeys.STYLESHEET_PARAM.length() + 1);
-				xslHandler.getTransformer().setParameter(property, value);
-			}
-		}
-	}
+    protected void checkStylesheetParams() {
+        if (xslHandler == null) {
+            return;
+        }
 
-	/**
-	 *  Plug an XSL stylesheet into the processing pipeline.
-	 *  All output will be passed to this stylesheet.
-	 */
-	public void setStylesheet(final DocumentImpl doc, final @Nullable String stylesheet) throws TransformerConfigurationException {
-		if (stylesheet == null) {
-			templates = null;
-			return;
-		}
+        for (final Enumeration<?> e = outputProperties.propertyNames(); e.hasMoreElements(); ) {
+            String property = (String) e.nextElement();
+            if (property.startsWith(EXistOutputKeys.STYLESHEET_PARAM)) {
+                final String value = outputProperties.getProperty(property);
+                property = property.substring(EXistOutputKeys.STYLESHEET_PARAM.length() + 1);
+                xslHandler.getTransformer().setParameter(property, value);
+            }
+        }
+    }
 
-		final long start = System.currentTimeMillis();
-		xslHandler = null;
+    /**
+     * Plug an XSL stylesheet into the processing pipeline.
+     * All output will be passed to this stylesheet.
+     */
+    public void setStylesheet(final DocumentImpl doc, final @Nullable String stylesheet) throws TransformerConfigurationException {
+        if (stylesheet == null) {
+            templates = null;
+            return;
+        }
+
+        final long start = System.currentTimeMillis();
+        xslHandler = null;
         @Nullable XmldbURI stylesheetUri = null;
         @Nullable URI externalUri = null;
         try {
@@ -749,7 +751,7 @@ public abstract class Serializer implements XMLReader {
             try {
                 externalUri = new URI(stylesheet);
             } catch (final URISyntaxException ee) {
-                throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage());
+                throw new IllegalArgumentException("Stylesheet URI could not be parsed: " + ee.getMessage());
             }
         }
         // does stylesheet point to an external resource?
@@ -802,44 +804,44 @@ public abstract class Serializer implements XMLReader {
         LOG.debug("compiling stylesheet took " + (System.currentTimeMillis() - start));
 
         if (templates != null) {
-        	xslHandler = factory.get().newTransformerHandler(templates);
+            xslHandler = factory.get().newTransformerHandler(templates);
         }
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
         checkStylesheetParams();
-	}
+    }
 
-	/** 
-	 * Set stylesheet parameter
-	 **/
-	public void setStylesheetParam(final String param, final String value) {
-		if (xslHandler != null) {
-			xslHandler.getTransformer().setParameter(param, value);
-		}
-	}
+    /**
+     * Set stylesheet parameter
+     **/
+    public void setStylesheetParam(final String param, final String value) {
+        if (xslHandler != null) {
+            xslHandler.getTransformer().setParameter(param, value);
+        }
+    }
 
-	protected void setXSLHandler(final NodeProxy root, final boolean applyFilters) {
-		if (templates != null && xslHandler != null) {
-			final SAXResult result = new SAXResult();
-			final boolean processXInclude =
-				"yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
-			ReceiverToSAX filter;
-			if (processXInclude) {
-				filter = (ReceiverToSAX)xinclude.getReceiver();
-			} else {
-				filter = (ReceiverToSAX) receiver;
-			}
-			result.setHandler(filter.getContentHandler());
-			result.setLexicalHandler(filter.getLexicalHandler());
-			filter.setLexicalHandler(xslHandler);
-			filter.setContentHandler(xslHandler);
-			xslHandler.setResult(result);
-			if (processXInclude) {
-				xinclude.setReceiver(new ReceiverToSAX(xslHandler));
-				receiver = xinclude;
-			} else {
-				receiver = new ReceiverToSAX(xslHandler);
-			}
-		}
+    protected void setXSLHandler(final NodeProxy root, final boolean applyFilters) {
+        if (templates != null && xslHandler != null) {
+            final SAXResult result = new SAXResult();
+            final boolean processXInclude =
+                    "yes".equals(getProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes"));
+            ReceiverToSAX filter;
+            if (processXInclude) {
+                filter = (ReceiverToSAX) xinclude.getReceiver();
+            } else {
+                filter = (ReceiverToSAX) receiver;
+            }
+            result.setHandler(filter.getContentHandler());
+            result.setLexicalHandler(filter.getLexicalHandler());
+            filter.setLexicalHandler(xslHandler);
+            filter.setContentHandler(xslHandler);
+            xslHandler.setResult(result);
+            if (processXInclude) {
+                xinclude.setReceiver(new ReceiverToSAX(xslHandler));
+                receiver = xinclude;
+            } else {
+                receiver = new ReceiverToSAX(xslHandler);
+            }
+        }
         if (root != null && getHighlightingMode() != TAG_NONE) {
             final IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
@@ -855,10 +857,10 @@ public abstract class Serializer implements XMLReader {
         }
     }
 
-	public void toSAX(final DocumentImpl doc) throws SAXException {
-		if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
-			final String stylesheet = hasXSLPi(doc);
-			if (stylesheet != null)
+    public void toSAX(final DocumentImpl doc) throws SAXException {
+        if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"))) {
+            final String stylesheet = hasXSLPi(doc);
+            if (stylesheet != null)
                 try {
                     setStylesheet(doc, stylesheet);
                 } catch (final TransformerConfigurationException e) {
@@ -871,112 +873,110 @@ public abstract class Serializer implements XMLReader {
             throw new SAXException(e.getMessage(), e);
         }
         setXSLHandler(null, true);
-		serializeToReceiver(doc, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
-	}
+        serializeToReceiver(doc, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+    }
 
-	public void toSAX(final NodeValue n) throws SAXException {
+    public void toSAX(final NodeValue n) throws SAXException {
         try {
-        	if (n.getType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
-				setStylesheetFromProperties((Document)n);
-			} else {
-				setStylesheetFromProperties(n.getOwnerDocument());
-			}
+            if (n.getType() == Type.DOCUMENT && !(n instanceof NodeProxy)) {
+                setStylesheetFromProperties((Document) n);
+            } else {
+                setStylesheetFromProperties(n.getOwnerDocument());
+            }
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        setXSLHandler(n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null, false);
-		serializeToReceiver(n, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
-	}
-	
-	public void toSAX(final NodeProxy p) throws SAXException {
-	    try {
-			setStylesheetFromProperties(p.getOwnerDocument());
-	    } catch (final TransformerConfigurationException e) {
-			throw new SAXException(e.getMessage(), e);
-	    }
-	    setXSLHandler(p, false);
-	    if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
-			serializeToReceiver(p.getOwnerDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
-	    } else {
-			serializeToReceiver(p, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
-	    }
-	}
+        setXSLHandler(n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy) n : null, false);
+        serializeToReceiver(n, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+    }
 
-	/**
-	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
-	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
-	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
-	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
-	 * 
-	 * @param seq The sequence to serialize
-	 * @param start The position in the sequence to start serialization from
-	 * @param count The number of items from the start position to serialize
-	 * @param wrap Indicates whether the output should be wrapped
-	 * @param typed Indicates whether the output types should be wrapped
-	 * @param compilationTime The time taken to compile the query which produced the sequence
-	 * @param executionTime The time taken to execute the query which produced the sequence
-	 *
-	 * @throws SAXException If an error occurs during serialization
-	 */
-	public void toSAX(final Sequence seq, int start, final int count, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException {
+    public void toSAX(final NodeProxy p) throws SAXException {
+        try {
+            setStylesheetFromProperties(p.getOwnerDocument());
+        } catch (final TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        setXSLHandler(p, false);
+        if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
+            serializeToReceiver(p.getOwnerDocument(), "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+        } else {
+            serializeToReceiver(p, "true".equals(getProperty(GENERATE_DOC_EVENTS, "false")));
+        }
+    }
+
+    /**
+     * Serialize the items in the given sequence to SAX, starting with item start. If parameter
+     * wrap is set to true, output a wrapper element to enclose the serialized items. The
+     * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
+     * <p>
+     * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+     *
+     * @param seq             The sequence to serialize
+     * @param start           The position in the sequence to start serialization from
+     * @param count           The number of items from the start position to serialize
+     * @param wrap            Indicates whether the output should be wrapped
+     * @param typed           Indicates whether the output types should be wrapped
+     * @param compilationTime The time taken to compile the query which produced the sequence
+     * @param executionTime   The time taken to execute the query which produced the sequence
+     * @throws SAXException If an error occurs during serialization
+     */
+    public void toSAX(final Sequence seq, int start, final int count, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException {
         try {
             setStylesheetFromProperties(null);
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
         setXSLHandler(null, false);
-		final AttrList attrs = new AttrList();
-		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getItemCount()));
-		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
-		attrs.addAttribute(ATTR_COUNT_QNAME, Integer.toString(count));
-		if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
+        final AttrList attrs = new AttrList();
+        attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getItemCount()));
+        attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
+        attrs.addAttribute(ATTR_COUNT_QNAME, Integer.toString(count));
+        if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
             attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
         }
-		attrs.addAttribute(ATTR_COMPILATION_TIME_QNAME, Long.toString(compilationTime));
-		attrs.addAttribute(ATTR_EXECUTION_TIME_QNAME, Long.toString(compilationTime));
+        attrs.addAttribute(ATTR_COMPILATION_TIME_QNAME, Long.toString(compilationTime));
+        attrs.addAttribute(ATTR_EXECUTION_TIME_QNAME, Long.toString(compilationTime));
 
-		receiver.startDocument();
-		if (wrap) {
-			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
-			receiver.startElement(ELEM_RESULT_QNAME, attrs);
-		}
+        receiver.startDocument();
+        if (wrap) {
+            receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
+            receiver.startElement(ELEM_RESULT_QNAME, attrs);
+        }
 
-		for (int i = --start; i < start + count; i++) {
-			final Item item = seq.itemAt(i);
-                        if (item == null) {
-                            LOG.debug("item " + i + " not found");
-                            continue;
-                        }
-                        
-			itemToSAX(item, typed, wrap);
-		}
-		
-		if (wrap) {
-			receiver.endElement(ELEM_RESULT_QNAME);
-			receiver.endPrefixMapping("exist");
-		}
-		receiver.endDocument();
-	}
-        
+        for (int i = --start; i < start + count; i++) {
+            final Item item = seq.itemAt(i);
+            if (item == null) {
+                LOG.debug("item " + i + " not found");
+                continue;
+            }
+
+            itemToSAX(item, typed, wrap);
+        }
+
+        if (wrap) {
+            receiver.endElement(ELEM_RESULT_QNAME);
+            receiver.endPrefixMapping("exist");
+        }
+        receiver.endDocument();
+    }
+
     /**
-	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
-	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
-	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
-	 * 
-	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
-	 *
-	 * @param seq The sequence to serialize
-	 *
-	 * @throws SAXException If an error occurs during serialization
-	 */
+     * Serialize the items in the given sequence to SAX, starting with item start. If parameter
+     * wrap is set to true, output a wrapper element to enclose the serialized items. The
+     * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
+     * <p>
+     * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
+     *
+     * @param seq The sequence to serialize
+     * @throws SAXException If an error occurs during serialization
+     */
     public void toSAX(final Sequence seq) throws SAXException {
         try {
             setStylesheetFromProperties(null);
         } catch (final TransformerConfigurationException e) {
             throw new SAXException(e.getMessage(), e);
         }
-        
+
         setXSLHandler(null, false);
 
         receiver.startDocument();
@@ -987,100 +987,99 @@ public abstract class Serializer implements XMLReader {
                 final Item item = itSeq.nextItem();
                 itemToSAX(item, false, false);
             }
-        } catch(final XPathException xpe) {
+        } catch (final XPathException xpe) {
             throw new SAXException(xpe.getMessage(), xpe);
         }
 
         receiver.endDocument();
     }
-        
+
     /**
-	 * Serializes an Item
-	 *
-	 * @param item The item to serialize
-	 * @param wrap Indicates whether the output should be wrapped
-	 * @param typed Indicates whether the output types should be wrapped
-	 *
-	 * @throws SAXException If an error occurs during serialization
-	 */
-	public void toSAX(final Item item, final boolean wrap, final boolean typed) throws SAXException {
-		try {
-			setStylesheetFromProperties(null);
-		} catch (final TransformerConfigurationException e) {
-			throw new SAXException(e.getMessage(), e);
-		}
+     * Serializes an Item
+     *
+     * @param item  The item to serialize
+     * @param wrap  Indicates whether the output should be wrapped
+     * @param typed Indicates whether the output types should be wrapped
+     * @throws SAXException If an error occurs during serialization
+     */
+    public void toSAX(final Item item, final boolean wrap, final boolean typed) throws SAXException {
+        try {
+            setStylesheetFromProperties(null);
+        } catch (final TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
 
-		setXSLHandler(null, false);
-		final AttrList attrs = new AttrList();
-		attrs.addAttribute(ATTR_HITS_QNAME, "1");
-		attrs.addAttribute(ATTR_START_QNAME, "1");
-		attrs.addAttribute(ATTR_COUNT_QNAME, "1");
-		if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
-			attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
-		}
+        setXSLHandler(null, false);
+        final AttrList attrs = new AttrList();
+        attrs.addAttribute(ATTR_HITS_QNAME, "1");
+        attrs.addAttribute(ATTR_START_QNAME, "1");
+        attrs.addAttribute(ATTR_COUNT_QNAME, "1");
+        if (outputProperties.getProperty(PROPERTY_SESSION_ID) != null) {
+            attrs.addAttribute(ATTR_SESSION_ID, outputProperties.getProperty(PROPERTY_SESSION_ID));
+        }
 
-		receiver.startDocument();
+        receiver.startDocument();
 
-		if (wrap) {
-			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
-			receiver.startElement(ELEM_RESULT_QNAME, attrs);
-		}
+        if (wrap) {
+            receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
+            receiver.startElement(ELEM_RESULT_QNAME, attrs);
+        }
 
 
-		itemToSAX(item, typed, wrap);
+        itemToSAX(item, typed, wrap);
 
-		if (wrap) {
-			receiver.endElement(ELEM_RESULT_QNAME);
-			receiver.endPrefixMapping("exist");
-		}
+        if (wrap) {
+            receiver.endElement(ELEM_RESULT_QNAME);
+            receiver.endPrefixMapping("exist");
+        }
 
-		receiver.endDocument();
-	}
-        
-	private void itemToSAX(final Item item, final boolean typed, final boolean wrap) throws SAXException {
-		if (Type.subTypeOf(item.getType(), Type. NODE)) {
-			final NodeValue node = (NodeValue) item;
+        receiver.endDocument();
+    }
 
-			if (typed) {
-				//TODO the typed and wrapped stuff should ideally be replaced
-				//with Marshaller.marshallItem
-				//unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
-				//results in a stack overflow
-				//TODO consider a full XDM serializer in place of this for these special needs
+    private void itemToSAX(final Item item, final boolean typed, final boolean wrap) throws SAXException {
+        if (Type.subTypeOf(item.getType(), Type.NODE)) {
+            final NodeValue node = (NodeValue) item;
 
-				serializeTypePreNode(node);
-				if (node.getType() == Type.ATTRIBUTE) {
-					serializeTypeAttributeValue(node);
-				} else {
-					serializeToReceiver(node, false);
-				}
-				serializeTypePostNode(node);
-			} else {
-				serializeToReceiver(node, false);
-			}
-		} else {
-			if (wrap) {
-				final AttrList attrs = new AttrList();
-				attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
-				receiver.startElement(ELEM_VALUE_QNAME, attrs);
-			}
-			try {
-				receiver.characters(item.getStringValue());
-			} catch (final XPathException e) {
-				throw new SAXException(e.getMessage(), e);
-			}
-			if (wrap) {
-				receiver.endElement(ELEM_VALUE_QNAME);
-			}
-		}
-	}
+            if (typed) {
+                //TODO the typed and wrapped stuff should ideally be replaced
+                //with Marshaller.marshallItem
+                //unfortrunately calling Marshaller.marshallItem(broker, item, new SAXToReceiver(receiver))
+                //results in a stack overflow
+                //TODO consider a full XDM serializer in place of this for these special needs
+
+                serializeTypePreNode(node);
+                if (node.getType() == Type.ATTRIBUTE) {
+                    serializeTypeAttributeValue(node);
+                } else {
+                    serializeToReceiver(node, false);
+                }
+                serializeTypePostNode(node);
+            } else {
+                serializeToReceiver(node, false);
+            }
+        } else {
+            if (wrap) {
+                final AttrList attrs = new AttrList();
+                attrs.addAttribute(ATTR_TYPE_QNAME, Type.getTypeName(item.getType()));
+                receiver.startElement(ELEM_VALUE_QNAME, attrs);
+            }
+            try {
+                receiver.characters(item.getStringValue());
+            } catch (final XPathException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+            if (wrap) {
+                receiver.endElement(ELEM_VALUE_QNAME);
+            }
+        }
+    }
 
     public void toReceiver(final NodeProxy p, final boolean highlightMatches) throws SAXException {
         toReceiver(p, highlightMatches, true);
     }
 
     public void toReceiver(final NodeProxy p, final boolean highlightMatches, final boolean checkAttributes) throws SAXException {
-		final Receiver oldReceiver = highlightMatches ? setupMatchListeners(p) : receiver;
+        final Receiver oldReceiver = highlightMatches ? setupMatchListeners(p) : receiver;
         serializeToReceiver(p, false, checkAttributes);
         receiver = oldReceiver;
     }
@@ -1088,83 +1087,83 @@ public abstract class Serializer implements XMLReader {
     protected abstract void serializeToReceiver(NodeProxy p, boolean generateDocEvent, boolean checkAttributes) throws SAXException;
 
     protected abstract void serializeToReceiver(DocumentImpl doc, boolean generateDocEvent)
-    throws SAXException;
-	
-	protected void serializeToReceiver(final NodeValue v, final boolean generateDocEvents)
-			throws SAXException {
-		if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			serializeToReceiver((NodeProxy)v, generateDocEvents, true);
-		} else {
-			serializeToReceiver((org.exist.dom.memtree.NodeImpl)v, generateDocEvents);
-		}
-	}
-	
-	protected void serializeToReceiver(final org.exist.dom.memtree.NodeImpl n, final boolean generateDocEvents)
-			throws SAXException {
-		if (generateDocEvents) {
-			receiver.startDocument();
-		}
+            throws SAXException;
+
+    protected void serializeToReceiver(final NodeValue v, final boolean generateDocEvents)
+            throws SAXException {
+        if (v.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+            serializeToReceiver((NodeProxy) v, generateDocEvents, true);
+        } else {
+            serializeToReceiver((org.exist.dom.memtree.NodeImpl) v, generateDocEvents);
+        }
+    }
+
+    protected void serializeToReceiver(final org.exist.dom.memtree.NodeImpl n, final boolean generateDocEvents)
+            throws SAXException {
+        if (generateDocEvents) {
+            receiver.startDocument();
+        }
         setDocument(null);
-		if (n.getNodeType() == Node.DOCUMENT_NODE) {
-			setXQueryContext(((org.exist.dom.memtree.DocumentImpl)n).getContext());
-		} else {
-			setXQueryContext(n.getOwnerDocument().getContext());
-		}
+        if (n.getNodeType() == Node.DOCUMENT_NODE) {
+            setXQueryContext(((org.exist.dom.memtree.DocumentImpl) n).getContext());
+        } else {
+            setXQueryContext(n.getOwnerDocument().getContext());
+        }
         n.streamTo(this, receiver);
-		if (generateDocEvents) {
-			receiver.endDocument();
-		}
-	}
-	
-	@Override
-	public void setDTDHandler(final DTDHandler handler) {
-	}
-	
-	@Override
-	public DTDHandler getDTDHandler() {
-		return null;
-	}
-	
+        if (generateDocEvents) {
+            receiver.endDocument();
+        }
+    }
+
+    @Override
+    public void setDTDHandler(final DTDHandler handler) {
+    }
+
+    @Override
+    public DTDHandler getDTDHandler() {
+        return null;
+    }
+
     /**
      * Check if the document has an xml-stylesheet processing instruction
      * that references an XSLT stylesheet. Return the link to the stylesheet.
-     *  
+     *
      * @param doc
      * @return link to the stylesheet
      */
-	public @Nullable String hasXSLPi(final Document doc) {
+    public @Nullable String hasXSLPi(final Document doc) {
         final boolean applyXSLPI =
-            outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+                outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
         if (!applyXSLPI) {
-			return null;
-		}
-        
-		final NodeList docChildren = doc.getChildNodes();
-		for (int i = 0; i < docChildren.getLength(); i++) {
-			final Node node = docChildren.item(i);
-			if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
-				&& "xml-stylesheet".equals(((ProcessingInstruction)node).getTarget())) {
-				// found <?xml-stylesheet?>
-				final String xsl = ((ProcessingInstruction) node).getData();
-				@Nullable final String type = XMLUtil.parseValue(xsl, "type");
-				if (type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
-					@Nullable final String href = XMLUtil.parseValue(xsl, "href");
-					if (href == null) {
-						continue;
-					}
-					return href;
-				}
-			}
-		}
-		return null;
-	}
+            return null;
+        }
+
+        final NodeList docChildren = doc.getChildNodes();
+        for (int i = 0; i < docChildren.getLength(); i++) {
+            final Node node = docChildren.item(i);
+            if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+                    && "xml-stylesheet".equals(((ProcessingInstruction) node).getTarget())) {
+                // found <?xml-stylesheet?>
+                final String xsl = ((ProcessingInstruction) node).getData();
+                @Nullable final String type = XMLUtil.parseValue(xsl, "type");
+                if (type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
+                    @Nullable final String href = XMLUtil.parseValue(xsl, "href");
+                    if (href == null) {
+                        continue;
+                    }
+                    return href;
+                }
+            }
+        }
+        return null;
+    }
 
 
     /**
      * Quick code fix for the remote XQJ API implementation.
-     *
+     * <p>
      * attribute name { "value" } ---> goes through fine.
-     *
+     * <p>
      * fn:doc($expr)/element()/attribute() ---> fails, as this is
      * contained within the Database (not an in memory attribute).
      *
@@ -1191,16 +1190,16 @@ public abstract class Serializer implements XMLReader {
     protected void serializeTypePreNode(final NodeValue item) throws SAXException {
         @Nullable AttrList attrs = null;
 
-        switch(item.getType()) {
+        switch (item.getType()) {
             case Type.DOCUMENT:
 
-                final String baseUri = ((Document)item).getBaseURI();
+                final String baseUri = ((Document) item).getBaseURI();
 
                 attrs = new AttrList();
-                if (baseUri != null && baseUri.length() > 0){
+                if (baseUri != null && baseUri.length() > 0) {
                     attrs.addAttribute(ATTR_URI_QNAME, baseUri);
                 }
-                if (((Document)item).getDocumentElement() == null) {
+                if (((Document) item).getDocumentElement() == null) {
                     attrs.addAttribute(ATTR_HAS_ELEMENT_QNAME, "false");
                 }
 
@@ -1211,7 +1210,7 @@ public abstract class Serializer implements XMLReader {
                 attrs = new AttrList();
 
                 String attributeValue;
-                if ((attributeValue = item.getNode().getLocalName()) != null && attributeValue.length() > 0){
+                if ((attributeValue = item.getNode().getLocalName()) != null && attributeValue.length() > 0) {
                     attrs.addAttribute(ATTR_LOCAL_QNAME, attributeValue);
                 }
                 if ((attributeValue = item.getNode().getNamespaceURI()) != null && attributeValue.length() > 0) {
@@ -1256,52 +1255,52 @@ public abstract class Serializer implements XMLReader {
     }
 
 
-	/**
-	 *  URIResolver is called by the XSL transformer to handle <xsl:include>,
-	 *  <xsl:import> ...
-	 *
-	 *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
-	 */
-	private class InternalURIResolver implements URIResolver {
+    /**
+     * URIResolver is called by the XSL transformer to handle <xsl:include>,
+     * <xsl:import> ...
+     *
+     * @author Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+     */
+    private class InternalURIResolver implements URIResolver {
 
-		private final String collectionId;
+        private final String collectionId;
 
-		public InternalURIResolver(final String collection) {
-			collectionId = collection;
-		}
+        public InternalURIResolver(final String collection) {
+            collectionId = collection;
+        }
 
-		@Override
-		public Source resolve(String href, final String base) throws TransformerException {
-			LOG.debug("resolving stylesheet ref " + href);
-			if (href.indexOf(':') != Constants.STRING_NOT_FOUND) {
-				// href is an URL pointing to an external resource
-				return null;
-			}
+        @Override
+        public Source resolve(String href, final String base) throws TransformerException {
+            LOG.debug("resolving stylesheet ref " + href);
+            if (href.indexOf(':') != Constants.STRING_NOT_FOUND) {
+                // href is an URL pointing to an external resource
+                return null;
+            }
             ///TODO : use dedicated function in XmldbURI
-			final URI baseURI = URI.create(collectionId + "/");
-			final URI uri = URI.create(href);
-			href = baseURI.resolve(uri).toString();
-			final Serializer serializer = broker.newSerializer();
-			return new SAXSource(serializer, new InputSource(href));
-		}
-	}
+            final URI baseURI = URI.create(collectionId + "/");
+            final URI uri = URI.create(href);
+            href = baseURI.resolve(uri).toString();
+            final Serializer serializer = broker.newSerializer();
+            return new SAXSource(serializer, new InputSource(href));
+        }
+    }
 
     /**
      * An error listener that just rethrows the exception
      */
     private static class ErrorListener implements javax.xml.transform.ErrorListener {
 
-		@Override
+        @Override
         public void warning(final TransformerException exception) throws TransformerException {
             LOG.warn("Warning while applying stylesheet: " + exception.getMessage(), exception);
         }
 
-		@Override
+        @Override
         public void error(final TransformerException exception) throws TransformerException {
             throw exception;
         }
 
-		@Override
+        @Override
         public void fatalError(final TransformerException exception) throws TransformerException {
             throw exception;
         }
