@@ -437,8 +437,7 @@ public abstract class Serializer implements XMLReader {
      */
     public void reset() {
         receiver = xinclude;
-        xinclude.setModuleLoadPath(null);
-        xinclude.setReceiver(null);
+        xinclude.reset();
         xslHandler = null;
         templates = null;
         outputProperties.clear();
