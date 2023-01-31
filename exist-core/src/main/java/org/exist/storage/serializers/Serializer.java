@@ -52,7 +52,6 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.MatchListener;
@@ -481,7 +480,7 @@ public abstract class Serializer implements XMLReader {
             //looking for serializer properties in <?exist-serialize?>
             final NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                final StoredNode node = (StoredNode) children.item(i);
+                final Node node = children.item(i);
                 if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
                         && "exist-serialize".equals(node.getNodeName())) {
 
