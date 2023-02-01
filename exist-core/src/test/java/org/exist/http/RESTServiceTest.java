@@ -170,8 +170,39 @@ public class RESTServiceTest {
             "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
             "<bookmap id=\"bookmap-1\"/>";
 
+
     private static final XmldbURI TEST_DOCTYPE_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-doctype");
     private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
+
+    private static final XmldbURI TEST_XSLPI_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xslpi");
+
+    private static final String XSLT_WITH_XSLPI =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" exclude-result-prefixes=\"xs\" version=\"2.0\">\n" +
+            "  <xsl:output method=\"xml\" indent=\"no\" media-type=\"application/xml\" omit-xml-declaration=\"yes\"/>\n" +
+            "  <xsl:template match=\"processing-instruction()\" priority=\"2\"/>\n" +
+            "  <xsl:template match=\"bookmap\">\n" +
+            "    <copied>\n" +
+            "      <xsl:copy>\n" +
+            "        <xsl:apply-templates select=\"node()|@*\"/>\n" +
+            "      </xsl:copy>\n" +
+            "    </copied>\n" +
+            "  </xsl:template>\n" +
+            "  <xsl:template match=\"node()|@*\">\n" +
+            "    <xsl:copy>\n" +
+            "      <xsl:apply-templates select=\"node()|@*\"/>\n" +
+            "    </xsl:copy>\n" +
+            "  </xsl:template>\n" +
+            "</xsl:stylesheet>";
+
+    private static final XmldbURI TEST_XSLT_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xslt");
+
+    private static final String XML_WITH_XSLPI =
+            "<?xml-stylesheet type=\"text/xsl\" href=\"" + TEST_XSLT_DOC_WITH_XSLPI_URI.lastSegmentString() + "\"?>\n" +
+            "<bookmap id=\"bookmap-1\"/>";
+
+    private static final XmldbURI TEST_XML_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xml");
+
 
     private static String credentials;
     private static String badCredentials;
@@ -279,6 +310,12 @@ public class RESTServiceTest {
 
             try (final Collection col = broker.getOrCreateCollection(transaction, TEST_DOCTYPE_COLLECTION_URI)) {
                 broker.storeDocument(transaction, TEST_XML_DOC_WITH_DOCTYPE_URI, new StringInputSource(XML_WITH_DOCTYPE), MimeType.XML_TYPE, col);
+                broker.saveCollection(transaction, col);
+            }
+
+            try (final Collection col = broker.getOrCreateCollection(transaction, TEST_XSLPI_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TEST_XSLT_DOC_WITH_XSLPI_URI, new StringInputSource(XSLT_WITH_XSLPI), MimeType.XML_TYPE, col);
+                broker.storeDocument(transaction, TEST_XML_DOC_WITH_XSLPI_URI, new StringInputSource(XML_WITH_XSLPI), MimeType.XML_TYPE, col);
                 broker.saveCollection(transaction, col);
             }
 
@@ -1301,6 +1338,52 @@ try {
         } finally {
             connect.disconnect();
         }
+    }
+
+    @Test
+    public void getDocWithXslPi() throws IOException {
+        final String docWithXslPiUri = getServerUri() + TEST_XSLPI_COLLECTION_URI.append(TEST_XML_DOC_WITH_XSLPI_URI);
+        final HttpURLConnection connect = getConnection(docWithXslPiUri);
+        try {
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            final int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, HttpStatus.OK_200, r);
+            String contentType = connect.getContentType();
+            final int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+
+            // NOTE(AR) At present the RESTServer will force XHTML with text/html mimetype and indenting if an xsl-pi is used... this should probably be improved in future!
+            assertEquals("Server returned content type " + contentType, "text/html", contentType);
+
+            final String response = readResponse(connect.getInputStream());
+
+            final Source expectedSource = Input.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<copied>\n" +
+                    "    <bookmap id=\"bookmap-1\"></bookmap>\n" +
+                    "</copied>\n").build();
+            final Source actualSource = Input.from(response).build();
+
+            final Diff diff = DiffBuilder.compare(expectedSource)
+                    .withTest(actualSource)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+        } finally {
+            connect.disconnect();
+        }
+    }
+
+    @Test
+    public void getDocWithXslPi_twice() throws IOException {
+        // NOTE(AR) doing this twice revealed an issue with the Serializer not being correctly reset
+        getDocWithXslPi();
+        getDocWithXslPi();
     }
 
     private void chmod(final String resourcePath, final String mode) throws IOException {

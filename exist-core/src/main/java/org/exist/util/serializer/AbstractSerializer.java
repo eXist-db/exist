@@ -21,13 +21,14 @@
  */
 package org.exist.util.serializer;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.json.JSONWriter;
 import org.exist.xquery.util.SerializerUtils;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.Writer;
-import java.util.Map;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -96,12 +97,13 @@ public abstract class AbstractSerializer {
         final SerializerWriter baseSerializerWriter = getBaseSerializerWriter(method, htmlVersion);
 
         final SerializerWriter serializerWriter;
-        final CharacterMappingWriter characterMappingWriter = getCharacterMappingWriter();
-        characterMappingWriter.setWrappedSerializerWriter(baseSerializerWriter);
-        final Map<Integer, String> characterMap = SerializerUtils.getCharacterMap(outputProperties);
-        if (characterMap == null || characterMap.size() == 0) {
+
+        @Nullable final Int2ObjectMap<String> characterMap = SerializerUtils.getCharacterMap(outputProperties);
+        if (characterMap == null || characterMap.isEmpty()) {
             serializerWriter = baseSerializerWriter;
         } else {
+            final CharacterMappingWriter characterMappingWriter = getCharacterMappingWriter();
+            characterMappingWriter.setWrappedSerializerWriter(baseSerializerWriter);
             serializerWriter = characterMappingWriter;
         }
 
