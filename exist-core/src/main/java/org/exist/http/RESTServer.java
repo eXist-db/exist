@@ -1768,7 +1768,6 @@ public class RESTServer {
                     serializer.setStylesheet(resource, stylesheet);
                 }
                 serializer.setProperties(outputProperties);
-                serializer.prepareStylesheets(resource);
 
                 if (asMimeType != null) { // was a mime-type specified?
                     response.setContentType(asMimeType + "; charset=" + encoding);
