@@ -124,7 +124,7 @@
         <junit.vintage.version>5.9.2</junit.vintage.version>
         <easymock.version>5.0.1</easymock.version>
         <objenesis.version>3.3</objenesis.version>
-        <assertj.version>3.23.1</assertj.version>
+        <assertj.version>3.24.2</assertj.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
 
