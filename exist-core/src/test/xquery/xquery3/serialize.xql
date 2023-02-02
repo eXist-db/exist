@@ -224,6 +224,26 @@ function ser:serialize-atomic() {
         fn:serialize($nodes)
 };
 
+(: test for https://github.com/eXist-db/exist/issues/4704 :)
+declare
+    %test:assertEquals("aaabbb")
+function ser:serialize-atomic-empty-separator() {
+    fn:serialize(("aaa", "bbb"), map {"item-separator": ""})
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4704 :)
+declare
+    %test:assertEquals("aaabbb")
+function ser:serialize-atomic-empty-separator-xml-options() {
+    fn:serialize(("aaa", "bbb"),
+      <output:serialization-parameters
+           xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+        <output:item-separator value=""/>
+      </output:serialization-parameters>
+    )
+};
+
+
 declare
     %test:assertEquals("")
 function ser:serialize-empty-sequence() {
@@ -926,4 +946,56 @@ function ser:serialize-html-5-needs-escape-elements() {
         </foo>
         => serialize($params)
         => normalize-space()
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4702 :)
+declare
+    %test:assertEquals("<a>foo</a> <b>bar</b>")
+function ser:sequence-of-nodes() {
+    (<a>foo</a>, <b>bar</b>) => serialize()
+};
+
+declare
+    %test:assertEquals("[|]")
+function ser:sequence-skip-empty-text-node() {
+    (<a>[</a>, <a>
+        </a>, <a>]</a>)/text()
+    => serialize(map {"item-separator": "|"})
+};
+
+declare
+    %test:assertEquals("||")
+function ser:sequence-dont-skip-empty-string() {
+    serialize(("", "", ""), map {"item-separator": "|"})
+};
+
+declare
+    %test:assertEquals("foo")
+function ser:skip-empty-no-separator() {
+    (<a>foo</a>, <b></b>)/text()
+    => serialize(map{"item-separator": "!"})
+};
+
+declare
+    %test:assertEquals("")
+function ser:empty-array-serializes-to-empty-string() {
+    serialize([])
+};
+
+declare
+    %test:assertEquals("")
+function ser:array-with-members-serializes-to-empty-string() {
+    serialize(["", ()])
+};
+
+declare
+    %test:assertEquals("")
+function ser:sequence-of-empty-arrays-serializes-to-empty-string() {
+    serialize(([],[]), map{"item-separator": "|"})
+};
+
+declare
+    %test:assertEquals("1|2")
+function ser:item-separator-applies-to-array-members() {
+    serialize(([1,2]), map{"item-separator":"|"})
 };

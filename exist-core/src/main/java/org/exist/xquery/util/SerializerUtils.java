@@ -454,7 +454,12 @@ public class SerializerUtils {
         final Sequence providedParameterValue = entries.get(parameterConventionEntryKey);
 
         // should we use the default value
-        if (providedParameterValue == null || providedParameterValue.isEmpty() || (parameterConvention.getType() == Type.STRING && isEmptyStringValue(providedParameterValue))) {
+        if (providedParameterValue == null || providedParameterValue.isEmpty() || (
+                parameterConvention.getType() == Type.STRING && isEmptyStringValue(providedParameterValue) &&
+                        // allow empty separator #4704
+                        parameterConvention.getParameterName() != EXistOutputKeys.ITEM_SEPARATOR
+        )
+        ) {
             // use default value
 
             if (W3CParameterConvention.MEDIA_TYPE == parameterConvention) {

@@ -404,6 +404,7 @@ public class Eval extends BasicFunction {
 
                         final Sequence seq;
                         if (xqSerializer.normalize()) {
+                            // TODO(JL): should this not be changed to DEFAULT_ITEM_SEPARATOR
                             seq = FunSerialize.normalize(this, context, result, null);
                         } else {
                             seq = result;
