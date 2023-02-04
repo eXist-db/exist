@@ -70,6 +70,7 @@ import java.util.Optional;
  */
 public class ExistRepository extends Observable implements BrokerPoolService {
 
+    private final static Logger EXIST_LOG = LogManager.getLogger(BrokerPool.class);
     private final static Logger LOG = LogManager.getLogger(ExistRepository.class);
     private static final String EXPATH_REPO_DIR_NAME = "expathrepo";
     private static final String LEGACY_DEFAULT_EXPATH_REPO_DIR = "webapp/WEB-INF/" + EXPATH_REPO_DIR_NAME;
@@ -98,13 +99,27 @@ public class ExistRepository extends Observable implements BrokerPoolService {
 
         LOG.info("Using directory {} for expath package repository", expathDir.toAbsolutePath().toString());
 
+        final FileSystemStorage storage;
         try {
-            final FileSystemStorage storage = new FileSystemStorage(expathDir);
-            storage.setErrorIfNoContentDir(false);
-            this.myParent = new Repository(storage);
+            storage = new FileSystemStorage(expathDir);
+        } catch(final PackageException e) {
+            throw new BrokerPoolServiceException("Unable to open storage for EXPath Package Repository: " + expathDir.toAbsolutePath(), e);
+        }
+        storage.setErrorIfNoContentDir(false);
+
+        this.myParent = new Repository(storage);
+        final List<PackageException> exceptions = this.myParent.init();
+        if (exceptions.size() > 0) {
+            EXIST_LOG.warn("It may not have been possible to load all EXPath Packages, see repo.log for details...");
+            for (final PackageException exception : exceptions) {
+                LOG.error(exception.getMessage(), exception);
+            }
+        }
+
+        try {
             myParent.registerExtension(new ExistPkgExtension());
         } catch(final PackageException e) {
-            throw new BrokerPoolServiceException("Unable to prepare EXPath Package Repository: " + expathDir.toAbsolutePath().toString(), e);
+            throw new BrokerPoolServiceException("Unable to register EXPath Package Repository extension 'ExistPkgExtension': " + e.getMessage(), e);
         }
     }
 
