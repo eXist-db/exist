@@ -166,8 +166,8 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>compile</scope>
         </dependency>
 
@@ -580,11 +580,6 @@
         </dependency>
 
         <!-- dependencies from exist-optional.jar -->
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>1.4</version>
-        </dependency>
         <dependency>
             <!--
                  NOTE(AR) This is needed to enable loading of Servlets etc

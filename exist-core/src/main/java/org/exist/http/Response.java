@@ -23,7 +23,7 @@ package org.exist.http;
 
 import org.exist.util.MimeType;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.DataOutputStream;
 import java.io.IOException;
 

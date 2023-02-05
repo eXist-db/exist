@@ -264,7 +264,7 @@ public class RESTServiceTest {
      *  all browsers send a bare / as is (user error? will separate path-segments)
      *  all browsers send a bare ? as is (user error? will start the query-string)
      *  no browser sends a bare # at all (user error? will start the fragment-identifier)
-     *  chrome and msie send [] verbatim (wrong? apache can accomodate…)
+     *  chrome and msie send [] verbatim (wrong? apache can accommodate...)
      *  all browsers send a bare % as is (user error? will start an escape, apache returns Bad Request)
 
      ** Interoperability /webdav/ space:
@@ -281,7 +281,7 @@ public class RESTServiceTest {
 
      ** Beware, some chars valid in a path-segment must not be in a filename (mostly NTFS)
      */
-    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted…
+    // Below String mostly contains the PCHAR set literally; the colon fails though, so its omitted...
     // Also in the mix: some (mandatory except %27) escapes, some multibyte UTF-8 characters
     // and a superficial directory traversal and a superficial double slash too
     private static String getResourceUriPlus() {

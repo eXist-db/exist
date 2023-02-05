@@ -21,8 +21,8 @@
  */
 package org.exist.http;
 
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SessionCountListener implements HttpSessionListener {

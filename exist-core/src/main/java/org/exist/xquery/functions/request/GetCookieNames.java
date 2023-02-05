@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.functions.request;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

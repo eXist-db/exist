@@ -21,8 +21,8 @@
  */
 package org.exist.http.servlets;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
 import java.util.Enumeration;
 
 /**

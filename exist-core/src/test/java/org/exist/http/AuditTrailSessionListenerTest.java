@@ -44,8 +44,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
 
 import java.io.IOException;
 import java.util.Optional;

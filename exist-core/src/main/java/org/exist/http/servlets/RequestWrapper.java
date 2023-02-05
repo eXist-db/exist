@@ -21,8 +21,8 @@
  */
 package org.exist.http.servlets;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.Cookie;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +38,7 @@ public interface RequestWrapper {
      * to this request. This method returns an empty Enumeration if the
      * request has no attributes available to it.
      *
-     * @see javax.servlet.ServletRequest#getAttributeNames()
+     * @see jakarta.servlet.ServletRequest#getAttributeNames()
      *
      * @return The attribute names.
      */
@@ -48,7 +48,7 @@ public interface RequestWrapper {
      * Returns the value of the named attribute as an Object, or null if no
      * attribute of the given name exists.
      *
-     * @see javax.servlet.ServletRequest#getAttribute(String)
+     * @see jakarta.servlet.ServletRequest#getAttribute(String)
      *
      * @param name a String specifying the name of the attribute.
      *
@@ -63,7 +63,7 @@ public interface RequestWrapper {
      * @param name a String specifying the name of the attribute.
      * @param o the Object to be stored.
      *
-     * @see javax.servlet.ServletRequest#setAttribute(String, Object)
+     * @see jakarta.servlet.ServletRequest#setAttribute(String, Object)
      */
     void setAttribute(String name, Object o);
 
@@ -74,7 +74,7 @@ public interface RequestWrapper {
      *
      * @param name a String specifying the name of the attribute.
      *
-     * @see javax.servlet.ServletRequest#removeAttribute(String)
+     * @see jakarta.servlet.ServletRequest#removeAttribute(String)
      */
     void removeAttribute(String name);
 
@@ -84,7 +84,7 @@ public interface RequestWrapper {
      * This method returns null if the request does not specify a character
      * encoding.
      *
-     * @see javax.servlet.ServletRequest#getCharacterEncoding()
+     * @see jakarta.servlet.ServletRequest#getCharacterEncoding()
      *
      * @return a String containing the name of the character encoding,
      *     or null if the request does not specify a character encoding.
@@ -95,7 +95,7 @@ public interface RequestWrapper {
      * Overrides the name of the character encoding used in the body of this
      * request.
      *
-     * @see javax.servlet.ServletRequest#setCharacterEncoding(String)
+     * @see jakarta.servlet.ServletRequest#setCharacterEncoding(String)
      *
      * @param env String containing the name of the character encoding.
      *
@@ -110,7 +110,7 @@ public interface RequestWrapper {
      * by the input stream, or -1 if the length is not known ir is greater
      * than Integer.MAX_VALUE
      *
-     * @see javax.servlet.ServletRequest#getContentLength()
+     * @see jakarta.servlet.ServletRequest#getContentLength()
      *
      * @return an integer containing the length of the request body or -1
      * if the length is not known or is greater than Integer.MAX_VALUE.
@@ -122,7 +122,7 @@ public interface RequestWrapper {
      * by the input stream, or -1 if the length is not known. For HTTP
      * servlets, same as the value of the CGI variable CONTENT_LENGTH.
      *
-     * @see javax.servlet.ServletRequest#getContentLengthLong()
+     * @see jakarta.servlet.ServletRequest#getContentLengthLong()
      *
      * @return a long containing the length of the request body or -1L
      *     if the length is not known.
@@ -133,7 +133,7 @@ public interface RequestWrapper {
      * Retrieves the body of the request as binary data using a ServletInputStream.
      * Either this method or getReader may be called to read the body, not both.
      *
-     * @see javax.servlet.ServletRequest#getInputStream()
+     * @see jakarta.servlet.ServletRequest#getInputStream()
      *
      * @return a ServletInputStream object containing the body of the request.
      *
@@ -148,7 +148,7 @@ public interface RequestWrapper {
      * is not known. For HTTP servlets, same as the value of the CGI
      * variable CONTENT_TYPE.
      *
-     * @see javax.servlet.ServletRequest#getContentType()
+     * @see jakarta.servlet.ServletRequest#getContentType()
      *
      * @return a String containing the name of the MIME type of the
      *     request, or null if the type is not known.
@@ -160,7 +160,7 @@ public interface RequestWrapper {
      * the parameters contained in this request. If the request has no
      * parameters, the method returns an empty Enumeration.
      *
-     * @see javax.servlet.ServletRequest#getParameterNames()
+     * @see jakarta.servlet.ServletRequest#getParameterNames()
      *
      * @return an Enumeration of String objects, each String containing
      *     the name of a request parameter; or an empty Enumeration if
@@ -174,7 +174,7 @@ public interface RequestWrapper {
      * information sent with the request. For HTTP servlets, parameters
      * are contained in the query string or posted form data.
      *
-     * @see javax.servlet.ServletRequest#getParameter(String)
+     * @see jakarta.servlet.ServletRequest#getParameter(String)
      *
      * @param name a String specifying the name of the parameter.
      *
@@ -187,7 +187,7 @@ public interface RequestWrapper {
      * given request parameter has, or null if the parameter does not exist.
      * If the parameter has a single value, the array has a length of 1.
      *
-     * @see javax.servlet.ServletRequest#getParameterValues(String)
+     * @see jakarta.servlet.ServletRequest#getParameterValues(String)
      *
      * @param name a String containing the name of the parameter whose
      *             value is requested.
@@ -202,7 +202,7 @@ public interface RequestWrapper {
      * For HTTP servlets, the value returned is the same as the value of
      * the CGI variable SERVER_PROTOCOL.
      *
-     * @see javax.servlet.ServletRequest#getProtocol()
+     * @see jakarta.servlet.ServletRequest#getProtocol()
      *
      * @return a String containing the protocol name and version number.
      */
@@ -213,7 +213,7 @@ public interface RequestWrapper {
      * http, https, or ftp. Different schemes have different rules for constructing
      * URLs, as noted in RFC 1738.
      *
-     * @see javax.servlet.ServletRequest#getScheme()
+     * @see jakarta.servlet.ServletRequest#getScheme()
      *
      * @return a String containing the name of the scheme used to make this
      *     request.
@@ -225,7 +225,7 @@ public interface RequestWrapper {
      * It is the value of the part before ":" in the Host header value,
      * if any, or the resolved server name, or the server IP address.
      *
-     * @see javax.servlet.ServletRequest#getServerName()
+     * @see jakarta.servlet.ServletRequest#getServerName()
      *
      * @return a String containing the name of the server.
      */
@@ -236,7 +236,7 @@ public interface RequestWrapper {
      * It is the value of the part after ":" in the Host header value,
      * if any, or the server port where the client connection was accepted on.
      *
-     * @see javax.servlet.ServletRequest#getServerPort()
+     * @see jakarta.servlet.ServletRequest#getServerPort()
      *
      * @return an integer specifying the port number.
      */
@@ -247,7 +247,7 @@ public interface RequestWrapper {
      * that sent the request. For HTTP servlets, same as the value of the CGI
      * variable REMOTE_ADDR.
      *
-     * @see javax.servlet.ServletRequest#getRemoteAddr()
+     * @see jakarta.servlet.ServletRequest#getRemoteAddr()
      *
      * @return a String containing the IP address of the client that sent the
      *     request.
@@ -261,7 +261,7 @@ public interface RequestWrapper {
      * form of the IP address. For HTTP servlets, same as the value of the
      * CGI variable REMOTE_HOST.
      *
-     * @see javax.servlet.ServletRequest#getRemoteHost()
+     * @see jakarta.servlet.ServletRequest#getRemoteHost()
      *
      * @return a String containing the fully qualified name of the client.
      */
@@ -271,7 +271,7 @@ public interface RequestWrapper {
      * Returns the Internet Protocol (IP) source port of the client or last
      * proxy that sent the request.
      *
-     * @see javax.servlet.ServletRequest#getRemotePort()
+     * @see jakarta.servlet.ServletRequest#getRemotePort()
      *
      * @return an integer specifying the port number.
      */
@@ -281,7 +281,7 @@ public interface RequestWrapper {
      * Returns a boolean indicating whether this request was made using a
      * secure channel, such as HTTPS.
      *
-     * @see javax.servlet.ServletRequest#isSecure()
+     * @see jakarta.servlet.ServletRequest#isSecure()
      *
      * @return a boolean indicating if the request was made using a
      *     secure channel.
@@ -292,7 +292,7 @@ public interface RequestWrapper {
      * Returns a RequestDispatcher object that acts as a wrapper for the
      * resource located at the given path.
      *
-     * @see javax.servlet.ServletRequest#getRequestDispatcher(String)
+     * @see jakarta.servlet.ServletRequest#getRequestDispatcher(String)
      *
      * @param path a String specifying the pathname to the resource.
      *     If it is relative, it must be relative against the current servlet.
@@ -307,7 +307,7 @@ public interface RequestWrapper {
      * Returns an array containing all of the Cookie objects the client sent
      * with this request. This method returns null if no cookies were sent.
      *
-     * @see javax.servlet.http.HttpServletRequest#getCookies()
+     * @see jakarta.servlet.http.HttpServletRequest#getCookies()
      *
      * @return an array of all the Cookies included with this request,
      *     or null if the request has no cookies.
@@ -318,7 +318,7 @@ public interface RequestWrapper {
      * Returns the portion of the request URI that indicates the context of
      * the request.
      *
-     * @see javax.servlet.http.HttpServletRequest#getContextPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getContextPath()
      *
      * @return a String specifying the portion of the request URI that
      *     indicates the context of the request.
@@ -329,7 +329,7 @@ public interface RequestWrapper {
      * Returns an enumeration of all the header names this request contains.
      * If the request has no headers, this method returns an empty enumeration.
      *
-     * @see javax.servlet.http.HttpServletRequest#getHeaderNames()
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaderNames()
      *
      * @return an enumeration of all the header names sent with this request;
      *     if the request has no headers, an empty enumeration; if the servlet
@@ -342,7 +342,7 @@ public interface RequestWrapper {
      * If the request did not include a header of the specified name,
      * this method returns null
      *
-     * @see javax.servlet.http.HttpServletRequest#getHeader(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeader(String)
      *
      * @param name a String specifying the header name.
      *
@@ -355,7 +355,7 @@ public interface RequestWrapper {
      * Returns all the values of the specified request header as an
      * Enumeration of String objects.
      *
-     * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
+     * @see jakarta.servlet.http.HttpServletRequest#getHeaders(String)
      *
      * @param name a String specifying the header name.
      *
@@ -371,7 +371,7 @@ public interface RequestWrapper {
      * for example, GET, POST, or PUT. Same as the value of the CGI variable
      * REQUEST_METHOD.
      *
-     * @see javax.servlet.http.HttpServletRequest#getMethod()
+     * @see jakarta.servlet.http.HttpServletRequest#getMethod()
      *
      * @return a String specifying the name of the method with which this
      *     request was made.
@@ -382,7 +382,7 @@ public interface RequestWrapper {
      * Returns any extra path information associated with the URL the client
      * sent when it made this request.
      *
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
      *
      * @return a String, decoded by the web container, specifying extra path
      *     information that comes after the servlet path but before the query
@@ -395,7 +395,7 @@ public interface RequestWrapper {
      * Returns any extra path information after the servlet name but before the
      * query string, and translates it to a real path.
      *
-     * @see javax.servlet.http.HttpServletRequest#getPathTranslated()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathTranslated()
      *
      * @return a String specifying the real path, or null if the URL does not
      *     have any extra path information.
@@ -407,7 +407,7 @@ public interface RequestWrapper {
      * path. This method returns null if the URL does not have a query string.
      * Same as the value of the CGI variable QUERY_STRING.
      *
-     * @see javax.servlet.http.HttpServletRequest#getQueryString()
+     * @see jakarta.servlet.http.HttpServletRequest#getQueryString()
      *
      * @return a String containing the query string or null if the URL contains
      *     no query string. The value is not decoded by the container.
@@ -421,7 +421,7 @@ public interface RequestWrapper {
      * browser and type of authentication. Same as the value of the CGI
      * variable REMOTE_USER.
      *
-     * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
+     * @see jakarta.servlet.http.HttpServletRequest#getRemoteUser()
      *
      * @return a String specifying the login of the user making this request,
      *     or null if the user login is not known.
@@ -433,7 +433,7 @@ public interface RequestWrapper {
      * as the ID of the current valid session for this request. If the client
      * did not specify a session ID, this method returns null.
      *
-     * @see javax.servlet.http.HttpServletRequest#getRequestedSessionId()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestedSessionId()
      *
      * @return a String specifying the session ID, or null if the request did not
      *     specify a session ID.
@@ -443,7 +443,7 @@ public interface RequestWrapper {
     /**
      * Checks whether the requested session ID came in as a cookie.
      *
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdFromCookie()
      *
      * @return true if the session ID came in as a cookie; otherwise, false.
      */
@@ -452,7 +452,7 @@ public interface RequestWrapper {
     /**
      * Checks whether the requested session ID came in as part of the request URL.
      *
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdFromURL()
      *
      * @return true if the session ID came in as part of a URL;
      *     otherwise, false.
@@ -463,7 +463,7 @@ public interface RequestWrapper {
      * Checks whether the requested session ID is still valid.
      * If the client did not specify any session ID, this method returns false.
      *
-     * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
+     * @see jakarta.servlet.http.HttpServletRequest#isRequestedSessionIdValid()
      *
      * @return true if this request has an id for a valid session in the current
      *     session context; false otherwise.
@@ -474,7 +474,7 @@ public interface RequestWrapper {
      * Returns the part of this request's URL from the protocol name up to the
      * query string in the first line of the HTTP request.
      *
-     * @see javax.servlet.http.HttpServletRequest#getRequestURI()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestURI()
      *
      * @return a String containing the part of the URL from the protocol name
      *     up to the query string.
@@ -486,7 +486,7 @@ public interface RequestWrapper {
      * The returned URL contains a protocol, server name, port number,
      * and server path, but it does not include query string parameters.
      *
-     * @see javax.servlet.http.HttpServletRequest#getRequestURL()
+     * @see jakarta.servlet.http.HttpServletRequest#getRequestURL()
      *
      * @return a StringBuffer object containing the reconstructed URL.
      */
@@ -495,7 +495,7 @@ public interface RequestWrapper {
     /**
      * Returns the part of this request's URL that calls the servlet.
      *
-     * @see javax.servlet.http.HttpServletRequest#getServletPath()
+     * @see jakarta.servlet.http.HttpServletRequest#getServletPath()
      *
      * @return a String containing the name or path of the servlet being
      *     called, as specified in the request URL, decoded, or an empty
@@ -508,7 +508,7 @@ public interface RequestWrapper {
      * Returns the current session associated with this request, or if
      * the request does not have a session, creates one.
      *
-     * @see javax.servlet.http.HttpServletRequest#getSession()
+     * @see jakarta.servlet.http.HttpServletRequest#getSession()
      *
      * @return the HttpSession associated with this request.
      */
@@ -518,7 +518,7 @@ public interface RequestWrapper {
      * Returns the current session associated with this request,
      * or if the request does not have a session, creates one.
      *
-     * @see javax.servlet.http.HttpServletRequest#getSession(boolean)
+     * @see jakarta.servlet.http.HttpServletRequest#getSession(boolean)
      *
      * @param create true to create a new session for this request if
      *     necessary; false to return null if there's no current session.
@@ -533,7 +533,7 @@ public interface RequestWrapper {
      * current authenticated user. If the user has not been authenticated,
      * the method returns null.
      *
-     * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
+     * @see jakarta.servlet.http.HttpServletRequest#getUserPrincipal()
      *
      * @return a java.security.Principal containing the name of the user
      *     making this request; null if the user has not been authenticated.
@@ -544,7 +544,7 @@ public interface RequestWrapper {
      * Returns a boolean indicating whether the authenticated user is included
      * in the specified logical "role".
      *
-     * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
+     * @see jakarta.servlet.http.HttpServletRequest#isUserInRole(String)
      *
      * @param role a String specifying the name of the role.
      *

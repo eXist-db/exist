@@ -297,14 +297,14 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>websocket-server</artifactId>
+            <artifactId>websocket-jetty-server</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- server-side dependency for javax.websocket (JSR-356) support -->
+        <!-- server-side dependency for jakarta.websocket support -->
         <dependency>
-          <groupId>org.eclipse.jetty.websocket</groupId>
-          <artifactId>javax-websocket-server-impl</artifactId>
-          <scope>runtime</scope>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-jakarta-server</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- needed for the AppAssembler booter approach -->
@@ -337,13 +337,13 @@
                                 <exclude>src/dmg/**</exclude>
                                 <exclude>src/main/config/**</exclude>  <!-- config files shipped with eXist-db don't need copyright headers -->
                                 <exclude>src/main/scripts/codesign-jansi-mac.sh</exclude>
-                                <exclude>src/main/xslt/configure_9_3.dtd</exclude>
-                                <exclude>src/main/xslt/web-app_3_1.xsd</exclude>
-                                <exclude>src/main/xslt/javaee_web_services_client_1_4.xsd</exclude>
-                                <exclude>src/main/xslt/jsp_2_3.xsd</exclude>
+                                <exclude>src/main/xslt/configure_10_0.dtd</exclude>
+                                <exclude>src/main/xslt/web-app_5_0.xsd</exclude>
+                                <exclude>src/main/xslt/jakartaee_web_services_client_2_0.xsd</exclude>
+                                <exclude>src/main/xslt/jsp_3_0.xsd</exclude>
                                 <exclude>src/main/xslt/xml.xsd</exclude>
-                                <exclude>src/main/xslt/web-common_3_1.xsd</exclude>
-                                <exclude>src/main/xslt/javaee_7.xsd</exclude>
+                                <exclude>src/main/xslt/web-common_5_0.xsd</exclude>
+                                <exclude>src/main/xslt/jakartaee_9.xsd</exclude>
                             </excludes>
                         </licenseSet>
 

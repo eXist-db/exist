@@ -21,6 +21,7 @@
  */
 package org.exist.http.urlrewrite;
 
+import jakarta.servlet.annotation.MultipartConfig;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -68,11 +69,11 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
 import javax.annotation.Nullable;
-import javax.servlet.*;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -95,12 +96,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * untouched. Otherwise, the query should return a single XML element, which will instruct the filter
  * how to further process the request. Details about the format can be found in the main documentation.
  *
- * The request is forwarded via {@link javax.servlet.RequestDispatcher#forward(javax.servlet.ServletRequest, javax.servlet.ServletResponse)}.
+ * The request is forwarded via {@link jakarta.servlet.RequestDispatcher#forward(jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse)}.
  * Contrary to HTTP forwarding, there is no additional roundtrip to the client. It all happens on
  * the server. The client will not notice the redirect.
  *
  * Please read the <a href="http://exist-db.org/urlrewrite.html">documentation</a> for further information.
  */
+@MultipartConfig
 public class XQueryURLRewrite extends HttpServlet {
 
     private static final Logger LOG = LogManager.getLogger(XQueryURLRewrite.class);
@@ -1036,7 +1038,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    public static class RequestWrapper extends javax.servlet.http.HttpServletRequestWrapper {
+    public static class RequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
         private final Map<String, List<String>> addedParams = new HashMap<>();
 
         private ServletInputStream sis = null;

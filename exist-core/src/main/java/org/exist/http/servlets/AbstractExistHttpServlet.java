@@ -21,6 +21,7 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.annotation.MultipartConfig;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
@@ -36,11 +37,11 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,6 +55,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
+@MultipartConfig
 public abstract class AbstractExistHttpServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 804071766041263220L;

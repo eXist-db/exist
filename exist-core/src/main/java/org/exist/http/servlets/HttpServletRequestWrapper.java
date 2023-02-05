@@ -28,8 +28,8 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.*;
 import java.net.URLDecoder;
 import java.security.Principal;
@@ -43,11 +43,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * - caches content Body of the POST request as read, making it available many times
  *
  * A method of differentiating between POST parameters in the URL or Content Body of the request was needed.
- * The standard javax.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
+ * The standard jakarta.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
  * this class does, the type is indicated in RequestParameter.type.
  *
  * To differentiate manually we need to read the URL (getQueryString()) and the Content body (getInputStream()),
- * this is problematic with the standard javax.servlet.http.HTTPServletRequest as parameter functions (getParameterMap(), getParameterNames(), getParameter(String), getParameterValues(String))
+ * this is problematic with the standard jakarta.servlet.http.HTTPServletRequest as parameter functions (getParameterMap(), getParameterNames(), getParameter(String), getParameterValues(String))
  * affect the  input stream functions (getInputStream(), getReader()) and vice versa.
  *
  * This class solves this by reading the Request Parameters initially from both the URL and the Content Body of the Request
@@ -273,7 +273,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     }
 
     /**
-     * Similar to javax.servlet.http.HttpServletRequest.toString() ,
+     * Similar to jakarta.servlet.http.HttpServletRequest.toString() ,
      * except it includes output of the Request parameters from the Request's Content Body
      *
      * @return String representation of HttpServletRequestWrapper

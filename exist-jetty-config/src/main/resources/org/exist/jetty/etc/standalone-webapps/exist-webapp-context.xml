@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://www.eclipse.org/jetty/configure_9_3.dtd">
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://www.eclipse.org/jetty/configure_10_0.dtd">
 
 <Configure id="exist-webapp-context" class="org.exist.jetty.WebAppContext">
     <!-- contextPath can be set to either '/exist' or '/' -->
@@ -18,6 +18,6 @@
     </Set>
     <Call name="setAttribute">
         <Arg>org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern</Arg>
-        <Arg>.*/[^/]*servlet-api-[^/]*\.jar$|.*/javax.servlet.jsp.jstl-.*\.jar$|.*/org.apache.taglibs.taglibs-standard-impl-.*\.jar$</Arg>
+        <Arg>.*/[^/]*servlet-api-[^/]*\.jar$|.*/jakarta.servlet.jsp.jstl-.*\.jar$|.*/org.apache.taglibs.taglibs-standard-impl-.*\.jar$</Arg>
     </Call>
 </Configure>
