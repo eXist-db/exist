@@ -46,7 +46,7 @@ public class CollectionConfigurationTest {
     private static final String invalidConfig = "<invalid/>";
 
     private void createCollection(String collection) throws XMLDBException {
-        final CollectionManagementService cmservice = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmservice = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 

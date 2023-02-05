@@ -173,10 +173,8 @@ public class CreateBackupDialog extends JPanel {
 
     private void getAllCollections(final Collection collection, final Vector<String> collections) throws XMLDBException {
         collections.add(collection.getName());
-        final String[] childCollections = collection.listChildCollections();
         Collection child = null;
-
-        for (final String childCollection : childCollections) {
+        for (final String childCollection : collection.listChildCollections()) {
             try {
                 child = collection.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {

@@ -67,7 +67,7 @@ public class FilterInputStreamCacheMonitorTest {
         final Path icon = Paths.get(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
 
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
-        try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.RESOURCE_TYPE)) {
+        try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.class)) {
             resource.setContent(icon);
             testCollection.storeResource(resource);
         }
@@ -76,7 +76,7 @@ public class FilterInputStreamCacheMonitorTest {
 
     @AfterClass
     public static void cleanup() throws XMLDBException {
-        final CollectionManagementService cms = (CollectionManagementService) existXmldbEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existXmldbEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION_NAME);
     }
 

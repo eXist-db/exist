@@ -59,7 +59,7 @@ public class InternalModuleTest {
     @Test
     public void moduleVariables() throws XMLDBException {
         final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
-        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+        final EXistXQueryService queryService = existServer.getRoot().getService(EXistXQueryService.class);
 
         moduleVariablesQuery(queryService, querySource, COUNTER.get());
     }
@@ -73,7 +73,7 @@ public class InternalModuleTest {
     @Test
     public void reusedModuleVariables() throws XMLDBException {
         final Source querySource = new StringSource(getModuleVariableQuery("org.exist.xquery.InternalModuleTest$TestModuleWithVariables"));
-        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+        final EXistXQueryService queryService = existServer.getRoot().getService(EXistXQueryService.class);
 
         moduleVariablesQuery(queryService, querySource, COUNTER.get());
         moduleVariablesQuery(queryService, querySource, COUNTER.get());
@@ -96,7 +96,7 @@ public class InternalModuleTest {
                         "}"
 
         );
-        final EXistXQueryService queryService = (EXistXQueryService)existServer.getRoot().getService("XQueryService", "1.0");
+        final EXistXQueryService queryService = existServer.getRoot().getService(EXistXQueryService.class);
 
         try {
             requestResponseSessionVariablesQuery_4_x_X_Api(queryService, querySource);

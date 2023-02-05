@@ -36,9 +36,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 
 import java.util.Arrays;
 
-import static com.ibm.icu.impl.Assert.fail;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class DeleteCollectionTest {
@@ -80,26 +78,26 @@ public class DeleteCollectionTest {
          * /db/testDelete/11
          * /db/testDelete/00/33
          */
-        EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService service = testCollection.getService(EXistCollectionManagementService.class);
         final Collection zeroCollection = service.createCollection(ZERO_COLLECTION_NAME);
         assertNotNull(zeroCollection);
 
         final Collection oneCollection = service.createCollection(ONE_COLLECTION_NAME);
         assertNotNull(oneCollection);
 
-        service = (EXistCollectionManagementService) zeroCollection.getService("CollectionManagementService", "1.0");
+        service = zeroCollection.getService(EXistCollectionManagementService.class);
         final Collection threeCollection = service.createCollection(THREE_COLLECTION_NAME);
         assertNotNull(threeCollection);
 
         // delete the collection /db/test/00
-        service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        service = testCollection.getService(EXistCollectionManagementService.class);
         service.removeCollection(ZERO_COLLECTION_NAME);
     }
 
     @Before
     public void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
@@ -107,7 +105,7 @@ public class DeleteCollectionTest {
     @After
     public void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

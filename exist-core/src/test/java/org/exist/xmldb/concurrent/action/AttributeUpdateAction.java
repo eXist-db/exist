@@ -50,7 +50,7 @@ public class AttributeUpdateAction extends RemoveAppendAction {
 	@Override
 	public boolean execute() throws XMLDBException {
 		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
+		final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 		final int attrSize = rand.nextInt(5);
 		for (int i = 0; i < 10; i++) {
 			final String xupdate = XUPDATE_START + xmlGenerator.generateText(attrSize) + XUPDATE_END;

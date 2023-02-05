@@ -125,7 +125,7 @@ public class TestDataGenerator {
     public Path[] generate(final org.xmldb.api.base.Collection collection, final String xqueryContent) throws SAXException {
         final String query = IMPORT + xqueryContent;
         try {
-            final XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
+            final XQueryService service = collection.getService(XQueryService.class);
             service.declareVariable("filename", "");
             service.declareVariable("count", "0");
             final CompiledExpression compiled = service.compile(query);
@@ -134,7 +134,7 @@ public class TestDataGenerator {
                 generatedFiles[i] = Files.createTempFile(prefix, ".xml");
 
                 service.declareVariable("filename", generatedFiles[i].getFileName().toString());
-                service.declareVariable("count", new Integer(i));
+                service.declareVariable("count", Integer.valueOf(i));
                 final ResourceSet result = service.execute(compiled);
 
                 try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {

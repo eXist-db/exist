@@ -79,17 +79,17 @@ public class XmldbTaskTest extends AbstractTaskTest {
     public void fileSetup() throws XMLDBException {
         final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
 
-        final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.RESOURCE_TYPE);
+        final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.class);
         res.setContent("<test>hello <subject>world</subject></test>");
         col.storeResource(res);
 
-        final Resource binResource = col.createResource(BIN_TEST_RESOURCE_NAME, BinaryResource.RESOURCE_TYPE);
+        final Resource binResource = col.createResource(BIN_TEST_RESOURCE_NAME, BinaryResource.class);
         binResource.setContent("blah blah");
         col.storeResource(binResource);
 
-        final CollectionManagementService service = (CollectionManagementService) col.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = col.getService(CollectionManagementService.class);
         final Collection otherCol = service.createCollection(OTHER_TEST_COLLECTION_NAME);
-        final Resource otherRes = otherCol.createResource(OTHER_TEST_RESOURCE_NAME, XMLResource.RESOURCE_TYPE);
+        final Resource otherRes = otherCol.createResource(OTHER_TEST_RESOURCE_NAME, XMLResource.class);
         otherRes.setContent("<test>other</test>");
         otherCol.storeResource(otherRes);
         otherCol.close();
@@ -99,7 +99,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
 
     @After
     public void fileCleanup() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
     }
 

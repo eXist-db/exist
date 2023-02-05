@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import java.time.Instant;
 import java.util.*;
 
 import org.exist.dom.persistent.DocumentImpl;
@@ -58,12 +59,12 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     public LocalUserManagementService(final Subject user, final BrokerPool pool, final LocalCollection collection) {
         super(user, pool, collection);
     }
-    
+
     @Override
     public String getName() {
         return "UserManagementService";
     }
-    
+
     @Override
     public String getVersion() {
         return "1.0";
@@ -106,7 +107,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             }
         });
     }
-    
+
     @Override
     public void setPermissions(final Resource resource, final Permission perm) throws XMLDBException {
         modify(resource).apply((document, broker, transaction) -> {
@@ -128,7 +129,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-    
+
     @Override
     public void setPermissions(final Collection child, final String owner, final String group, final int mode, final List<ACEAider> aces) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -258,7 +259,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return lockOwner == null ? null : lockOwner.getName();
         }));
     }
-	
+
     @Override
     public void lockResource(final Resource resource, final Account u) throws XMLDBException {
         modify(resource).apply((document, broker, transaction) -> {
@@ -287,7 +288,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-	
+
     @Override
     public void unlockResource(final Resource resource) throws XMLDBException {
         modify(resource).apply((document, broker, transaction) -> {
@@ -336,9 +337,9 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     }
 
     @Override
-    public Date getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
+    public Instant getSubCollectionCreationTime(final Collection parent, final String name) throws XMLDBException {
         if (parent instanceof LocalCollection localCollection) {
-            return this.<Date>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> new Date(collection.getChildCollectionEntry(broker, name).getCreated()));
+            return this.<Instant>read(localCollection.getPathURI()).apply((collection, broker, transaction) -> Instant.ofEpochMilli(collection.getChildCollectionEntry(broker, name).getCreated()));
         } else {
             return null;
         }
@@ -456,7 +457,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-    
+
     @Override
     public void updateGroup(final Group g) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -474,7 +475,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
         });
         return groupMembers.toArray(new String[0]);
     }
-    
+
     @Override
     public void addAccountToGroup(final String accountName, final String groupName) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -485,7 +486,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-    
+
     @Override
     public void addGroupManager(final String manager, final String groupName) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -497,7 +498,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-    
+
     @Override
     public void removeGroupManager(final String groupName, final String manager) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -509,12 +510,12 @@ public class LocalUserManagementService extends AbstractLocalService implements 
             return null;
         });
     }
-	
+
     @Override
     public void addUserGroup(final Account user) throws XMLDBException {
         throw new UnsupportedOperationException();
     }
-	
+
     @Override
     public void removeGroupMember(final String group, final String member) throws XMLDBException {
         withDb((broker, transaction) -> {
@@ -561,15 +562,6 @@ public class LocalUserManagementService extends AbstractLocalService implements 
         final Account account = new UserAider(u.getName());
         lockResource(res, account);
     }
-        
-    @Override
-    public String getProperty(final String property) throws XMLDBException {
-        return null;
-    }
-    
-    @Override
-    public void setProperty(final String property, final String value) throws XMLDBException {
-    }
 
     /**
      * Executes a LocalXmldbFunction only if the supplied user is an Admin user
@@ -594,7 +586,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
     private <R> FunctionE<LocalXmldbDocumentFunction<R>, R, XMLDBException> modify(final Resource resource) throws XMLDBException {
         return modifyOp -> withDb((broker, transaction) -> (((AbstractEXistResource)resource).<R>modify(broker, transaction).apply(modifyOp)));
     }
-    
+
     /**
      * Higher-order-function for updating a collection and its metadata
      *

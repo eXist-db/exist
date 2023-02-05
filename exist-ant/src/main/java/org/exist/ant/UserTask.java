@@ -64,7 +64,7 @@ public abstract class UserTask extends AbstractXMLDBTask
                     log( msg, Project.MSG_ERR );
                 }
             } else {
-                service = (UserManagementService)base.getService( "UserManagementService", "1.0" );
+                service = base.getService( UserManagementService.class);
             }
 
         }

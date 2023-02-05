@@ -43,7 +43,7 @@ public class Base64BinaryTest {
         final String base64String = "QWxhZGRpbjpvcGVuIHNlc2FtZQ==";
         final String query = "let $data := '" + base64String + "' cast as xs:base64Binary return $data cast as xs:string";
 
-        final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+        final XQueryService service = server.getRoot().getService(XQueryService.class);
 
         final ResourceSet result = service.query(query);
 

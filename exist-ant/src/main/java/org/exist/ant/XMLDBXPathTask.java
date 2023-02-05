@@ -98,7 +98,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
                 }
 
             } else {
-                final XPathQueryService service = (XPathQueryService) base.getService("XPathQueryService", "1.0");
+                final XPathQueryService service = base.getService(XPathQueryService.class);
 
                 // set pretty-printing on
                 service.setProperty(OutputKeys.INDENT, "yes");

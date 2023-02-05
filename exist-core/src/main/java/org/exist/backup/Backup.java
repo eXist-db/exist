@@ -49,13 +49,15 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.time.Instant;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 public class Backup {
     private static final String EXIST_GENERATED_FILENAME_DOT_FILENAME = "_eXist_generated_backup_filename_dot_file_";
@@ -273,19 +275,19 @@ public class Backup {
         current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
 
         // get collections and documents
-        final String[] collections = current.listChildCollections();
-        final String[] resources = current.listResources();
+        final List<String> collections = current.listChildCollections();
+        final List<String> resources = current.listResources();
 
         // do not sort: order is important because permissions need to be read in the same order below
         // Arrays.sort( resources );
 
-        final UserManagementService mgtService = (UserManagementService) current.getService("UserManagementService", "1.0");
+        final UserManagementService mgtService = current.getService(UserManagementService.class);
         final Permission[] perms = mgtService.listResourcePermissions();
         final Permission currentPerms = mgtService.getPermissions(current);
 
         if (dialog != null) {
             dialog.setCollection(current.getName());
-            dialog.setResourceCount(resources.length);
+            dialog.setResourceCount(resources.size());
         }
 
         final Writer contents = output.newContents();
@@ -316,26 +318,26 @@ public class Backup {
             }
 
             // scan through resources
-            for (int i = 0; i < resources.length; i++) {
+            for (int i = 0; i < resources.size(); i++) {
 
                 try {
 
-                    if ("__contents__.xml".equals(resources[i])) {
+                    if ("__contents__.xml".equals(resources.get(i))) {
 
                         //Skipping resources[i]
                         continue;
                     }
 
-                    final Resource resource = current.getResource(resources[i]);
+                    final Resource resource = current.getResource(resources.get(i));
 
                     if (dialog != null) {
-                        dialog.setResource(resources[i]);
+                        dialog.setResource(resources.get(i));
                         dialog.setProgress(i);
                     }
 
                     // Avoid NPE
                     if (resource == null) {
-                        final String msg = "Resource " + resources[i] + " could not be found.";
+                        final String msg = "Resource " + resources.get(i) + " could not be found.";
 
                         if (dialog != null) {
                             Object[] options = {"Ignore", "Abort"};
@@ -354,8 +356,8 @@ public class Backup {
                         throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, msg);
                     }
 
-                    final String name = resources[i];
-                    String filename = encode(URIUtils.urlDecodeUtf8(resources[i]));
+                    final String name = resources.get(i);
+                    String filename = encode(URIUtils.urlDecodeUtf8(resources.get(i)));
 
                     // Check for special resource names which cause problems as filenames, and if so, replace the filename with a generated filename
 
@@ -402,11 +404,12 @@ public class Backup {
                     final EXistResource ris = (EXistResource) resource;
 
                     //store permissions
+                    final ResourceType resourceType = resource.getResourceType();
                     attr.clear();
-                    attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
+                    attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resourceType.typeName());
                     attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", name);
                     writeUnixStylePermissionAttributes(attr, perms[i]);
-                    Date date = ris.getCreationTime();
+                    Instant date = ris.getCreationTime();
 
                     if (date != null) {
                         attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
@@ -420,7 +423,7 @@ public class Backup {
                     attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);
                     attr.addAttribute(Namespaces.EXIST_NS, "mimetype", "mimetype", "CDATA", encode(((EXistResource) resource).getMimeType()));
 
-                    if (!"BinaryResource".equals(resource.getResourceType())) {
+                    if (XML_RESOURCE.equals(resourceType)) {
 
                         if (ris.getDocType() != null) {
 
@@ -446,7 +449,7 @@ public class Backup {
                     }
                     serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
                 } catch (final XMLDBException e) {
-                    System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
+                    System.err.println("Failed to backup resource " + resources.get(i) + " from collection " + current.getName());
                     throw e;
                 }
             }

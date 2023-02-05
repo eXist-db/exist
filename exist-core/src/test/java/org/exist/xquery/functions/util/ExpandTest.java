@@ -23,16 +23,14 @@ package org.exist.xquery.functions.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -106,7 +104,7 @@ public class ExpandTest {
         final String query = "util:expand(doc('/db/expand-test/doc3.xml')/doc3/@foo)";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource res = result.getResource(0);
-        assertEquals(XMLResource.RESOURCE_TYPE, res.getResourceType());
+        assertEquals(XML_RESOURCE, res.getResourceType());
         final XMLResource xmlRes = (XMLResource) res;
         final Node node = xmlRes.getContentAsDOM();
         assertEquals(Node.ATTRIBUTE_NODE, node.getNodeType());
@@ -121,7 +119,7 @@ public class ExpandTest {
                 "util:expand(doc('/db/expand-test/doc4.xml')/doc4/@x:foo)";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource res = result.getResource(0);
-        assertEquals(XMLResource.RESOURCE_TYPE, res.getResourceType());
+        assertEquals(XML_RESOURCE, res.getResourceType());
         final XMLResource xmlRes = (XMLResource) res;
         final Node node = xmlRes.getContentAsDOM();
         assertEquals(Node.ATTRIBUTE_NODE, node.getNodeType());

@@ -67,7 +67,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     @Before
     public void beforeClass() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        final UserManagementService ums = root.getService(UserManagementService.class);
 
         final GroupAider group1 = new GroupAider(USER1_UID);
         ums.addGroup(group1);

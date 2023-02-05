@@ -90,7 +90,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
                     logger.error("Resource {} not found", doc);
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
-                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
                 service.moveResource(doc, destination, null);
             } catch (final XMLDBException e) {
                 logger.error(e.getMessage());
@@ -98,7 +98,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
             }
         } else {
             try {
-                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
                 service.move(XmldbURI.xmldbUriFor(collection.getName()),
                         destination, null);
 

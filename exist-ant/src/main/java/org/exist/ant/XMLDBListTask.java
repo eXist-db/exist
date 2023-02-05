@@ -27,6 +27,8 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import java.util.List;
+
 
 /**
  * an ant task to list the sub-collections or resources in a collection.
@@ -66,15 +68,15 @@ public class XMLDBListTask extends AbstractXMLDBTask
                     throw( new BuildException( msg ) );
                 } else {
                     log( msg, Project.MSG_ERR );
+                    return;
                 }
             }
 
             final StringBuilder buffer = new StringBuilder();
 
             if( hasCollections ) {
-                final String[] childCollections = base.listChildCollections();
-
-                if( childCollections != null ) {
+                final List<String> childCollections = base.listChildCollections();
+                if( !childCollections.isEmpty() ) {
                     log( "Listing child collections", Project.MSG_DEBUG );
                     boolean isFirst = true;
 
@@ -94,9 +96,8 @@ public class XMLDBListTask extends AbstractXMLDBTask
 
             if( hasResources ) {
                 log( "Listing resources", Project.MSG_DEBUG );
-                final String[] resources = base.listResources();
-
-                if( resources != null ) {
+                final List<String> resources = base.listResources();
+                if( !resources.isEmpty() ) {
 
                     if( buffer.length() > 0 ) {
                         buffer.append( separator );

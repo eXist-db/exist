@@ -118,7 +118,7 @@ public class UnionTest {
     private void storeCollectionConfig() throws XMLDBException {
         
         final Collection colConfig = getOrCreateCollection("/db/system/config/db/" + TEST_COLLECTION_NAME);
-        final XMLResource docConfig = (XMLResource) colConfig.createResource(DEFAULT_COLLECTION_CONFIG_FILE, "XMLResource");
+        final XMLResource docConfig = colConfig.createResource(DEFAULT_COLLECTION_CONFIG_FILE, XMLResource.class);
         docConfig.setContent(INDEX_CONFIG);
         colConfig.storeResource(docConfig);
     }
@@ -138,7 +138,7 @@ public class UnionTest {
         
         Collection child = currentCollection.getChildCollection(colName);
         if(child == null) {
-            final CollectionManagementService service = (CollectionManagementService)currentCollection.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService service = currentCollection.getService(CollectionManagementService.class);
             child = service.createCollection(colName);
         }
         
@@ -151,10 +151,10 @@ public class UnionTest {
     }
     
     private XQueryService storeXMLStringAndGetQueryService(String documentName, String content) throws XMLDBException {
-       final XMLResource doc = (XMLResource) testCollection.createResource(documentName, "XMLResource");
+       final XMLResource doc = testCollection.createResource(documentName, XMLResource.class);
        doc.setContent(content);
        testCollection.storeResource(doc);
-       final XQueryService service = (XQueryService) testCollection.getService("XPathQueryService", "1.0");
+       final XQueryService service = testCollection.getService(XQueryService.class);
        return service;
     }
     
@@ -178,8 +178,7 @@ public class UnionTest {
         }
         
         boolean foundPubmedConfig = false;
-        final String configCols[] = colConfigDb.listChildCollections();
-        for(final String configCol : configCols) {
+        for(final String configCol : colConfigDb.listChildCollections()) {
             if(configCol.equals(TEST_COLLECTION_NAME)) {
                 foundPubmedConfig = true;
                 break;
@@ -187,14 +186,14 @@ public class UnionTest {
         }
         
         if(foundPubmedConfig) {
-            final CollectionManagementService service = (CollectionManagementService)colConfigDb.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService service = colConfigDb.getService(CollectionManagementService.class);
             service.removeCollection(TEST_COLLECTION_NAME);
         }
     }
 
     @BeforeClass
     public static void createTestCollection() throws Exception {
-        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
@@ -202,9 +201,8 @@ public class UnionTest {
     @AfterClass
     public static void tearDown() throws Exception {
         final CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                        "CollectionManagementService",
-                        "1.0");
+                existEmbeddedServer.getRoot().getService(
+                        CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

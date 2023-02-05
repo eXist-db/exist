@@ -42,17 +42,15 @@ public class CollectionScanner {
 
 	public final static void scan(List<Resource> list, Collection current, String vpath, String pattern) 
 	throws XMLDBException {
-		final String[] resources = current.listResources();
 		String name;
-		for (String resource : resources) {
+		for (String resource : current.listResources()) {
 			name = vpath + resource;
 			System.out.println("checking " + name);
 			if (DirectoryScanner.match(pattern, name)) {
 				list.add(current.getResource(resource));
 			}
 		}
-		final String[] childCollections = current.listChildCollections();
-		for (String sub : childCollections) {
+		for (String sub : current.listChildCollections()) {
 			name = vpath + sub;
 			System.out.println("checking " + name + " = " + pattern);
 			if (SelectorUtils.matchPatternStart(pattern, name))

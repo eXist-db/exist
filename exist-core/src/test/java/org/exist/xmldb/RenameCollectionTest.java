@@ -80,19 +80,19 @@ public class RenameCollectionTest {
          * /db/testRename/1
          * /db/testRename/0/3
          */
-        EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService service = testCollection.getService(EXistCollectionManagementService.class);
         final Collection zeroCollection = service.createCollection(ZERO_COLLECTION_NAME);
         assertNotNull(zeroCollection);
 
         final Collection oneCollection = service.createCollection(ONE_COLLECTION_NAME);
         assertNotNull(oneCollection);
 
-        service = (EXistCollectionManagementService) zeroCollection.getService("CollectionManagementService", "1.0");
+        service = zeroCollection.getService(EXistCollectionManagementService.class);
         final Collection threeCollection = service.createCollection(THREE_COLLECTION_NAME);
         assertNotNull(threeCollection);
 
         // rename the collection /db/testRename/0 to /db/testRename/zero
-        service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        service = testCollection.getService(EXistCollectionManagementService.class);
 
         try {
             service.move(XmldbURI.create(ZERO_COLLECTION_NAME), null, XmldbURI.create(ZERO_COLLECTION_NAME));
@@ -113,19 +113,19 @@ public class RenameCollectionTest {
          * /db/test/1
          * /db/test/0/3
          */
-        EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService service = testCollection.getService(EXistCollectionManagementService.class);
         final Collection zeroCollection = service.createCollection(ZERO_COLLECTION_NAME);
         assertNotNull(zeroCollection);
 
         final Collection oneCollection = service.createCollection(ONE_COLLECTION_NAME);
         assertNotNull(oneCollection);
 
-        service = (EXistCollectionManagementService) zeroCollection.getService("CollectionManagementService", "1.0");
+        service = zeroCollection.getService(EXistCollectionManagementService.class);
         final Collection threeCollection = service.createCollection(THREE_COLLECTION_NAME);
         assertNotNull(threeCollection);
 
         // rename the collection /db/test/0 to /db/test/zero
-        service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        service = testCollection.getService(EXistCollectionManagementService.class);
 
         final XmldbURI newName = XmldbURI.create("zero");
         service.move(XmldbURI.create(ZERO_COLLECTION_NAME), null, newName);
@@ -134,7 +134,7 @@ public class RenameCollectionTest {
     @Before
     public void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
@@ -142,7 +142,7 @@ public class RenameCollectionTest {
     @After
     public void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

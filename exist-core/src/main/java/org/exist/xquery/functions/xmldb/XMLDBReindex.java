@@ -93,7 +93,7 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
         }
 
         try {
-            final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+            final IndexQueryService iqs = collection.getService(IndexQueryService.class);
             if(args.length == 2) {
                 //reindex document
                 iqs.reindexDocument(args[1].getStringValue());

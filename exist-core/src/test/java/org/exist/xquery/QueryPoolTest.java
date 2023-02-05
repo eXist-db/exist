@@ -44,7 +44,7 @@ public class QueryPoolTest {
 
     @Test
     public void differentQueries() throws XMLDBException {
-        EXistXQueryService service = (EXistXQueryService) testCollection.getService("XQueryService", "1.0");
+        EXistXQueryService service = testCollection.getService(EXistXQueryService.class);
         for (int i = 0; i < 1000; i++) {
             String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
@@ -64,22 +64,19 @@ public class QueryPoolTest {
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+                existEmbeddedServer.getRoot().getService(
+                    CollectionManagementService.class);
         testCollection = service.createCollection("test-pool");
         assertNotNull(testCollection);
 
-        final XMLResource doc =
-          (XMLResource) testCollection.createResource("large_list.xml", "XMLResource");
+        final XMLResource doc = testCollection.createResource("large_list.xml", XMLResource.class);
         doc.setContent("<test id='t1'/>");
         testCollection.storeResource(doc);
     }
 
     @After
     public void tearDown() throws Exception {
-        final CollectionManagementService service = (CollectionManagementService)
-            testCollection.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = testCollection.getService(CollectionManagementService.class);
         service.removeCollection("/db/test-pool");
         testCollection.close();
     }

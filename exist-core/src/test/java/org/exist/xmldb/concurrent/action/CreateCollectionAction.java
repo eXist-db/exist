@@ -47,17 +47,14 @@ public class CreateCollectionAction extends Action {
         final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
         final Collection target = DBUtils.addCollection(col, "C" + ++collectionCnt);
         addFiles(target);
-        String resources[] = target.listResources();
-        
-        final EXistCollectionManagementService mgt = (EXistCollectionManagementService)
-            col.getService("CollectionManagementService", "1.0");
+
+        final EXistCollectionManagementService mgt = col.getService(EXistCollectionManagementService.class);
         final Collection copy = DBUtils.addCollection(col, "CC" + collectionCnt);
-        for (int i = 0; i < resources.length; i++) {
-           mgt.copyResource(target.getName() + '/' + resources[i], 
+        for (String resource : target.listResources()) {
+           mgt.copyResource(target.getName() + '/' + resource,
                    copy.getName(), null);
         }
 
-        resources = copy.listResources();
         return true;
     }
 

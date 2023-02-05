@@ -29,7 +29,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.xmldb.*;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
 import java.net.URISyntaxException;
@@ -62,55 +61,6 @@ public class InTxnLocalCollection extends LocalCollection {
         } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         }
-    }
-
-    @Override
-    public Service getService(final String name, final String version) throws XMLDBException {
-        final Service service;
-        switch(name) {
-            case "XPathQueryService":
-            case "XQueryService":
-                service = new InTxnLocalXPathQueryService(user, brokerPool, this);
-                break;
-
-            case "CollectionManagementService":
-            case "CollectionManager":
-                service = new InTxnLocalCollectionManagementService(user, brokerPool, this);
-                break;
-
-            case "UserManagementService":
-                service = new InTxnLocalUserManagementService(user, brokerPool, this);
-                break;
-
-            case "DatabaseInstanceManager":
-                service = new LocalDatabaseInstanceManager(user, brokerPool);
-                break;
-
-            case "XUpdateQueryService":
-                service = new InTxnLocalXUpdateQueryService(user, brokerPool, this);
-                break;
-
-            case "IndexQueryService":
-                service = new InTxnLocalIndexQueryService(user, brokerPool, this);
-                break;
-
-            default:
-                throw new XMLDBException(ErrorCodes.NO_SUCH_SERVICE);
-        }
-        return service;
-    }
-
-    @Override
-    public Service[] getServices() throws XMLDBException {
-        final Service[] services = {
-                new InTxnLocalXPathQueryService(user, brokerPool, this),
-                new InTxnLocalCollectionManagementService(user, brokerPool, this),
-                new InTxnLocalUserManagementService(user, brokerPool, this),
-                new LocalDatabaseInstanceManager(user, brokerPool),
-                new InTxnLocalXUpdateQueryService(user, brokerPool, this),
-                new InTxnLocalIndexQueryService(user, brokerPool, this)
-        };
-        return services;
     }
 
     @Override

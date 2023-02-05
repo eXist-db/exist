@@ -88,7 +88,7 @@ public class XQDocTask extends AbstractXMLDBTask {
             } else
                 root = DatabaseManager.getCollection(uri, user, password);
 
-            EXistXQueryService service = (EXistXQueryService) root.getService("XQueryService", "1.0");
+            EXistXQueryService service = root.getService(EXistXQueryService.class);
             Source source = new StringSource(XQUERY);
             service.declareVariable("collection", root.getName());
             service.declareVariable("uri", "");

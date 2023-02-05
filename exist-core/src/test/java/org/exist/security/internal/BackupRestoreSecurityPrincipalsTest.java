@@ -45,9 +45,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -94,7 +92,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      * that were owned by them are still correctly owner by them (and not some other user).
      */
     @Test
-    public void restoreConflictingUsername() throws PermissionDeniedException, EXistException, SAXException, ParserConfigurationException, IOException, URISyntaxException, XMLDBException, IllegalAccessException, ClassNotFoundException, InstantiationException {
+    public void restoreConflictingUsername() throws PermissionDeniedException, EXistException, SAXException, IOException, XMLDBException, IllegalAccessException, ClassNotFoundException, InstantiationException {
         // creates a database with new users: 'frank(id=11)', 'joe(id=12)', and 'jack(id=13)'
         createInitialUsers(FRANK_USER, JOE_USER, JACK_USER);
 
@@ -112,7 +110,7 @@ public class BackupRestoreSecurityPrincipalsTest {
             "return\n" +
             "<user id='{$account/@id}' name='{$account/c:name}'/>";
 
-        final XPathQueryService xqs = (XPathQueryService) server.getRoot().getService("XPathQueryService", "1.0");
+        final XPathQueryService xqs = server.getRoot().getService(XPathQueryService.class);
 
         final SecurityManagerImpl sm = (SecurityManagerImpl) BrokerPool.getInstance().getSecurityManager();
 
@@ -127,27 +125,27 @@ public class BackupRestoreSecurityPrincipalsTest {
         assertEquals(SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID + 2, sm.getLastAccountId()); //last account id should be that of 'jack'
 
         //create a test collection and give everyone access
-        final CollectionManagementService cms = (CollectionManagementService)server.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = server.getRoot().getService(CollectionManagementService.class);
         final Collection test = cms.createCollection("test");
-        final UserManagementService testUms = (UserManagementService)test.getService("UserManagementService", "1.0");
+        final UserManagementService testUms = test.getService(UserManagementService.class);
         testUms.chmod("rwxrwxrwx");
 
         //create and store a new document as 'frank'
         final Collection frankTest = DatabaseManager.getCollection("xmldb:exist:///db/test", FRANK_USER, FRANK_USER);
         final String FRANKS_DOCUMENT = "franks-document.xml";
-        final Resource frankDoc = frankTest.createResource(FRANKS_DOCUMENT, XMLResource.RESOURCE_TYPE);
+        final Resource frankDoc = frankTest.createResource(FRANKS_DOCUMENT, XMLResource.class);
         frankDoc.setContent("<hello>frank</hello>");
         frankTest.storeResource(frankDoc);
 
         //create and store a new document as 'jack'
         final Collection jackTest = DatabaseManager.getCollection("xmldb:exist:///db/test", JACK_USER, JACK_USER);
         final String JACKS_DOCUMENT = "jacks-document.xml";
-        final Resource jackDoc = jackTest.createResource(JACKS_DOCUMENT, XMLResource.RESOURCE_TYPE);
+        final Resource jackDoc = jackTest.createResource(JACKS_DOCUMENT, XMLResource.class);
         jackDoc.setContent("<hello>jack</hello>");
         jackTest.storeResource(jackDoc);
 
         //restore the database backup
-        final EXistRestoreService service = (EXistRestoreService)server.getRoot().getService("RestoreService", "1.0");
+        final EXistRestoreService service = server.getRoot().getService(EXistRestoreService.class);
         service.restore(backupFile.normalize().toAbsolutePath().toString(), null, new NullRestoreServiceTaskListener(), false);
 
 
@@ -178,7 +176,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      *
      * NOTE: The database must be in a clean initialised empty state.
      */
-    private void createInitialUsers(final String... usernames) throws PermissionDeniedException, XMLDBException, SAXException, IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
+    private void createInitialUsers(final String... usernames) throws PermissionDeniedException, XMLDBException {
         int lastAccountId = SecurityManagerImpl.INITIAL_LAST_ACCOUNT_ID;
 
         for (final String username : usernames) {
@@ -208,7 +206,7 @@ public class BackupRestoreSecurityPrincipalsTest {
     }
 
     private void createUser(final String username, final String password) throws XMLDBException, PermissionDeniedException {
-        final UserManagementService ums = (UserManagementService) server.getRoot().getService("UserManagementService", "1.0");
+        final UserManagementService ums = server.getRoot().getService(UserManagementService.class);
 
         final Account user = new UserAider(username);
         user.setPassword(password);
@@ -229,7 +227,7 @@ public class BackupRestoreSecurityPrincipalsTest {
     }
 
     private Account getUser(final String username) throws XMLDBException {
-        final UserManagementService ums = (UserManagementService) server.getRoot().getService("UserManagementService", "1.0");
+        final UserManagementService ums = server.getRoot().getService(UserManagementService.class);
         return ums.getAccount(username);
     }
 }

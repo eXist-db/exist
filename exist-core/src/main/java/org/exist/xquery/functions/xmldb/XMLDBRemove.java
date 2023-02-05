@@ -88,8 +88,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 			}
 		} else {
 			try {
-				final CollectionManagementService service = (CollectionManagementService)
-					collection.getService("CollectionManagementService", "1.0");
+				final CollectionManagementService service = collection.getService(CollectionManagementService.class);
 				service.removeCollection(collection.getName());
 			} catch (final XMLDBException e) {
 				logger.error("Cannot remove collection: {}", e.getMessage());

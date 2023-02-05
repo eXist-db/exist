@@ -64,7 +64,7 @@ public class XMLDBShutdownTask extends AbstractXMLDBTask
                 }
 
             } else {
-                final DatabaseInstanceManager mgr = (DatabaseInstanceManager)root.getService( "DatabaseInstanceManager", "1.0" );
+                final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
                 log( "Shutdown database instance", Project.MSG_INFO );
                 mgr.shutdown();
             }

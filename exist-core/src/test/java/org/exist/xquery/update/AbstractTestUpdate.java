@@ -59,24 +59,22 @@ public abstract class AbstractTestUpdate {
     @Before
     public void setUp() throws Exception {
         final CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+                existEmbeddedServer.getRoot().getService(
+                    CollectionManagementService.class);
         testCollection = service.createCollection("test");
 
-        final IndexQueryService idx = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idx = testCollection.getService(IndexQueryService.class);
         idx.configureCollection(XCONF);
     }
 
     @After
     public void tearDown() throws XMLDBException {
         CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                        "CollectionManagementService",
-                        "1.0");
+                existEmbeddedServer.getRoot().getService(
+                        CollectionManagementService.class);
         service.removeCollection("test");
         Collection confColl = DatabaseManager.getCollection("xmldb:exist:///db/system/config/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        service = (CollectionManagementService) confColl.getService("CollectionManagementService", "1.0");
+        service = confColl.getService(CollectionManagementService.class);
         service.removeCollection("test");
         testCollection = null;
     }
@@ -90,14 +88,12 @@ public abstract class AbstractTestUpdate {
     protected XQueryService storeXMLStringAndGetQueryService(final String documentName,
            final String content) throws XMLDBException {
         final XMLResource doc =
-            (XMLResource) testCollection.createResource(
-                documentName, "XMLResource" );
+            testCollection.createResource(
+                documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
         final XQueryService service =
-            (XQueryService) testCollection.getService(
-                "XPathQueryService",
-                "1.0");
+                testCollection.getService(XQueryService.class);
         return service;
     }
 

@@ -73,7 +73,7 @@ public class TransformTest {
     
     
     private String execQuery(String query) throws XMLDBException {
-    	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+    	XQueryService service = testCollection.getService(XQueryService.class);
         service.setProperty("indent", "no");
     	ResourceSet result = service.query(query);
     	assertEquals(result.getSize(), 1);
@@ -81,7 +81,7 @@ public class TransformTest {
     }
     
     private void addXMLDocument(Collection c, String doc, String id) throws XMLDBException {
-    	Resource r = c.createResource(id, XMLResource.RESOURCE_TYPE);
+    	Resource r = c.createResource(id, XMLResource.class);
     	r.setContent(doc);
     	((EXistResource) r).setMimeType("application/xml");
     	c.storeResource(r);
@@ -90,16 +90,14 @@ public class TransformTest {
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+                existEmbeddedServer.getRoot().getService(
+                    CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
 
         service =
-            (CollectionManagementService) testCollection.getService(
-                "CollectionManagementService",
-                "1.0");
+                testCollection.getService(
+                    CollectionManagementService.class);
 
         Collection xsl1 = service.createCollection("xsl1");
         assertNotNull(xsl1);
@@ -108,9 +106,8 @@ public class TransformTest {
         assertNotNull(xsl3);
 
         service =
-            (CollectionManagementService) xsl1.getService(
-                "CollectionManagementService",
-                "1.0");
+                xsl1.getService(
+                    CollectionManagementService.class);
 
         Collection xsl2 = service.createCollection("xsl2");
         assertNotNull(xsl2);
@@ -156,9 +153,8 @@ public class TransformTest {
         Collection root =
             DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         CollectionManagementService service =
-            (CollectionManagementService) root.getService(
-                "CollectionManagementService",
-                "1.0");
+                root.getService(
+                    CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

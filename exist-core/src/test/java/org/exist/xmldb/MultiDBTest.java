@@ -63,8 +63,7 @@ public class MultiDBTest {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             Collection test = root.getChildCollection("test");
             if (test == null) {
-                CollectionManagementService service = (CollectionManagementService)
-                        root.getService("CollectionManagementService", "1.0");
+                CollectionManagementService service = root.getService(CollectionManagementService.class);
                 test = service.createCollection("test");
             }
 
@@ -78,16 +77,15 @@ public class MultiDBTest {
 
     protected static void loadFile(final InputStream is, final Collection collection, final String fileName) throws XMLDBException, IOException {
         // create new XMLResource; an id will be assigned to the new resource
-        XMLResource document = (XMLResource)
+        XMLResource document = 
                 collection.createResource(fileName,
-                        "XMLResource");
+                        XMLResource.class);
         document.setContent(InputStreamUtil.readString(is, UTF_8));
         collection.storeResource(document);
     }
 
     private static void doQuery(Collection collection, String query) throws XMLDBException {
-        EXistXQueryService service = (EXistXQueryService)
-                collection.getService("XQueryService", "1.0");
+        EXistXQueryService service = collection.getService(EXistXQueryService.class);
         ResourceSet result = service.query(query);
         for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
             @SuppressWarnings("unused")
@@ -123,10 +121,10 @@ public class MultiDBTest {
     public void tearDown() throws XMLDBException {
         for (int i = 0; i < INSTANCE_COUNT; i++) {
             Collection root = DatabaseManager.getCollection("xmldb:test" + i + "://" + XmldbURI.ROOT_COLLECTION, "admin", "");
-            final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService service = root.getService(CollectionManagementService.class);
             service.removeCollection("test");
 
-            final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+            final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
             mgr.shutdown();
         }
     }

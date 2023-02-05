@@ -64,7 +64,7 @@ public class CollectionConfigurationValidationModeTest {
     }
 
     private void createCollection(final String collection) throws XMLDBException {
-        final CollectionManagementService cmservice = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmservice = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
 

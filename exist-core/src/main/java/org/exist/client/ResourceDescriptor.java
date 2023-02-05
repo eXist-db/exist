@@ -21,7 +21,7 @@
  */
 package org.exist.client;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
@@ -36,12 +36,12 @@ import org.exist.xmldb.XmldbURI;
 public abstract class ResourceDescriptor {
     private final XmldbURI name;
     protected final Permission permissions;
-    private final Date date;
+    private final Instant instant;
     
-    public ResourceDescriptor(final XmldbURI name, final Permission permissions, final Date date) {
+    public ResourceDescriptor(final XmldbURI name, final Permission permissions, final Instant instant) {
         this.name = name;
         this.permissions = permissions;
-        this.date = date;
+        this.instant = instant;
     }
     
     public XmldbURI getName() {
@@ -62,15 +62,15 @@ public abstract class ResourceDescriptor {
         return permissions;
     }
     
-    public Date getDate() {
-        return date;
+    public Instant getInstant() {
+        return instant;
     }
 	
     public abstract boolean isCollection();
     
     public static class Document extends ResourceDescriptor {
-        public Document(final XmldbURI name, final Permission permissions, final Date date) {
-            super(name, permissions, date);
+        public Document(final XmldbURI name, final Permission permissions, final Instant instant) {
+            super(name, permissions, instant);
         }
         
         @Override
@@ -89,8 +89,8 @@ public abstract class ResourceDescriptor {
             super(name, null, null);
         }
         
-        public Collection(final XmldbURI name, final Permission permissions, final Date date) {
-            super(name, permissions, date);
+        public Collection(final XmldbURI name, final Permission permissions, final Instant instant) {
+            super(name, permissions, instant);
         }
         
         @Override

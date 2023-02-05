@@ -190,14 +190,14 @@ public class FunSubSequenceTest {
     @BeforeClass
     public static void setup() throws XMLDBException {
         test = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TestConstants.TEST_COLLECTION_URI.lastSegment().toString());
-        final Resource resource = test.createResource(SIMPLE_XML_FILENAME, XMLResource.RESOURCE_TYPE);
+        final Resource resource = test.createResource(SIMPLE_XML_FILENAME, XMLResource.class);
         resource.setContent(SIMPLE_XML);
         test.storeResource(resource);
     }
 
     @AfterClass
     public static void cleanup() throws XMLDBException {
-        final CollectionManagementService collectionManagementService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService collectionManagementService = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         collectionManagementService.removeCollection(test.getName());
     }
 

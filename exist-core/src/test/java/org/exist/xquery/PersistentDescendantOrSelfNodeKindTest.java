@@ -53,7 +53,7 @@ public class PersistentDescendantOrSelfNodeKindTest extends AbstractDescendantOr
     @BeforeClass
     public static void storeTestDoc() throws XMLDBException {
         final Collection root =  existEmbeddedServer.getRoot();
-        final XMLResource res = (XMLResource)root.createResource(TEST_DOCUMENT_NAME, "XMLResource");
+        final XMLResource res = root.createResource(TEST_DOCUMENT_NAME, XMLResource.class);
         res.setContent(TEST_DOCUMENT);
         root.storeResource(res);
     }

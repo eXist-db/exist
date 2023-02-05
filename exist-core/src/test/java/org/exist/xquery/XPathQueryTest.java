@@ -241,9 +241,8 @@ public class XPathQueryTest {
                 "admin",
                 "");
         CollectionManagementService service =
-                (CollectionManagementService) root.getService(
-                "CollectionManagementService",
-                "1.0");
+                root.getService(
+                CollectionManagementService.class);
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
@@ -1648,9 +1647,9 @@ public class XPathQueryTest {
     @Test
     public void idsOnEmptyCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri(), "admin", "");
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
 		final Collection emptyCollection = service.createCollection("empty");
-        final XQueryService queryService = (XQueryService) emptyCollection.getService("XPathQueryService", "1.0");
+        final XQueryService queryService = (XQueryService) emptyCollection.getService(XPathQueryService.class);
  	  	queryAndAssert(queryService, "/*", 0, null);
  	  	queryAndAssert(queryService, "/id('foo')", 0, null);
     }
@@ -1764,7 +1763,7 @@ public class XPathQueryTest {
         final InputSource source = new InputSource(new StringReader(strings));
         final Document doc = builder.parse(source);
 
-        final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        final XQueryService service = testCollection.getService(XQueryService.class);
         final CompiledExpression expr = service.compile("declare variable $local:node external; $local:node//string");
         service.declareVariable("local:node", doc.getDocumentElement());
         final ResourceSet result = service.execute(expr);
@@ -1773,19 +1772,17 @@ public class XPathQueryTest {
 
     @Test
     public void queryResource() throws XMLDBException {
-        XMLResource doc =
-                (XMLResource) testCollection.createResource("strings.xml", "XMLResource");
+        XMLResource doc = testCollection.createResource("strings.xml", XMLResource.class);
         doc.setContent(strings);
         testCollection.storeResource(doc);
             
-        doc = (XMLResource) testCollection.createResource("strings2.xml", "XMLResource");
+        doc = testCollection.createResource("strings2.xml", XMLResource.class);
         doc.setContent(strings);
         testCollection.storeResource(doc);
 
         final XPathQueryService query =
-                (XPathQueryService) testCollection.getService(
-                "XPathQueryService",
-                "1.0");
+                testCollection.getService(
+                XPathQueryService.class);
         ResourceSet result = query.queryResource("strings2.xml", "/test/string[. = 'Hello World!']");
         assertEquals(1, result.getSize());
 
@@ -1870,14 +1867,13 @@ public class XPathQueryTest {
     @Test
     public void staticVariables() throws XMLDBException {
         final XMLResource doc =
-                (XMLResource) testCollection.createResource(
-                "numbers.xml", "XMLResource" );
+                testCollection.createResource(
+                "numbers.xml", XMLResource.class );
         doc.setContent(numbers);
         testCollection.storeResource(doc);
         XPathQueryService service =
-                (XPathQueryService) testCollection.getService(
-                "XPathQueryService",
-                "1.0");
+                testCollection.getService(
+                XPathQueryService.class);
 
         final EXistXPathQueryService service2 = (EXistXPathQueryService) service;
         service2.declareVariable("name", "MONTAGUE");
@@ -2321,7 +2317,7 @@ public class XPathQueryTest {
     /** For queries without associated data */
     private XQueryService getQueryService() throws XMLDBException {
         final XQueryService service = (XQueryService) testCollection.getService(
-            "XPathQueryService", "1.0");
+            XPathQueryService.class);
         return service;
     }
 
@@ -2334,14 +2330,13 @@ public class XPathQueryTest {
     private XQueryService storeXMLStringAndGetQueryService(final String documentName,
                                                            final String content) throws XMLDBException {
         final XMLResource doc =
-            (XMLResource) testCollection.createResource(
-                documentName, "XMLResource" );
+            testCollection.createResource(
+                documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
         final XQueryService service =
             (XQueryService) testCollection.getService(
-                "XPathQueryService",
-                "1.0");
+                XPathQueryService.class);
         return service;
     }
 }

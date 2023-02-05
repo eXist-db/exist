@@ -39,7 +39,7 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	
 	@Before
 	public void setUp() throws Exception {
-        final XMLResource res = (XMLResource)getTestCollection().createResource("R01.xml", "XMLResource");
+        final XMLResource res = getTestCollection().createResource("R01.xml", XMLResource.class);
         res.setContent(XML);
         getTestCollection().storeResource(res);
         getTestCollection().close();

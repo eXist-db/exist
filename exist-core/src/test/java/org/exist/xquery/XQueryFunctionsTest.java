@@ -21,6 +21,13 @@
  */
 package org.exist.xquery;
 
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
@@ -33,13 +40,6 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -939,7 +939,7 @@ public class XQueryFunctionsTest {
 
         Collection testCollection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
         if (testCollection != null) {
-            CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+            CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
             cms.removeCollection(collectionPath);
         }
 
@@ -960,7 +960,7 @@ public class XQueryFunctionsTest {
 
         Collection testCollection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
         if (testCollection == null) {
-            CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+            CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
             cms.createCollection(collectionPath);
         }
 
@@ -990,14 +990,14 @@ public class XQueryFunctionsTest {
         final String XML_RESOURCE_FILENAME = "logo.xml";
 
         //create a test collection
-        CollectionManagementService colService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService colService = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
         assertNotNull(testCollection);
 
         final Path fLogo = Paths.get(getClass().getResource("value/logo.jpg").toURI());
 
         //store the eXist logo in the test collection
-        BinaryResource br = (BinaryResource) testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
+        BinaryResource br = testCollection.createResource(BINARY_RESOURCE_FILENAME, BinaryResource.class);
         br.setContent(fLogo);
         testCollection.storeResource(br);
 

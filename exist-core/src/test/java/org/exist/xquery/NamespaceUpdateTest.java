@@ -53,7 +53,7 @@ public class NamespaceUpdateTest {
 
 	@Test
 	public void updateAttribute() throws XMLDBException {
-		XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		XQueryService service = testCollection.getService(XQueryService.class);
 		String query =
 				"declare namespace t='http://www.foo.com';\n" +
 						"<test xmlns='http://www.foo.com'>\n" +
@@ -75,14 +75,12 @@ public class NamespaceUpdateTest {
 	public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
 		// initialize driver
 		final CollectionManagementService service =
-				(CollectionManagementService) existEmbeddedServer.getRoot().getService(
-						"CollectionManagementService",
-						"1.0");
+				existEmbeddedServer.getRoot().getService(
+						CollectionManagementService.class);
 		testCollection = service.createCollection("test");
 		assertNotNull(testCollection);
 
-		final XMLResource doc =
-				(XMLResource) testCollection.createResource("namespace-updates.xml", "XMLResource");
+		final XMLResource doc = testCollection.createResource("namespace-updates.xml", XMLResource.class);
 		doc.setContent(namespaces);
 		testCollection.storeResource(doc);
 	}
@@ -90,9 +88,8 @@ public class NamespaceUpdateTest {
 	@After
 	public void tearDown() throws Exception {
 		final CollectionManagementService service =
-				(CollectionManagementService) existEmbeddedServer.getRoot().getService(
-						"CollectionManagementService",
-						"1.0");
+				existEmbeddedServer.getRoot().getService(
+						CollectionManagementService.class);
 		service.removeCollection("test");
 		testCollection = null;
 	}

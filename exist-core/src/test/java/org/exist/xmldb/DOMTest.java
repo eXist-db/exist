@@ -76,24 +76,21 @@ public class DOMTest {
 
 
 		CollectionManagementService cms =
-			(CollectionManagementService) existEmbeddedServer.getRoot().getService(
-				"CollectionManagementService",
-				"1.0");
+				existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 		cms.createCollection("A"); // jmv
 		cms.removeCollection("A");
 		cms.createCollection("A");
 		Collection coll = existEmbeddedServer.getRoot().getChildCollection("A");
 
 		XMLResource r =
-			(XMLResource) coll.createResource(
+			coll.createResource(
 				name,
-				XMLResource.RESOURCE_TYPE);
+				XMLResource.class);
 		r.setContent(
 			"<properties><property key=\"type\">Table</property></properties>");
 		coll.storeResource(r);
 
-		XPathQueryService xpqs =
-			(XPathQueryService) coll.getService("XPathQueryService", "1.0");
+		XPathQueryService xpqs = coll.getService(XPathQueryService.class);
 		ResourceSet rs =
 			xpqs.query(
 				"//properties[property[@key='type' and text()='Table']]");
@@ -119,9 +116,9 @@ public class DOMTest {
 			XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
 			if (resource == null) {
 				resource =
-					(XMLResource) existEmbeddedServer.getRoot().createResource(
+					existEmbeddedServer.getRoot().createResource(
 						name,
-						XMLResource.RESOURCE_TYPE);
+						XMLResource.class);
 
 				DocumentBuilderFactory dbf =
 					DocumentBuilderFactory.newInstance();
@@ -151,9 +148,9 @@ public class DOMTest {
 	public void test3() throws XMLDBException, ParserConfigurationException {
 		Collection coll = existEmbeddedServer.getRoot();
 		XMLResource resource =
-			(XMLResource) coll.createResource(
+			coll.createResource(
 				name,
-				XMLResource.RESOURCE_TYPE);
+				XMLResource.class);
 
 		Document doc =
 			DocumentBuilderFactory
@@ -193,9 +190,9 @@ public class DOMTest {
 	private void _test4(boolean getContentAsDOM) throws TransformerException, ParserConfigurationException, XMLDBException, IOException, SAXException {
 		Collection coll =  existEmbeddedServer.getRoot();
 		XMLResource resource =
-			(XMLResource) coll.createResource(
+			coll.createResource(
 				name,
-				XMLResource.RESOURCE_TYPE);
+				XMLResource.class);
 
 		Document doc =
 			DocumentBuilderFactory

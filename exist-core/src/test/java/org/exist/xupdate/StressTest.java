@@ -76,10 +76,8 @@ public class StressTest {
     }
 
     private void insertTags() throws XMLDBException {
-        final XUpdateQueryService service = (XUpdateQueryService)
-                testCol.getService("XUpdateQueryService", "1.0");
-        final XPathQueryService xquery = (XPathQueryService)
-                testCol.getService("XPathQueryService", "1.0");
+        final XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
+        final XPathQueryService xquery = testCol.getService(XPathQueryService.class);
 
         final String[] tagsWritten = new String[RUNS];
         for (int i = 0; i < RUNS; i++) {
@@ -112,8 +110,7 @@ public class StressTest {
     }
 
     private void removeTags() throws XMLDBException {
-        final XUpdateQueryService service = (XUpdateQueryService)
-                testCol.getService("XUpdateQueryService", "1.0");
+        final XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
         final int start = rand.nextInt(RUNS / 4);
         for (int i = start; i < RUNS; i++) {
             final String xupdate =
@@ -129,8 +126,7 @@ public class StressTest {
     }
 
     private void fetchDb() throws XMLDBException {
-        final XPathQueryService xquery = (XPathQueryService)
-                testCol.getService("XPathQueryService", "1.0");
+        final XPathQueryService xquery = testCol.getService(XPathQueryService.class);
         final ResourceSet result = xquery.query("for $n in collection('" + XmldbURI.ROOT_COLLECTION + "/test')//* return local-name($n)");
 
         for (int i = 0; i < result.getSize(); i++) {

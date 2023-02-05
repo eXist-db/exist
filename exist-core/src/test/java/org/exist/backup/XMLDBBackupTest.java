@@ -147,33 +147,33 @@ public class XMLDBBackupTest {
 
     private void restore(final Path backupFile, final XmldbURI collectionUri) throws XMLDBException, SAXException, URISyntaxException, ParserConfigurationException, IOException {
         final Collection collection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+        final EXistRestoreService restoreService = collection.getService(EXistRestoreService.class);
         final TestRestoreListener listener = new TestRestoreListener();
         restoreService.restore(backupFile.normalize().toAbsolutePath().toString(), null, listener, false);
     }
 
     private void deleteCollection(final XmldbURI collectionUri) throws XMLDBException {
         final Collection parent = DatabaseManager.getCollection(collectionUri.removeLastSegment().toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService colService = (CollectionManagementService) parent.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService colService = parent.getService(CollectionManagementService.class);
         colService.removeCollection(collectionUri.lastSegment().toString());
     }
 
     @Before
     public void before() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService colService = root.getService(CollectionManagementService.class);
         final Collection testCollection = colService.createCollection(COLLECTION_NAME);
         assertNotNull(testCollection);
 
-        final Resource doc1 = testCollection.createResource(DOC1_NAME, XMLResource.RESOURCE_TYPE);
+        final Resource doc1 = testCollection.createResource(DOC1_NAME, XMLResource.class);
         doc1.setContent(doc1Content);
         testCollection.storeResource(doc1);
 
-        final Resource binDoc1 = testCollection.createResource(BIN_DOC1_NAME, BinaryResource.RESOURCE_TYPE);
+        final Resource binDoc1 = testCollection.createResource(BIN_DOC1_NAME, BinaryResource.class);
         binDoc1.setContent(binDoc1Content);
         testCollection.storeResource(binDoc1);
 
-        final Resource binDoc2 = testCollection.createResource(BIN_DOC2_NAME, BinaryResource.RESOURCE_TYPE);
+        final Resource binDoc2 = testCollection.createResource(BIN_DOC2_NAME, BinaryResource.class);
         binDoc2.setContent(binDoc2Content);
         testCollection.storeResource(binDoc2);
     }

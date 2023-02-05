@@ -43,6 +43,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 /**
  * https://github.com/eXist-db/exist/issues/1682#issuecomment-402108184
@@ -82,7 +83,7 @@ public class DocumentBuilderReceiverIntegrationTest {
 
         final Resource resource = result.getResource(0);
         assertNotNull(resource);
-        assertEquals(XMLResource.RESOURCE_TYPE, resource.getResourceType());
+        assertEquals(XML_RESOURCE, resource.getResourceType());
 
         final Source expectedSource = Input.fromString(expectedResult).build();
         final Source actualSource = Input.fromNode(((XMLResource)resource).getContentAsDOM()).build();

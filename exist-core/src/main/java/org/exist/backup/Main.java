@@ -288,7 +288,7 @@ public class Main {
         final AggregatingConsoleRestoreServiceTaskListener listener = new AggregatingConsoleRestoreServiceTaskListener(quiet);
         try {
             final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
-            final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+            final EXistRestoreService service = collection.getService(EXistRestoreService.class);
             service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
         } catch (final XMLDBException e) {
@@ -381,7 +381,7 @@ public class Main {
 
             try {
                 final Collection collection = DatabaseManager.getCollection(uri.toString(), username, password);
-                final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                final EXistRestoreService service = collection.getService(EXistRestoreService.class);
                 service.restore(f.toAbsolutePath().toString(), dbaPassword.orElse(null), listener, overwriteApps);
 
                 listener.enableDismissDialogButton();
@@ -437,7 +437,7 @@ public class Main {
 
     private static void shutdown(final Collection root) {
         try {
-            final DatabaseInstanceManager mgr = (DatabaseInstanceManager) root.getService("DatabaseInstanceManager", "1.0");
+            final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
 
             if (mgr == null) {
                 System.err.println("service is not available");

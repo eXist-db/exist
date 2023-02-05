@@ -125,7 +125,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
             } else {
                 root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
             }
-            xpathQueryService = (EXistXQueryService) root.getService("XQueryService", "1.0");
+            xpathQueryService = root.getService(EXistXQueryService.class);
         } else {
             throw new IllegalStateException("ExistXmldbEmbeddedServer already running");
         }
@@ -195,7 +195,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
 
     public Collection createCollection(final Collection collection, final String collectionName) throws XMLDBException {
         final CollectionManagementService collectionManagementService =
-                (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+                collection.getService(CollectionManagementService.class);
         Collection newCollection = collection.getChildCollection(collectionName);
         if (newCollection == null) {
             collectionManagementService.createCollection(collectionName);
@@ -214,10 +214,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     public static void storeResource(final Collection collection, final String documentName, final byte[] content)
             throws XMLDBException {
         final MimeType mime = MimeTable.getInstance().getContentTypeFor(documentName);
-        final String type = mime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
-        final Resource resource = collection.createResource(documentName, type);
-        resource.setContent(content);
-        collection.storeResource(resource);
+        final Class<? extends Resource> type = mime.isXMLType() ? XMLResource.class : BinaryResource.class;
+        try (final Resource resource = collection.createResource(documentName, type)) {
+            resource.setContent(content);
+            collection.storeResource(resource);
+        }
     }
 
     public static String getXMLResource(final Collection collection, final String resource) throws XMLDBException {

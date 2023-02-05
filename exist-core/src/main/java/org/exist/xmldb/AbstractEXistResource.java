@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
@@ -36,6 +35,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -97,18 +97,18 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
     }
 
     @Override
-    public Date getCreationTime() throws XMLDBException {
-        return read((document, broker, transaction) -> new Date(document.getCreated()));
+    public Instant getCreationTime() throws XMLDBException {
+        return read((document, broker, transaction) -> Instant.ofEpochMilli(document.getCreated()));
     }
 
     @Override
-    public Date getLastModificationTime() throws XMLDBException {
-        return read((document, broker, transaction) -> new Date(document.getLastModified()));
+    public Instant getLastModificationTime() throws XMLDBException {
+        return read((document, broker, transaction) -> Instant.ofEpochMilli((document.getLastModified())));
     }
 
     @Override
-    public void setLastModificationTime(final Date lastModificationTime) throws XMLDBException {
-        if(lastModificationTime.before(getCreationTime())) {
+    public void setLastModificationTime(final Instant lastModificationTime) throws XMLDBException {
+        if(lastModificationTime.isBefore(getCreationTime())) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Modification time must be after creation time.");
         }
 
@@ -117,7 +117,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + docId + " not found");
             }
 
-            document.setLastModified(lastModificationTime.getTime());
+            document.setLastModified(lastModificationTime.toEpochMilli());
             return null;
         });
     }

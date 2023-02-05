@@ -39,13 +39,13 @@ public class CollectionTest {
 
     @Before
     public void setup() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.createCollection(TestConstants.SPECIAL_NAME);
     }
 
     @After
     public void cleanup() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TestConstants.SPECIAL_NAME);
     }
 

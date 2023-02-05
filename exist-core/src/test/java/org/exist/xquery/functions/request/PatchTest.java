@@ -63,9 +63,9 @@ public class PatchTest extends RESTTest {
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = root.getService(UserManagementService.class);
 
-        bin = (BinaryResource)root.createResource(XQUERY_FILENAME, BinaryResource.RESOURCE_TYPE);
+        bin = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) bin).setMimeType("application/xquery");
         bin.setContent("xquery version \"3.1\";" +
                 "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";" +
@@ -76,7 +76,7 @@ public class PatchTest extends RESTTest {
         root.storeResource(bin);
         ums.chmod(bin, 0777);
 
-        xml = (XMLResource)root.createResource(XML_FILENAME, XMLResource.RESOURCE_TYPE);
+        xml = root.createResource(XML_FILENAME, XMLResource.class);
         xml.setContent("<root/>");
         root.storeResource(xml);
         ums.chmod(xml, 0777);

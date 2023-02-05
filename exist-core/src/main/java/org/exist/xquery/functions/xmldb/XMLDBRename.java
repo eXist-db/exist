@@ -89,9 +89,8 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 					throw new XPathException(this, "Resource " + doc + " not found");
                 }
                final String newName = args[2].itemAt(0).getStringValue();
-			   final EXistCollectionManagementService service = (EXistCollectionManagementService)
-					collection.getService("CollectionManagementService", "1.0");
-				service.moveResource(doc, (XmldbURI) null, 
+			   final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
+				service.moveResource(doc, null,
                         XmldbURI.xmldbUriFor(newName));
 			} catch (final XMLDBException e) {
                 logger.error(e.getMessage());
@@ -107,8 +106,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 		} else {
 			try {
                 final String newName = args[1].itemAt(0).getStringValue();
-				final EXistCollectionManagementService service = (EXistCollectionManagementService)
-					collection.getService("CollectionManagementService", "1.0");
+				final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
 				service.move(XmldbURI.xmldbUriFor(collection.getName()), null,
                         XmldbURI.xmldbUriFor(newName));
 

@@ -113,9 +113,9 @@ public class IndexingTest {
         Collection coll =
                 DatabaseManager.getCollection(baseURI, username, password);
         XMLResource resource =
-                (XMLResource) coll.createResource(
+                coll.createResource(
                         name,
-                        XMLResource.RESOURCE_TYPE);
+                        XMLResource.class);
 
         Document doc =
                 DocumentBuilderFactory
@@ -259,7 +259,7 @@ public class IndexingTest {
 
     /**
      * @param doc
-     * @param i
+     * @param length
      */
     private int addChildren(Document doc, int length) {
         Element rootElem = doc.createElement("root");

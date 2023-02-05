@@ -33,8 +33,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -274,7 +272,7 @@ class IndexDialog extends JFrame {
 						final Runnable reindexThread = () -> {
                             try
                             {
-                                IndexQueryService service = (IndexQueryService)client.current.getService("IndexQueryService", "1.0");
+                                IndexQueryService service = client.current.getService(IndexQueryService.class);
 
                                 ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
 
@@ -308,9 +306,8 @@ class IndexDialog extends JFrame {
 	private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
     {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
-        final String[] childCollections= root.listChildCollections();
         Collection child;
-		for (String childCollection : childCollections) {
+		for (String childCollection : root.listChildCollections()) {
 			child = root.getChildCollection(childCollection);
 			getCollections(child, collectionsList);
 		}

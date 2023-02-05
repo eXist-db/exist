@@ -106,7 +106,7 @@ public class TreeLevelOrderTest {
         query.append("$doc := xmldb:store('" + XmldbURI.ROOT_COLLECTION + "', $document, $survey)");
         query.append("return <result/>");
 
-        final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+        final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("survey", xml);
         service.declareVariable("document", document);
         final CompiledExpression cQuery = service.compile(query.toString());
@@ -123,7 +123,7 @@ public class TreeLevelOrderTest {
         query.append("let $survey := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
         query.append("return $survey");
 
-        final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+        final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("document", document);
         final CompiledExpression cQuery = service.compile(query.toString());
         final ResourceSet set = service.execute(cQuery);

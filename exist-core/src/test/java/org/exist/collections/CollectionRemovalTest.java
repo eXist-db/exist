@@ -161,8 +161,7 @@ public class CollectionRemovalTest {
         if (testCollection == null) {
             return;
         }
-        final EXistXPathQueryService service = (EXistXPathQueryService)
-                testCollection.getService("XQueryService", "1.0");
+        final EXistXPathQueryService service = testCollection.getService(EXistXPathQueryService.class);
         ResourceSet result = service.query(QUERY1);
         assertEquals(expected, result.getSize());
 
@@ -224,7 +223,7 @@ public class CollectionRemovalTest {
     public void clearDB() throws XMLDBException {
         final org.xmldb.api.base.Collection root =
                 DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(".");
     }
 }

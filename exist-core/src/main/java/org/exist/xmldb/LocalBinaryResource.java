@@ -39,7 +39,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -60,11 +59,6 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     public LocalBinaryResource(final Subject user, final BrokerPool brokerPool, final LocalCollection collection, final XmldbURI docId) {
         super(user, brokerPool, collection, docId, null);
-    }
-
-    @Override
-    public String getResourceType() throws XMLDBException {
-        return BinaryResource.RESOURCE_TYPE;
     }
 
     @Override
@@ -231,6 +225,11 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             }
             return null;
         });
+    }
+
+    @Override
+    public void getContentAsStream(OutputStream os) throws XMLDBException {
+      getContentIntoAStream(os);
     }
 
     @Override

@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -35,15 +35,6 @@ public interface EXistCollection extends Collection {
     boolean isRemoteCollection() throws XMLDBException;
 
     /**
-     * Returns the time of creation of the collection.
-     *
-     * @return the creation time
-     *
-     * @throws XMLDBException if an error occurs whilst retrieving the creation time.
-     */
-    Date getCreationTime() throws XMLDBException;
-
-    /**
      * Alternative methods, especially to be used from JSP.
      *
      * @return the child collections.
@@ -54,8 +45,7 @@ public interface EXistCollection extends Collection {
 
     String[] getResources() throws XMLDBException;
 
-    void storeResource(Resource res, Date a, Date b) throws XMLDBException;
+    void storeResource(Resource res, Instant a, Instant b) throws XMLDBException;
 
     XmldbURI getPathURI();
-
 }

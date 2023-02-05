@@ -25,8 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -75,7 +73,7 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 class DocumentView extends JFrame {
 
@@ -116,7 +114,7 @@ class DocumentView extends JFrame {
 
     public void viewDocument() {
         try {
-            if ("XMLResource".equals(resource.getResourceType())) //$NON-NLS-1$
+            if (XML_RESOURCE.equals(resource.getResourceType()))
             {
                 setText((String) resource.getContent());
             } else {
@@ -124,8 +122,7 @@ class DocumentView extends JFrame {
             }
 
             // lock the resource for editing
-            final UserManagementService service = (UserManagementService)
-                    client.current.getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+            final UserManagementService service = client.current.getService(UserManagementService.class);
             final Account user = service.getAccount(properties.getProperty("user")); //$NON-NLS-1$
             final String lockOwner = service.hasUserLock(resource);
             if (lockOwner != null) {
@@ -198,8 +195,7 @@ class DocumentView extends JFrame {
             return;
         }
         try {
-            final UserManagementService service = (UserManagementService) collection
-                    .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+            final UserManagementService service = collection.getService(UserManagementService.class);
             service.unlockResource(resource);
         } catch (final XMLDBException e) {
             e.printStackTrace();
@@ -385,7 +381,7 @@ class DocumentView extends JFrame {
 
                     //Create a new resource as named, set the content, store the resource
                     XMLResource result = null;
-                    result = (XMLResource) collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.RESOURCE_TYPE);
+                    result = collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.class);
                     result.setContent(text.getText());
                     collection.storeResource(result);
                     client.reloadCollection();    //reload the client collection

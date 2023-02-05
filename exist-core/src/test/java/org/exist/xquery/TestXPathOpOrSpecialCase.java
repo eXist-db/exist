@@ -51,7 +51,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
 	@Before
 	public void setUp() throws Exception 
 	{
-        final CollectionManagementService service = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("blah");
         assertNotNull(testCollection);
     }
@@ -59,9 +59,8 @@ public class TestXPathOpOrSpecialCase extends Assert {
 	@After
 	public void tearDown() throws Exception {
 		final CollectionManagementService service =
-				(CollectionManagementService) existEmbeddedServer.getRoot().getService(
-						"CollectionManagementService",
-						"1.0");
+				existEmbeddedServer.getRoot().getService(
+						CollectionManagementService.class);
 		service.removeCollection("blah");
 		testCollection = null;
 	}
@@ -95,7 +94,7 @@ public class TestXPathOpOrSpecialCase extends Assert {
      */
     private void storeXML(final Collection collection, final String documentName, final String content) throws XMLDBException 
     {
-        final XMLResource doc = (XMLResource)collection.createResource(documentName, "XMLResource");
+        final XMLResource doc = collection.createResource(documentName, XMLResource.class);
         doc.setContent(content);
         collection.storeResource(doc);
     }

@@ -26,7 +26,6 @@ import javax.xml.transform.OutputKeys;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
@@ -170,7 +169,7 @@ public class ConstructedNodesTest {
 				"<a><b>world</b>hello</a>"
 				};
 
-		final XQueryService xpathQueryService = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
+		final XQueryService xpathQueryService = existEmbeddedServer.getRoot().getService(XQueryService.class);
 
         String oki = xpathQueryService.getProperty(OutputKeys.INDENT);
 		xpathQueryService.setProperty(OutputKeys.INDENT, "no");

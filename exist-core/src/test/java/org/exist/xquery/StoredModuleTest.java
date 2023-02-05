@@ -28,7 +28,6 @@ import org.xmldb.api.base.Resource;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.XmldbURI;
@@ -69,7 +68,7 @@ public class StoredModuleTest {
 
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
-        final CollectionManagementService cmService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmService = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         if (collection == null) {
             //cmService.removeCollection(collectionName);
             cmService.createCollection(collectionName);
@@ -81,7 +80,7 @@ public class StoredModuleTest {
     }
 
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
-        BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
+        BinaryResource res = collection.createResource(modulename, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(module.getBytes());
         collection.storeResource(res);
@@ -99,7 +98,7 @@ public class StoredModuleTest {
 
         String cols[] = {"one", "two", "three"};
 
-        final XQueryService xqService = (XQueryService) existEmbeddedServer.getRoot().getService("XQueryService", "1.0");
+        final XQueryService xqService = existEmbeddedServer.getRoot().getService(XQueryService.class);
 
         xqService.setNamespace("itg-modules", "http://localhost:80/itg/xquery");
 
@@ -381,7 +380,7 @@ public class StoredModuleTest {
         
         assertEquals(1, rs1.getSize());
         Resource r1 = rs1.getIterator().nextResource();
-        assertEquals("<hello-from>module1</hello-from>", (String)r1.getContent());
+        assertEquals("<hello-from>module1</hello-from>", r1.getContent());
         
         final String query2 = 
                 "xquery version \"1.0\";" +
@@ -393,7 +392,7 @@ public class StoredModuleTest {
         
         assertEquals(1, rs2.getSize());
         Resource r2 = rs2.getIterator().nextResource();
-        assertEquals("<hello-from>module2</hello-from>", (String)r2.getContent());
+        assertEquals("<hello-from>module2</hello-from>", r2.getContent());
         
     }
 

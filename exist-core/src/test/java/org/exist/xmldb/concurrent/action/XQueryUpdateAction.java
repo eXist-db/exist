@@ -49,7 +49,7 @@ public class XQueryUpdateAction extends Action {
 	@Override
 	public boolean execute() throws XMLDBException {
 		final Collection col = DatabaseManager.getCollection(collectionPath, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-		final XQueryService service = (XQueryService) col.getService("XQueryService", "1.0");
+		final XQueryService service = col.getService(XQueryService.class);
 		
 		service.query(query);
 		return true;

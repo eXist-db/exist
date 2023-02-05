@@ -100,8 +100,8 @@ public class DBUtils {
 
     public static CollectionManagementService getCollectionManagementService(final Collection col)
             throws XMLDBException {
-        return (CollectionManagementService) col.getService(
-                "CollectionManagementService", "1.0");
+        return col.getService(
+                CollectionManagementService.class);
     }
 
     public static void addXMLResource(final Collection col, final String resourceId, final Path file)
@@ -109,16 +109,14 @@ public class DBUtils {
         if (file == null || !Files.exists(file)) {
             throw new IllegalArgumentException("File does not exist: " + file);
         }
-        final XMLResource res = (XMLResource) col.createResource(
-                resourceId, "XMLResource");
+        final XMLResource res = col.createResource(resourceId, XMLResource.class);
         res.setContent(file);
         col.storeResource(res);
     }
 
     public static void addXMLResource(final Collection col, final String resourceId, final String contents)
             throws XMLDBException {
-        final XMLResource res = (XMLResource) col.createResource(
-                resourceId, "XMLResource");
+        final XMLResource res = col.createResource(resourceId, XMLResource.class);
         res.setContent(contents);
         col.storeResource(res);
     }
@@ -144,14 +142,13 @@ public class DBUtils {
 
     public static XPathQueryService getQueryService(final Collection collection)
             throws XMLDBException {
-        return (XPathQueryService) collection.getService(
-                "XPathQueryService", "1.0");
+        return collection.getService(
+                XPathQueryService.class);
     }
 
     public static EXistXQueryService getXQueryService(final Collection collection)
             throws XMLDBException {
-        return (EXistXQueryService) collection.getService(
-                "XQueryService", "1.0");
+        return collection.getService(EXistXQueryService.class);
     }
 
     public static String[] wordList() throws XMLDBException {

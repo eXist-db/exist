@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.update;
 
-import org.exist.xmldb.EXistResource;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -38,6 +35,7 @@ import org.xmlunit.diff.Diff;
 import javax.xml.transform.Source;
 
 import static org.junit.Assert.*;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 public class UpdateReplaceTest extends AbstractTestUpdate {
 
@@ -60,7 +58,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final Resource res1 = result.getResource(0);
         assertNotNull(res1);
-        assertEquals(XMLResource.RESOURCE_TYPE, res1.getResourceType());
+        assertEquals(XML_RESOURCE, res1.getResourceType());
         final Document doc = ((XMLResource) res1).getContentAsDOM().getOwnerDocument();
 
         final Source actual = Input.fromDocument(doc).build();
@@ -94,7 +92,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final Resource res1 = result.getResource(0);
         assertNotNull(res1);
-        assertEquals(XMLResource.RESOURCE_TYPE, res1.getResourceType());
+        assertEquals(XML_RESOURCE, res1.getResourceType());
         final Document doc = ((XMLResource) res1).getContentAsDOM().getOwnerDocument();
 
         final Source actual = Input.fromDocument(doc).build();
@@ -128,7 +126,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final Resource res1 = result.getResource(0);
         assertNotNull(res1);
-        assertEquals(XMLResource.RESOURCE_TYPE, res1.getResourceType());
+        assertEquals(XML_RESOURCE, res1.getResourceType());
         final Document doc = ((XMLResource) res1).getContentAsDOM().getOwnerDocument();
 
         final Source actual = Input.fromDocument(doc).build();
@@ -162,7 +160,7 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final Resource res1 = result.getResource(0);
         assertNotNull(res1);
-        assertEquals(XMLResource.RESOURCE_TYPE, res1.getResourceType());
+        assertEquals(XML_RESOURCE, res1.getResourceType());
         final Document doc = ((XMLResource) res1).getContentAsDOM().getOwnerDocument();
 
         final Source actual = Input.fromDocument(doc).build();

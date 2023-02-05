@@ -49,14 +49,14 @@ public class XQueryAction extends Action {
 	    
 		final Collection col = DatabaseManager.getCollection(collectionPath);
 		
-		final EXistXPathQueryService service = (EXistXPathQueryService) col.getService("XPathQueryService", "1.0");
+		final EXistXPathQueryService service = col.getService(EXistXPathQueryService.class);
 		
 //		service.beginProtected();
 		final ResourceSet result = service.query(xquery);
 		
 		final DefaultHandler handler = new DefaultHandler();
 		for (int i = 0; i < result.getSize(); i++) {
-			final XMLResource next = (XMLResource) result.getResource((long)i);
+			final XMLResource next = (XMLResource) result.getResource(i);
 			next.getContentAsSAX(handler);
 		}
 //		service.endProtected();

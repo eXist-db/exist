@@ -48,9 +48,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -84,25 +86,23 @@ public class DocTest {
 
     @Before
     public void setUp() throws XMLDBException {
-        final CollectionManagementService cms = (CollectionManagementService)
-        	existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         //Creates the 'test' collection
         test = cms.createCollection("test");
         assertNotNull(test);
 
-        storeResource(test, "test.xq", "BinaryResource", "application/xquery", "doc('test.xml')");
-        storeResource(test, "test1.xq", "BinaryResource", "application/xquery", "doc('/test.xml')");
-        storeResource(test, "test2.xq", "BinaryResource", "application/xquery", "doc('/db/test.xml')");
+        storeResource(test, "test.xq", BinaryResource.class, "application/xquery", "doc('test.xml')");
+        storeResource(test, "test1.xq", BinaryResource.class, "application/xquery", "doc('/test.xml')");
+        storeResource(test, "test2.xq", BinaryResource.class, "application/xquery", "doc('/db/test.xml')");
 
-        storeResource(existEmbeddedServer.getRoot(), "test.xml", "XMLResource", null, "<x/>");
-        storeResource(test, "test.xml", "XMLResource", null, "<y/>");
+        storeResource(existEmbeddedServer.getRoot(), "test.xml", XMLResource.class, null, "<x/>");
+        storeResource(test, "test.xml", XMLResource.class, null, "<y/>");
 
     }
 
     @After
     public void tearDown() throws XMLDBException {
-        final CollectionManagementService cms = (CollectionManagementService)
-                existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         //Creates the 'test' collection
         cms.removeCollection("test");
         test = null;
@@ -110,7 +110,7 @@ public class DocTest {
         existEmbeddedServer.getRoot().removeResource(existEmbeddedServer.getRoot().getResource("test.xml"));
     }
     
-    private void storeResource(final Collection col, final String fileName, final String type, final String mimeType, final String content) throws XMLDBException {
+    private void storeResource(final Collection col, final String fileName, final Class<? extends Resource> type, final String mimeType, final String content) throws XMLDBException {
     	Resource res = col.createResource(fileName, type);
     	res.setContent(content);
     	

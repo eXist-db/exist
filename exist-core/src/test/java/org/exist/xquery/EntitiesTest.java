@@ -46,9 +46,8 @@ public class EntitiesTest {
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
         final CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+                existEmbeddedServer.getRoot().getService(
+                CollectionManagementService.class);
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
@@ -56,9 +55,8 @@ public class EntitiesTest {
     @After
     public void tearDown() throws Exception {
         final CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                        "CollectionManagementService",
-                        "1.0");
+                existEmbeddedServer.getRoot().getService(
+                        CollectionManagementService.class);
         service.removeCollection("test");
         testCollection = null;
     }
@@ -106,8 +104,7 @@ public class EntitiesTest {
     
     /** For queries without associated data */
     private XQueryService getQueryService() throws XMLDBException {
-        XQueryService service = (XQueryService) testCollection.getService(
-                "XPathQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         return service;
     }
     
@@ -121,14 +118,12 @@ public class EntitiesTest {
 	private XQueryService storeXMLStringAndGetQueryService(String documentName,
             String content) throws XMLDBException {
         XMLResource doc =
-                (XMLResource) testCollection.createResource(
-                documentName, "XMLResource" );
+                testCollection.createResource(
+                documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
         XQueryService service =
-                (XQueryService) testCollection.getService(
-                "XPathQueryService",
-                "1.0");
+                testCollection.getService(XQueryService.class);
         return service;
     }
 

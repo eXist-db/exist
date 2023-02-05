@@ -70,10 +70,8 @@ public class RemoveAppendTest {
     @Ignore
     @Test
     public void testRemoveAppend() throws Exception {
-        XUpdateQueryService service = (XUpdateQueryService)
-            testCol.getService("XUpdateQueryService", "1.0");
-        XPathQueryService query = (XPathQueryService)
-            testCol.getService("XPathQueryService", "1.0");
+        XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
+        XPathQueryService query = testCol.getService(XPathQueryService.class);
         for (int i = 1; i < 1000; i++) {
             int which = rand.nextInt(ITEM_COUNT) + 1;
             insert(service, which);
@@ -87,10 +85,8 @@ public class RemoveAppendTest {
     
     @Test
     public void appendRemove() throws XMLDBException, IOException {
-        XUpdateQueryService service = (XUpdateQueryService)
-        testCol.getService("XUpdateQueryService", "1.0");
-        XPathQueryService query = (XPathQueryService)
-            testCol.getService("XPathQueryService", "1.0");
+        XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
+        XPathQueryService query = testCol.getService(XPathQueryService.class);
         for (int i = 1; i <= 100; i++) {
             append(service, i);
             

@@ -38,7 +38,9 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
+
+import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
@@ -84,11 +86,10 @@ public class CollectionXConf
 			{return;}
 		
 		//get the resource from the db
-        final String[] resources = collection.listResources();
-		for (String resource : resources) {
+		for (String resource : collection.listResources()) {
 			if (resource.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
 				resConfig = collection.getResource(resource);
-				if (resConfig.getResourceType().equals(BinaryResource.RESOURCE_TYPE)) {
+				if (BINARY_RESOURCE.equals(resConfig.getResourceType())) {
 					System.err.println("Found a possible Collection configuration document: " + resConfig.getId() + ", however it is a Binary document! A user may have stored the document as a Binary document by mistake. Skipping...");
 					continue;
 				}
@@ -543,7 +544,7 @@ public class CollectionXConf
 					collection = client.getCollection(path);
 				}
 				
-				resConfig = collection.createResource(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, "XMLResource");
+				resConfig = collection.createResource(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE, XMLResource.class);
 			}
 			
 			//set the content of the collection.xconf

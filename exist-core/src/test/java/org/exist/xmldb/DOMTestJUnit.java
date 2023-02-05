@@ -59,7 +59,7 @@ public class DOMTestJUnit extends RemoteDBTest {
 		rootColl = DatabaseManager.getCollection(getBaseURI(), "admin", "");
 		assertNotNull(rootColl);
 
-		XMLResource r = (XMLResource)rootColl.createResource(name, XMLResource.RESOURCE_TYPE);
+		XMLResource r = rootColl.createResource(name, XMLResource.class);
 		r.setContent("<?xml-stylesheet type=\"text/xsl\" href=\"test.xsl\"?><!-- Root Comment --><properties><property key=\"type\">Table</property></properties>");
 		rootColl.storeResource(r);
 	}

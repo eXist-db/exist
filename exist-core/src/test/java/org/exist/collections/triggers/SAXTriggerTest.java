@@ -36,6 +36,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
 
@@ -85,7 +86,7 @@ public class SAXTriggerTest {
 
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-        final Resource resource = root.createResource("data.xml", "XMLResource");
+        final Resource resource = root.createResource("data.xml", XMLResource.class);
         resource.setContent(DOCUMENT1_CONTENT);
         root.storeResource(resource);
 
@@ -104,11 +105,11 @@ public class SAXTriggerTest {
 
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-        Resource resource = root.createResource("data.xml", "XMLResource");
+        Resource resource = root.createResource("data.xml", XMLResource.class);
         resource.setContent(DOCUMENT2_CONTENT);
         root.storeResource(resource);
 
-        resource = root.createResource("data.xml", "XMLResource");
+        resource = root.createResource("data.xml", XMLResource.class);
 
         assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
@@ -117,14 +118,14 @@ public class SAXTriggerTest {
     public void saxEventModificationsAtXConf() throws EXistException, XMLDBException {
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
 
-        final IndexQueryService idxConf = (IndexQueryService) root.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = root.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        Resource resource = root.createResource("data.xml", "XMLResource");
+        Resource resource = root.createResource("data.xml", XMLResource.class);
         resource.setContent(DOCUMENT2_CONTENT);
         root.storeResource(resource);
 
-        resource = root.createResource("data.xml", "XMLResource");
+        resource = root.createResource("data.xml", XMLResource.class);
 
         assertEquals(DOCUMENT3_CONTENT, resource.getContent().toString());
     }
@@ -133,7 +134,7 @@ public class SAXTriggerTest {
     public void cleanDB() throws XMLDBException {
         final Collection config = DatabaseManager.getCollection(BASE_URI + "/db/system/config" + testCollection, "admin", "");
         if (config != null) {
-            CollectionManagementService mgmt = (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
+            CollectionManagementService mgmt = config.getService(CollectionManagementService.class);
             mgmt.removeCollection(".");
         }
         final Collection root = DatabaseManager.getCollection(BASE_URI + testCollection, "admin", "");
@@ -151,11 +152,11 @@ public class SAXTriggerTest {
 
     @BeforeClass
     public static void initDB() throws ClassNotFoundException, XMLDBException, InstantiationException, IllegalAccessException {
-        CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCol = mgmt.createCollection("triggers");
 
         for (int i = 1; i <= 2; i++) {
-            mgmt = (CollectionManagementService) testCol.getService("CollectionManagementService", "1.0");
+            mgmt = testCol.getService(CollectionManagementService.class);
             testCol = mgmt.createCollection("sub" + i);
         }
     }

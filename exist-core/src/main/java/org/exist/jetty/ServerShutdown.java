@@ -111,8 +111,7 @@ public class ServerShutdown {
                 uri = uri + XmldbURI.ROOT_COLLECTION;
             }
             final Collection root = DatabaseManager.getCollection(uri, user, passwd);
-            final DatabaseInstanceManager manager = (DatabaseInstanceManager) root
-                    .getService("DatabaseInstanceManager", "1.0");
+            final DatabaseInstanceManager manager = root.getService(DatabaseInstanceManager.class);
             System.out.println("Shutting down database instance at ");
             System.out.println('\t' + uri);
             manager.shutdown();

@@ -24,18 +24,17 @@ package org.exist.xmldb;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.*;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
-import org.exist.util.Leasable;
 import org.exist.util.io.ByteArrayContent;
 import org.exist.util.io.ContentFile;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
@@ -64,8 +63,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
 
-    Date dateCreated = null;
-    Date dateModified = null;
+    Instant dateCreated = null;
+    Instant dateModified = null;
 
     protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType) {
         super(parent);
@@ -139,27 +138,27 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public Date getCreationTime()
+    public Instant getCreationTime()
             throws XMLDBException {
         return dateCreated;
     }
 
     @Override
-    public Date getLastModificationTime()
+    public Instant getLastModificationTime()
             throws XMLDBException {
         return dateModified;
     }
 
     @Override
-    public void setLastModificationTime(final Date dateModified) throws XMLDBException {
+    public void setLastModificationTime(final Instant dateModified) throws XMLDBException {
         if (dateModified != null) {
-            if (dateModified.before(getCreationTime())) {
+            if (dateModified.isBefore(getCreationTime())) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, "Modification time must be after creation time.");
             }
 
             final List<Object> params = new ArrayList<>(2);
             params.add(path.toString());
-            params.add(dateModified.getTime());
+            params.add(dateModified.toEpochMilli());
 
             collection.execute("setLastModified", params);
 

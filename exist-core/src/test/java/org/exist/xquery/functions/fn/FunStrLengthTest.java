@@ -37,7 +37,7 @@ public class FunStrLengthTest {
 
     @Test
     public void contextItemWithinPredicate() throws XMLDBException {
-        final XPathQueryService queryService = (XPathQueryService) server.getRoot().getService("XQueryService", "1.0");
+        final XPathQueryService queryService = server.getRoot().getService(XPathQueryService.class);
 
         ResourceSet results = null;
 

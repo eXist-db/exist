@@ -136,7 +136,7 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
 
             if( c == null ) {
                 log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
-                mgtService = (CollectionManagementService)current.getService( "CollectionManagementService", "1.0" );
+                mgtService = current.getService( CollectionManagementService.class);
                 log( "Create child collection " + segment );
                 current = mgtService.createCollection( segment.toString() );
                 log( "Created collection " + current.getName() + '.' );

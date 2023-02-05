@@ -135,13 +135,4 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
     public long update(final String commands) throws XMLDBException {
         return updateResource(null, commands);
     }
-
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
-    }
-
-    @Override
-        public void setProperty(final String name, final String value) throws XMLDBException {
-    }
 }
