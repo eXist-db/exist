@@ -205,41 +205,8 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- TODO the version of GeoTools that we use is not compatible with Java 9+
-                    so we skip the tests by default, and only enable them in a profile (below) if Java 8
-                    See: https://medium.com/codefx-weekly/geotools-on-java-9-e8717e347a1f
-                    See: https://github.com/geotools/geotools/pull/1670
-                    -->
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>test-java8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <repositories>
         <repository>
