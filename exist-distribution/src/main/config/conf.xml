@@ -944,8 +944,6 @@
             <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule"/>
             <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule"/>
             <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
-            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq"/>
-            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq"/>
             <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
             <module uri="http://exist-db.org/xquery/request" class="org.exist.xquery.functions.request.RequestModule"/>
             <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule"/>
