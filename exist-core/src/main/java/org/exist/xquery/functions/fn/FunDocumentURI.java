@@ -27,7 +27,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
-import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.returnsOpt;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
@@ -37,7 +37,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignature;
  */
 public class FunDocumentURI extends Function {
 
-    private static final FunctionParameterSequenceType FS_PARAM_NODE = optManyParam("value", Type.NODE, "The document node.");
+    private static final FunctionParameterSequenceType FS_PARAM_NODE = optParam("value", Type.NODE, "The document node.");
 
     private static final String FS_DOCUMENT_URI = "document-uri";
     private static final String FS_DESCRIPTION = "Returns the URI of a resource where a document can be found, if available.";

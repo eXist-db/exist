@@ -48,7 +48,7 @@ public class FunXmlToJson extends BasicFunction {
 
     private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
     private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
-    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = optParam("options", Type.MAP, "The options map");
+    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = param("options", Type.MAP, "The options map");
     static final FunctionSignature[] FS_XML_TO_JSON = functionSignatures(
             new QName(FS_XML_TO_JSON_NAME, Function.BUILTIN_FUNCTION_NS),
             "Converts an XML tree (in w3c 'XML Representation of JSON' format) into a string conforming to the JSON grammar. Basic string (un)escaping.",
@@ -67,7 +67,7 @@ public class FunXmlToJson extends BasicFunction {
         final Sequence result;
         final Sequence seq = (getArgumentCount() > 0) ? args[0] : Sequence.EMPTY_SEQUENCE;
         //TODO: implement handling of options
-        final MapType options = (getArgumentCount() > 1) ? (MapType) args[1].itemAt(0) : new MapType(this, context);
+        final MapType options = (getArgumentCount() == 2) ? (MapType) args[1].itemAt(0) : new MapType(this, context);
 
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;

@@ -90,7 +90,7 @@ public class JSON extends BasicFunction {
     static final FunctionSignature[] FS_JSON_TO_XML = functionSignatures(
             FS_JSON_TO_XML_NAME,
             "Parses a string supplied in the form of a JSON text, returning the results in the form of an XML document node.",
-            returnsOpt(Type.ITEM, "The parsed data as XML"),
+            returnsOpt(Type.DOCUMENT, "The parsed data as XML"),
             arities(
                     arity(
                             FS_PARAM_JSON_TEXT
