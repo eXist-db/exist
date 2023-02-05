@@ -20,10 +20,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use JDK 8 in Debian Stretch (as our production image gcr.io/distroless/java:8 is based on Debian Stretch with just a JRE)
-FROM debian:stretch-slim
+# Use JDK 17 in Debian Bullseye (as our production image gcr.io/distroless/java:17 is based on Debian Bullseye with just a JRE)
+FROM debian:bullseye-slim
 RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y openjdk-8-jdk-headless
+RUN apt-get install -y openjdk-17-jdk-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
 
 # Copy eXist-db
@@ -65,7 +65,8 @@ ENV JAVA_TOOL_OPTIONS \
   -Dexist.configurationFile=/exist/etc/conf.xml \
   -Djetty.home=/exist \
   -Dexist.jetty.config=/exist/etc/jetty/standard.enabled-jetty-configs \
-  -XX:+UseG1GC \
+  -XX:+UseNUMA \
+  -XX:+UseZGC \
   -XX:+UseStringDeduplication \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \

@@ -75,7 +75,7 @@ public class SourceFactory {
      *     but the calling user does not have permission to access it.
      * @throws IOException if a general I/O error occurs whilst accessing the resource.
      */
-    public static @Nullable Source getSource(final DBBroker broker, final String contextPath, final String location, final boolean checkXQEncoding) throws IOException, PermissionDeniedException {
+    public static @Nullable Source getSource(final DBBroker broker, @Nullable final String contextPath, final String location, final boolean checkXQEncoding) throws IOException, PermissionDeniedException {
         Source source = null;
 
         /* resource: */
@@ -152,7 +152,7 @@ public class SourceFactory {
     }
 
     private static Source getSource_fromClasspath(final String contextPath, final String location) throws IOException {
-        if (location.startsWith(ClassLoaderSource.PROTOCOL)) {
+        if (contextPath == null || location.startsWith(ClassLoaderSource.PROTOCOL)) {
             return new ClassLoaderSource(location);
         }
 
@@ -212,12 +212,18 @@ public class SourceFactory {
      *
      * @return the source, or null if there is no such resource in the db indicated by {@code path}.
      */
-    private static @Nullable Source getSource_fromFile(final String contextPath, final String location, final boolean checkXQEncoding) {
+    private static @Nullable Source getSource_fromFile(@Nullable final String contextPath, final String location, final boolean checkXQEncoding) {
         String locationPath = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
         Source source = null;
         try {
-            final Path p = Paths.get(contextPath, locationPath);
+            final Path p;
+            if (contextPath == null) {
+                p = Paths.get(locationPath);
+            } else {
+                p = Paths.get(contextPath, locationPath);
+            }
+
             if (Files.isReadable(p)) {
                 locationPath = p.toUri().toASCIIString();
                 source = new FileSource(p, checkXQEncoding);

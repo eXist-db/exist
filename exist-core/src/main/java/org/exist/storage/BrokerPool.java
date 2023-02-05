@@ -456,10 +456,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 dataLock.release();
             }
 
-            if(e instanceof EXistException) {
-                throw (EXistException) e;
-            } else if(e instanceof DatabaseConfigurationException) {
-                throw (DatabaseConfigurationException) e;
+            if (e instanceof EXistException existException) {
+                throw existException;
+            } else if(e instanceof DatabaseConfigurationException databaseConfigurationException) {
+                throw databaseConfigurationException;
             } else {
                 throw new EXistException(e);
             }

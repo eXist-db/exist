@@ -50,8 +50,8 @@ import org.exist.xquery.modules.ModuleUtils.ContextMapModifierWithoutResult;
  * 
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
- * @author <a href="mailto:josemariafg@gmail.com">ljo
- * @author José María Fernández</a>
+ * @author ljo
+ * @author <a href="mailto:josemariafg@gmail.com">José María Fernández</a>
  * @serial 2011-09-06
  * @version 1.4.1
  *

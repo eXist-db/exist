@@ -203,7 +203,8 @@ public final class Journal implements Closeable {
      */
     @ConfigurationFieldAsAttribute("minSize")
     //TODO: conf.xml refactoring <recovery minSize=""> => <journal minSize="">
-    private final long journalSizeMin;
+    // package-private accessibility for testing
+    long journalSizeMin;
 
     /**
      * size limit for the journal file. A checkpoint will be triggered if the file

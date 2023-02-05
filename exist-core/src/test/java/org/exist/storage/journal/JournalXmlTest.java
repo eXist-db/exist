@@ -97,7 +97,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     }
 
     @Test
-    public void largeJournalEntry_nonCorrupt() throws IllegalAccessException, EXistException, NoSuchFieldException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    public void largeJournalEntry_nonCorrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer
@@ -126,7 +126,7 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     }
 
     @Test
-    public void largeJournalEntry_corrupt() throws IllegalAccessException, EXistException, NoSuchFieldException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
+    public void largeJournalEntry_corrupt() throws EXistException, LockException, SAXException, PermissionDeniedException, IOException, InterruptedException {
         checkpointJournalAndSwitchFile();
 
         // generate a string filled with random a-z characters which is larger than the journal buffer

@@ -61,8 +61,8 @@ import static com.evolvedbinary.j8fu.Try.Try;
 /**
  * Utilities for XPath doc related functions
  *
- * @author <a href="mailto:pierrick.brihaye@free.fr">wolf
- * @author Pierrick Brihaye</a>
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 //TODO : many more improvements to handle efficiently any URI
 public class DocUtils {
@@ -146,8 +146,8 @@ public class DocUtils {
             }
 
             try (final InputStream is = source.getInputStream()) {
-                if (source instanceof URLSource) {
-                    final int responseCode = ((URLSource) source).getResponseCode();
+                if (source instanceof URLSource urlSource) {
+                    final int responseCode = urlSource.getResponseCode();
                     if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                         // Special case: '404'
                         return Sequence.EMPTY_SEQUENCE;

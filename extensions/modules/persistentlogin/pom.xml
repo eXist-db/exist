@@ -74,6 +74,10 @@
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -120,6 +124,7 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- needed for starting up a jetty server -->

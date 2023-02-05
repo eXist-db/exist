@@ -116,7 +116,7 @@
             <artifactId>jing</artifactId>
             <version>20220510</version>
             <exclusions>
-                <exclusion> <!-- conflicts with xerces 2.12.2 dependency on xml-apis version 1.4.01 -->
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
@@ -272,6 +272,12 @@
             <artifactId>xercesImpl</artifactId>
             <version>2.12.2</version>
             <classifier>xml-schema-1.1</classifier>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -288,13 +294,15 @@
         </dependency>
 
         <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
             <artifactId>ws-commons-util</artifactId>
             <version>1.0.2</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- xml-resolver is needed at runtime because xercesImpl declares this as optional,
@@ -310,6 +318,12 @@
             <groupId>org.xmlresolver</groupId>
             <artifactId>xmlresolver</artifactId>
             <version>${xmlresolver.version}</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -318,6 +332,12 @@
             <version>${xmlresolver.version}</version>
             <classifier>data</classifier>
             <scope>runtime</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- xpath2 and java-cup are needed at runtime because xercesImpl declares this as optional,
@@ -338,7 +358,13 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <version>2.7.2</version> <!-- needed an compile time for various dependencies -->
+            <version>2.7.2</version> <!-- needed at compile time for various dependencies -->
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -363,7 +389,7 @@
             <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
             <exclusions>
-                <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
                 </exclusion>
@@ -403,11 +429,13 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
             <version>${jetty.version}</version>
+            <!-- NOTE: needed for both scopes: <scope>runtime</scope><scope>test</scope> -->
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
             <version>${jetty.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -521,6 +549,7 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-matchers</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.xmlunit</groupId>
@@ -933,6 +962,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jcl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
 
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
@@ -945,8 +975,13 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-security:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>org.eclipse.jetty:jetty-http:jar:${jetty.version}</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -987,9 +1022,9 @@ The BaseX Team. The original license statement is also included below.]]></pream
             </plugin>
 
             <plugin>
-                <groupId>com.nickwongdev</groupId>
+                <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.12.6</version>
+                <version>1.13.1</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.aspectj</groupId>

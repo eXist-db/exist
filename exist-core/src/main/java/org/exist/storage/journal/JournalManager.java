@@ -61,7 +61,8 @@ public class JournalManager implements BrokerPoolService {
 
     @GuardedBy("this") private Path journalDir;
     @GuardedBy("this") private boolean groupCommits;
-    @GuardedBy("this") private Journal journal;
+    // package-private accessibility for testing
+    @GuardedBy("this") Journal journal;
     @GuardedBy("this") private boolean journallingDisabled = false;
     @GuardedBy("this") private boolean initialized = false;
 

@@ -190,6 +190,10 @@
                                 <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queries:jar:${lucene.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
                                 <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>

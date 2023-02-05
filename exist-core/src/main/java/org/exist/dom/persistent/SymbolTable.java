@@ -52,8 +52,8 @@ import java.nio.file.StandardOpenOption;
  * The global SymbolTable singleton can be retrieved from {@link org.exist.storage.BrokerPool#getSymbols()}.
  * It is saved into the database file "symbols.dbx".
  *
- * @author <a href="mailto:wolfgang@exist-db.org">wolf</a>
- * @author Adam Retter
+ * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class SymbolTable implements BrokerPoolService, Closeable {
 
@@ -438,8 +438,8 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * Represents a distinct collection of symbols
      *
-     * @author <a href="mailto:adam@exist-db.org">wolf
-     * @author Adam Retter</a>
+     * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
+     * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
      */
     protected class SymbolCollection {
 
