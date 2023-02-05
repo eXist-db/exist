@@ -247,43 +247,6 @@ public class MapType extends AbstractMapType {
         return new MapType(context, newMap.forked(), prevType);
     }
 
-    @Override
-    public AbstractMapType merge(final Iterable<AbstractMapType> others, final BinaryOperator<Sequence> mergeFn) {
-
-        // create a transient map
-        IMap<AtomicValue, Sequence> newMap = map.linear();
-
-        int prevType = keyType;
-        for (final AbstractMapType other: others) {
-            if (other instanceof MapType) {
-                // MapType - optimise merge
-                final MapType otherMap = (MapType) other;
-                newMap = newMap.merge(otherMap.map, mergeFn);
-
-                if (prevType != otherMap.keyType) {
-                    prevType = MIXED_KEY_TYPES;
-                }
-            } else {
-                // non MapType
-                for (final IEntry<AtomicValue, Sequence> entry : other) {
-                    final AtomicValue key = entry.key();
-                    final Optional<Sequence> headEntry = newMap.get(key);
-                    if (headEntry.isPresent()) {
-                        newMap = newMap.put(key, mergeFn.apply(headEntry.get(), entry.value()));
-                    } else {
-                        newMap = newMap.put(key, entry.value());
-                    }
-                    if (prevType != key.getType()) {
-                        prevType = MIXED_KEY_TYPES;
-                    }
-                }
-            }
-        }
-
-        // return an immutable map
-        return new MapType(context, newMap.forked(), prevType);
-    }
-
     public void add(final AtomicValue key, final Sequence value) {
         setKeyType(key.getType());
         map = map.put(key, value);
