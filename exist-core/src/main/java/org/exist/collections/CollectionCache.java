@@ -154,7 +154,7 @@ public class CollectionCache implements BrokerPoolService {
      * @param collectionUri The URI of the Collection to remove from the Cache
      */
     public void invalidate(final XmldbURI collectionUri) {
-        cache.invalidate(collectionUri);
+        cache.invalidate(key(collectionUri));
     }
 
     /**
