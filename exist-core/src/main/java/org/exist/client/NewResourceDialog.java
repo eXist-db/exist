@@ -25,8 +25,6 @@ import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -287,15 +285,18 @@ public class NewResourceDialog extends JFrame {
         
         try {
             final String resName = URIUtils.urlEncodeUtf8((isNullOrEmpty(filename) ? DEFAULT_FILENAME : filename) + "." + resourceType.getFileExtension());
-            final String resType = resourceType == ResourceType.XML_DOCUMENT ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
-            
-            final Collection collection = client.current;
-            
-            final Resource resource = collection.createResource(resName, resType);
-            resource.setContent(resourceContent);
-            ((EXistResource)resource).setMimeType(resourceType.getMimeType());
-            collection.storeResource(resource);
-            collection.close();
+            final Class<? extends Resource> resType;
+            if (resourceType == ResourceType.XML_DOCUMENT) {
+                resType = XMLResource.class ;
+            } else {
+                resType = BinaryResource.class;
+            }
+
+            try (final Collection collection = client.current; final Resource resource = collection.createResource(resName, resType)) {
+                resource.setContent(resourceContent);
+                ((EXistResource) resource).setMimeType(resourceType.getMimeType());
+                collection.storeResource(resource);
+            }
             client.reloadCollection();
         } catch(final XMLDBException xmldbe) {
             ClientFrame.showErrorMessage(xmldbe.getMessage(), xmldbe);

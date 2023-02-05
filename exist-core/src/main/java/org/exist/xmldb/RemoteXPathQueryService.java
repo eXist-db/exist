@@ -25,26 +25,21 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.source.Source;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Leasable;
 import org.exist.xmlrpc.RpcAPI;
 import org.exist.xquery.XPathException;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.xml.XMLConstants;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
-public class RemoteXPathQueryService extends AbstractRemote implements EXistXPathQueryService, EXistXQueryService {
+public class RemoteXPathQueryService extends AbstractRemoteService implements EXistXPathQueryService, EXistXQueryService {
 
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
     private final Map<String, String> namespaceMappings = new HashMap<>();
@@ -268,7 +263,7 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
             if (res == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " not found");
             }
-            if (!"XMLResource".equals(res.getResourceType())) {
+            if (!XML_RESOURCE.equals(res.getResourceType())) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource " + resource + " is not an XML resource");
             }
             return query((XMLResource) res, query);
@@ -279,12 +274,13 @@ public class RemoteXPathQueryService extends AbstractRemote implements EXistXPat
     }
 
     @Override
-    public void setCollection(final Collection collection) throws XMLDBException {
+    public String getProperty(final String name) throws XMLDBException {
+        return outputProperties.getProperty(name);
     }
 
     @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return outputProperties.getProperty(name);
+    public String getProperty(String name, String defaultValue) throws XMLDBException {
+        return outputProperties.getProperty(name, defaultValue);
     }
 
     @Override

@@ -36,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -133,8 +134,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      * @throws IOException if an I/O error occurs
      */
     private void extractResources(final Collection base, final String path) throws XMLDBException, IOException {
-        final String[] resources = base.listResources();
-        if (resources != null) {
+        final List<String> resources = base.listResources();
+        if (!resources.isEmpty()) {
             Path dir = destDir;
 
             log("Extracting to directory " + destDir.toAbsolutePath().toString(), Project.MSG_DEBUG);
@@ -169,9 +170,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      * @throws IOException if an I/O error occurs
      */
     private void extractSubCollections(final Collection base, final String path) throws XMLDBException, IOException {
-        final String[] childCols = base.listChildCollections();
-
-        if (childCols != null) {
+        final List<String> childCols = base.listChildCollections();
+        if (!childCols.isEmpty()) {
             for (final String childCol : childCols) {
                 final Collection col = base.getChildCollection(childCol);
 

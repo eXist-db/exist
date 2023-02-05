@@ -72,8 +72,7 @@ public class TextUpdateAction extends Action {
 	@Override
 	public boolean execute() throws XMLDBException {
 		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		final XUpdateQueryService service = (XUpdateQueryService)
-			col.getService("XUpdateQueryService", "1.0");
+		final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 		
 		// append a new section
 		long mods = service.update(APPEND);
@@ -87,7 +86,7 @@ public class TextUpdateAction extends Action {
 		assertEquals(1, mods);
 		
 		// query for section
-		final XPathQueryService query = (XPathQueryService) col.getService("XPathQueryService", "1.0");
+		final XPathQueryService query = col.getService(XPathQueryService.class);
 		ResourceSet result = query.query("/article/section/para/text()");
 		assertEquals(1, result.getSize());
 		updateText = result.getResource(0).getContent().toString();

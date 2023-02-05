@@ -43,11 +43,11 @@ import java.nio.file.Path;
  */
 public class RestoreTask extends AbstractXMLDBTask
 {
-    private Path zipFile         = null;
-    private Path   dir             = null;
-    private DirSet dirSet          = null;
-    private String restorePassword = null;
-    private boolean overwriteApps = false;
+    private Path zipFile;
+    private Path dir;
+    private DirSet dirSet;
+    private String restorePassword;
+    private boolean overwriteApps;
 
     @Override
     public void execute() throws BuildException
@@ -61,7 +61,7 @@ public class RestoreTask extends AbstractXMLDBTask
         }
 
         if( ( dir != null ) && !Files.isReadable(dir)) {
-            final String msg = "Cannot read restore file: " + dir.toAbsolutePath().toString();
+            final String msg = "Cannot read restore file: " + dir.toAbsolutePath();
 
             if( failonerror ) {
                 throw( new BuildException( msg ) );
@@ -75,11 +75,11 @@ public class RestoreTask extends AbstractXMLDBTask
             try {
 
                 if( dir != null ) {
-                    log( "Restoring from " + dir.toAbsolutePath().toString(), Project.MSG_INFO );
+                    log( "Restoring from " + dir.toAbsolutePath(), Project.MSG_INFO );
                     final Path file = dir.resolve("__contents__.xml" );
 
                     if( !Files.exists(file)) {
-                        final String msg = "Could not find file " + file.toAbsolutePath().toString();
+                        final String msg = "Could not find file " + file.toAbsolutePath();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -89,7 +89,7 @@ public class RestoreTask extends AbstractXMLDBTask
                     } else {
                         final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                         final Collection collection = DatabaseManager.getCollection(uri, user, password);
-                        final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                        final EXistRestoreService service = collection.getService(EXistRestoreService.class);
                         service.restore(file.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                     }
 
@@ -104,7 +104,7 @@ public class RestoreTask extends AbstractXMLDBTask
                         final Path contentsFile = dir.resolve("__contents__.xml");
 
                         if( !Files.exists(contentsFile)) {
-                            final String msg = "Did not found file " + contentsFile.toAbsolutePath().toString();
+                            final String msg = "Did not found file " + contentsFile.toAbsolutePath();
 
                             if( failonerror ) {
                                 throw( new BuildException( msg ) );
@@ -112,21 +112,21 @@ public class RestoreTask extends AbstractXMLDBTask
                                 log( msg, Project.MSG_ERR );
                             }
                         } else {
-                            log( "Restoring from " + contentsFile.toAbsolutePath().toString() + " ...\n" );
+                            log( "Restoring from " + contentsFile.toAbsolutePath() + " ...\n" );
 
                             // TODO subdirectories as sub-collections?
                             final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                             final Collection collection = DatabaseManager.getCollection(uri, user, password);
-                            final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                            final EXistRestoreService service = collection.getService(EXistRestoreService.class);
                             service.restore(contentsFile.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                         }
                     }
 
                 } else if( zipFile != null ) {
-                    log( "Restoring from " + zipFile.toAbsolutePath().toString(), Project.MSG_INFO );
+                    log( "Restoring from " + zipFile.toAbsolutePath(), Project.MSG_INFO );
 
                     if( !Files.exists(zipFile)) {
-                        final String msg = "File not found: " + zipFile.toAbsolutePath().toString();
+                        final String msg = "File not found: " + zipFile.toAbsolutePath();
 
                         if( failonerror ) {
                             throw( new BuildException( msg ) );
@@ -136,7 +136,7 @@ public class RestoreTask extends AbstractXMLDBTask
                     } else {
                         final RestoreServiceTaskListener listener = new ConsoleRestoreServiceTaskListener();
                         final Collection collection = DatabaseManager.getCollection(uri, user, password);
-                        final EXistRestoreService service = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+                        final EXistRestoreService service = collection.getService(EXistRestoreService.class);
                         service.restore(zipFile.normalize().toAbsolutePath().toString(), restorePassword, listener, overwriteApps);
                     }
                 }
@@ -183,5 +183,10 @@ public class RestoreTask extends AbstractXMLDBTask
     public void setRestorePassword(final String pass )
     {
         this.restorePassword = pass;
+    }
+
+    public void setOverwriteApps(final boolean overwriteApps)
+    {
+        this.overwriteApps = overwriteApps;
     }
 }

@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.XmlRpcException;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -36,7 +34,7 @@ import org.xmldb.api.base.XMLDBException;
 import javax.annotation.Nullable;
 
 
-public class RemoteCollectionManagementService extends AbstractRemote implements EXistCollectionManagementService {
+public class RemoteCollectionManagementService extends AbstractRemoteService implements EXistCollectionManagementService {
 
     public RemoteCollectionManagementService(final RemoteCollection parent) {
         super(parent);
@@ -107,12 +105,6 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         return createCollection(path);
     }
 
-    @Override
-    public String getProperty(final String property) {
-        return null;
-    }
-
-
     /**
      * @deprecated {@link org.exist.xmldb.RemoteCollectionManagementService#removeCollection(org.exist.xmldb.XmldbURI)}
      */
@@ -132,15 +124,6 @@ public class RemoteCollectionManagementService extends AbstractRemote implements
         final List<Object> params = new ArrayList<>();
         params.add(collName.toString());
         collection.execute("removeCollection", params);
-    }
-
-    @Override
-    public void setCollection(final Collection parent) throws XMLDBException {
-        this.collection = (RemoteCollection) parent;
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) {
     }
 
     /**

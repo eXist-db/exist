@@ -60,14 +60,14 @@ public class FileTaskTest extends AbstractTaskTest {
     @Before
     public void fileSetup() throws XMLDBException {
         final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
-        final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.RESOURCE_TYPE);
+        final Resource res = col.createResource(TEST_RESOURCE_NAME, XMLResource.class);
         res.setContent("<test/>");
         col.storeResource(res);
     }
 
     @After
     public void fileCleanup() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
     }
 

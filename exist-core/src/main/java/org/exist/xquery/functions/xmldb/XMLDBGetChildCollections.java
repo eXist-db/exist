@@ -68,8 +68,7 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 		
 		final ValueSequence result = new ValueSequence();
 		try {
-			final String[] collections = collection.listChildCollections();
-			for (String s : collections) {
+			for (String s : collection.listChildCollections()) {
 				result.add(new StringValue(this, s));
 			}
 			return result;

@@ -40,10 +40,25 @@ public abstract class AbstractLocalService extends AbstractLocal implements Serv
     }
 
     @Override
-    public void setCollection(final Collection collection) throws XMLDBException {
+    public final void setCollection(final Collection collection) throws XMLDBException {
         if(!(collection instanceof LocalCollection)) {
             throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "incompatible collection type: " + collection.getClass().getName());
         }
         this.collection = (LocalCollection) collection;
+    }
+
+    @Override
+    public final String getProperty(final String name) throws XMLDBException {
+        return getProperty(name, null);
+    }
+
+    @Override
+    public String getProperty(String name, String defaultValue) throws XMLDBException {
+        return defaultValue;
+    }
+
+    @Override
+    public void setProperty(final String name, final String value) throws XMLDBException {
+        // no action if needed implement this method in subclasses
     }
 }

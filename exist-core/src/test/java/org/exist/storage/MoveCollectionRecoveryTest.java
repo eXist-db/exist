@@ -53,6 +53,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
@@ -227,7 +228,7 @@ public class MoveCollectionRecoveryTest {
     private void xmldbStore() throws XMLDBException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final EXistCollectionManagementService rootMgr = (EXistCollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService rootMgr = root.getService(EXistCollectionManagementService.class);
         assertNotNull(rootMgr);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -238,7 +239,7 @@ public class MoveCollectionRecoveryTest {
 
         org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
         if (test2 == null) {
-            EXistCollectionManagementService testMgr = (EXistCollectionManagementService) test.getService("CollectionManagementService", "1.0");
+            EXistCollectionManagementService testMgr = test.getService(EXistCollectionManagementService.class);
             test2 = testMgr.createCollection("test2");
         }
         assertNotNull(test2);
@@ -248,7 +249,7 @@ public class MoveCollectionRecoveryTest {
             assertNotNull(is);
             sample = InputStreamUtil.readString(is, UTF_8);
         }
-        final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+        final Resource res = test2.createResource("test_xmldb.xml", XMLResource.class);
         assertNotNull(res);
         res.setContent(sample);
         test2.storeResource(res);

@@ -109,7 +109,7 @@ public class ComplexUpdateAction extends Action {
 	}
 
 	private void query(final Collection col, final int repeat) throws XMLDBException {
-		final XPathQueryService service = (XPathQueryService)col.getService("XPathQueryService", "1.0");
+		final XPathQueryService service = col.getService(XPathQueryService.class);
 		ResourceSet r = service.query("//USER-SESSION-DATA");
 		assertEquals(1, r.getSize());
 		for(long i = 0; i < r.getSize(); i++) {
@@ -121,8 +121,7 @@ public class ComplexUpdateAction extends Action {
 	}
 
 	private void update(final Collection col, final String xupdate) throws XMLDBException {
-		final XUpdateQueryService service = (XUpdateQueryService)
-		col.getService("XUpdateQueryService", "1.0");
+		final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 		long mods = service.updateResource(resourceName, xupdate);
 	}
 }

@@ -73,7 +73,7 @@ public class DeclareVariableTest {
     @Before
     public void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
@@ -81,7 +81,7 @@ public class DeclareVariableTest {
     @After
     public void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }
@@ -99,7 +99,7 @@ public class DeclareVariableTest {
     }
 
     private Resource executeQueryWithExternalVariable(final Object value) throws XMLDBException {
-        final XQueryService xqueryService = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        final XQueryService xqueryService = testCollection.getService(XQueryService.class);
         xqueryService.declareVariable("x", value);
 
         final String query =

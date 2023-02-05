@@ -125,7 +125,7 @@ public class DocumentUpdateTest {
                 "(: without the output on the next line, it works :) " +
                 "xs:string($link) " +
             ")";
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         ResourceSet r = service.query(query);
         assertEquals(r.getSize(), 2);
         assertEquals(r.getResource(0).getContent().toString(), "123");
@@ -152,7 +152,7 @@ public class DocumentUpdateTest {
     }
     
     private String execQuery(String query) throws XMLDBException {
-    	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+    	XQueryService service = testCollection.getService(XQueryService.class);
     	ResourceSet result = service.query(query);
     	assertEquals(result.getSize(), 1);
     	return result.getResource(0).getContent().toString();
@@ -160,20 +160,14 @@ public class DocumentUpdateTest {
 
     @Before
     public void setUp() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
-        CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+        CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
 
     @After
     public void tearDown() throws XMLDBException {
-        CollectionManagementService service =
-            (CollectionManagementService) existEmbeddedServer.getRoot().getService(
-                "CollectionManagementService",
-                "1.0");
+        CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

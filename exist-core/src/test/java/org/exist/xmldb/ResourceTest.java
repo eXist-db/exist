@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.*;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.XMLConstants;
@@ -95,10 +96,10 @@ public class ResourceTest {
     public void readResource() throws XMLDBException, IOException {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
-        final String[] resources = testCollection.listResources();
-        assertEquals(resources.length, testCollection.getResourceCount());
+        final List<String> resources = testCollection.listResources();
+        assertEquals(resources.size(), testCollection.getResourceCount());
 
-        final XMLResource doc = (XMLResource) testCollection.getResource(resources[0]);
+        final XMLResource doc = (XMLResource) testCollection.getResource(resources.get(0));
         assertNotNull(doc);
 
         try(final StringWriter sout = new StringWriter()) {
@@ -185,8 +186,7 @@ public class ResourceTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        XMLResource doc =
-                (XMLResource) testCollection.createResource("test.xml", "XMLResource");
+        XMLResource doc = testCollection.createResource("test.xml", XMLResource.class);
         String xml =
                 "<test><title>Title</title>"
                         + "<para>Paragraph1</para>"
@@ -208,7 +208,7 @@ public class ResourceTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        XMLResource doc = (XMLResource) testCollection.createResource("dom.xml", "XMLResource");
+        XMLResource doc = testCollection.createResource("dom.xml", XMLResource.class);
         String xml =
                 "<test><title>Title</title>"
                         + "<para>Paragraph1</para>"
@@ -226,7 +226,7 @@ public class ResourceTest {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        final XMLResource doc = (XMLResource) testCollection.createResource("source.xml", "XMLResource");
+        final XMLResource doc = testCollection.createResource("source.xml", XMLResource.class);
         final String xml =
                 "<test><title>Title1</title>"
                         + "<para>Paragraph3</para>"
@@ -251,7 +251,7 @@ public class ResourceTest {
         final Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        final BinaryResource doc = (BinaryResource) testCollection.createResource("source.bin", "BinaryResource");
+        final BinaryResource doc = testCollection.createResource("source.bin", BinaryResource.class);
         final byte[] bin = "Stuff And Things".getBytes(UTF_8);
 
         doc.setContent(new StringInputSource(bin));
@@ -272,11 +272,11 @@ public class ResourceTest {
         String resourceName = "QueryTestPerson.xml";
         String id = "test." + System.currentTimeMillis();
         String content = "<?xml version='1.0'?><person id=\"" + id + "\"><name>Jason</name></person>";
-        resource = testCollection.createResource(resourceName, "XMLResource");
+        resource = testCollection.createResource(resourceName, XMLResource.class);
         resource.setContent(content);
         testCollection.storeResource(resource);
 
-        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        XPathQueryService service = testCollection.getService(XPathQueryService.class);
         ResourceSet rs = service.query("/person[@id='" + id + "']");
 
         for (ResourceIterator iterator = rs.getIterator(); iterator.hasMoreResources();) {
@@ -336,7 +336,7 @@ public class ResourceTest {
 
         try {
             collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-            result = (XMLResource) collection.createResource(id, XMLResource.RESOURCE_TYPE);
+            result = collection.createResource(id, XMLResource.class);
             result.setContent(content);
             collection.storeResource(result);
         } finally {
@@ -375,9 +375,9 @@ public class ResourceTest {
     @Before
     public void setUp() throws XMLDBException, IOException {
         //create a test collection
-        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
-        final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        final UserManagementService ums = testCollection.getService(UserManagementService.class);
         // change ownership to guest
         final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
@@ -386,7 +386,7 @@ public class ResourceTest {
         //store sample files as guest
         final Collection testCollectionAsGuest = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
-            final XMLResource res = (XMLResource) testCollectionAsGuest.createResource(sampleName, "XMLResource");
+            final XMLResource res = testCollectionAsGuest.createResource(sampleName, XMLResource.class);
             try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                 res.setContent(InputStreamUtil.readString(is, UTF_8));
             }
@@ -397,7 +397,7 @@ public class ResourceTest {
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);
     }
 

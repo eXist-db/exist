@@ -64,8 +64,7 @@ public class XMLDBGetChildResources extends XMLDBAbstractCollectionManipulator {
 		throws XPathException {
 		final ValueSequence result = new ValueSequence();
 		try {
-			final String[] collections = collection.listResources();
-			for (String s : collections) {
+			for (String s : collection.listResources()) {
 				result.add(new StringValue(this, s));
 			}
 			return result;

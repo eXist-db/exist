@@ -241,22 +241,21 @@ public class XQueryTrigger2Test {
      * and store the XQuery module implementing the trigger under test */
     @Before
     public void setup() throws XMLDBException {
-        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
-                .getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION);
         assertNotNull(testCollection);
 
-        service = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        service = testCollection.getService(CollectionManagementService.class);
         eventsCollection = service.createCollection(EVENTS_COLLECTION);
         assertNotNull(eventsCollection);
         triggeredCollection = service.createCollection(TRIGGERED_COLLECTION);
         assertNotNull(triggeredCollection);
 
-        final XMLResource doc = (XMLResource) eventsCollection.createResource(LOG_NAME, "XMLResource" );
+        final XMLResource doc = (XMLResource) eventsCollection.createResource(LOG_NAME, XMLResource.class);
         doc.setContent(EMPTY_LOG);
         eventsCollection.storeResource(doc);
 
-        final BinaryResource module = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+        final BinaryResource module = testCollection.createResource(MODULE_NAME, BinaryResource.class);
         ((EXistResource)module).setMimeType("application/xquery");
         module.setContent(MODULE.getBytes());
         testCollection.storeResource(module);
@@ -264,8 +263,7 @@ public class XQueryTrigger2Test {
 
     @After
     public void cleanup() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot()
-                .getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
 
         testCollection = null;
@@ -277,18 +275,18 @@ public class XQueryTrigger2Test {
     @Test
     public void documentCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
-        final IndexQueryService idxConf = (IndexQueryService) triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         // this will fire the trigger
-        final XMLResource doc = (XMLResource) triggeredCollection.createResource(DOCUMENT_NAME, "XMLResource");
+        final XMLResource doc = triggeredCollection.createResource(DOCUMENT_NAME, XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         triggeredCollection.storeResource(doc);
 
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService service = (XPathQueryService) eventsCollection.getService("XPathQueryService", "1.0");
+        final XPathQueryService service = eventsCollection.getService(XPathQueryService.class);
 
         ResourceSet result = service.query(BEFORE+CREATE+DOCUMENT+documentURI);
         assertEquals(1, result.getSize());
@@ -303,23 +301,21 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Document Update */
     @Test
     public void documentUpdate() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService)
-            triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        final XMLResource doc = (XMLResource) triggeredCollection.createResource(DOCUMENT_NAME, "XMLResource" );
+        final XMLResource doc = triggeredCollection.createResource(DOCUMENT_NAME, XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         triggeredCollection.storeResource(doc);
 
         //TODO : trigger UPDATE events !
-        final XUpdateQueryService update = (XUpdateQueryService) triggeredCollection.getService("XUpdateQueryService", "1.0");
+        final XUpdateQueryService update = triggeredCollection.getService(XUpdateQueryService.class);
         update.updateResource(DOCUMENT_NAME, DOCUMENT_UPDATE);
 
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService service = (XPathQueryService) eventsCollection
-            .getService("XPathQueryService", "1.0");
+        final XPathQueryService service = eventsCollection.getService(XPathQueryService.class);
         // this is necessary to compare with MODIFIED_DOCUMENT_CONTENT ; TODO better compare with XML diff tool
         service.setProperty(OutputKeys.INDENT, "no");
 
@@ -342,12 +338,11 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Document Delete */
     @Test
     public void documentDelete() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService)
-            triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        final XMLResource doc = (XMLResource) triggeredCollection.createResource(DOCUMENT_NAME, "XMLResource" );
-            doc.setContent(DOCUMENT_CONTENT);
+        final XMLResource doc = triggeredCollection.createResource(DOCUMENT_NAME, XMLResource.class);
+        doc.setContent(DOCUMENT_CONTENT);
         triggeredCollection.storeResource(doc);
 
         triggeredCollection.removeResource(triggeredCollection.getResource(DOCUMENT_NAME));
@@ -355,8 +350,7 @@ public class XQueryTrigger2Test {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService service = (XPathQueryService) eventsCollection
-            .getService("XPathQueryService", "1.0");
+        final XPathQueryService service = eventsCollection.getService(XPathQueryService.class);
 
         service.setProperty(OutputKeys.INDENT, "no");
 
@@ -380,12 +374,11 @@ public class XQueryTrigger2Test {
     @Test
     public void documentBinaryCreate() throws XMLDBException {
         // configure the Collection with the trigger under test
-        final IndexQueryService idxConf = (IndexQueryService)
-            triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         // this will fire the trigger
-        final Resource res = triggeredCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+        final Resource res = triggeredCollection.createResource(BINARY_DOCUMENT_NAME, BinaryResource.class);
         final byte[] content = Base64.decodeBase64(BINARY_DOCUMENT_CONTENT);
         res.setContent(content);
         triggeredCollection.storeResource(res);
@@ -393,7 +386,7 @@ public class XQueryTrigger2Test {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService service = (XPathQueryService) eventsCollection.getService("XPathQueryService", "1.0");
+        final XPathQueryService service = eventsCollection.getService(XPathQueryService.class);
         //TODO : understand why it is necessary !
         service.setProperty(OutputKeys.INDENT, "no");
 
@@ -410,12 +403,11 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Binary Document Delete */
     @Test
     public void documentBinaryDelete() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService)
-            triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         // this will fire the trigger
-        final Resource res = triggeredCollection.createResource(BINARY_DOCUMENT_NAME, "BinaryResource");
+        final Resource res = triggeredCollection.createResource(BINARY_DOCUMENT_NAME, BinaryResource.class);
         final byte[] content = Base64.decodeBase64(BINARY_DOCUMENT_CONTENT);
         res.setContent(content);
         triggeredCollection.storeResource(res);
@@ -425,8 +417,7 @@ public class XQueryTrigger2Test {
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService service = (XPathQueryService) eventsCollection
-            .getService("XPathQueryService", "1.0");
+        final XPathQueryService service = eventsCollection.getService(XPathQueryService.class);
 
         service.setProperty(OutputKeys.INDENT, "no");
 
@@ -450,17 +441,17 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCreate() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService) triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        final CollectionManagementService service = (CollectionManagementService) triggeredCollection.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = triggeredCollection.getService(CollectionManagementService.class);
         final Collection collection = service.createCollection("test");
         assertNotNull(collection);
 
         // remove the trigger for the Collection under test
         idxConf.configureCollection(EMPTY_COLLECTION_CONFIG);
 
-        final XPathQueryService query = (XPathQueryService) eventsCollection.getService("XPathQueryService", "1.0");
+        final XPathQueryService query = eventsCollection.getService(XPathQueryService.class);
 
         ResourceSet result = query.query(BEFORE+CREATE+COLLECTION+testCollectionURI);
         assertEquals(1, result.getSize());
@@ -475,13 +466,13 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionCopy() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/triggered/test");
         final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/triggered/test-dst");
 
-        final EXistCollectionManagementService service = (EXistCollectionManagementService) triggeredCollection.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService service = triggeredCollection.getService(EXistCollectionManagementService.class);
         final Collection src = service.createCollection("test");
         assertNotNull(src);
 
@@ -518,13 +509,13 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionMove() throws XMLDBException, URISyntaxException {
-        final IndexQueryService idxConf = (IndexQueryService) triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final XmldbURI srcURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/triggered/test");
         final XmldbURI dstURI = XmldbURI.xmldbUriFor("/db/testXQueryTrigger/triggered/test-dst");
 
-        final EXistCollectionManagementService service = (EXistCollectionManagementService) triggeredCollection.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService service = triggeredCollection.getService(EXistCollectionManagementService.class);
         final Collection src = service.createCollection("test");
         assertNotNull(src);
 
@@ -561,10 +552,10 @@ public class XQueryTrigger2Test {
     /** test a trigger fired by a Collection manipulations */
     @Test
     public void collectionDelete() throws XMLDBException {
-        final IndexQueryService idxConf = (IndexQueryService) triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        final CollectionManagementService service = (CollectionManagementService) triggeredCollection.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = triggeredCollection.getService(CollectionManagementService.class);
         final Collection collection = service.createCollection("test");
         assertNotNull(collection);
 
@@ -591,13 +582,13 @@ public class XQueryTrigger2Test {
 
     @Test
     public void storeDocumentInvalidTriggerForPrepare() throws XMLDBException {
-        final BinaryResource invalidModule = (BinaryResource) testCollection.createResource(MODULE_NAME, "BinaryResource" );
+        final BinaryResource invalidModule = testCollection.createResource(MODULE_NAME, BinaryResource.class);
         ((EXistResource)invalidModule).setMimeType("application/xquery");
         invalidModule.setContent(INVALID_MODULE.getBytes());
         testCollection.storeResource(invalidModule);
 
         // configure the Collection with the trigger under test
-        final IndexQueryService idxConf = (IndexQueryService)triggeredCollection.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = triggeredCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
         final int max_store_attempts = 10;
@@ -605,7 +596,7 @@ public class XQueryTrigger2Test {
         for(int i = 0; i < max_store_attempts; i++) {
             try {
                 // this will fire the trigger
-                final XMLResource doc = (XMLResource) triggeredCollection.createResource(DOCUMENT_NAME, "XMLResource");
+                final XMLResource doc = triggeredCollection.createResource(DOCUMENT_NAME, XMLResource.class);
                 doc.setContent(DOCUMENT_CONTENT);
                 triggeredCollection.storeResource(doc);
             } catch(XMLDBException xdbe) {

@@ -74,7 +74,7 @@ public class ProtectedModeTest {
     @Test
     public void queryCollection() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
+        final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         try {
             service.beginProtected();
             final ResourceSet result = service.query("collection('/db/protected/test5')//book");
@@ -87,7 +87,7 @@ public class ProtectedModeTest {
     @Test
     public void queryRoot() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
+        final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         try {
             service.beginProtected();
             final ResourceSet result = service.query("//book");
@@ -100,7 +100,7 @@ public class ProtectedModeTest {
     @Test
     public void queryDocs() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection("xmldb:exist:///db/protected", "admin", "");
-        final EXistXPathQueryService service = (EXistXPathQueryService) root.getService("XQueryService", "1.0");
+        final EXistXPathQueryService service = root.getService(EXistXPathQueryService.class);
         final Random random = new Random();
         for (int i = 0; i < COLLECTION_COUNT; i++) {
             String docURI = "doc('/db/protected/test" + i + "/xdb" + random.nextInt(DOCUMENT_COUNT) + ".xml')";
@@ -116,17 +116,17 @@ public class ProtectedModeTest {
 
     @BeforeClass
     public static void setupDb() throws XMLDBException, SAXException {
-        CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection collection = mgmt.createCollection("protected");
 
-        mgmt = (CollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+        mgmt = collection.getService(CollectionManagementService.class);
 
         final TestDataGenerator generator = new TestDataGenerator("xdb", DOCUMENT_COUNT);
         for (int i = 0; i < COLLECTION_COUNT; i++) {
             Collection currentColl = mgmt.createCollection("test" + i);
             final Path[] files = generator.generate(currentColl, generateXQ);
             for (int j = 0; j < files.length; j++) {
-                final XMLResource resource = (XMLResource) currentColl.createResource("xdb" + j + ".xml", "XMLResource");
+                final XMLResource resource = currentColl.createResource("xdb" + j + ".xml", XMLResource.class);
                 resource.setContent(files[j].toFile());
                 currentColl.storeResource(resource);
             }
@@ -135,7 +135,7 @@ public class ProtectedModeTest {
 
     @AfterClass
     public static void cleanupDb() throws XMLDBException {
-        final CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmgr = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cmgr.removeCollection("protected");
     }
 }

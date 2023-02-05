@@ -256,7 +256,7 @@ public class SeqOpTest {
 	}
 	
 	private XMLResource createDocument(String name, String content) throws XMLDBException {
-		XMLResource res = (XMLResource) c.createResource(name, XMLResource.RESOURCE_TYPE);
+		XMLResource res = c.createResource(name, XMLResource.class);
 		res.setContent(content);
 		c.storeResource(res);
 		return res;
@@ -268,21 +268,21 @@ public class SeqOpTest {
 	@BeforeClass
 	public static void setupTestCollection() throws XMLDBException {
 		final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-		final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);
 		c = root.getChildCollection("test");
 		if (c != null) {
 			rootcms.removeCollection("test");
 		}
 		c = rootcms.createCollection("test");
 		assertNotNull(c);
-		query = (XPathQueryService) c.getService("XPathQueryService", "1.0");
+		query = c.getService(XPathQueryService.class);
 	}
 
 	@AfterClass
 	public static void tearDown() throws XMLDBException {
 		if (c != null) {
 			final Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-			final CollectionManagementService rootcms = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+			final CollectionManagementService rootcms = root.getService(CollectionManagementService.class);
 			rootcms.removeCollection("test");
 			query = null;
 			c = null;

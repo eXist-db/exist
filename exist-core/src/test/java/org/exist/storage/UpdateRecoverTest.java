@@ -53,6 +53,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XUpdateQueryService;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -300,8 +301,7 @@ public class UpdateRecoverTest {
     private void xmldbStore(final BrokerPool pool) throws IllegalAccessException, DatabaseConfigurationException, InstantiationException, ClassNotFoundException, XMLDBException, EXistException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
         assertNotNull(mgr);
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
         if(test == null) {
@@ -313,13 +313,12 @@ public class UpdateRecoverTest {
             test2 = mgr.createCollection(TestConstants.TEST_COLLECTION_URI2.toString());
         }
         assertNotNull(test2);
-        final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+        final Resource res = test2.createResource("test_xmldb.xml", XMLResource.class);
         assertNotNull(res);
         res.setContent(TEST_XML);
         test2.storeResource(res);
 
-        final XUpdateQueryService service = (XUpdateQueryService)
-            test2.getService("XUpdateQueryService", "1.0");
+        final XUpdateQueryService service = test2.getService(XUpdateQueryService.class);
         assertNotNull(service);
 
         // insert some nodes
@@ -431,8 +430,7 @@ public class UpdateRecoverTest {
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-            root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
         assertNotNull(mgr);
         mgr.removeCollection("test");
     }

@@ -52,7 +52,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
 
 import org.junit.runners.Parameterized.Parameters;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -150,7 +149,7 @@ public class XUpdateTest {
     private void addDocument(final String sourceFile) throws XMLDBException, IOException, URISyntaxException {
         final Path f = getRelFile(SOURCE_DIR_NAME + "/" + sourceFile);
 
-        final XMLResource document = (XMLResource) col.createResource(XUPDATE_FILE, "XMLResource");
+        final XMLResource document = col.createResource(XUPDATE_FILE, XMLResource.class);
         document.setContent(f);
         col.storeResource(document);
     }
@@ -178,7 +177,7 @@ public class XUpdateTest {
      * @return resultant XML document as a String
      */
     private String updateDocument(final Path updateFile) throws XMLDBException, IOException, ParserConfigurationException, SAXException {
-        final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
+        final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 
         // Read XUpdate-Modifcations
         final String xUpdateModifications = new String(Files.readAllBytes(updateFile), UTF_8);
@@ -194,9 +193,9 @@ public class XUpdateTest {
         col = existXmldbEmbeddedServer.getRoot().getChildCollection(XUPDATE_COLLECTION);
 
         if (col == null) {
-            final CollectionManagementService collectionManagementService = (CollectionManagementService) existXmldbEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+            final CollectionManagementService collectionManagementService = existXmldbEmbeddedServer.getRoot().getService(CollectionManagementService.class);
             col = collectionManagementService.createCollection(XUPDATE_COLLECTION);
-            final UserManagementService ums = (UserManagementService) col.getService("UserManagementService", "1.0");
+            final UserManagementService ums = col.getService(UserManagementService.class);
             // change ownership to guest
             final Account guest = ums.getAccount("guest");
             ums.chown(guest, guest.getPrimaryGroup());

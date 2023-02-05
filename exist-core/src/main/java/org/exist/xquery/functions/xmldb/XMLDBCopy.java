@@ -112,7 +112,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
                     logger.error("Resource {} not found", doc);
                     throw new XPathException(this, "Resource " + doc + " not found");
                 }
-                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
                 final DBBroker.PreserveType preserve;
                 if (getArgumentCount() == 5) {
                     final boolean preserveArg = args[4].itemAt(0).toJavaObject(boolean.class);
@@ -152,7 +152,7 @@ public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
         } else {
             final XmldbURI destination = new AnyURIValue(this, args[1].itemAt(0).getStringValue()).toXmldbURI();
             try {
-                final EXistCollectionManagementService service = (EXistCollectionManagementService) collection.getService("CollectionManagementService", "1.0");
+                final EXistCollectionManagementService service = collection.getService(EXistCollectionManagementService.class);
 
                 final DBBroker.PreserveType preserve;
                 if (getArgumentCount() == 3) {

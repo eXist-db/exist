@@ -30,6 +30,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -59,6 +60,15 @@ public class DateTimeValue extends AbstractDateTimeValue {
 
     public DateTimeValue(final Expression expression, XMLGregorianCalendar calendar) {
         super(expression, fillCalendar(cloneXMLGregorianCalendar(calendar)));
+        normalize();
+    }
+
+    public DateTimeValue(final Instant instant) {
+        this(null, instant);
+    }
+
+    public DateTimeValue(final Expression expression, final Instant instant) {
+        super(expression, dateToXMLGregorianCalendar(new Date(instant.toEpochMilli())));
         normalize();
     }
 
@@ -178,7 +188,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
             case Type.DAY_TIME_DURATION:
                 return ((DayTimeDurationValue) other).negate().plus(this);
             default:
-                throw new XPathException(getExpression(), 
+                throw new XPathException(getExpression(),
                         "Operand to minus should be of type xs:dateTime, xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }

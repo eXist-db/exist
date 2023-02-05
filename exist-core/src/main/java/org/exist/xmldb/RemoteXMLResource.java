@@ -21,26 +21,36 @@
  */
 package org.exist.xmldb;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
-
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.util.ExistSAXParserFactory;
-import org.exist.util.Leasable;
 import org.exist.util.MimeType;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.io.VirtualTempPath;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.value.StringValue;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
-
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -51,27 +61,6 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
-
-import java.util.Optional;
 
 public class RemoteXMLResource
         extends AbstractRemoteResource
@@ -167,11 +156,6 @@ public class RemoteXMLResource
     @Override
     public String getId() throws XMLDBException {
         return id.map(x -> x.equals("1") ? getDocumentId() : getDocumentId() + '_' + id).orElse(getDocumentId());
-    }
-
-    @Override
-    public String getResourceType() throws XMLDBException {
-        return XMLResource.RESOURCE_TYPE;
     }
 
     @Override
@@ -407,7 +391,7 @@ public class RemoteXMLResource
 
     @Override
     public DocumentType getDocType() throws XMLDBException {
-        final List params = new ArrayList(1);
+        final List<String> params = new ArrayList<>(1);
         params.add(path.toString());
 
         final Object[] request = (Object[]) collection.execute("getDocType", params);
@@ -423,7 +407,7 @@ public class RemoteXMLResource
     @Override
     public void setDocType(final DocumentType doctype) throws XMLDBException {
         if (doctype != null) {
-            final List params = new ArrayList(4);
+            final List<String> params = new ArrayList<>(4);
             params.add(path.toString());
             params.add(doctype.getName());
             params.add(doctype.getPublicId() == null ? "" : doctype.getPublicId());
@@ -437,6 +421,11 @@ public class RemoteXMLResource
     public void getContentIntoAStream(final OutputStream os)
             throws XMLDBException {
         getContentIntoAStreamInternal(os, content, idIsPresent(), handle, pos);
+    }
+
+    @Override
+    public void getContentAsStream(OutputStream os) throws XMLDBException {
+       getContentIntoAStream(os);
     }
 
     @Override

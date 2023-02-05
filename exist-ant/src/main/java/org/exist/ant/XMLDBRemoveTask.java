@@ -82,7 +82,7 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
 
             } else {
                 log( "Removing collection: " + collection, Project.MSG_INFO );
-                final CollectionManagementService service = (CollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
+                final CollectionManagementService service = base.getService(CollectionManagementService.class);
                 service.removeCollection( collection );
             }
 

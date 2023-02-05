@@ -21,6 +21,9 @@
  */
 package org.exist.util;
 
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XMLResource;
 
 public class MimeType {
     
@@ -79,8 +82,8 @@ public class MimeType {
         return type;
     }
     
-    public String getXMLDBType() {
-        return isXMLType() ? "XMLResource" : "BinaryResource";
+    public Class<? extends Resource> getXMLDBType() {
+        return isXMLType() ? XMLResource.class : BinaryResource.class;
     }
     
     public boolean isXMLType() {

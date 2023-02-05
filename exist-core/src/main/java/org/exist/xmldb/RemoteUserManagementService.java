@@ -21,10 +21,9 @@
  */
 package org.exist.xmldb;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.Account;
@@ -46,7 +45,7 @@ import org.exist.security.internal.aider.ACEAider;
 /**
  * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
-public class RemoteUserManagementService extends AbstractRemote implements EXistUserManagementService {
+public class RemoteUserManagementService extends AbstractRemoteService implements EXistUserManagementService {
 
     public RemoteUserManagementService(final RemoteCollection collection) {
         super(collection);
@@ -291,7 +290,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
     }
 
     @Override
-    public Date getSubCollectionCreationTime(final Collection cParent, final String name) throws XMLDBException {
+    public Instant getSubCollectionCreationTime(final Collection cParent, final String name) throws XMLDBException {
         if (collection == null) {
             throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "collection is null");
         }
@@ -307,7 +306,7 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             creationTime = (Long)collection.execute("getSubCollectionCreationTime", params);
         }
 
-        return new Date(creationTime);
+        return Instant.ofEpochMilli(creationTime);
     }
 
     @Override
@@ -430,17 +429,16 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             final Map result = (Map) collection.execute("listDocumentPermissions", params);
             final Permission perm[] = new Permission[result.size()];
-            final String[] resources = collection.listResources();
-            Object[] t;
-            for (int i = 0; i < resources.length; i++) {
-                t = (Object[]) result.get(resources[i]);
+            int index = 0;
+            for (String resource : collection.listResources()) {
+                Object[] t = (Object[]) result.get(resource);
 
                 final String owner = (String) t[0];
                 final String group = (String) t[1];
                 final int mode = (Integer) t[2];
                 final Stream<ACEAider> aces = extractAces(t[3]);
-
-                perm[i] = getPermission(owner, group, mode, aces);
+                perm[index] = getPermission(owner, group, mode, aces);
+                index++;
             }
             return perm;
         } catch (final PermissionDeniedException pde) {
@@ -455,27 +453,21 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
             params.add(collection.getPath());
             final Map result = (Map) collection.execute("listCollectionPermissions", params);
             final Permission perm[] = new Permission[result.size()];
-            final String collections[] = collection.listChildCollections();
-            Object[] t;
-            for (int i = 0; i < collections.length; i++) {
-                t = (Object[]) result.get(collections[i]);
+            int index = 0;
+            for (String collection : collection.listChildCollections()) {
+                Object[] t = (Object[]) result.get(collection);
 
                 final String owner = (String) t[0];
                 final String group = (String) t[1];
                 final int mode = (Integer) t[2];
                 final Stream<ACEAider> aces = extractAces(t[3]);
 
-                perm[i] = getPermission(owner, group, mode, aces);
+                perm[index] = getPermission(owner, group, mode, aces);
             }
             return perm;
         } catch (final PermissionDeniedException pde) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, pde.getMessage(), pde);
         }
-    }
-
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
     }
 
     @Override
@@ -614,15 +606,6 @@ public class RemoteUserManagementService extends AbstractRemote implements EXist
         final List<Object> params = new ArrayList<>();
         params.add(role.getName());
         collection.execute("removeGroup", params);
-    }
-
-    @Override
-    public void setCollection(final Collection collection) throws XMLDBException {
-        this.collection = (RemoteCollection) collection;
-    }
-
-    @Override
-    public void setProperty(final String property, final String value) throws XMLDBException {
     }
 
     @Override

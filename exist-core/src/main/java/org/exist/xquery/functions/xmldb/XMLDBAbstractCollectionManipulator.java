@@ -184,7 +184,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
     static public final Collection createCollection(final Collection parentColl, final String name) throws XMLDBException {
         final Collection child = parentColl.getChildCollection(name);
         if (child == null) {
-            final CollectionManagementService mgtService = (CollectionManagementService) parentColl.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService mgtService = parentColl.getService(CollectionManagementService.class);
             return mgtService.createCollection(name);
         }
         return child;

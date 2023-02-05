@@ -35,6 +35,7 @@ import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.xmldb.api.base.*;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import java.util.Iterator;
@@ -86,9 +87,9 @@ public class CleanupTest {
     @Before
     public void setup() throws XMLDBException {
         final CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+                existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         collection = service.createCollection("test");
-        final Resource doc = collection.createResource("test-module.xql", "BinaryResource");
+        final Resource doc = collection.createResource("test-module.xql", BinaryResource.class);
         doc.setContent(TEST_MODULE);
         ((EXistResource) doc).setMimeType("application/xquery");
         collection.storeResource(doc);
@@ -97,13 +98,13 @@ public class CleanupTest {
     @After
     public void tearDown() throws XMLDBException {
         final CollectionManagementService service =
-                (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+                existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection("test");
     }
 
     @Test
     public void resetStateOfModuleVars() throws XMLDBException, XPathException {
-        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = collection.getService(EXistXQueryService.class);
         final CompiledExpression compiled = service.compile(TEST_QUERY);
 
         final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);
@@ -154,7 +155,7 @@ public class CleanupTest {
     @Test
     public void preserveExternalVariable() throws XMLDBException, XPathException {
         // see https://github.com/eXist-db/exist/pull/1512 and use of util:eval
-        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_EVAL_TEST);
         final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);
@@ -172,7 +173,7 @@ public class CleanupTest {
 
     @Test
     public void resetStateofInternalModule() throws XMLDBException, XPathException {
-        final EXistXQueryService service = (EXistXQueryService)collection.getService("XQueryService", "1.0");
+        final EXistXQueryService service = collection.getService(EXistXQueryService.class);
 
         final CompiledExpression compiled = service.compile(INTERNAL_MODULE_TEST);
         final Module[] modules = ((PathExpr) compiled).getContext().getModules(MODULE_NS);

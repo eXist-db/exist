@@ -81,24 +81,25 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 public class QueryDialog extends JFrame {
-
     private static final long serialVersionUID = 1L;
 
-    private static final AtomicInteger QUERY_THREAD_ID = new AtomicInteger();
-    private static final AtomicInteger GET_COLLECTIONS_THREAD_ID = new AtomicInteger();
-
     private static final String LOADING_INDICATOR = "Loading...";
+    private static final String WORKING_DIR = "working-dir";
+    private static final String QUERY_DIALOG_ERROR = "QueryDialog.Error";
+    private static final String QUERY_DIALOG_COMPILATION = "QueryDialog.Compilation";
+    private static final String QUERY_DIALOG_EXECUTION = "QueryDialog.Execution";
+
+    private static final AtomicInteger QUERY_THREAD_ID = new AtomicInteger();
 
     private InteractiveClient client;
     private Collection collection;
     private Properties properties;
     private RSyntaxTextArea query;
-    private RTextScrollPane queryScrollPane;
     private JTabbedPane resultTabs;
     private RSyntaxTextArea resultDisplay;
     private RTextScrollPane resultDisplayScrollPane;
@@ -108,7 +109,6 @@ public class QueryDialog extends JFrame {
     private SpinnerNumberModel count;
     private DefaultComboBoxModel<String> history = new DefaultComboBoxModel<>();
     private JTextField statusMessage;
-    private JTextField queryPositionDisplay;
     private JProgressBar progress;
     private JButton submitButton;
     private JButton killButton;
@@ -136,8 +136,7 @@ public class QueryDialog extends JFrame {
             @Override
             public void windowClosing(WindowEvent ev) {
                 try {
-                    final UserManagementService service = (UserManagementService) collection
-                            .getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+                    final UserManagementService service = collection.getService(UserManagementService.class);
                     service.unlockResource(resource);
                 } catch (final XMLDBException e) {
                     e.printStackTrace();
@@ -286,7 +285,7 @@ public class QueryDialog extends JFrame {
         statusMessage.setEditable(false);
         statusMessage.setFocusable(true);
         statusbar.add(statusMessage);
-        queryPositionDisplay = new JTextField(5);
+        JTextField queryPositionDisplay = new JTextField(5);
         queryPositionDisplay.setEditable(false);
         queryPositionDisplay.setFocusable(true);
         statusbar.add(queryPositionDisplay);
@@ -319,8 +318,8 @@ public class QueryDialog extends JFrame {
         JLabel label = new JLabel(Messages.getString("QueryDialog.historylabel"));
         historyBox.add(label);
         final JComboBox<String> historyList = new JComboBox<>(history);
-        for (final String query : client.queryHistory) {
-            addQuery(query);
+        for (final String queryHistory : client.queryHistory) {
+            addQuery(queryHistory);
         }
         historyList.setSelectedIndex(-1);  // by default - we are not using anything from the history!
         historyList.addItemListener(itemEvent -> {
@@ -336,7 +335,7 @@ public class QueryDialog extends JFrame {
         query = new RSyntaxTextArea(14, 80);
         query.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
         query.setCodeFoldingEnabled(true);
-        queryScrollPane = new RTextScrollPane(query);
+        RTextScrollPane queryScrollPane = new RTextScrollPane(query);
         inputVBox.add(queryScrollPane, BorderLayout.CENTER);
 
         final Box optionsPanel = Box.createHorizontalBox();
@@ -367,10 +366,12 @@ public class QueryDialog extends JFrame {
 
                 @Override
                 public void popupMenuWillBecomeInvisible(final PopupMenuEvent e) {
+                    // no action
                 }
 
                 @Override
                 public void popupMenuCanceled(final PopupMenuEvent e) {
+                    // no action
                 }
             });
         } catch (final XMLDBException e) {
@@ -384,11 +385,12 @@ public class QueryDialog extends JFrame {
             if (p == -1) {
                 context = "/db";
             } else {
-                context =  collectionsList.get(p);
+                context = collectionsList.get(p);
             }
             try {
                 collection = client.getCollection(context);
             } catch (final XMLDBException e1) {
+                // ignore error
             }
         });
         optionsPanel.add(collections);
@@ -406,7 +408,7 @@ public class QueryDialog extends JFrame {
     }
 
     private void open() {
-        final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+        final String workDir = properties.getProperty(WORKING_DIR, System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(Paths.get(workDir).toFile());
         chooser.setMultiSelectionEnabled(false);
@@ -415,11 +417,11 @@ public class QueryDialog extends JFrame {
 
         if (chooser.showDialog(this, Messages.getString("QueryDialog.opendialog")) == JFileChooser.APPROVE_OPTION) {
             final Path selectedDir = chooser.getCurrentDirectory().toPath();
-            properties.setProperty("working-dir", selectedDir.toAbsolutePath().toString());
+            properties.setProperty(WORKING_DIR, selectedDir.toAbsolutePath().toString());
             final Path file = chooser.getSelectedFile().toPath();
             if (!Files.isReadable(file)) {
                 JOptionPane.showInternalMessageDialog(this, Messages.getString("QueryDialog.cannotreadmessage") + " " + file.toAbsolutePath(),
-                        Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
+                        Messages.getString(QUERY_DIALOG_ERROR), JOptionPane.ERROR_MESSAGE);
             }
 
             try (final BufferedReader reader = Files.newBufferedReader(file)) {
@@ -441,7 +443,7 @@ public class QueryDialog extends JFrame {
         if (stringToSave == null || stringToSave.isEmpty()) {
             return;
         }
-        final String workDir = properties.getProperty("working-dir", System.getProperty("user.dir"));
+        final String workDir = properties.getProperty(WORKING_DIR, System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setCurrentDirectory(Paths.get(workDir).toFile());
@@ -455,18 +457,18 @@ public class QueryDialog extends JFrame {
         if (chooser.showDialog(this, Messages.getString("QueryDialog.savedialogpre") + " " + fileCategory + " " + Messages.getString("QueryDialog.savedialogpost"))
                 == JFileChooser.APPROVE_OPTION) {
             final Path selectedDir = chooser.getCurrentDirectory().toPath();
-            properties.setProperty("working-dir", selectedDir.toAbsolutePath().toString());
+            properties.setProperty(WORKING_DIR, selectedDir.toAbsolutePath().toString());
             final Path file = chooser.getSelectedFile().toPath();
             if (Files.exists(file) && (!Files.isWritable(file))) {
                 JOptionPane.showMessageDialog(this, Messages.getString("QueryDialog.cannotsavemessagepre") + " " + fileCategory + " " + Messages.getString("QueryDialog.cannotsavemessageinf") + " " + file.toAbsolutePath(),
-                        Messages.getString("QueryDialog.Error"), JOptionPane.ERROR_MESSAGE);
+                        Messages.getString(QUERY_DIALOG_ERROR), JOptionPane.ERROR_MESSAGE);
             }
             if (Files.exists(file) &&
                     JOptionPane.showConfirmDialog(this, Messages.getString("QueryDialog.savedialogconfirm"), "Overwrite?",
                             JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
                 return;
             }
-            try(final Writer writer = Files.newBufferedWriter(file)) {
+            try (final Writer writer = Files.newBufferedWriter(file)) {
                 writer.write(stringToSave);
             } catch (final IOException e) {
                 ClientFrame.showErrorMessage(e.getMessage(), e);
@@ -481,54 +483,51 @@ public class QueryDialog extends JFrame {
         }
         resultDisplay.setText("");
 
-        final QueryRunnable queryRunnable = new QueryRunnable(xpath);
-        final Thread queryThread = client.newClientThread("query-" + QUERY_THREAD_ID.getAndIncrement(), queryRunnable);
+        final QueryRunnable queryTask = new QueryRunnable(xpath);
+        final Thread queryThread = client.newClientThread("query-" + QUERY_THREAD_ID.getAndIncrement(), queryTask);
         queryThread.start();
-        return queryRunnable;
+        return queryTask;
     }
 
 
     private void compileQuery() {
-        final String xpath = (String) query.getText();
+        final String xpath = query.getText();
         if (xpath.length() == 0) {
             return;
         }
         resultDisplay.setText("");
 
-        {
-            statusMessage.setText(Messages.getString("QueryDialog.compilemessage"));
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            final long tResult = 0;
-            long tCompiled = 0;
+        statusMessage.setText(Messages.getString("QueryDialog.compilemessage"));
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        final long tResult = 0;
+        long tCompiled = 0;
 
-            try {
-                final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
-                service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
-                final long t0 = System.currentTimeMillis();
-                final CompiledExpression compiled = service.compile(xpath);
-                final long t1 = System.currentTimeMillis();
-                tCompiled = t1 - t0;
+        try {
+            final EXistXQueryService service = collection.getService(EXistXQueryService.class);
+            service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
+            final long t0 = System.currentTimeMillis();
+            final CompiledExpression compiled = service.compile(xpath);
+            final long t1 = System.currentTimeMillis();
+            tCompiled = t1 - t0;
 
-                // In this way we can see the parsed structure meanwhile the query is
-                final StringWriter writer = new StringWriter();
-                service.dump(compiled, writer);
-                exprDisplay.setText(writer.toString());
-                resultTabs.setSelectedComponent(exprDisplayScrollPane);
+            // In this way we can see the parsed structure meanwhile the query is
+            final StringWriter writer = new StringWriter();
+            service.dump(compiled, writer);
+            exprDisplay.setText(writer.toString());
+            resultTabs.setSelectedComponent(exprDisplayScrollPane);
 
-                statusMessage.setText(Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms");
+            statusMessage.setText(Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms");
 
-            } catch (final Throwable e) {
-                statusMessage.setText(Messages.getString("QueryDialog.Error") + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms, " + Messages.getString("QueryDialog.Execution") + ": " + tResult + "ms");
+        } catch (final Throwable e) {
+            statusMessage.setText(Messages.getString(QUERY_DIALOG_ERROR) + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResult + "ms");
 
-                ClientFrame.showErrorMessageQuery(
-                        Messages.getString("QueryDialog.compilationerrormessage") + ": "
-                                + InteractiveClient.getExceptionMessage(e), e);
-
-            }
-
-            setCursor(Cursor.getDefaultCursor());
+            ClientFrame.showErrorMessageQuery(
+                    Messages.getString("QueryDialog.compilationerrormessage") + ": "
+                            + InteractiveClient.getExceptionMessage(e), e);
 
         }
+
+        setCursor(Cursor.getDefaultCursor());
     }
 
     private class QueryRunnable implements Runnable {
@@ -566,7 +565,7 @@ public class QueryDialog extends JFrame {
             ResourceSet result = null;
             XQueryContext context = null;
             try {
-                final EXistXQueryService service = (EXistXQueryService) collection.getService("XQueryService", "1.0");
+                final EXistXQueryService service = collection.getService(EXistXQueryService.class);
                 service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
                 final long t0 = System.currentTimeMillis();
 
@@ -602,7 +601,6 @@ public class QueryDialog extends JFrame {
                 exprDisplay.setText(writer.toString());
 
                 statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage"));
-                Resource resource;
                 final int howmany = count.getNumber().intValue();
                 progress.setIndeterminate(false);
                 progress.setMinimum(1);
@@ -611,13 +609,12 @@ public class QueryDialog extends JFrame {
                 int select = -1;
                 final StringBuilder contents = new StringBuilder();
                 for (final ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
-                    resource = i.nextResource();
-                    progress.setValue(j);
-                    try {
-                        if (resource.getResourceType() == XMLResource.RESOURCE_TYPE) {
-                            contents.append((String) resource.getContent());
+                    try (Resource processedResource = i.nextResource()) {
+                        progress.setValue(j);
+                        if (XML_RESOURCE.equals(processedResource.getResourceType())) {
+                            contents.append((String) processedResource.getContent());
                         } else {
-                            contents.append(new String((byte[])resource.getContent(), UTF_8));
+                            contents.append(new String((byte[]) processedResource.getContent(), UTF_8));
                         }
                         contents.append("\n");
                     } catch (final XMLDBException e) {
@@ -633,9 +630,9 @@ public class QueryDialog extends JFrame {
                 resultDisplay.setText(contents.toString());
                 resultDisplay.setCaretPosition(0);
                 statusMessage.setText(Messages.getString("QueryDialog.Found") + " " + result.getSize() + " " + Messages.getString("QueryDialog.items") + "." +
-                        " " + Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms, " + Messages.getString("QueryDialog.Execution") + ": " + tResult + "ms");
+                        " " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResult + "ms");
             } catch (final XMLDBException e) {
-                statusMessage.setText(Messages.getString("QueryDialog.Error") + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString("QueryDialog.Compilation") + ": " + tCompiled + "ms, " + Messages.getString("QueryDialog.Execution") + ": " + tResult + "ms");
+                statusMessage.setText(Messages.getString(QUERY_DIALOG_ERROR) + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResult + "ms");
                 progress.setVisible(false);
 
 
@@ -651,6 +648,7 @@ public class QueryDialog extends JFrame {
                     try {
                         result.clear();
                     } catch (final XMLDBException e) {
+                        // ignore error
                     }
             }
             if (client.queryHistory.isEmpty() || !client.queryHistory.getLast().equals(xpath)) {
@@ -710,31 +708,20 @@ public class QueryDialog extends JFrame {
                 return;
             }
 
-            if (!currentCollection.equals(root.getName())) {
-                publish(root.getName());
+            final String rootName = root.getName();
+            if (!currentCollection.equals(rootName)) {
+                publish(rootName);
             }
 
-            final String[] childCollections = root.listChildCollections();
-            Collection child = null;
-            for (int i = 0; i < childCollections.length; i++) {
-                try {
-                    child = root.getChildCollection(childCollections[i]);
+            for (String collectionName : root.listChildCollections()) {
+                try (Collection child = root.getChildCollection(collectionName)) {
+                    getCollections(child, currentCollection);
                 } catch (final XMLDBException xmldbe) {
-                    if (xmldbe.getCause() instanceof PermissionDeniedException) {
-                        continue;
-                    } else {
+                    if (!(xmldbe.getCause() instanceof PermissionDeniedException)) {
                         throw xmldbe;
                     }
                 } catch (Exception npe) {
-                    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
-                    continue;
-                }
-
-                try {
-                    getCollections(child, currentCollection);
-                } catch (Exception ee) {
-                    System.out.println("Corrupted resource/collection skipped: " + child != null ? child.getName() != null ? child.getName() : "unknown" : "unknown");
-                    continue;
+                    System.out.println("Corrupted resource/collection skipped: " + collectionName);
                 }
             }
         }

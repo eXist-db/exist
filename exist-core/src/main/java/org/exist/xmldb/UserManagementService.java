@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.exist.security.Group;
@@ -365,7 +365,7 @@ public interface UserManagementService extends Service {
      */
     Permission getSubResourcePermissions(Collection parent, String name) throws XMLDBException;
 
-    Date getSubCollectionCreationTime(Collection parent, String string) throws XMLDBException;
+    Instant getSubCollectionCreationTime(Collection parent, String string) throws XMLDBException;
 
     /**
      * Get permissions for the specified resource

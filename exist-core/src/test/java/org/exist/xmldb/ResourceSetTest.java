@@ -44,18 +44,18 @@ public class ResourceSetTest {
 
 	@Before
 	public void setUp() throws Exception {
-		final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+		final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 		testCollection = service.createCollection(TEST_COLLECTION);
 		assertNotNull(testCollection);
 
 		try (final InputStream is = SAMPLES.getSample("shakespeare/shakes.xsl")) {
-			final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.RESOURCE_TYPE);
+			final Resource shakesRes = testCollection.createResource("shakes.xsl", XMLResource.class);
 			shakesRes.setContent(InputStreamUtil.readAll(is));
 			testCollection.storeResource(shakesRes);
 		}
 
 		try (final InputStream is = SAMPLES.getHamletSample()) {
-			final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.RESOURCE_TYPE);
+			final Resource hamletRes = testCollection.createResource("hamlet.xml", XMLResource.class);
 			hamletRes.setContent(InputStreamUtil.readAll(is));
 			testCollection.storeResource(hamletRes);
 		}
@@ -64,7 +64,7 @@ public class ResourceSetTest {
 	@After
 	public void tearDown() throws XMLDBException {
 		//delete the test collection
-		final CollectionManagementService service = (CollectionManagementService)testCollection.getParentCollection().getService("CollectionManagementService", "1.0");
+		final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);
 		service.removeCollection(TEST_COLLECTION);
 	}
 
@@ -76,8 +76,7 @@ public class ResourceSetTest {
 		final String query2 = xpathPrefix + "[position() <= 10]";
 		final int expected = 87;
 
-        final XPathQueryService service = (XPathQueryService)
-            testCollection.getService("XPathQueryService", "1.0");
+        final XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
         final ResourceSet result1 = service.query(query1);
         final ResourceSet result2 = service.query(query2);
@@ -92,8 +91,7 @@ public class ResourceSetTest {
 		final String query2 = xpathPrefix + "[fn:contains(. , 'dirge')]";		// count=1, intersection=1
 		final int expected = 1;
 
-		final XPathQueryService service = (XPathQueryService)
-				testCollection.getService("XPathQueryService", "1.0");
+		final XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
 		final ResourceSet result1 = service.query(query1);
 		final ResourceSet result2 = service.query(query2);

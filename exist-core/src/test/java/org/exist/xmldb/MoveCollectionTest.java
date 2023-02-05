@@ -80,30 +80,30 @@ public class MoveCollectionTest {
          * /db/testMove/0/X
          * /db/testMove/0/X/Y
          */
-        EXistCollectionManagementService service = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService service = testCollection.getService(EXistCollectionManagementService.class);
         final Collection zeroCollection = service.createCollection(ZERO_COLLECTION_NAME);
         assertNotNull(zeroCollection);
 
         final Collection oneCollection = service.createCollection(ONE_COLLECTION_NAME);
         assertNotNull(oneCollection);
 
-        service = (EXistCollectionManagementService) zeroCollection.getService("CollectionManagementService", "1.0");
+        service = zeroCollection.getService(EXistCollectionManagementService.class);
         final Collection xCollection = service.createCollection(X_COLLECTION_NAME);
         assertNotNull(xCollection);
 
-        service = (EXistCollectionManagementService) xCollection.getService("CollectionManagementService", "1.0");
+        service = xCollection.getService(EXistCollectionManagementService.class);
         final Collection yCollection = service.createCollection(Y_COLLECTION_NAME);
         assertNotNull(yCollection);
 
         // move the collection /db/testMove/0/X to /db/testMove/1
-        service = (EXistCollectionManagementService) zeroCollection.getService("CollectionManagementService", "1.0");
+        service = zeroCollection.getService(EXistCollectionManagementService.class);
         service.move(XmldbURI.create(X_COLLECTION_NAME), XmldbURI.create(oneCollection.getName()), null);
     }
 
     @Before
     public void setUp() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
     }
@@ -111,7 +111,7 @@ public class MoveCollectionTest {
     @After
     public void tearDown() throws XMLDBException {
         final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

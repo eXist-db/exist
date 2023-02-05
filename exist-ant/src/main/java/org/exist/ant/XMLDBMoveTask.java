@@ -73,7 +73,7 @@ public class XMLDBMoveTask extends AbstractXMLDBTask
             }
 
             log( "Create collection management service for collection " + base.getName(), Project.MSG_DEBUG );
-            final EXistCollectionManagementService service = (EXistCollectionManagementService)base.getService( "CollectionManagementService", "1.0" );
+            final EXistCollectionManagementService service = base.getService(EXistCollectionManagementService.class);
 
             if( resource != null ) {
                 log( "Moving resource: " + resource, Project.MSG_INFO );

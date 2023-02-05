@@ -64,7 +64,7 @@ public class XMLDBXUpdateTask extends AbstractXMLDBTask
                 }
 
             } else {
-                final XUpdateQueryService service = (XUpdateQueryService)base.getService( "XUpdateQueryService", "1.0" );
+                final XUpdateQueryService service = base.getService( XUpdateQueryService.class);
 
                 if( resource != null ) {
                     log( "Updating resource: " + resource, Project.MSG_INFO );

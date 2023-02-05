@@ -158,17 +158,17 @@ public class CollectionConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
 
         final Collection testCollection = service.createCollection(TEST_COLLECTION);
-        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        UserManagementService ums = testCollection.getService(UserManagementService.class);
         // change ownership to guest
         final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
 
         final Collection testConfCollection = service.createCollection(CONF_COLL_URI.toString());
-        ums = (UserManagementService) testConfCollection.getService("UserManagementService", "1.0");
+        ums = testConfCollection.getService(UserManagementService.class);
         // change ownership to guest
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod("rwxr-xr-x");
@@ -178,7 +178,7 @@ public class CollectionConfigurationTest {
 
     @After
     public void tearDown() throws XMLDBException {
-        final CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
         service.removeCollection(CONF_COLL_URI.toString()); //Removes the collection config collection *manually*
     }
@@ -188,15 +188,14 @@ public class CollectionConfigurationTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         //Configure collection automatically
-        IndexQueryService idxConf = (IndexQueryService)testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+        XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
         doc.setContent(DOCUMENT_CONTENT); testCollection.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService)
-        testCollection.getService("XPathQueryService", "1.0");
+        XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
         //3 numeric values
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -218,18 +217,17 @@ public class CollectionConfigurationTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
         // Add document....
-        XMLResource doc = (XMLResource) testCollection.createResource(
-                TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         testCollection.storeResource(doc);
 
         // ... then configure collection automatically
-        IndexQueryService idxConf = (IndexQueryService) testCollection
-                .getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection
+                .getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
-        XPathQueryService service = (XPathQueryService) testCollection
-                .getService("XPathQueryService", "1.0");
+        XPathQueryService service = testCollection
+                .getService(XPathQueryService.class);
 
         // No numeric values because we have no index
         ResourceSet result = service.query("util:index-key-occurrences( /test/a, 1 ) ");
@@ -271,12 +269,11 @@ public class CollectionConfigurationTest {
         storeConfiguration(CONF_COLL_URI, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-        testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+        XMLResource doc =
+        testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
         doc.setContent(DOCUMENT_CONTENT); testCollection.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService)
-        testCollection.getService("XPathQueryService", "1.0");
+        XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
         //3 numeric values
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -301,16 +298,15 @@ public class CollectionConfigurationTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
    
        // Add document....
-       XMLResource doc = (XMLResource) testCollection.createResource(
-               TestConstants.TEST_XML_URI.toString(), "XMLResource");
+       XMLResource doc =  testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
        doc.setContent(DOCUMENT_CONTENT);
        testCollection.storeResource(doc);
 
        // ... then configure collection *manually*
        storeConfiguration(CONF_COLL_URI, CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI, CONFIG1);
 
-       XPathQueryService service = (XPathQueryService) testCollection
-               .getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection
+               .getService(XPathQueryService.class);
 
        // No numeric values because we have no index
        ResourceSet result = service.query("util:index-key-occurrences( /test/a, 1 ) ");
@@ -327,8 +323,7 @@ public class CollectionConfigurationTest {
        assertEquals(0, result.getSize());
 
        // ...let's activate the index
-       IndexQueryService idxConf = (IndexQueryService)
-           testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
        idxConf.reindexCollection();
 
        //3 numeric values
@@ -355,23 +350,19 @@ public class CollectionConfigurationTest {
        storeConfiguration(CONF_COLL_URI, configurationFileName, CONFIG1);
 
        // ... then configure collection automatically
-       IndexQueryService idxConf = (IndexQueryService) testCollection
-               .getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection
+               .getService(IndexQueryService.class);
        idxConf.configureCollection(CONFIG1);
 
        // Add document....
-       XMLResource doc = (XMLResource) testCollection.createResource(
-               TestConstants.TEST_XML_URI.toString(), "XMLResource");
+       XMLResource doc =  testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
        doc.setContent(DOCUMENT_CONTENT);
        testCollection.storeResource(doc);
 
-       XPathQueryService service = (XPathQueryService) testCollection
-               .getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        //our config file
-       ResourceSet result = service.query("xmldb:get-child-resources('" +
-               CONF_COLL_URI +
-               "')");
+       ResourceSet result = service.query("xmldb:get-child-resources('" + CONF_COLL_URI + "')");
        assertEquals(configurationFileName.toString(), result.getResource(0).getContent());
 
        //3 numeric values
@@ -394,8 +385,7 @@ public class CollectionConfigurationTest {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
        // Add document....
-       XMLResource doc = (XMLResource) testCollection.createResource(
-               TestConstants.TEST_XML_URI.toString(), "XMLResource");
+       XMLResource doc =  testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
        doc.setContent(DOCUMENT_CONTENT);
        testCollection.storeResource(doc);
 
@@ -404,12 +394,10 @@ public class CollectionConfigurationTest {
        storeConfiguration(CONF_COLL_URI, configurationFileName, CONFIG1);
 
        //... then configure collection automatically
-       IndexQueryService idxConf = (IndexQueryService)
-       testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
        idxConf.configureCollection(CONFIG1);
 
-       XPathQueryService service = (XPathQueryService) testCollection
-       .getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        //our config file
        ResourceSet result = service.query("xmldb:get-child-resources('" +
@@ -460,24 +448,22 @@ public class CollectionConfigurationTest {
 
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
         //Configure collection automatically
         // sub2 should inherit its index configuration from the top collection
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService)
-                sub2.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub2.getService(XPathQueryService.class);
 
         //3 numeric values
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -499,27 +485,25 @@ public class CollectionConfigurationTest {
     public void collectionConfigurationService8() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
         //Configure collection automatically
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         // Overwrite main configuration with an empty configuration in the subcollection
-        idxConf = (IndexQueryService) sub2.getService("IndexQueryService", "1.0");
+        idxConf = sub2.getService(IndexQueryService.class);
         idxConf.configureCollection(EMPTY_CONFIG);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService)
-                sub2.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub2.getService(XPathQueryService.class);
 
         // index should be empty
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -537,31 +521,31 @@ public class CollectionConfigurationTest {
     @Test
     public void collectionConfigurationService9() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub1 = cms.createCollection(COLLECTION_SUB1.toString());
-        UserManagementService ums = (UserManagementService) sub1.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub1.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         // Overwrite main configuration with an empty configuration in the subcollection
-        idxConf = (IndexQueryService) sub1.getService("IndexQueryService", "1.0");
+        idxConf = sub1.getService(IndexQueryService.class);
         idxConf.configureCollection(EMPTY_CONFIG);
 
         // Overwrite sub1 configuration in sub2
-        idxConf = (IndexQueryService) sub2.getService("IndexQueryService", "1.0");
+        idxConf = sub2.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG3);
 
         //... then store document into sub1
-        XMLResource doc = (XMLResource)sub1.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = sub1.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub1.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService)sub1.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub1.getService(XPathQueryService.class);
 
         // sub1 has empty configuration, so index should be empty as well
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -576,11 +560,11 @@ public class CollectionConfigurationTest {
 
         // remove document in sub1 and restore it in sub2
         sub1.removeResource(doc);
-        doc = (XMLResource)sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        doc = sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+        service = sub2.getService(XPathQueryService.class);
 
         // sub2 only has an index on /test/a, but not on /test/b
 
@@ -605,21 +589,21 @@ public class CollectionConfigurationTest {
 
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc =
+                sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub2.getService(XPathQueryService.class);
 
         //3 numeric values
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -640,7 +624,7 @@ public class CollectionConfigurationTest {
         Resource confDoc = confCol.getResource(DEFAULT_COLLECTION_CONFIG_FILE);
         assertNotNull(confDoc);
         confCol.removeResource(confDoc);
-//            cms = (CollectionManagementService) confCol.getService("CollectionManagementService", "1.0");
+//            cms = confCol.getService(CollectionManagementService.class);
 //            cms.removeCollection(".");
 
         idxConf.reindexCollection();
@@ -662,21 +646,20 @@ public class CollectionConfigurationTest {
     public void collectionConfigurationService11() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub2.getService(XPathQueryService.class);
 
         //3 numeric values
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -716,21 +699,20 @@ public class CollectionConfigurationTest {
     public void invalidConfiguration1() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
-        CollectionManagementService cms = (CollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
         Collection sub2 = cms.createCollection(COLLECTION_SUB2.toString());
-        UserManagementService ums = (UserManagementService) sub2.getService("UserManagementService", "1.0");
+        UserManagementService ums = sub2.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(INVALID_CONFIG1);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                sub2.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource");
+        XMLResource doc = sub2.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class);
         doc.setContent(DOCUMENT_CONTENT);
         sub2.storeResource(doc);
 
-        XPathQueryService service = (XPathQueryService) sub2.getService("XPathQueryService", "1.0");
+        XPathQueryService service = sub2.getService(XPathQueryService.class);
 
         // index should be empty since configuration was invalid
         ResourceSet result = service.query("util:index-key-occurrences(/test/a, 1)");
@@ -745,18 +727,15 @@ public class CollectionConfigurationTest {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
        //Configure collection automatically
-       IndexQueryService idxConf = (IndexQueryService)
-       testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
        idxConf.configureCollection(CONFIG2);
 
        //... then index document
-       XMLResource doc = (XMLResource)
-       testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+       XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
        doc.setContent(DOCUMENT_CONTENT2);
        testCollection.storeResource(doc);
 
-       XPathQueryService service = (XPathQueryService)
-       testCollection.getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        ResourceSet result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
        assertEquals(1, result.getSize());
@@ -862,18 +841,15 @@ public class CollectionConfigurationTest {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
        //Configure collection automatically
-       IndexQueryService idxConf = (IndexQueryService)
-       testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
        idxConf.configureCollection(QNAME_CONFIG2);
 
        //... then index document
-       XMLResource doc = (XMLResource)
-       testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+       XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
        doc.setContent(DOCUMENT_CONTENT2);
        testCollection.storeResource(doc);
 
-       XPathQueryService service = (XPathQueryService)
-       testCollection.getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        ResourceSet result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
        assertEquals(1, result.getSize());
@@ -979,17 +955,15 @@ public class CollectionConfigurationTest {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
         //Configure collection automatically
-        IndexQueryService idxConf = (IndexQueryService)
-                testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(QNAME_CONFIG);
 
         //... then index document
-        XMLResource doc = (XMLResource)
-                testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+        XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
         doc.setContent(DOCUMENT_CONTENT3);
         testCollection.storeResource(doc);
 
-        EXistXQueryService service = (EXistXQueryService) testCollection.getService("XQueryService", "1.0");
+        EXistXQueryService service = testCollection.getService(EXistXQueryService.class);
         // the query optimizer cannot optimize the following general comparison as
         // the context qname is unknown. however, the available qname index should still be used.
         ResourceSet result = service.query("(# exist:force-index-use #) { for $t in /test/a where $t = 1 return $t}");
@@ -1064,18 +1038,15 @@ public class CollectionConfigurationTest {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
        //Configure collection automatically
-       IndexQueryService idxConf = (IndexQueryService)
-       testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
        idxConf.configureCollection(CONFIG2);
 
        //... then index document
-       XMLResource doc = (XMLResource)
-       testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+       XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
        doc.setContent(DOCUMENT_CONTENT2);
        testCollection.storeResource(doc);
 
-       XPathQueryService service = (XPathQueryService)
-       testCollection.getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        ResourceSet result = service.query("//test[@x = 0]");
        assertEquals(1, result.getSize());
@@ -1254,17 +1225,14 @@ public class CollectionConfigurationTest {
        boolean exceptionThrown = false;
        //Configure collection automatically
        @SuppressWarnings("unused")
-       IndexQueryService idxConf = (IndexQueryService)
-       testCollection.getService("IndexQueryService", "1.0");
+       IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
 
        //... then index document
-       XMLResource doc = (XMLResource)
-       testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+       XMLResource doc = testCollection.createResource(TestConstants.TEST_XML_URI.toString(), XMLResource.class );
        doc.setContent(DOCUMENT_CONTENT2);
        testCollection.storeResource(doc);
 
-       XPathQueryService service = (XPathQueryService)
-       testCollection.getService("XPathQueryService", "1.0");
+       XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
        try {
                exceptionThrown = false;
@@ -1429,17 +1397,17 @@ public class CollectionConfigurationTest {
        String fullCollPath = XmldbURI.LOCAL_DB + collPath.toString();
        Collection configColl = DatabaseManager.getCollection(fullCollPath, "admin", "");
        if(configColl == null) {
-     	   CollectionManagementService cms = (CollectionManagementService)testCollection.getService("CollectionManagementService", "1.0");
+     	   CollectionManagementService cms = testCollection.getService(CollectionManagementService.class);
             configColl = cms.createCollection(collPath.toString());
-            UserManagementService ums = (UserManagementService) configColl.getService("UserManagementService", "1.0");
+            UserManagementService ums = configColl.getService(UserManagementService.class);
             ums.chmod("rwxr-xr-x");
        }
        assertNotNull(configColl);
-       Resource res = configColl.createResource(confName.toString(), "XMLResource");
+       Resource res = configColl.createResource(confName.toString(), XMLResource.class);
        assertNotNull(res);
        res.setContent(confContent);            
        configColl.storeResource(res);
-       UserManagementService ums = (UserManagementService)configColl.getService("UserManagementService", "1.0");
+       UserManagementService ums = configColl.getService(UserManagementService.class);
        ums.chmod(res, 0744);
    }
 }

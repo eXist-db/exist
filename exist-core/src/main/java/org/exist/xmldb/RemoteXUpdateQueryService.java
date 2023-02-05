@@ -25,10 +25,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
@@ -90,6 +87,11 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
     @Override
     public String getProperty(final String name) throws XMLDBException {
         return null;
+    }
+
+    @Override
+    public String getProperty(String name, String defaultValue) throws XMLDBException {
+        return defaultValue;
     }
 
     @Override

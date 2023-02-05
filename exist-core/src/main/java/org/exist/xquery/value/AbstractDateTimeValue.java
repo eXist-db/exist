@@ -38,6 +38,7 @@ import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -416,8 +417,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         if (javaClass.isAssignableFrom(GregorianCalendar.class)) {
             return 2;
         }
-        if (javaClass == Date.class) {
+        if (Date.class.equals(javaClass)) {
             return 3;
+        }
+        if (Instant.class.equals(javaClass)) {
+            return 4;
         }
         return Integer.MAX_VALUE;
     }
@@ -430,8 +434,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             return (T) calendar.clone();
         } else if (target.isAssignableFrom(GregorianCalendar.class)) {
             return (T) calendar.toGregorianCalendar();
-        } else if (target == Date.class) {
+        } else if (Date.class.equals(target)) {
             return (T) calendar.toGregorianCalendar().getTime();
+        } else if (Instant.class.equals(target)) {
+            return (T)calendar.toGregorianCalendar().toInstant();
         }
 
         throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());

@@ -174,7 +174,7 @@ public class DeadlockTest {
     @After
     public void clearDB() throws XMLDBException {
 		final org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
-		CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		CollectionManagementService service = root.getService(CollectionManagementService.class);
 		service.removeCollection(".");
     }
 
@@ -313,8 +313,7 @@ public class DeadlockTest {
 						.getCollection("xmldb:exist://" + collection, "admin", null);
                 if (testCollection == null)
                     return;
-                EXistXPathQueryService service = (EXistXPathQueryService) testCollection
-						.getService("XQueryService", "1.0");
+                EXistXPathQueryService service = testCollection.getService(EXistXPathQueryService.class);
 				service.beginProtected();
 				try {
 					ResourceSet result = service.query(query);

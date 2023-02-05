@@ -57,6 +57,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 public class MoveResourceRecoveryTest {
 
@@ -220,8 +221,7 @@ public class MoveResourceRecoveryTest {
 
     private void xmldbStore() throws XMLDBException, URISyntaxException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
-        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
         if (test == null) {
@@ -238,7 +238,7 @@ public class MoveResourceRecoveryTest {
             sample = InputStreamUtil.readString(is, UTF_8);
         }
 
-        final Resource res = test2.createResource("test3.xml", "XMLResource");
+        final Resource res = test2.createResource("test3.xml", XMLResource.class);
         res.setContent(sample);
         test2.storeResource(res);
 
@@ -252,8 +252,7 @@ public class MoveResourceRecoveryTest {
         assertNotNull("Document should not be null", res);
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
         mgr.removeCollection(XmldbURI.create("test"));
         mgr.removeCollection(XmldbURI.create("test2"));
     }

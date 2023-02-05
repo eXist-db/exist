@@ -64,15 +64,6 @@ public class LocalRestoreService extends AbstractLocalService implements EXistRe
         });
     }
 
-    @Override
-    public String getProperty(final String s) {
-        return null;
-    }
-
-    @Override
-    public void setProperty(final String s, final String s1) {
-    }
-
     private static class RestoreListenerAdapter implements RestoreListener {
         private final RestoreServiceTaskListener restoreListener;
 

@@ -40,7 +40,7 @@ public class MapTest {
     @Test
     public void effectiveBooleanValue() {
         try {
-            final XQueryService queryService = (XQueryService) server.getRoot().getService("XQueryService", "1.0");
+            final XQueryService queryService = server.getRoot().getService(XQueryService.class);
             queryService.query("fn:boolean(map{})");
         } catch(final XMLDBException e) {
            final Throwable cause = e.getCause();

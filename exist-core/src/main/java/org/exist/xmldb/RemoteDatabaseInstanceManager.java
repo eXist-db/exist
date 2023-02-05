@@ -21,7 +21,6 @@
  */
 package org.exist.xmldb;
 
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -29,16 +28,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
+public class RemoteDatabaseInstanceManager extends  AbstractRemoteService implements DatabaseInstanceManager {
 
     private final RemoteCallSite remoteCallSite;
 
     /**
      * Constructor for DatabaseInstanceManagerImpl.
      *
+     * @param collection the parent colleciton
      * @param remoteCallSite the remote call site
      */
-    public RemoteDatabaseInstanceManager(final RemoteCallSite remoteCallSite) {
+    public RemoteDatabaseInstanceManager(final RemoteCollection collection, final RemoteCallSite remoteCallSite) {
+        super(collection);
         this.remoteCallSite = remoteCallSite;
     }
 
@@ -79,19 +80,6 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
     @Override
     public void exitServiceMode() throws XMLDBException {
         remoteCallSite.execute("exitServiceMode", Collections.EMPTY_LIST);
-    }
-
-    @Override
-    public void setCollection(final Collection collection) throws XMLDBException {
-    }
-
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) throws XMLDBException {
     }
 
     @Override

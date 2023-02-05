@@ -49,7 +49,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     @Test
     public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+        UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -72,7 +72,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+            ums = getRoot().getService(UserManagementService.class);
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -106,7 +106,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     @Test
     public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
-        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+        UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String group1Name = "testGroup1";
         final String group2Name = "testGroup2";
@@ -130,7 +130,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+            ums = getRoot().getService(UserManagementService.class);
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -166,7 +166,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     @Test
     public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
 
-        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+        UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String group1Name = "testGroupA";
         final String group2Name = "testGroupB";
@@ -189,7 +189,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+            ums = getRoot().getService(UserManagementService.class);
 
             user = ums.getAccount(userName);
             assertNotNull(user);
@@ -223,7 +223,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
 
     @Test
     public void checkGroupManagerStability() throws XMLDBException, PermissionDeniedException, IOException {
-        UserManagementService ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+        UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String commonGroupName = "commonGroup";
         Group commonGroup = new GroupAider(commonGroupName);
@@ -246,7 +246,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             restartServer();
             /**************************/
 
-            ums = (UserManagementService)getRoot().getService("UserManagementService", "1.0");
+            ums = getRoot().getService(UserManagementService.class);
 
             // get the common group
             commonGroup = ums.getGroup(commonGroupName);

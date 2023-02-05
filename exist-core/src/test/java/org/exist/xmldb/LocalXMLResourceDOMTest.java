@@ -51,15 +51,15 @@ public class LocalXMLResourceDOMTest {
 
     @BeforeClass
     public static void setup() throws XMLDBException {
-        final CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer
+        final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
-                .getService("CollectionManagementService", "1.0");
+                .getService(CollectionManagementService.class);
 
         final Collection coll = cms.createCollection(TestConstants.TEST_COLLECTION_URI.lastSegment().toString());
 
-        final XMLResource r = (XMLResource) coll.createResource(
+        final XMLResource r = coll.createResource(
                 TEST_RESOURCE_NAME,
-                XMLResource.RESOURCE_TYPE
+                XMLResource.class
         );
         r.setContent("<properties><property key=\"type\">Table</property><test/></properties><!-- comment -->");
         coll.storeResource(r);
@@ -67,9 +67,9 @@ public class LocalXMLResourceDOMTest {
 
     @AfterClass
     public static void cleanup() throws XMLDBException {
-        final CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer
+        final CollectionManagementService cms = existEmbeddedServer
                 .getRoot()
-                .getService("CollectionManagementService", "1.0");
+                .getService(CollectionManagementService.class);
 
         cms.removeCollection(TestConstants.TEST_COLLECTION_URI.getRawCollectionPath());
     }

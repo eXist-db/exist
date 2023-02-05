@@ -25,13 +25,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.TestDataGenerator;
 import org.exist.TestUtils;
-import org.exist.storage.ReindexRecoveryTest;
 import org.exist.test.ExistWebServer;
 import org.junit.*;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import java.nio.file.Path;
@@ -90,7 +90,7 @@ public class QuerySessionTest {
     @Test (expected=XMLDBException.class)
     public void manualRelease() throws XMLDBException {
         Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
+        XQueryService service = test.getService(XQueryService.class);
         ResourceSet result = service.query("//chapter[@xml:id eq 'chapter1']");
         assertEquals(1, result.getSize());
 
@@ -131,7 +131,7 @@ public class QuerySessionTest {
         public void run() {
             try {
                 final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/rpctest", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-                final XQueryService service = (XQueryService) test.getService("XQueryService", "1.0");
+                final XQueryService service = test.getService(XQueryService.class);
                 final int n = random.nextInt(DOC_COUNT) + 1;
                 service.declareVariable("n", "chapter" + n);
                 final ResourceSet result = service.query(query);
@@ -153,13 +153,13 @@ public class QuerySessionTest {
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         
         CollectionManagementService mgmt =
-                (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+                root.getService(CollectionManagementService.class);
         Collection test = mgmt.createCollection("rpctest");
 
         final TestDataGenerator generator = new TestDataGenerator("xdb", DOC_COUNT);
         final Path[] files = generator.generate(test, generateXQ);
         for (int i = 0; i < files.length; i++) {
-            Resource resource = test.createResource(files[i].getFileName().toString(), "XMLResource");
+            Resource resource = test.createResource(files[i].getFileName().toString(), XMLResource.class);
             resource.setContent(files[i].toFile());
             test.storeResource(resource);
         }
@@ -170,12 +170,12 @@ public class QuerySessionTest {
     public static void stopServer() throws XMLDBException {
         Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         CollectionManagementService mgmt =
-            (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+                root.getService(CollectionManagementService.class);
         mgmt.removeCollection("rpctest");
 
         Collection config = DatabaseManager.getCollection(getBaseUri() + "/db/system/config/db", "admin", "");
         mgmt =
-            (CollectionManagementService) config.getService("CollectionManagementService", "1.0");
+                config.getService(CollectionManagementService.class);
         mgmt.removeCollection("rpctest");
     }
 }

@@ -159,9 +159,7 @@ public abstract class AbstractXMLDBTask extends Task
     {
         try {
             log( "Registering database", Project.MSG_DEBUG );
-            final Database[] allDataBases = DatabaseManager.getDatabases();
-
-            for( final Database database : allDataBases ) {
+            for( final Database database : DatabaseManager.getDatabases() ) {
 
                 if( database.acceptsURI( uri ) ) {
                     return;
@@ -213,7 +211,7 @@ public abstract class AbstractXMLDBTask extends Task
 
             if( collection == null ) {
                 log( "Create collection management service for collection " + current.getName(), Project.MSG_DEBUG );
-                mgtService = (CollectionManagementService)current.getService( "CollectionManagementService", "1.0" );
+                mgtService = current.getService( CollectionManagementService.class );
                 log( "Create child collection " + token, Project.MSG_DEBUG );
                 current = mgtService.createCollection( token );
                 log( "Created collection " + current.getName() + '.', Project.MSG_DEBUG );
@@ -248,7 +246,7 @@ public abstract class AbstractXMLDBTask extends Task
                     log( msg, Project.MSG_ERR );
                 }
             } else {
-                service = (UserManagementService)base.getService( "UserManagementService", "1.0" );
+                service = base.getService( UserManagementService.class);
                 
                 setPermissions( res, service );
             }
@@ -270,7 +268,7 @@ public abstract class AbstractXMLDBTask extends Task
     {
         try {
         	if( permissions != null ) {
-                 setPermissions( null, (UserManagementService)col.getService( "UserManagementService", "1.0" ) );
+                 setPermissions( null, col.getService( UserManagementService.class));
             }
         }
         catch( final XMLDBException e ) {

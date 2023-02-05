@@ -123,7 +123,6 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             }
 
         } else {
-            Resource res;
             Collection col = root;
             String relDir;
             String prevDir = null;
@@ -131,55 +130,48 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
             if (srcFile != null) {
                 log("Storing " + srcFile.getName());
 
-                MimeType mime = getMimeTable().getContentTypeFor(srcFile.getName());
                 final String baseMimeType;
-
                 if (forceMimeType != null) {
                     baseMimeType = forceMimeType;
-
-                } else if (mime != null) {
-                    baseMimeType = mime.getName();
-
                 } else {
-                    baseMimeType = defaultMimeType;
-                }
-
-                if (type != null) {
-
-                    if ("xml".equals(type)) {
-                        mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.XML)) : MimeType.XML_TYPE;
-                    } else if ("binary".equals(type)) {
-                        mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
+                    final MimeType fileMime = getMimeTable().getContentTypeFor(srcFile.getName());
+                    if (fileMime != null) {
+                        baseMimeType = fileMime.getName();
+                    } else {
+                        baseMimeType = defaultMimeType;
                     }
                 }
 
-                // single file
-                if (mime == null) {
+                final MimeType mime;
+                if ("xml".equals(type)) {
+                    mime = (baseMimeType != null) ? new MimeType(baseMimeType, MimeType.XML) : MimeType.XML_TYPE;
+                } else if ("binary".equals(type)) {
+                    mime = (baseMimeType != null) ? new MimeType(baseMimeType, MimeType.BINARY) : MimeType.BINARY_TYPE;
+                } else {
                     final String msg = "Cannot guess mime-type kind for " + srcFile.getName() + ". Treating it as a binary.";
                     log(msg, Project.MSG_ERR);
-                    mime = (baseMimeType != null) ? (new MimeType(baseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
+                    mime = (baseMimeType != null) ? new MimeType(baseMimeType, MimeType.BINARY) : MimeType.BINARY_TYPE;
                 }
-
-                final String resourceType = mime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
 
                 if (targetFile == null) {
                     targetFile = srcFile.getName();
                 }
 
                 try {
-                    log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
-                    res = col.createResource(targetFile, resourceType);
+                    final Class<? extends Resource> resourceType = mime.isXMLType() ? XMLResource.class : BinaryResource.class;
+                    log("Creating resource " + targetFile + " in collection " + col.getName() + " of type " + resourceType.getName() + " with mime-type: " + mime.getName(), Project.MSG_DEBUG);
+                    try (Resource res = col.createResource(targetFile, resourceType)) {
+                        if (srcFile.length() == 0) {
+                            // note: solves bug id 2429889 when this task hits empty files
+                        } else {
+                            res.setContent(srcFile);
+                            ((EXistResource) res).setMimeType(mime.getName());
+                            col.storeResource(res);
+                        }
 
-                    if (srcFile.length() == 0) {
-                        // note: solves bug id 2429889 when this task hits empty files
-                    } else {
-                        res.setContent(srcFile);
-                        ((EXistResource) res).setMimeType(mime.getName());
-                        col.storeResource(res);
-                    }
-
-                    if (permissions != null) {
-                        setPermissions(res);
+                        if (permissions != null) {
+                            setPermissions(res);
+                        }
                     }
                 } catch (final XMLDBException e) {
                     final String msg = "XMLDB exception caught: " + e.getMessage();
@@ -303,17 +295,17 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
                                 currentMime = (currentBaseMimeType != null) ? (new MimeType(currentBaseMimeType, MimeType.BINARY)) : MimeType.BINARY_TYPE;
                             }
 
-                            final String resourceType = currentMime.isXMLType() ? XMLResource.RESOURCE_TYPE : BinaryResource.RESOURCE_TYPE;
-                            log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
-                            res = col.createResource(file.getName(), resourceType);
-                            res.setContent(file);
-                            ((EXistResource) res).setMimeType(currentMime.getName());
-                            col.storeResource(res);
+                            final Class<? extends Resource> resourceType = currentMime.isXMLType() ? XMLResource.class : BinaryResource.class;
+                            log("Creating resource " + file.getName() + " in collection " + col.getName() + " of type " + resourceType.getName() + " with mime-type: " + currentMime.getName(), Project.MSG_DEBUG);
+                            try (Resource res = col.createResource(file.getName(), resourceType)) {
+                                res.setContent(file);
+                                ((EXistResource) res).setMimeType(currentMime.getName());
+                                col.storeResource(res);
 
-                            if (permissions != null) {
-                                setPermissions(res);
+                                if (permissions != null) {
+                                    setPermissions(res);
+                                }
                             }
-
                         } catch (final XMLDBException e) {
                             final String msg = "XMLDB exception caught: " + e.getMessage();
 

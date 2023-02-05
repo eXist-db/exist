@@ -33,8 +33,7 @@ import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -85,11 +84,11 @@ public class XMLDBTouch extends XMLDBAbstractCollectionManipulator {
                 return BooleanValue.FALSE;
             }
 
-            final Date newModificationTime;
+            final Instant newModificationTime;
             if (getSignature().getArgumentCount() == 2) {
-                newModificationTime = Calendar.getInstance().getTime();
+                newModificationTime = Instant.now();
             } else if (getSignature().getArgumentCount() == 3) {
-                newModificationTime = args[2].toJavaObject(Date.class);
+                newModificationTime = args[2].toJavaObject(Instant.class);
             } else {
                 throw new XPathException(this, "Unrecognised function signature: " + getSignature());
             }

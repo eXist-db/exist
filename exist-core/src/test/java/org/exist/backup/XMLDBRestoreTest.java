@@ -197,7 +197,7 @@ public class XMLDBRestoreTest {
         assertEquals(0, listener.errors.size());
 
         final Collection collection = DatabaseManager.getCollection(rootUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistUserManagementService userManagementService = (EXistUserManagementService) collection.getService("UserManagementService", "1.0");
+        final EXistUserManagementService userManagementService = collection.getService(EXistUserManagementService.class);
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(SecurityManager.UNKNOWN_GROUP, account.getPrimaryGroup());
@@ -218,7 +218,7 @@ public class XMLDBRestoreTest {
         assertEquals(0, listener.errors.size());
 
         final Collection collection = DatabaseManager.getCollection(rootUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistUserManagementService userManagementService = (EXistUserManagementService) collection.getService("UserManagementService", "1.0");
+        final EXistUserManagementService userManagementService = collection.getService(EXistUserManagementService.class);
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(SecurityManager.UNKNOWN_GROUP, account.getPrimaryGroup());
@@ -285,7 +285,7 @@ public class XMLDBRestoreTest {
         assertEquals(0, listener.errors.size());
 
         final Collection collection = DatabaseManager.getCollection(rootUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistUserManagementService userManagementService = (EXistUserManagementService) collection.getService("UserManagementService", "1.0");
+        final EXistUserManagementService userManagementService = collection.getService(EXistUserManagementService.class);
         final Account account = userManagementService.getAccount(username);
         assertNotNull(account);
         assertEquals(primaryGroup, account.getPrimaryGroup());
@@ -294,7 +294,7 @@ public class XMLDBRestoreTest {
 
     private static void restoreBackup(final XmldbURI uri, final Path backup, @Nullable final String backupPassword, final RestoreServiceTaskListener listener) throws XMLDBException {
         final Collection collection = DatabaseManager.getCollection(uri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final EXistRestoreService restoreService = (EXistRestoreService) collection.getService("RestoreService", "1.0");
+        final EXistRestoreService restoreService = collection.getService(EXistRestoreService.class);
         restoreService.restore(backup.normalize().toAbsolutePath().toString(), backupPassword, listener, false);
     }
 

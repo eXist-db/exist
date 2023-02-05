@@ -22,8 +22,6 @@
 package org.exist.xmldb;
 
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.exist.scheduler.SystemTaskJob;
 import org.exist.scheduler.impl.ShutdownTask;
@@ -96,14 +94,5 @@ public class LocalDatabaseInstanceManager extends AbstractLocalService implement
     @Override
     public boolean isLocalInstance() {
         return true;
-    }
-
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) throws XMLDBException {
     }
 }

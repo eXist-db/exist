@@ -24,7 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollection;
@@ -93,32 +93,30 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
     public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
-	throws XPathException {
+			throws XPathException {
+		try {
+			Instant instant;
+			if (getSignature().getArgumentCount() == 1) {
+					instant = ((EXistCollection)collection).getCreationTime();
+			} else {
+					final Resource resource = collection.getResource(args[1].getStringValue());
 
-	try {
-	    Date date;
-	    if(getSignature().getArgumentCount() == 1) {
-                date = ((EXistCollection)collection).getCreationTime();
-	    } else {
-                final Resource resource = collection.getResource(args[1].getStringValue());
-                
-                if(resource == null) {
-                    return Sequence.EMPTY_SEQUENCE;
-                }
-                
-                if(isCalledAs("last-modified"))
-		    {date = ((EXistResource)resource).getLastModificationTime();}
-                else
-		    {date = ((EXistResource)resource).getCreationTime();}
-            }
+					if (resource == null) {
+						return Sequence.EMPTY_SEQUENCE;
+					}
 
-	    return new DateTimeValue(this, date);
+					if (isCalledAs("last-modified")) {
+						instant = ((EXistResource)resource).getLastModificationTime();
+					} else {
+						instant = ((EXistResource)resource).getCreationTime();
+					}
+			}
 
-	} catch(final XMLDBException e) {
-	    logger.error("Failed to retrieve creation date or modification time of specified resource or creation date of collection");
+			return new DateTimeValue(this, instant);
+		} catch(final XMLDBException e) {
+			logger.error("Failed to retrieve creation date or modification time of specified resource or creation date of collection");
 
-	    throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);
-	}
+			throw new XPathException(this, "Failed to retrieve creation date: " + e.getMessage(), e);
+		}
     }
-
 }

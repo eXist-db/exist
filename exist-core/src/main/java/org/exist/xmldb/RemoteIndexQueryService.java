@@ -27,15 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.dom.QName;
 import org.exist.util.Occurrences;
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
-public class RemoteIndexQueryService extends AbstractRemote implements IndexQueryService {
+public class RemoteIndexQueryService extends AbstractRemoteService implements IndexQueryService {
 
     public RemoteIndexQueryService(final RemoteCollection parent) {
         super(parent);
@@ -97,20 +94,6 @@ public class RemoteIndexQueryService extends AbstractRemote implements IndexQuer
                 .map(o -> (Object[]) o)
                 .map(row -> new Occurrences(new QName(row[0].toString(), row[1].toString(), row[2].toString()), (Integer) row[3]));
         return occurrences.toArray(Occurrences[]::new);
-    }
-
-    @Override
-    public void setCollection(final Collection collection) throws XMLDBException {
-        this.collection = (RemoteCollection) collection;
-    }
-
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) throws XMLDBException {
     }
 
     @Override

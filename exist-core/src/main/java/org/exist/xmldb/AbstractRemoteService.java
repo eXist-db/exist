@@ -1,0 +1,62 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xmldb;
+
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.base.XMLDBException;
+
+/**
+ * Base class for Remote XMLDB Services
+ *
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
+ */
+public abstract class AbstractRemoteService extends AbstractRemote implements Service {
+
+    AbstractRemoteService(final RemoteCollection collection) {
+        super(collection);
+    }
+
+    @Override
+    public final void setCollection(final Collection collection) throws XMLDBException {
+        if(!(collection instanceof RemoteCollection)) {
+            throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "incompatible collection type: " + collection.getClass().getName());
+        }
+        this.collection = (RemoteCollection) collection;
+    }
+
+    @Override
+    public String getProperty(final String name) throws XMLDBException {
+        return getProperty(name, null);
+    }
+
+    @Override
+    public String getProperty(String name, String defaultValue) throws XMLDBException {
+        return defaultValue;
+    }
+
+    @Override
+    public void setProperty(final String name, final String value) throws XMLDBException {
+        // no action if needed implement this method in subclasses
+    }
+}

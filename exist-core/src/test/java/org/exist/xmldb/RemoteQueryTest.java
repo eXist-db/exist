@@ -40,6 +40,7 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
@@ -56,7 +57,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 	@Test
 	public void resourceSet() throws XMLDBException {
 		String query = "//SPEECH[SPEAKER = 'HAMLET']";
-		XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		XQueryService service = testCollection.getService(XQueryService.class);
 		service.setProperty("highlight-matches", "none");
 		CompiledExpression compiled = service.compile(query);
 		ResourceSet result = service.execute(compiled);
@@ -72,7 +73,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 	@Test
 	public void externalVar() throws XMLDBException {
         String query = XmlRpcTest.QUERY_MODULE_DATA;
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         service.setProperty("highlight-matches", "none");
 
         service.setNamespace("tm", "http://exist-db.org/test/module");
@@ -105,13 +106,12 @@ public class RemoteQueryTest extends RemoteDBTest {
                     "admin",
                     null);
         CollectionManagementService service =
-            (CollectionManagementService) root.getService(
-                    "CollectionManagementService",
-            "1.0");
+                root.getService(
+                        CollectionManagementService.class);
         testCollection = service.createCollection("test");
         assertNotNull(testCollection);
 
-        Resource xr = testCollection.createResource("hamlet.xml", "XMLResource");
+        Resource xr = testCollection.createResource("hamlet.xml", XMLResource.class);
         try (final InputStream is = SAMPLES.getHamletSample()) {
             xr.setContent(InputStreamUtil.readString(is, UTF_8));
             testCollection.storeResource(xr);
@@ -120,7 +120,7 @@ public class RemoteQueryTest extends RemoteDBTest {
         xmlrpcCollection = service.createCollection("xmlrpc");
         assertNotNull(xmlrpcCollection);
 
-        Resource br = xmlrpcCollection.createResource(TestConstants.TEST_MODULE_URI.toString(), "BinaryResource");
+        Resource br = xmlrpcCollection.createResource(TestConstants.TEST_MODULE_URI.toString(), BinaryResource.class);
         ((EXistResource) br).setMimeType(MimeType.XQUERY_TYPE.getName());
         br.setContent(XmlRpcTest.MODULE_DATA);
         xmlrpcCollection.storeResource(br);
@@ -130,8 +130,7 @@ public class RemoteQueryTest extends RemoteDBTest {
 	public void tearDown() throws Exception {
         if (!((EXistCollection) testCollection).isRemoteCollection()) {
             DatabaseInstanceManager dim =
-                (DatabaseInstanceManager) testCollection.getService(
-                        "DatabaseInstanceManager", "1.0");
+                    testCollection.getService(DatabaseInstanceManager.class);
             dim.shutdown();
         }
         testCollection = null;

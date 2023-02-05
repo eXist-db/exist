@@ -38,6 +38,7 @@ import java.util.Deque;
 
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
+import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -85,7 +86,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
                 }
 
                 final String fileName = filePath.lastSegment().toString();
-                final Resource resource = current.createResource(fileName, BinaryResource.RESOURCE_TYPE);
+                final Resource resource = current.createResource(fileName, BinaryResource.class);
                 resource.setContent(content);
                 current.storeResource(resource);
 
@@ -108,7 +109,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
     private Collection getOrCreateCollection(final Collection parent, final String childName) throws XMLDBException {
         Collection child = parent.getChildCollection(childName);
         if(child == null) {
-            final CollectionManagementService cms = (CollectionManagementService) parent.getService("CollectionManagementService", "1.0");
+            final CollectionManagementService cms = parent.getService(CollectionManagementService.class);
             child = cms.createCollection(childName);
         }
         return child;
@@ -122,7 +123,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
 
             final Collection colTest = colRoot.getChildCollection("test");
             try {
-                final CollectionManagementService cms = (CollectionManagementService) colTest.getService("CollectionManagementService", "1.0");
+                final CollectionManagementService cms = colTest.getService(CollectionManagementService.class);
 
                 final String testCollectionName = collectionUri.lastSegment().toString();
                 cms.removeCollection(testCollectionName);
@@ -144,7 +145,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
             Collection colRoot = null;
             try {
                 colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
-                final XQueryService xqueryService = (XQueryService)colRoot.getService("XQueryService", "1.0");
+                final XQueryService xqueryService = colRoot.getService(XQueryService.class);
 
                 final CompiledExpression compiledExpression = xqueryService.compile(query);
                 final ResourceSet results = xqueryService.execute(compiledExpression);
@@ -177,7 +178,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
 
     @Override
     protected boolean isBinaryType(final Resource item) throws XMLDBException {
-        return BinaryResource.RESOURCE_TYPE.equals(item.getResourceType());
+        return BINARY_RESOURCE.equals(item.getResourceType());
     }
 
     @Override

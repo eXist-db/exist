@@ -52,6 +52,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 @RunWith(ParallelParameterized.class)
 public class ExtDocTest {
@@ -109,7 +110,7 @@ public class ExtDocTest {
         assertEquals(1, result.getSize());
         final Resource resource = result.getResource(0);
         assertNotNull(resource);
-        assertEquals(XMLResource.RESOURCE_TYPE, resource.getResourceType());
+        assertEquals(XML_RESOURCE, resource.getResourceType());
 
         final Source expectedSource = Input.fromString(docContent).build();
         final Source actualSource = Input.fromNode(((XMLResource)resource).getContentAsDOM()).build();

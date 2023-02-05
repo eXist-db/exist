@@ -95,7 +95,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                 }
 
             } else {
-                final EXistXQueryService service = (EXistXQueryService) base.getService("XQueryService", "1.0");
+                final EXistXQueryService service = base.getService(EXistXQueryService.class);
 
                 // set pretty-printing on
                 service.setProperty(OutputKeys.INDENT, "yes");

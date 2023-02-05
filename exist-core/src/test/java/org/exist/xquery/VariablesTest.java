@@ -34,10 +34,10 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 public class VariablesTest {
 
@@ -78,12 +78,12 @@ public class VariablesTest {
 
         final ResourceSet rs = existEmbeddedServer.executeQuery(query);
         assertEquals(1, rs.getSize());
-        assertEquals(XMLResource.RESOURCE_TYPE, rs.getResource(0).getResourceType());
+        assertEquals(XML_RESOURCE, rs.getResource(0).getResourceType());
     }
 
     private static Collection createCollection(final String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
-        final CollectionManagementService cmService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmService = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         if (collection == null) {
             //cmService.removeCollection(collectionName);
             cmService.createCollection(collectionName);
@@ -95,7 +95,7 @@ public class VariablesTest {
     }
 
     private static void writeModule(final Collection collection, final String modulename, final String module) throws XMLDBException {
-        final BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
+        final BinaryResource res = collection.createResource(modulename, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(module.getBytes());
         collection.storeResource(res);

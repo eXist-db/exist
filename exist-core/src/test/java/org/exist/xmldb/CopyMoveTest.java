@@ -47,10 +47,10 @@ public class CopyMoveTest {
     @Test
     public void copyResourceChangeName() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
+        XMLResource original = testCollection.createResource("original", XMLResource.class);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
-        EXistCollectionManagementService cms = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService cms = testCollection.getService(EXistCollectionManagementService.class);
         cms.copyResource("original", "", "duplicate");
         assertEquals(2, testCollection.getResourceCount());
         XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
@@ -60,14 +60,14 @@ public class CopyMoveTest {
     @Test
     public void queryCopiedResource() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        XMLResource original = (XMLResource) testCollection.createResource("original", XMLResource.RESOURCE_TYPE);
+        XMLResource original = testCollection.createResource("original", XMLResource.class);
         original.setContent("<sample/>");
         testCollection.storeResource(original);
-        EXistCollectionManagementService cms = (EXistCollectionManagementService) testCollection.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService cms = testCollection.getService(EXistCollectionManagementService.class);
         cms.copyResource("original", "", "duplicate");
         XMLResource duplicate = (XMLResource) testCollection.getResource("duplicate");
         assertNotNull(duplicate);
-        XPathQueryService xq = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        XPathQueryService xq = testCollection.getService(XPathQueryService.class);
         ResourceSet rs = xq.queryResource("duplicate", "/sample");
         assertEquals(1, rs.getSize());
     }
@@ -82,11 +82,11 @@ public class CopyMoveTest {
         
         //get collection & services
         EXistCollection col = (EXistCollection)DatabaseManager.getCollection(collectionURL);
-        EXistCollectionManagementService service = (EXistCollectionManagementService) col.getService("CollectionManagementService", "1.0");
-        UserManagementService ums = (UserManagementService)DatabaseManager.getCollection(collectionURL, ADMIN_DB_USER, ADMIN_DB_PWD).getService("UserManagementService", "1.0");
+        EXistCollectionManagementService service = col.getService(EXistCollectionManagementService.class);
+        UserManagementService ums = DatabaseManager.getCollection(collectionURL, ADMIN_DB_USER, ADMIN_DB_PWD).getService(UserManagementService.class);
         
         //store xml document
-        XMLResource original = (XMLResource) col.createResource(originalResource, XMLResource.RESOURCE_TYPE);
+        XMLResource original = col.createResource(originalResource, XMLResource.class);
         original.setContent("<sample/>");
         col.storeResource(original);
 
@@ -123,9 +123,9 @@ public class CopyMoveTest {
 
     @Before
     public void setUp() throws Exception {
-        final CollectionManagementService cms = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection testCollection = cms.createCollection(TEST_COLLECTION);
-        final UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        final UserManagementService ums = testCollection.getService(UserManagementService.class);
         // change ownership to guest
         final Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
@@ -135,7 +135,7 @@ public class CopyMoveTest {
     @After
     public void tearDown() throws XMLDBException {
         //delete the test collection
-        final CollectionManagementService cms = (CollectionManagementService)existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cms = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);
     }
 }

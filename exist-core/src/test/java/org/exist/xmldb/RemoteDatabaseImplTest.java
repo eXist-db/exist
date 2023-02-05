@@ -31,6 +31,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import static org.junit.Assert.fail;
@@ -56,9 +57,9 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 
         Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
 
-        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService("CollectionManagementService", "1.0");
+        CollectionManagementService cms = rootCollection.getService(CollectionManagementService.class);
         Collection adminCollection = cms.createCollection(ADMIN_COLLECTION_NAME);
-        UserManagementService ums = (UserManagementService) rootCollection.getService("UserManagementService", "1.0");
+        UserManagementService ums = rootCollection.getService(UserManagementService.class);
         if (ums != null) {
             Permission p = ums.getPermissions(adminCollection);
             p.setMode(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
@@ -66,7 +67,7 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 
             Collection guestCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest", "guest");
 
-            Resource resource = guestCollection.createResource("testguest", "BinaryResource");
+            Resource resource = guestCollection.createResource("testguest", BinaryResource.class);
             resource.setContent("123".getBytes());
             try {
                 guestCollection.storeResource(resource);

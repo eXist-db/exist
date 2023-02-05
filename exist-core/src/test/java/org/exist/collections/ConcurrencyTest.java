@@ -36,6 +36,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -122,7 +123,7 @@ public class ConcurrencyTest {
         public void run() {
             try {
                 final Collection collection = DatabaseManager.getCollection("xmldb:exist:///db/test", "admin", "");
-                final EXistXPathQueryService service = (EXistXPathQueryService) collection.getService("XQueryService", "1.0");
+                final EXistXPathQueryService service = collection.getService(EXistXPathQueryService.class);
                 if(protect) {
                     service.beginProtected();
                 }
@@ -145,11 +146,11 @@ public class ConcurrencyTest {
 
     @BeforeClass
     public static void initDB() throws XMLDBException {
-        final CollectionManagementService mgmt = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         final Collection test = mgmt.createCollection("test");
 
         for (int i = 1; i <= DOC_COUNT; i++) {
-            final Resource r = test.createResource("test" + i + ".xml", "XMLResource");
+            final Resource r = test.createResource("test" + i + ".xml", XMLResource.class);
             final String XML =
                 "<test id='" + i + "'>" +
                 "   <a>b</a>" +
@@ -162,7 +163,7 @@ public class ConcurrencyTest {
 
     @AfterClass
     public static void cleanup() throws XMLDBException {
-        final CollectionManagementService cmgr = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        final CollectionManagementService cmgr = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         cmgr.removeCollection("test");
     }
 }

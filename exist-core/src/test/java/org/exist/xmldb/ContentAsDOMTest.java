@@ -76,7 +76,7 @@ public class ContentAsDOMTest {
     @Test
     public void getContentAsDOM() throws XMLDBException, TransformerException, IOException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         ResourceSet result = service.query(XQUERY);
         for(long i = 0; i < result.getSize(); i++) {
             XMLResource r = (XMLResource) result.getResource(i);
@@ -96,15 +96,15 @@ public class ContentAsDOMTest {
 
     @Before
     public void setUp() throws Exception {
-        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = service.createCollection(TEST_COLLECTION);
-        UserManagementService ums = (UserManagementService) testCollection.getService("UserManagementService", "1.0");
+        UserManagementService ums = testCollection.getService(UserManagementService.class);
         // change ownership to guest
         Account guest = ums.getAccount(GUEST_DB_USER);
         ums.chown(guest, guest.getPrimaryGroup());
         ums.chmod(Permission.DEFAULT_COLLECTION_PERM);
 
-        Resource resource = testCollection.createResource("test.xml", "XMLResource");
+        Resource resource = testCollection.createResource("test.xml", XMLResource.class);
         resource.setContent(XML);
         testCollection.storeResource(resource);
         ums.chown(resource, guest, GUEST_DB_USER); //change resource ownership to guest
@@ -114,7 +114,7 @@ public class ContentAsDOMTest {
     public void tearDown() throws XMLDBException {
         //delete the test collection
         Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, ADMIN_DB_USER, ADMIN_DB_PWD);
-        CollectionManagementService service = (CollectionManagementService)root.getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
     }
 }

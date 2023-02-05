@@ -120,8 +120,7 @@ public class DbStoreTest2 {
             assertNotNull(testCol);
         }
 
-        final XPathQueryService xpqs =
-                (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
+        final XPathQueryService xpqs = testCol.getService(XPathQueryService.class);
         final ResourceSet rs =
                 xpqs.query(
                         "xmldb:store(\n" +
@@ -150,8 +149,7 @@ public class DbStoreTest2 {
             assertNotNull(testCol);
         }
 
-        final XPathQueryService xpqs =
-                (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
+        final XPathQueryService xpqs = testCol.getService(XPathQueryService.class);
         final ResourceSet rs =
                 xpqs.query(
                         "xmldb:store(\n" +

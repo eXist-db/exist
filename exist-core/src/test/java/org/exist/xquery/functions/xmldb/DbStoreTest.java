@@ -51,8 +51,7 @@ public class DbStoreTest {
             assertNotNull(testCol);
         }
 
-        final XPathQueryService xpqs =
-                (XPathQueryService) testCol.getService("XPathQueryService", "1.0");
+        final XPathQueryService xpqs = testCol.getService(XPathQueryService.class);
         assertThrows(XMLDBException.class, () -> {
                     xpqs.query(
                             "xmldb:store(\n" +

@@ -359,21 +359,9 @@ public class DatabaseImpl implements Database {
     }
 
     //WARNING : returning such a default value is dangerous IMHO ? -pb
-    /**
-     * @deprecated
-     */
-    @Deprecated
     @Override
     public String getName() throws XMLDBException {
         return currentInstanceName != null ? currentInstanceName : "exist";
-    }
-
-    //WARNING : returning such *a* default value is dangerous IMHO ? -pb
-    @Override
-    public String[] getNames() throws XMLDBException {
-        return new String[] {
-                currentInstanceName != null ? currentInstanceName : "exist"
-        };
     }
 
     public final static String CREATE_DATABASE = "create-database";
@@ -387,6 +375,11 @@ public class DatabaseImpl implements Database {
 
     @Override
     public String getProperty(final String property) throws XMLDBException {
+        return getProperty(property, null);
+    }
+
+    @Override
+    public String getProperty(final String property, final String defaultValue) throws XMLDBException {
         final String value;
         switch(property) {
             case CREATE_DATABASE:
@@ -422,7 +415,7 @@ public class DatabaseImpl implements Database {
                 break;
 
             default:
-                value = null;
+                value = defaultValue;
         }
         return value;
     }

@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.*;
 import org.exist.xquery.ErrorCodes;
@@ -30,7 +29,6 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import org.exist.xquery.XPathException;
-import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
 import org.xmldb.api.base.Collection;
@@ -58,7 +56,7 @@ public class EvalTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        invokableQuery = existEmbeddedServer.getRoot().createResource(INVOKABLE_QUERY_FILENAME, "BinaryResource");
+        invokableQuery = existEmbeddedServer.getRoot().createResource(INVOKABLE_QUERY_FILENAME, BinaryResource.class);
         invokableQuery.setContent(
             "declare variable $" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + " external;\n" + "<hello>{$" + INVOKABLE_QUERY_EXTERNAL_VAR_NAME + "}</hello>"
         );
@@ -273,7 +271,7 @@ public class EvalTest {
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);
         if (collection == null) {
-            CollectionManagementService cmService = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+            CollectionManagementService cmService = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
             cmService.createCollection(collectionName);
         }
 
@@ -382,7 +380,7 @@ public class EvalTest {
     }
     
     private void writeModule(Collection collection, String modulename, String module) throws XMLDBException {
-        BinaryResource res = (BinaryResource) collection.createResource(modulename, "BinaryResource");
+        BinaryResource res = collection.createResource(modulename, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(module.getBytes());
         collection.storeResource(res);
@@ -390,7 +388,7 @@ public class EvalTest {
     }
 
     private ResourceSet executeModule(final Collection collection, final String moduleName) throws XMLDBException {
-        final EXistXPathQueryService service = (EXistXPathQueryService) collection.getService("XQueryService", "1.0");
+        final EXistXPathQueryService service = collection.getService(EXistXPathQueryService.class);
         final XmldbURI moduleUri = ((EXistCollection)collection).getPathURI().append(moduleName);
         return service.executeStoredQuery(moduleUri.toString());
     }

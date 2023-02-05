@@ -50,7 +50,7 @@ public class AnnotationsTest {
 
     @BeforeClass
     public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        CollectionManagementService service = (CollectionManagementService) existEmbeddedServer.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = service.createCollection("test");
         assertNotNull(testCollection);
     }
@@ -220,7 +220,7 @@ public class AnnotationsTest {
    
     private XPathQueryService getQueryService() throws XMLDBException {
         Collection testCollection = getTestCollection();       
-        XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        XPathQueryService service = testCollection.getService(XPathQueryService.class);
         return service;
     }
 }

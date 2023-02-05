@@ -60,8 +60,8 @@ public abstract class RemoteDBTest {
         //Get the root collection...
         Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
         assertNotNull(rootCollection);
-        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
-                "CollectionManagementService", "1.0");
+        CollectionManagementService cms = rootCollection.getService(
+                CollectionManagementService.class);
         //Creates the child collection
         Collection childCollection = cms.createCollection(CHILD_COLLECTION);
         assertNotNull(childCollection);
@@ -74,8 +74,8 @@ public abstract class RemoteDBTest {
     	try {
 	        Collection rootCollection = DatabaseManager.getCollection(getUri() + XmldbURI.ROOT_COLLECTION, "admin", "");
 	        assertNotNull(rootCollection);
-	        CollectionManagementService cms = (CollectionManagementService) rootCollection.getService(
-	                "CollectionManagementService", "1.0");
+	        CollectionManagementService cms = rootCollection.getService(
+	                CollectionManagementService.class);
 	        cms.removeCollection(CHILD_COLLECTION);
         } catch (Exception e) {            
             fail(e.getMessage()); 

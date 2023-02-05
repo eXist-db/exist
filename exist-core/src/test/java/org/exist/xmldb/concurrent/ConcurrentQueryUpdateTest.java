@@ -40,7 +40,7 @@ public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 	@Before
 	public void setUp() throws Exception {
 		final Collection col = getTestCollection();
-		final XMLResource res = (XMLResource) col.createResource("testappend.xml", "XMLResource");
+		final XMLResource res = col.createResource("testappend.xml", XMLResource.class);
 		res.setContent("<root><node id=\"1\"/></root>");
 		col.storeResource(res);
 	}
@@ -48,11 +48,11 @@ public class ConcurrentQueryUpdateTest extends ConcurrentTestBase {
 	@Override
 	public void assertAdditional() throws XMLDBException {
 		final Collection col = getTestCollection();
-		final XQueryService service = (XQueryService) col.getService("XQueryService", "1.0");
+		final XQueryService service = col.getService(XQueryService.class);
 		final ResourceSet result = service.query("distinct-values(//node/@id)");
 		assertEquals(41, result.getSize());
 		for (int i = 0; i < result.getSize(); i++) {
-			final XMLResource next = (XMLResource) result.getResource((long)i);
+			final XMLResource next = (XMLResource) result.getResource(i);
 			next.getContent();
 		}
 	}

@@ -108,7 +108,7 @@ public class NodeTypeTest {
 		query.append("$doc := xmldb:store('" + XmldbURI.ROOT_COLLECTION + "', $document, $data)");
 		query.append("return <result/>");
 
-		final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+		final XQueryService service = server.getRoot().getService(XQueryService.class);
 
         service.declareVariable("document", document);
         service.declareVariable("data", xml);
@@ -149,7 +149,7 @@ public class NodeTypeTest {
 		query.append("    return\n");
 		query.append("		              ()\n");
 
-		final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+		final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("collection", XmldbURI.ROOT_COLLECTION);
         final CompiledExpression cQuery = service.compile(query.toString());
         service.execute(cQuery);
@@ -166,7 +166,7 @@ public class NodeTypeTest {
 		query.append("$mods := xmldb:remove('" + XmldbURI.ROOT_COLLECTION + "', '" + doc + "')");
 		query.append("return <modifications>{$mods}</modifications>");
 
-		final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+		final XQueryService service = server.getRoot().getService(XQueryService.class);
         final CompiledExpression cQuery = service.compile(query.toString());
         service.execute(cQuery);
 	}
@@ -182,7 +182,7 @@ public class NodeTypeTest {
 		query.append("let $result := doc(string-join(('" + XmldbURI.ROOT_COLLECTION + "', $document), '/'))");
 		query.append("return ($result)");
 
-		final XQueryService service = (XQueryService)server.getRoot().getService("XQueryService", "1.0");
+		final XQueryService service = server.getRoot().getService(XQueryService.class);
         service.declareVariable("document", document);
         final CompiledExpression cQuery = service.compile(query.toString());
         final ResourceSet set = service.execute(cQuery);

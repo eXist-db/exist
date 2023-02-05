@@ -65,11 +65,11 @@ public class GetDataTest extends RESTTest {
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
         root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc/db", "admin", "");
-        BinaryResource res = (BinaryResource)root.createResource(XQUERY_FILENAME, "BinaryResource");
+        BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
         root.storeResource(res);
-        UserManagementService ums = (UserManagementService)root.getService("UserManagementService", "1.0");
+        UserManagementService ums = root.getService(UserManagementService.class);
         ums.chmod(res, 0777);
     }
 

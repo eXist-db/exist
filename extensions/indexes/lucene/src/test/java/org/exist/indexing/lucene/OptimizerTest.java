@@ -144,7 +144,7 @@ public class OptimizerTest {
     }
 
     private long execute(String query, boolean optimize) throws XMLDBException {
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         if (optimize) {
             query = OPTIMIZE + query;
         } else {
@@ -156,7 +156,7 @@ public class OptimizerTest {
     }
 
     private void execute(String query, boolean optimize, String message, long expected) throws XMLDBException {
-        XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+        XQueryService service = testCollection.getService(XQueryService.class);
         if (optimize) {
             query = NAMESPACES + OPTIMIZE + query;
         } else {
@@ -176,20 +176,19 @@ public class OptimizerTest {
 
     @BeforeClass
     public static void initDatabase() throws XMLDBException, IOException {
-        CollectionManagementService service =
-                (CollectionManagementService) server.getRoot().getService("CollectionManagementService", "1.0");
+        CollectionManagementService service = server.getRoot().getService(CollectionManagementService.class);
         testCollection = service.createCollection("test");
         Assert.assertNotNull(testCollection);
 
-        IndexQueryService idxConf = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+        IndexQueryService idxConf = testCollection.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
 
-        XMLResource resource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
+        XMLResource resource = testCollection.createResource("test.xml", XMLResource.class);
         resource.setContent(XML);
         testCollection.storeResource(resource);
 
         for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
-            resource = (XMLResource) testCollection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+            resource = testCollection.createResource(sampleName, XMLResource.class);
             try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                 resource.setContent(InputStreamUtil.readString(is, UTF_8));
             }

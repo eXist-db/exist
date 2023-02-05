@@ -58,6 +58,7 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
 
 public class CopyCollectionRecoveryTest {
 
@@ -212,8 +213,7 @@ public class CopyCollectionRecoveryTest {
     private void xmldbStore() throws XMLDBException, IOException {
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
+        EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
         assertNotNull(mgr);
 
         org.xmldb.api.base.Collection test = root.getChildCollection("test");
@@ -229,7 +229,7 @@ public class CopyCollectionRecoveryTest {
         assertNotNull(test2);
 
         final String sample = getSampleData();
-        final Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
+        final Resource res = test2.createResource("test_xmldb.xml", XMLResource.class);
         assertNotNull(res);
         res.setContent(sample);
         test2.storeResource(res);
@@ -251,8 +251,7 @@ public class CopyCollectionRecoveryTest {
 
         final org.xmldb.api.base.Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, "admin", "");
         assertNotNull(root);
-        final EXistCollectionManagementService mgr = (EXistCollectionManagementService)
-                root.getService("CollectionManagementService", "1.0");
+        final EXistCollectionManagementService mgr = root.getService(EXistCollectionManagementService.class);
         assertNotNull(mgr);
         mgr.removeCollection("destination");
     }

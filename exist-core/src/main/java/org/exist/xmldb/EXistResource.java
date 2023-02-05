@@ -21,7 +21,7 @@
  */
 package org.exist.xmldb;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Properties;
 
 import org.exist.security.Permission;
@@ -39,10 +39,6 @@ import javax.annotation.Nullable;
  * @author wolf
  */
 public interface EXistResource extends Resource, AutoCloseable {
-
-    Date getCreationTime() throws XMLDBException;
-
-    Date getLastModificationTime() throws XMLDBException;
 
     Permission getPermissions() throws XMLDBException;
 
@@ -65,7 +61,7 @@ public interface EXistResource extends Resource, AutoCloseable {
 
     void setDocType(DocumentType doctype) throws XMLDBException;
 
-    void setLastModificationTime(Date lastModificationTime) throws XMLDBException;
+    void setLastModificationTime(Instant lastModificationTime) throws XMLDBException;
 
     void freeResources() throws XMLDBException;
 

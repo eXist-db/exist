@@ -76,8 +76,7 @@ public class ConcurrentXUpdateTest extends ConcurrentTestBase {
 
 	@Before
 	public void setUp() throws Exception {
-        final IndexQueryService idxConf = (IndexQueryService)
-            getTestCollection().getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = getTestCollection().getService(IndexQueryService.class);
         assertNotNull(idxConf);
         idxConf.configureCollection(CONFIG);
         this.wordList = DBUtils.wordList();

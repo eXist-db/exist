@@ -81,7 +81,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	throws XPathException {
 
 		try {
-			final UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
+			final UserManagementService ums = collection.getService(UserManagementService.class);
 			final Expression expression = this;
 			final Resource res = collection.getResource(execAndAddErrorIfMissing(this, () -> new AnyURIValue(expression, args[1].getStringValue()).toXmldbURI().toString()));
 			if (res != null) {

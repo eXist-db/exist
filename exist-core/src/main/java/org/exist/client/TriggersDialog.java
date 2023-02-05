@@ -218,9 +218,8 @@ class TriggersDialog extends JFrame {
     //TODO: share this code between the two classes
     private List<PrettyXmldbURI> getCollections(final Collection root, final List<PrettyXmldbURI> collectionsList) throws XMLDBException {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
-        final String[] childCollections = root.listChildCollections();
         Collection child;
-        for (String childCollection : childCollections) {
+        for (String childCollection : root.listChildCollections()) {
             try {
                 child = root.getChildCollection(childCollection);
             } catch (final XMLDBException xmldbe) {

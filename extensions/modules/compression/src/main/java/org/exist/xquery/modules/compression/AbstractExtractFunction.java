@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
 /**
@@ -177,9 +178,6 @@ public abstract class AbstractExtractFunction extends BasicFunction
                     XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
                 } else {
-
-                    Resource resource;
-
                     Path file = Paths.get(path).normalize();
                     name = FileUtils.fileName(file);
                     path = file.getParent().toAbsolutePath().toString();
@@ -197,23 +195,19 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                     try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
                         NodeValue content = ModuleUtils.streamToXML(context, bis, this);
-                        resource = target.createResource(name, "XMLResource");
-                        ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
-                        handler.startDocument();
-                        content.toSAX(context.getBroker(), handler, null);
-                        handler.endDocument();
-                    } catch (SAXException e) {
-                        resource = target.createResource(name, "BinaryResource");
-                        resource.setContent(entryData);
-                    }
-
-                    if (resource != null) {
-                        if (mime != null) {
-                            ((EXistResource) resource).setMimeType(mime.getName());
+                        try (Resource  resource = target.createResource(name, XMLResource.class)) {
+                            ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                            handler.startDocument();
+                            content.toSAX(context.getBroker(), handler, null);
+                            handler.endDocument();
+                            storeResource(target, mime, resource);
                         }
-                        target.storeResource(resource);
+                    } catch (SAXException e) {
+                        try (Resource  resource = target.createResource(name, BinaryResource.class)) {
+                            resource.setContent(entryData);
+                            storeResource(target, mime, resource);
+                        }
                     }
-
                 }
 
             } else {
@@ -248,5 +242,12 @@ public abstract class AbstractExtractFunction extends BasicFunction
             return entryDataFunctionResult;
         }
     }
-    
+
+    private void storeResource(Collection target, MimeType mime, Resource resource) throws XMLDBException {
+        if (mime != null) {
+            ((EXistResource) resource).setMimeType(mime.getName());
+        }
+        target.storeResource(resource);
+    }
+
 }

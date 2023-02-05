@@ -48,10 +48,8 @@ public class ValueAppendAction extends Action {
     @Override
     public boolean execute() throws XMLDBException {
         final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		final XUpdateQueryService service = (XUpdateQueryService)
-			col.getService("XUpdateQueryService", "1.0");
-		final XPathQueryService query = (XPathQueryService)
-    		col.getService("XPathQueryService", "1.0");
+		final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
+		final XPathQueryService query = col.getService(XPathQueryService.class);
 		append(service);
 		query(query);
         remove(service);

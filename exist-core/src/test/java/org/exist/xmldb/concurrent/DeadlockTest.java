@@ -75,7 +75,7 @@ public class DeadlockTest {
             try {
                 final Collection collection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
                 for (int i = 0; i < resources; i++) {
-                    final XMLResource document = (XMLResource) collection.createResource(Thread.currentThread().getName() + "_" + i, "XMLResource");
+                    final XMLResource document = collection.createResource(Thread.currentThread().getName() + "_" + i, XMLResource.class);
                     document.setContent(DOCUMENT_CONTENT);
                     LOG.debug("Storing document {}", document.getId());
                     collection.storeResource(document);

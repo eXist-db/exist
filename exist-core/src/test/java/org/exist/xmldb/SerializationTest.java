@@ -118,7 +118,7 @@ public class SerializationTest {
 
 	@Test
 	public void wrappedNsTest1() throws XMLDBException {
-		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final XQueryService service = testCollection.getService(XQueryService.class);
 		final ResourceSet result = service.query("declare namespace foo=\"http://foo.com\"; //foo:entry");
 		assertEquals(2, result.getSize());
 
@@ -128,7 +128,7 @@ public class SerializationTest {
 
 	@Test
 	public void wrappedNsTest2() throws XMLDBException {
-		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final XQueryService service = testCollection.getService(XQueryService.class);
 		final ResourceSet result = service.query("declare namespace config='urn:config'; " +
 				"declare namespace c='urn:content'; "  +
 				"declare variable $config := <config xmlns='urn:config'>123</config>; " +
@@ -144,7 +144,7 @@ public class SerializationTest {
 
 	@Test
 	public void xqueryUpdateNsTest() throws XMLDBException {
-		final XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+		final XQueryService service = testCollection.getService(XQueryService.class);
 		final ResourceSet result = service.query(
 				"xquery version \"1.0\";" + EOL +
 				"declare namespace foo=\"http://foo.com\";" + EOL +
@@ -216,15 +216,15 @@ public class SerializationTest {
     @Before
 	public void setUp() throws XMLDBException {
 		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+        final CollectionManagementService service = root.getService(CollectionManagementService.class);
         testCollection = service.createCollection(TEST_COLLECTION_NAME);
         assertNotNull(testCollection);
 
-        final XMLResource res = (XMLResource) testCollection.createResource(XML_DOC_NAME, "XMLResource");
+        final XMLResource res = testCollection.createResource(XML_DOC_NAME, XMLResource.class);
         res.setContent(XML);
         testCollection.storeResource(res);
 
-		final XMLResource res1 = (XMLResource) testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), "XMLResource");
+		final XMLResource res1 = testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), XMLResource.class);
 		res1.setContent(XML_WITH_DOCTYPE);
 		testCollection.storeResource(res1);
     }
@@ -232,7 +232,7 @@ public class SerializationTest {
     @After
     public void tearDown() throws XMLDBException {
 		final Collection root = DatabaseManager.getCollection(getBaseUri() + "/db", TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-		final CollectionManagementService service = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+		final CollectionManagementService service = root.getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION_NAME);
         testCollection = null;
     }

@@ -64,7 +64,7 @@ public abstract class ConcurrentTestBase {
     public final void startupDb() throws Exception {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
         assertNotNull(rootCol);
-        final IndexQueryService idxConf = (IndexQueryService) rootCol.getService("IndexQueryService", "1.0");
+        final IndexQueryService idxConf = rootCol.getService(IndexQueryService.class);
         idxConf.configureCollection(COLLECTION_CONFIG);
         testCol = rootCol.getChildCollection(getTestCollectionName());
         if (testCol != null) {

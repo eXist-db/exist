@@ -53,7 +53,7 @@ public class RemoveAppendAction extends Action {
 	@Override
 	public boolean execute() throws XMLDBException, IOException {
 		final Collection col = DatabaseManager.getCollection(collectionPath, "admin", "");
-		final XUpdateQueryService service = (XUpdateQueryService) col.getService("XUpdateQueryService", "1.0");
+		final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 		append(service);
         remove(service);
         return true;

@@ -146,16 +146,15 @@ public class ConcurrencyTest {
     private void storeRemoveDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
-        final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
+        final EXistXQueryService xqs = test.getService(EXistXQueryService.class);
         ResourceSet result = xqs.query("//SPEECH[ft:query(LINE, 'king')]");
         assertEquals(98, result.getSize());
 
         result = xqs.query("//SPEECH[ft:query(SPEAKER, 'juliet')]");
         assertEquals(118, result.getSize());
 
-        final String[] resources = test.listResources();
-        for (int i = 0; i < resources.length; i++) {
-            final Resource resource = test.getResource(resources[i]);
+        for (String resourceName : test.listResources()) {
+            final Resource resource = test.getResource(resourceName);
             test.removeResource(resource);
         }
         result = xqs.query("//SPEECH[ft:query(LINE, 'king')]");
@@ -168,7 +167,7 @@ public class ConcurrencyTest {
     private void xupdateDocs(final String collectionName) throws XMLDBException, IOException, URISyntaxException {
         storeDocs(collectionName);
 
-        final EXistXQueryService xqs = (EXistXQueryService) test.getService("XQueryService", "1.0");
+        final EXistXQueryService xqs = test.getService(EXistXQueryService.class);
         ResourceSet result = xqs.query("//SPEECH[ft:query(SPEAKER, 'juliet')]");
         assertEquals(118, result.getSize());
 
@@ -176,7 +175,7 @@ public class ConcurrencyTest {
             LuceneIndexTest.XUPDATE_START +
             "   <xu:remove select=\"//SPEECH[ft:query(SPEAKER, 'juliet')]\"/>" +
             LuceneIndexTest.XUPDATE_END;
-        final XUpdateQueryService xuqs = (XUpdateQueryService) test.getService("XUpdateQueryService", "1.0");
+        final XUpdateQueryService xuqs = test.getService(XUpdateQueryService.class);
         xuqs.update(xupdate);
 
         result = xqs.query("//SPEECH[ft:query(SPEAKER, 'juliet')]");
@@ -191,11 +190,11 @@ public class ConcurrencyTest {
         try {
             collection = existEmbeddedServer.createCollection(test, collectionName);
 
-            final IndexQueryService iqs = (IndexQueryService) collection.getService("IndexQueryService", "1.0");
+            final IndexQueryService iqs = collection.getService(IndexQueryService.class);
             iqs.configureCollection(COLLECTION_CONFIG1);
 
             for (final String sampleName : SAMPLES.getShakespeareXmlSampleNames()) {
-                final Resource resource = collection.createResource(sampleName, XMLResource.RESOURCE_TYPE);
+                final Resource resource = collection.createResource(sampleName, XMLResource.class);
                 try (final InputStream is = SAMPLES.getShakespeareSample(sampleName)) {
                     resource.setContent(InputStreamUtil.readString(is, UTF_8));
                 }

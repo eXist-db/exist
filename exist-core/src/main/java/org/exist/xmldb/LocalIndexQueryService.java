@@ -23,7 +23,6 @@ package org.exist.xmldb;
 
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -117,12 +116,4 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     	return this.<Occurrences[]>read(collection.getPathURI()).apply((collection, broker, transaction) -> broker.getElementIndex().scanIndexedElements(collection, inclusive));
     }
 
-    @Override
-    public String getProperty(final String name) throws XMLDBException {
-        return null;
-    }
-
-    @Override
-    public void setProperty(final String name, final String value) throws XMLDBException {
-    }
 }
