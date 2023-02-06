@@ -74,6 +74,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -111,7 +112,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected TreeMap<String, MathTransform> transformations = new TreeMap<>();
     protected boolean useLenientMode = false;
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
-    protected GeometryTransformer gmlTransformer = new GeometryTransformer();
+    protected final GeometryTransformer gmlTransformer;
     protected WKBWriter wkbWriter = new WKBWriter();
     protected WKBReader wkbReader = new WKBReader();
     protected WKTWriter wktWriter = new WKTWriter();
@@ -120,6 +121,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
         this.index = index;
         this.broker = broker;
+        this.gmlTransformer = new GeometryTransformer();
+        gmlTransformer.setEncoding(StandardCharsets.UTF_8);
+        gmlTransformer.setIndentation(4);
+        gmlTransformer.setNamespaceDeclarationEnabled(true);
+        gmlTransformer.setOmitXMLDeclaration(false);
     }
 
     protected DBBroker getBroker() {
