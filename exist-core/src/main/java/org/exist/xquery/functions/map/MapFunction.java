@@ -259,12 +259,10 @@ public class MapFunction extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
                 }
             } else {
-                // TODO(AR) the XQ3.1 spec says that the default for fn:merge#2 should be USE_FIRST... this needs to be revised in a major release of eXist-db
-                mergeDuplicates = MergeDuplicates.USE_LAST;
+                mergeDuplicates = MergeDuplicates.USE_FIRST;
             }
         } else {
-            // TODO(AR) the XQ3.1 spec says that the default for fn:merge#1 should be USE_FIRST... this needs to be revised in a major release of eXist-db
-            mergeDuplicates = MergeDuplicates.USE_LAST;
+            mergeDuplicates = MergeDuplicates.USE_FIRST;
         }
 
         final Sequence maps = args[0];

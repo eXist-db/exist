@@ -196,23 +196,17 @@ function mt:createWithSingleKey() {
         $map("Su")
 };
 
-(:~
- : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last
-:)
 declare
-    %test:assertEquals("Saturday", "Caturday")
-function mt:merge-duplicate-keys-use-last-implicit-1() {
+    %test:assertEquals("Saturday", "Saturday")
+function mt:merge-duplicate-keys-use-first-implicit-1() {
     let $specialWeek := map:merge(($mt:integerKeys, map { 7 : "Caturday" }))
     return
         ($mt:integerKeys(7), $specialWeek(7))
 };
 
-(:~
- : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last
-:)
 declare
-    %test:assertEquals("Saturday", "Saturday")
-function mt:merge-duplicate-keys-use-last-implicit-2() {
+    %test:assertEquals("Saturday", "Caturday")
+function mt:merge-duplicate-keys-use-first-implicit-2() {
     let $specialWeek := map:merge((map { 7 : "Caturday" }, $mt:integerKeys))
     return
         ($mt:integerKeys(7), $specialWeek(7))
@@ -588,10 +582,10 @@ declare
     %test:assertEquals(3)
     %test:args("Three")
     %test:assertEmpty
-function mt:doubleKeys($key as item()) {
+function mt:double-keys($key as item()) {
     let $map := map { xs:double(1.1) : 1, xs:double(2) : 2 }
     return
-        map:merge(($map, map:entry(xs:double(2), 3)))($key)
+        map:merge((map:entry(xs:double(2), 3), $map))($key)
 };
 
 declare
@@ -797,7 +791,7 @@ declare
 function mt:immutable-put-then-merge() {
     let $extended := map:put(mt:create-test-map(), $mt:test-key-two, false())
     let $expected := $extended($mt:test-key-one)
-    let $result := map:merge(($extended, map { $mt:test-key-one : false() }))
+    let $result := map:merge((map { $mt:test-key-one : false() }, $extended))
     return
         (
             $expected eq $extended($mt:test-key-one),
@@ -839,7 +833,7 @@ declare
 function mt:immutable-remove-then-merge() {
     let $removed := map:remove(mt:create-test-map(), $mt:test-key-two)
     let $expected := $removed($mt:test-key-one)
-    let $result := map:merge(($removed, map { $mt:test-key-one : false() }))
+    let $result := map:merge((map { $mt:test-key-one : false() }, $removed))
     return
         (
             $expected eq $removed($mt:test-key-one),
@@ -880,7 +874,7 @@ declare
 function mt:immutable-merge-then-merge() {
     let $merged := map:merge(mt:create-test-map())
     let $expected := $merged($mt:test-key-one)
-    let $result := map:merge(($merged, map { $mt:test-key-one : false() }))
+    let $result := map:merge((map { $mt:test-key-one : false() }, $merged))
     return
         (
             $expected eq $merged($mt:test-key-one),
@@ -916,12 +910,8 @@ function mt:immutable-merge2-then-remove() {
         )
 };
 
-(:~
- : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last,
- :          therefore the result should be ("true", "true") instead
-:)
 declare
-    %test:assertEquals("true", "false")
+    %test:assertEquals("true", "true")
 function mt:immutable-merge2-then-merge() {
     let $merged := map:merge((mt:create-test-map(), mt:create-test-map2()))
     let $expected := $merged($mt:test-key-one)
@@ -932,6 +922,7 @@ function mt:immutable-merge2-then-merge() {
             $expected ne $result($mt:test-key-one)
         )
 };
+
 declare
     %test:assertEquals("true", "true")
 function mt:immutable-merge-duplicates-then-put() {
@@ -960,12 +951,8 @@ function mt:immutable-merge-duplicates-then-remove() {
         )
 };
 
-(:~
- : TODO(AR) implicit behaviour of map:merge according to XQ3.1 specification should be use-first not use-last,
- :          therefore the result should be ("true", "true") instead
-:)
 declare
-    %test:assertEquals("true", "false")
+    %test:assertEquals("true", "true")
 function mt:immutable-merge-duplicates-then-merge() {
     let $merged := map:merge((mt:create-test-map(), mt:create-test-map()))
     let $expected := $merged($mt:test-key-one)
