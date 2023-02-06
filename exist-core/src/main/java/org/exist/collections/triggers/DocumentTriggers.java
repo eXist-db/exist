@@ -29,7 +29,6 @@ import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.XMLDeclarationImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
