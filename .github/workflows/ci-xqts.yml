@@ -22,8 +22,9 @@ jobs:
         env:
           JAVA_OPTS: -XX:+UseG1GC -XX:+UseStringDeduplication
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
+      - name: Check XQTS Logs
+        run: ls /tmp/xqts-output 
       - name: Archive XQTS Logs
-        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: xqts-logs
