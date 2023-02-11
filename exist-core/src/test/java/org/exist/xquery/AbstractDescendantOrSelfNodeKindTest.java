@@ -47,6 +47,7 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
         "            <d xmlns=\"x\" y=\"2\" z=\"3\">text</d>\n"+
         "            </c>\n"+
         "    </a>\n"+
+        "    <d><![CDATA[ & ]]></d>\n"+
         "</doc>";
 
 
@@ -63,21 +64,21 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
     public void nodeCount() throws XMLDBException {
         final ResourceSet result = executeQueryOnDoc("count($doc//node())");
         assertEquals(1, result.getSize());
-        assertEquals(23, Integer.parseInt((String)result.getResource(0).getContent()));
+        assertEquals(26, Integer.parseInt((String)result.getResource(0).getContent()));
     }
 
     @Test
     public void elementCount() throws XMLDBException {
         final ResourceSet result = executeQueryOnDoc("count($doc//element())");
         assertEquals(1, result.getSize());
-        assertEquals(7, Integer.parseInt((String)result.getResource(0).getContent()));
+        assertEquals(8, Integer.parseInt((String)result.getResource(0).getContent()));
     }
 
     @Test
     public void textCount() throws XMLDBException {
         final ResourceSet result = executeQueryOnDoc("count($doc//text())");
         assertEquals(1, result.getSize());
-        assertEquals(14, Integer.parseInt((String)result.getResource(0).getContent()));
+        assertEquals(16, Integer.parseInt((String)result.getResource(0).getContent()));
     }
 
     @Test
@@ -99,5 +100,12 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
         final ResourceSet result = executeQueryOnDoc("count($doc//processing-instruction())");
         assertEquals(1, result.getSize());
         assertEquals(1, Integer.parseInt((String)result.getResource(0).getContent()));
+    }
+
+    @Test
+    public void qnameTest() throws XMLDBException {
+        final ResourceSet result = executeQueryOnDoc("name($doc//d/node())");
+        assertEquals(1, result.getSize());
+        assertEquals("", result.getResource(0).getContent());
     }
 }
