@@ -58,24 +58,6 @@ public class SerializationTest {
 	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 	private static final String PORT_PLACEHOLDER = "${PORT}";
 
-	@Parameterized.Parameters(name = "{0}")
-	public static java.util.Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ "local", "xmldb:exist://" },
-				{ "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
-		});
-	}
-
-	@Parameterized.Parameter
-	public String apiName;
-
-	@Parameterized.Parameter(value = 1)
-	public String baseUri;
-
-	private final String getBaseUri() {
-		return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
-	}
-
 	private static final String EOL = System.getProperty("line.separator");
 
 	private static final String TEST_COLLECTION_NAME = "xmlrpc-serialization-test";
@@ -114,7 +96,31 @@ public class SerializationTest {
 			"<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
 			"<bookmap id=\"bookmap-1\"/>";
 
+	private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
+
+	private static final String XML_WITH_XMLDECL =
+			"<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
+			"<bookmap id=\"bookmap-2\"/>";
+
+	@Parameterized.Parameters(name = "{0}")
+	public static java.util.Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				{ "local", "xmldb:exist://" },
+				{ "remote", "xmldb:exist://localhost:" + PORT_PLACEHOLDER + "/xmlrpc" }
+		});
+	}
+
+	@Parameterized.Parameter
+	public String apiName;
+
+	@Parameterized.Parameter(value = 1)
+	public String baseUri;
+
 	private Collection testCollection;
+
+	private final String getBaseUri() {
+		return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
+	}
 
 	@Test
 	public void wrappedNsTest1() throws XMLDBException {
@@ -179,7 +185,7 @@ public class SerializationTest {
 		final String prevOutputDocType = testCollection.getProperty(EXistOutputKeys.OUTPUT_DOCTYPE);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "NO");
+			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
 			assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
 		} finally {
 			if (prevOutputDocType != null) {
@@ -198,6 +204,40 @@ public class SerializationTest {
 		} finally {
 			if (prevOutputDocType != null) {
 				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
+			}
+		}
+	}
+
+	@Test
+	public void getXmlDeclDefault() throws XMLDBException {
+		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+		assertEquals(XML_WITH_XMLDECL, res.getContent());
+	}
+
+	@Test
+	public void getXmlDeclNo() throws XMLDBException {
+		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
+		try {
+			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
+			assertEquals(XML_WITH_XMLDECL, res.getContent());
+		} finally {
+			if (prevOmitOriginalXmlDecl != null) {
+				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
+			}
+		}
+	}
+
+	@Test
+	public void getXmlDeclYes() throws XMLDBException {
+		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
+		try {
+			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
+			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+			assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
+		} finally {
+			if (prevOmitOriginalXmlDecl != null) {
+				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
 			}
 		}
 	}
@@ -227,6 +267,10 @@ public class SerializationTest {
 		final XMLResource res1 = testCollection.createResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString(), XMLResource.class);
 		res1.setContent(XML_WITH_DOCTYPE);
 		testCollection.storeResource(res1);
+
+		final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
+		res2.setContent(XML_WITH_XMLDECL);
+		testCollection.storeResource(res2);
     }
 
     @After

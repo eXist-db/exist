@@ -787,6 +787,14 @@
            service.setProperty("compress-output", "yes");
            to uncompress the retrieved result in the client too.
 
+        - omit-xml-declaration:
+            should the XML Declaration for a document be serialized
+            if it is present?
+
+        - omit-original-xml-declaration:
+            should the original persisted XML Declaration for a document be serialized
+            if it is present?
+
         - output-doctype:
             should the Doctype Declaration for a document be serialized
             if it is present?
@@ -815,8 +823,10 @@
             Set the parameter to "yes" to enable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" output-doctype="yes" enable-xinclude="yes"
-                enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+    <serializer add-exist-id="none" compress-output="no"
+                omit-xml-declaration="yes" omit-original-xml-declaration="no"
+                output-doctype="yes" enable-xinclude="yes"
+                enable-xsl="no" indent="yes" match-tagging-attributes="no"
                 match-tagging-elements="no">
         <!--
             You may add as many custom-filters as you want, they will be executed

@@ -40,6 +40,8 @@ import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
  * @author <a href="mailto:dannes@exist-db.org">Dannes Wessels</a>
@@ -114,6 +116,10 @@ public class ContentReceiver implements Receiver {
 
     @Override
     public void endDocument() throws SAXException {
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
     }
 
     @Override

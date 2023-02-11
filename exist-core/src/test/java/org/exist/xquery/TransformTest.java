@@ -61,14 +61,14 @@ public class TransformTest {
             "let $xsl := 'xmldb:exist:///db/"+TEST_COLLECTION_NAME+"/xsl1/1.xsl'\n" +
             "return transform:transform($xml, $xsl, ())";
         String result = execQuery(query);
-        assertEquals(result, "<doc>" +
+        assertEquals("<doc>" +
                 "<p>Start Template 1</p>" +
                 "<p>Start Template 2</p>" +
                 "<p>Template 3</p>" +
                 "<p>End Template 2</p>" +
                 "<p>Template 3</p>" +
                 "<p>End Template 1</p>" +
-                "</doc>");
+                "</doc>", result);
     }
     
     

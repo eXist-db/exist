@@ -29,6 +29,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
+import javax.annotation.Nullable;
+
 /**
  * A wrapper class that forwards the method calls defined in the
  * {@link org.exist.util.serializer.Receiver} interface to a
@@ -79,6 +81,11 @@ public class ReceiverToSAX implements Receiver {
     @Override
     public void endDocument() throws SAXException {
         contentHandler.endDocument();
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        contentHandler.declaration(version, encoding, standalone);
     }
 
     @Override

@@ -41,6 +41,8 @@ import com.siemens.ct.exi.exceptions.EXIException;
 import com.siemens.ct.exi.grammars.Grammars;
 import com.siemens.ct.exi.helpers.DefaultEXIFactory;
 
+import javax.annotation.Nullable;
+
 public class EXISerializer implements ContentHandler, Receiver {
 	
 	static final String UNKNOWN_TYPE = "";
@@ -68,6 +70,11 @@ public class EXISerializer implements ContentHandler, Receiver {
 
 	public void endDocument() throws SAXException {
 		encoder.endDocument();
+	}
+
+	@Override
+	public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+		encoder.declaration(version, encoding, standalone);
 	}
 
 	@Override

@@ -652,6 +652,18 @@ public class Configuration implements ErrorHandler
      */
     private void configureSerializer( Element serializer )
     {
+        final String omitXmlDeclaration = getConfigAttributeValue( serializer, Serializer.OMIT_XML_DECLARATION_ATTRIBUTE );
+        if (omitXmlDeclaration != null) {
+            config.put(Serializer.PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
+            LOG.debug(Serializer.PROPERTY_OMIT_XML_DECLARATION + ": {}", config.get(Serializer.PROPERTY_OMIT_XML_DECLARATION));
+        }
+
+        final String omitOriginalXmlDeclaration = getConfigAttributeValue( serializer, Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE );
+        if (omitOriginalXmlDeclaration != null) {
+            config.put(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
+            LOG.debug(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION + ": {}", config.get(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION));
+        }
+
         final String outputDocType = getConfigAttributeValue( serializer, Serializer.OUTPUT_DOCTYPE_ATTRIBUTE );
         if (outputDocType != null) {
             config.put(Serializer.PROPERTY_OUTPUT_DOCTYPE, outputDocType);

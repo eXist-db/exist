@@ -90,11 +90,12 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
 
     private final static Properties defaultProperties = new Properties();
     static {
-        defaultProperties.setProperty(OutputKeys.ENCODING, UTF_8.name());
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
         defaultProperties.setProperty(NORMALIZE_HTML, "no");
+        defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
     }
 

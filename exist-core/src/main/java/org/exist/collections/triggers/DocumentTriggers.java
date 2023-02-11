@@ -40,6 +40,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
+import javax.annotation.Nullable;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -142,6 +144,11 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     @Override
     public void startDocument() throws SAXException {
         contentHandler.startDocument();
+    }
+
+    @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        contentHandler.declaration(version, encoding, standalone);
     }
 
     @Override

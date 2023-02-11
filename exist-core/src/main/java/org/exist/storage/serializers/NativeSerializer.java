@@ -22,6 +22,7 @@
 package org.exist.storage.serializers;
 
 import org.exist.Namespaces;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.persistent.CDATASectionImpl;
 import org.exist.dom.persistent.CommentImpl;
@@ -32,8 +33,8 @@ import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.XMLDeclarationImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -116,7 +117,14 @@ public class NativeSerializer extends Serializer {
             documentStarted = true;
         }
 
-        if (doc.getDoctype() != null){
+        if (doc.getXmlDeclaration() != null){
+            if ("no".equals(getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no"))) {
+                final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
+                receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
+            }
+        }
+
+        if (doc.getDoctype() != null) {
             if ("yes".equals(getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no"))) {
                 final DocumentTypeImpl docType = (DocumentTypeImpl)doc.getDoctype();
                 serializeToReceiver(docType, null, docType.getOwnerDocument(), true, null, new TreeSet<>());

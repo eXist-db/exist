@@ -219,6 +219,11 @@ public class XIncludeFilter implements Receiver {
     }
 
     @Override
+    public void declaration(@Nullable final String version, @Nullable final String encoding, @Nullable final String standalone) throws SAXException {
+        receiver.declaration(version, encoding, standalone);
+    }
+
+    @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         if (!inFallback || error != null) {
             receiver.attribute(qname, value);

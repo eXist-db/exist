@@ -77,6 +77,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     //public static final byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
+    public static final byte NO_XMLDECL = 0;
+    public static final byte HAS_XMLDECL = 1;
+
     public static final byte NO_DOCTYPE = 0;
     public static final byte HAS_DOCTYPE = 1;
 
@@ -141,6 +144,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     protected int userLock = 0;
 
     /**
+     * The document's XML Declaration - if specified.
+     */
+    @Nullable private XMLDeclarationImpl xmlDecl = null;
+
+    /**
      * The document's doctype declaration - if specified.
      */
     protected DocumentType docType = null;
@@ -203,7 +211,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             final XmldbURI fileURI) {
         this(expression, pool, collection, docId, fileURI,
                 PermissionFactory.getDefaultResourcePermission(pool.getSecurityManager()), 0, null,
-                System.currentTimeMillis(), null, null, null);
+                System.currentTimeMillis(), null, null, null, null);
     }
 
     /**
@@ -225,7 +233,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     public DocumentImpl(final Expression expression, final int docId, final DocumentImpl prevDoc) {
         this(expression, prevDoc.pool, prevDoc.collection, docId, prevDoc.fileURI, prevDoc.permissions.copy(), 0, null,
-                System.currentTimeMillis(), null, null, null);
+                System.currentTimeMillis(), null, null, null, null);
     }
 
     /**
@@ -242,13 +250,40 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param lastModified the last modified time of the document, or null to use the {@code created} time
      * @param mimeType the media type of the document, or null for application/xml
      * @param docType the document type, or null
+     *
+     * @deprecated Use {@link DocumentImpl(BrokerPool, Collection, int, XmldbURI, Permission, int, long[], long, Long, String, XMLDeclarationImpl, DocumentType)}
+     */
+    @Deprecated
+    public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection,
+                        final int docId, final XmldbURI fileURI, final Permission permissions,
+                        final int children, @Nullable final long[] childAddress,
+                        final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
+                        @Nullable final DocumentType docType) {
+        this(null, pool, collection, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, null, docType);
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     * @param permissions the permissions of the document
+     * @param children the number of children that the document has
+     * @param childAddress the addresses of the child nodes
+     * @param created the created time of the document
+     * @param lastModified the last modified time of the document, or null to use the {@code created} time
+     * @param mimeType the media type of the document, or null for application/xml
+     * @param xmlDecl the XML Declaration, or null
+     * @param docType the document type, or null
      */
     public DocumentImpl(final BrokerPool pool, @Nullable final Collection collection,
             final int docId, final XmldbURI fileURI, final Permission permissions,
             final int children, @Nullable final long[] childAddress,
             final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
-            @Nullable final DocumentType docType) {
-        this(null, pool, collection, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
+            @Nullable final XMLDeclarationImpl xmlDecl, @Nullable final DocumentType docType) {
+        this(null, pool, collection, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, xmlDecl, docType);
     }
 
     /**
@@ -266,12 +301,40 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      * @param lastModified the last modified time of the document, or null to use the {@code created} time
      * @param mimeType the media type of the document, or null for application/xml
      * @param docType the document type, or null
+     *
+     * @deprecated Use {@link DocumentImpl(Expression, BrokerPool, Collection, int ,XmldbURI, Permission, int, long[], long, Long, String, XMLDeclarationImpl, DocumentType)}
      */
+    @Deprecated
     public DocumentImpl(final Expression expression, final BrokerPool pool, @Nullable final Collection collection,
             final int docId, final XmldbURI fileURI, final Permission permissions,
             final int children, @Nullable final long[] childAddress,
             final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
             @Nullable final DocumentType docType) {
+        this(expression, pool, collection, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, null, docType);
+    }
+
+    /**
+     * Creates a new persistent Document instance to replace an existing document instance.
+     *
+     * @param expression the expression from which the document instance derives
+     * @param pool The broker pool
+     * @param collection The Collection which holds this document
+     * @param docId the id of the document
+     * @param fileURI The name of the document
+     * @param permissions the permissions of the document
+     * @param children the number of children that the document has
+     * @param childAddress the addresses of the child nodes
+     * @param created the created time of the document
+     * @param lastModified the last modified time of the document, or null to use the {@code created} time
+     * @param mimeType the media type of the document, or null for application/xml
+     * @param xmlDecl the XML Declaration, or null
+     * @param docType the document type, or null
+     */
+    public DocumentImpl(final Expression expression, final BrokerPool pool, @Nullable final Collection collection,
+            final int docId, final XmldbURI fileURI, final Permission permissions,
+            final int children, @Nullable final long[] childAddress,
+            final long created, @Nullable final Long lastModified, @Nullable final String mimeType,
+            @Nullable final XMLDeclarationImpl xmlDecl, @Nullable final DocumentType docType) {
         super(expression);
         this.pool = pool;
 
@@ -286,6 +349,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         this.created = created;
         this.lastModified = lastModified == null ? created : lastModified;
         this.mimeType = mimeType == null ?  MimeType.XML_TYPE.getName() : mimeType;
+        this.xmlDecl = xmlDecl;
         this.docType = docType;
 
         //inherit the group to the resource if current collection is setGid
@@ -790,6 +854,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         ostream.writeInt(symbolTable.getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
+        if (xmlDecl != null) {
+            ostream.writeByte(HAS_XMLDECL);
+            xmlDecl.write(ostream);
+        } else {
+            ostream.writeByte(NO_XMLDECL);
+        }
         if (docType != null) {
             ostream.writeByte(HAS_DOCTYPE);
             ((DocumentTypeImpl) docType).write(ostream);
@@ -833,6 +903,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         final String mimeType = pool.getSymbols().getMimeType(mimeTypeSymbolsIndex);
         final int pageCount = istream.readInt();
         final int userLock = istream.readInt();
+        final XMLDeclarationImpl xmlDecl;
+        if (istream.readByte() == HAS_XMLDECL) {
+            xmlDecl = XMLDeclarationImpl.read(istream);
+        } else {
+            xmlDecl = null;
+        }
         final DocumentTypeImpl docType;
         if (istream.readByte() == HAS_DOCTYPE) {
             docType = DocumentTypeImpl.read(istream);
@@ -846,7 +922,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             lockToken = null;
         }
 
-        final DocumentImpl doc = new DocumentImpl(null, pool, null, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, docType);
+        final DocumentImpl doc = new DocumentImpl(null, pool, null, docId, fileURI, permissions, children, childAddress, created, lastModified, mimeType, xmlDecl, docType);
         doc.pageCount = pageCount;
         doc.userLock = userLock;
         doc.lockToken = lockToken;
@@ -1025,6 +1101,21 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             LOG.warn("Exception while finding elements: {}", e.getMessage(), e);
         }
         return NodeSet.EMPTY_SET;
+    }
+
+    /**
+     * The method <code>setXmlDeclaration</code>
+     *
+     * @param xmlDecl a <code>XMLDeclarationImpl</code> value
+     */
+    @EnsureContainerLocked(mode=WRITE_LOCK)
+    public void setXmlDeclaration(final XMLDeclarationImpl xmlDecl) {
+        this.xmlDecl = xmlDecl;
+    }
+
+    @EnsureContainerLocked(mode=READ_LOCK)
+    public @Nullable XMLDeclarationImpl getXmlDeclaration() {
+        return xmlDecl;
     }
 
     /************************************************

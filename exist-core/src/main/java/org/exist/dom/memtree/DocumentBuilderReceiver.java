@@ -123,6 +123,11 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     }
 
     @Override
+    public void declaration(final String version, final String encoding, final String standalone) throws SAXException {
+        // NOTE(AR) in-memory documents do not support XML Declaration
+    }
+
+    @Override
     public void startPrefixMapping(final String prefix, final String namespaceURI) throws SAXException {
         if(prefix == null || prefix.length() == 0) {
             builder.setDefaultNamespace(namespaceURI);
