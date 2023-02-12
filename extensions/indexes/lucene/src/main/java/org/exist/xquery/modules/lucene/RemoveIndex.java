@@ -49,7 +49,7 @@ public class RemoveIndex extends BasicFunction {
                 new FunctionParameterSequenceType("documentPath", Type.STRING, Cardinality.EXACTLY_ONE,
                 "URI path of document in database.")
             },
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, ""));
+            new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, ""));
 	
 	public RemoveIndex(XQueryContext context) {
 		super(context, signature);

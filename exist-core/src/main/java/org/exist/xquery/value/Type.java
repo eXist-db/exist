@@ -50,12 +50,12 @@ public class Type {
     public final static int DOCUMENT = 6;
     public final static int NAMESPACE = 500;
     public final static int CDATA_SECTION = 501;
-    public final static int EMPTY = 10;
+    public final static int EMPTY_SEQUENCE = 10;
     public final static int ITEM = 11;
     public final static int ANY_TYPE = 12;
     public final static int ANY_SIMPLE_TYPE = 13;
     public final static int UNTYPED = 14;
-    public final static int ATOMIC = 20;
+    public final static int ANY_ATOMIC_TYPE = 20;
     public final static int UNTYPED_ATOMIC = 21;
     public final static int STRING = 22;
     public final static int BOOLEAN = 23;
@@ -64,7 +64,7 @@ public class Type {
     public final static int BASE64_BINARY = 26;
     public final static int HEX_BINARY = 27;
     public final static int NOTATION = 28;
-    public final static int NUMBER = 30;
+    public final static int NUMERIC = 30;
     public final static int INTEGER = 31;
     public final static int DECIMAL = 32;
     public final static int FLOAT = 33;
@@ -87,11 +87,11 @@ public class Type {
     public final static int DURATION = 53;
     public final static int YEAR_MONTH_DURATION = 54;
     public final static int DAY_TIME_DURATION = 55;
-    public final static int GYEAR = 56;
-    public final static int GMONTH = 57;
-    public final static int GDAY = 58;
-    public final static int GYEARMONTH = 59;
-    public final static int GMONTHDAY = 71;
+    public final static int G_YEAR = 56;
+    public final static int G_MONTH = 57;
+    public final static int G_DAY = 58;
+    public final static int G_YEAR_MONTH = 59;
+    public final static int G_MONTH_DAY = 71;
     public final static int DATE_TIME_STAMP = 72;
     public final static int TOKEN = 60;
     public final static int NORMALIZED_STRING = 61;
@@ -103,9 +103,9 @@ public class Type {
     public final static int IDREF = 67;
     public final static int ENTITY = 68;
     public final static int JAVA_OBJECT = 100;
-    public final static int FUNCTION_REFERENCE = 101;
-    public final static int MAP = 102;
-    public final static int ARRAY = 103;
+    public final static int FUNCTION = 101;
+    public final static int MAP_ITEM = 102;
+    public final static int ARRAY_ITEM = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
 
     private static int NO_SUCH_VALUE = -99;
@@ -128,36 +128,36 @@ public class Type {
         defineSubType(ANY_TYPE, UNTYPED);
 
         // ANY_SIMPLE types
-        defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
-        defineSubType(ANY_SIMPLE_TYPE, NUMBER);
+        defineSubType(ANY_SIMPLE_TYPE, ANY_ATOMIC_TYPE);
+        defineSubType(ANY_SIMPLE_TYPE, NUMERIC);
 
         // ITEM sub-types
-        defineSubType(ITEM, ATOMIC);
-        defineSubType(ITEM, FUNCTION_REFERENCE);
+        defineSubType(ITEM, ANY_ATOMIC_TYPE);
+        defineSubType(ITEM, FUNCTION);
         //defineSubType(ITEM, NODE);                // TODO(AR) this appears in the XDM 3.1, but uncommenting this breaks a lot of stuff in eXist-db
 
         // ATOMIC sub-types
-        defineSubType(ATOMIC, ANY_URI);
-        defineSubType(ATOMIC, BASE64_BINARY);
-        defineSubType(ATOMIC, BOOLEAN);
-        defineSubType(ATOMIC, DATE);
-        defineSubType(ATOMIC, DATE_TIME);
-        defineSubType(ATOMIC, DECIMAL);
-        defineSubType(ATOMIC, DOUBLE);
-        defineSubType(ATOMIC, DURATION);
-        defineSubType(ATOMIC, FLOAT);
-        defineSubType(ATOMIC, GDAY);
-        defineSubType(ATOMIC, GMONTH);
-        defineSubType(ATOMIC, GMONTHDAY);
-        defineSubType(ATOMIC, GYEAR);
-        defineSubType(ATOMIC, GYEARMONTH);
-        defineSubType(ATOMIC, HEX_BINARY);
-        defineSubType(ATOMIC, JAVA_OBJECT);
-        defineSubType(ATOMIC, NOTATION);
-        defineSubType(ATOMIC, QNAME);
-        defineSubType(ATOMIC, STRING);
-        defineSubType(ATOMIC, TIME);
-        defineSubType(ATOMIC, UNTYPED_ATOMIC);
+        defineSubType(ANY_ATOMIC_TYPE, ANY_URI);
+        defineSubType(ANY_ATOMIC_TYPE, BASE64_BINARY);
+        defineSubType(ANY_ATOMIC_TYPE, BOOLEAN);
+        defineSubType(ANY_ATOMIC_TYPE, DATE);
+        defineSubType(ANY_ATOMIC_TYPE, DATE_TIME);
+        defineSubType(ANY_ATOMIC_TYPE, DECIMAL);
+        defineSubType(ANY_ATOMIC_TYPE, DOUBLE);
+        defineSubType(ANY_ATOMIC_TYPE, DURATION);
+        defineSubType(ANY_ATOMIC_TYPE, FLOAT);
+        defineSubType(ANY_ATOMIC_TYPE, G_DAY);
+        defineSubType(ANY_ATOMIC_TYPE, G_MONTH);
+        defineSubType(ANY_ATOMIC_TYPE, G_MONTH_DAY);
+        defineSubType(ANY_ATOMIC_TYPE, G_YEAR);
+        defineSubType(ANY_ATOMIC_TYPE, G_YEAR_MONTH);
+        defineSubType(ANY_ATOMIC_TYPE, HEX_BINARY);
+        defineSubType(ANY_ATOMIC_TYPE, JAVA_OBJECT);
+        defineSubType(ANY_ATOMIC_TYPE, NOTATION);
+        defineSubType(ANY_ATOMIC_TYPE, QNAME);
+        defineSubType(ANY_ATOMIC_TYPE, STRING);
+        defineSubType(ANY_ATOMIC_TYPE, TIME);
+        defineSubType(ANY_ATOMIC_TYPE, UNTYPED_ATOMIC);
 
         // DATE_TIME sub-types
         defineSubType(DATE_TIME, DATE_TIME_STAMP);
@@ -219,8 +219,8 @@ public class Type {
         defineSubType(NCNAME, IDREF);
 
         // FUNCTION_REFERENCE sub-types
-        defineSubType(FUNCTION_REFERENCE, MAP);
-        defineSubType(FUNCTION_REFERENCE, ARRAY);
+        defineSubType(FUNCTION, MAP_ITEM);
+        defineSubType(FUNCTION, ARRAY_ITEM);
 
         // NODE types
         defineSubType(NODE, ATTRIBUTE);
@@ -236,7 +236,7 @@ public class Type {
     static {
         defineBuiltInType(NODE, "node()");
         defineBuiltInType(ITEM, "item()");
-        defineBuiltInType(EMPTY, "empty-sequence()", "empty()");                                // keep `empty()` for backward compatibility
+        defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                                // keep `empty()` for backward compatibility
 
         defineBuiltInType(ELEMENT, "element()");
         defineBuiltInType(DOCUMENT, "document-node()");
@@ -248,16 +248,16 @@ public class Type {
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
 
         defineBuiltInType(JAVA_OBJECT, "object");
-        defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
-        defineBuiltInType(MAP, "map(*)", "map");                                                // keep `map` for backward compatibility
-        defineBuiltInType(ARRAY, "array(*)","array");
-        defineBuiltInType(NUMBER, "xs:numeric", "numeric");                                     // keep `numeric` for backward compatibility
+        defineBuiltInType(FUNCTION, "function(*)", "function");
+        defineBuiltInType(MAP_ITEM, "map(*)", "map");                                                // keep `map` for backward compatibility
+        defineBuiltInType(ARRAY_ITEM, "array(*)","array");
+        defineBuiltInType(NUMERIC, "xs:numeric", "numeric");                                     // keep `numeric` for backward compatibility
 
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
         defineBuiltInType(UNTYPED, "xs:untyped");
 
-        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");                     // keep `xdt:anyAtomicType` for backward compatibility
+        defineBuiltInType(ANY_ATOMIC_TYPE, "xs:anyAtomicType", "xdt:anyAtomicType");                     // keep `xdt:anyAtomicType` for backward compatibility
 
         defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");             // keep `xdt:untypedAtomic` for backward compatibility
 
@@ -292,11 +292,11 @@ public class Type {
         defineBuiltInType(DATE, "xs:date");
         defineBuiltInType(TIME, "xs:time");
         defineBuiltInType(DURATION, "xs:duration");
-        defineBuiltInType(GYEAR, "xs:gYear");
-        defineBuiltInType(GMONTH, "xs:gMonth");
-        defineBuiltInType(GDAY, "xs:gDay");
-        defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
-        defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
+        defineBuiltInType(G_YEAR, "xs:gYear");
+        defineBuiltInType(G_MONTH, "xs:gMonth");
+        defineBuiltInType(G_DAY, "xs:gDay");
+        defineBuiltInType(G_YEAR_MONTH, "xs:gYearMonth");
+        defineBuiltInType(G_MONTH_DAY, "xs:gMonthDay");
 
         defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");    // keep `xdt:yearMonthDuration` for backward compatibility
         defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");          // keep `xdt:dayTimeDuration` for backward compatibility
@@ -317,7 +317,7 @@ public class Type {
     }
 
     static {
-        defineUnionType(NUMBER, new int[]{ DECIMAL, FLOAT, DOUBLE });
+        defineUnionType(NUMERIC, new int[]{ DECIMAL, FLOAT, DOUBLE });
     }
 
     // https://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
@@ -360,11 +360,11 @@ public class Type {
         });
         definePrimitiveType(TIME);
         definePrimitiveType(DATE);
-        definePrimitiveType(GYEARMONTH);
-        definePrimitiveType(GYEAR);
-        definePrimitiveType(GMONTHDAY);
-        definePrimitiveType(GDAY);
-        definePrimitiveType(GMONTH);
+        definePrimitiveType(G_YEAR_MONTH);
+        definePrimitiveType(G_YEAR);
+        definePrimitiveType(G_MONTH_DAY);
+        definePrimitiveType(G_DAY);
+        definePrimitiveType(G_MONTH);
         definePrimitiveType(HEX_BINARY);
         definePrimitiveType(BASE64_BINARY);
         definePrimitiveType(ANY_URI);
@@ -500,13 +500,13 @@ public class Type {
         }
 
         if (supertype == ITEM || supertype == ANY_TYPE) {
-            // Note: this will return true even if subtype == EMPTY, maybe return subtype != EMPTY ?
+            // Note: this will return true even if subtype == EMPTY_SEQUENCE, maybe return subtype != EMPTY_SEQUENCE ?
             return true;
         }
 
-        // Note that EMPTY is *not* a sub-type of anything else than itself
+        // Note that EMPTY_SEQUENCE is *not* a sub-type of anything else than itself
         // EmptySequence has to take care of this when it checks its type
-        if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE) {
+        if (subtype == ITEM || subtype == EMPTY_SEQUENCE || subtype == ANY_TYPE || subtype == NODE) {
             return false;
         }
 
@@ -564,9 +564,9 @@ public class Type {
         }
         // if one of the types is empty(), return the other type: optimizer is free to choose
         // an optimization based on the more specific type.
-        if (type1 == Type.EMPTY) {
+        if (type1 == Type.EMPTY_SEQUENCE) {
             return type2;
-        } else if (type2 == Type.EMPTY) {
+        } else if (type2 == Type.EMPTY_SEQUENCE) {
             return type1;
         }
 

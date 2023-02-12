@@ -82,7 +82,7 @@ public final class SQLUtils {
             case Types.DOUBLE -> (Type.DOUBLE);
             case Types.FLOAT -> (Type.FLOAT);
             case Types.LONGVARCHAR -> (Type.STRING);
-            case Types.NUMERIC -> (Type.NUMBER);
+            case Types.NUMERIC -> (Type.NUMERIC);
             case Types.SMALLINT -> (Type.INT);
             case Types.TINYINT -> (Type.INT);
             case Types.INTEGER -> (Type.INTEGER);

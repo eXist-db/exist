@@ -46,7 +46,7 @@ public class EmptySequenceExpr extends AbstractExpression {
 
     @Override
     public int returnsType() {
-        return Type.EMPTY;
+        return Type.EMPTY_SEQUENCE;
     }
 
     @Override

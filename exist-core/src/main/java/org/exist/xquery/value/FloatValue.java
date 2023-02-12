@@ -186,9 +186,9 @@ public class FloatValue extends NumericValue {
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
-            case Type.NUMBER:
+            case Type.NUMERIC:
             case Type.FLOAT:
                 return this;
             case Type.DOUBLE:
@@ -339,7 +339,7 @@ public class FloatValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
      */
     public ComputableValue div(ComputableValue other) throws XPathException {
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
                 return NaN;

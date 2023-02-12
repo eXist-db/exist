@@ -135,7 +135,7 @@ public class SequenceConstructor extends PathExpr {
      */
     public void addPathIfNotFunction(final PathExpr path) throws XPathException {
         final int retType = path.returnsType();
-        if (Type.subTypeOf(retType, Type.FUNCTION_REFERENCE) && retType != Type.ARRAY) {
+        if (Type.subTypeOf(retType, Type.FUNCTION) && retType != Type.ARRAY_ITEM) {
             throw new XPathException(path, ErrorCodes.XQTY0105, "Function types are not allowed in element content. Got " + Type.getTypeName(retType));
         }
         super.addPath(path);

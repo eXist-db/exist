@@ -58,7 +58,7 @@ public class XMLDBSetMimeType extends BasicFunction {
                 new FunctionParameterSequenceType("resource-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The resource URI"),
                 new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.ZERO_OR_ONE, "The new mime-type, use empty sequence to set default value.")
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
 		);
 	
     public XMLDBSetMimeType(XQueryContext context, FunctionSignature signature) {

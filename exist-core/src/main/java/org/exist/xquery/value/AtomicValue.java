@@ -73,7 +73,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     @Override
     public int getType() {
-        return Type.ATOMIC;
+        return Type.ANY_ATOMIC_TYPE;
     }
 
     @Override
@@ -398,16 +398,29 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
         @Override
         public AtomicValue convertTo(final int requiredType) throws XPathException {
-            return switch (requiredType) {
-                case Type.ATOMIC, Type.ITEM, Type.STRING -> StringValue.EMPTY_STRING;
-                case Type.NORMALIZED_STRING, Type.TOKEN, Type.LANGUAGE, Type.NMTOKEN, Type.NAME, Type.NCNAME, Type.ID, Type.IDREF, Type.ENTITY ->
-                        new StringValue(getExpression(), "", requiredType);
-                case Type.ANY_URI -> AnyURIValue.EMPTY_URI;
-                case Type.BOOLEAN -> BooleanValue.FALSE;
+            switch (requiredType) {
+                case Type.ANY_ATOMIC_TYPE:
+                case Type.ITEM:
+                case Type.STRING:
+                    return StringValue.EMPTY_STRING;
+                case Type.NORMALIZED_STRING:
+                case Type.TOKEN:
+                case Type.LANGUAGE:
+                case Type.NMTOKEN:
+                case Type.NAME:
+                case Type.NCNAME:
+                case Type.ID:
+                case Type.IDREF:
+                case Type.ENTITY:
+                    return new StringValue(getExpression(), "", requiredType);
+                case Type.ANY_URI:
+                    return AnyURIValue.EMPTY_URI;
+                case Type.BOOLEAN:
+                    return BooleanValue.FALSE;
                 //case Type.FLOAT :
                 //return new FloatValue(value);
                 //case Type.DOUBLE :
-                //case Type.NUMBER :
+                //case Type.NUMERIC :
                 //return new DoubleValue(this);
                 //case Type.DECIMAL :
                 //return new DecimalValue(value);
@@ -453,8 +466,9 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
                 //return new GMonthDayValue(value);
                 //case Type.UNTYPED_ATOMIC :
                 //return new UntypedAtomicValue(getStringValue());
-                default -> throw new XPathException(getExpression(), "cannot convert empty value to " + requiredType);
-            };
+                default:
+                    throw new XPathException(getExpression(), "cannot convert empty value to " + requiredType);
+            }
         }
 
         @Override

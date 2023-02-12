@@ -65,7 +65,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 
 	@Override
 	public int returnsType() {
-		return Type.FUNCTION_REFERENCE;
+		return Type.FUNCTION;
 	}
 	
 	@Override

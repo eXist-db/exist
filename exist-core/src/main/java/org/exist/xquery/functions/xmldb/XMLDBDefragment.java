@@ -65,7 +65,7 @@ public class XMLDBDefragment extends BasicFunction {
 			new FunctionParameterSequenceType("integer", Type.INTEGER, Cardinality.EXACTLY_ONE,
                     "The minimum number of fragmented pages required before defragmenting")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Start a defragmentation run on each document which has a node in $nodes. " +
@@ -78,7 +78,7 @@ public class XMLDBDefragment extends BasicFunction {
 			new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ONE_OR_MORE,
                     "The sequence of nodes from the documents to defragment"),
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE))
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE))
     };
 
     public XMLDBDefragment(XQueryContext context, FunctionSignature signature) {

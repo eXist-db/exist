@@ -64,7 +64,7 @@ public class FunctionCall extends Function {
 
     private static FunctionSignature signatureForForwardReference(final QName name, final List<Expression> arguments) {
         final SequenceType[] functionSignatureArgs = new SequenceType[arguments.size() + 1];
-        functionSignatureArgs[0] = new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "forward-reference: " + name.getStringValue());
+        functionSignatureArgs[0] = new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "forward-reference: " + name.getStringValue());
         for (int i = 0; i < arguments.size(); i++) {
             final Expression argument = arguments.get(i);
             functionSignatureArgs[1 + i] = new SequenceType(argument.returnsType(), argument.getCardinality());
@@ -98,11 +98,11 @@ public class FunctionCall extends Function {
                 expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression, new Error(Error.FUNC_RETURN_CARDINALITY));
         }
         
-        if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC)) {
+        if(Type.subTypeOf(returnType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
                 expression = new Atomize(context, expression);
         }
         
-        if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMBER)) {
+        if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMERIC)) {
                 expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
         } else if(returnType.getPrimaryType() != Type.ITEM) {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
@@ -390,11 +390,11 @@ public class FunctionCall extends Function {
                 expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression, new Error(Error.FUNC_RETURN_CARDINALITY));
             }
 
-            if(Type.subTypeOf(returnType.getPrimaryType(), Type.ATOMIC)) {
+            if(Type.subTypeOf(returnType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
                 expression = new Atomize(context, expression);
             }
 
-            if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMBER)) {
+            if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMERIC)) {
                 expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
             } else if(returnType.getPrimaryType() != Type.ITEM) {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);

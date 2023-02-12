@@ -45,7 +45,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
     private static final String FS_RANDOM_NUMBER_GENERATOR_NAME = "random-number-generator";
 
     private static final FunctionReturnSequenceType FS_RANDOM_NUMBER_GENERATOR_RETURN_TYPE = returns(
-            Type.MAP,
+            Type.MAP_ITEM,
             "The function returns a random number generator. " +
             "A random number generator is represented as a map containing three entries. " +
             "The keys of each entry are strings: `number`, `next`, and `permute`.");
@@ -57,7 +57,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
             arities(
                     arity(),
                     arity(
-                            optParam("seed", Type.ATOMIC, "A seed value for the random generator")
+                            optParam("seed", Type.ANY_ATOMIC_TYPE, "A seed value for the random generator")
                     )
             )
     );

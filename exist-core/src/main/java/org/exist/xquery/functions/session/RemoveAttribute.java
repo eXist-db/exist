@@ -44,7 +44,7 @@ public class RemoveAttribute extends StrictSessionFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public RemoveAttribute(final XQueryContext context) {
         super(context, signature);

@@ -117,7 +117,7 @@ public class FunSubstring extends Function {
         	final String sourceString = seqSourceString.getStringValue();
     		
         	//check for a valid start position for the substring
-        	final NumericValue startingLoc = ((NumericValue)(argStartingLoc.eval(contextSequence, null).itemAt(0).convertTo(Type.NUMBER))).round();
+        	final NumericValue startingLoc = ((NumericValue)(argStartingLoc.eval(contextSequence, null).itemAt(0).convertTo(Type.NUMERIC))).round();
         	if(!validStartPosition(startingLoc, sourceString.length())) {
         		//invalid start position
         		result = StringValue.EMPTY_STRING;
@@ -125,7 +125,7 @@ public class FunSubstring extends Function {
 				//are there 2 or 3 arguments to this function?
 				if(getArgumentCount() > 2) {
 					argLength = getArgument(2);
-                    final NumericValue length = ((NumericValue)(argLength.eval(contextSequence, null).itemAt(0).convertTo(Type.NUMBER))).round();
+                    final NumericValue length = ((NumericValue)(argLength.eval(contextSequence, null).itemAt(0).convertTo(Type.NUMERIC))).round();
 
                     // Relocate length to position according to spec:
                     // fn:round($startingLoc) <=

@@ -109,28 +109,36 @@ public class YearMonthDurationValue extends OrderedDurationValue {
         return sb.toString();
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.ITEM, Type.ATOMIC, Type.YEAR_MONTH_DURATION -> this;
-            case Type.STRING -> new StringValue(getExpression(), getStringValue());
-            case Type.DURATION -> new DurationValue(getExpression(), TimeUtils.getInstance().newDuration(
-                    duration.getSign() >= 0,
-                    (BigInteger) duration.getField(DatatypeConstants.YEARS),
-                    (BigInteger) duration.getField(DatatypeConstants.MONTHS),
-                    null, null, null, null
-            ));
-            case Type.DAY_TIME_DURATION ->
-                    new DayTimeDurationValue(getExpression(), DayTimeDurationValue.CANONICAL_ZERO_DURATION);
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.ITEM:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.YEAR_MONTH_DURATION:
+                return this;
+            case Type.STRING:
+                return new StringValue(getExpression(), getStringValue());
+            case Type.DURATION:
+                return new DurationValue(getExpression(), TimeUtils.getInstance().newDuration(
+                        duration.getSign() >= 0,
+                        (BigInteger) duration.getField(DatatypeConstants.YEARS),
+                        (BigInteger) duration.getField(DatatypeConstants.MONTHS),
+                        null, null, null, null
+                ));
+            case Type.DAY_TIME_DURATION:
+                return new DayTimeDurationValue(getExpression(), DayTimeDurationValue.CANONICAL_ZERO_DURATION);
             //case Type.DOUBLE:
             //return new DoubleValue(monthsValueSigned().doubleValue());
             //return new DoubleValue(Double.NaN);
             //case Type.DECIMAL:
             //return new DecimalValue(monthsValueSigned().doubleValue());
-            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                    "cannot cast 'xs:yearMonthDuration(\"" + getStringValue() +
-                            "\")' to " + Type.getTypeName(requiredType));
-        };
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getExpression(), getStringValue());
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "cannot cast 'xs:yearMonthDuration(\"" + getStringValue() +
+                                "\")' to " + Type.getTypeName(requiredType));
+        }
     }
 
     protected DurationValue createSameKind(Duration dur) throws XPathException {

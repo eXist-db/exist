@@ -44,7 +44,7 @@ public class Clear extends StrictSessionFunction {
                     new QName("clear", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Removes all attributes from the current HTTP session. Does NOT invalidate the session.",
                     null,
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public Clear(final XQueryContext context) {
         super(context, signature);

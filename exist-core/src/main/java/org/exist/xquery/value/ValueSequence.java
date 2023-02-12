@@ -462,7 +462,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             }
             size = j;
         } else {
-            if (itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ATOMIC)) {
+            if (itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ANY_ATOMIC_TYPE)) {
                 return;
             }
             // check if the sequence contains nodes

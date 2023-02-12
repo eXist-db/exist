@@ -104,7 +104,7 @@ public class ArrowOperator extends AbstractExpression {
                     "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
                             ". Expression: " + ExpressionDumper.dump(funcSpec));}
             final Item item0 = funcSeq.itemAt(0);
-            if (!Type.subTypeOf(item0.getType(), Type.FUNCTION_REFERENCE)) {
+            if (!Type.subTypeOf(item0.getType(), Type.FUNCTION)) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Type error: expected function, got " + Type.getTypeName(item0.getType()));
             }

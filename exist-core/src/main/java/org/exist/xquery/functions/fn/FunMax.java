@@ -95,19 +95,19 @@ public class FunMax extends CollatingFunction {
 					FUNCTION_DESCRIPTION_COMMON_1 +
                     FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence")
+						new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence")
 					},
-					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
+					new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the max value")
 			),
 			new FunctionSignature(
 					new QName("max", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION_COMMON_1  + FUNCTION_DESCRIPTION_2_PARAM +
                     FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence"),
+						new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence"),
 						new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 					},
-					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the max value")
+					new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the max value")
 			)
 	};
 
@@ -170,7 +170,7 @@ public class FunMax extends CollatingFunction {
                     {max = value;}
                 
                 else {
-                	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ATOMIC) {
+                	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
                 				" and " + Type.getTypeName(value.getType()), max);
                 	}
@@ -179,9 +179,9 @@ public class FunMax extends CollatingFunction {
                     	{value = value.convertTo(Type.DOUBLE);}                	
 
                     //Numeric tests
-	                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
+	                if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
 	                	//Don't mix comparisons
-	                	if (!Type.subTypeOfUnion(max.getType(), Type.NUMBER))
+	                	if (!Type.subTypeOfUnion(max.getType(), Type.NUMERIC))
 	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
 	                				" and " + Type.getTypeName(value.getType()), max);}
 	                	if (((NumericValue) value).isNaN()) {

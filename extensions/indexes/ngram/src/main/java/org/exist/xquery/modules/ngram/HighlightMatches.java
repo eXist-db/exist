@@ -67,7 +67,7 @@ public class HighlightMatches extends BasicFunction {
             "once for every text node which is part of the matching text sequence.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The sequence of nodes"),
-                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The callback function")
+                    new FunctionParameterSequenceType("function-reference", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The callback function")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "a resulting node set"));
 

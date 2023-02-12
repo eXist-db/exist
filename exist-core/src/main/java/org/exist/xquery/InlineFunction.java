@@ -89,7 +89,7 @@ public class InlineFunction extends AbstractExpression {
 
 	@Override
 	public int returnsType() {
-		return Type.FUNCTION_REFERENCE;
+		return Type.FUNCTION;
 	}
 
     @Override

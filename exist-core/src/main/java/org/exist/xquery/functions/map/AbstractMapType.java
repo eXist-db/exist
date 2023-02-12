@@ -53,7 +53,7 @@ public abstract class AbstractMapType extends FunctionReference
     /**
      * Used when a map contains keys of various xs:anyAtomicType
      */
-    public static final int MIXED_KEY_TYPES = Type.ATOMIC;
+    public static final int MIXED_KEY_TYPES = Type.ANY_ATOMIC_TYPE;
 
     private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
 
@@ -63,7 +63,7 @@ public abstract class AbstractMapType extends FunctionReference
             new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX),
             "Internal accessor function for maps.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The key to look up")
+                    new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The key to look up")
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
@@ -101,12 +101,12 @@ public abstract class AbstractMapType extends FunctionReference
 
     @Override
     public int getItemType() {
-        return Type.MAP;
+        return Type.MAP_ITEM;
     }
 
     @Override
     public int getType() {
-        return Type.MAP;
+        return Type.MAP_ITEM;
     }
 
     @Override

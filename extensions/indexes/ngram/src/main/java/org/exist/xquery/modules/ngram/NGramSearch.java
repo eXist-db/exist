@@ -140,7 +140,7 @@ public class NGramSearch extends Function implements Optimizable {
         Expression arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg, new org.exist.xquery.util.Error(
             Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+        if(!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE))
             arg = new Atomize(context, arg);
         steps.add(arg);
     }

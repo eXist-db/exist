@@ -42,7 +42,7 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
 				new FunctionParameterSequenceType("location", Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The location of the module")
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE),
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE),
 				"Use fn:load-module#2 instead!"),
 		new FunctionSignature(
 			new QName("declare-namespace", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -51,7 +51,7 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.EXACTLY_ONE, "The prefix to be assigned to the namespace"),
 				new FunctionParameterSequenceType("namespace-uri", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The namespace URI")
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
 		new FunctionSignature(
 			new QName("declare-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically declares a serialization option as with 'declare option'.",
@@ -59,7 +59,7 @@ public class PrologFunctions extends BasicFunction {
 				new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option name"),
 				new FunctionParameterSequenceType("option", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization option value")
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
                 new FunctionSignature(
                     new QName("get-option", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Gets the value of a serialization option as set with 'declare option'.",

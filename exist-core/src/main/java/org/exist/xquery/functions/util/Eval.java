@@ -593,7 +593,7 @@ public class Eval extends BasicFunction {
                     }
                 }
                 final String type = elem.getAttribute("type");
-                if (type != null && Type.subTypeOf(Type.getType(type), Type.ATOMIC)) {
+                if (type != null && Type.subTypeOf(Type.getType(type), Type.ANY_ATOMIC_TYPE)) {
                     innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
                 } else {
                     innerContext.declareVariable(qname, value);

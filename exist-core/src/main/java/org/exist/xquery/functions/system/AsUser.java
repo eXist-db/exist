@@ -70,7 +70,7 @@ public class AsUser extends Function {
             returnsOptMany(Type.ITEM, "the results of the code block executed"),
             param("username", Type.STRING, "The username of the user to run the code against"),
             optParam("password", Type.STRING, "The password of the user to run the code against"),
-            param("function", Type.FUNCTION_REFERENCE, "The zero arity function to run as the identified user")
+            param("function", Type.FUNCTION, "The zero arity function to run as the identified user")
     );
 
     public AsUser(final XQueryContext context, final FunctionSignature signature) {

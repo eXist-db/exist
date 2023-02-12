@@ -395,7 +395,7 @@ public class LocationStep extends Step {
                     case Constants.SELF_AXIS:
                         if (!(contextSequence instanceof VirtualNodeSet)
                                 && Type.subTypeOf(contextSequence.getItemType(),
-                                Type.ATOMIC)) {
+                                Type.ANY_ATOMIC_TYPE)) {
                             // This test is copied from the legacy method
                             // getSelfAtomic()
                             if (!test.isWildcardTest()) {

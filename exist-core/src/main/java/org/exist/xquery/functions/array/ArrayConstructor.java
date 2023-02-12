@@ -81,7 +81,7 @@ public class ArrayConstructor extends AbstractExpression {
 
     @Override
     public int returnsType() {
-        return Type.ARRAY;
+        return Type.ARRAY_ITEM;
     }
 
     @Override

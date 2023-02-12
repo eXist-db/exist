@@ -56,7 +56,7 @@ public class TriggerSystemTask extends BasicFunction {
                 new FunctionParameterSequenceType("java-classname", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the Java class to execute.  It must implement org.exist.storage.SystemTask"),
                 new FunctionParameterSequenceType("task-parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The XML fragment with the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/></parameters>")
             },
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
 
     public TriggerSystemTask(XQueryContext context) {

@@ -51,7 +51,7 @@ public class SetHeader extends StrictResponseFunction {
                     new QName("set-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Header on the HTTP Response.",
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public SetHeader(final XQueryContext context) {
         super(context, signature);

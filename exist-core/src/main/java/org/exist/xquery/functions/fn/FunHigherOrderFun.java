@@ -42,7 +42,7 @@ public class FunHigherOrderFun extends BasicFunction {
                     "$sequence in turn, returning the concatenation of the resulting sequences in order.",
             new SequenceType[]{
                     new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence on which to apply the function"),
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of applying the function to each item of the sequence")
     );
@@ -54,7 +54,7 @@ public class FunHigherOrderFun extends BasicFunction {
             new SequenceType[]{
                     new FunctionParameterSequenceType("seq1", Type.ITEM, Cardinality.ZERO_OR_MORE, "first sequence to take items from"),
                     new FunctionParameterSequenceType("seq2", Type.ITEM, Cardinality.ZERO_OR_MORE, "second sequence to take items from"),
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "concatenation of resulting sequences")
     );
@@ -64,7 +64,7 @@ public class FunHigherOrderFun extends BasicFunction {
             "Returns those items from the sequence $sequence for which the supplied function $function returns true.",
             new SequenceType[]{
                     new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of filtering the sequence")
     );
@@ -76,7 +76,7 @@ public class FunHigherOrderFun extends BasicFunction {
             new SequenceType[]{
                     new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
                     new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "initial value to start with"),
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call")
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the fold-left operation")
     );
@@ -88,7 +88,7 @@ public class FunHigherOrderFun extends BasicFunction {
             new SequenceType[]{
                     new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
                     new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "initial value to start with"),
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call"),
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the fold-right operation")
     );
@@ -98,8 +98,8 @@ public class FunHigherOrderFun extends BasicFunction {
             "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
                     "item in turn, together with an accumulated result value.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the function to call"),
-                    new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "an array containing the arguments to pass to the function")
+                    new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "the function to call"),
+                    new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "an array containing the arguments to pass to the function")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "return value of the function call")
     );

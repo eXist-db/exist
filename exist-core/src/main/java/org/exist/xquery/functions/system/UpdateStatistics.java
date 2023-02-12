@@ -47,7 +47,7 @@ public class UpdateStatistics extends BasicFunction {
         "yet usable in a normal eXist setup. update-statistics rebuilds index statistics " +
         "for the entire database.",
         null,
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public UpdateStatistics(XQueryContext context) {
         super(context, signature);

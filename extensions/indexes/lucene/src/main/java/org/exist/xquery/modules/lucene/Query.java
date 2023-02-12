@@ -350,7 +350,7 @@ public class Query extends Function implements Optimizable {
         final Sequence optSeq = funct.getArgument(position - 1).eval(contextSequence, contextItem);
         if (Type.subTypeOf(optSeq.getItemType(), Type.ELEMENT)) {
             return new QueryOptions(funct.getContext(), (NodeValue) optSeq.itemAt(0));
-        } else if (Type.subTypeOf(optSeq.getItemType(), Type.MAP)) {
+        } else if (Type.subTypeOf(optSeq.getItemType(), Type.MAP_ITEM)) {
             return new QueryOptions((AbstractMapType) optSeq.itemAt(0));
         } else {
             throw new XPathException(funct, LuceneModule.EXXQDYFT0004, "Argument 3 should be either a map or an XML element");

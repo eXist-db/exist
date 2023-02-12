@@ -75,15 +75,22 @@ public class GYearMonthValue extends AbstractDateTimeValue {
         return calendar;
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.GYEARMONTH, Type.ATOMIC, Type.ITEM -> new GYearMonthValue(getExpression(), this.calendar);
-            case Type.STRING -> new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                    "Type error: cannot cast xs:time to "
-                            + Type.getTypeName(requiredType));
-        };
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.G_YEAR_MONTH:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.ITEM:
+                return new GYearMonthValue(getExpression(), this.calendar);
+            case Type.STRING:
+                return new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getExpression(), getStringValue());
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                        "Type error: cannot cast xs:time to "
+                                + Type.getTypeName(requiredType));
+        }
     }
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal)
@@ -92,7 +99,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GYEARMONTH;
+        return Type.G_YEAR_MONTH;
     }
 
     protected QName getXMLSchemaType() {
