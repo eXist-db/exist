@@ -46,7 +46,7 @@ public class FnTransform extends BasicFunction {
     static final FunctionSignature FS_TRANSFORM = functionSignature(
             FnTransform.FS_TRANSFORM_NAME,
             "Invokes a transformation using a dynamically-loaded XSLT stylesheet.",
-            returnsOptMany(Type.MAP, "The result of the transformation is returned as a map. " +
+            returnsOptMany(Type.MAP_ITEM, "The result of the transformation is returned as a map. " +
                     "There is one entry in the map for the principal result document, and one for each " +
                     "secondary result document. The key is a URI in the form of an xs:string value. " +
                     "The key for the principal result document is the base output URI if specified, or " +
@@ -54,7 +54,7 @@ public class FnTransform extends BasicFunction {
                     "document, as an absolute URI. The associated value in each entry depends on the requested " +
                     "delivery format. If the delivery format is document, the value is a document node. If the " +
                     "delivery format is serialized, the value is a string containing the serialized result."),
-            param("options", Type.MAP, "The inputs to the transformation are supplied in the form of a map")
+            param("options", Type.MAP_ITEM, "The inputs to the transformation are supplied in the form of a map")
     );
 
     private final Transform transform;

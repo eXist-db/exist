@@ -51,7 +51,7 @@ public class TwoParamFunctions extends BasicFunction {
             "Returns the result of raising the first argument to the power of the second.",
             new SequenceType[]{
                     new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The value"),
-                    new FunctionParameterSequenceType("power", Type.NUMBER, Cardinality.EXACTLY_ONE, "The power to raise the value to")
+                    new FunctionParameterSequenceType("power", Type.NUMERIC, Cardinality.EXACTLY_ONE, "The power to raise the value to")
             },
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );

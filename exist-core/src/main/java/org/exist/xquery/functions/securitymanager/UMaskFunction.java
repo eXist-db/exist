@@ -66,7 +66,7 @@ public class UMaskFunction extends BasicFunction {
             new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The username of the account to set the umask for."),
             new FunctionParameterSequenceType("umask", Type.INT, Cardinality.EXACTLY_ONE, "The umask to set as an integer.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
     public UMaskFunction(final XQueryContext context, final FunctionSignature signature) {

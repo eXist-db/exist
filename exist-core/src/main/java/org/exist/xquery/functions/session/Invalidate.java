@@ -42,7 +42,7 @@ public class Invalidate extends SessionFunction {
                     new QName("invalidate", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Invalidate (remove) the current HTTP session if present",
                     null,
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public Invalidate(final XQueryContext context) {
         super(context, signature);

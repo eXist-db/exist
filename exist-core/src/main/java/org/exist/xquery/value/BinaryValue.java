@@ -188,7 +188,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
         final AtomicValue result;
 
-        if (requiredType == getType() || requiredType == Type.ITEM || requiredType == Type.ATOMIC) {
+        if (requiredType == getType() || requiredType == Type.ITEM || requiredType == Type.ANY_ATOMIC_TYPE) {
             result = this;
         } else {
             switch (requiredType) {

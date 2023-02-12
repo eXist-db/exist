@@ -175,7 +175,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ITEM:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.DAY_TIME_DURATION:
                 return new DayTimeDurationValue(getExpression(), getCanonicalDuration());
             case Type.STRING: {

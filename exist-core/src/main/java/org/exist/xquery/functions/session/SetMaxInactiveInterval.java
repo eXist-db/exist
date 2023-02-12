@@ -50,7 +50,7 @@ public class SetMaxInactiveInterval extends SessionFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("interval", Type.INT, Cardinality.EXACTLY_ONE, "The maximum inactive interval (in seconds) before closing the session")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public SetMaxInactiveInterval(final XQueryContext context) {
         super(context, signature);

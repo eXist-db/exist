@@ -40,7 +40,7 @@ abstract class FunRoundBase extends BasicFunction {
     }
 
     public int returnsType() {
-        return Type.NUMBER;
+        return Type.NUMERIC;
     }
 
     abstract protected RoundingMode getFunctionRoundingMode(NumericValue value);
@@ -57,7 +57,7 @@ abstract class FunRoundBase extends BasicFunction {
         if (item instanceof NumericValue) {
             value = (NumericValue) item;
         } else {
-            value = (NumericValue) item.convertTo(Type.NUMBER);
+            value = (NumericValue) item.convertTo(Type.NUMERIC);
         }
 
         final RoundingMode roundingMode = getFunctionRoundingMode(value);

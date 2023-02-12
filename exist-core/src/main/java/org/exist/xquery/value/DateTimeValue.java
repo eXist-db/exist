@@ -148,7 +148,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.DATE_TIME:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
             case Type.DATE_TIME_STAMP:
@@ -157,15 +157,15 @@ public class DateTimeValue extends AbstractDateTimeValue {
                 return new DateValue(getExpression(), calendar);
             case Type.TIME:
                 return new TimeValue(getExpression(), calendar);
-            case Type.GYEAR:
+            case Type.G_YEAR:
                 return new GYearValue(getExpression(), calendar);
-            case Type.GYEARMONTH:
+            case Type.G_YEAR_MONTH:
                 return new GYearMonthValue(getExpression(), calendar);
-            case Type.GMONTHDAY:
+            case Type.G_MONTH_DAY:
                 return new GMonthDayValue(getExpression(), calendar);
-            case Type.GDAY:
+            case Type.G_DAY:
                 return new GDayValue(getExpression(), calendar);
-            case Type.GMONTH:
+            case Type.G_MONTH:
                 return new GMonthValue(getExpression(), calendar);
             case Type.STRING:
                 return new StringValue(getExpression(), getStringValue());

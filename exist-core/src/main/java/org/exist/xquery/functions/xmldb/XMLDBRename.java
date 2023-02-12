@@ -54,7 +54,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 				new SequenceType[] {
                 new FunctionParameterSequenceType("source-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The source collection URI"),
                 new FunctionParameterSequenceType("new-collection-name", Type.STRING, Cardinality.EXACTLY_ONE, "The new collection name")},
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
 		),
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -64,7 +64,7 @@ public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
                 new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
                 new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource"),
                 new FunctionParameterSequenceType("new-resource-name", Type.STRING, Cardinality.EXACTLY_ONE, "The new resource name")},
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
 		)
 	};
 	

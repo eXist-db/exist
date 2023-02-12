@@ -129,7 +129,7 @@ public class QNameValue extends AtomicValue {
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
             case Type.QNAME:
                 return this;

@@ -158,7 +158,7 @@ public class Sync extends BasicFunction {
 
         final Item item = parameter.itemAt(0);
 
-        if (item.getType() == Type.MAP) {
+        if (item.getType() == Type.MAP_ITEM) {
             final AbstractMapType optionsMap = (AbstractMapType) item;
 
             outputProperties = SerializerUtils.getSerializationOptions(this, optionsMap);

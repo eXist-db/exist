@@ -1035,7 +1035,7 @@ throws XPathException
                 try {
                     QName qn= QName.parse(staticContext, t.getText());
                     int code= Type.getType(qn);
-                    if (!Type.subTypeOf(code, Type.ATOMIC))
+                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE))
                         throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, qn.toString() + " is not atomic");
                     type.setPrimaryType(code);
                 } catch (final XPathException e) {
@@ -1049,7 +1049,7 @@ throws XPathException
         #(
             "empty"
             {
-                type.setPrimaryType(Type.EMPTY);
+                type.setPrimaryType(Type.EMPTY_SEQUENCE);
                 type.setCardinality(Cardinality.EMPTY_SEQUENCE);
             }
         )
@@ -1057,13 +1057,13 @@ throws XPathException
         #(
             "empty-sequence"
             {
-                type.setPrimaryType(Type.EMPTY);
+                type.setPrimaryType(Type.EMPTY_SEQUENCE);
                 type.setCardinality(Cardinality.EMPTY_SEQUENCE);
             }
         )
         |
         #(
-            FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION_REFERENCE); }
+            FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION); }
             (
                 STAR
                 |
@@ -1083,7 +1083,7 @@ throws XPathException
         )
         |
         #(
-            MAP_TEST { type.setPrimaryType(Type.MAP); }
+            MAP_TEST { type.setPrimaryType(Type.MAP_ITEM); }
             (
                 STAR
                 |
@@ -1101,7 +1101,7 @@ throws XPathException
         )
         |
         #(
-            ARRAY_TEST { type.setPrimaryType(Type.ARRAY); }
+            ARRAY_TEST { type.setPrimaryType(Type.ARRAY_ITEM); }
             (
                 STAR
                 |

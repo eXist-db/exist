@@ -61,13 +61,13 @@ public class FunRound extends FunRoundBase {
 			"and the resulting xs:decimal is cast back to xs:float or xs:double as appropriate " +
 			"to form the function result. If the resulting xs:decimal value is zero, " +
 			"then positive or negative zero is returned according to the sign of $arg.";
-	private static final FunctionReturnSequenceType returnType = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
+	private static final FunctionReturnSequenceType returnType = new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE, "the rounded value");
 
 	public static final FunctionSignature[] FN_ROUND_SIGNATURES = {
 			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
-					optParam("arg", Type.NUMBER, "The input number")),
+					optParam("arg", Type.NUMERIC, "The input number")),
 			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
-					optParam("arg", Type.NUMBER, "The input number"),
+					optParam("arg", Type.NUMERIC, "The input number"),
 					optParam("precision", Type.INTEGER, "The input number"))
 	};
 
@@ -76,7 +76,7 @@ public class FunRound extends FunRoundBase {
 	}
 
 	public int returnsType() {
-		return Type.NUMBER;
+		return Type.NUMERIC;
 	}
 
 	/**

@@ -67,7 +67,7 @@ public class FunNumber extends Function {
         "following the rules of 17.1.3.2 Casting to xs:double. If the conversion " +
         "to xs:double fails, the xs:double value NaN is returned.";
 
-    protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The input item");
+    protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The input item");
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value");
 
     public final static FunctionSignature[] signatures = {

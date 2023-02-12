@@ -67,7 +67,7 @@ public class FunConcat extends Function {
             new SequenceType[] {
                 //More complicated : see below
                 new FunctionParameterSequenceType("atomizable-values",
-                    Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The atomizable values")
+                    Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The atomizable values")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
                 "The concatenated values"),
@@ -94,7 +94,7 @@ public class FunConcat extends Function {
 	            argument = new DynamicCardinalityCheck(context,
 	                Cardinality.ZERO_OR_ONE, argument,
 	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
-	            if (!Type.subTypeOf(argument.returnsType(), Type.ATOMIC))
+	            if (!Type.subTypeOf(argument.returnsType(), Type.ANY_ATOMIC_TYPE))
 	                {argument = new Atomize(context, argument);}
         	}
             steps.add(argument);

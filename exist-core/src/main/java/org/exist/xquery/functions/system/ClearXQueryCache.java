@@ -45,7 +45,7 @@ public class ClearXQueryCache extends BasicFunction {
         new QName("clear-xquery-cache", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Clear XQuery cache.",
         FunctionSignature.NO_ARGS,
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public ClearXQueryCache(XQueryContext context) {

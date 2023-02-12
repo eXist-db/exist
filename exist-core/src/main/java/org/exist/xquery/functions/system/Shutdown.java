@@ -54,7 +54,7 @@ public class Shutdown extends BasicFunction
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Shutdown eXist immediately.  This method is only available to the DBA role.",
 			null,
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
 		),
 		
 		new FunctionSignature(
@@ -63,7 +63,7 @@ public class Shutdown extends BasicFunction
 			new SequenceType[] {
 					new FunctionParameterSequenceType("delay", Type.LONG, Cardinality.EXACTLY_ONE, "The delay in milliseconds before eXist starts to shutdown.")
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+			new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
 		)
 	};
 		

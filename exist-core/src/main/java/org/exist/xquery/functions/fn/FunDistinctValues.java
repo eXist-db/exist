@@ -66,10 +66,10 @@ public class FunDistinctValues extends CollatingFunction {
             "Returns a sequence where duplicate values of $atomic-values, " +
             "based on value equality, have been deleted.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC,
+                new FunctionParameterSequenceType("atomic-values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The atomic values")
             },
-            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+            new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "the distinct values sequence")
         ),
         new FunctionSignature(
@@ -78,12 +78,12 @@ public class FunDistinctValues extends CollatingFunction {
             "based on value equality specified by collation $collation-uri, " + 
             "have been deleted.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("atomic-values", Type.ATOMIC,
+                new FunctionParameterSequenceType("atomic-values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The atomic values"),
                 new FunctionParameterSequenceType("collation-uri", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
-            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+            new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "the distinct values sequence")
         )
     };
@@ -96,7 +96,7 @@ public class FunDistinctValues extends CollatingFunction {
      * @see org.exist.xquery.PathExpr#returnsType()
      */
     public int returnsType() {
-        return Type.ATOMIC;
+        return Type.ANY_ATOMIC_TYPE;
     }
 
     /* (non-Javadoc)
@@ -126,7 +126,7 @@ public class FunDistinctValues extends CollatingFunction {
             item = i.nextItem();
             value = item.atomize();
             if (!set.contains(value)) {
-                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
+                if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
                     if (((NumericValue)value).isNaN()) {
                         //although NaN does not equal itself, if $arg 
                         //contains multiple NaN values a single NaN is returned.

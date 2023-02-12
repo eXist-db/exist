@@ -194,7 +194,7 @@ public class SequenceType {
      * @throws XPathException if subtype check fails
      */
     public void checkType(int type) throws XPathException {
-        if (type == Type.EMPTY || type == Type.ITEM) {
+        if (type == Type.EMPTY_SEQUENCE || type == Type.ITEM) {
             return;
         }
 

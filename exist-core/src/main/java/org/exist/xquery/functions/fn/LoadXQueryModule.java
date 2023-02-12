@@ -57,7 +57,7 @@ public class LoadXQueryModule extends BasicFunction {
                             Cardinality.EXACTLY_ONE, "The target namespace of the module")
             },
             new FunctionReturnSequenceType(
-                    Type.MAP,
+                    Type.MAP_ITEM,
                     Cardinality.EXACTLY_ONE,
                     "a map with two entries: 1) 'variables': a map with one entry for each public global variable declared in " +
                             "the library module. The key of the entry is the name of the variable, as an xs:QName value; the " +
@@ -76,11 +76,11 @@ public class LoadXQueryModule extends BasicFunction {
             new SequenceType[] {
                     new FunctionParameterSequenceType("module-uri", Type.STRING,
                             Cardinality.EXACTLY_ONE, "The target namespace of the module"),
-                    new FunctionParameterSequenceType("options", Type.MAP,
+                    new FunctionParameterSequenceType("options", Type.MAP_ITEM,
                             Cardinality.EXACTLY_ONE, "Options for loading the module")
             },
             new FunctionReturnSequenceType(
-                    Type.MAP,
+                    Type.MAP_ITEM,
                     Cardinality.EXACTLY_ONE,
                     "a map with two entries: 1) 'variables': a map with one entry for each public global variable declared in " +
                             "the library module. The key of the entry is the name of the variable, as an xs:QName value; the " +
@@ -133,7 +133,7 @@ public class LoadXQueryModule extends BasicFunction {
 
             final Sequence vars = map.get(OPTIONS_VARIABLES);
             if (!vars.isEmpty()) {
-                if (vars.hasOne() && vars.itemAt(0).getType() == Type.MAP) {
+                if (vars.hasOne() && vars.itemAt(0).getType() == Type.MAP_ITEM) {
                     externalVars = (AbstractMapType) vars.itemAt(0);
                 } else {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Option 'variables' must be a map");

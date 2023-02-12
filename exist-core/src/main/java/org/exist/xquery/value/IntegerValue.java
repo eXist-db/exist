@@ -283,14 +283,14 @@ public class IntegerValue extends NumericValue {
         }
 
         switch (requiredType) {
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
             case Type.DECIMAL:
                 return new DecimalValue(getExpression(), new BigDecimal(value));
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
-            case Type.NUMBER:
+            case Type.NUMERIC:
                 return new IntegerValue(getExpression(), value, requiredType, false);
             case Type.LONG:
             case Type.INTEGER:

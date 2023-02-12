@@ -101,7 +101,7 @@ public class MapExpr extends AbstractExpression {
 
     @Override
     public int returnsType() {
-        return Type.MAP;
+        return Type.MAP_ITEM;
     }
 
     @Override

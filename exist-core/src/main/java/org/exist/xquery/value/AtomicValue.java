@@ -73,7 +73,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     @Override
     public int getType() {
-        return Type.ATOMIC;
+        return Type.ANY_ATOMIC_TYPE;
     }
 
     @Override
@@ -399,7 +399,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         @Override
         public AtomicValue convertTo(final int requiredType) throws XPathException {
             switch (requiredType) {
-                case Type.ATOMIC:
+                case Type.ANY_ATOMIC_TYPE:
                 case Type.ITEM:
                 case Type.STRING:
                     return StringValue.EMPTY_STRING;

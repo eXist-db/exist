@@ -50,7 +50,7 @@ public class FunData extends Function {
             qnData,
             "Atomizes the context item, replacing all nodes in the sequence by their typed values.",
             new SequenceType[0],
-            new FunctionReturnSequenceType(Type.ATOMIC,
+            new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE,
                 Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
         ),
         new FunctionSignature(
@@ -60,7 +60,7 @@ public class FunData extends Function {
                 new FunctionParameterSequenceType("items", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The items")
             },
-            new FunctionReturnSequenceType(Type.ATOMIC,
+            new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE,
                 Cardinality.ZERO_OR_MORE, "the atomic values of the items in $items")
         )
     };

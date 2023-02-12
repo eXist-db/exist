@@ -121,7 +121,7 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("stylesheet", Type.ITEM, Cardinality.EXACTLY_ONE, "The XSL stylesheet"),
                             new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
             new FunctionSignature(
                     new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
                     "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
@@ -134,7 +134,7 @@ public class Transform extends BasicFunction {
                             new FunctionParameterSequenceType("parameters", Type.NODE, Cardinality.ZERO_OR_ONE, "The transformer parameters"),
                             new FunctionParameterSequenceType("attributes", Type.NODE, Cardinality.ZERO_OR_ONE, "Attributes to pass to the transformation factory"),
                             new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.ZERO_OR_ONE, "The serialization options")},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE))
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE))
     };
 
     private static final Logger logger = LogManager.getLogger(Transform.class);

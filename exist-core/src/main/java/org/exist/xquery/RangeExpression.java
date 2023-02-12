@@ -92,7 +92,7 @@ public class RangeExpression extends PathExpr {
 	        	NumericValue valueStart;
 	        	try {
 	        		//Currently breaks 1e3 to 3
-	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMBER);
+	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMERIC);
 	        	} catch (final XPathException e) {
 					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
@@ -101,7 +101,7 @@ public class RangeExpression extends PathExpr {
 	        	NumericValue valueEnd;
 	        	try {
 	        		//Currently breaks 3 to 1e3
-	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMBER);
+	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMERIC);
 	        	} catch (final XPathException e) {
 					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
 							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +

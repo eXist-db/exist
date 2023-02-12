@@ -277,7 +277,7 @@ public class    AnyURIValue extends AtomicValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ITEM:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ANY_URI:
                 return this;
             case Type.STRING:

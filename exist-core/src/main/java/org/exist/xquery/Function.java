@@ -275,7 +275,7 @@ public abstract class Function extends PathExpr {
                 new Error(Error.FUNC_PARAM_CARDINALITY, argPosition, mySignature));
         // check return type if both types are not Type.ITEM
         int returnType = argument.returnsType();
-        if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY) {
+        if (returnType == Type.ANY_TYPE || returnType == Type.EMPTY_SEQUENCE) {
             returnType = Type.ITEM;
         }
         final boolean typeMatches = Type.subTypeOf(returnType, argType.getPrimaryType());
@@ -345,13 +345,13 @@ public abstract class Function extends PathExpr {
             @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
             int returnType) {
         if (Type.subTypeOf(argType.getPrimaryType(), Type.STRING)) {
-            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+            if (!Type.subTypeOf(returnType, Type.ANY_ATOMIC_TYPE)) {
                 argument = new Atomize(context, argument);
             }
             argument = new AtomicToString(context, argument);
             returnType = Type.STRING;
-        } else if (Type.subTypeOfUnion(argType.getPrimaryType(), Type.NUMBER)) {
-            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+        } else if (Type.subTypeOfUnion(argType.getPrimaryType(), Type.NUMERIC)) {
+            if (!Type.subTypeOf(returnType, Type.ANY_ATOMIC_TYPE)) {
                 argument = new Atomize(context, argument);
             }
             argument = new UntypedValueCheck(context, argType.getPrimaryType(), argument,
@@ -359,11 +359,11 @@ public abstract class Function extends PathExpr {
             returnType = argType.getPrimaryType();
         }
         //If the required type is an atomic type, convert the argument to an atomic
-        if (Type.subTypeOf(argType.getPrimaryType(), Type.ATOMIC)) {
-            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+        if (Type.subTypeOf(argType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
+            if (!Type.subTypeOf(returnType, Type.ANY_ATOMIC_TYPE)) {
                 argument = new Atomize(context, argument);
             }
-            if (argType.getPrimaryType() != Type.ATOMIC) {
+            if (argType.getPrimaryType() != Type.ANY_ATOMIC_TYPE) {
                 argument = new UntypedValueCheck(context, argType.getPrimaryType(),
                         argument, new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
             }
@@ -378,9 +378,9 @@ public abstract class Function extends PathExpr {
             int returnType) {
 
         // if the required type is an atomic type, convert the argument to an atomic
-        if (Type.subTypeOf(argType.getPrimaryType(), Type.ATOMIC)) {
+        if (Type.subTypeOf(argType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
 
-            if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
+            if (!Type.subTypeOf(returnType, Type.ANY_ATOMIC_TYPE)) {
                 // Atomization!
                 argument = new Atomize(context, argument);
             }

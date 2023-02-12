@@ -75,8 +75,8 @@ public class GMonthDayValue extends AbstractDateTimeValue {
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GMONTHDAY:
-            case Type.ATOMIC:
+            case Type.G_MONTH_DAY:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
             case Type.STRING:
@@ -96,7 +96,7 @@ public class GMonthDayValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GMONTHDAY;
+        return Type.G_MONTH_DAY;
     }
 
     protected QName getXMLSchemaType() {

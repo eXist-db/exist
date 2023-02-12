@@ -40,7 +40,6 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class Lookup extends Function implements Optimizable {
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "The node set to search using a range index which is defined on those nodes"),
-            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                     "The key to look up.")
     };
 
