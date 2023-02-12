@@ -341,7 +341,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     @Override
     public boolean equals(final Object other) {
-        if(!(other instanceof NodeProxy otherNode)) {
+        if(!(other instanceof final NodeProxy otherNode)) {
             return false;
         }
 
@@ -671,25 +671,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     //	methods of interface Item
     @Override
     public int getType() {
-        return nodeType2XQuery(nodeType);
-    }
-
-    public static int nodeType2XQuery(final short nodeType) {
-        return switch (nodeType) {
-            case Node.ELEMENT_NODE ->
-                //TODO : return Type.DOCUMENT for some in-memory nodes :
-                //http://sourceforge.net/tracker/index.php?func=detail&aid=1730690&group_id=17691&atid=117691
-                //Ideally compute this when proxy is constructed
-                    Type.ELEMENT;
-            case Node.ATTRIBUTE_NODE -> Type.ATTRIBUTE;
-            case Node.TEXT_NODE -> Type.TEXT;
-            case Node.CDATA_SECTION_NODE -> Type.CDATA_SECTION;
-            case Node.PROCESSING_INSTRUCTION_NODE -> Type.PROCESSING_INSTRUCTION;
-            case Node.COMMENT_NODE -> Type.COMMENT;
-            case Node.DOCUMENT_NODE -> Type.DOCUMENT;
-            //(yet) unknown type : return generic
-            default -> Type.NODE;
-        };
+        if (nodeType == UNKNOWN_NODE_TYPE) {
+            return Type.NODE;
+        }
+        return Type.fromDomNodeType(nodeType);
     }
 
     @Override

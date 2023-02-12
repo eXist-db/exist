@@ -30,6 +30,7 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 
@@ -706,5 +707,45 @@ public class Type {
             throw new IllegalArgumentException("Primitive type is not defined for: " + (typeName != null ? typeName : type));
         }
         return primitiveType;
+    }
+
+    /**
+     * Get the XDM equivalent type of a DOM Node type (i.e. {@link Node#getNodeType()}).
+     *
+     * @param domNodeType the DOM node type as defined in {@link Node}.
+     *
+     * @return the equivalent XDM type.
+     *
+     * @throws IllegalArgumentException if the provided argument is not a DOM Node Type.
+     */
+    public static int fromDomNodeType(final short domNodeType) {
+        switch (domNodeType) {
+            case Node.ELEMENT_NODE:
+                return Type.ELEMENT;
+            case Node.ATTRIBUTE_NODE:
+                return Type.ATTRIBUTE;
+            case Node.TEXT_NODE:
+                return Type.TEXT;
+            case Node.CDATA_SECTION_NODE:
+                return Type.CDATA_SECTION;
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return Type.PROCESSING_INSTRUCTION;
+            case Node.COMMENT_NODE:
+                return Type.COMMENT;
+            case Node.DOCUMENT_NODE:
+                return Type.DOCUMENT;
+
+            // un-mappable Node types, so just return the XDM Node type
+            case Node.ENTITY_REFERENCE_NODE:
+            case Node.ENTITY_NODE:
+            case Node.DOCUMENT_TYPE_NODE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+            case Node.NOTATION_NODE:
+                return Type.NODE;
+
+            // unknown
+            default:
+                throw new IllegalArgumentException("Unknown DOM Node type: " + domNodeType);
+        }
     }
 }
