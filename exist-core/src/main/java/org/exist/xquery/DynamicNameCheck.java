@@ -80,7 +80,7 @@ public class DynamicNameCheck extends AbstractExpression {
                     itemType = item.getType();
                     if (itemType == NodeProxy.UNKNOWN_NODE_TYPE) {
                         //Retrieve the actual node
-                        itemType = NodeProxy.nodeType2XQuery(((NodeProxy) item).getNode().getNodeType());
+                        itemType = Type.fromDomNodeType(((NodeProxy) item).getNode().getNodeType());
                     }
                 }
                 if (!Type.subTypeOf(itemType, test.getType())) {
