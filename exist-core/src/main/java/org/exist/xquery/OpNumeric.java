@@ -56,17 +56,20 @@ public class OpNumeric extends BinaryOp {
         int ltype = left.returnsType();
         int rtype = right.returnsType();
         if (Type.subTypeOfUnion(ltype, Type.NUMERIC) && Type.subTypeOfUnion(rtype, Type.NUMERIC)) {
-            if (ltype > rtype) {
-                right = new UntypedValueCheck(context, ltype, right);
-            } else if (rtype > ltype) {
-                left = new UntypedValueCheck(context, rtype, left);
+            if (ltype != rtype) {
+                if (Type.subTypeOf(ltype, rtype)) {
+                    right = new UntypedValueCheck(context, ltype, right);
+                } else {
+                    left = new UntypedValueCheck(context, rtype, left);
+                }
             }
+
             if (operator == ArithmeticOperator.DIVISION && ltype == Type.INTEGER && rtype == Type.INTEGER) {
                 returnType = Type.DECIMAL;
             } else if (operator == ArithmeticOperator.DIVISION_INTEGER) {
                 returnType = Type.INTEGER;
             } else {
-                returnType = Math.max(ltype, rtype);
+                returnType = Type.getCommonSuperType(ltype, rtype);
             }
         } else {
             if (Type.subTypeOfUnion(ltype, Type.NUMERIC)) {ltype = Type.NUMERIC;}
