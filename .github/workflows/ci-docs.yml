@@ -27,4 +27,11 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Maven Javadoc
         run: mvn -V -B -q -T 2C javadoc:javadoc
-        
+      - name: Archive logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}-jdk${{ matrix.jdk }}-javadoc-logs
+          retention-days: 5
+          path: |
+            **/target/site/apidocs/*
