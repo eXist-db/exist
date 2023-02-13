@@ -214,6 +214,8 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
                 return QName.COMMENT_QNAME;
             case Node.DOCUMENT_TYPE_NODE:
                 return QName.DOCTYPE_QNAME;
+            case Node.CDATA_SECTION_NODE:
+                return QName.CDATA_SECTION_QNAME;
             default:
                 LOG.error("Unknown node type: {}", getNodeType());
                 return null;

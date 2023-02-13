@@ -47,7 +47,7 @@ public class QName implements Comparable<QName> {
     public static final QName TEXT_QNAME = EMPTY_QNAME;
     public static final QName COMMENT_QNAME = EMPTY_QNAME;
     public static final QName DOCTYPE_QNAME = EMPTY_QNAME;
-
+    public static final QName CDATA_SECTION_QNAME = EMPTY_QNAME;
 
     private final String localPart;
     private final String namespaceURI;
