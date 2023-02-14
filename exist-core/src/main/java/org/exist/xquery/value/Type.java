@@ -610,7 +610,7 @@ public class Type {
         int t;
         for (t = type1; t != ITEM && t != ANY_TYPE; t = getSuperType(t)) {
             //Shortcut
-            if (t == type2) {
+            if (t == type2 || hasMember(t, type2)) {
                 return t;
             }
             t1.add(t);
