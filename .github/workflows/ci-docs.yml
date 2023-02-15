@@ -35,3 +35,6 @@ jobs:
           retention-days: 5
           path: |
             **/target/site/apidocs/*
+      - name: Delete local cache
+        if: ${{ failure() }}
+        run: rm -rf ~/.m2
