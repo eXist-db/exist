@@ -34,7 +34,16 @@ jobs:
           name: ${{ runner.os }}-jdk${{ matrix.jdk }}-javadoc-logs
           retention-days: 5
           path: |
-            **/target/site/apidocs/*
+            **/target/site/apidocs/javadoc.sh
+            **/target/site/apidocs/options
+            **/target/site/apidocs/packages
       - name: Delete local cache
         if: ${{ failure() }}
-        run: rm -rf ~/.m2
+        run: rm -rf ~/.m2/repository
+      - name: Store empty cache
+        if: ${{ failure() }}
+        uses: actions/cache/save@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
