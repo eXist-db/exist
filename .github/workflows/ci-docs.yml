@@ -37,12 +37,3 @@ jobs:
             **/target/site/apidocs/javadoc.sh
             **/target/site/apidocs/options
             **/target/site/apidocs/packages
-      - name: Delete local cache
-        if: ${{ failure() }}
-        run: rm -rf ~/.m2/repository
-      - name: Store empty cache
-        if: ${{ failure() }}
-        uses: actions/cache/save@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
