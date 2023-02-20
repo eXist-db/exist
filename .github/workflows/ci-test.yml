@@ -12,7 +12,7 @@ jobs:
         jdk: ['17']
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up JDK ${{ matrix.jdk }}
         uses: actions/setup-java@v3
         with:
@@ -33,7 +33,7 @@ jobs:
         run: mvn -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
           retention-days: 5
