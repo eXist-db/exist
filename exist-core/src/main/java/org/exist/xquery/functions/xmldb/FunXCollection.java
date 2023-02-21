@@ -31,7 +31,7 @@ import org.exist.xquery.value.Type;
 import java.net.URI;
 
 import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
+import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignatures;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -39,30 +39,34 @@ import static org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature;
 public class FunXCollection extends ExtCollection {
 
 	private static final String FS_XCOLLECTION_NAME = "xcollection";
-	static final FunctionSignature FS_XCOLLECTION = functionSignature(
+	static final FunctionSignature[] FS_XCOLLECTION = functionSignatures(
 			FS_XCOLLECTION_NAME,
-			"Returns the document nodes in the collections $collection-uris " +
+			"Returns the documents contained in the Collection specified in the input sequence " +
 					"non-recursively, i.e. does not include document nodes found in " +
 					"sub-collections. " +
-					"C.f. fn:collection().",
-			returnsOptMany(Type.ITEM, "The items from the specified collections excluding sub-collections"),
-			params(
-				manyParam("args", Type.STRING,"The Collection URI")
+					"This is different to fn:collection() that returns documents recursively.",
+			returnsOptMany(Type.ITEM, "The items from the specified collection excluding sub-collections"),
+			arities(
+					arity(),
+					arity(
+							optParam("arg", Type.STRING,"The Collection URI")
+					)
 			)
 	);
 
-	public FunXCollection(final XQueryContext context) {
-		super(context, FS_XCOLLECTION, false);
+	public FunXCollection(final XQueryContext context, final FunctionSignature signature) {
+		super(context, signature, false);
 	}
 
 	@Override
 	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-		final int len = args[0].getItemCount();
-		final URI[] collectionUris = new URI[len];
-		for (int i = 0; i < len; i++) {
-			collectionUris[i] = asUri(args[0].itemAt(i).getStringValue());
+		final URI collectionUri;
+		if (args.length == 0 || args[0].isEmpty()) {
+			collectionUri = null;
+		} else {
+			collectionUri = asUri(args[0].itemAt(0).getStringValue());
 		}
 
-		return getCollectionItems(collectionUris);
+		return getCollectionItems(new URI[] { collectionUri });
 	}
 }
