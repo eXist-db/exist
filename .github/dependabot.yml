@@ -1,6 +1,8 @@
 version: 2
 updates:
-- package-ecosystem: maven
+- package-ecosystem:
+  - github-actions
+  - maven
   directory: "/"
   schedule:
     interval: daily
