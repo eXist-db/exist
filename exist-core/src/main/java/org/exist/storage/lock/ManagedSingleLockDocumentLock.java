@@ -38,16 +38,13 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public abstract class ManagedDocumentLock<T> extends ManagedLock<T> {
+public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock> {
 
-    private final XmldbURI documentUri;
-
-    public ManagedDocumentLock(final XmldbURI documentUri, final T lock, final Runnable closer) {
-        super(lock, closer);
-        this.documentUri = documentUri;
+    public ManagedSingleLockDocumentLock(final XmldbURI documentUri, final MultiLock lock, final Runnable closer) {
+        super(documentUri, lock, closer);
     }
 
-    public XmldbURI getPath() {
-        return documentUri;
+    public static ManagedSingleLockDocumentLock notLocked(final XmldbURI documentUri) {
+        return new ManagedSingleLockDocumentLock(documentUri, null, () -> {});
     }
 }

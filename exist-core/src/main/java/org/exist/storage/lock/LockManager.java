@@ -490,7 +490,7 @@ public class LockManager {
     public ManagedDocumentLock acquireDocumentReadLock(final XmldbURI documentPath) throws LockException {
         if (usePathLocksForDocuments) {
             final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
-            return new ManagedDocumentLock(
+            return new ManagedLockGroupDocumentLock(
                     documentPath,
                     Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
                     () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
@@ -510,7 +510,7 @@ public class LockManager {
                 throw new LockException("Unable to acquire READ_LOCK for: " + path);
             }
 
-            return new ManagedDocumentLock(documentPath, lock, () -> {
+            return new ManagedSingleLockDocumentLock(documentPath, lock, () -> {
                 lock.asReadLock().unlock();
                 lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
             });
@@ -529,7 +529,7 @@ public class LockManager {
     public ManagedDocumentLock acquireDocumentWriteLock(final XmldbURI documentPath) throws LockException {
         if (usePathLocksForDocuments) {
             final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
-            return new ManagedDocumentLock(
+            return new ManagedLockGroupDocumentLock(
                     documentPath,
                     Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
                     () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
@@ -548,7 +548,7 @@ public class LockManager {
                 throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
             }
 
-            return new ManagedDocumentLock(documentPath, lock, () -> {
+            return new ManagedSingleLockDocumentLock(documentPath, lock, () -> {
                 lock.asWriteLock().unlock();
                 lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
             });
