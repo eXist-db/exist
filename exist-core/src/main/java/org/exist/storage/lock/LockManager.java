@@ -219,8 +219,7 @@ public class LockManager {
         return new ManagedCollectionLock(
                 collectionPath,
                 lockGroup,
-                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
-        );
+                lockTable);
     }
 
     /**
@@ -308,8 +307,8 @@ public class LockManager {
      *
      * @param locked An array of locks in acquisition order
      */
-    private static void unlockAll(final LockedPath[] locked, final Consumer<LockedPath> unlockListener) {
-        for(int i = locked.length - 1; i >= 0; i--) {
+    static void unlockAll(final LockedPath[] locked, final Consumer<LockedPath> unlockListener) {
+        for (int i = locked.length - 1; i >= 0; i--) {
             final LockedPath lock = locked[i];
             unlock(lock.lock, lock.mode);
             unlockListener.accept(lock);
@@ -323,7 +322,7 @@ public class LockManager {
      * @param lockMode The mode of the {@code lock} to release.
      */
     private static void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
-        switch(lockMode) {
+        switch (lockMode) {
             case INTENTION_READ:
                 lock.unlockIntentionRead();
                 break;
@@ -370,8 +369,7 @@ public class LockManager {
         return new ManagedCollectionLock(
                 collectionPath,
                 lockGroup,
-                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
-        );
+                lockTable);
     }
 
     /**
