@@ -276,7 +276,7 @@ public class LockManager {
      *
      * @return true, if we were able to lock with the mode.
      */
-    private boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
+    private static boolean lock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch (lockMode) {
             case INTENTION_READ:
                 lock.intentionReadLock();
@@ -308,7 +308,7 @@ public class LockManager {
      *
      * @param locked An array of locks in acquisition order
      */
-    private void unlockAll(final LockedPath[] locked, final Consumer<LockedPath> unlockListener) {
+    private static void unlockAll(final LockedPath[] locked, final Consumer<LockedPath> unlockListener) {
         for(int i = locked.length - 1; i >= 0; i--) {
             final LockedPath lock = locked[i];
             unlock(lock.lock, lock.mode);
@@ -322,7 +322,7 @@ public class LockManager {
      * @param lock The lock object to unlock.
      * @param lockMode The mode of the {@code lock} to release.
      */
-    private void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
+    private static void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch(lockMode) {
             case INTENTION_READ:
                 lock.unlockIntentionRead();
