@@ -492,7 +492,7 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
             return new ManagedLockGroupDocumentLock(
                     documentPath,
-                    Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                    lockGroup,
                     () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
             );
         } else {
@@ -531,7 +531,7 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
             return new ManagedLockGroupDocumentLock(
                     documentPath,
-                    Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                    lockGroup,
                     () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
             );
         } else {
