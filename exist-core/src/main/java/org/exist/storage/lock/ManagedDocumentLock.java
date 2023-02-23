@@ -40,7 +40,7 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
  */
 public abstract class ManagedDocumentLock<T> extends ManagedLock<T> {
 
-    private final XmldbURI documentUri;
+    protected final XmldbURI documentUri;
 
     public ManagedDocumentLock(final XmldbURI documentUri, final T lock, final Runnable closer) {
         super(lock, closer);

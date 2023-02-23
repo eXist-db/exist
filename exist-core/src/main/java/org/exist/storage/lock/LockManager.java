@@ -41,7 +41,6 @@ import org.exist.util.WeakLazyStripes;
 import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
-import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
@@ -321,7 +320,7 @@ public class LockManager {
      * @param lock The lock object to unlock.
      * @param lockMode The mode of the {@code lock} to release.
      */
-    private static void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
+    static void unlock(final MultiLock lock, final Lock.LockMode lockMode) {
         switch (lockMode) {
             case INTENTION_READ:
                 lock.unlockIntentionRead();
@@ -490,11 +489,7 @@ public class LockManager {
     public ManagedDocumentLock acquireDocumentReadLock(final XmldbURI documentPath) throws LockException {
         if (usePathLocksForDocuments) {
             final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
-            return new ManagedLockGroupDocumentLock(
-                    documentPath,
-                    lockGroup,
-                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
-            );
+            return new ManagedLockGroupDocumentLock(documentPath, lockGroup, lockTable);
         } else {
             final long groupId = System.nanoTime();
             final String path = documentPath.toString();
@@ -510,10 +505,7 @@ public class LockManager {
                 throw new LockException("Unable to acquire READ_LOCK for: " + path);
             }
 
-            return new ManagedSingleLockDocumentLock(documentPath, lock, () -> {
-                lock.asReadLock().unlock();
-                lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.READ_LOCK);
-            });
+            return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.READ_LOCK, lockTable);
         }
     }
 
@@ -529,11 +521,7 @@ public class LockManager {
     public ManagedDocumentLock acquireDocumentWriteLock(final XmldbURI documentPath) throws LockException {
         if (usePathLocksForDocuments) {
             final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
-            return new ManagedLockGroupDocumentLock(
-                    documentPath,
-                    lockGroup,
-                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
-            );
+            return new ManagedLockGroupDocumentLock(documentPath, lockGroup, lockTable);
         } else {
             final long groupId = System.nanoTime();
             final String path = documentPath.toString();
@@ -548,10 +536,7 @@ public class LockManager {
                 throw new LockException("Unable to acquire WRITE_LOCK for: " + path);
             }
 
-            return new ManagedSingleLockDocumentLock(documentPath, lock, () -> {
-                lock.asWriteLock().unlock();
-                lockTable.released(groupId, path, LockType.DOCUMENT, Lock.LockMode.WRITE_LOCK);
-            });
+            return new ManagedSingleLockDocumentLock(documentPath, groupId, lock, Lock.LockMode.WRITE_LOCK, lockTable);
         }
     }
 

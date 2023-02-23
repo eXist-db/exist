@@ -32,6 +32,7 @@
  */
 package org.exist.storage.lock;
 
+import jakarta.annotation.Nullable;
 import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
@@ -40,11 +41,34 @@ import uk.ac.ic.doc.slurp.multilock.MultiLock;
  */
 public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock> {
 
-    public ManagedSingleLockDocumentLock(final XmldbURI documentUri, final MultiLock lock, final Runnable closer) {
-        super(documentUri, lock, closer);
+    private final long groupId;
+    private final Lock.LockMode lockMode;
+
+    @Nullable private final LockTable lockTable;  // NOTE(AR) only null when called via private constructor from {@link #notLocked(XmldbURI)}.
+
+    public ManagedSingleLockDocumentLock(final XmldbURI documentUri, final long groupId, final MultiLock lock, final Lock.LockMode lockMode, final LockTable lockTable) {
+        super(documentUri, lock, null);  // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
+        this.groupId = groupId;
+        this.lockMode = lockMode;
+        this.lockTable = lockTable;
+    }
+
+    private ManagedSingleLockDocumentLock(final XmldbURI documentUri) {
+        this(documentUri, -1, null, Lock.LockMode.NO_LOCK, null);
+    }
+
+    @Override
+    public void close() {
+        if (!closed) {
+            if (lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
+                LockManager.unlock(lock, lockMode);
+                lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
+            }
+        }
+        this.closed = true;
     }
 
     public static ManagedSingleLockDocumentLock notLocked(final XmldbURI documentUri) {
-        return new ManagedSingleLockDocumentLock(documentUri, null, () -> {});
+        return new ManagedSingleLockDocumentLock(documentUri);
     }
 }

@@ -39,7 +39,18 @@ import org.exist.xmldb.XmldbURI;
  */
 public class ManagedLockGroupDocumentLock extends ManagedDocumentLock<LockGroup> {
 
-    public ManagedLockGroupDocumentLock(final XmldbURI documentUri, final LockGroup lock, final Runnable closer) {
-        super(documentUri, lock, closer);
+    private final LockTable lockTable;
+
+    public ManagedLockGroupDocumentLock(final XmldbURI documentUri, final LockGroup lock, final LockTable lockTable) {
+        super(documentUri, lock, null);    // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
+        this.lockTable = lockTable;
+    }
+
+    @Override
+    public void close() {
+        if (!closed) {
+            LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.DOCUMENT, l.mode));
+        }
+        this.closed = true;
     }
 }
