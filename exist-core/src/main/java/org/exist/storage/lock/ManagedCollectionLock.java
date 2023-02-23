@@ -33,17 +33,16 @@
 package org.exist.storage.lock;
 
 import org.exist.xmldb.XmldbURI;
-import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ManagedCollectionLock extends ManagedLock<MultiLock[]> {
+public class ManagedCollectionLock extends ManagedLock<LockGroup> {
 
     private final XmldbURI collectionUri;
 
-    public ManagedCollectionLock(final XmldbURI collectionUri, final MultiLock[] locks, final Runnable closer) {
-        super(locks, closer);
+    public ManagedCollectionLock(final XmldbURI collectionUri, final LockGroup lockGroup, final Runnable closer) {
+        super(lockGroup, closer);
         this.collectionUri = collectionUri;
     }
 

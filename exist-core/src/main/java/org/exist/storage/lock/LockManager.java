@@ -218,7 +218,7 @@ public class LockManager {
         final LockGroup lockGroup = acquirePathReadLock(LockType.COLLECTION, collectionPath);
         return new ManagedCollectionLock(
                 collectionPath,
-                Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                lockGroup,
                 () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
         );
     }
@@ -369,7 +369,7 @@ public class LockManager {
         final LockGroup lockGroup = acquirePathWriteLock(LockType.COLLECTION, collectionPath, lockParent);
         return new ManagedCollectionLock(
                 collectionPath,
-                Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                lockGroup,
                 () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
         );
     }
