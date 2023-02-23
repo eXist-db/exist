@@ -32,7 +32,6 @@
  */
 package org.exist.storage.lock;
 
-import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.lock.Lock.LockType;
@@ -219,19 +218,9 @@ public class LockManager {
         final LockGroup lockGroup = acquirePathReadLock(LockType.COLLECTION, collectionPath);
         return new ManagedCollectionLock(
                 collectionPath,
-                Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.COLLECTION, l._2))
+                Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
         );
-    }
-
-    private static class LockGroup {
-        final long groupId;
-        final Tuple3<MultiLock, Lock.LockMode, String>[] locks;
-
-        private LockGroup(final long groupId, final Tuple3<MultiLock, Lock.LockMode, String>[] locks) {
-            this.groupId = groupId;
-            this.locks = locks;
-        }
     }
 
     /**
@@ -250,7 +239,7 @@ public class LockManager {
         final long groupId = System.nanoTime();
 
         String pathStr = "";
-        final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
+        final LockedPath[] locked = new LockedPath[segments.length];
         for (int i = 0; i < segments.length; i++) {
             pathStr += '/' + segments[i].toString();
 
@@ -265,12 +254,12 @@ public class LockManager {
 
             lockTable.attempt(groupId, pathStr, lockType, lockMode);
             if (lock(lock, lockMode)) {
-                locked[i] = new Tuple3<>(lock, lockMode, pathStr);
+                locked[i] = new LockedPath(lock, lockMode, pathStr);
                 lockTable.acquired(groupId, pathStr, lockType, lockMode);
             } else {
                 lockTable.attemptFailed(groupId, pathStr, lockType, lockMode);
 
-                unlockAll(locked, l -> lockTable.released(groupId, l._3, lockType, l._2));
+                unlockAll(locked, l -> lockTable.released(groupId, l.path, lockType, l.mode));
 
                 throw new LockException("Unable to acquire " + lockType + " " + lockMode + " for: " + pathStr);
             }
@@ -319,10 +308,10 @@ public class LockManager {
      *
      * @param locked An array of locks in acquisition order
      */
-    private void unlockAll(final Tuple3<MultiLock, Lock.LockMode, String>[] locked, final Consumer<Tuple3<MultiLock, Lock.LockMode, String>> unlockListener) {
+    private void unlockAll(final LockedPath[] locked, final Consumer<LockedPath> unlockListener) {
         for(int i = locked.length - 1; i >= 0; i--) {
-            final Tuple3<MultiLock, Lock.LockMode, String> lock = locked[i];
-            unlock(lock._1, lock._2);
+            final LockedPath lock = locked[i];
+            unlock(lock.lock, lock.mode);
             unlockListener.accept(lock);
         }
     }
@@ -380,8 +369,8 @@ public class LockManager {
         final LockGroup lockGroup = acquirePathWriteLock(LockType.COLLECTION, collectionPath, lockParent);
         return new ManagedCollectionLock(
                 collectionPath,
-                Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.COLLECTION, l._2))
+                Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.COLLECTION, l.mode))
         );
     }
 
@@ -400,7 +389,7 @@ public class LockManager {
         final long groupId = System.nanoTime();
 
         String pathStr = "";
-        final Tuple3<MultiLock, Lock.LockMode, String>[] locked = new Tuple3[segments.length];
+        final LockedPath[] locked = new LockedPath[segments.length];
         for (int i = 0; i < segments.length; i++) {
             pathStr += '/' + segments[i].toString();
 
@@ -437,12 +426,12 @@ public class LockManager {
 
             lockTable.attempt(groupId, pathStr, lockType, lockMode);
             if (lock(lock, lockMode)) {
-                locked[i] = new Tuple3<>(lock, lockMode, pathStr);
+                locked[i] = new LockedPath(lock, lockMode, pathStr);
                 lockTable.acquired(groupId, pathStr, lockType, lockMode);
             } else {
                 lockTable.attemptFailed(groupId, pathStr, lockType, lockMode);
 
-                unlockAll(locked, l -> lockTable.released(groupId, l._3, lockType, l._2));
+                unlockAll(locked, l -> lockTable.released(groupId, l.path, lockType, l.mode));
 
                 throw new LockException("Unable to acquire " + lockType + " " + lockMode + " for: " + pathStr);
             }
@@ -505,8 +494,8 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathReadLock(LockType.DOCUMENT, documentPath);
             return new ManagedDocumentLock(
                     documentPath,
-                    Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.DOCUMENT, l._2))
+                    Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
             );
         } else {
             final long groupId = System.nanoTime();
@@ -544,8 +533,8 @@ public class LockManager {
             final LockGroup lockGroup = acquirePathWriteLock(LockType.DOCUMENT, documentPath, false);
             return new ManagedDocumentLock(
                     documentPath,
-                    Arrays.stream(lockGroup.locks).map(Tuple3::get_1).toArray(MultiLock[]::new),
-                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l._3, LockType.DOCUMENT, l._2))
+                    Arrays.stream(lockGroup.locks).map(l -> l.lock).toArray(MultiLock[]::new),
+                    () -> unlockAll(lockGroup.locks, l -> lockTable.released(lockGroup.groupId, l.path, LockType.DOCUMENT, l.mode))
             );
         } else {
             final long groupId = System.nanoTime();

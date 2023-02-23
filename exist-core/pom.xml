@@ -710,6 +710,8 @@
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventLogListener.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockedPath.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockGroup.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockManager.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockTable.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockTableUtils.java</exclude>
@@ -862,6 +864,8 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockEventLogListener.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockedPath.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockGroup.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockManager.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockTable.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockTableUtils.java</include>
