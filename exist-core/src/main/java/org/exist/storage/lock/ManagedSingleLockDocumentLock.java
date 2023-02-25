@@ -32,9 +32,10 @@
  */
 package org.exist.storage.lock;
 
-import jakarta.annotation.Nullable;
 import org.exist.xmldb.XmldbURI;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
+
+import javax.annotation.Nullable;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -59,11 +60,9 @@ public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock
 
     @Override
     public void close() {
-        if (!closed) {
-            if (lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
-                LockManager.unlock(lock, lockMode);
-                lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
-            }
+        if (!closed && lock != null) {  // NOTE(AR) lock is null when constructed from {@link #notLocked(XmldbURI)}.
+            LockManager.unlock(lock, lockMode);
+            lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
         }
         this.closed = true;
     }

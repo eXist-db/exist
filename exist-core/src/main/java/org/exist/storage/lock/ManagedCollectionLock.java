@@ -32,8 +32,9 @@
  */
 package org.exist.storage.lock;
 
-import jakarta.annotation.Nullable;
 import org.exist.xmldb.XmldbURI;
+
+import javax.annotation.Nullable;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -59,10 +60,8 @@ public class ManagedCollectionLock extends ManagedLock<LockGroup> {
 
     @Override
     public void close() {
-        if (!closed) {
-            if (lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
-                LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.COLLECTION, l.mode));
-            }
+        if (!closed && lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
+            LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.COLLECTION, l.mode));
         }
         this.closed = true;
     }
