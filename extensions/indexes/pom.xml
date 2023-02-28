@@ -51,6 +51,7 @@
         <module>range</module>
         <module>sort</module>
         <module>spatial</module>
+        <module>indexes-integration-tests</module>
     </modules>
 
 </project>

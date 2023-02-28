@@ -45,6 +45,7 @@ import org.exist.storage.NodePath2;
 import org.exist.util.serializer.AttrList;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
@@ -174,8 +175,10 @@ public class LuceneMatchListener extends AbstractMatchListener {
         // Collect the text content of all descendants of p. 
         // Remember the start offsets of the text nodes for later use.
         final NodePath path = getPath(p);
-        final LuceneIndexConfig idxConf = config.getConfig(path).next();
-
+        @Nullable final LuceneIndexConfig idxConf = config.getConfig(path).next();
+        if(idxConf == null) {
+            return;  // there is no index config so there can not be any matches
+        }
         final TextExtractor extractor = new DefaultTextExtractor();
         extractor.configure(config, idxConf);
 
