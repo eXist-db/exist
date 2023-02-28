@@ -31,6 +31,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
 import se.softhouse.jargo.Argument;
@@ -624,6 +625,7 @@ public class ExportGUI extends javax.swing.JFrame {
             // parse command-line options
             CommandLineParser
                     .withArguments(helpArg)
+                    .programName("export-gui" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
         } catch (final StartException e) {

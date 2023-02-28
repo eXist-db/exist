@@ -24,6 +24,7 @@ package org.exist.launcher;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import se.softhouse.jargo.Argument;
 import se.softhouse.jargo.ArgumentException;
@@ -54,7 +55,7 @@ import static se.softhouse.jargo.Arguments.helpArgument;
 public class LauncherWrapper {
 
     private final static String LAUNCHER = org.exist.launcher.Launcher.class.getName();
-    private final static String OS = System.getProperty("os.name").toLowerCase();
+    private final static String OS = OSUtil.getOS().toLowerCase();
 
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
@@ -66,6 +67,7 @@ public class LauncherWrapper {
             // parse command-line options
             CommandLineParser
                     .withArguments(helpArg)
+                    .programName("launcher" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
         } catch (final StartException e) {

@@ -41,10 +41,7 @@ import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
 import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.FileUtils;
-import org.exist.util.SingleInstanceConfiguration;
-import org.exist.util.SystemExitCodes;
+import org.exist.util.*;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
@@ -106,6 +103,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             CommandLineParser
                     .withArguments(helpArg)
+                    .programName("startup" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
         } catch (final StartException e) {

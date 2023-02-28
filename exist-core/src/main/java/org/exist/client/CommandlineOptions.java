@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.*;
 
+import org.exist.util.OSUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
 import se.softhouse.jargo.*;
@@ -176,6 +177,7 @@ public class CommandlineOptions {
                 .andArguments(setDocArg, xupdateArg)
                 .andArguments(reindexArg, reindexRecurseDirsArg)
                 .andArguments(helpArg, quietArg, verboseArg, outputFileArg, optionArg)
+                .programName("client" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                 .parse(args);
 
         final boolean quiet = getBool(arguments, quietArg);

@@ -23,6 +23,7 @@ package org.exist.management.client;
 
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import se.softhouse.jargo.Argument;
 import se.softhouse.jargo.ArgumentException;
@@ -314,6 +315,7 @@ public class JMXClient {
                     .andArguments(cacheDisplayArg, locksDisplayArg)
                     .andArguments(dbInfoArg, memoryInfoArg, sanityCheckInfoArg, jobsInfoArg)
                     .andArguments(helpArg)
+                    .programName("jmxclient" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
             process(arguments);

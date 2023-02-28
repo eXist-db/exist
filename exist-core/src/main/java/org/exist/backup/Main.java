@@ -26,6 +26,7 @@ import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.NamedThreadFactory;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.*;
 import org.xmldb.api.DatabaseManager;
@@ -461,6 +462,7 @@ public class Main {
                     .andArguments(backupCollectionArg, backupOutputDirArg, backupDeduplicateBlobs)
                     .andArguments(restoreArg, rebuildExpathRepoArg, overwriteAppsArg)
                     .andArguments(helpArg, guiArg, quietArg, optionArg)
+                    .programName("backup" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
             process(arguments);

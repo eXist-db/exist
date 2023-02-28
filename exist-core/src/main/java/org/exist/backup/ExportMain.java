@@ -30,6 +30,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
 import se.softhouse.jargo.Argument;
@@ -130,6 +131,7 @@ public class ExportMain {
                     .withArguments(noCheckArg, checkDocsArg, directAccessArg, exportArg, noExportArg, incrementalArg, zipArg, noZipArg)
                     .andArguments(configArg, outputDirArg)
                     .andArguments(helpArg, verboseArg)
+                    .programName("export" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
             process(arguments);
