@@ -256,17 +256,14 @@ public class JMXClient {
     /* connection arguments */
     private static final Argument<String> addressArg = stringArgument("-a", "--address")
             .description("RMI address of the server")
-            .required()
             .defaultValue("localhost")
             .build();
     private static final Argument<Integer> portArg = integerArgument("-p", "--port")
             .description("RMI port of the server")
-            .required()
             .defaultValue(DEFAULT_PORT)
             .build();
     private static final Argument<String> instanceArg = stringArgument("-i", "--instance")
             .description("The ID of the database instance to connect to")
-            .required()
             .defaultValue("exist")
             .build();
     private static final Argument<Integer> waitArg = integerArgument("-w", "--wait")
