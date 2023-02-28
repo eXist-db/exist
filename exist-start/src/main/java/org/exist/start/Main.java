@@ -189,6 +189,10 @@ public class Main {
                 _classname = "org.exist.launcher.LauncherWrapper";
                 _mode = "jetty";
 
+            } else if ("launcher".equals(args[0])) {
+                _classname = "org.exist.launcher.LauncherWrapper";
+                _mode = "other";
+
             } else if ("shutdown".equals(args[0])) {
                 _classname = "org.exist.jetty.ServerShutdown";
                 _mode = "other";
