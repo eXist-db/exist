@@ -51,8 +51,10 @@ declare
     %test:args('') %test:assertError("FORG0010")
     %test:args('asdfa') %test:assertError("FORG0010")
 
-    %test:args(0) %test:assertError("FORG0010")
-    %test:args(1) %test:assertError("FORG0010")
+    %test:args(0) %test:assertError("XPTY0004")
+    %test:args(1) %test:assertError("XPTY0004")
+    %test:args('0') %test:assertError("FORG0010")
+    %test:args('1') %test:assertError("FORG0010")
 
     %test:args('-1') %test:assertError("FORG0010")
     %test:args('Tue, 30 Feb 2019 13:10:56 GMT') %test:assertError("FORG0010")

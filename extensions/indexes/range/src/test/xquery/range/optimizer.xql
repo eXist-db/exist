@@ -27,7 +27,7 @@ xquery version "3.0";
  : Expressions use the @test:stats annotation to retrieve execution statistics
  : for each test function. All comparisons should be fully optimized.
  :)
-module namespace ot="http://exist-db.org/xquery/range/optimizer/test";
+module namespace ot="http://exist-db.org/xquery/range/test/optimizer";
 
 import module namespace range="http://exist-db.org/xquery/range" at "java:org.exist.xquery.modules.range.RangeIndexModule";
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";

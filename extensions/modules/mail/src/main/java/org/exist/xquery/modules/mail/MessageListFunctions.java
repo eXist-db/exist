@@ -89,7 +89,7 @@ public class MessageListFunctions extends BasicFunction
 			"Returns a message list of all messages in a folder.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" )
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
 			),
@@ -107,7 +107,7 @@ public class MessageListFunctions extends BasicFunction
 			"The format string should conform to Java SimpleDateFormat specifications and the date string must conform to the specified format string.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "mail-folder-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
+				new FunctionParameterSequenceType( "mail-folder-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The mail folder handle retrieved from mail:get-mail-folder()" ),
 				new FunctionParameterSequenceType( "search-parameters", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The xml fragment defining the search terms" )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the message list handle." )
@@ -118,7 +118,7 @@ public class MessageListFunctions extends BasicFunction
 			"Returns a message list of all messages in a folder as XML.  If there are no messages in the list, an empty sequence will be returned",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" ),
+				new FunctionParameterSequenceType( "message-list-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" ),
 				new FunctionParameterSequenceType( "include-headers", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "A boolean specifying whether to include message headers" )
 			},
 			new FunctionReturnSequenceType( Type.ELEMENT, Cardinality.ZERO_OR_ONE, "the list of all messages in a folder as XML" )
@@ -129,7 +129,7 @@ public class MessageListFunctions extends BasicFunction
 			"Closes a message list.",
 			new SequenceType[]
 			{
-				new FunctionParameterSequenceType( "message-list-handle", Type.INTEGER, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
+				new FunctionParameterSequenceType( "message-list-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The message list handle retrieved from mail:get-message-list() or mail:search-message-list()" )
 			},
 			new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE )
 			)
@@ -207,7 +207,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ) ) );
+		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG ) );
 	}
 
 	private Sequence searchMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -239,7 +239,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ) ) );
+		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG ) );
 	}
 
 	private void prefetchMessages( Folder folder, Message[] msgList ) throws MessagingException

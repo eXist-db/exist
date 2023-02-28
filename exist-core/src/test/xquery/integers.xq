@@ -48,9 +48,9 @@ function it:function-signature-negative-integer-from-string($test-value as xs:st
 
 declare
     %test:args(0)
-    %test:assertError("err:FORG0001")
+    %test:assertError("err:XPTY0004")
     %test:args(1)
-    %test:assertError("err:FORG0001")
+    %test:assertError("err:XPTY0004")
 function it:function-signature-negative-integer-from-integer($test-value as xs:integer) {
     function($negative-integer as xs:negativeInteger) {
         $negative-integer
@@ -72,9 +72,9 @@ function it:function-signature-positive-integer-from-string($test-value as xs:st
 
 declare
     %test:args(0)
-    %test:assertError("err:FORG0001")
+    %test:assertError("err:XPTY0004")
     %test:args(1)
-    %test:assertError("err:FORG0001")
+    %test:assertError("err:XPTY0004")
 function it:function-signature-positive-integer-from-integer($test-value as xs:integer) {
     function($positive-integer as xs:positiveInteger) {
         $positive-integer

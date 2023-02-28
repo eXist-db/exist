@@ -29,7 +29,7 @@ jobs:
       - name: Install bats
         run: sudo apt-get install bats    
       - name: Build images
-        run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true clean package
+        run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
       - name: Check local images
         run: docker image ls
       - name: Check license headers

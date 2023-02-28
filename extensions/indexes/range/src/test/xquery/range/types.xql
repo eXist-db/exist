@@ -21,7 +21,7 @@
  :)
 xquery version "3.0";
 
-module namespace tt="http://exist-db.org/xquery/range/types/test";
+module namespace tt="http://exist-db.org/xquery/range/test/types";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 

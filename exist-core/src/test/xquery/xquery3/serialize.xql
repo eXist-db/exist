@@ -254,7 +254,7 @@ function ser:serialize-empty-sequence() {
 
 declare
     %test:args(1234)
-    %test:assertEquals('"1234"')
+    %test:assertEquals(1234)
     %test:args('Hello "world"!')
     %test:assertEquals('"Hello ""world""!"')
 function ser:adaptive-simple-atomic($atomic as xs:anyAtomicType) {
@@ -263,7 +263,7 @@ function ser:adaptive-simple-atomic($atomic as xs:anyAtomicType) {
 
 declare
     %test:args(1234)
-    %test:assertEquals('"1234"')
+    %test:assertEquals(1234)
     %test:args('Hello "world"!')
     %test:assertEquals('"Hello ""world""!"')
 function ser:adaptive-simple-atomic-map-params($atomic as xs:anyAtomicType) {

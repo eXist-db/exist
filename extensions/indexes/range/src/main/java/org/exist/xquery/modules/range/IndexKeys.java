@@ -42,7 +42,7 @@ public class IndexKeys extends BasicFunction {
                         "containing three int values: a) the overall frequency of the key within the node set, " +
                         "b) the number of distinct documents in the node set the key occurs in, " +
                         "c) the current position of the key in the whole list of keys returned."),
-                new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.ZERO_OR_ONE , "The maximum number of returned keys")
+                new FunctionParameterSequenceType("max-number-returned", Type.INTEGER, Cardinality.ZERO_OR_ONE , "The maximum number of returned keys")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference")),
         new FunctionSignature(
@@ -58,7 +58,7 @@ public class IndexKeys extends BasicFunction {
                                 "containing three int values: a) the overall frequency of the key within the node set, " +
                                 "b) the number of distinct documents in the node set the key occurs in, " +
                                 "c) the current position of the key in the whole list of keys returned."),
-                        new FunctionParameterSequenceType("max-number-returned", Type.INT, Cardinality.ZERO_OR_ONE , "The maximum number of returned keys")
+                        new FunctionParameterSequenceType("max-number-returned", Type.INTEGER, Cardinality.ZERO_OR_ONE , "The maximum number of returned keys")
                 },
                 new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results of the eval of the $function-reference"))
     };

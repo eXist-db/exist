@@ -2625,7 +2625,15 @@ public class XQueryContext implements BinaryValueManager, Context {
             final Source moduleSource;
             try {
                 //TODO: use URIs to ensure proper resolution of relative locations
-                moduleSource = SourceFactory.getSource(getBroker(), moduleLoadPath, location, true);
+                final String contextPath;
+                if (source instanceof FileSource) {
+                    final Path sourcePath = ((FileSource)source).getPath();
+                    contextPath = sourcePath.resolveSibling(moduleLoadPath).normalize().toString();
+                } else {
+                    contextPath = moduleLoadPath;
+                }
+
+                moduleSource = SourceFactory.getSource(getBroker(), contextPath, location, true);
                 if (moduleSource == null) {
                     throw moduleLoadException("Source for module '" + namespaceURI + "' not found module location hint URI '" + location + "'.", location);
                 }
