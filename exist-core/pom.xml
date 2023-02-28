@@ -710,12 +710,16 @@
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventLogListener.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockedPath.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockGroup.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockManager.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockTable.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/LockTableUtils.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</exclude>
                                 <exclude>src/main/java/org/exist/storage/lock/ManagedLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedLockGroupDocumentLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedSingleLockDocumentLock.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</exclude>
                                 <exclude>src/test/java/org/exist/storage/lock/LockManagerTest.java</exclude>
@@ -862,12 +866,16 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockEventLogListener.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockedPath.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockGroup.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockManager.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockTable.java</include>
                                 <include>src/main/java/org/exist/storage/lock/LockTableUtils.java</include>
                                 <include>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</include>
                                 <include>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</include>
                                 <include>src/main/java/org/exist/storage/lock/ManagedLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedLockGroupDocumentLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedSingleLockDocumentLock.java</include>
                                 <include>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</include>
                                 <include>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</include>
                                 <include>src/test/java/org/exist/storage/lock/LockManagerTest.java</include>

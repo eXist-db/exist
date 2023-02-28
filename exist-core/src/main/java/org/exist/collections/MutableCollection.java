@@ -568,7 +568,7 @@ public class MutableCollection implements Collection {
 
                     case NO_LOCK:
                     default:
-                        documentLock = ManagedDocumentLock.notLocked(doc.getURI());
+                        documentLock = ManagedSingleLockDocumentLock.notLocked(doc.getURI());
                         break;
                 }
 
@@ -710,7 +710,7 @@ public class MutableCollection implements Collection {
 
                 case NO_LOCK:
                 default:
-                    documentLock = ManagedDocumentLock.notLocked(getURI().append(name.lastSegment()));
+                    documentLock = ManagedSingleLockDocumentLock.notLocked(getURI().append(name.lastSegment()));
                     unlockFn = () -> {};
             }
 

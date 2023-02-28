@@ -33,40 +33,41 @@
 package org.exist.storage.lock;
 
 import org.exist.xmldb.XmldbURI;
+import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 import javax.annotation.Nullable;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ManagedCollectionLock extends ManagedLock<LockGroup> {
+public class ManagedSingleLockDocumentLock extends ManagedDocumentLock<MultiLock> {
 
-    private final XmldbURI collectionUri;
+    private final long groupId;
+    private final Lock.LockMode lockMode;
+
     @Nullable private final LockTable lockTable;  // NOTE(AR) only null when called via private constructor from {@link #notLocked(XmldbURI)}.
 
-    public ManagedCollectionLock(final XmldbURI collectionUri, final LockGroup lockGroup, final LockTable lockTable) {
-        super(lockGroup, null);  // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
-        this.collectionUri = collectionUri;
+    public ManagedSingleLockDocumentLock(final XmldbURI documentUri, final long groupId, final MultiLock lock, final Lock.LockMode lockMode, final LockTable lockTable) {
+        super(documentUri, lock, null);  // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
+        this.groupId = groupId;
+        this.lockMode = lockMode;
         this.lockTable = lockTable;
     }
 
-    private ManagedCollectionLock(final XmldbURI collectionUri) {
-        this(collectionUri, null, null);
-    }
-
-    public XmldbURI getPath() {
-        return collectionUri;
+    private ManagedSingleLockDocumentLock(final XmldbURI documentUri) {
+        this(documentUri, -1, null, Lock.LockMode.NO_LOCK, null);
     }
 
     @Override
     public void close() {
-        if (!closed && lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
-            LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.COLLECTION, l.mode));
+        if (!closed && lock != null) {  // NOTE(AR) lock is null when constructed from {@link #notLocked(XmldbURI)}.
+            LockManager.unlock(lock, lockMode);
+            lockTable.released(groupId, documentUri.toString(), Lock.LockType.DOCUMENT, lockMode);
         }
         this.closed = true;
     }
 
-    public static ManagedCollectionLock notLocked(final XmldbURI collectionUri) {
-        return new ManagedCollectionLock(collectionUri);
+    public static ManagedSingleLockDocumentLock notLocked(final XmldbURI documentUri) {
+        return new ManagedSingleLockDocumentLock(documentUri);
     }
 }

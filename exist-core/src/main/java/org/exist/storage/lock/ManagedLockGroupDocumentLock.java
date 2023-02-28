@@ -34,39 +34,23 @@ package org.exist.storage.lock;
 
 import org.exist.xmldb.XmldbURI;
 
-import javax.annotation.Nullable;
-
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class ManagedCollectionLock extends ManagedLock<LockGroup> {
+public class ManagedLockGroupDocumentLock extends ManagedDocumentLock<LockGroup> {
 
-    private final XmldbURI collectionUri;
-    @Nullable private final LockTable lockTable;  // NOTE(AR) only null when called via private constructor from {@link #notLocked(XmldbURI)}.
+    private final LockTable lockTable;
 
-    public ManagedCollectionLock(final XmldbURI collectionUri, final LockGroup lockGroup, final LockTable lockTable) {
-        super(lockGroup, null);  // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
-        this.collectionUri = collectionUri;
+    public ManagedLockGroupDocumentLock(final XmldbURI documentUri, final LockGroup lock, final LockTable lockTable) {
+        super(documentUri, lock, null);    // NOTE(AR) we can set the closer as null here, because we override {@link #close()} below!
         this.lockTable = lockTable;
-    }
-
-    private ManagedCollectionLock(final XmldbURI collectionUri) {
-        this(collectionUri, null, null);
-    }
-
-    public XmldbURI getPath() {
-        return collectionUri;
     }
 
     @Override
     public void close() {
-        if (!closed && lock != null) {  // NOTE(AR) only null when constructed from {@link #notLocked(XmldbURI)}.
-            LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.COLLECTION, l.mode));
+        if (!closed) {
+            LockManager.unlockAll(lock.locks, l -> lockTable.released(lock.groupId, l.path, Lock.LockType.DOCUMENT, l.mode));
         }
         this.closed = true;
-    }
-
-    public static ManagedCollectionLock notLocked(final XmldbURI collectionUri) {
-        return new ManagedCollectionLock(collectionUri);
     }
 }
