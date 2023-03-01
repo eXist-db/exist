@@ -25,57 +25,44 @@ module namespace ser="http://exist-db.org/xquery/test/serialize";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare %private function ser:adaptive($data, $itemSep as xs:string?) {
-    let $options :=
-        <output:serialization-parameters
+declare %private variable $ser:opt-map-html5 :=
+    map {
+        "method": "html",
+        "html-version": 5.0
+    }
+;
+
+declare %private variable $ser:opt-xml-adaptive-no-indent :=
+    <output:serialization-parameters
+        xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+        <method>adaptive</method>
+        <indent>no</indent>
+    </output:serialization-parameters>
+;
+
+declare %private function ser:opt-xml-with-separator($item-separator as xs:string) {
+    <output:serialization-parameters
             xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <output:method value="adaptive"/>
-            <output:indent>no</output:indent>
-            {
-                if ($itemSep) then
-                    <output:item-separator>{$itemSep}</output:item-separator>
-                else
-                    ()
-            }
-        </output:serialization-parameters>
-    return
-        fn:serialize($data, $options)
+        <item-separator>{$item-separator}</item-separator>
+        <method>adaptive</method>
+        <indent>no</indent>
+    </output:serialization-parameters>
 };
 
-declare %private function ser:adaptive-map-params($data, $itemSep as xs:string?) {
-    let $options :=
-        map {
-            "method": "adaptive",
-            "indent": false(),
-            "item-separator": $itemSep
-        }
-    return
-        fn:serialize($data, $options)
+declare %private variable $ser:opt-map-adaptive-no-indent := map {
+    "method": "adaptive",
+    "indent": false()
 };
 
-declare %private function ser:adaptive($data) {
-    ser:adaptive($data, ())
-};
-
-declare %private function ser:adaptive-map-params($data) {
-    ser:adaptive-map-params($data, ())
-};
-
-declare %private function ser:serialize-with-item-separator($data as item()*, $method as xs:string) {
-    let $options :=
-        <output:serialization-parameters
-            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <output:method value="{$method}"/>
-            <output:indent>no</output:indent>
-            <output:item-separator>--</output:item-separator>
-        </output:serialization-parameters>
-    return
-        fn:serialize($data, $options)
+declare %private function ser:opt-map-with-separator($item-separator as xs:string) {
+    map:put($ser:opt-map-adaptive-no-indent, "item-separator", $item-separator)
 };
 
 declare variable $ser:atomic :=
-    <atomic:root xmlns:atomic="http://www.w3.org/XQueryTest" xmlns:foo="http://www.example.com/foo"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <atomic:root
+        xmlns:atomic="http://www.w3.org/XQueryTest"
+        xmlns:foo="http://www.example.com/foo"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <atomic:duration>P1Y2M3DT10H30M</atomic:duration>
       <atomic:dateTime>2002-04-02T12:00:00Z</atomic:dateTime>
       <atomic:time>13:20:10.5Z</atomic:time>
@@ -113,7 +100,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <atomic:id1>id1</atomic:id1>
       <atomic:id2>id2</atomic:id2>
       <atomic:idrefs atomic:attr="id1 id2">id1 id2</atomic:idrefs>
-    </atomic:root>;
+    </atomic:root>
+;
 
 
 declare variable $ser:test-xsl := document {
@@ -132,11 +120,59 @@ declare variable $ser:test-xml := document {
     <elem a="abc"><!--comment--><b>123</b></elem>
 };
 
+declare variable $ser:mixed := (
+    $ser:test-xml/elem/@a,
+    ["a", 2, $ser:test-xml/elem/b, ()],
+    xs:double(math:pi()),
+    math:pi#0,
+    "hello",
+    '"quoted"',
+    2 = 1+1,
+    map:entry("k", ())
+);
+
+declare variable $ser:function-items := (
+    substring#3,
+    math:pi#0,
+    Q{http://www.w3.org/2005/xpath-functions}exists#1,
+    function ($a) { $a },
+    ser:adaptive-simple-atomic#1
+);
+
+declare variable $ser:nested-map := map {
+    "k1": 1 to 3,
+    "k2": map {
+        "k3": $ser:test-xml/elem/@a,
+        "k4": array { 1 to 2 }
+    }
+};
+
+declare variable $ser:doubles := (
+    xs:double(1), xs:double(math:pi()), xs:double(2.543e1)
+);
+
+declare variable $ser:strings := (
+    xs:normalizedString("en"), xs:token("en"),
+    xs:language("en"), xs:ID("en"), xs:NCName("en")
+);
+
+declare variable $ser:decimals := (
+    xs:decimal(1.2), xs:integer(1), xs:nonPositiveInteger("0"),
+    xs:negativeInteger(-1), xs:long(0), xs:int(0)
+);
+
 declare variable $ser:test-xml-with-doctype := '<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd"><bookmap id="bookmap-1"/>';
 
 declare variable $ser:collection-name := "serialization-test";
 
 declare variable $ser:collection := "/db/" || $ser:collection-name;
+
+declare variable $ser:xi-doc := document {
+    <article xmlns:xi="http://www.w3.org/2001/XInclude">
+        <title>My Title</title>
+        <xi:include href="{$ser:collection}/test.xml"/>
+    </article>
+};
 
 declare
     %test:setUp
@@ -157,99 +193,84 @@ function ser:teardown() {
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-element() {
-    fn:serialize($ser:atomic)
+    serialize($ser:atomic)
 };
 
 declare
     %test:assertError
 function ser:serialize-attribute() {
-    fn:serialize(($ser:atomic//@*)[1])
+    serialize(($ser:atomic//@*)[1])
 };
 
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-with-params() {
-    let $params :=
-      <output:serialization-parameters
-           xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-        <output:method value="xml"/>
-        <output:indent value="yes"/>
-      </output:serialization-parameters>
-    return fn:serialize($ser:atomic, $params)
+    serialize(
+        $ser:atomic,
+        <output:serialization-parameters
+               xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <method value="xml"/>
+            <indent value="yes"/>
+        </output:serialization-parameters>
+    )
 };
 
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-with-params-map-params() {
-    let $params :=
-      map {
-        "method": "xml",
-        "indent": true()
-      }
-    return fn:serialize($ser:atomic, $params)
+    serialize($ser:atomic,
+        map { "method": "xml", "indent": true() })
 };
 
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-no-method() {
-    let $params :=
-        <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <output:indent value="yes"/>
-        </output:serialization-parameters>
-    return fn:serialize($ser:atomic, $params)
+    serialize($ser:atomic,
+        <output:serialization-parameters
+                xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" />)
 };
 
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-no-method-map-params() {
-    let $params :=
-        map {
-            "indent": true()
-        }
-    return fn:serialize($ser:atomic, $params)
+    serialize($ser:atomic, map{})
 };
 
 declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-empty-params() {
-    let $params := ()
-    return fn:serialize($ser:atomic, $params)
+    serialize($ser:atomic, ())
 };
 
 declare
     %test:assertEquals("aaa bbb")
 function ser:serialize-atomic() {
-    let $nodes := ("aaa", "bbb")
-    return
-        fn:serialize($nodes)
+    serialize(("aaa", "bbb"))
 };
 
 (: test for https://github.com/eXist-db/exist/issues/4704 :)
 declare
     %test:assertEquals("aaabbb")
 function ser:serialize-atomic-empty-separator() {
-    fn:serialize(("aaa", "bbb"), map {"item-separator": ""})
+    serialize(("aaa", "bbb"), map { "item-separator": "" })
 };
 
 (: test for https://github.com/eXist-db/exist/issues/4704 :)
 declare
     %test:assertEquals("aaabbb")
 function ser:serialize-atomic-empty-separator-xml-options() {
-    fn:serialize(("aaa", "bbb"),
-      <output:serialization-parameters
-           xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-        <output:item-separator value=""/>
-      </output:serialization-parameters>
+    serialize(("aaa", "bbb"),
+        <output:serialization-parameters
+            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <item-separator value=""/>
+        </output:serialization-parameters>
     )
 };
-
 
 declare
     %test:assertEquals("")
 function ser:serialize-empty-sequence() {
-    let $nodes := ()
-    return
-        fn:serialize($nodes)
+    serialize(())
 };
 
 declare
@@ -260,7 +281,7 @@ declare
     %test:args('Hello "world"!')
     %test:assertEquals('"Hello ""world""!"')
 function ser:adaptive-simple-atomic($atomic as xs:anyAtomicType) {
-    ser:adaptive($atomic)
+    serialize($atomic, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -271,7 +292,7 @@ declare
     %test:args('Hello "world"!')
     %test:assertEquals('"Hello ""world""!"')
 function ser:adaptive-simple-atomic-map-params($atomic as xs:anyAtomicType) {
-    ser:adaptive-map-params($atomic)
+    serialize($atomic, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
@@ -281,15 +302,7 @@ fn:exists#1
 (anonymous-function)#1
 Q{http://exist-db.org/xquery/test/serialize}adaptive-simple-atomic#1")
 function ser:adaptive-function-item() {
-    let $input := (
-        substring#3,
-        math:pi#0,
-        Q{http://www.w3.org/2005/xpath-functions}exists#1,
-        function ($a) { $a },
-        ser:adaptive-simple-atomic#1
-    )
-    return
-        ser:adaptive($input)
+    serialize($ser:function-items, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -299,15 +312,7 @@ fn:exists#1
 (anonymous-function)#1
 Q{http://exist-db.org/xquery/test/serialize}adaptive-simple-atomic#1")
 function ser:adaptive-function-item-map-params() {
-    let $input := (
-        substring#3,
-        math:pi#0,
-        Q{http://www.w3.org/2005/xpath-functions}exists#1,
-        function ($a) { $a },
-        ser:adaptive-simple-atomic#1
-    )
-    return
-        ser:adaptive-map-params($input)
+    serialize($ser:function-items, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
@@ -316,9 +321,8 @@ declare
 a="abc"
 <!--comment-->')
 function ser:adaptive-xml() {
-    let $input := ($ser:test-xml, $ser:test-xml/elem, $ser:test-xml/elem/@a, $ser:test-xml/elem/comment())
-    return
-        ser:adaptive($input)
+    serialize(($ser:test-xml, $ser:test-xml/elem, $ser:test-xml/elem/@a, $ser:test-xml/elem/comment()),
+        $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -327,9 +331,8 @@ declare
 a="abc"
 <!--comment-->')
 function ser:adaptive-xml-map-params() {
-    let $input := ($ser:test-xml, $ser:test-xml/elem, $ser:test-xml/elem/@a, $ser:test-xml/elem/comment())
-    return
-        ser:adaptive-map-params($input)
+    serialize(($ser:test-xml, $ser:test-xml/elem, $ser:test-xml/elem/@a, $ser:test-xml/elem/comment()),
+        $ser:opt-map-adaptive-no-indent)
 };
 
 declare
@@ -341,7 +344,7 @@ function ser:adaptive-xml-stored() {
     let $doc := doc($ser:collection || "/test.xml")
     let $input := ($doc, $doc/elem, $doc/elem/@a, $doc/elem/comment())
     return
-        ser:adaptive($input)
+        serialize($input, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -353,73 +356,57 @@ function ser:adaptive-xml-stored-map-params() {
     let $doc := doc($ser:collection || "/test.xml")
     let $input := ($doc, $doc/elem, $doc/elem/@a, $doc/elem/comment())
     return
-        ser:adaptive-map-params($input)
+        serialize($input, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xmlns:foo="http://exist-db.org/foo"')
 function ser:adaptive-xml-namespace() {
-    let $input := namespace foo { "http://exist-db.org/foo" }
-    return
-        ser:adaptive($input)
+    serialize(namespace foo { "http://exist-db.org/foo" }, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xmlns:foo="http://exist-db.org/foo"')
 function ser:adaptive-xml-namespace-map-params() {
-    let $input := namespace foo { "http://exist-db.org/foo" }
-    return
-        ser:adaptive-map-params($input)
+    serialize(namespace foo { "http://exist-db.org/foo" }, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("Q{http://exist.sourceforge.net/NS/exist}test")
 function ser:adaptive-qname() {
-    ser:adaptive(xs:QName("exist:test"))
+    serialize(xs:QName("exist:test"), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("Q{http://exist.sourceforge.net/NS/exist}test")
 function ser:adaptive-qname-map-params() {
-    ser:adaptive-map-params(xs:QName("exist:test"))
+    serialize(xs:QName("exist:test"), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('[(1,2,3),"hello ""world""!",true(),false()]')
 function ser:adaptive-array() {
-    let $input := [(1 to 3), 'hello "world"!', true(), 1 = 0]
-    return
-        ser:adaptive($input)
+    serialize([(1 to 3), 'hello "world"!', true(), 1 = 0],
+        $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('[(1,2,3),"hello ""world""!",true(),false()]')
 function ser:adaptive-array-map-params() {
-    let $input := [(1 to 3), 'hello "world"!', true(), 1 = 0]
-    return
-        ser:adaptive-map-params($input)
+    serialize([(1 to 3), 'hello "world"!', true(), 1 = 0],
+        $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('map{"k1":(1,2,3),"k2":map{"k3":a="abc","k4":[1,2]}}')
 function ser:adaptive-map() {
-    let $input := map {
-        "k1": 1 to 3,
-        "k2": map { "k3": $ser:test-xml/elem/@a, "k4": array { 1 to 2 } }
-    }
-    return
-        ser:adaptive($input)
+    serialize($ser:nested-map, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('map{"k1":(1,2,3),"k2":map{"k3":a="abc","k4":[1,2]}}')
 function ser:adaptive-map-map-params() {
-    let $input := map {
-        "k1": 1 to 3,
-        "k2": map { "k3": $ser:test-xml/elem/@a, "k4": array { 1 to 2 } }
-    }
-    return
-        ser:adaptive-map-params($input)
+    serialize($ser:nested-map, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
@@ -427,9 +414,7 @@ declare
 3.141592653589793e0
 2.543e1')
 function ser:adaptive-double() {
-    let $input := (xs:double(1), xs:double(math:pi()), xs:double(2.543e1))
-    return
-        ser:adaptive($input)
+    serialize($ser:doubles, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -437,9 +422,7 @@ declare
 3.141592653589793e0
 2.543e1')
 function ser:adaptive-double-map-params() {
-    let $input := (xs:double(1), xs:double(math:pi()), xs:double(2.543e1))
-    return
-        ser:adaptive-map-params($input)
+    serialize($ser:doubles, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
@@ -452,18 +435,7 @@ math:pi#0
 true()
 map{"k":()}')
 function ser:adaptive-mixed() {
-    let $input := (
-        $ser:test-xml/elem/@a,
-        ["a", 2, $ser:test-xml/elem/b, ()],
-        xs:double(math:pi()),
-        math:pi#0,
-        "hello",
-        '"quoted"',
-        2 = 1+1,
-        map:entry("k", ())
-    )
-    return
-        ser:adaptive($input)
+    serialize($ser:mixed, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
@@ -476,374 +448,323 @@ math:pi#0
 true()
 map{"k":()}')
 function ser:adaptive-mixed-map-params() {
-    let $input := (
-        $ser:test-xml/elem/@a,
-        ["a", 2, $ser:test-xml/elem/b, ()],
-        xs:double(math:pi()),
-        math:pi#0,
-        "hello",
-        '"quoted"',
-        2 = 1+1,
-        map:entry("k", ())
-    )
-    return
-        ser:adaptive-map-params($input)
+    serialize($ser:mixed, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("[]")
 function ser:adaptive-empty-array() {
-    ser:adaptive([])
+    serialize([], $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("[]")
 function ser:adaptive-empty-array-map-params() {
-    ser:adaptive-map-params([])
+    serialize([], $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("map{}")
 function ser:adaptive-empty-map() {
-    ser:adaptive(map { })
+    serialize(map {}, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("map{}")
 function ser:adaptive-empty-map-map-params() {
-    ser:adaptive-map-params(map { })
+    serialize(map {}, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("")
 function ser:adaptive-empty-seq() {
-    ser:adaptive(())
+    serialize((), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("")
 function ser:adaptive-empty-seq-map-params() {
-    ser:adaptive-map-params(())
+    serialize((), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("content")
 function ser:adaptive-text-node() {
-    ser:adaptive(<test>content</test>/text())
+    serialize(<test>content</test>/text(), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("content")
 function ser:adaptive-text-node-map-params() {
-    ser:adaptive-map-params(<test>content</test>/text())
+    serialize(<test>content</test>/text(), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("<!--comment-->")
 function ser:adaptive-comment-node() {
-    ser:adaptive(<!--comment-->)
+    serialize(<!--comment-->, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("<!--comment-->")
 function ser:adaptive-comment-node-map-params() {
-    ser:adaptive-map-params(<!--comment-->)
+    serialize(<!--comment-->, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("<?target instruction ?>")
 function ser:adaptive-processing-instr() {
-    ser:adaptive(<?target instruction ?>)
+    serialize(<?target instruction ?>, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals("<?target instruction ?>")
 function ser:adaptive-processing-instr-map-params() {
-    ser:adaptive-map-params(<?target instruction ?>)
+    serialize(<?target instruction ?>, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('att-name="att-value"')
 function ser:adaptive-attribute-node() {
-    ser:adaptive(attribute att-name { "att-value" })
+    serialize(attribute att-name { "att-value" }, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('att-name="att-value"')
 function ser:adaptive-attribute-node-map-params() {
-    ser:adaptive-map-params(attribute att-name { "att-value" })
+    serialize(attribute att-name { "att-value" }, $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('[xs:float("NaN")]')
 function ser:adaptive-array-with-NaN() {
-    ser:adaptive([ xs:float("NaN") ])
+    serialize([ xs:float("NaN") ], $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('[xs:float("NaN")]')
 function ser:adaptive-array-with-NaN-map-params() {
-    ser:adaptive-map-params([ xs:float("NaN") ])
+    serialize([ xs:float("NaN") ], $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('1-2-3-4-5')
 function ser:adaptive-seq-with-item-separator() {
-    ser:adaptive(1 to 5, "-")
+    serialize(1 to 5, ser:opt-xml-with-separator("-"))
 };
 
 declare
     %test:assertEquals('1-2-3-4-5')
 function ser:adaptive-seq-with-item-separator-map-params() {
-    ser:adaptive-map-params(1 to 5, "-")
+    serialize(1 to 5, ser:opt-map-with-separator("-"))
 };
 
 declare
     %test:assertEquals('"the quick", "brown fox"')
 function ser:adaptive-seq-with-item-separator2() {
-    ser:adaptive(("the quick", "brown fox"), ", ")
+    serialize(("the quick", "brown fox"), ser:opt-xml-with-separator(", "))
 };
 
 declare
     %test:assertEquals('"the quick", "brown fox"')
 function ser:adaptive-seq-with-item-separator2-map-params() {
-    ser:adaptive-map-params(("the quick", "brown fox"), ", ")
+    serialize(("the quick", "brown fox"), ser:opt-map-with-separator(", "))
 };
 
 declare
     %test:assertEquals('map{"a":("quotes ("")","apos (&apos;)")}')
 function ser:adaptive-map-with-itemsep-no-quotes() {
-    let $input := map{ "a":("quotes ("")", "apos (')") }
-    return
-        ser:adaptive($input, ",")
+    serialize(map{ "a":("quotes ("")", "apos (')") }, ser:opt-xml-with-separator(","))
 };
 
 declare
     %test:assertEquals('map{"a":("quotes ("")","apos (&apos;)")}')
 function ser:adaptive-map-with-itemsep-no-quotes-map-params() {
-    let $input := map{ "a":("quotes ("")", "apos (')") }
-    return
-        ser:adaptive-map-params($input, ",")
+    serialize(map{ "a":("quotes ("")", "apos (')") }, ser:opt-map-with-separator(","))
 };
 
 declare
     %test:assertEquals('xs:dateTime("1999-05-31T13:20:00-05:00")')
 function ser:adaptive-xs-date-time() {
-    ser:adaptive(xs:dateTime('1999-05-31T13:20:00-05:00'))
+    serialize(xs:dateTime('1999-05-31T13:20:00-05:00'), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xs:dateTime("1999-05-31T13:20:00-05:00")')
 function ser:adaptive-xs-date-time-map-params() {
-    ser:adaptive-map-params(xs:dateTime('1999-05-31T13:20:00-05:00'))
+    serialize(xs:dateTime('1999-05-31T13:20:00-05:00'), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xs:duration("P1Y2M3DT10H30M23S")')
 function ser:adaptive-xs-duration() {
-    ser:adaptive(xs:duration("P1Y2M3DT10H30M23S"))
+    serialize(xs:duration("P1Y2M3DT10H30M23S"), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xs:duration("P1Y2M3DT10H30M23S")')
 function ser:adaptive-xs-duration-map-params() {
-    ser:adaptive-map-params(xs:duration("P1Y2M3DT10H30M23S"))
+    serialize(xs:duration("P1Y2M3DT10H30M23S"), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xs:float("1")')
 function ser:adaptive-xs-float() {
-    ser:adaptive(xs:float("1e0"))
+    serialize(xs:float("1e0"), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('xs:float("1")')
 function ser:adaptive-xs-float-map-params() {
-    ser:adaptive-map-params(xs:float("1e0"))
+    serialize(xs:float("1e0"), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('1.0e0')
 function ser:adaptive-xs-double() {
-    let $input := xs:double(1e0)
-    return
-        ser:adaptive($input, ",")
+    serialize(xs:double(1e0), $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('1.0e0')
 function ser:adaptive-xs-double-map-params() {
-    let $input := xs:double(1e0)
-    return
-        ser:adaptive-map-params($input, ",")
+    serialize(xs:double(1e0), $ser:opt-map-adaptive-no-indent)
 };
 
 declare
     %test:assertEquals('1.2,1,0,-1,0,0')
 function ser:adaptive-xs-integers() {
-    let $input := (xs:decimal(1.2), xs:integer(1), xs:nonPositiveInteger("0"),
-        xs:negativeInteger(-1), xs:long(0), xs:int(0))
-    return
-        ser:adaptive($input, ",")
+    serialize($ser:decimals, ser:opt-xml-with-separator(","))
 };
 
 declare
     %test:assertEquals('1.2,1,0,-1,0,0')
 function ser:adaptive-xs-integers-map-params() {
-    let $input := (xs:decimal(1.2), xs:integer(1), xs:nonPositiveInteger("0"),
-        xs:negativeInteger(-1), xs:long(0), xs:int(0))
-    return
-        ser:adaptive-map-params($input, ",")
+    serialize($ser:decimals, ser:opt-map-with-separator(","))
 };
 
 declare
     %test:assertEquals('"""","""",""""')
 function ser:adaptive-string-escaping() {
-    let $input := ('"', xs:untypedAtomic('"'), xs:anyURI('"'))
-    return
-        ser:adaptive($input, ",")
+    serialize(('"', xs:untypedAtomic('"'), xs:anyURI('"')), ser:opt-xml-with-separator(","))
 };
 
 declare
     %test:assertEquals('"""","""",""""')
 function ser:adaptive-string-escaping-map-params() {
-    let $input := ('"', xs:untypedAtomic('"'), xs:anyURI('"'))
-    return
-        ser:adaptive-map-params($input, ",")
+    serialize(('"', xs:untypedAtomic('"'), xs:anyURI('"')), ser:opt-map-with-separator(","))
 };
 
 declare
     %test:assertEquals('"en","en","en","en","en"')
 function ser:adaptive-xs-strings() {
-    let $input := (xs:normalizedString("en"), xs:token("en"), xs:language("en"), xs:ID("en"), xs:NCName("en"))
-    return
-        ser:adaptive($input, ",")
+    serialize($ser:strings, ser:opt-xml-with-separator(","))
 };
 
 declare
     %test:assertEquals('"en","en","en","en","en"')
 function ser:adaptive-xs-strings-map-params() {
-    let $input := (xs:normalizedString("en"), xs:token("en"), xs:language("en"), xs:ID("en"), xs:NCName("en"))
-    return
-        ser:adaptive-map-params($input, ",")
+    serialize($ser:strings, ser:opt-map-with-separator(","))
 };
 
 declare
     %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
 function ser:exist-output-doctype-true() {
-    let $doc := doc($ser:collection || "/test-with-doctype.xml")
-    return
-        fn:serialize($doc, map { xs:QName("exist:output-doctype"): fn:true() })
+    serialize(doc($ser:collection || "/test-with-doctype.xml"),
+        map { "exist:output-doctype": true() })
 };
 
 declare
     %test:assertXPath("not(contains($result, '-//OASIS//DTD DITA BookMap//EN')) and not(contains($result, 'bookmap.dtd'))")
 function ser:exist-output-doctype-false() {
-    let $doc := doc($ser:collection || "/test-with-doctype.xml")
-    return
-        fn:serialize($doc, map { xs:QName("exist:output-doctype"): fn:false() })
+    serialize(doc($ser:collection || "/test-with-doctype.xml"),
+        map { "exist:output-doctype": false() })
 };
 
 declare
     %test:assertXPath("contains($result, 'include')")
 function ser:exist-expand-xinclude-false() {
-    let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
-                            <title>My Title</title>
-                            <xi:include href="{$ser:collection}/test.xml"/>
-                        </article>}
-    return
-        fn:serialize($doc, map { xs:QName("exist:expand-xincludes"): false() })
+    serialize($ser:xi-doc,
+        map { "exist:expand-xincludes": false() })
 };
 
 declare
     %test:assertXPath("contains($result, 'comment')")
 function ser:exist-expand-xinclude-true() {
-    let $doc := document{<article xmlns:xi="http://www.w3.org/2001/XInclude">
-                            <title>My Title</title>
-                            <xi:include href="{$ser:collection}/test.xml"/>
-                        </article>}
-    return
-        fn:serialize($doc, map {  xs:QName("exist:expand-xincludes"): true() })
+    serialize($ser:xi-doc,
+        map { "exist:expand-xincludes": true() })
 };
 
 declare
-    %test:assertXPath("contains($result, 'true')")
+    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>')
 function ser:exist-add-exist-id-all() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "all" }) eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>'
+    serialize(doc($ser:collection || "/test.xml"),
+        map { "exist:add-exist-id": "all" })
 };
 
 declare
-    %test:assertXPath("contains($result, 'true')")
+    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>')
 function ser:exist-add-exist-id-element() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "element" })  eq '<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>'
+    serialize(doc($ser:collection || "/test.xml"),
+        map { "exist:add-exist-id": "element" })
 };
 
 declare
      %test:assertXPath("not(contains($result, 'exist:id'))")
 function ser:exist-add-exist-id-none() {
-    let $doc := doc($ser:collection || "/test.xml")
-    return fn:serialize($doc, map { xs:QName("exist:add-exist-id"): "none" })
+    serialize(doc($ser:collection || "/test.xml"),
+        map { "exist:add-exist-id": "none" })
 };
 
 declare
-    %test:assertXPath("contains($result, 'true')")
+    %test:assertEquals('functionName({"author":["John Doe","Robert Smith"]})')
 function ser:exist-jsonp() {
-      let $node := <book>
-          <author>John Doe</author>
-          <author>Robert Smith</author>
-      </book>
-    return fn:serialize($node, map {"method":"json", "media-type":"application/json", xs:QName("exist:jsonp"):"functionName"}) eq 'functionName({"author":["John Doe","Robert Smith"]})'
+    serialize(
+        <book>
+            <author>John Doe</author>
+            <author>Robert Smith</author>
+        </book>,
+        map {
+            "method": "json",
+            "media-type": "application/json",
+            "exist:jsonp": "functionName"
+        }
+    )
 };
 
 declare
     %test:assertEquals('processed')
 function ser:exist-process-xsl-pi-true() {
-    let $doc := doc($ser:collection || "/test-xsl.xml")
-    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): true()})
+    serialize(doc($ser:collection || "/test-xsl.xml"),
+        map { "exist:process-xsl-pi": true() })
 };
 
 declare
     %test:assertXPath("contains($result, 'stylesheet')")
 function ser:exist-process-xsl-pi-false() {
-    let $doc := doc($ser:collection || "/test-xsl.xml")
-    return fn:serialize($doc, map {xs:QName("exist:process-xsl-pi"): false()})
+    serialize(doc($ser:collection || "/test-xsl.xml"),
+        map { "exist:process-xsl-pi": false() })
 };
 
 declare
+    %test:args("text")
     %test:assertEquals("1--2")
-function ser:item-separator-text-method() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "text")
-};
-
-declare
+    %test:args("html")
     %test:assertEquals("1--2")
-function ser:item-separator-html-method() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "html")
-};
-
-declare
+    %test:args("xhtml")
     %test:assertEquals("1--2")
-function ser:item-separator-xhtml-method() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "xhtml")
-};
-
-declare
+    %test:args("xml")
     %test:assertEquals("1--2")
-function ser:item-separator-xml-method() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "xml")
-};
-
-declare
+    %test:args("adaptive")
     %test:assertEquals("1--2")
-function ser:item-separator-adaptive-method() {
-    let $data := (1, 2)
-    return ser:serialize-with-item-separator($data, "adaptive")
+function ser:item-separator-with-method($method as xs:string) {
+    serialize((1, 2),
+        <output:serialization-parameters
+                xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <method>{$method}</method>
+            <item-separator>--</item-separator>
+        </output:serialization-parameters>
+    )
 };
 
 declare
@@ -851,133 +772,123 @@ declare
 function ser:serialize-xml-033() {
     let $params :=
         <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <output:method value="xml"/>
-            <output:item-separator value="|"/>
+            <method value="xml"/>
+            <item-separator value="|"/>
         </output:serialization-parameters>
     return serialize(1 to 10, $params)
-};
-
-declare
-    %test:assertEquals("1==2==3==4")
-function ser:serialize-xml-034() {
-    let $params :=
-        <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <output:method value="xml"/>
-            <output:omit-xml-declaration value="yes"/>
-            <output:item-separator value="=="/>
-        </output:serialization-parameters>
-    return serialize(1 to 4, $params)
 };
 
 declare
     %test:assertEquals("1|2|3|4|5|6|7|8|9|10")
 function ser:serialize-xml-133() {
-    let $params := map {
-        "method" : "xml",
-        "item-separator" : "|"
-    }
-    return serialize(1 to 10, $params)
+    serialize(1 to 10, map { "method": "xml", "item-separator": "|" })
+};
+
+declare
+    %test:assertEquals("1==2==3==4")
+function ser:serialize-xml-034() {
+    serialize(1 to 4,
+        <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
+            <method value="xml"/>
+            <omit-xml-declaration value="yes"/>
+            <item-separator value="=="/>
+        </output:serialization-parameters>
+    )
 };
 
 declare
     %test:assertEquals("1==2==3==4")
 function ser:serialize-xml-134() {
-    let $params := map {
-        "method" : "xml",
-        "omit-xml-declaration" : true(),
-        "item-separator" : "=="
-    }
-    return serialize((1 to 4)!text{.}, $params)
+    serialize((1 to 4) ! text { . },
+        map {
+            "method": "xml",
+            "omit-xml-declaration": true(),
+            "item-separator": "=="
+        }
+    )
 };
 
 declare
     %test:assertEquals('<!DOCTYPE html> <option selected></option>')
 function ser:serialize-html-5-boolean-attribute-names() {
-    let $params := map {
-        "method" : "html",
-        "html-version": 5.0
-    }
-    return
-        <option selected="selected"/>
-        => serialize($params)
-        => normalize-space()
+    <option selected="selected"/>
+    => serialize($ser:opt-map-html5)
+    => normalize-space()
 };
 
 declare
     %test:assertEquals('<!DOCTYPE html> <br>')
 function ser:serialize-html-5-empty-tags() {
-    let $params := map {
-        "method" : "html",
-        "html-version": 5.0
-    }
-    return
-        <br/>
-        => serialize($params)
-        => normalize-space()
+    <br/>
+    => serialize($ser:opt-map-html5)
+    => normalize-space()
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <foo><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></foo>')
-function ser:serialize-html-5-raw-text-elements() {
-    let $params := map {
-        "method" : "html",
-        "html-version": 5.0
-    }
-    return
-        <foo>
-            <style>{``[ul > li { 
-                color:red; 
-            }]``}</style>
-            <script>{``[if (a < b) foo()]``}</script>
-        </foo>
-        => serialize($params)
-        => normalize-space()
+    %test:assertEquals('<!DOCTYPE html> <html><body><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></body></html>')
+function ser:serialize-html-5-raw-text-elements-body() {
+    <html>
+        <body>
+            <style><![CDATA[ul > li { color:red; }]]></style>
+            <script><![CDATA[if (a < b) foo()]]></script>
+        </body>
+    </html>
+    => serialize($ser:opt-map-html5)
+    => normalize-space()
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <foo><title>ul &amp;gt; li { color:red; }</title><textarea>if (a &amp;lt; b) foo()</textarea></foo>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
+function ser:serialize-html-5-raw-text-elements-head() {
+    <html>
+        <head>
+            <style><![CDATA[ul > li { color:red; }]]></style>
+            <script><![CDATA[if (a < b) foo()]]></script>
+        </head>
+        <body></body>
+    </html>
+    => serialize($ser:opt-map-html5)
+    => normalize-space()
+};
+
+declare
+    %test:assertEquals('<!DOCTYPE html> <html><head><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
-    let $params := map {
-        "method" : "html",
-        "html-version": 5.0
-    }
-    return
-        <foo>
-            <title>{``[ul > li { 
-                color:red; 
-            }]``}</title>
-            <textarea>{``[if (a < b) foo()]``}</textarea>
-        </foo>
-        => serialize($params)
-        => normalize-space()
+    <html>
+        <head>
+            <title><![CDATA[XML > JSON]]></title>
+        </head>
+        <body>
+            <textarea><![CDATA[if (a < b) foo()]]></textarea>
+        </body>
+    </html>
+    => serialize($ser:opt-map-html5)
+    => normalize-space()
 };
 
 (: test for https://github.com/eXist-db/exist/issues/4702 :)
 declare
     %test:assertEquals("<a>foo</a> <b>bar</b>")
 function ser:sequence-of-nodes() {
-    (<a>foo</a>, <b>bar</b>) => serialize()
+    serialize((<a>foo</a>, <b>bar</b>))
 };
 
 declare
     %test:assertEquals("[|]")
 function ser:sequence-skip-empty-text-node() {
-    (<a>[</a>, <a>
-        </a>, <a>]</a>)/text()
-    => serialize(map {"item-separator": "|"})
+    serialize((<a>[</a>, <a> </a>, <a>]</a>)/text(), map { "item-separator": "|" })
 };
 
 declare
     %test:assertEquals("||")
 function ser:sequence-dont-skip-empty-string() {
-    serialize(("", "", ""), map {"item-separator": "|"})
+    serialize(("", "", ""), map { "item-separator": "|" })
 };
 
 declare
     %test:assertEquals("foo")
 function ser:skip-empty-no-separator() {
-    (<a>foo</a>, <b></b>)/text()
-    => serialize(map{"item-separator": "!"})
+    serialize((<a>foo</a>, <b></b>)/text(), map {"item-separator": "!" })
 };
 
 declare
@@ -995,11 +906,11 @@ function ser:array-with-members-serializes-to-empty-string() {
 declare
     %test:assertEquals("")
 function ser:sequence-of-empty-arrays-serializes-to-empty-string() {
-    serialize(([],[]), map{"item-separator": "|"})
+    serialize(([],[]), map { "item-separator": "|" })
 };
 
 declare
     %test:assertEquals("1|2")
 function ser:item-separator-applies-to-array-members() {
-    serialize(([1,2]), map{"item-separator":"|"})
+    serialize([1,2], map { "item-separator": "|" })
 };
