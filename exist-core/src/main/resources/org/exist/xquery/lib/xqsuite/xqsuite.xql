@@ -905,31 +905,26 @@ declare %private function test:assertTrue($result as item()*) as element(report)
         </report>
 };
 
+declare %private function test:safe-effective-boolean-value ($result as item()*) as xs:boolean {
+    try {
+        boolean($result)
+    } catch err:FORG0006 {
+        false()
+    }
+};
+
 (:~
  : Check if the function caused an error.
  :)
 declare %private function test:assertError($value as xs:string, $result as item()*) as element(report)? {
-    let $ebv :=
-        try {
-            if ($result)
-            then
-                fn:true()
-            else
-                fn:false()
-        } catch err:FORG0006 {
-            fn:false()
-        }
-    return
-
-        if ($ebv)
-        then
-            ()
-        else
-            <report>
-                <failure message="assertError failed. Expected error {$value}"
-                    type="failure-error-code-1"/>
-                <output>{ $result }</output>
-            </report>
+    if (test:safe-effective-boolean-value($result))
+    then ()
+    else
+        <report>
+            <failure message="assertError failed. Expected error {$value}"
+                type="failure-error-code-1"/>
+            <output>{ $result }</output>
+        </report>
 };
 
 (:~
