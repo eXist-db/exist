@@ -34,33 +34,32 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * eXist Image Module Extension
- * 
+ * <p>
  * An extension module for the eXist Native XML Database that allows operations
  * on images stored in the eXist database.
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author ljo
- * @serial 2006-03-10
  * @version 1.0
- *
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map) 
+ * @serial 2006-03-10
+ * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map)
  */
 public class ImageModule extends AbstractInternalModule {
 
     public final static String NAMESPACE_URI = "http://exist-db.org/xquery/image";
-	
+
     public final static String PREFIX = "image";
     public final static String INCLUSION_DATE = "2006-03-13";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     private final static FunctionDef[] functions = {
-        new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
-        new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
-        new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
-        new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class),
-        new FunctionDef(CropFunction.signature, CropFunction.class)
+            new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
+            new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
+            new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
+            new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class),
+            new FunctionDef(CropFunction.signature, CropFunction.class)
     };
-	
+
     public ImageModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
@@ -84,17 +83,15 @@ public class ImageModule extends AbstractInternalModule {
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
     }
-	
+
     /**
      * Create a thumbnail.
      *
-     * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
-     *
-     * @param image the image
+     * @param image  the image
      * @param height the height of the thumbnail
-     * @param width the width of the thumbnail
-     *
+     * @param width  the width of the thumbnail
      * @return the thumbnail
+     * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
      */
     protected static BufferedImage createThumb(final Image image, final int height, final int width) {
         int thumbWidth = 0;
@@ -104,26 +101,26 @@ public class ImageModule extends AbstractInternalModule {
         int imageHeight = image.getHeight(null);
         int imageWidth = image.getWidth(null);
 
-        if(imageHeight >= imageWidth) {
-            scaleFactor = (double)height / (double)imageHeight;
-            thumbWidth = (int)(imageWidth * scaleFactor);
+        if (imageHeight >= imageWidth) {
+            scaleFactor = (double) height / (double) imageHeight;
+            thumbWidth = (int) (imageWidth * scaleFactor);
             thumbHeight = height;
-            if(thumbWidth > width) { // thumbwidth is greater than
+            if (thumbWidth > width) { // thumbwidth is greater than
                 // maxThumbWidth, so we have to scale
                 // again
-                scaleFactor = (double)width / (double)thumbWidth;
-                thumbHeight = (int)(thumbHeight * scaleFactor);
+                scaleFactor = (double) width / (double) thumbWidth;
+                thumbHeight = (int) (thumbHeight * scaleFactor);
                 thumbWidth = width;
             }
         } else {
-            scaleFactor = (double)width / (double)imageWidth;
-            thumbHeight = (int)(imageHeight * scaleFactor);
+            scaleFactor = (double) width / (double) imageWidth;
+            thumbHeight = (int) (imageHeight * scaleFactor);
             thumbWidth = width;
-            if(thumbHeight > height) { // thumbHeight is greater than
+            if (thumbHeight > height) { // thumbHeight is greater than
                 // maxThumbHeight, so we have to scale
                 // again
-                scaleFactor = (double)height / (double)thumbHeight;
-                thumbWidth = (int)(thumbWidth * scaleFactor);
+                scaleFactor = (double) height / (double) thumbHeight;
+                thumbWidth = (int) (thumbWidth * scaleFactor);
                 thumbHeight = height;
             }
         }
@@ -139,7 +136,7 @@ public class ImageModule extends AbstractInternalModule {
                 graphics2D.dispose();
             }
         }
-        
+
         return thumbImage;
     }
 }
