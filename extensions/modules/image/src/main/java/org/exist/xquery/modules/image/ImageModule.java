@@ -28,9 +28,15 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Map;
 
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
+import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
  * eXist-db Image Module Extension.
@@ -51,13 +57,13 @@ public class ImageModule extends AbstractInternalModule {
     public final static String INCLUSION_DATE = "2006-03-13";
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
-    private final static FunctionDef[] functions = {
-            new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
-            new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
-            new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
-            new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class),
-            new FunctionDef(CropFunction.signature, CropFunction.class)
-    };
+    private final static FunctionDef[] functions = functionDefs(
+            functionDefs(GetWidthFunction.class, GetWidthFunction.signature),
+            functionDefs(GetHeightFunction.class, GetHeightFunction.signature),
+            functionDefs(ScaleFunction.class, ScaleFunction.signature),
+            functionDefs(GetThumbnailsFunction.class, GetThumbnailsFunction.signature),
+            functionDefs(CropFunction.class, CropFunction.signature)
+    );
 
     public ImageModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
@@ -137,5 +143,13 @@ public class ImageModule extends AbstractInternalModule {
         }
 
         return thumbImage;
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }

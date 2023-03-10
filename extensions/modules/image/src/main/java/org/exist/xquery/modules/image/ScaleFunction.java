@@ -29,22 +29,20 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
 
-import org.exist.dom.QName;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.modules.image.ImageModule.functionSignature;
 
 /**
  * eXist-db Image Module Extension ScaleFunction.
@@ -62,15 +60,14 @@ public class ScaleFunction extends BasicFunction {
     private static final int MAXHEIGHT = 100;
     private static final int MAXWIDTH = 100;
 
-    public static final FunctionSignature signature = new FunctionSignature(
-            new QName("scale", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
+    public static final FunctionSignature signature = functionSignature(
+            "scale",
             "Scale the image image to a specified dimension.  If no dimensions are specified, then the default values are 'maxheight = 100' and 'maxwidth = 100'.",
-            new SequenceType[] {
-                    new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data"),
-                    new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, "The maximum dimension of the scaled image. expressed in pixels (maxheight, maxwidth).  If empty, then the default values are 'maxheight = 100' and 'maxwidth = 100'."),
-                    new FunctionParameterSequenceType("mimeType", Type.STRING, Cardinality.EXACTLY_ONE, "The mime-type of the image")
-            },
-            new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the scaled image or an empty sequence if $image is invalid"));
+            returnsOpt(Type.BASE64_BINARY, "the scaled image or an empty sequence if $image is invalid"),
+            param("image", Type.BASE64_BINARY, "The image data"),
+            optManyParam("dimension", Type.INTEGER, "The maximum dimension of the scaled image. expressed in pixels (maxheight, maxwidth).  If empty, then the default values are 'maxheight = 100' and 'maxwidth = 100'."),
+            param("mimeType", Type.STRING, "The mime-type of the image")
+    );
 
     public ScaleFunction(final XQueryContext context) {
         super(context, signature);
