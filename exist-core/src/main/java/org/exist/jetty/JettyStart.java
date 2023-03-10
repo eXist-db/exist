@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 
 import static org.exist.util.ThreadUtils.newGlobalThread;
 import static se.softhouse.jargo.Arguments.helpArgument;
+import static se.softhouse.jargo.Arguments.stringArgument;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -88,6 +89,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private final static int STATUS_STOPPED = 3;
 
     /* general arguments */
+    private static final Argument<String> jettyConfigFilePath = stringArgument()
+            .description("Path to Jetty Config File")
+            .build();
+    private static final Argument<String> existConfigFilePath = stringArgument()
+            .description("Path to eXist-db Config File")
+            .build();
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
     @GuardedBy("this") private int status = STATUS_STOPPED;
@@ -102,7 +109,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 
             CommandLineParser
-                    .withArguments(helpArg)
+                    .withArguments(jettyConfigFilePath, existConfigFilePath)
+                    .andArguments(helpArg)
                     .programName("startup" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
