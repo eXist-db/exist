@@ -343,7 +343,7 @@ public class LuceneConfig {
                                 Element elem = (Element) node;
                                 QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
                                 if (inlineNodes == null) {
-                                    inlineNodes = new TreeSet<>();
+                                    inlineNodes = new HashSet<>(8);
                                 }
                                 inlineNodes.add(qname);
                                 break;
@@ -352,7 +352,7 @@ public class LuceneConfig {
                                 Element elem = (Element) node;
                                 QName qname = LuceneIndexConfig.parseQName(elem, namespaces);
                                 if (ignoreNodes == null) {
-                                    ignoreNodes = new TreeSet<>();
+                                    ignoreNodes = new HashSet<>(8);
                                 }
                                 ignoreNodes.add(qname);
                                 break;
