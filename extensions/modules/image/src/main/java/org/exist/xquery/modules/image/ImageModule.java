@@ -96,12 +96,10 @@ public class ImageModule extends AbstractInternalModule {
      *
      * @return the thumbnail
      */
-    protected static BufferedImage createThumb(Image image, int height, int width) {
+    protected static BufferedImage createThumb(final Image image, final int height, final int width) {
         int thumbWidth = 0;
         int thumbHeight = 0;
         double scaleFactor = 0.0;
-        BufferedImage thumbImage = null;
-        Graphics2D graphics2D = null;
 
         int imageHeight = image.getHeight(null);
         int imageWidth = image.getWidth(null);
@@ -130,11 +128,17 @@ public class ImageModule extends AbstractInternalModule {
             }
         }
 
-        thumbImage = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
-        graphics2D = thumbImage.createGraphics();
-        graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
-        graphics2D.dispose();
+        final BufferedImage thumbImage = new BufferedImage(thumbWidth, thumbHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics2D = null;
+        try {
+            graphics2D = thumbImage.createGraphics();
+            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
+        } finally {
+            if (graphics2D != null) {
+                graphics2D.dispose();
+            }
+        }
         
         return thumbImage;
     }
