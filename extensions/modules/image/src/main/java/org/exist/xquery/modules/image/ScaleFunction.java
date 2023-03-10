@@ -47,40 +47,32 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * eXist Image Module Extension ScaleFunction
+ * eXist-db Image Module Extension ScaleFunction.
  * <p>
- * Scale's an Image
+ * Scale's an Image.
  *
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author Loren Cahlander
- * @version 1.0
- * @serial 2007-01-16
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
+ * @version 2.0.0
+ * @serial 2023-03-10
  */
 public class ScaleFunction extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(ScaleFunction.class);
 
-    private final static int MAXHEIGHT = 100;
-    private final static int MAXWIDTH = 100;
+    private static final int MAXHEIGHT = 100;
+    private static final int MAXWIDTH = 100;
 
-
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("scale", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
             "Scale the image image to a specified dimension.  If no dimensions are specified, then the default values are 'maxheight = 100' and 'maxwidth = 100'.",
-            new SequenceType[]{
+            new SequenceType[] {
                     new FunctionParameterSequenceType("image", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The image data"),
                     new FunctionParameterSequenceType("dimension", Type.INTEGER, Cardinality.ZERO_OR_MORE, "The maximum dimension of the scaled image. expressed in pixels (maxheight, maxwidth).  If empty, then the default values are 'maxheight = 100' and 'maxwidth = 100'."),
                     new FunctionParameterSequenceType("mimeType", Type.STRING, Cardinality.EXACTLY_ONE, "The mime-type of the image")
             },
             new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE, "the scaled image or an empty sequence if $image is invalid"));
 
-
-    /**
-     * ScaleFunction Constructor
-     *
-     * @param context The Context of the calling XQuery
-     */
-    public ScaleFunction(XQueryContext context) {
+    public ScaleFunction(final XQueryContext context) {
         super(context, signature);
     }
 
@@ -91,9 +83,8 @@ public class ScaleFunction extends BasicFunction {
      * @param args            arguments from the scale() function call
      * @param contextSequence the Context Sequence to operate on (not used here internally!)
      * @return A sequence representing the result of the scale() function call
-     * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         //was an image and a mime-type speficifed
         if (args[0].isEmpty() || args[2].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;

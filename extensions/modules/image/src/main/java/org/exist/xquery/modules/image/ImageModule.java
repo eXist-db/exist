@@ -33,16 +33,15 @@ import org.exist.xquery.FunctionDef;
 
 
 /**
- * eXist Image Module Extension
+ * eXist-db Image Module Extension.
  * <p>
- * An extension module for the eXist Native XML Database that allows operations
- * on images stored in the eXist database.
+ * An extension module for the eXist-db Native XML Database that allows operations
+ * on images stored in the eXist-db database.
  *
- * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author ljo
- * @version 1.0
- * @serial 2006-03-10
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[], java.util.Map)
+ * @version 2.0.0
+ * @serial 2023-03-10
  */
 public class ImageModule extends AbstractInternalModule {
 

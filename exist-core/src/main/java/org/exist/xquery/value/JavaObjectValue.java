@@ -41,14 +41,12 @@ public class JavaObjectValue extends AtomicValue {
         this(null, object);
     }
 
-    public JavaObjectValue(final Expression expression, Object object) {
+    public JavaObjectValue(final Expression expression, final Object object) {
         super(expression);
         this.object = object;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#getType()
-     */
+    @Override
     public int getType() {
         return Type.JAVA_OBJECT;
     }
@@ -57,17 +55,13 @@ public class JavaObjectValue extends AtomicValue {
         return object;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#getStringValue()
-     */
+    @Override
     public String getStringValue() {
         return String.valueOf(object);
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#convertTo(int)
-     */
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    @Override
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
         if (requiredType == Type.JAVA_OBJECT) {
             return this;
         }
@@ -75,39 +69,35 @@ public class JavaObjectValue extends AtomicValue {
                 "cannot convert Java object to " + Type.getTypeName(requiredType));
     }
 
+    @Override
     public boolean effectiveBooleanValue() throws XPathException {
         throw new XPathException(getExpression(), "Called effectiveBooleanValue() on JavaObjectValue");
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
-        throw new XPathException(getExpression(), 
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other) throws XPathException {
+        throw new XPathException(getExpression(),
                 "cannot compare Java object to " + Type.getTypeName(other.getType()));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
-     */
-    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        throw new XPathException(getExpression(), 
+    @Override
+    public int compareTo(final Collator collator, final AtomicValue other) throws XPathException {
+        throw new XPathException(getExpression(),
                 "cannot compare Java object to " + Type.getTypeName(other.getType()));
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
-     */
-    public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue max(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare Java objects");
     }
 
-    public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+    @Override
+    public AtomicValue min(final Collator collator, final AtomicValue other) throws XPathException {
         throw new XPathException(getExpression(), "Invalid argument to aggregate function: cannot compare Java objects");
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
-     */
-    public int conversionPreference(Class<?> javaClass) {
+    @Override
+    public int conversionPreference(final Class<?> javaClass) {
         if (javaClass.isAssignableFrom(object.getClass())) {
             return 0;
         }
@@ -115,9 +105,6 @@ public class JavaObjectValue extends AtomicValue {
         return Integer.MAX_VALUE;
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Item#toJavaObject(java.lang.Class)
-     */
     @Override
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target.isAssignableFrom(object.getClass())) {
