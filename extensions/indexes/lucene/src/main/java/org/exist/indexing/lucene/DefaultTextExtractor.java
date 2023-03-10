@@ -30,13 +30,13 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     private boolean addSpaceBeforeNext = false;
     
     public int startElement(QName name) {
-        if(isInlineNode(name)) {
+        if (isInlineNode(name)) {
             // discard not yet applied whitespaces
             addSpaceBeforeNext = false;
         }
-        if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
+        if (isIgnoredNode(name)) {
             stack++;
-        else if (!isInlineNode(name) && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
+        } else if (!isInlineNode(name) && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
         	// separate the current element's text from preceding text
             buffer.append(' ');
             return 1;
@@ -44,14 +44,18 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
         return 0;
     }
 
-	private boolean isInlineNode(QName name) {
+    private boolean isIgnoredNode(final QName name) {
+        return (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)));
+    }
+
+	private boolean isInlineNode(final QName name) {
 		return (config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)));
 	}
 
-    public int endElement(QName name) {
-        if (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)))
+    public int endElement(final QName name) {
+        if (isIgnoredNode(name)) {
             stack--;
-        else if (!isInlineNode(name)) {
+        } else if (!isInlineNode(name)) {
         	// add space before following text
         	addSpaceBeforeNext = true;
         }
