@@ -72,8 +72,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -83,7 +81,7 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.time.ZoneOffset.UTC;
+import static org.exist.client.InteractiveClient.DATE_TIME_FORMATTER;
 import static org.exist.util.FileUtils.humanSize;
 
 /**
@@ -1262,8 +1260,6 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             ModeDisplay mode = null;
             SimpleACLPermissionAider acl = null;
 
-            final DateFormat dateTimeFormat = DateFormat.getDateTimeInstance();
-
             final List<ResourceDescriptor> selected = new ArrayList<>();
 
             boolean firstPerm = true;
@@ -1283,7 +1279,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
                 if (selectedRow.isCollection()) {
                     final Collection coll = collection.getChildCollection(thisName.toString());
-                    thisCreated = dateTimeFormat.format(coll.getCreationTime());
+                    thisCreated = DATE_TIME_FORMATTER.format(coll.getCreationTime());
                     thisModified = NON_APPLICABLE;
                     thisMimeType = COLLECTION_MIME_TYPE;
                     thisMessageDigestType = NON_APPLICABLE;
@@ -1292,8 +1288,8 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     thisPerm = service.getPermissions(coll);
                 } else {
                     final Resource res = collection.getResource(thisName.toString());
-                    thisCreated = dateTimeFormat.format(res.getCreationTime());
-                    thisModified = dateTimeFormat.format(res.getLastModificationTime());
+                    thisCreated = DATE_TIME_FORMATTER.format(res.getCreationTime());
+                    thisModified = DATE_TIME_FORMATTER.format(res.getLastModificationTime());
                     thisMimeType = ((EXistResource) res).getMimeType();
                     if (res instanceof EXistBinaryResource) {
                         final MessageDigest messageDigest = ((EXistBinaryResource) res).getContentDigest(DigestType.BLAKE_256);
@@ -1596,8 +1592,6 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
         private List<ResourceDescriptor> rows = null;
 
-        private DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(UTC);
-
         public void setData(final List<ResourceDescriptor> rows) {
             rows.sort(new ResourceComparator());
             this.rows = rows;
@@ -1651,7 +1645,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     case 0:
                         return row.getName().toString();
                     case 1:
-                        return dateFormat.format(row.getInstant());
+                        return DATE_TIME_FORMATTER.format(row.getInstant());
                     case 2:
                         return row.getOwner();
                     case 3:

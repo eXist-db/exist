@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
@@ -89,6 +90,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import se.softhouse.jargo.ArgumentException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.ZoneOffset.UTC;
 import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 import static org.exist.storage.serializers.EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION;
 import static org.exist.storage.serializers.EXistOutputKeys.OUTPUT_DOCTYPE;
@@ -100,6 +102,8 @@ import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
  * @author wolf
  */
 public class InteractiveClient {
+
+    static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(UTC);
 
     // ANSI colors for ls display
     // private final static String ANSI_BLUE = "\033[0;34m";
@@ -397,7 +401,7 @@ public class InteractiveClient {
             if ("true".equals(properties.getProperty(PERMISSIONS))) {
                 resources[i] = 'c' + perm.toString() + '\t' + getOwnerName(perm)
                         + '\t' + getGroupName(perm) + '\t'
-                        + created.toString() + '\t'
+                        + DATE_TIME_FORMATTER.format(created) + '\t'
                         + collectionName;
             } else {
                 resources[i] = collectionName;
@@ -431,7 +435,7 @@ public class InteractiveClient {
                 if ("true".equals(properties.getProperty(PERMISSIONS))) {
                     resources[i] = '-' + perm.toString() + '\t' + getOwnerName(perm)
                             + '\t' + getGroupName(perm) + '\t'
-                            + lastModificationTime.toString() + '\t'
+                            + DATE_TIME_FORMATTER.format(lastModificationTime) + '\t'
                             + resourceId;
                 } else {
                     resources[i] = resourceId;
