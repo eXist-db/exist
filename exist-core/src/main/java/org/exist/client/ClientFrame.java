@@ -93,15 +93,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private static final long serialVersionUID = 1L;
 
-    public final static String CUT = Messages.getString("ClientFrame.0"); //$NON-NLS-1$
-    public final static String COPY = Messages.getString("ClientFrame.1"); //$NON-NLS-1$
-    public final static String PASTE = Messages.getString("ClientFrame.2"); //$NON-NLS-1$
+    public static final String CUT = Messages.getString("ClientFrame.0"); //$NON-NLS-1$
+    public static final String COPY = Messages.getString("ClientFrame.1"); //$NON-NLS-1$
+    public static final String PASTE = Messages.getString("ClientFrame.2"); //$NON-NLS-1$
 
-    public final static int MAX_DISPLAY_LENGTH = 512000;
-    public final static int MAX_HISTORY = 50;
+    public static final int MAX_DISPLAY_LENGTH = 512000;
+    public static final int MAX_HISTORY = 50;
 
-    private final static SimpleAttributeSet promptAttrs = new SimpleAttributeSet();
-    private final static SimpleAttributeSet defaultAttrs = new SimpleAttributeSet();
+    private static final SimpleAttributeSet promptAttrs = new SimpleAttributeSet();
+    private static final SimpleAttributeSet defaultAttrs = new SimpleAttributeSet();
     static {
         StyleConstants.setForeground(promptAttrs, Color.blue);
         StyleConstants.setBold(promptAttrs, true);
