@@ -30,10 +30,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.*;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.PermissionFactory;
-import org.exist.security.UnixStylePermission;
+import org.exist.security.*;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.source.FileSource;
@@ -875,7 +872,7 @@ public class Deployment {
         }
 
         if (isCollection || (mime != null && mime.getName().equals(MimeType.XQUERY_TYPE.getName()))) {
-            mode = mode | 0111;     //TODO(AR) Whoever did this - this is a really bad idea. You are circumventing the security of the system
+            mode = AbstractUnixStylePermission.safeSetExecutable(mode);
         }
 
         PermissionFactory.chmod(broker, permission, Optional.of(mode), Optional.empty());
