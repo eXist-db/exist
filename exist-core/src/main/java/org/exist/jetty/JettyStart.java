@@ -103,8 +103,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
 
     public static void main(final String[] args) {
-        String jettyConfigFile = null;
-        Optional<String> existdbConfigFile = Optional.empty();
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 

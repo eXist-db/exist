@@ -54,8 +54,8 @@ import static se.softhouse.jargo.Arguments.helpArgument;
  */
 public class LauncherWrapper {
 
-    private final static String LAUNCHER = org.exist.launcher.Launcher.class.getName();
-    private final static String OS = OSUtil.getOS().toLowerCase();
+    private static final String LAUNCHER = org.exist.launcher.Launcher.class.getName();
+    private static final String OS = OSUtil.getOS().toLowerCase();
 
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
