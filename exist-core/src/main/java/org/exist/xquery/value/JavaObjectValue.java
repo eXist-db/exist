@@ -115,4 +115,23 @@ public class JavaObjectValue extends AtomicValue {
 
         throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final JavaObjectValue that = (JavaObjectValue) o;
+        return this.object.equals(that.object);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.object.hashCode();
+    }
 }

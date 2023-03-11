@@ -25,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +34,12 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import javax.annotation.Nullable;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
@@ -46,6 +51,7 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author ljo
+ * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
  * @version 2.0.0
  * @serial 2023-03-10
  */
@@ -60,13 +66,81 @@ public class ImageModule extends AbstractInternalModule {
     private final static FunctionDef[] functions = functionDefs(
             functionDefs(GetWidthFunction.class, GetWidthFunction.signature),
             functionDefs(GetHeightFunction.class, GetHeightFunction.signature),
-            functionDefs(ScaleFunction.class, ScaleFunction.signature),
+            functionDefs(ScaleFunction.class, ScaleFunction.FS_SCALE),
             functionDefs(GetThumbnailsFunction.class, GetThumbnailsFunction.signature),
             functionDefs(CropFunction.class, CropFunction.signature)
     );
 
     public ImageModule(Map<String, List<?>> parameters) {
         super(functions, parameters);
+    }
+
+    static final RenderingHintVariable[] RENDERING_HINT_VARIABLES = {
+            renderingHintVariable("alpha-interpolation", RenderingHints.KEY_ALPHA_INTERPOLATION),
+            renderingHintVariable("alpha-interpolation_default", RenderingHints.VALUE_ALPHA_INTERPOLATION_DEFAULT),
+            renderingHintVariable("alpha-interpolation_speed", RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED),
+            renderingHintVariable("alpha-interpolation_quality", RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY),
+
+            renderingHintVariable("antialiasing", RenderingHints.KEY_ANTIALIASING),
+            renderingHintVariable("antialiasing_default", RenderingHints.VALUE_ANTIALIAS_DEFAULT),
+            renderingHintVariable("antialiasing_on", RenderingHints.VALUE_ANTIALIAS_ON),
+            renderingHintVariable("antialiasing_off", RenderingHints.VALUE_ANTIALIAS_OFF),
+
+            renderingHintVariable("color-rendering", RenderingHints.KEY_COLOR_RENDERING),
+            renderingHintVariable("color-rendering_default", RenderingHints.VALUE_COLOR_RENDER_DEFAULT),
+            renderingHintVariable("color-rendering_speed", RenderingHints.VALUE_COLOR_RENDER_SPEED),
+            renderingHintVariable("color-rendering_quality", RenderingHints.VALUE_COLOR_RENDER_QUALITY),
+
+            renderingHintVariable("dithering", RenderingHints.KEY_DITHERING),
+            renderingHintVariable("dithering_default", RenderingHints.VALUE_DITHER_DEFAULT),
+            renderingHintVariable("dithering_disable", RenderingHints.VALUE_DITHER_DISABLE),
+            renderingHintVariable("dithering_enable", RenderingHints.VALUE_DITHER_ENABLE),
+
+            renderingHintVariable("fractional-metrics", RenderingHints.KEY_FRACTIONALMETRICS),
+            renderingHintVariable("fractional-metrics_default", RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT),
+            renderingHintVariable("fractional-metrics_off", RenderingHints.VALUE_FRACTIONALMETRICS_OFF),
+            renderingHintVariable("fractional-metrics_on", RenderingHints.VALUE_FRACTIONALMETRICS_ON),
+
+            renderingHintVariable("interpolation", RenderingHints.KEY_INTERPOLATION),
+            renderingHintVariable("interpolation_nearest_neighbor", RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR),
+            renderingHintVariable("interpolation_bilinear", RenderingHints.VALUE_INTERPOLATION_BILINEAR),
+            renderingHintVariable("interpolation_bicubic", RenderingHints.VALUE_INTERPOLATION_BICUBIC),
+
+            renderingHintVariable("rendering", RenderingHints.KEY_RENDERING),
+            renderingHintVariable("rendering_default", RenderingHints.VALUE_RENDER_DEFAULT),
+            renderingHintVariable("rendering_speed", RenderingHints.VALUE_RENDER_SPEED),
+            renderingHintVariable("rendering_quality", RenderingHints.VALUE_RENDER_QUALITY),
+
+            renderingHintVariable("resolution-variant", RenderingHints.KEY_RESOLUTION_VARIANT),
+            renderingHintVariable("resolution-variant_default", RenderingHints.VALUE_RESOLUTION_VARIANT_DEFAULT),
+            renderingHintVariable("resolution-variant_base", RenderingHints.VALUE_RESOLUTION_VARIANT_BASE),
+            renderingHintVariable("resolution-variant_size_fit", RenderingHints.VALUE_RESOLUTION_VARIANT_SIZE_FIT),
+            renderingHintVariable("resolution-variant_dpi_fit", RenderingHints.VALUE_RESOLUTION_VARIANT_DPI_FIT),
+
+            renderingHintVariable("stroke-control", RenderingHints.KEY_STROKE_CONTROL),
+            renderingHintVariable("stroke-control_default", RenderingHints.VALUE_STROKE_DEFAULT),
+            renderingHintVariable("stroke-control_normalize", RenderingHints.VALUE_STROKE_NORMALIZE),
+            renderingHintVariable("stroke-control_pure", RenderingHints.VALUE_STROKE_PURE),
+
+            renderingHintVariable("text-antialiasing", RenderingHints.KEY_TEXT_ANTIALIASING),
+            renderingHintVariable("text-antialiasing_default", RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT),
+            renderingHintVariable("text-antialiasing_on", RenderingHints.VALUE_TEXT_ANTIALIAS_ON),
+            renderingHintVariable("text-antialiasing_off", RenderingHints.VALUE_TEXT_ANTIALIAS_OFF),
+            renderingHintVariable("text-antialiasing_gasp", RenderingHints.VALUE_TEXT_ANTIALIAS_GASP),
+            renderingHintVariable("text-antialiasing_lcd_hrgb", RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HRGB),
+            renderingHintVariable("text-antialiasing_lcd_hbgr", RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_HBGR),
+            renderingHintVariable("text-antialiasing_lcd_vrgb", RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VRGB),
+            renderingHintVariable("text-antialiasing_lcd_vbgr", RenderingHints.VALUE_TEXT_ANTIALIAS_LCD_VBGR),
+
+            renderingHintVariable("text-lcd-contrast", RenderingHints.KEY_TEXT_LCD_CONTRAST)
+    };
+
+    @Override
+    public void prepare(final XQueryContext context) throws XPathException {
+        // register the rendering hint variables
+        for (final RenderingHintVariable renderingHintVariable : RENDERING_HINT_VARIABLES) {
+            declareVariable(renderingHintVariable.name, renderingHintVariable.value);
+        }
     }
 
     @Override
@@ -92,13 +166,13 @@ public class ImageModule extends AbstractInternalModule {
     /**
      * Create a thumbnail.
      *
-     * @param image  the image
-     * @param height the height of the thumbnail
-     * @param width  the width of the thumbnail
+     * @param image          the image
+     * @param height         the height of the thumbnail
+     * @param width          the width of the thumbnail
+     * @param renderingHints hints for rendering
      * @return the thumbnail
-     * @author <a href="mailto:rtroilo@gmail.com">Rafael Troilo</a>
      */
-    protected static BufferedImage createThumb(final Image image, final int height, final int width) {
+    protected static BufferedImage createThumb(final Image image, final int height, final int width, @Nullable Map<RenderingHints.Key, Object> renderingHints) {
         int thumbWidth = 0;
         int thumbHeight = 0;
         double scaleFactor = 0.0;
@@ -134,7 +208,18 @@ public class ImageModule extends AbstractInternalModule {
         Graphics2D graphics2D = null;
         try {
             graphics2D = thumbImage.createGraphics();
-            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+            if (renderingHints == null) {
+                // default to Bilinear Interpolation
+                renderingHints = Collections.singletonMap(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            }
+
+            // set any rendering hints
+            for (final Map.Entry<RenderingHints.Key, Object> renderingHint : renderingHints.entrySet()) {
+                graphics2D.setRenderingHint(renderingHint.getKey(), renderingHint.getValue());
+            }
+
+            // draw the scaled image
             graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
         } finally {
             if (graphics2D != null) {
@@ -151,5 +236,19 @@ public class ImageModule extends AbstractInternalModule {
 
     static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
+    }
+
+    static RenderingHintVariable renderingHintVariable(final String localName, final Object value) {
+        return new RenderingHintVariable(localName, value);
+    }
+
+    static class RenderingHintVariable {
+        final QName name;
+        final Object value;
+
+        RenderingHintVariable(final String localName, final Object value) {
+            this.name = new QName(localName, NAMESPACE_URI, PREFIX);
+            this.value = value;
+        }
     }
 }
