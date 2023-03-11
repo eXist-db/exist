@@ -40,9 +40,6 @@ import java.util.*;
 
 public class LuceneIndexConfig {
 
-    private final static String N_INLINE = "inline";
-    private final static String N_IGNORE = "ignore";
-
     private final static String IGNORE_ELEMENT = "ignore";
     private final static String INLINE_ELEMENT = "inline";
     private final static String MATCH_ATTR_ELEMENT = "match-attribute";
@@ -65,7 +62,9 @@ public class LuceneIndexConfig {
 
     private boolean isQNameIndex = false;
 
-    private Map<QName, String> specialNodes = null;
+    private Set<QName> inlineNodes = null;
+
+    private Set<QName> ignoreNodes = null;
 
     private List<AbstractFieldConfig> facetsAndFields = new ArrayList<>();
 
@@ -144,21 +143,21 @@ public class LuceneIndexConfig {
                             if (StringUtils.isEmpty(qnameAttr)) {
                                 throw new DatabaseConfigurationException("Lucene configuration element 'ignore' needs an attribute 'qname'");
                             }
-                            if (specialNodes == null) {
-                                specialNodes = new TreeMap<>();
+                            if (ignoreNodes == null) {
+                                ignoreNodes = new HashSet<>(8);
                             }
-                            specialNodes.put(parseQName(qnameAttr, namespaces), N_IGNORE);
+                            ignoreNodes.add(parseQName(qnameAttr, namespaces));
                             break;
                         }
                         case INLINE_ELEMENT: {
-			    String qnameAttr = configElement.getAttribute(QNAME_ATTR);
+                            String qnameAttr = configElement.getAttribute(QNAME_ATTR);
                             if (StringUtils.isEmpty(qnameAttr)) {
                                 throw new DatabaseConfigurationException("Lucene configuration element 'inline' needs an attribute 'qname'");
                             }
-                            if (specialNodes == null) {
-                                specialNodes = new TreeMap<>();
+                            if (inlineNodes == null) {
+                                inlineNodes = new HashSet<>(8);
                             }
-                            specialNodes.put(parseQName(qnameAttr, namespaces), N_INLINE);
+                            inlineNodes.add(parseQName(qnameAttr, namespaces));
                             break;
                         }
                         case MATCH_SIBLING_ATTR_ELEMENT:
@@ -312,12 +311,12 @@ public class LuceneIndexConfig {
 	return name != null;
     }
 
-    public boolean isIgnoredNode(QName qname) {
-        return specialNodes != null && specialNodes.get(qname) == N_IGNORE;
+    public boolean isIgnoredNode(final QName qname) {
+        return ignoreNodes != null && ignoreNodes.contains(qname);
     }
 
-    public boolean isInlineNode(QName qname) {
-        return specialNodes != null && specialNodes.get(qname) == N_INLINE;
+    public boolean isInlineNode(final QName qname) {
+        return inlineNodes != null && inlineNodes.contains(qname);
     }
 
     public List<AbstractFieldConfig> getFacetsAndFields() {
