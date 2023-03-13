@@ -22,6 +22,21 @@ jobs:
         env:
           JAVA_OPTS: -XX:+UseZGC -Xmx6g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -XX:+ExitOnOutOfMemoryError
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
+      - name: Check for HeapDump
+        id: check_heapdump
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "/tmp/*.hprof"
+      - name: Compress HeapDump
+        if: steps.check_heapdump.outputs.files_exists == 'true'
+        run: zstd --rm -9 --progress -T0 /tmp/*.hprof
+      - name: Attach HeapDump artifact
+        if: steps.check_heapdump.outputs.files_exists == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: exist-xqts-runner-hprof
+          retention-days: 1
+          path: /tmp/*.hprof.zst
       - name: Archive XQTS Logs
         if: always()
         uses: actions/upload-artifact@v3
