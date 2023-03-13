@@ -20,7 +20,7 @@ jobs:
       - name: Run XQTS
         timeout-minutes: 60
         env:
-          JAVA_OPTS: -XX:+UseZGC
+          JAVA_OPTS: -XX:+UseZGC -Xmx6g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -XX:+ExitOnOutOfMemoryError
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
       - name: Archive XQTS Logs
         if: always()
