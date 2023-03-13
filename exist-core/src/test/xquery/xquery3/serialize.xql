@@ -25,6 +25,8 @@ module namespace ser="http://exist-db.org/xquery/test/serialize";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+
 declare %private variable $ser:opt-map-html5 :=
     map {
         "method": "html",
@@ -33,19 +35,17 @@ declare %private variable $ser:opt-map-html5 :=
 ;
 
 declare %private variable $ser:opt-xml-adaptive-no-indent :=
-    <output:serialization-parameters
-        xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-        <method>adaptive</method>
-        <indent>no</indent>
+    <output:serialization-parameters>
+        <output:method>adaptive</output:method>
+        <output:indent>no</output:indent>
     </output:serialization-parameters>
 ;
 
 declare %private function ser:opt-xml-with-separator($item-separator as xs:string) {
-    <output:serialization-parameters
-            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-        <item-separator>{$item-separator}</item-separator>
-        <method>adaptive</method>
-        <indent>no</indent>
+    <output:serialization-parameters>
+        <output:item-separator>{$item-separator}</output:item-separator>
+        <output:method>adaptive</output:method>
+        <output:indent>no</output:indent>
     </output:serialization-parameters>
 };
 
@@ -207,10 +207,9 @@ declare
 function ser:serialize-with-params() {
     serialize(
         $ser:atomic,
-        <output:serialization-parameters
-               xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <method value="xml"/>
-            <indent value="yes"/>
+        <output:serialization-parameters>
+            <output:method value="xml"/>
+            <output:indent value="yes"/>
         </output:serialization-parameters>
     )
 };
@@ -226,8 +225,7 @@ declare
     %test:assertXPath("contains($result,'atomic')")
 function ser:serialize-no-method() {
     serialize($ser:atomic,
-        <output:serialization-parameters
-                xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization" />)
+        <output:serialization-parameters />)
 };
 
 declare
@@ -260,9 +258,8 @@ declare
     %test:assertEquals("aaabbb")
 function ser:serialize-atomic-empty-separator-xml-options() {
     serialize(("aaa", "bbb"),
-        <output:serialization-parameters
-            xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <item-separator value=""/>
+        <output:serialization-parameters>
+            <output:item-separator value=""/>
         </output:serialization-parameters>
     )
 };
@@ -759,10 +756,9 @@ declare
     %test:assertEquals("1--2")
 function ser:item-separator-with-method($method as xs:string) {
     serialize((1, 2),
-        <output:serialization-parameters
-                xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <method>{$method}</method>
-            <item-separator>--</item-separator>
+        <output:serialization-parameters>
+            <output:method>{$method}</output:method>
+            <output:item-separator>--</output:item-separator>
         </output:serialization-parameters>
     )
 };
@@ -771,9 +767,9 @@ declare
     %test:assertEquals("1|2|3|4|5|6|7|8|9|10")
 function ser:serialize-xml-033() {
     let $params :=
-        <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <method value="xml"/>
-            <item-separator value="|"/>
+        <output:serialization-parameters>
+            <output:method value="xml"/>
+            <output:item-separator value="|"/>
         </output:serialization-parameters>
     return serialize(1 to 10, $params)
 };
@@ -788,10 +784,10 @@ declare
     %test:assertEquals("1==2==3==4")
 function ser:serialize-xml-034() {
     serialize(1 to 4,
-        <output:serialization-parameters xmlns:output="http://www.w3.org/2010/xslt-xquery-serialization">
-            <method value="xml"/>
-            <omit-xml-declaration value="yes"/>
-            <item-separator value="=="/>
+        <output:serialization-parameters>
+            <output:method value="xml"/>
+            <output:omit-xml-declaration value="yes"/>
+            <output:item-separator value="=="/>
         </output:serialization-parameters>
     )
 };
