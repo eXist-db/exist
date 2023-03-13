@@ -264,7 +264,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 
                                 try {
                                     bImage = ImageModule.createThumb(image, maxThumbHeight,
-                                            maxThumbWidth);
+                                            maxThumbWidth, null);
                                 } catch (Exception e) {
                                     throw new XPathException(this, e.getMessage());
                                 }
