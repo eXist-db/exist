@@ -24,6 +24,11 @@ package org.exist.launcher;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.OSUtil;
+import org.exist.util.SystemExitCodes;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
 
 import javax.swing.*;
 import java.io.File;
@@ -37,6 +42,7 @@ import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.launcher.ConfigurationUtility.*;
+import static se.softhouse.jargo.Arguments.helpArgument;
 
 /**
  * A wrapper to start a Java process using start.jar with correct VM settings.
@@ -48,17 +54,30 @@ import static org.exist.launcher.ConfigurationUtility.*;
  */
 public class LauncherWrapper {
 
-    private final static String LAUNCHER = org.exist.launcher.Launcher.class.getName();
-    private final static String OS = System.getProperty("os.name").toLowerCase();
+    private static final String LAUNCHER = org.exist.launcher.Launcher.class.getName();
+    private static final String OS = OSUtil.getOS().toLowerCase();
+
+    /* general arguments */
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
     public final static void main(final String[] args) {
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
+            // parse command-line options
+            CommandLineParser
+                    .withArguments(helpArg)
+                    .programName("launcher" + (OSUtil.isWindows() ? ".bat" : ".sh"))
+                    .parse(args);
+
         } catch (final StartException e) {
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
                 System.err.println(e.getMessage());
             }
             System.exit(e.getErrorCode());
+        } catch (final ArgumentException e) {
+            consoleOut(e.getMessageAndUsage().toString());
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
         }
 
         final LauncherWrapper wrapper = new LauncherWrapper(LAUNCHER);
@@ -202,5 +221,9 @@ public class LauncherWrapper {
                 }
             }
         }
+    }
+
+    private static void consoleOut(final String msg) {
+        System.out.println(msg); //NOSONAR this has to go to the console
     }
 }

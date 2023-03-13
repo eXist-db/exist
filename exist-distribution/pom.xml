@@ -871,7 +871,9 @@
                                 <daemon>
                                     <id>launcher</id>
                                     <mainClass>org.exist.start.Main</mainClass>
-                                    <!-- No arguments needed! Default is to start the launcher -->
+                                    <commandLineArguments>
+                                        <commandLineArgument>launcher</commandLineArgument>
+                                    </commandLineArguments>
                                     <platforms>
                                         <platform>booter-unix</platform>
                                         <platform>booter-windows</platform>

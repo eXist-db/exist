@@ -26,6 +26,7 @@ import org.exist.client.InteractiveClient;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
@@ -77,6 +78,7 @@ public class ServerShutdown {
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(userArg, passwordArg, uriArg)
                     .andArguments(helpArg)
+                    .programName("shutdown" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
             process(arguments);

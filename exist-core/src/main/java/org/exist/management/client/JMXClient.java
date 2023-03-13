@@ -23,6 +23,7 @@ package org.exist.management.client;
 
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import se.softhouse.jargo.Argument;
 import se.softhouse.jargo.ArgumentException;
@@ -256,17 +257,14 @@ public class JMXClient {
     /* connection arguments */
     private static final Argument<String> addressArg = stringArgument("-a", "--address")
             .description("RMI address of the server")
-            .required()
             .defaultValue("localhost")
             .build();
     private static final Argument<Integer> portArg = integerArgument("-p", "--port")
             .description("RMI port of the server")
-            .required()
             .defaultValue(DEFAULT_PORT)
             .build();
     private static final Argument<String> instanceArg = stringArgument("-i", "--instance")
             .description("The ID of the database instance to connect to")
-            .required()
             .defaultValue("exist")
             .build();
     private static final Argument<Integer> waitArg = integerArgument("-w", "--wait")
@@ -317,6 +315,7 @@ public class JMXClient {
                     .andArguments(cacheDisplayArg, locksDisplayArg)
                     .andArguments(dbInfoArg, memoryInfoArg, sanityCheckInfoArg, jobsInfoArg)
                     .andArguments(helpArg)
+                    .programName("jmxclient" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
             process(arguments);

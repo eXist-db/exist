@@ -31,8 +31,12 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xquery.TerminatedException;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -48,6 +52,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.ThreadUtils.newGlobalThread;
 import static org.exist.util.ThreadUtils.newInstanceThread;
+import static se.softhouse.jargo.Arguments.helpArgument;
 
 
 /**
@@ -57,6 +62,9 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  */
 public class ExportGUI extends javax.swing.JFrame {
     private static final long serialVersionUID = -8104424554660744639L;
+
+    /* general arguments */
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
     private BrokerPool pool = null;
     private int documentCount = 0;
@@ -613,13 +621,27 @@ public class ExportGUI extends javax.swing.JFrame {
     public static void main(final String[] args) {
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
+            // parse command-line options
+            CommandLineParser
+                    .withArguments(helpArg)
+                    .programName("export-gui" + (OSUtil.isWindows() ? ".bat" : ".sh"))
+                    .parse(args);
+
         } catch (final StartException e) {
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
                 System.err.println(e.getMessage());
             }
             System.exit(e.getErrorCode());
+        } catch (final ArgumentException e) {
+            consoleOut(e.getMessageAndUsage().toString());
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
         }
 
         java.awt.EventQueue.invokeLater(() -> new ExportGUI().setVisible(true));
+    }
+
+    private static void consoleOut(final String msg) {
+        System.out.println(msg); //NOSONAR this has to go to the console
     }
 }

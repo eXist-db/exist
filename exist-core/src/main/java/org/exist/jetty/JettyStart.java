@@ -41,14 +41,15 @@ import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
 import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.FileUtils;
-import org.exist.util.SingleInstanceConfiguration;
+import org.exist.util.*;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+import se.softhouse.jargo.Argument;
+import se.softhouse.jargo.ArgumentException;
+import se.softhouse.jargo.CommandLineParser;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -61,6 +62,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.exist.util.ThreadUtils.newGlobalThread;
+import static se.softhouse.jargo.Arguments.helpArgument;
+import static se.softhouse.jargo.Arguments.stringArgument;
 
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
@@ -85,6 +88,15 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private final static int STATUS_STOPPING = 2;
     private final static int STATUS_STOPPED = 3;
 
+    /* general arguments */
+    private static final Argument<String> jettyConfigFilePath = stringArgument()
+            .description("Path to Jetty Config File")
+            .build();
+    private static final Argument<String> existConfigFilePath = stringArgument()
+            .description("Path to eXist-db Config File")
+            .build();
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
+
     @GuardedBy("this") private int status = STATUS_STOPPED;
     @GuardedBy("this") private Optional<Thread> shutdownHookThread = Optional.empty();
     @GuardedBy("this") private int primaryPort = 8080;
@@ -93,11 +105,21 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     public static void main(final String[] args) {
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
+            CommandLineParser
+                    .withArguments(jettyConfigFilePath, existConfigFilePath)
+                    .andArguments(helpArg)
+                    .programName("startup" + (OSUtil.isWindows() ? ".bat" : ".sh"))
+                    .parse(args);
+
         } catch (final StartException e) {
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
                 System.err.println(e.getMessage());
             }
             System.exit(e.getErrorCode());
+        } catch (final ArgumentException e) {
+            consoleOut(e.getMessageAndUsage().toString());
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
         }
 
         final JettyStart start = new JettyStart();
@@ -107,6 +129,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     public JettyStart() {
         // Additional checks XML libs @@@@
         XmlLibraryChecker.check();
+    }
+
+    private static void consoleOut(final String msg) {
+        System.out.println(msg); //NOSONAR this has to go to the console
     }
 
     public synchronized void run() {
