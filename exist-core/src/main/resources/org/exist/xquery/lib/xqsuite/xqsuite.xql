@@ -958,7 +958,7 @@ declare %private function test:assertXPath($annotation as element(annotation), $
                 function ($namespaces as map(*), $xml as element()) {
                     map:merge(($namespaces,
                 	    for $prefix in in-scope-prefixes($xml)
-                	    where $prefix != "" and $prefix != "xml"
+                	    where $prefix ne "xml"
                 	    return
                 	        map:entry($prefix, namespace-uri-for-prefix($prefix, $xml))
                     ))
@@ -968,7 +968,10 @@ declare %private function test:assertXPath($annotation as element(annotation), $
                 string-join(
                     for $prefix in map:keys($namespaces)
                     return
-                        "declare namespace " || $prefix || "='" || $namespaces($prefix) || "';",
+                        if ($prefix eq "") then
+                            "declare default element namespace '" || $namespaces($prefix) || "';"
+                        else
+                            "declare namespace " || $prefix || "='" || $namespaces($prefix) || "';",
                     " "
                 )
         else

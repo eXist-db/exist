@@ -84,3 +84,35 @@ function t:xpath() {
         <name>Item1</name>
     </item>
 };
+
+declare
+    %test:arg("error", "Bad Request")
+    %test:assertXPath("$result/self::html")
+    %test:assertXPath("$result/head[title = 'Bad Request']")
+    %test:assertXPath("$result/body/p[@class = 'ErrorMessage']")
+    %test:assertXPath("/self::html")
+    %test:assertXPath("/head[title = 'Bad Request']")
+    %test:assertXPath("/body/p[@class = 'ErrorMessage']")
+function local:default-element-namespace(
+    $error as xs:string
+) as node() {
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+        <head>
+            <title>{$error}</title>
+        </head>
+        <body>
+            <p class='ErrorMessage'><b>Message: </b>{$error}</p>
+        </body>
+    </html>
+};
+
+declare
+    %test:assertXPath("/self::x")
+    %test:assertXPath("exists($result/*:y)")
+    %test:assertXPath("not($result/y)")
+    %test:assertXPath("$result/Q{bar}y")
+function local:multiple-default-element-namespaces() as node() {
+    <x xmlns="foo">
+        <y xmlns="bar"/>
+    </x>
+};
