@@ -49,7 +49,7 @@ public class FunXCollection extends ExtCollection {
 			arities(
 					arity(),
 					arity(
-							optParam("arg", Type.STRING,"The Collection URI")
+							optParam("collection-uri", Type.STRING,"The Collection URI")
 					)
 			)
 	);
