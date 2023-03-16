@@ -111,6 +111,7 @@ public class MailSessionFunctions extends BasicFunction
 					String password = authElement.getAttribute("password");
 					if( username != null && password != null ) {
 						auth = new Authenticator() {
+							@Override
 							protected PasswordAuthentication getPasswordAuthentication() {
 								return new PasswordAuthentication(username, password);
 							}
