@@ -24,6 +24,8 @@ package org.exist.xquery.modules.mail;
 
 import java.util.Properties;
 
+import jakarta.mail.Authenticator;
+import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,6 +44,8 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import org.w3c.dom.Element;
 
 /**
  * eXist Mail Module Extension GetSession
@@ -68,7 +72,18 @@ public class MailSessionFunctions extends BasicFunction
 				new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "An optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.  The JavaMail properties are spelled out in Appendix A of the JavaMail specifications." )
 			},
 			new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the session handle." )
-			)
+			),
+		
+			new FunctionSignature(
+				new QName( "get-mail-session", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
+				"Opens a JavaMail session with authentication.",
+				new SequenceType[]
+				{
+					new FunctionParameterSequenceType( "properties", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "An optional JavaMail session properties in the form <properties><property name=\"\" value=\"\"/></properties>.  The JavaMail properties are spelled out in Appendix A of the JavaMail specifications." ),
+					new FunctionParameterSequenceType( "authentication", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The username and password for authentication in the form <authentication username=\"\" password=\"\"/>." )
+				},
+				new FunctionReturnSequenceType( Type.LONG, Cardinality.ZERO_OR_ONE, "an xs:long representing the session handle." )
+			  )
 		};
 
 	public MailSessionFunctions( XQueryContext context, FunctionSignature signature )
@@ -76,20 +91,41 @@ public class MailSessionFunctions extends BasicFunction
 		super( context, signature );
     }
 
-	@Override
-	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
-	{
-		Properties props = new Properties();
-		
-		if( args.length == 1 ) {
-			// try and get the session properties
-			props = ParametersExtractor.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
+		@Override
+		public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException
+		{
+			Properties props = new Properties();
+			
+			if( args.length > 0 ) {
+				// try and get the session properties
+				props = ParametersExtractor.parseProperties( ((NodeValue) args[0].itemAt(0)).getNode() );
+			}
+			
+			Authenticator auth = null;
+			
+			if( args.length > 1 ) {
+				// get the authentication parameters
+				Element authElement = (Element) ((NodeValue) args[1].itemAt(0)).getNode();
+				if( authElement != null ) {
+					String username = authElement.getAttribute("username");
+					String password = authElement.getAttribute("password");
+					if( username != null && password != null ) {
+						auth = new Authenticator() {
+							protected PasswordAuthentication getPasswordAuthentication() {
+								return new PasswordAuthentication(username, password);
+							}
+						};
+					} else {
+						throw new IllegalArgumentException("'username' and 'password' attributes are mandatory in the 'authentication' element");
+					}
+				} else {
+					throw new IllegalArgumentException("'authentication' element missing");
+				}
+			}
+			
+			Session session = Session.getInstance( props, auth );
+			
+			// store the session and return the handle of the session
+			return new IntegerValue( this, MailModule.storeSession( context, session ), Type.LONG );
 		}
-		
-		Session session = Session.getInstance( props, null );
-		
-		// store the session and return the handle of the session
-
-        return new IntegerValue( this, MailModule.storeSession( context, session ) );
 	}
-}
