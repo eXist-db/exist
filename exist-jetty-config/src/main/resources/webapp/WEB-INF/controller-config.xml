@@ -15,9 +15,6 @@
   <!-- XMLRPC servlet -->
   <forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
   
-  <!-- betterFORM resource-servlet -->
-  <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
-  
   <!-- REST interface -->
   <forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
   
@@ -39,12 +36,7 @@
     ++ Default configuration: main web application is served from the
     ++ webapp directory. 
   -->
-  <root pattern="/apps/library" path="xmldb:exist:///db/apps/tamboti"/>
-  <root pattern="/apps/tamboti" path="xmldb:exist:///db/apps/tamboti"/>
-  
   <root pattern="/apps" path="xmldb:exist:///db/apps"/>
-  
-  <root pattern="/solutions" path="xmldb:exist:///db/solutions/"/>
   
   <!-- 
     ++ To redirect requests based on the server name (i.e. www.example.com)
