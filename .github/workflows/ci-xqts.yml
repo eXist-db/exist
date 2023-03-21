@@ -53,5 +53,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: 'cat /tmp/previous-xqts-logs-artifact.json | xargs curl -H "Authorization: Bearer ${GITHUB_TOKEN}" --location --output /tmp/previous-xqts-output.zip'
       - name: Extract Previous XQTS Logs
-        run: mkdir /tmp/previous-xqts-output && cd /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip
+        run: mkdir /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip -d /tmp/previous-xqts-output
 
