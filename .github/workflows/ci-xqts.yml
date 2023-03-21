@@ -54,4 +54,7 @@ jobs:
         run: 'cat /tmp/previous-xqts-logs-artifact.json | xargs curl -H "Authorization: Bearer ${GITHUB_TOKEN}" --location --output /tmp/previous-xqts-output.zip'
       - name: Extract Previous XQTS Logs
         run: mkdir /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip -d /tmp/previous-xqts-output
-
+      - name: Compare Previous and Current XQTS Logs
+        run: java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/9.9.1-8/Saxon-HE-9.9.1-8.jar -xsl:exist-xqts/src/main/xslt/compare-results.xslt -it:compare-results -o:/tmp/comparison-results.xml xqts.previous.junit-data-path=/tmp/previous-xqts-output/junit/data xqts.current.junit-data-path=/tmp/xqts-output/junit/data
+      - name: Show Comparison Results
+        run: cat /tmp/comparison-results.xml
