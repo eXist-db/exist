@@ -31,7 +31,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConstants;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
@@ -168,78 +167,46 @@ public class DoubleValue extends NumericValue {
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC:
-            case Type.ITEM:
-            case Type.NUMBER:
-            case Type.DOUBLE:
+            case Type.ATOMIC, Type.ITEM, Type.NUMBER, Type.DOUBLE -> {
                 return this;
-            case Type.FLOAT:
-                //if (Float.compare(value, 0.0f) && (value < Float.MIN_VALUE || value > Float.MAX_VALUE)
-                //	throw new XPathException(getExpression(), "Value is out of range for type xs:float");
-                //return new FloatValue((float) value);
+            }
+            case Type.FLOAT -> {
                 return new FloatValue(getExpression(), (float) value);
-            case Type.UNTYPED_ATOMIC:
+            }
+            case Type.UNTYPED_ATOMIC -> {
                 return new UntypedAtomicValue(getExpression(), getStringValue());
-            case Type.STRING:
+            }
+            case Type.STRING -> {
                 return new StringValue(getExpression(), getStringValue());
-            case Type.DECIMAL:
-                if (isNaN()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert "
-                            + Type.getTypeName(getType())
-                            + "('"
-                            + getStringValue()
-                            + "') to "
-                            + Type.getTypeName(requiredType));
-                }
-                if (isInfinite()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert "
-                            + Type.getTypeName(getType())
-                            + "('" + getStringValue()
-                            + "') to "
+            }
+            case Type.DECIMAL -> {
+                if (isNaN() || isInfinite()) {
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
+                            + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
                             + Type.getTypeName(requiredType));
                 }
                 return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
-            case Type.INTEGER:
-            case Type.NON_POSITIVE_INTEGER:
-            case Type.NEGATIVE_INTEGER:
-            case Type.LONG:
-            case Type.INT:
-            case Type.SHORT:
-            case Type.BYTE:
-            case Type.NON_NEGATIVE_INTEGER:
-            case Type.UNSIGNED_LONG:
-            case Type.UNSIGNED_INT:
-            case Type.UNSIGNED_SHORT:
-            case Type.UNSIGNED_BYTE:
-            case Type.POSITIVE_INTEGER:
-                if (isNaN()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert "
-                            + Type.getTypeName(getType())
-                            + "('" + getStringValue()
-                            + "') to "
-                            + Type.getTypeName(requiredType));
-                }
-                if (Double.isInfinite(value)) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert "
-                            + Type.getTypeName(getType())
-                            + "('"
-                            + getStringValue()
-                            + "') to "
+            }
+            case Type.INTEGER, Type.NON_POSITIVE_INTEGER, Type.NEGATIVE_INTEGER, Type.LONG, Type.INT, Type.SHORT,
+                    Type.BYTE, Type.NON_NEGATIVE_INTEGER, Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT,
+                    Type.UNSIGNED_BYTE, Type.POSITIVE_INTEGER -> {
+                if (isNaN() || isInfinite()) {
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
+                            + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
                             + Type.getTypeName(requiredType));
                 }
                 if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
-                    throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type " + Type.getTypeName(requiredType));
+                    throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
+                            + Type.getTypeName(requiredType));
                 }
                 return new IntegerValue(getExpression(), (long) value, requiredType);
-            case Type.BOOLEAN:
+            }
+            case Type.BOOLEAN -> {
                 return new BooleanValue(getExpression(), this.effectiveBooleanValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '"
-                        + Type.getTypeName(this.getItemType())
-                        + "(\""
-                        + getStringValue()
-                        + "\")' to "
-                        + Type.getTypeName(requiredType));
+            }
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '"
+                    + Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to "
+                    + Type.getTypeName(requiredType));
         }
     }
 
@@ -327,15 +294,11 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public ComputableValue mult(final ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DOUBLE:
-                return new DoubleValue(getExpression(), value * ((DoubleValue) other).value);
-            case Type.DAY_TIME_DURATION:
-            case Type.YEAR_MONTH_DURATION:
-                return other.mult(this);
-            default:
-                return mult((ComputableValue) other.convertTo(getType()));
-        }
+        return switch (other.getType()) {
+            case Type.DOUBLE -> new DoubleValue(getExpression(), value * ((DoubleValue) other).value);
+            case Type.DAY_TIME_DURATION, Type.YEAR_MONTH_DURATION -> other.mult(this);
+            default -> mult((ComputableValue) other.convertTo(getType()));
+        };
     }
 
     @Override
@@ -386,15 +349,6 @@ public class DoubleValue extends NumericValue {
     public IntegerValue idiv(final NumericValue other) throws XPathException {
         final ComputableValue result = div(other);
         return new IntegerValue(getExpression(), ((IntegerValue) result.convertTo(Type.INTEGER)).getLong());
-		/*
-		if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
-			double result = value / ((DoubleValue) other).value;
-			if (result == Double.NaN || result == Double.POSITIVE_INFINITY || result == Double.NEGATIVE_INFINITY)
-				throw new XPathException(getExpression(), "illegal arguments to idiv");
-			return new IntegerValue(new BigDecimal(result).toBigInteger(), Type.INTEGER);
-		}
-		throw new XPathException(getExpression(), "idiv called with incompatible argument type: " + getType() + " vs " + other.getType());
-		*/
     }
 
     @Override
@@ -506,11 +460,8 @@ public class DoubleValue extends NumericValue {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         }
 
-        throw new XPathException(getExpression(), 
-                "cannot convert value of type "
-                        + Type.getTypeName(getType())
-                        + " to Java object of type "
-                        + target.getName());
+        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert value of type "
+                + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
     }
 
     @Override
@@ -518,9 +469,8 @@ public class DoubleValue extends NumericValue {
         final AtomicValue other = (AtomicValue) o;
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return Double.compare(value, ((DoubleValue) other).value);
-        } else {
-            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
         }
+        return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 
     @Override
@@ -530,7 +480,6 @@ public class DoubleValue extends NumericValue {
 
     /**
      * Serializes to a ByteBuffer.
-     *
      * 8 bytes.
      *
      * @param buf the ByteBuffer to serialize to.
