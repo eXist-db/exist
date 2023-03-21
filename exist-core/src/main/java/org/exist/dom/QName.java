@@ -59,11 +59,7 @@ public class QName implements Comparable<QName> {
 
     public QName(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
         this.localPart = localPart;
-        if(namespaceURI == null) {
-            this.namespaceURI = XMLConstants.NULL_NS_URI;
-        } else {
-            this.namespaceURI = namespaceURI;
-        }
+        this.namespaceURI = namespaceURI == null ? XMLConstants.NULL_NS_URI : namespaceURI;
         this.prefix = prefix;
         this.nameType = nameType;
     }
@@ -137,6 +133,7 @@ public class QName implements Comparable<QName> {
      * @deprecated Use for debugging purpose only,
      * use {@link #getStringValue()} for production
      */
+    @Deprecated
     @Override
     public String toString() {
         //TODO : remove this copy of getStringValue()
@@ -205,15 +202,14 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public boolean equals(final Object other) {
-        if(other == this) {
+        if (other == this) {
             return true;
-        } else if(!(other instanceof QName)) {
-            return false;
-        } else {
-            final QName qnOther = (QName)other;
-            return this.namespaceURI.equals(qnOther.namespaceURI)
-                    && this.localPart.equals(qnOther.localPart);
         }
+        if (!(other instanceof final QName qnOther)) {
+            return false;
+        }
+        return this.namespaceURI.equals(qnOther.namespaceURI)
+                && this.localPart.equals(qnOther.localPart);
     }
 
     /**
@@ -226,21 +222,22 @@ public class QName implements Comparable<QName> {
      * @return true if two qnames match
      */
     public boolean matches(final QName qnOther) {
-        if(equals(qnOther)) {
+        if (equals(qnOther)) {
             return true;
-        } else {
-            if(this == WildcardQName.instance || qnOther == WildcardQName.instance) {
-                return true;
-            } else if((localPart.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD)) && this.namespaceURI.equals(qnOther.namespaceURI)) {
-                return true;
-            } else if((namespaceURI.equals(WILDCARD) || qnOther.namespaceURI.equals(WILDCARD)) && this.localPart.equals(qnOther.localPart)) {
-                return true;
-            } else if((namespaceURI.equals(WILDCARD) && localPart.equals(WILDCARD)) || (qnOther.namespaceURI.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD))) {
-                return true;
-            } else {
-                return false;
-            }
         }
+        if (this == WildcardQName.instance || qnOther == WildcardQName.instance) {
+            return true;
+        }
+        if ((localPart.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD))
+                && this.namespaceURI.equals(qnOther.namespaceURI)) {
+            return true;
+        }
+        if ((namespaceURI.equals(WILDCARD) || qnOther.namespaceURI.equals(WILDCARD))
+                && this.localPart.equals(qnOther.localPart)) {
+            return true;
+        }
+        return (namespaceURI.equals(WILDCARD) && localPart.equals(WILDCARD))
+                || (qnOther.namespaceURI.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD));
     }
 
     @Override
@@ -269,9 +266,11 @@ public class QName implements Comparable<QName> {
 
         if (p == Constants.STRING_NOT_FOUND) {
             return null;
-        } else if (p == 0) {
+        }
+        if (p == 0) {
             throw new IllegalQNameException(INVALID_PREFIX.val, "Illegal QName: starts with a :");
-        } else if (Character.isDigit(qname.substring(0,1).charAt(0))) {
+        }
+        if (Character.isDigit(qname.substring(0,1).charAt(0))) {
             throw new IllegalQNameException(INVALID_PREFIX.val, "Illegal QName: starts with a digit");
         }
 
@@ -326,7 +325,7 @@ public class QName implements Comparable<QName> {
         }
     }
 
-    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)\\}([^&{}:]+)");
+    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
     private final static Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
 
     /**
@@ -388,7 +387,6 @@ public class QName implements Comparable<QName> {
     /**
      * Parses the given string into a QName. The method uses context to look up
      * a namespace URI for an optional existing prefix.
-     *
      * This method uses the default element namespace for qnames without prefix.
      *
      * @param context the xquery context
@@ -427,7 +425,7 @@ public class QName implements Comparable<QName> {
         return result;
     }
 
-    public static final byte isQName(final String name) {
+    public static byte isQName(final String name) {
         final int colon = name.indexOf(COLON);
 
         if (colon == Constants.STRING_NOT_FOUND) {
