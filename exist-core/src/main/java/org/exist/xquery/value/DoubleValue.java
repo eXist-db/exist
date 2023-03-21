@@ -480,7 +480,7 @@ public class DoubleValue extends NumericValue {
         } else if (target == Double.class || target == double.class) {
             return (T) Double.valueOf(value);
         } else if (target == Float.class || target == float.class) {
-            return (T) new Float(value);
+            return (T) Float.valueOf((float) value);
         } else if (target == Long.class || target == long.class) {
             return (T) Long.valueOf(((IntegerValue) convertTo(Type.LONG)).getValue());
         } else if (target == Integer.class || target == int.class) {
