@@ -151,13 +151,13 @@ public class DoubleValue extends NumericValue {
     protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
         final IntSupplier comparison;
         if (other instanceof IntegerValue) {
-            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue)other).value));
+            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue) other).value));
         } else if (other instanceof DecimalValue) {
-            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue)other).value);
+            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue) other).value);
         } else if (other instanceof DoubleValue) {
-            comparison = () -> Double.compare(value, ((DoubleValue)other).value);
+            comparison = () -> Double.compare(value, ((DoubleValue) other).value);
         } else if (other instanceof FloatValue) {
-            comparison = () -> Double.compare(value, ((FloatValue)other).value);
+            comparison = () -> Double.compare(value, ((FloatValue) other).value);
         } else {
             return null;
         }
@@ -375,7 +375,7 @@ public class DoubleValue extends NumericValue {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), Math.max(value, ((DoubleValue) other).value));
         } else {
-            return new DoubleValue(getExpression(), 
+            return new DoubleValue(getExpression(),
                     Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
         }
     }
@@ -385,7 +385,7 @@ public class DoubleValue extends NumericValue {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), Math.min(value, ((DoubleValue) other).value));
         } else {
-            return new DoubleValue(getExpression(), 
+            return new DoubleValue(getExpression(),
                     Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
         }
     }
