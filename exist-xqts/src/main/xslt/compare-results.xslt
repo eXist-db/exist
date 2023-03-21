@@ -41,10 +41,14 @@
         <xsl:document>
             <cr:comparison>
                 <cr:previous>
-                    <xsl:sequence select="$previous-summary/cr:results"/>
+                    <xsl:copy select="$previous-summary/cr:results">
+                        <xsl:copy-of select="@*"/>
+                    </xsl:copy>
                 </cr:previous>
                 <cr:current>
-                    <xsl:sequence select="$current-summary/cr:results"/>
+                    <xsl:copy select="$current-summary/cr:results">
+                        <xsl:copy-of select="@*"/>
+                    </xsl:copy>
                 </cr:current>
                 <cr:change>
                     <cr:results>
@@ -52,6 +56,13 @@
                             <xsl:sequence select="cr:calculate-change($previous-summary/cr:results, $current-summary/cr:results, .)"/>
                         </xsl:for-each>
                     </cr:results>
+                    <cr:new>
+                        <xsl:for-each select="('pass', 'skipped', 'failures', 'errors')">
+                            <xsl:element name="cr:{.}">
+                                <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
+                            </xsl:element>
+                        </xsl:for-each>
+                    </cr:new>
                 </cr:change>
             </cr:comparison>
         </xsl:document>
@@ -62,7 +73,20 @@
         <xsl:variable name="collection-uri" select="concat($junit-data-path, '?select=*.xml')"/>
         <xsl:variable name="testsuite" select="collection($collection-uri)/testsuite"/>
         <xsl:document>
-            <cr:results tests="{sum($testsuite/@tests/xs:integer(.))}" skipped="{sum($testsuite/@skipped/xs:integer(.))}" failures="{sum($testsuite/@failures/xs:integer(.))}" errors="{sum($testsuite/@errors/xs:integer(.))}" time="{sum($testsuite/@time/xs:float(.))}"/>
+            <cr:results tests="{sum($testsuite/@tests/xs:integer(.))}" skipped="{sum($testsuite/@skipped/xs:integer(.))}" failures="{sum($testsuite/@failures/xs:integer(.))}" errors="{sum($testsuite/@errors/xs:integer(.))}" time="{sum($testsuite/@time/xs:float(.))}">
+                <cr:skipped>
+                    <xsl:sequence select="$testsuite/testcase[skipped]"/>
+                </cr:skipped>
+                <cr:failures>
+                    <xsl:sequence select="$testsuite/testcase[failure]"/>
+                </cr:failures>
+                <cr:errors>
+                    <xsl:sequence select="$testsuite/testcase[error]"/>
+                </cr:errors>
+                <cr:pass>
+                    <xsl:sequence select="$testsuite/testcase[empty(skipped)][empty(failure)][empty(error)]"/>
+                </cr:pass>
+            </cr:results>
         </xsl:document>
     </xsl:function>
 
@@ -77,5 +101,22 @@
         <xsl:attribute name="{$attr-name}" select="$current-attr - $previous-attr"/>
         <xsl:attribute name="{$attr-name}-pct" select="(($current-attr - $previous-attr) div $previous-attr) * 100"/>
     </xsl:function>
+
+    <xsl:function name="cr:new-changes">
+        <xsl:param name="previous-results" as="element(cr:results)" required="yes"/>
+        <xsl:param name="current-results" as="element(cr:results)" required="yes"/>
+        <xsl:param name="attr-name" as="xs:string" required="yes"/>
+        <xsl:variable name="elem-name" as="xs:QName" select="xs:QName(concat('cr:', $attr-name))"/>
+        <xsl:element name="cr:{$attr-name}">
+            <xsl:apply-templates mode="simple" select="$current-results/element()[node-name(.) eq $elem-name]/testcase[@name except $previous-results/element()[node-name(.) eq $elem-name]/testcase/@name]"/>
+        </xsl:element>
+    </xsl:function>
+
+    <xsl:template match="testcase" mode="simple">
+        <xsl:copy>
+            <xsl:copy-of select="@name"/>
+            <xsl:copy-of select="failure|error"/>
+        </xsl:copy>
+    </xsl:template>
 
 </xsl:stylesheet>
