@@ -48,11 +48,11 @@ jobs:
         run: 'curl -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs > /tmp/previous-xqts-logs-artifacts.json'
       - name: Extract Previous XQTS Logs Artifact JSON
         run: cat /tmp/previous-xqts-logs-artifacts.json | jq -r "[.artifacts[] | select(.workflow_run.head_branch == \"develop\")][1].archive_download_url" > /tmp/previous-xqts-logs-artifact.json
-      - name: Get Previous XQTS Logs Artifacts
+      - name: Get Previous XQTS Logs Artifact
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: 'cat /tmp/previous-xqts-logs-artifact.json | xargs curl -H "Authorization: Bearer ${GITHUB_TOKEN}" --location --output /tmp/previous-xqts-output.zip'
-      - name: Extract Previous XQTS Logs
+      - name: Extract Previous XQTS Logs Artifact
         run: mkdir /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip -d /tmp/previous-xqts-output
       - name: Compare Previous and Current XQTS Logs
         run: java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/9.9.1-8/Saxon-HE-9.9.1-8.jar -xsl:exist-xqts/src/main/xslt/compare-results.xslt -it:compare-results -o:/tmp/comparison-results.xml xqts.previous.junit-data-path=/tmp/previous-xqts-output/junit/data xqts.current.junit-data-path=/tmp/xqts-output/junit/data
