@@ -143,8 +143,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     /**
      * Constructs an XmldbURI from given URI. The provided URI must have the XMLDB_SCHEME ("xmldb")
      *
-     * @param xmldbURI A string
-     * @param mustHaveXMLDB true if the provided shceme must be xmldb
+     * @param xmldbURI      A string
+     * @param mustHaveXMLDB true if the provided scheme must be xmldb
      * @throws URISyntaxException If the given string is not a valid xmldb URI.
      */
     protected XmldbURI(URI xmldbURI, final boolean mustHaveXMLDB) throws URISyntaxException {
@@ -275,9 +275,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     /**
      * Feeds private members. Receives a URI with the xmldb: scheme already stripped
      *
-     * @param xmldbURI the xmldb URI.
-     * @param hadXmldbPrefix if the xmldb URI has an xmldb prefix.
-     *
+     * @param xmldbURI       the xmldb URI.
+     * @param hadXmldbPrefix if the xmldb URI has a xmldb prefix.
      * @throws URISyntaxException if the URI is invalid.
      */
     protected void parseURI(final URI xmldbURI, final boolean hadXmldbPrefix) throws URISyntaxException {
@@ -524,7 +523,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         if ((name == null) || name.isEmpty()) {
             return NO_SEGMENTS;
         }
-        
+
         final String[] split = name.split("/");
         if (split.length == 0) {
             return NO_SEGMENTS;
@@ -593,11 +592,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      * Ugly workaround for non-URI compliant pathes.
      *
      * @param pseudoURI What is supposed to be a URI
-     *
      * @return a supposedly correctly escaped URI <strong>string representation</strong>
-     *
      * @throws URISyntaxException if the URI is invalid.
-     *
      * @deprecated By definition, using this method is strongly discouraged
      */
     @Deprecated
@@ -610,10 +606,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             newURIString.append("/");
 
             if (!parts[i].isEmpty()) {
-
                 try {
-
-                    //Try to instantiate the parst as a URI
+                    //Try to instantiate the parts as a URI
                     new URI(newURIString + parts[i]);
                     newURIString.append(parts[i]);
                 } catch (final URISyntaxException e) {
@@ -635,7 +629,6 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         }
 
         if (ob instanceof String) {
-
             try {
                 return getXmldbURI().equals(new URI((String) ob));
             } catch (final URISyntaxException e) {
@@ -896,6 +889,4 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     public Object clone() {
         return new XmldbURI(this);
     }
-
-    //  TODO : prefefined URIs as static classes...
 }
