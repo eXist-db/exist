@@ -167,7 +167,7 @@ public class DoubleValue extends NumericValue {
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC, Type.ITEM, Type.NUMBER, Type.DOUBLE -> {
+            case Type.ITEM, Type.NUMBER, Type.ATOMIC, Type.DOUBLE -> {
                 return this;
             }
             case Type.FLOAT -> {
@@ -187,9 +187,11 @@ public class DoubleValue extends NumericValue {
                 }
                 return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
             }
-            case Type.INTEGER, Type.NON_POSITIVE_INTEGER, Type.NEGATIVE_INTEGER, Type.LONG, Type.INT, Type.SHORT,
-                    Type.BYTE, Type.NON_NEGATIVE_INTEGER, Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT,
-                    Type.UNSIGNED_BYTE, Type.POSITIVE_INTEGER -> {
+            case Type.INTEGER,
+                    Type.POSITIVE_INTEGER, Type.NEGATIVE_INTEGER,
+                    Type.NON_NEGATIVE_INTEGER, Type.NON_POSITIVE_INTEGER,
+                    Type.LONG, Type.INT, Type.SHORT, Type.BYTE,
+                    Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT, Type.UNSIGNED_BYTE -> {
                 if (isNaN() || isInfinite()) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
                             + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
