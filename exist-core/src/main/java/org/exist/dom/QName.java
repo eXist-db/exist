@@ -56,6 +56,8 @@ public class QName implements Comparable<QName> {
     //TODO : use ElementValue.UNKNOWN and type explicitly ?
     private final byte nameType; // = ElementValue.ELEMENT;
 
+    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
+    private final static Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
 
     public QName(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
         this.localPart = localPart;
@@ -130,10 +132,9 @@ public class QName implements Comparable<QName> {
     }
 
     /**
-     * @deprecated Use for debugging purpose only,
+     * Only for debugging purposes,
      * use {@link #getStringValue()} for production
      */
-    @Deprecated
     @Override
     public String toString() {
         //TODO : remove this copy of getStringValue()
@@ -198,18 +199,16 @@ public class QName implements Comparable<QName> {
      *
      * @param other The other qname
      *
-     * @return true if they are qual.
+     * @return true if they are equal.
      */
     @Override
     public boolean equals(final Object other) {
-        if (other == this) {
-            return true;
-        }
-        if (!(other instanceof final QName qnOther)) {
-            return false;
-        }
-        return this.namespaceURI.equals(qnOther.namespaceURI)
-                && this.localPart.equals(qnOther.localPart);
+        return other instanceof QName && equals((QName) other);
+    }
+
+    public boolean equals(final QName other) {
+        return other == this
+                || (this.namespaceURI.equals(other.namespaceURI) && this.localPart.equals(other.localPart));
     }
 
     /**
@@ -289,13 +288,15 @@ public class QName implements Comparable<QName> {
 
         if (p == Constants.STRING_NOT_FOUND) {
             return qname;
-        } else if (p == 0 || p == qname.length() - 1) {
+        }
+
+        if (p == 0 || p == qname.length() - 1) {
             throw new IllegalQNameException(ILLEGAL_FORMAT.val, "Illegal QName: starts or ends with a ':'");
-        } else {
-            final byte validity = isQName(qname);
-            if(validity != VALID.val) {
-                throw new IllegalQNameException(validity, "Illegal QName: '" + qname + "'.");
-            }
+        }
+
+        final byte validity = isQName(qname);
+        if (validity != VALID.val) {
+            throw new IllegalQNameException(validity, "Illegal QName: '" + qname + "'.");
         }
 
         return qname.substring(p + 1);
@@ -324,9 +325,6 @@ public class QName implements Comparable<QName> {
             }
         }
     }
-
-    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
-    private final static Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
 
     /**
      * Parses the given string into a QName. The method uses context to look up
@@ -430,11 +428,14 @@ public class QName implements Comparable<QName> {
 
         if (colon == Constants.STRING_NOT_FOUND) {
             return XMLNames.isNCName(name) ? VALID.val : INVALID_LOCAL_PART.val;
-        } else if (colon == 0 || colon == name.length() - 1) {
+        }
+        if (colon == 0 || colon == name.length() - 1) {
             return ILLEGAL_FORMAT.val;
-        } else if (!XMLNames.isNCName(name.substring(0, colon))) {
+        }
+        if (!XMLNames.isNCName(name.substring(0, colon))) {
             return INVALID_PREFIX.val;
-        } else if (!XMLNames.isNCName(name.substring(colon + 1))) {
+        }
+        if (!XMLNames.isNCName(name.substring(colon + 1))) {
             return INVALID_LOCAL_PART.val;
         }
 
