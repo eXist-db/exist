@@ -58,9 +58,7 @@
                     </cr:results>
                     <cr:new>
                         <xsl:for-each select="('pass', 'skipped', 'failures', 'errors')">
-                            <xsl:element name="cr:{.}">
-                                <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
-                            </xsl:element>
+                            <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
                         </xsl:for-each>
                     </cr:new>
                 </cr:change>
