@@ -134,7 +134,7 @@ public class ExistResourceFactory implements ResourceFactory {
             xmldbUri = XmldbURI.xmldbUriFor(path);
 
         } catch (URISyntaxException e) {
-            LOG.error("Unable to convert path '{}}' into a XmldbURI representation.", path);
+            LOG.error("Unable to convert path '{}}' into an XmldbURI representation.", path);
             return null;
         }
 

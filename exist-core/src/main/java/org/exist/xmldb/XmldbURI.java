@@ -276,7 +276,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      * Feeds private members. Receives a URI with the xmldb: scheme already stripped
      *
      * @param xmldbURI       the xmldb URI.
-     * @param hadXmldbPrefix if the xmldb URI has a xmldb prefix.
+     * @param hadXmldbPrefix if the xmldb URI has an xmldb prefix.
      * @throws URISyntaxException if the URI is invalid.
      */
     protected void parseURI(final URI xmldbURI, final boolean hadXmldbPrefix) throws URISyntaxException {
@@ -361,7 +361,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     }
 
     /**
-     * This returns a xmldb uri. This is the most generic sort of uri - the only fields set in the uri are scheme and schemeSpecificPart
+     * This returns an xmldb uri. This is the most generic sort of uri - the only fields set in the uri are scheme and schemeSpecificPart
      *
      * @return DOCUMENT ME!
      */
