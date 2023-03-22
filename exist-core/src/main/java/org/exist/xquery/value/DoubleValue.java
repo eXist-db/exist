@@ -271,7 +271,6 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public NumericValue round(final IntegerValue precision) throws XPathException {
-
         /* use the decimal rounding method */
         return round(precision, DecimalValue.DEFAULT_ROUNDING_MODE);
     }
@@ -427,32 +426,42 @@ public class DoubleValue extends NumericValue {
     public <T> T toJavaObject(final Class<T> target) throws XPathException {
         if (target.isAssignableFrom(DoubleValue.class)) {
             return (T) this;
-        } else if (target == Double.class || target == double.class) {
+        }
+        if (target == Double.class || target == double.class) {
             return (T) Double.valueOf(value);
-        } else if (target == Float.class || target == float.class) {
+        }
+        if (target == Float.class || target == float.class) {
             return (T) Float.valueOf((float) value);
-        } else if (target == Long.class || target == long.class) {
+        }
+        if (target == Long.class || target == long.class) {
             return (T) Long.valueOf(((IntegerValue) convertTo(Type.LONG)).getValue());
-        } else if (target == Integer.class || target == int.class) {
+        }
+        if (target == Integer.class || target == int.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.INT);
             return (T) Integer.valueOf((int) v.getValue());
-        } else if (target == Short.class || target == short.class) {
+        }
+        if (target == Short.class || target == short.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.SHORT);
             return (T) Short.valueOf((short) v.getValue());
-        } else if (target == Byte.class || target == byte.class) {
+        }
+        if (target == Byte.class || target == byte.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
             return (T) Byte.valueOf((byte) v.getValue());
-        } else if (target == byte[].class) {
+        }
+        if (target == byte[].class) {
             final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf.array();
-        } else if (target == ByteBuffer.class) {
+        }
+        if (target == ByteBuffer.class) {
             final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
             serialize(buf);
             return (T) buf;
-        } else if (target == String.class) {
+        }
+        if (target == String.class) {
             return (T) getStringValue();
-        } else if (target == Boolean.class) {
+        }
+        if (target == Boolean.class) {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         }
 
