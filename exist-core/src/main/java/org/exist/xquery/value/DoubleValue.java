@@ -278,18 +278,16 @@ public class DoubleValue extends NumericValue {
     public ComputableValue minus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), value - ((DoubleValue) other).value);
-        } else {
-            return minus((ComputableValue) other.convertTo(getType()));
         }
+        return minus((ComputableValue) other.convertTo(getType()));
     }
 
     @Override
     public ComputableValue plus(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), value + ((DoubleValue) other).value);
-        } else {
-            return plus((ComputableValue) other.convertTo(getType()));
         }
+        return plus((ComputableValue) other.convertTo(getType()));
     }
 
     @Override
@@ -340,9 +338,8 @@ public class DoubleValue extends NumericValue {
 
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), value / ((DoubleValue) other).value);
-        } else {
-            return div((ComputableValue) other.convertTo(getType()));
         }
+        return div((ComputableValue) other.convertTo(getType()));
     }
 
     @Override
@@ -355,9 +352,8 @@ public class DoubleValue extends NumericValue {
     public NumericValue mod(final NumericValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), value % ((DoubleValue) other).value);
-        } else {
-            return mod((NumericValue) other.convertTo(getType()));
         }
+        return mod((NumericValue) other.convertTo(getType()));
     }
 
     @Override
@@ -374,20 +370,18 @@ public class DoubleValue extends NumericValue {
     public AtomicValue max(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), Math.max(value, ((DoubleValue) other).value));
-        } else {
-            return new DoubleValue(getExpression(),
-                    Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
         }
+        return new DoubleValue(getExpression(),
+                Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
     }
 
     @Override
     public AtomicValue min(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.DOUBLE)) {
             return new DoubleValue(getExpression(), Math.min(value, ((DoubleValue) other).value));
-        } else {
-            return new DoubleValue(getExpression(),
-                    Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
         }
+        return new DoubleValue(getExpression(),
+                Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
     }
 
     @Override
