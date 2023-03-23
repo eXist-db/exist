@@ -339,28 +339,31 @@ public class QName implements Comparable<QName> {
     public static QName parse(final Context context, final String qname, final String defaultNS)
             throws IllegalQNameException {
 
+        final char firstChar = qname.length() > 0 ? qname.charAt(0) : 0;
+
         // quick test if qname is in clark notation
-        if (qname.length() > 0 ) {
-            if (qname.charAt(0) == '{') {
-                final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
+        if (firstChar == '{') {
+            final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
 
-                // more expensive check
-                if (clarkNotation.matches()) {
-                    //parse as clark notation
-                    final String ns = clarkNotation.group(1);
-                    final String localPart = clarkNotation.group(2);
-                    return new QName(localPart, ns);
-                }
-            } else if (qname.charAt(0) == 'Q') {
-                final Matcher eqNameNotation = ptnEqNameNotation.matcher(qname);
+            // more expensive check
+            if (clarkNotation.matches()) {
+                //parse as clark notation
+                final String ns = clarkNotation.group(1);
+                final String localPart = clarkNotation.group(2);
+                return new QName(localPart, ns);
+            }
+        }
 
-                // more expensive check
-                if (eqNameNotation.matches()) {
-                    //parse as clark notation
-                    final String ns = eqNameNotation.group(1);
-                    final String localPart = eqNameNotation.group(2);
-                    return new QName(localPart, ns);
-                }
+        // quick test if qname is in EqName notation
+        if (firstChar == 'Q') {
+            final Matcher eqNameNotation = ptnEqNameNotation.matcher(qname);
+
+            // more expensive check
+            if (eqNameNotation.matches()) {
+                //parse as clark notation
+                final String ns = eqNameNotation.group(1);
+                final String localPart = eqNameNotation.group(2);
+                return new QName(localPart, ns);
             }
         }
 
@@ -512,7 +515,7 @@ public class QName implements Comparable<QName> {
          * a namespace URI for an existing prefix.
          *
          * @param context the xquery context
-         * @param prefix The namepspace prefix
+         * @param prefix The namespace prefix
          * @return WildcardLocalPartQName
          * @throws IllegalQNameException if no namespace URI is mapped to the prefix
          */
