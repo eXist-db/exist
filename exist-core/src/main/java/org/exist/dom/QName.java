@@ -405,17 +405,17 @@ public class QName implements Comparable<QName> {
      * @return Either {@link Validity#VALID} or various validity codes XOR'd together
      */
     public final byte isValid(final boolean allowWildcards) {
+        if (allowWildcards && this == QName.WildcardQName.getInstance()) {
+            return VALID.val;
+        }
+
         byte result = VALID.val;
 
-        if(!(allowWildcards && this == QName.WildcardQName.getInstance())) {
-
-            if ((!(this instanceof WildcardLocalPartQName && allowWildcards)) && !XMLNames.isNCName(localPart)) {
-                result ^= INVALID_LOCAL_PART.val;
-            }
-
-            if (prefix != null && !XMLNames.isNCName(prefix)) {
-                result ^= INVALID_PREFIX.val;
-            }
+        if (!(allowWildcards && this instanceof WildcardLocalPartQName) && !XMLNames.isNCName(localPart)) {
+            result ^= INVALID_LOCAL_PART.val;
+        }
+        if (prefix != null && !XMLNames.isNCName(prefix)) {
+            result ^= INVALID_PREFIX.val;
         }
 
         return result;
