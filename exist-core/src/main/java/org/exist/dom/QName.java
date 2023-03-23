@@ -316,14 +316,12 @@ public class QName implements Comparable<QName> {
         final int p = qname.indexOf(COLON);
         if (p == Constants.STRING_NOT_FOUND) {
             return new QName(qname, namespaceURI);
-        } else {
-            final byte validity = isQName(qname);
-            if(validity != VALID.val) {
-                throw new IllegalQNameException(validity, "Illegal QName: '" + qname + "'");
-            } else {
-                return new QName(qname.substring(p + 1), namespaceURI, qname.substring(0, p));
-            }
         }
+        final byte validity = isQName(qname);
+        if (validity != VALID.val) {
+            throw new IllegalQNameException(validity, "Illegal QName: '" + qname + "'");
+        }
+        return new QName(qname.substring(p + 1), namespaceURI, qname.substring(0, p));
     }
 
     /**
