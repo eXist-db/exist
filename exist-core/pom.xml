@@ -460,7 +460,7 @@
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
-            <version>3.3.2</version>
+            <version>3.3.3</version>
         </dependency>
 
         <dependency>
