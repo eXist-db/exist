@@ -574,27 +574,26 @@ public class XQueryContext implements BinaryValueManager, Context {
         // the repo and its eXist handler
         final Optional<ExistRepository> repo = getRepository();
 
+        if (repo.isEmpty()) {
+            return null;
+        }
+
         // try an internal module
-        if (repo.isPresent()) {
-            final Module jMod = repo.get().resolveJavaModule(namespace, this);
-            if (jMod != null) {
-                return jMod;
-            }
+        final Module jMod = repo.get().resolveJavaModule(namespace, this);
+        if (jMod != null) {
+            return jMod;
         }
 
         // try an eXist-specific module
-        if (repo.isPresent()) {
-            final Path resolved = repo.get().resolveXQueryModule(namespace);
-
-            // use the resolved file or return null
-            if (resolved != null) {
-                // build a module object from the file
-                final Source src = new FileSource(resolved, false);
-                return compileOrBorrowModule(prefix, namespace, "", src);
-            }
+        final Path resolved = repo.get().resolveXQueryModule(namespace);
+        if (resolved == null) {
+            return null;
         }
 
-        return null;
+        // use the resolved file or return null
+        // build a module object from the file
+        final Source src = new FileSource(resolved, false);
+        return compileOrBorrowModule(prefix, namespace, "", src);
     }
 
     /**
