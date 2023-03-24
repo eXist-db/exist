@@ -49,8 +49,8 @@ public class QName implements Comparable<QName> {
     public static final QName DOCTYPE_QNAME = EMPTY_QNAME;
     public static final QName CDATA_SECTION_QNAME = EMPTY_QNAME;
 
-    private static final Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
-    private static final Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
+    private static final Pattern PTN_CLARK_NOTATION = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
+    private static final Pattern PTN_EQ_NAME_NOTATION = Pattern.compile("Q" + PTN_CLARK_NOTATION);
 
     private final String localPart;
     private final String namespaceURI;
@@ -168,7 +168,7 @@ public class QName implements Comparable<QName> {
      * @return the QName
      */
     public static QName fromURIQualifiedName(final String uriQualifiedName) {
-        final Matcher matcher = ptnClarkNotation.matcher(uriQualifiedName);
+        final Matcher matcher = PTN_CLARK_NOTATION.matcher(uriQualifiedName);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Argument is not a URIQualifiedName");
         }
@@ -334,7 +334,7 @@ public class QName implements Comparable<QName> {
 
         // quick test if qname is in clark notation
         if (firstChar == '{') {
-            final Matcher clarkNotation = ptnClarkNotation.matcher(qname);
+            final Matcher clarkNotation = PTN_CLARK_NOTATION.matcher(qname);
 
             // more expensive check
             if (clarkNotation.matches()) {
@@ -347,7 +347,7 @@ public class QName implements Comparable<QName> {
 
         // quick test if qname is in EqName notation
         if (firstChar == 'Q') {
-            final Matcher eqNameNotation = ptnEqNameNotation.matcher(qname);
+            final Matcher eqNameNotation = PTN_EQ_NAME_NOTATION.matcher(qname);
 
             // more expensive check
             if (eqNameNotation.matches()) {
