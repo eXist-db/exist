@@ -3306,39 +3306,36 @@ public class XQueryContext implements BinaryValueManager, Context {
     private Deque<BinaryValue> binaryValueInstances;
 
     void enterEnclosedExpr() {
-        if (binaryValueInstances != null) {
-            final Iterator<BinaryValue> it = binaryValueInstances.descendingIterator();
-            while (it.hasNext()) {
-                it.next().incrementSharedReferences();
-            }
+        if (binaryValueInstances == null) {
+            return;
+        }
+        final Iterator<BinaryValue> it = binaryValueInstances.descendingIterator();
+        while (it.hasNext()) {
+            it.next().incrementSharedReferences();
         }
     }
 
     void exitEnclosedExpr() {
-        if (binaryValueInstances != null) {
-            final Iterator<BinaryValue> it = binaryValueInstances.iterator();
-            List<BinaryValue> destroyable = null;
-            while (it.hasNext()) {
-                try {
-                    final BinaryValue bv = it.next();
-                    bv.close(); // really just decrements a reference
-                    if (bv.isClosed()) {
-                        if (destroyable == null) {
-                            destroyable = new ArrayList<>();
-                        }
-                        destroyable.add(bv);
-                    }
-                } catch (final IOException e) {
-                    LOG.warn("Unable to close binary reference on exiting enclosed expression: {}", e.getMessage(), e);
+        if (binaryValueInstances == null) {
+            return;
+        }
+        final Iterator<BinaryValue> it = binaryValueInstances.iterator();
+        final List<BinaryValue> destroyable = new ArrayList<>();
+        while (it.hasNext()) {
+            try {
+                final BinaryValue bv = it.next();
+                bv.close(); // really just decrements a reference
+                if (bv.isClosed()) {
+                    destroyable.add(bv);
                 }
+            } catch (final IOException e) {
+                LOG.warn("Unable to close binary reference on exiting enclosed expression: {}", e.getMessage(), e);
             }
+        }
 
-            // eagerly cleanup those BinaryValues that are not used outside the EnclosedExpr (to release memory)
-            if (destroyable != null) {
-                for (final BinaryValue bvd : destroyable) {
-                    binaryValueInstances.remove(bvd);
-                }
-            }
+        // eagerly cleanup those BinaryValues that are not used outside the EnclosedExpr (to release memory)
+        for (final BinaryValue bvd : destroyable) {
+            binaryValueInstances.remove(bvd);
         }
     }
 
@@ -3363,27 +3360,23 @@ public class XQueryContext implements BinaryValueManager, Context {
     public static class BinaryValueCleanupTask implements CleanupTask {
         @Override
         public void cleanup(final XQueryContext context, final Predicate<Object> predicate) {
-            if (context.binaryValueInstances != null) {
-                List<BinaryValue> removable = null;
-                for (final BinaryValue bv : context.binaryValueInstances) {
-                    try {
-                        if (predicate.test(bv)) {
-                            bv.close();
-                            if (removable == null) {
-                                removable = new ArrayList<>();
-                            }
-                            removable.add(bv);
-                        }
-                    } catch (final IOException e) {
-                        LOG.error("Unable to close binary value: {}", e.getMessage(), e);
+            if (context.binaryValueInstances == null) {
+                return;
+            }
+            final List<BinaryValue> removable = new ArrayList<>();
+            for (final BinaryValue bv : context.binaryValueInstances) {
+                try {
+                    if (predicate.test(bv)) {
+                        bv.close();
+                        removable.add(bv);
                     }
+                } catch (final IOException e) {
+                    LOG.error("Unable to close binary value: {}", e.getMessage(), e);
                 }
+            }
 
-                if (removable != null) {
-                    for (final BinaryValue bv : removable) {
-                        context.binaryValueInstances.remove(bv);
-                    }
-                }
+            for (final BinaryValue bv : removable) {
+                context.binaryValueInstances.remove(bv);
             }
         }
     }
