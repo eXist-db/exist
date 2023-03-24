@@ -166,50 +166,51 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.ITEM, Type.NUMBER, Type.ATOMIC, Type.DOUBLE -> {
-                return this;
-            }
-            case Type.FLOAT -> {
-                return new FloatValue(getExpression(), (float) value);
-            }
-            case Type.UNTYPED_ATOMIC -> {
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            }
-            case Type.STRING -> {
-                return new StringValue(getExpression(), getStringValue());
-            }
-            case Type.DECIMAL -> {
-                if (isNaN() || isInfinite()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
-                            + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
-                            + Type.getTypeName(requiredType));
-                }
-                return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
-            }
-            case Type.INTEGER,
-                    Type.POSITIVE_INTEGER, Type.NEGATIVE_INTEGER,
-                    Type.NON_NEGATIVE_INTEGER, Type.NON_POSITIVE_INTEGER,
+        return switch (requiredType) {
+            case Type.ITEM, Type.NUMBER, Type.ATOMIC, Type.DOUBLE -> this;
+            case Type.FLOAT -> new FloatValue(getExpression(), (float) value);
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.DECIMAL -> toDecimalValue();
+            case Type.INTEGER -> toIntegerValue();
+            case Type.POSITIVE_INTEGER, Type.NEGATIVE_INTEGER, Type.NON_NEGATIVE_INTEGER, Type.NON_POSITIVE_INTEGER,
                     Type.LONG, Type.INT, Type.SHORT, Type.BYTE,
-                    Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT, Type.UNSIGNED_BYTE -> {
-                if (isNaN() || isInfinite()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
-                            + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
-                            + Type.getTypeName(requiredType));
-                }
-                if (requiredType != Type.INTEGER && value > Integer.MAX_VALUE) {
-                    throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
-                            + Type.getTypeName(requiredType));
-                }
-                return new IntegerValue(getExpression(), (long) value, requiredType);
-            }
-            case Type.BOOLEAN -> {
-                return new BooleanValue(getExpression(), this.effectiveBooleanValue());
-            }
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '"
-                    + Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to "
-                    + Type.getTypeName(requiredType));
+                    Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT, Type.UNSIGNED_BYTE
+                -> toIntegerSubType(requiredType);
+            case Type.BOOLEAN -> new BooleanValue(getExpression(), effectiveBooleanValue());
+            default -> throw conversionError(requiredType);
+        };
+    }
+
+    public DecimalValue toDecimalValue() throws XPathException {
+        if (isNaN() || isInfinite()) {
+            throw conversionError(Type.DECIMAL);
         }
+        return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
+    }
+
+    public IntegerValue toIntegerValue() throws XPathException {
+        if (isNaN() || isInfinite()) {
+            throw conversionError(Type.INTEGER);
+        }
+        return new IntegerValue(getExpression(), (long) value);
+    }
+
+    public IntegerValue toIntegerSubType(final int subType) throws XPathException {
+        if (isNaN() || isInfinite()) {
+            throw conversionError(subType);
+        }
+        if (subType != Type.INTEGER && value > Integer.MAX_VALUE) {
+            throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
+                    + Type.getTypeName(subType));
+        }
+        return new IntegerValue(getExpression(), (long) value, subType);
+    }
+
+    private XPathException conversionError(final int type) {
+        return new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
+                + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
+                + Type.getTypeName(type));
     }
 
     @Override
