@@ -359,17 +359,6 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     private int expressionCounter = 0;
 
-//    /**
-//     * Should all documents loaded by the query be locked? If set to true, it is the responsibility of the calling client code to unlock documents
-//     * after the query has completed.
-//     */
-//  private boolean lockDocumentsOnLoad = false;
-
-//    /**
-//     * Documents locked during the query.
-//     */
-//  private LockedDocumentMap lockedDocuments = null;
-
     private LockedDocumentMap protectedDocuments = null;
 
     /**
@@ -396,7 +385,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     protected Database db;
 
-    protected Configuration configuration = null;
+    protected Configuration configuration;
 
     private boolean analyzed = false;
 
@@ -636,7 +625,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     public void updateContext(final XQueryContext from) {
         this.watchdog = from.watchdog;
         this.lastVar = from.lastVar;
-        this.variableStackSize = from.getCurrentStackSize();
         this.contextStack = from.contextStack;
         this.inScopeNamespaces = from.inScopeNamespaces;
         this.inScopePrefixes = from.inScopePrefixes;
@@ -977,16 +965,6 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
         }
         return staticNamespaces.get(prefix);
-            /* old code checked namespaces first
-            String ns = (String) namespaces.get(prefix);
-            if (ns == null)
-              // try in-scope namespace declarations
-              return inScopeNamespaces == null
-                  ? null
-                  : (String) inScopeNamespaces.get(prefix);
-            else
-              return ns;
-              */
     }
 
     @Override
@@ -1333,76 +1311,9 @@ public class XQueryContext implements BinaryValueManager, Context {
         return false;
     }
 
-
-//  /**
-//   * If lock is true, all documents loaded during query execution
-//   * will be locked. This way, we avoid that query results become
-//   * invalid before the entire result has been processed by the client
-//   * code. All attempts to modify nodes which are part of the result
-//   * set will be blocked.
-//   *
-//   * However, it is the client's responsibility to proper unlock
-//   * all documents once processing is completed.
-//   *
-//   * @param lock
-//   */
-//  public void setLockDocumentsOnLoad(boolean lock) {
-//      lockDocumentsOnLoad = lock;
-//      if(lock)
-//          lockedDocuments = new LockedDocumentMap();
-//  }
-
-
     @Override
     public void addLockedDocument(final DocumentImpl doc) {
-//        if (lockedDocuments != null)
-//           lockedDocuments.add(doc);
     }
-
-
-//    /**
-//     * Release all locks on documents that have been locked
-//     * during query execution.
-//     *
-//     *@see #setLockDocumentsOnLoad(boolean)
-//     */
-//  public void releaseLockedDocuments() {
-//        if(lockedDocuments != null)
-//          lockedDocuments.unlock();
-//      lockDocumentsOnLoad = false;
-//      lockedDocuments = null;
-//  }
-
-//    /**
-//     * Release all locks on documents not being referenced by the sequence.
-//     * This is called after query execution has completed. Only locks on those
-//     * documents contained in the final result set will be preserved. All other
-//     * locks are released as they are no longer needed.
-//     *
-//     * @param seq
-//     * @throws XPathException
-//     */
-//  public LockedDocumentMap releaseUnusedDocuments(Sequence seq) throws XPathException {
-//      if(lockedDocuments == null)
-//          return null;
-//        // determine the set of documents referenced by nodes in the sequence
-//        DocumentSet usedDocs = new DocumentSet();
-//        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-//            Item next = i.nextItem();
-//            if(Type.subTypeOf(next.getType(), Type.NODE)) {
-//                NodeValue node = (NodeValue) next;
-//                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-//                    DocumentImpl doc = ((NodeProxy)node).getDocument();
-//                    if(!usedDocs.contains(doc.getDocId()))
-//                      usedDocs.add(doc, false);
-//                }
-//            }
-//        }
-//        LockedDocumentMap remaining = lockedDocuments.unlockSome(usedDocs);
-//        lockDocumentsOnLoad = false;
-//      lockedDocuments = null;
-//        return remaining;
-//    }
 
     @Override
     public void setShared(final boolean shared) {
@@ -1823,9 +1734,9 @@ public class XQueryContext implements BinaryValueManager, Context {
         final FunctionId functionKey = signature.getFunctionId();
         if (declaredFunctions.containsKey(functionKey)) {
             throw new XPathException(function, ErrorCodes.XQST0034, "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount() + " is already defined.");
-        } else {
-            declaredFunctions.put(functionKey, function);
         }
+
+        declaredFunctions.put(functionKey, function);
     }
 
     @Override
@@ -1853,12 +1764,10 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public LocalVariable declareVariableBinding(final LocalVariable var) throws XPathException {
-        if (lastVar == null) {
-            lastVar = var;
-        } else {
+        if (lastVar != null) {
             lastVar.addAfter(var);
-            lastVar = var;
         }
+        lastVar = var;
         var.setStackPosition(getCurrentStackSize());
         return var;
     }
@@ -2298,10 +2207,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             return;
         }
 
-        if (uri == null) {
-            baseURI = AnyURIValue.EMPTY_URI;
-        }
-        baseURI = uri;
+        baseURI = (uri == null) ? AnyURIValue.EMPTY_URI : uri;
         baseURISetInProlog = setInProlog;
     }
 
@@ -2808,9 +2714,8 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             if (func == null) {
                 throw new XPathException(call, ErrorCodes.XPST0017, "Call to undeclared function: " + call.getQName().getStringValue());
-            } else {
-                call.resolveForwardReference(func);
             }
+            call.resolveForwardReference(func);
         }
     }
 
@@ -2978,12 +2883,10 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         final Option option = new Option(rootExpression, qn, value);
 
-        //if the option exists, remove it so we can add the new option
-        for (int i = 0; i < options.size(); i++) {
-            if (options.get(i).equals(option)) {
-                options.remove(i);
-                break;
-            }
+        // if the option exists, remove it so we can add the new option
+        final int pos = options.indexOf(option);
+        if (pos != -1) {
+            options.remove(pos);
         }
 
         //add option
@@ -3108,19 +3011,6 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     @SuppressWarnings("unchecked")
     void loadDefaults(@Nullable final Configuration config) {
-        /*
-        SymbolTable syms = broker.getSymbols();
-        String[] pfx = syms.defaultPrefixList();
-        namespaces = new HashMap(pfx.length);
-        prefixes = new HashMap(pfx.length);
-        String sym;
-        for (int i = 0; i < pfx.length; i++) {
-            sym = syms.getDefaultNamespace(pfx[i]);
-            namespaces.put(pfx[i], sym);
-            prefixes.put(sym, pfx[i]);
-        }
-        */
-
         loadDefaultNS();
 
         if (config != null) {
