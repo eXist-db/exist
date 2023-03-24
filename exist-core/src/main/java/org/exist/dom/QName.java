@@ -49,15 +49,15 @@ public class QName implements Comparable<QName> {
     public static final QName DOCTYPE_QNAME = EMPTY_QNAME;
     public static final QName CDATA_SECTION_QNAME = EMPTY_QNAME;
 
+    private static final Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
+    private static final Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
+
     private final String localPart;
     private final String namespaceURI;
     private final String prefix;
 
     //TODO : use ElementValue.UNKNOWN and type explicitly ?
     private final byte nameType; // = ElementValue.ELEMENT;
-
-    private final static Pattern ptnClarkNotation = Pattern.compile("\\{([^&{}]*)}([^&{}:]+)");
-    private final static Pattern ptnEqNameNotation = Pattern.compile("Q" + ptnClarkNotation);
 
     public QName(final String localPart, final String namespaceURI, final String prefix, final byte nameType) {
         this.localPart = localPart;
@@ -200,7 +200,7 @@ public class QName implements Comparable<QName> {
      */
     @Override
     public boolean equals(final Object other) {
-        return other instanceof QName && equals((QName) other);
+        return other instanceof QName qName && equals(qName);
     }
 
     public boolean equals(final QName other) {
@@ -224,11 +224,11 @@ public class QName implements Comparable<QName> {
             return true;
         }
         if ((localPart.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD))
-                && this.namespaceURI.equals(qnOther.namespaceURI)) {
+                && namespaceURI.equals(qnOther.namespaceURI)) {
             return true;
         }
         if ((namespaceURI.equals(WILDCARD) || qnOther.namespaceURI.equals(WILDCARD))
-                && this.localPart.equals(qnOther.localPart)) {
+                && localPart.equals(qnOther.localPart)) {
             return true;
         }
         return (namespaceURI.equals(WILDCARD) && localPart.equals(WILDCARD))
