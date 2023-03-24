@@ -74,18 +74,15 @@ public class DoubleValue extends NumericValue {
     public DoubleValue(final Expression expression, final String stringValue) throws XPathException {
         super(expression);
         try {
-            if ("INF".equals(stringValue)) {
-                value = Double.POSITIVE_INFINITY;
-            } else if ("-INF".equals(stringValue)) {
-                value = Double.NEGATIVE_INFINITY;
-            } else if ("NaN".equals(stringValue)) {
-                value = Double.NaN;
-            } else {
-                value = Double.parseDouble(stringValue);
-            }
+            value = switch (stringValue) {
+                case "INF" -> Double.POSITIVE_INFINITY;
+                case "-INF" -> Double.NEGATIVE_INFINITY;
+                case "NaN" -> Double.NaN;
+                default -> Double.parseDouble(stringValue);
+            };
         } catch (final NumberFormatException e) {
-            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
-                    " from '" + stringValue + "'");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "Cannot construct " + Type.getTypeName(getItemType()) + " from '" + stringValue + "'");
         }
     }
 
