@@ -136,7 +136,23 @@ declare
     %test:args("true")
     %test:assertTrue
     %test:args("false")
+    %test:assertFalse
+    %test:args("true")
+    %test:assertEquals("true")
+    %test:args("false")
     %test:assertEquals("false")
+    %test:args("1")
+    %test:assertEquals("true")
+    %test:args("0")
+    %test:assertEquals("false")
+    %test:args("1")
+    %test:assertTrue
+    %test:args("0")
+    %test:assertFalse
+    %test:args(1)
+    %test:assertTrue
+    %test:args(0)
+    %test:assertFalse
 function t:args-assert-boolean($arg as xs:boolean) as xs:boolean {
     $arg
 };
