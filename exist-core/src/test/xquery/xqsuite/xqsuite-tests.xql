@@ -149,6 +149,20 @@ function t:args-assert-anyURI($arg as xs:anyURI) as xs:anyURI {
 };
 
 declare
+    %test:args("asdf")
+    %test:assertEquals("asdf")
+function t:args-assert-ncname($arg as xs:NCName) as xs:NCName {
+    $arg
+};
+
+declare
+    %test:args("test:asdf")
+    %test:assertEquals("test:asdf")
+function t:args-assert-qname($arg as xs:QName) as xs:QName {
+    $arg
+};
+
+declare
     %test:args("2001-01-01")
     %test:assertEquals("2001-01-01")
 function t:args-assert-date($arg as xs:date) as xs:date {

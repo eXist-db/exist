@@ -611,6 +611,9 @@ declare %private function test:cast(
             case "xs:boolean"           return xs:boolean($literal-value)
             case "xs:anyURI"            return xs:anyURI($literal-value)
 
+            case "xs:NCName"            return xs:NCName($literal-value)
+            case "xs:QName"             return xs:QName($literal-value)
+
             case "xs:numeric"           return xs:numeric($literal-value)
             case "xs:int"               return xs:int($literal-value)
             case "xs:positiveInteger"   return xs:positiveInteger($literal-value)
@@ -1000,6 +1003,9 @@ declare %private function test:cast-to-type($value as item(), $result as item())
         case xs:boolean           return xs:boolean($value)
 
         case xs:anyURI            return xs:anyURI($value)
+
+        case xs:NCName            return xs:NCName($value)
+        case xs:QName             return xs:QName($value)
 
         default return string($value)
 };
