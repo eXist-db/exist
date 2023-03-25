@@ -27,18 +27,18 @@ import org.exist.xquery.value.BinaryValue;
 import org.junit.Test;
 import org.easymock.EasyMock;
 
+import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-/**
- * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
- */
 public class XQueryContextTest {
+    private static final List<String> INITIAL_NAMESPACES = Arrays.asList(
+            "err", "fn", "xdt", "dbgp", "local", "xsi", "exist", "java", "exerr", "xml", "xs");
 
     @Test
     public void prepareForExecution_setsUserFromSession() {
@@ -167,14 +167,138 @@ public class XQueryContextTest {
     private int countBinaryValueInstances(final XQueryContext context) throws NoSuchFieldException, IllegalAccessException {
         final Field fldBinaryValueInstances = context.getClass().getDeclaredField("binaryValueInstances");
         fldBinaryValueInstances.setAccessible(true);
-        final Deque<BinaryValue> binaryValueInstances = (Deque<BinaryValue>)fldBinaryValueInstances.get(context);
+        final Deque<BinaryValue> binaryValueInstances = (Deque<BinaryValue>) fldBinaryValueInstances.get(context);
         return binaryValueInstances.size();
     }
 
     private int countCleanupTasks(final XQueryContext context) throws NoSuchFieldException, IllegalAccessException {
         final Field fldCleanupTasks = context.getClass().getDeclaredField("cleanupTasks");
         fldCleanupTasks.setAccessible(true);
-        final List<XQueryContext.CleanupTask> cleanupTasks = (List<XQueryContext.CleanupTask>)fldCleanupTasks.get(context);
+        final List<XQueryContext.CleanupTask> cleanupTasks = (List<XQueryContext.CleanupTask>) fldCleanupTasks.get(context);
         return cleanupTasks.size();
+    }
+
+    @Test
+    public void testDeclareNamespace () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("first", "ns/a");
+        context.declareNamespace("second", "ns/b");
+        // declare third namespace bound to a URI already used
+        context.declareNamespace("third", "ns/a");
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        expected.addAll(Arrays.asList("first", "second", "third"));
+        assertEquals(expected,  context.staticNamespaces.keySet());
+    }
+    @Test
+    public void testReDeclareNamespaceAllowed () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        final String nsAllowedToBeRebound = "xs";
+        assertEquals("http://www.w3.org/2001/XMLSchema",
+                context.staticNamespaces.get(nsAllowedToBeRebound));
+
+        context.declareNamespace(nsAllowedToBeRebound, "schemaless");
+
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals("schemaless",  context.staticNamespaces.get(nsAllowedToBeRebound));
+    }
+    @Test
+    public void testReDeclareNamespaceNullNull () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(null, null);
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        assertEquals(expected,  context.staticNamespaces.keySet());
+    }
+
+    @Test
+    public void testDeclareNamespaceEmptyPrefix () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("", "default");
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        expected.add("");
+        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals("default",  context.staticNamespaces.get(""));
+    }
+
+    @Test
+    public void testDeclareNamespaceNullPrefix () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(null, "default");
+        final Set<String> expected = new HashSet<>(INITIAL_NAMESPACES);
+        expected.add("");
+        assertEquals(expected,  context.staticNamespaces.keySet());
+        assertEquals("default",  context.staticNamespaces.get(""));
+    }
+
+    @Test
+    public void testReDeclareNamespaceEmptyPrefixFail () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("", "default");
+        // context.declareNamespace("", "");
+
+        try {
+            context.declareNamespace("", "new-default");
+            fail("empty prefix was rebound");
+        } catch (XPathException e) {
+            assertEquals("err:XQST0033 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
+                    e.getMessage());
+            assertEquals("default",  context.staticNamespaces.get(""));
+        }
+    }
+
+    @Test
+    public void testReDeclareNamespaceEmptyPrefixSuccess () throws XPathException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("mutable", "ns/initial");
+        context.declareNamespace("mutable", "");
+        context.declareNamespace("mutable", null);
+        context.declareNamespace("mutable", "ns/new");
+        assertEquals("ns/new",  context.staticNamespaces.get("mutable"));
+    }
+
+    @Test
+    public void testReDeclareNamespaceForbidden () {
+        try {
+            final XQueryContext context = new XQueryContext();
+            context.declareNamespace("xml", "html");
+            fail("XML prefix was rebound");
+        } catch (XPathException e) {
+            assertEquals("err:XQST0070 Namespace predefined prefix 'xml' can not be bound", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testReDeclareNamespaceForbiddenEmpty () {
+        try {
+            final XQueryContext context = new XQueryContext();
+            context.declareNamespace("xml", "");
+            fail("XML prefix was rebound");
+        } catch (XPathException e) {
+            assertEquals("err:XQST0070 Namespace predefined prefix 'xml' can not be bound", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testReDeclareNamespaceForbiddenNull () {
+        try {
+            final XQueryContext context = new XQueryContext();
+            context.declareNamespace("xml", null);
+            fail("XML prefix was rebound");
+        } catch (XPathException e) {
+            assertEquals("err:XQST0070 Namespace predefined prefix 'xml' can not be bound", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testXmlNsProtected () {
+        try {
+            final XQueryContext context = new XQueryContext();
+            context.declareNamespace("test", XMLConstants.XML_NS_URI);
+            fail("XML namespace was rebound");
+        } catch (XPathException e) {
+            assertEquals(
+                    "err:XQST0070 Namespace URI 'http://www.w3.org/XML/1998/namespace' must be bound to the 'xml' prefix",
+                    e.getMessage());
+        }
     }
 }
