@@ -787,74 +787,70 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public void declareNamespace(String prefix, String uri) throws XPathException {
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        if (uri == null) {
-            uri = "";
-        }
-
+    public void declareNamespace(final String prefix, final String uri) throws XPathException {
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0070, "Namespace predefined prefix '" + prefix + "' can not be bound");
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "Namespace predefined prefix '" + prefix + "' can not be bound");
         }
 
-        if (uri.equals(XML_NS)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0070, "Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
+        if (XML_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "Namespace URI '" + uri + "' must be bound to the 'xml' prefix");
         }
 
-        final String prevURI = staticNamespaces.get(prefix);
+        final String nonNullPrefix = prefix == null ?  "" : prefix;
+        final String nonNullUri = uri == null ? "" : uri;
 
         //This prefix was not bound
-        if (prevURI == null) {
-
-            if (uri.isEmpty()) {
+        if (!staticNamespaces.containsKey(nonNullPrefix)) {
+            if (nonNullUri.isEmpty()) {
                 //Nothing to bind
-
                 //TODO : check the specs : unbinding an NS which is not already bound may be disallowed.
+                // FIXME (JL): despite the log message nothing happens in this execution branch
                 LOG.warn("Unbinding unbound prefix '{}'", prefix);
             } else {
                 //Bind it
-                staticNamespaces.put(prefix, uri);
-                staticPrefixes.put(uri, prefix);
+                staticNamespaces.put(nonNullPrefix, nonNullUri);
+                staticPrefixes.put(nonNullUri, nonNullPrefix);
             }
-
-        } else {
-            //This prefix was bound
-
-            //Unbind it
-            if (uri.isEmpty()) {
-                // if an empty namespace is specified,
-                // remove any existing mapping for this namespace
-                //TODO : improve, since XML_NS can't be unbound
-                staticPrefixes.remove(uri);
-                staticNamespaces.remove(prefix);
-                return;
-            }
-
-            //those prefixes can be rebound to different URIs
-            if (("xs".equals(prefix) && Namespaces.SCHEMA_NS.equals(prevURI))
-                    || ("xsi".equals(prefix) && Namespaces.SCHEMA_INSTANCE_NS.equals(prevURI))
-                    || ("xdt".equals(prefix) && Namespaces.XPATH_DATATYPES_NS.equals(prevURI))
-                    || ("fn".equals(prefix) && Namespaces.XPATH_FUNCTIONS_NS.equals(prevURI))
-                    || ("math".equals(prefix)) && Namespaces.XPATH_FUNCTIONS_MATH_NS.equals(prevURI)
-                    || ("local".equals(prefix) && Namespaces.XQUERY_LOCAL_NS.equals(prevURI))) {
-
-                staticPrefixes.remove(prevURI);
-                staticNamespaces.remove(prefix);
-
-                staticNamespaces.put(prefix, uri);
-                staticPrefixes.put(uri, prefix);
-
-            } else {
-
-                //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
-                if (!uri.equals(prevURI)) {
-                    throw new XPathException(rootExpression, ErrorCodes.XQST0033, "Cannot bind prefix '" + prefix + "' to '" + uri + "' it is already bound to '" + prevURI + "'");
-                }
-            }
+            return;
         }
+
+        //This prefix was bound
+        final String prevURI = staticNamespaces.get(nonNullPrefix);
+        //Unbind it
+        if (nonNullUri.isEmpty()) {
+            // if an empty namespace is specified,
+            // remove any existing mapping for this namespace
+            // FIXME (JL): this allows to rebind namespaces to a different URI
+            staticPrefixes.remove(nonNullUri);
+            staticNamespaces.remove(nonNullPrefix);
+            return;
+        }
+
+        //those prefixes can be rebound to different URIs
+        if (("xs".equals(nonNullPrefix) && Namespaces.SCHEMA_NS.equals(prevURI))
+                || ("xsi".equals(nonNullPrefix) && Namespaces.SCHEMA_INSTANCE_NS.equals(prevURI))
+                || ("xdt".equals(nonNullPrefix) && Namespaces.XPATH_DATATYPES_NS.equals(prevURI))
+                || ("fn".equals(nonNullPrefix) && Namespaces.XPATH_FUNCTIONS_NS.equals(prevURI))
+                || ("math".equals(nonNullPrefix)) && Namespaces.XPATH_FUNCTIONS_MATH_NS.equals(prevURI)
+                || ("local".equals(nonNullPrefix) && Namespaces.XQUERY_LOCAL_NS.equals(prevURI))) {
+
+            staticPrefixes.remove(prevURI);
+            staticNamespaces.remove(nonNullPrefix);
+
+            staticNamespaces.put(nonNullPrefix, nonNullUri);
+            staticPrefixes.put(nonNullUri, nonNullPrefix);
+            return;
+        }
+        //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
+        if (!nonNullUri.equals(prevURI)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0033,
+                    "Cannot bind prefix '" + prefix + "' to '" + nonNullUri + "' it is already bound to '" + prevURI + "'");
+        }
+
+        // FIXME (JL): function call can end up in unhandled case
+        // e.g. declareNamespace(null,null)
     }
 
     @Override
