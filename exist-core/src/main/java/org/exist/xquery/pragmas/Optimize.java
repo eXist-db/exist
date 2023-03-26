@@ -47,7 +47,7 @@ public class Optimize extends Pragma {
 
     private boolean enabled = true;
     private XQueryContext context;
-    private Optimizable optimizables[];
+    private Optimizable[] optimizables;
     private Expression innerExpr = null;
     private LocationStep contextStep = null;
     private VariableReference contextVar = null;
@@ -61,17 +61,20 @@ public class Optimize extends Pragma {
         this(null, context, pragmaName, contents, explicit);
     }
     
-    public Optimize(final Expression expression, XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
+    public Optimize(final Expression expression, final XQueryContext context, final QName pragmaName, final String contents, boolean explicit) throws XPathException {
         super(expression, pragmaName, contents);
         this.context = context;
         this.enabled = explicit || context.optimizationsEnabled();
-        if (contents != null && contents.length() > 0) {
-            final String param[] = Option.parseKeyValuePair(contents);
-            if (param == null)
-                {throw new XPathException((Expression) null, "Invalid content found for pragma exist:optimize: " + contents);}
-            if ("enable".equals(param[0])) {
-                enabled = "yes".equals(param[1]);
-            }
+        if (contents == null || contents.isEmpty()) {
+            return;
+        }
+        final String[] param = Option.parseKeyValuePair(contents);
+        if (param == null) {
+            throw new XPathException((Expression) null,
+                    "Invalid content found for pragma exist:optimize: " + contents);
+        }
+        if ("enable".equals(param[0])) {
+            enabled = "yes".equals(param[1]);
         }
     }
 
