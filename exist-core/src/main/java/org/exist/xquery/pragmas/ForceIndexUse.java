@@ -27,12 +27,11 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 public class ForceIndexUse extends Pragma {
-	
+    public static final String LOCAL_NAME = "force-index-use";
+    public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA =  new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+
 	Expression expression;
 	boolean bailout = true;
-
-	public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA = 
-		 new QName("force-index-use", Namespaces.EXIST_NS, "exist");
 
     public ForceIndexUse(QName qname, String contents) throws XPathException {
         this(null, qname, contents);

@@ -40,8 +40,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Optimize extends Pragma {
-
-    public  final static QName OPTIMIZE_PRAGMA = new QName("optimize", Namespaces.EXIST_NS, "exist");
+    public final static String LOCAL_NAME = "optimize";
+    public final static QName OPTIMIZE_PRAGMA = new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
     private final static Logger LOG = LogManager.getLogger(Optimize.class);
 
