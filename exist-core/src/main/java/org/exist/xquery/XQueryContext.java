@@ -1620,7 +1620,6 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @SuppressWarnings("unchecked")
     Module initBuiltInModule(final String namespaceURI, final String moduleClass) {
-        Module module = null;
         try {
             // lookup the class
             final ClassLoader existClassLoader = getBroker().getBrokerPool().getClassLoader();
@@ -1630,16 +1629,17 @@ public class XQueryContext implements BinaryValueManager, Context {
                 LOG.info("failed to load module. {} is not an instance of org.exist.xquery.Module.", moduleClass);
                 return null;
             }
-            //instantiateModule( namespaceURI, (Class<Module>)mClass );
             // INOTE: expathrepo
-            module = instantiateModule(namespaceURI, (Class<Module>) mClass, (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+            final Module module = instantiateModule(namespaceURI, (Class<Module>) mClass,
+                    (Map<String, Map<String, List<?>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("module {} loaded successfully.", module.getNamespaceURI());
             }
+            return module;
         } catch (final ClassNotFoundException e) {
             LOG.warn("module class {} not found. Skipping...", moduleClass);
+            return null;
         }
-        return module;
     }
 
     @SuppressWarnings("unchecked")
