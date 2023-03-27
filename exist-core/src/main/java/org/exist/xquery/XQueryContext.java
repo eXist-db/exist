@@ -3481,35 +3481,29 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         sb.append("inScopePrefixes: {");
-        if (inScopePrefixes != null) {
-            for (final Map.Entry<String, String> entry : inScopePrefixes.entrySet()) {
-                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
-            }
+        for (final Map.Entry<String, String> entry : inScopePrefixes.entrySet()) {
+            sb.append(entry.getKey()).append("-> ").append(entry.getValue());
         }
         sb.append('}');
         sb.append('\n');
 
         sb.append("inScopeNamespaces: {");
-        if (inScopeNamespaces != null) {
-            for (final Map.Entry<String, String> entry : inScopeNamespaces.entrySet()) {
-                sb.append(entry.getKey()).append("-> ").append(entry.getValue());
-            }
+        for (final Map.Entry<String, String> entry : inScopeNamespaces.entrySet()) {
+            sb.append(entry.getKey()).append("-> ").append(entry.getValue());
         }
         sb.append('}');
         sb.append('\n');
 
         sb.append("modules: {");
-        if (modules != null) {
-            for (final Map.Entry<String, Module[]> entry : modules.entrySet()) {
-                sb.append(entry.getKey()).append("-> ");
-                for (final Module module : modules.get(entry.getKey())) {
-                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
-                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
-                    sb.append("description: ").append(module.getDescription()).append('\n');
-                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
-                        final QName qName = it.next();
-                        sb.append(qName).append(';');
-                    }
+        for (final Map.Entry<String, Module[]> entry : modules.entrySet()) {
+            sb.append(entry.getKey()).append("-> ");
+            for (final Module module : modules.get(entry.getKey())) {
+                sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                sb.append("description: ").append(module.getDescription()).append('\n');
+                for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                    final QName qName = it.next();
+                    sb.append(qName).append(';');
                 }
             }
         }
@@ -3517,17 +3511,15 @@ public class XQueryContext implements BinaryValueManager, Context {
         sb.append('\n');
 
         sb.append("allModules: {");
-        if (allModules != null) {
-            for (final Map.Entry<String, Module[]> entry : allModules.entrySet()) {
-                sb.append(entry.getKey()).append("-> ");
-                for (final Module module : allModules.get(entry.getKey())) {
-                    sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
-                    sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
-                    sb.append("description: ").append(module.getDescription()).append('\n');
-                    for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
-                        final QName qName = it.next();
-                        sb.append(qName).append(';');
-                    }
+        for (final Map.Entry<String, Module[]> entry : allModules.entrySet()) {
+            sb.append(entry.getKey()).append("-> ");
+            for (final Module module : allModules.get(entry.getKey())) {
+                sb.append("namespaceURI: ").append(module.getNamespaceURI()).append('\n');
+                sb.append("defaultPrefix: ").append(module.getDefaultPrefix()).append('\n');
+                sb.append("description: ").append(module.getDescription()).append('\n');
+                for (final Iterator<QName> it = module.getGlobalVariables(); it.hasNext(); ) {
+                    final QName qName = it.next();
+                    sb.append(qName).append(';');
                 }
             }
         }
