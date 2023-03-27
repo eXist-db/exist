@@ -2946,34 +2946,26 @@ public class XQueryContext implements BinaryValueManager, Context {
         } catch (final QName.IllegalQNameException e) {
             throw new XPathException(rootExpression, ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
-
-        if (qname.getNamespaceURI().isEmpty()) {
-            throw new XPathException(rootExpression, "XPST0081: pragma's ('" + name + "') namespace URI is empty");
-        } else if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
-            contents = StringValue.trimWhitespace(contents);
-
-            if (TimerPragma.TIMER_PRAGMA.equals(qname)) {
-                return new TimerPragma(rootExpression, qname, contents);
-            }
-
-            if (Optimize.OPTIMIZE_PRAGMA.equals(qname)) {
-                return new Optimize(rootExpression, this, qname, contents, true);
-            }
-
-            if (ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equals(qname)) {
-                return new ForceIndexUse(rootExpression, qname, contents);
-            }
-
-            if (ProfilePragma.PROFILING_PRAGMA.equals(qname)) {
-                return new ProfilePragma(rootExpression, qname, contents);
-            }
-
-            if (NoIndexPragma.NO_INDEX_PRAGMA.equals(qname)) {
-                return new NoIndexPragma(rootExpression, qname, contents);
-            }
+        final String ns = qname.getNamespaceURI();
+        if (ns.isEmpty()) {
+            throw new XPathException(rootExpression, ErrorCodes.XPST0081, "XPST0081: pragma's ('" + name + "') namespace URI is empty");
         }
 
-        return null;
+        if (!Namespaces.EXIST_NS.equals(ns)) {
+            // TODO(JL): should we throw or a least warn here?
+            return null;
+        }
+
+        final String sanitizedContents = StringValue.trimWhitespace(contents);
+
+        return switch(qname.getLocalPart()) {
+            case Optimize.LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
+            case TimerPragma.LOCAL_NAME -> new TimerPragma(rootExpression, qname, sanitizedContents);
+            case ProfilePragma.LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
+            case ForceIndexUse.LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
+            case NoIndexPragma.LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);
+            default -> null;
+        };
     }
 
     @Override
