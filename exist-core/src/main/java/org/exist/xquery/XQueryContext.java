@@ -85,10 +85,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Collations;
-import org.exist.util.CollectionOfArrayIterator;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
+import org.exist.util.*;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
@@ -105,7 +102,7 @@ import static javax.xml.XMLConstants.XML_NS_PREFIX;
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 import static org.exist.Namespaces.XML_NS;
-import static org.exist.util.MapUtil.HashMap;
+import static org.exist.util.MapUtil.hashMap;
 
 /**
  * The current XQuery execution context. Contains the static as well as the dynamic
@@ -413,7 +410,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private HttpContext httpContext = null;
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
-    private final Map<QName, DecimalFormat> staticDecimalFormats = HashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
+    private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
 
     // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
     private Optional<ExistRepository> testRepository = Optional.empty();

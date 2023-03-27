@@ -54,8 +54,9 @@ public interface MapUtil {
      *
      * @return The HashMap
      */
-    static <K, V> Map<K,V> HashMap(final Tuple2<K, V>... entries) {
-        return HashMap(Math.max(entries.length, 16), entries);
+    @SafeVarargs
+    static <K, V> Map<K,V> hashMap(final Tuple2<K, V>... entries) {
+        return hashMap(Math.max(entries.length, 16), entries);
     }
 
     /**
@@ -69,7 +70,8 @@ public interface MapUtil {
      *
      * @return The HashMap
      */
-    static <K, V> Map<K,V> HashMap(final int initialCapacity, final Tuple2<K, V>... entries) {
+    @SafeVarargs
+    static <K, V> Map<K,V> hashMap(final int initialCapacity, final Tuple2<K, V>... entries) {
         final Map<K, V> map = new HashMap<>(initialCapacity);
         for (final Tuple2<K, V> entry : entries) {
             map.put(entry._1, entry._2);
