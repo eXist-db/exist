@@ -39,6 +39,8 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.lang.System.arraycopy;
+
 public class Optimize extends Pragma {
     public final static String LOCAL_NAME = "optimize";
     public final static QName OPTIMIZE_PRAGMA = new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
@@ -203,8 +205,8 @@ public class Optimize extends Pragma {
         innerExpr.accept(new BasicExpressionVisitor() {
 
             public void visitPathExpr(PathExpr expression) {
-                for (int i = 0; i < expression.getLength(); i++) {
-                    final Expression next = expression.getExpression(i);
+                for (int i = 0; i < expression.getSubExpressionCount(); i++) {
+                    final Expression next = expression.getSubExpression(i);
                     next.accept(this);
                 }
             }
@@ -275,21 +277,24 @@ public class Optimize extends Pragma {
 
     private void addOptimizable(Optimizable optimizable) {
         final int axis = optimizable.getOptimizeAxis();
+
         if (!(axis == Constants.CHILD_AXIS || axis == Constants.SELF_AXIS || axis == Constants.DESCENDANT_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
                 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
             // reverse axes cannot be optimized
             return;
         }
+
         if (optimizables == null) {
             optimizables = new Optimizable[1];
             optimizables[0] = optimizable;
-        } else {
-            Optimizable[] o = new Optimizable[optimizables.length + 1];
-            System.arraycopy(optimizables, 0, o, 0, optimizables.length);
-            o[optimizables.length] = optimizable;
-            optimizables = o;
+            return;
         }
+
+        Optimizable[] o = new Optimizable[optimizables.length + 1];
+        arraycopy(optimizables, 0, o, 0, optimizables.length);
+        o[optimizables.length] = optimizable;
+        optimizables = o;
     }
 
     public void resetState(boolean postOptimization) {
@@ -311,41 +316,50 @@ public class Optimize extends Pragma {
             return Type.ITEM;
         }
 
-        final String enforceIndexUse =
+        final String enforceIndexUseValue =
                 (String) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_ENFORCE_INDEX_USE);
+        final boolean enforceIndexUse = enforceIndexUseValue != null;
+        final boolean alwaysEnforceIndexUse = enforceIndexUse && "always".equals(enforceIndexUseValue);
+
         int indexType = Type.ITEM;
+
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            final Collection collection = i.next();
-            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
-                continue;
-            }
-            final QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
-            if (config == null) {
-                // no index found for this collection
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("Cannot optimize: collection {} does not define an index on {}", collection.getURI(), qname);
+            try (Collection collection = i.next()) {
+                // always skip system collection
+                if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                    continue;
                 }
-                // if enfoceIndexUse == "always", continue to check other collections
-                // for indexes. It is sufficient if one collection defines an index
-                if (enforceIndexUse == null || !"always".equals(enforceIndexUse)) {
-                    return Type.ITEM;
-                }   // found a collection without index
-            } else {
-                int type = config.getType();
-                if (indexType == Type.ITEM) {
-                    indexType = type;
-                    // if enforceIndexUse == "always", it is sufficient if one collection
-                    // defines an index. Just return it.
-                    if (enforceIndexUse != null && "always".equals(enforceIndexUse)) {
-                        return indexType;
-                    }
-                } else if (indexType != type) {
-                    // found an index with a bad type. cannot optimize.
-                    // TODO: should this continue checking other collections?
+                // load index configuration for current collection
+                final QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
+                if (config == null) {
+                    // no index found for this collection
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Cannot optimize: collection {} does not define an index with the required type {} on {}", collection.getURI(), Type.getTypeName(type), qname);
+                        LOG.trace("Cannot optimize: collection {} does not define an index on {}",
+                                collection.getURI(), qname);
                     }
-                    return Type.ITEM;   // found a collection with a different type
+                    // If enforceIndexUse is set to "always" we have to continue to check other collections
+                    // for indexes. Otherwise, it is sufficient if one collection defines an index.
+                    if (!enforceIndexUse || !alwaysEnforceIndexUse) {
+                        return Type.ITEM;
+                    }   // found a collection without index
+                } else {
+                    int type = config.getType();
+                    if (indexType == Type.ITEM) {
+                        indexType = type;
+                        // If enforceIndexUse is set to "always", it is sufficient if only one collection
+                        // defines an index. Just return it.
+                        if (alwaysEnforceIndexUse) {
+                            return indexType;
+                        }
+                    } else if (indexType != type) {
+                        // Found an index with a bad type. cannot optimize.
+                        // TODO: should this continue checking other collections?
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("Cannot optimize: collection {} does not define an index with the required type {} on {}",
+                                    collection.getURI(), Type.getTypeName(type), qname);
+                        }
+                        return Type.ITEM;   // found a collection with a different type
+                    }
                 }
             }
         }
