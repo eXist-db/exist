@@ -170,7 +170,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     private boolean inheritNamespaces = true;
 
     // Local namespace stack
-    private Deque<Map<String, String>> namespaceStack = new ArrayDeque<>();
+    private final Deque<Map<String, String>> namespaceStack = new ArrayDeque<>();
 
     // Known user defined functions in the local module
     private Map<FunctionId, UserDefinedFunction> declaredFunctions = new Object2ObjectAVLTreeMap<>();
@@ -183,16 +183,16 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private Deque<LocalVariable> contextStack = new ArrayDeque<>();
 
-    private Deque<FunctionSignature> callStack = new ArrayDeque<>();
+    private final Deque<FunctionSignature> callStack = new ArrayDeque<>();
 
     // The current size of the variable stack
     private int variableStackSize = 0;
 
     // Unresolved references to user defined functions
-    private Deque<FunctionCall> forwardReferences = new ArrayDeque<>();
+    private final Deque<FunctionCall> forwardReferences = new ArrayDeque<>();
 
     // Inline functions using closures need to be cleared after execution
-    private Deque<UserDefinedFunction> closures = new ArrayDeque<>();
+    private final Deque<UserDefinedFunction> closures = new ArrayDeque<>();
 
     // List of options declared for this query at compile time - i.e. declare option
     private List<Option> staticOptions = new ArrayList<>();
@@ -228,7 +228,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Used to save current state when modules are imported dynamically
      */
-    private SavedState savedState = new SavedState();
+    private final SavedState savedState = new SavedState();
 
     /**
      * Whether some modules were rebound to new instances since the last time this context's query was analyzed. (This assumes that each context is
@@ -1639,19 +1639,22 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> mClazz,
-            final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
-        Module module = null;
+            final Map<String, Map<String, List<?>>> moduleParameters) {
         try {
-            try {
-                // attempt for a constructor that takes 1 argument
-                final Constructor<Module> cstr1 = mClazz.getConstructor(Map.class);
-                module = cstr1.newInstance(moduleParameters.get(namespaceURI));
+            final Constructor<Module> constructor = XQueryContext.getModuleConstructor(mClazz);
 
-            } catch (final NoSuchMethodException nsme) {
+            if (constructor == null) {
+                LOG.warn("Module {} has no matching public constructor!", mClazz.getName());
+                return null;
+            }
+
+            final Module module;
+            if (constructor.getParameterCount() == 1) {
+                module = constructor.newInstance(moduleParameters.get(namespaceURI));
+            } else {
                 // attempt for a constructor that takes 0 arguments
-                module = mClazz.newInstance();
+                module = constructor.newInstance();
             }
 
             if (namespaceURI != null && !module.getNamespaceURI().equals(namespaceURI)) {
@@ -1669,11 +1672,25 @@ public class XQueryContext implements BinaryValueManager, Context {
             if (module instanceof InternalModule) {
                 ((InternalModule) module).prepare(this);
             }
+            return module;
         } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | XPathException e) {
             LOG.warn("error while instantiating module class {}", mClazz.getName(), e);
+            return null;
         }
+    }
 
-        return module;
+    private static @Nullable Constructor<Module> getModuleConstructor(Class<Module> moduleClazz) {
+        try {
+            // prefer constructor that takes one Map argument
+            return moduleClazz.getConstructor(Map.class);
+        } catch (final NoSuchMethodException noPreferredConstructor) {
+            // attempt for a constructor that takes 0 arguments
+            try {
+                return moduleClazz.getConstructor();
+            } catch (final NoSuchMethodException noUsableConstructor) {
+                return null;
+            }
+        }
     }
 
     private static BiFunction<String, Module[], Module[]> addToMapValueArray(final Module module) {
