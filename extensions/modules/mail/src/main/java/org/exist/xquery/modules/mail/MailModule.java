@@ -71,6 +71,7 @@ public class MailModule extends AbstractInternalModule {
 	
     private final static FunctionDef[] functions = {
         new FunctionDef(MailSessionFunctions.signatures[0], MailSessionFunctions.class),
+        new FunctionDef(MailSessionFunctions.signatures[1], MailSessionFunctions.class),
         new FunctionDef(MailStoreFunctions.signatures[0], MailStoreFunctions.class),
         new FunctionDef(MailStoreFunctions.signatures[1], MailStoreFunctions.class),
         new FunctionDef(MailFolderFunctions.signatures[0], MailFolderFunctions.class),

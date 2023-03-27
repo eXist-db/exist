@@ -58,6 +58,7 @@ import org.exist.util.UUIDGenerator;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -68,7 +69,7 @@ import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.EnumSet;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -90,13 +91,25 @@ public class SendEmailIT {
         JAKARTA_MAIL
     }
 
-    @Parameterized.Parameters(name = "{0}")
-    public static java.util.Collection<SmtpImplementation> data() {
-        return EnumSet.allOf(SmtpImplementation.class);
+    enum AuthenticationOption {
+        NOT_AUTHENTICATED,
+        AUTHENTICATED
     }
 
-    @Parameterized.Parameter
+    @Parameterized.Parameters(name = "{0} {1}")
+    public static java.util.Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                { SmtpImplementation.SMTP_DIRECT_CONNECTION, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.NOT_AUTHENTICATED },
+                { SmtpImplementation.JAKARTA_MAIL, AuthenticationOption.AUTHENTICATED },
+        });
+    }
+
+    @Parameterized.Parameter(0)
     public SmtpImplementation smtpImplementation;
+
+    @Parameterized.Parameter(1)
+    public AuthenticationOption authenticationOption;
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -106,6 +119,9 @@ public class SendEmailIT {
     private static final String XML_DOC1_CONTENT = "<uuid>" + UUIDGenerator.getUUIDversion4() + "</uuid>";
     private static final XmldbURI BIN_DOC1_NAME = XmldbURI.create("doc 1.bin");     // NOTE(AR) intentionally contains a space character to test correct encoding/decoding
     private static final byte[] BIN_DOC1_CONTENT = UUIDGenerator.getUUIDversion4().getBytes(UTF_8);
+
+    private static final String EMAIL_UID = "emailuid";
+    private static final String EMAIL_PWD = "emailpwd";
 
     private final int smtpPort = nextFreePort(2525, 2599, 10);
 
@@ -124,6 +140,13 @@ public class SendEmailIT {
              }
 
             transaction.commit();
+        }
+    }
+
+    @Before
+    public void setSmtpAuth() {
+        if (authenticationOption == AuthenticationOption.AUTHENTICATED) {
+            greenMail.setUser(EMAIL_UID, EMAIL_PWD);
         }
     }
 
@@ -528,6 +551,10 @@ public class SendEmailIT {
     }
 
     private MimeMessage sendEmailBySmtpDirectConnection(final String message, @Nullable final String[] attachmentPaths) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
+        if (authenticationOption == AuthenticationOption.AUTHENTICATED) {
+            throw new UnsupportedOperationException("Authentication is not yet implemented by SMTP direct connection");
+        }
+
         final String from = "sender@place1.com";
         final String to = "recipient@place2.com";
         final String subject = "some email subject";
@@ -601,7 +628,7 @@ public class SendEmailIT {
             tmpAttachmentPaths = "'" + tmpAttachmentPaths + "'";
         }
 
-        final String query =
+        String query =
                 "import module namespace mail = \"http://exist-db.org/xquery/mail\";\n" +
                         "let $attachments := \n" +
                         "    for $attachment-path in (" + tmpAttachmentPaths + ")\n" +
@@ -619,8 +646,20 @@ public class SendEmailIT {
                         "      <properties>\n" +
                         "          <property name=\"mail.transport.protocol\" value=\"smtp\"/>\n" +
                         "          <property name=\"mail.smtp.port\" value=\"" + smtpPort + "\"/>\n" +
-                        "          <property name=\"mail.smtp.host\" value=\"127.0.0.1\"/>\n" +
+                        "          <property name=\"mail.smtp.host\" value=\"127.0.0.1\"/>\n";
+
+        if (authenticationOption == AuthenticationOption.AUTHENTICATED) {
+            query +=
+                    "          <property name=\"mail.smtp.auth\" value=\"true\"/>" +
                         "      </properties>\n" +
+                    ", \n" +
+                    "<authentication username='" + EMAIL_UID + "' password='" + EMAIL_PWD + "'/>";
+        } else {
+            query +=
+                    "      </properties>\n";
+        }
+
+        query +=
                         ")\n" +
                         "  return\n" +
                         "    mail:send-email(\n" +
