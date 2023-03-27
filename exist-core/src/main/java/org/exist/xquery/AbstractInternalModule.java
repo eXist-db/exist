@@ -29,16 +29,15 @@ import org.exist.xquery.value.Sequence;
 import javax.annotation.Nullable;
 
 /**
- * Abstract base class for an {@link org.exist.xquery.InternalModule}. 
+ * Abstract base class for an {@link org.exist.xquery.InternalModule}.
  * Functions are defined in an array of {@link org.exist.xquery.FunctionDef}, which
  * is passed to the constructor. A single implementation class
  * can be registered for more than one function signature, given that the signatures differ
  * in name or the number of expected arguments. It is thus possible to implement
  * similar XQuery functions in one single class.
- * 
+ *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @author ljo
- *
  */
 public abstract class AbstractInternalModule implements InternalModule {
 
@@ -51,18 +50,16 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     protected final FunctionDef[] mFunctions;
     protected final boolean ordered;
-    private final Map<String, List<? extends Object>> parameters;
+    private final Map<String, List<?>> parameters;
 
     protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
 
-    public AbstractInternalModule(final FunctionDef[] functions,
-            final Map<String, List<? extends Object>> parameters) {
+    public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters) {
         this(functions, parameters, false);
     }
 
-    public AbstractInternalModule(final FunctionDef[] functions,
-            final Map<String, List<? extends Object>> parameters,
-            final boolean functionsOrdered) {
+    public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters,
+                                  final boolean functionsOrdered) {
         this.mFunctions = functions;
         this.ordered = functionsOrdered;
         this.parameters = parameters;
@@ -77,10 +74,9 @@ public abstract class AbstractInternalModule implements InternalModule {
      * Get a parameter.
      *
      * @param paramName the name of the parameter
-     *
      * @return the value of tyhe parameter
      */
-    protected List<? extends Object> getParameter(final String paramName) {
+    protected List<?> getParameter(final String paramName) {
         return parameters.get(paramName);
     }
 
@@ -96,7 +92,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     @Override
     public FunctionSignature[] listFunctions() {
-        final FunctionSignature signatures[] = new FunctionSignature[mFunctions.length];
+        final FunctionSignature[] signatures = new FunctionSignature[mFunctions.length];
         for (int i = 0; i < signatures.length; i++) {
             signatures[i] = mFunctions[i].getSignature();
         }
@@ -167,7 +163,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     /**
      * Declares a variable defined by the module.
-     *
+     * <p>
      * NOTE: this should not be called from the constructor of a module
      * otherwise when {@link #reset(XQueryContext, boolean)} is called
      * with {@code keepGlobals = false}, the variables will be removed
@@ -178,7 +174,6 @@ public abstract class AbstractInternalModule implements InternalModule {
      *
      * @param qname The name of the variable
      * @param value The Java value of the variable, will be converted to an XDM type.
-     *
      * @return the variable
      */
     @Override
@@ -195,7 +190,7 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     /**
      * Declares a variable defined by the module.
-     *
+     * <p>
      * NOTE: this should not be called from the constructor of a module
      * otherwise when {@link #reset(XQueryContext, boolean)} is called
      * with {@code keepGlobals = false}, the variables will be removed
@@ -205,7 +200,6 @@ public abstract class AbstractInternalModule implements InternalModule {
      * in {@link #prepare(XQueryContext)}.
      *
      * @param var The variable
-     *
      * @return the variable
      */
     @Override
@@ -215,12 +209,14 @@ public abstract class AbstractInternalModule implements InternalModule {
     }
 
     @Override
-    @Nullable public Variable resolveVariable(final QName qname) throws XPathException {
+    @Nullable
+    public Variable resolveVariable(final QName qname) throws XPathException {
         return resolveVariable(null, qname);
     }
 
     @Override
-    @Nullable public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
+    @Nullable
+    public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         return mGlobalVariables.get(qname);
     }
 
