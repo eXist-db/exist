@@ -580,82 +580,58 @@ declare %private function test:xdm-value-from-annotation-value($annotation-value
             )
 };
 
-declare %private function test:cast($targs as element(value)*, $farg as element(argument)) {
-    for $targ in $targs
-    let $varg := test:xdm-value-from-annotation-value($targ)
+declare %private function test:cast(
+    $annotation-arg-values as element(value)*,
+    $function-argument as element(argument)
+) {
+    for $annotation-arg-value in $annotation-arg-values
+    let $literal-value := test:xdm-value-from-annotation-value($annotation-arg-value)
     return
-        switch (string($farg/@type))
-            case "xs:string"
-            return
-                if ($varg instance of xs:string)
-                then
-                    $varg
-                else
-                    string($varg)
+        switch (string($function-argument/@type))
+            case "xs:string" return
+                if ($literal-value instance of xs:string)
+                then $literal-value
+                else xs:string($literal-value)
 
-            case "xs:integer"
-            return
-                if ($varg instance of xs:integer)
-                then
-                    $varg
-                else
-                    xs:integer($varg)
+            case "xs:integer" return
+                if ($literal-value instance of xs:integer)
+                then $literal-value
+                else xs:integer($literal-value)
 
-            case "xs:int"
-            return
-                xs:int($varg)
+            case "xs:decimal" return
+                if ($literal-value instance of xs:decimal)
+                then $literal-value
+                else xs:decimal($literal-value)
 
-            case "xs:decimal"
-            return
-                if ($varg instance of xs:decimal)
-                then
-                    $varg
-                else
-                    xs:decimal($varg)
+            case "xs:double" return
+                if ($literal-value instance of xs:double)
+                then $literal-value
+                else xs:double($literal-value)
 
-            case "xs:float"
-            return
-                xs:float($varg)
+            case "xs:boolean"           return xs:boolean($literal-value)
+            case "xs:anyURI"            return xs:anyURI($literal-value)
 
-            case "xs:double"
-            return
-                if ($varg instance of xs:decimal)
-                then
-                    $varg
-                else
-                    xs:double($varg)
+            case "xs:NCName"            return xs:NCName($literal-value)
+            case "xs:QName"             return xs:QName($literal-value)
 
-            case "xs:date"
-            return
-                xs:date($varg)
+            case "xs:numeric"           return xs:numeric($literal-value)
+            case "xs:int"               return xs:int($literal-value)
+            case "xs:positiveInteger"   return xs:positiveInteger($literal-value)
+            case "xs:negativeInteger"   return xs:negativeInteger($literal-value)
+            case "xs:float"             return xs:float($literal-value)
 
-            case "xs:dateTimeStamp"
-            return
-                xs:dateTimeStamp($varg)
+            case "xs:time"              return xs:time($literal-value)
+            case "xs:date"              return xs:date($literal-value)
+            case "xs:dateTime"          return xs:dateTime($literal-value)
+            case "xs:dateTimeStamp"     return xs:dateTimeStamp($literal-value)
 
-            case "xs:dateTime"
-            return
-                xs:dateTime($varg)
+            case "xs:duration"          return xs:duration($literal-value)
+            case "xs:yearMonthDuration" return xs:yearMonthDuration($literal-value)
+            case "xs:dayTimeDuration"   return xs:dayTimeDuration($literal-value)
 
-            case "xs:time"
-            return
-                xs:time($varg)
-
-            case "element()"
-            return
-                fn:parse-xml($varg)/element()
-
-            case "text()"
-            return
-                if ($varg instance of xs:string)
-                then
-                    text { $varg }
-                else
-                    text { xs:string($varg) }
-
-            default
-            return
-                $varg
+            case "text()"               return text { $literal-value }
+            case "element()"            return parse-xml($literal-value)/element()
+            default                     return $literal-value
 };
 
 declare function test:apply($func as function(*), $meta as element(function), $args as item()*) {
@@ -1005,30 +981,33 @@ declare %private function test:cast-to-type($value as item(), $result as item())
     typeswitch ($result)
         case node() return
             parse-xml("<r>" || $value || "</r>")/r/node()
-        case xs:integer return
-            xs:integer($value)
-        case xs:int return
-            xs:int($value)
-        case xs:long return
-            xs:long($value)
-        case xs:decimal return
-            xs:decimal($value)
-        case xs:double return
-            xs:double($value)
-        case xs:float return
-            xs:float($value)
-        case xs:date return
-            xs:date($value)
-        case xs:dateTime return
-            xs:dateTime($value)
-        case xs:time return
-            xs:time($value)
-        case xs:boolean return
-            xs:boolean($value)
-        case xs:anyURI return
-            xs:anyURI($value)
-        default return
-            string($value)
+
+        case xs:integer           return xs:integer($value)
+        case xs:positiveInteger   return xs:positiveInteger($value)
+        case xs:negativeInteger   return xs:negativeInteger($value)
+        case xs:int               return xs:int($value)
+        case xs:long              return xs:long($value)
+        case xs:decimal           return xs:decimal($value)
+        case xs:double            return xs:double($value)
+        case xs:float             return xs:float($value)
+        case xs:numeric           return xs:numeric($value)
+
+        case xs:date              return xs:date($value)
+        case xs:dateTime          return xs:dateTime($value)
+        case xs:time              return xs:time($value)
+
+        case xs:duration          return xs:duration($value)
+        case xs:yearMonthDuration return xs:yearMonthDuration($value)
+        case xs:dayTimeDuration   return xs:dayTimeDuration($value)
+
+        case xs:boolean           return xs:boolean($value)
+
+        case xs:anyURI            return xs:anyURI($value)
+
+        case xs:NCName            return xs:NCName($value)
+        case xs:QName             return xs:QName($value)
+
+        default return string($value)
 };
 
 (: Helper functions to be used by test modules :)
