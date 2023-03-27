@@ -1682,20 +1682,22 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static BiFunction<String, Module[], Module[]> addToMapValueArray(final Module module) {
         return (namespaceURI, modules) -> {
             if (modules == null) {
-                modules = new Module[]{ module };
-            } else {
-                // check if the module is already present
-                for (final Module existingModule : modules) {
-                    if (existingModule == module) {  // NOTE: intentional object identity comparison
-                        return modules;  // already present, no further action needed
-                    }
-                }
-
-                // add the module to the modules
-                modules = Arrays.copyOf(modules, modules.length + 1);
-                modules[modules.length - 1] = module;
+                return new Module[]{ module };
             }
-            return modules;
+
+            // check if the module is already present
+            for (final Module existingModule : modules) {
+                if (existingModule == module) {  // NOTE: intentional object identity comparison
+                    return modules;  // already present, no further action needed
+                }
+            }
+
+            // add the module to the modules
+            final int currentLength = modules.length;
+            final Module[] newModules = Arrays.copyOf(modules, currentLength + 1);
+            // previous length is new last index
+            newModules[currentLength] = module;
+            return newModules;
         };
     }
 
