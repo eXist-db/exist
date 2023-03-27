@@ -95,7 +95,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * </ul>
  *
  * The class should be used in combination with {@link ConsistencyCheck}. The error lists returned by ConsistencyCheck can be passed to {@link
- * #export(BackupHandler, org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.
+ * #export(org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.
  */
 public class SystemExport {
     public final static Logger LOG = LogManager.getLogger(SystemExport.class);
@@ -121,7 +121,6 @@ public class SystemExport {
     private StatusCallback callback = null;
     private boolean directAccess = false;
     private ProcessMonitor.Monitor monitor = null;
-    private BackupHandler bh = null;
     private ChainOfReceiversFactory chainFactory;
 
     public SystemExport(final DBBroker broker, final Txn transaction, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
@@ -140,8 +139,6 @@ public class SystemExport {
         defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 
         contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
-
-        bh = broker.getDatabase().getPluginsManager().getBackupHandler(LOG);
     }
 
     @SuppressWarnings("unchecked")
@@ -370,7 +367,7 @@ public class SystemExport {
      * @throws SAXException
      * @throws TerminatedException DOCUMENT ME!
      */
-    private void export(final BackupHandler bh, final Collection current, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final List<ErrorReport> errorList, final MutableDocumentSet docs) throws IOException, SAXException, TerminatedException, PermissionDeniedException {
+    private void export(final Collection current, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final List<ErrorReport> errorList, final MutableDocumentSet docs) throws IOException, SAXException, TerminatedException, PermissionDeniedException {
 //        if( callback != null ) {
 //            callback.startCollection( current.getURI().toString() );
 //        }
@@ -405,15 +402,11 @@ public class SystemExport {
                 e.printStackTrace();
             }
 
-            bh.backup(current, attr);
-
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
             if (perm instanceof ACLPermission) {
                 Backup.writeACLPermission(serializer, (ACLPermission) perm);
             }
-
-            bh.backup(current, serializer);
 
             final int docsCount = current.getDocumentCountNoLock(broker);
             int count = 0;
@@ -429,7 +422,7 @@ public class SystemExport {
                 if (doc.getFileURI().equalsInternal(CONTENTS_URI) || doc.getFileURI().equalsInternal(LOST_URI)) {
                     continue; // skip __contents__.xml documents
                 }
-                exportDocument(bh, output, date, prevBackup, serializer, docsCount, count, doc);
+                exportDocument(output, date, prevBackup, serializer, docsCount, count, doc);
                 docs.add(doc, false);
             }
 
@@ -479,7 +472,7 @@ public class SystemExport {
     }
 
 
-    private void exportDocument(final BackupHandler bh, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final SAXSerializer serializer, final int docsCount, final int count, final DocumentImpl doc) throws IOException, SAXException, TerminatedException {
+    private void exportDocument(final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final SAXSerializer serializer, final int docsCount, final int count, final DocumentImpl doc) throws IOException, SAXException, TerminatedException {
         if (callback != null) {
             callback.startDocument(doc.getFileURI().toString(), count, docsCount);
         }
@@ -571,14 +564,10 @@ public class SystemExport {
 //            }
 //        }
 
-        bh.backup(doc, attr);
-
         serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
         if (perms instanceof ACLPermission) {
             Backup.writeACLPermission(serializer, (ACLPermission) perms);
         }
-
-        bh.backup(doc, serializer);
 
         serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
     }
@@ -768,7 +757,7 @@ public class SystemExport {
                         lastPercentage = percentage;
                         jmxAgent.updateStatus(broker.getBrokerPool(), percentage);
                     }
-                    export(bh, collection, writer, date, bd, errors, docs);
+                    export(collection, writer, date, bd, errors, docs);
                 }
             } catch (final TerminatedException e) {
                 reportError("Terminating system export upon request", e);
@@ -837,7 +826,7 @@ public class SystemExport {
                         doc.setFileURI(XmldbURI.createInternal(fileURI));
                         writtenDocs.add(fileURI);
                     }
-                    exportDocument(bh, output, date, prevBackup, serializer, 0, 0, doc);
+                    exportDocument(output, date, prevBackup, serializer, 0, 0, doc);
                 } catch (final Exception e) {
                     reportError("Caught an exception while scanning documents: " + e.getMessage(), e);
                 }

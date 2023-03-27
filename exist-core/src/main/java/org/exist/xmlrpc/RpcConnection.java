@@ -3618,14 +3618,6 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public void runCommand(final XmldbURI collectionURI, final List<String> params) throws EXistException, PermissionDeniedException {
-        withDb((broker, transaction) -> {
-            org.exist.plugin.command.Commands.command(collectionURI, params.toArray(new String[0]));
-            return null;
-        });
-    }
-
-    @Override
     public String restore(final String newAdminPassword, final String localFile, final boolean overwriteApps) throws EXistException {
         final int handle = Integer.parseInt(localFile);
         final SerializedResult sr = factory.resultSets.getSerializedResult(handle);

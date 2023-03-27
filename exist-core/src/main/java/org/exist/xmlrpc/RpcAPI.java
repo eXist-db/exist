@@ -988,8 +988,6 @@ public interface RpcAPI {
     boolean setDocType(String documentName, String doctypename, String publicid, String systemid)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    void runCommand(XmldbURI collectionURI, List<String> params) throws EXistException, PermissionDeniedException;
-
     long getSubCollectionCreationTime(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;
 
     Map<String, Object> getSubCollectionPermissions(String parentPath, String name) throws EXistException, PermissionDeniedException, URISyntaxException;

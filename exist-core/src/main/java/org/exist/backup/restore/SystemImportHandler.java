@@ -24,13 +24,8 @@ package org.exist.backup.restore;
 import org.exist.Namespaces;
 import org.exist.backup.BackupDescriptor;
 import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.collections.Collection;
-import org.exist.dom.persistent.LockedDocument;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -45,8 +40,6 @@ import java.util.Set;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class SystemImportHandler extends AbstractRestoreHandler {
-    
-    private final org.exist.backup.RestoreHandler rh;
 
     /**
      * @param broker the database broker
@@ -59,13 +52,11 @@ public class SystemImportHandler extends AbstractRestoreHandler {
     public SystemImportHandler(final DBBroker broker, @Nullable final Txn transaction, final BackupDescriptor descriptor,
             final RestoreListener listener) {
         super(broker, transaction, descriptor, listener, null);
-        this.rh = broker.getDatabase().getPluginsManager().getRestoreHandler();
     }
 
     @Override
     public void startDocument() throws SAXException {
         super.startDocument();
-        rh.startDocument();
     }
 
     @Override
@@ -77,8 +68,6 @@ public class SystemImportHandler extends AbstractRestoreHandler {
                         DELETED_ELEMENT_NAME.equals(localName) ||
                         ACE_ELEMENT_NAME.equals(localName))) {
             super.startElement(namespaceURI, localName, qName, atts);
-        } else {
-            rh.startElement(namespaceURI, localName, qName, atts);
         }
     }
 
@@ -91,8 +80,6 @@ public class SystemImportHandler extends AbstractRestoreHandler {
                         DELETED_ELEMENT_NAME.equals(localName) ||
                         ACE_ELEMENT_NAME.equals(localName))) {
             super.endElement(namespaceURI, localName, qName);
-        } else {
-            rh.endElement(namespaceURI, localName, qName);
         }
     }
 
@@ -101,33 +88,5 @@ public class SystemImportHandler extends AbstractRestoreHandler {
             final BackupDescriptor descriptor, final RestoreListener listener,
             @Nullable final Set<String> pathsToIgnore) {
         return new SystemImportHandler(broker, transaction, descriptor, listener);
-    }
-
-    @Override
-    protected void notifyStartCollectionRestore(final XmldbURI collectionUri, final Attributes attributes) throws PermissionDeniedException {
-        try (final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
-            rh.startCollectionRestore(collection, attributes);
-        }
-    }
-
-    @Override
-    protected void notifyEndCollectionRestore(final XmldbURI collectionUri) throws PermissionDeniedException {
-        try (final Collection collection = broker.openCollection(collectionUri, Lock.LockMode.WRITE_LOCK)) {
-            rh.endCollectionRestore(collection);
-        }
-    }
-
-    @Override
-    protected void notifyStartDocumentRestore(final XmldbURI documentUri, final Attributes attributes) throws PermissionDeniedException {
-        try (final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.WRITE_LOCK)) {
-            rh.startDocumentRestore(lockedDocument.getDocument(), attributes);
-        }
-    }
-
-    @Override
-    protected void notifyEndDocumentRestore(final XmldbURI documentUri) throws PermissionDeniedException {
-        try (final LockedDocument lockedDocument = broker.getXMLResource(documentUri, Lock.LockMode.WRITE_LOCK)) {
-            rh.endDocumentRestore(lockedDocument.getDocument());
-        }
     }
 }

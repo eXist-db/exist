@@ -270,13 +270,5 @@ public class RemoteCollectionManagementService extends AbstractRemoteService imp
         params.add(preserveType);
         collection.execute("copyResource", params);
     }
-
-    @Override
-    public void runCommand(final String[] cmdParams) throws XMLDBException {
-        final List<Object> params = new ArrayList<>();
-        params.add(collection.getPathURI());
-        params.add(cmdParams);
-        collection.execute("runCommand", params);
-    }
 }
 
