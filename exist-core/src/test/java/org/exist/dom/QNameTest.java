@@ -22,13 +22,15 @@
 
 package org.exist.dom;
 
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
 
 import static org.exist.dom.QName.Validity.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -94,6 +96,60 @@ public class QNameTest {
     @Test
     public void isQName_illegalFormat2() {
         assertEquals(ILLEGAL_FORMAT.val, QName.isQName(":emp"));
+    }
+
+    @Test
+    public void testParseEqNameWithDefaultNS() throws XPathException, QName.IllegalQNameException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(XMLConstants.DEFAULT_NS_PREFIX, "a");
+        final QName parsed = QName.parse(context, "Q{a}b", XMLConstants.DEFAULT_NS_PREFIX);
+        assertEquals("b", parsed.getStringValue());
+        assertEquals("a", parsed.getNamespaceURI());
+    }
+    @Test
+    public void testParseEqNameWithNSBound() throws XPathException, QName.IllegalQNameException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("c", "a");
+        final QName parsed = QName.parse(context, "Q{a}b", XMLConstants.DEFAULT_NS_PREFIX);
+        assertEquals("b", parsed.getStringValue());
+        assertEquals("a", parsed.getNamespaceURI());
+    }
+
+    @Test
+    public void testParseInvalidEqName() {
+        try {
+            QName.parse(new XQueryContext(), "Q{:b", XMLConstants.DEFAULT_NS_PREFIX);
+            fail("invalid QName in clark notation was parsed");
+        } catch (Exception e) {
+            assertEquals("No namespace defined for prefix Q{. QName is invalid: INVALID_PREFIX", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testParseClarkNotationWithDefaultNS() throws XPathException, QName.IllegalQNameException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace(XMLConstants.DEFAULT_NS_PREFIX, "a");
+        final QName parsed = QName.parse(context, "{a}b", XMLConstants.DEFAULT_NS_PREFIX);
+        assertEquals("b", parsed.getStringValue());
+        assertEquals("a", parsed.getNamespaceURI());
+    }
+    @Test
+    public void testParseClarkNotationWithNSBound() throws XPathException, QName.IllegalQNameException {
+        final XQueryContext context = new XQueryContext();
+        context.declareNamespace("c", "a");
+        final QName parsed = QName.parse(context, "{a}b", XMLConstants.DEFAULT_NS_PREFIX);
+        assertEquals("b", parsed.getStringValue());
+        assertEquals("a", parsed.getNamespaceURI());
+    }
+
+    @Test
+    public void testParseInvalidClarkNotation() throws XPathException, QName.IllegalQNameException {
+        try {
+            QName.parse(new XQueryContext(), "{a:b", XMLConstants.DEFAULT_NS_PREFIX);
+            fail("invalid QName in clark notation was parsed");
+        } catch (Exception e) {
+            assertEquals("No namespace defined for prefix {a. QName is invalid: INVALID_PREFIX", e.getMessage());
+        }
     }
 }
 

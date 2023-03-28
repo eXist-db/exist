@@ -88,8 +88,10 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      */
     public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
 
+    /**
+     * '/db/system/config' collection name
+     */
     @Deprecated
-    /** '/db/system/config' collection name */
     public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
 
     /**
@@ -139,17 +141,18 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     }
 
     /**
-     * Contructs an XmldbURI from given URI. The provided URI must have the XMLDB_SCHEME ("xmldb")
+     * Constructs an XmldbURI from given URI. The provided URI must have the XMLDB_SCHEME ("xmldb")
      *
-     * @param xmldbURI A string
-     * @param mustHaveXMLDB true if the provided shceme must be xmldb
+     * @param xmldbURI      A string
+     * @param mustHaveXMLDB true if the provided scheme must be xmldb
      * @throws URISyntaxException If the given string is not a valid xmldb URI.
      */
     protected XmldbURI(URI xmldbURI, final boolean mustHaveXMLDB) throws URISyntaxException {
         final String uriStr = xmldbURI.toString().trim();
 
         if (!".".equals(uriStr) && !"..".equals(uriStr) && !uriStr.endsWith("/.") && !uriStr.endsWith("/..")) {
-            // Only normalize if uri is not "." or ".." or doesn't end with "/." or "/.." .  If it's a dot uri, then the final segment is assumed to be a document name
+            // Only normalize if uri is not "." or ".." or doesn't end with "/." or "/.." .
+            // If it's a dot uri, then the final segment is assumed to be a document name
             xmldbURI = xmldbURI.normalize();
         }
 
@@ -260,19 +263,6 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             return new FullXmldbURI(uri);
         }
         return new XmldbURI(uri);
-        /*
-        //TODO : get rid of this and use a more robust approach (dedicated constructor ?) -pb
-        //TODO : use named constants
-        index = path.lastIndexOf("/xmlrpc");
-        if (index > lastIndex) {
-        return false;
-        }
-        //TODO : use named constants
-        index = path.lastIndexOf("/webdav");
-        if (index > lastIndex) {
-        return false;
-        }
-         */
     }
 
     private static XmldbURI getXmldbURI(final URI uri, final boolean mustHaveXMLDB) throws URISyntaxException {
@@ -285,9 +275,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     /**
      * Feeds private members. Receives a URI with the xmldb: scheme already stripped
      *
-     * @param xmldbURI the xmldb URI.
+     * @param xmldbURI       the xmldb URI.
      * @param hadXmldbPrefix if the xmldb URI has an xmldb prefix.
-     *
      * @throws URISyntaxException if the URI is invalid.
      */
     protected void parseURI(final URI xmldbURI, final boolean hadXmldbPrefix) throws URISyntaxException {
@@ -360,62 +349,9 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         }
     }
 
-
-    /*
-     * It is an error for any of the following private members to throw an exception.
-     */
-    /*
-    private void setInstanceName(String instanceName) {
-    String oldInstanceName = this.instanceName;
-    try {
-    this.instanceName = instanceName;
-    recomputeURI();
-    } catch (URISyntaxException e) {
-    this.instanceName = oldInstanceName;
-    throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
-    }
-    }
-
-    private void setContext(String context) throws URISyntaxException {
-    String oldContext = this.context;
-    try {
-    //trims any trailing slash
-    if (context != null && context.endsWith("/")) {
-    //include root slash if we have a host
-    if (this.getHost() != null)
-    context = context.substring(0, context.length() - 1);
-    }
-    this.context = "".equals(context) ? null : context;
-    recomputeURI();
-    } catch (URISyntaxException e) {
-    this.context = oldContext;
-    throw e;
-    }
-    }
-
-    private void setCollectionPath(String collectionPath) throws URISyntaxException {
-    String oldCollectionPath = collectionPath;
-    try {
-    if (collectionPath == null)
-    this.encodedCollectionPath = null;
-    else {
-    String escaped = URIUtils.escapeHtmlURI(collectionPath);
-    this.encodedCollectionPath = escaped;
-    }
-    recomputeURI();
-    } catch (URISyntaxException e) {
-    this.encodedCollectionPath = oldCollectionPath;
-    throw e;
-    } catch (UnsupportedEncodingException e) {
-    wrappedURI = null;
-    throw new URISyntaxException(this.toString(), e.getMessage());
-    }
-    }
-     */
-
     /**
-     * This returns a proper heirarchical URI - the xmldb scheme is trimmed from the beginning. The scheme will be the instance name, and all other
-     * fields will be populated as would be expected from a heirarchical URI
+     * This returns a proper hierarchical URI - the xmldb scheme is trimmed from the beginning. The scheme will be the
+     * instance name, and all other fields will be populated as would be expected from a hierarchical URI.
      *
      * @return DOCUMENT ME!
      * @see #getXmldbURI
@@ -452,7 +388,6 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         }
 
         try {
-
             //TODO: we might want to cache this value
             return URLDecoder.decode(encodedCollectionPath, UTF_8.name());
         } catch (final UnsupportedEncodingException e) {
@@ -479,7 +414,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     protected void safeRecomputeURI() {
         try {
             recomputeURI();
-        } catch (final URISyntaxException e) {
+        } catch (final URISyntaxException ignored) {
         }
     }
 
@@ -588,7 +523,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         if ((name == null) || name.isEmpty()) {
             return NO_SEGMENTS;
         }
-        
+
         final String[] split = name.split("/");
         if (split.length == 0) {
             return NO_SEGMENTS;
@@ -657,11 +592,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      * Ugly workaround for non-URI compliant pathes.
      *
      * @param pseudoURI What is supposed to be a URI
-     *
-     * @return an supposedly correctly escaped URI <strong>string representation</strong>
-     *
+     * @return a supposedly correctly escaped URI <strong>string representation</strong>
      * @throws URISyntaxException if the URI is invalid.
-     *
      * @deprecated By definition, using this method is strongly discouraged
      */
     @Deprecated
@@ -674,10 +606,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             newURIString.append("/");
 
             if (!parts[i].isEmpty()) {
-
                 try {
-
-                    //Try to instantiate the parst as a URI
+                    //Try to instantiate the parts as a URI
                     new URI(newURIString + parts[i]);
                     newURIString.append(parts[i]);
                 } catch (final URISyntaxException e) {
@@ -699,7 +629,6 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         }
 
         if (ob instanceof String) {
-
             try {
                 return getXmldbURI().equals(new URI((String) ob));
             } catch (final URISyntaxException e) {
@@ -786,24 +715,9 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         if (child == null) {
             throw new NullPointerException("The provided child URI is null");
         }
-//        if (child.isAbsolute())
-//            return child;
-        //Old method:
-        /*
-        String collectionPath = this.encodedCollectionPath;
-        if (collectionPath == null)
-        throw new NullPointerException("The current collection path is null");
-        URI collectionPathURI;
-        //Adds a final slash if necessary
-        if (!collectionPath.endsWith("/")) {
-        LOG.info("Added a final '/' to '" + collectionPath + "'");
-        collectionPathURI = URI.create(collectionPath + "/");
-        } else
-        collectionPathURI = URI.create(collectionPath);
-         */
 
         final String collectionPath = toCollectionPathURI().toString();
-        URI newCollectionURI = null;
+        URI newCollectionURI;
 
         if (!collectionPath.endsWith("/")) {
             newCollectionURI = URI.create(collectionPath + "/").resolve(child.toCollectionPathURI().getURI());
@@ -880,7 +794,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
     //TODO: add unit test for this
     public boolean endsWith(final XmldbURI xmldbUri) {
-        return xmldbUri == null ? false : toString().endsWith(xmldbUri.toString());
+        return xmldbUri != null && toString().endsWith(xmldbUri.toString());
     }
 
     public boolean endsWith(final String string) throws URISyntaxException {
@@ -924,153 +838,6 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
         final String[] result = new String[split.length - 1];
         System.arraycopy(split, 1, result, 0, split.length - 1);
         return result;
-    }
-
-
-    /**
-     * If the currentPath is null return the parentPath else
-     * if the currentPath doesnt not start with "/db/" and is not equal to "/db" then adjust the path to start with the parentPath
-     *
-     * Fix to Jens collection/resource name problem by deliriumsky
-     *
-     * @param currentPath the current path
-     * @param parentPath the parent path
-     *
-     * @return the checked path
-     *
-     * @deprecated Use {@link #resolveCollectionPath(XmldbURI)} instead
-     */
-    public static String checkPath(String currentPath, String parentPath) {
-        if (currentPath == null) {
-            return parentPath;
-        }
-
-        //Absolute path
-        if (ROOT_COLLECTION.equals(currentPath)) {
-            return currentPath;
-        }
-
-        //Absolute path
-        if (currentPath.startsWith(ROOT_COLLECTION + "/")) {
-            return currentPath;
-        }
-
-        //Kind of relative path : against all conventions ! -pb
-        if (currentPath.startsWith("/")) {
-            LOG.warn("Initial '/' for relative path '{}'", currentPath);
-        }
-
-        //OK : let's process this so-called relative path
-        if (currentPath.startsWith("/")) {
-
-            if (parentPath.endsWith("/")) {
-                return parentPath + currentPath.substring(1);
-            }
-            return parentPath + currentPath;
-        }
-
-        //True relative pathes
-        if (parentPath.endsWith("/")) {
-            return parentPath + currentPath;
-        }
-        return parentPath + "/" + currentPath;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param fileName the filename
-     * @param parentPath the parent path
-     * @return the checked path
-     * @deprecated Legacy method used here and there in the code
-     */
-    @Deprecated
-    public static String checkPath2(final String fileName, final String parentPath) {
-        //if (!fileName.startsWith("/"))
-        //    fileName = "/" + fileName;
-        /*if (!fileName.startsWith(ROOT_COLLECTION))
-        fileName = ROOT_COLLECTION + fileName;*/
-
-        return checkPath(fileName, parentPath);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name the name
-     * @return the absolute name
-     * @deprecated Legacy method used here and there in the code and copied as such
-     */
-    //TODO : changes // into /  */
-    @Deprecated
-    public String makeAbsolute(final String name) {
-        final StringBuilder out = new StringBuilder();
-
-        for (int i = 0; i < name.length(); i++) {
-
-            //TODO : use dedicated function in XmldbURI
-            if ((name.charAt(i) == '/') && (name.length() > (i + 1)) && (name.charAt(i + 1) == '/')) {
-                i++;
-            } else {
-                out.append(name.charAt(i));
-            }
-        }
-
-        String name2 = out.toString();
-
-        if ((name2.length() > 0) && (name2.charAt(0) != '/')) {
-            name2 = "/" + name2;
-        }
-
-        if (!name2.startsWith(XmldbURI.ROOT_COLLECTION)) {
-            name2 = XmldbURI.ROOT_COLLECTION + name2;
-        }
-
-        if (name2.endsWith("/") && (name2.length() > 1)) {
-            name2 = name2.substring(0, name2.length() - 1);
-        }
-
-        return name2;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name the name
-     * @return the normalized collection name
-     * @deprecated Legacy method used here and there in the code and copied as such
-     */
-    //TODO : changes // into /  */
-    @Deprecated
-    public final static String normalizeCollectionName(final String name) {
-        final StringBuilder out = new StringBuilder();
-
-        for (int i = 0; i < name.length(); i++) {
-
-            //TODO : use dedicated function in XmldbURI
-            if ((name.charAt(i) == '/') && (name.length() > (i + 1)) && (name.charAt(i + 1) == '/')) {
-                i++;
-            } else {
-                out.append(name.charAt(i));
-            }
-        }
-
-        String name2 = out.toString();
-
-        if ((name2.length() > 0) && (name2.charAt(0) != '/')) {
-            name2 = "/" + name2;
-        }
-
-        if (!name2.startsWith(XmldbURI.ROOT_COLLECTION)) {
-            name2 = XmldbURI.ROOT_COLLECTION + name2;
-        }
-
-        if (name2.endsWith("/") && (name2.length() > 1)) {
-            name2 = name2.substring(0, name2.length() - 1);
-        }
-
-        return name2;
-
     }
 
     public String getAuthority() {
@@ -1122,6 +889,4 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     public Object clone() {
         return new XmldbURI(this);
     }
-
-    //  TODO : prefefined URIs as static classes...
 }

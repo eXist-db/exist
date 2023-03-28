@@ -30,7 +30,7 @@ import org.xmldb.api.base.XMLDBException;
 
 
 /**
- * an ant task to shutdown a XMLDB database.
+ * ant task to shutdown an XMLDB database.
  *
  * @author  Wolfgang Meier (wolfgang@exist-db.org)
  *
