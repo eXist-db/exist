@@ -1074,27 +1074,14 @@ public class Configuration implements ErrorHandler {
         }
 
         final String posixChownRestrictedStr = getConfigAttributeValue(con, DBBroker.POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
-        final boolean posixChownRestricted;
-        if (posixChownRestrictedStr == null) {
-            posixChownRestricted = true;  // default
-        } else {
-            // configuration explicitly specifies that posix chown should NOT be restricted
-            posixChownRestricted = Boolean.parseBoolean(posixChownRestrictedStr);
-        }
+        final boolean posixChownRestricted = posixChownRestrictedStr == null || Boolean.parseBoolean(posixChownRestrictedStr);
         config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
 
         final String preserveOnCopyStr = getConfigAttributeValue(con, DBBroker.PRESERVE_ON_COPY_ATTRIBUTE);
-        final DBBroker.PreserveType preserveOnCopy;
-        if (preserveOnCopyStr == null) {
-            preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;  // default
-        } else {
-            if (Boolean.parseBoolean(preserveOnCopyStr)) {
-                // configuration explicitly specifies that attributes should be preserved on copy
-                preserveOnCopy = DBBroker.PreserveType.PRESERVE;
-            } else {
-                preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;
-            }
-        }
+        // default or configuration explicitly specifies that attributes should be preserved on copy
+        final DBBroker.PreserveType preserveOnCopy = Boolean.parseBoolean(preserveOnCopyStr)
+                ? DBBroker.PreserveType.PRESERVE
+                : DBBroker.PreserveType.NO_PRESERVE;
         config.put(DBBroker.PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
 
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
