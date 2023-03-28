@@ -2902,13 +2902,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         final Option option = new Option(rootExpression, qn, value);
-
-        // if the option exists, remove it so we can add the new option
-        final int pos = options.indexOf(option);
-        if (pos != -1) {
-            options.remove(pos);
-        }
-
+        // if the option exists, remove it first
+        options.remove(option);
         //add option
         options.add(option);
 
