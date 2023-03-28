@@ -599,7 +599,7 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>4.0.rc1</version>
+                    <version>4.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.owasp</groupId>
@@ -956,6 +956,7 @@
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
+                                <exclude>LGPL-21-license.template.txt</exclude>                    
                                 <exclude>LGPL-21-license.txt</exclude>
                             </excludes>
                         </licenseSet>
