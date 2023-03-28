@@ -250,7 +250,7 @@ public class Configuration implements ErrorHandler {
 
             //saxon settings (most importantly license file for PE or EE features)
             final NodeList saxon = doc.getElementsByTagName(SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME);
-            if( saxon.getLength() > 0 ) {
+            if (saxon.getLength() > 0) {
                 configureSaxon((Element)saxon.item(0));
             }
 
@@ -363,22 +363,27 @@ public class Configuration implements ErrorHandler {
 
     private void configureRepository(Element element) {
         String root = getConfigAttributeValue(element, "root");
-        if (root != null && !root.isEmpty()) {
-            if (!root.endsWith("/")) {
-                root += "/";
-            }
-            config.put(Deployment.PROPERTY_APP_ROOT, root);
+        if (root == null || root.isEmpty()) {
+            return;
         }
+
+        if (!root.endsWith("/")) {
+            root += "/";
+        }
+
+        config.put(Deployment.PROPERTY_APP_ROOT, root);
     }
 
     private void configureBinaryManager(Element binaryManager) {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
-        if (nlCache.getLength() > 0) {
-            final Element cache = (Element) nlCache.item(0);
-            final String binaryCacheClass = getConfigAttributeValue(cache, "class");
-            config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
-            LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": {}", config.get(BINARY_CACHE_CLASS_PROPERTY));
+        if (nlCache.getLength() == 0) {
+            return;
         }
+
+        final Element cache = (Element) nlCache.item(0);
+        final String binaryCacheClass = getConfigAttributeValue(cache, "class");
+        config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
+        LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": {}", config.get(BINARY_CACHE_CLASS_PROPERTY));
     }
 
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
@@ -458,14 +463,14 @@ public class Configuration implements ErrorHandler {
         modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
         // add other modules specified in configuration
-        final NodeList builtins = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
+        final NodeList builtIns = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
 
         // search under <builtin-modules>
-        if (builtins.getLength() == 0) {
+        if (builtIns.getLength() == 0) {
             return;
         }
 
-        final Element builtIn = (Element) builtins.item(0);
+        final Element builtIn = (Element) builtIns.item(0);
         final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
 
         if (modules.getLength() == 0) {
@@ -565,7 +570,7 @@ public class Configuration implements ErrorHandler {
      * @param xupdate
      * @throws NumberFormatException
      */
-    private void configureXUpdate(Element xupdate) throws NumberFormatException {
+    private void configureXUpdate(final Element xupdate) throws NumberFormatException {
         final String fragmentation = getConfigAttributeValue(xupdate, DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
 
         if (fragmentation != null) {
@@ -583,7 +588,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureSaxon(Element saxon) {
+    private void configureSaxon(final Element saxon) {
         final String configurationFile = getConfigAttributeValue( saxon,
             SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
         if (configurationFile != null) {
@@ -591,7 +596,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureTransformer(Element transformer) {
+    private void configureTransformer(final Element transformer) {
         final String className = getConfigAttributeValue(transformer, TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE);
 
         if (className != null) {
@@ -676,30 +681,28 @@ public class Configuration implements ErrorHandler {
 
     private void configureHtmlToXmlParser(final Element parser) {
         final NodeList nlHtmlToXml = parser.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_ELEMENT);
-        if (nlHtmlToXml.getLength() > 0) {
-            final Element htmlToXml = (Element) nlHtmlToXml.item(0);
-            final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
-            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
+        if (nlHtmlToXml.getLength() == 0) {
+            return;
+        }
 
-            final NodeList nlProperties = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
-            if (nlProperties.getLength() > 0) {
-                final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
-                if (pProperties != null) {
-                    final Map<String, Object> properties = new HashMap<>();
-                    pProperties.forEach((k, v) -> properties.put(k.toString(), v));
-                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
-                }
-            }
+        final Element htmlToXml = (Element) nlHtmlToXml.item(0);
+        final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
+        config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
 
-            final NodeList nlFeatures = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT);
-            if (nlFeatures.getLength() > 0) {
-                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-                if (pFeatures != null) {
-                    final Map<String, Boolean> features = new HashMap<>();
-                    pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
-                }
-            }
+        final NodeList nlProperties = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
+        if (nlProperties.getLength() > 0) {
+            final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
+            final Map<String, Object> properties = new HashMap<>();
+            pProperties.forEach((k, v) -> properties.put(k.toString(), v));
+            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
+        }
+
+        final NodeList nlFeatures = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT);
+        if (nlFeatures.getLength() > 0) {
+            final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
+            final Map<String, Boolean> features = new HashMap<>();
+            pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
         }
     }
 
@@ -796,22 +799,25 @@ public class Configuration implements ErrorHandler {
         }
 
         final NodeList backupFilters = serializer.getElementsByTagName(SystemExport.CONFIGURATION_ELEMENT);
+        if (backupFilters == null) {
+            return;
+        }
 
-        if (backupFilters != null) {
-            final List<String> filters = new ArrayList<>(backupFilters.getLength());
+        final List<String> filters = new ArrayList<>(backupFilters.getLength());
 
-            for (int i = 0; i < backupFilters.getLength(); i++) {
-                final Element filterElem = (Element) backupFilters.item(i);
-                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
+        for (int i = 0; i < backupFilters.getLength(); i++) {
+            final Element filterElem = (Element) backupFilters.item(i);
+            final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-                if (filterClass != null) {
-                    filters.add(filterClass);
-                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
-                } else {
-                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
-                }
+            if (filterClass != null) {
+                filters.add(filterClass);
+                LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
+            } else {
+                LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
             }
-            if (!filters.isEmpty()) config.put(SystemExport.CONFIG_FILTERS, filters);
+        }
+        if (!filters.isEmpty()) {
+            config.put(SystemExport.CONFIG_FILTERS, filters);
         }
     }
 
@@ -892,7 +898,10 @@ public class Configuration implements ErrorHandler {
 
                 jobList.add(jobConfig);
 
-                LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource, (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule), (jobDelay == null) ? "" : ("' with delay '" + jobDelay), (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
+                LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource,
+                        (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule),
+                        (jobDelay == null) ? "" : ("' with delay '" + jobDelay),
+                        (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
             } catch (final JobException je) {
                 LOG.error(je);
             }
@@ -1069,12 +1078,8 @@ public class Configuration implements ErrorHandler {
         if (posixChownRestrictedStr == null) {
             posixChownRestricted = true;  // default
         } else {
-            if (Boolean.parseBoolean(posixChownRestrictedStr)) {
-                posixChownRestricted = true;
-            } else {
-                // configuration explicitly specifies that posix chown should NOT be restricted
-                posixChownRestricted = false;
-            }
+            // configuration explicitly specifies that posix chown should NOT be restricted
+            posixChownRestricted = Boolean.parseBoolean(posixChownRestrictedStr);
         }
         config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
 
@@ -1254,61 +1259,63 @@ public class Configuration implements ErrorHandler {
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
 
         // If <triggers> exists
-        if (nlTriggers != null && nlTriggers.getLength() > 0) {
-            // Get <triggers>
-            final Element triggers = (Element) nlTriggers.item(0);
+        if (nlTriggers == null || nlTriggers.getLength() == 0) {
+            return;
+        }
+        // Get <triggers>
+        final Element triggers = (Element) nlTriggers.item(0);
 
-            // Get <trigger>
-            final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
+        // Get <trigger>
+        final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
 
-            // If <trigger> exists and there are more than 0
-            if (nlTrigger != null && nlTrigger.getLength() > 0) {
+        // If <trigger> exists and there are more than 0
+        if (nlTrigger == null || nlTrigger.getLength() == 0) {
+            return;
+        }
 
-                // Initialize trigger configuration
-                List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
-                if (startupTriggers == null) {
-                    startupTriggers = new ArrayList<>();
-                    config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-                }
+        // Initialize trigger configuration
+        List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
+        if (startupTriggers == null) {
+            startupTriggers = new ArrayList<>();
+            config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+        }
 
-                // Iterate over <trigger> elements
-                for (int i = 0; i < nlTrigger.getLength(); i++) {
+        // Iterate over <trigger> elements
+        for (int i = 0; i < nlTrigger.getLength(); i++) {
 
-                    // Get <trigger> element
-                    final Element trigger = (Element) nlTrigger.item(i);
+            // Get <trigger> element
+            final Element trigger = (Element) nlTrigger.item(i);
 
-                    // Get @class
-                    final String startupTriggerClass = trigger.getAttribute("class");
+            // Get @class
+            final String startupTriggerClass = trigger.getAttribute("class");
 
-                    boolean isStartupTrigger = false;
-                    try {
-                        // Verify if class is StartupTrigger
-                        for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
-                            if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
-                                isStartupTrigger = true;
-                                break;
-                            }
-                        }
-
-                        // if it actually is a StartupTrigger
-                        if (isStartupTrigger) {
-                            // Parse additional parameters
-                            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
-
-                            // Register trigger
-                            startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
-
-                            // Done
-                            LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
-
-                        } else {
-                            LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
-                        }
-
-                    } catch (final ClassNotFoundException cnfe) {
-                        LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
+            boolean isStartupTrigger = false;
+            try {
+                // Verify if class is StartupTrigger
+                for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                    if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
+                        isStartupTrigger = true;
+                        break;
                     }
                 }
+
+                // if it actually is a StartupTrigger
+                if (isStartupTrigger) {
+                    // Parse additional parameters
+                    final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
+
+                    // Register trigger
+                    startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
+
+                    // Done
+                    LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
+
+                } else {
+                    LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
+                }
+
+            } catch (final ClassNotFoundException cnfe) {
+                LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
             }
         }
     }
@@ -1504,7 +1511,9 @@ public class Configuration implements ErrorHandler {
 
             // Create and Store the resolver
             try {
-                final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream().map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty())).collect(Collectors.toList());
+                final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
+                        .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
+                        .collect(Collectors.toList());
                 final Resolver resolver = ResolverFactory.newResolver(catalogs);
                 config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
             } catch (final URISyntaxException e) {
@@ -1526,24 +1535,20 @@ public class Configuration implements ErrorHandler {
      * @param attributeName The name of the attribute
      * @return The value of the attribute
      */
-    private String getConfigAttributeValue(Element element, String attributeName) {
-        String value = null;
-
-        if (element != null && attributeName != null) {
-            final String property = getAttributeSystemPropertyName(element, attributeName);
-
-            value = System.getProperty(property);
-
-            // If the value has not been overridden in a system property, then get it from the configuration
-
-            if (value != null) {
-                LOG.warn("Configuration value overridden by system property: {}, with value: {}", property, value);
-            } else {
-                value = element.getAttribute(attributeName);
-            }
+    private String getConfigAttributeValue(final Element element, final String attributeName) {
+        if (element == null || attributeName == null) {
+            return null;
         }
 
-        return (value);
+        final String property = getAttributeSystemPropertyName(element, attributeName);
+        final String value = System.getProperty(property);
+
+        if (value != null) {
+            LOG.warn("Configuration value overridden by system property: {}, with value: {}", property, value);
+            return value;
+        }
+        // If the value has not been overridden in a system property, then get it from the configuration
+        return element.getAttribute(attributeName);
     }
 
     /**
@@ -1606,7 +1611,10 @@ public class Configuration implements ErrorHandler {
     }
 
     public int getInteger(final String name) {
-        return Optional.ofNullable(getProperty(name)).filter(v -> v instanceof Integer).map(v -> (int) v).orElse(-1);
+        return Optional.ofNullable(getProperty(name))
+                .filter(v -> v instanceof Integer)
+                .map(v -> (int) v)
+                .orElse(-1);
     }
 
     /**
@@ -1618,7 +1626,8 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void error(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -1630,7 +1639,8 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -1642,7 +1652,8 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void warning(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     public record StartupTriggerConfig(String clazz, Map<String, List<?>> params) {
