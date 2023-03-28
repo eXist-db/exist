@@ -2945,12 +2945,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public Option getOption(final QName qname) {
         for (final Option option : dynamicOptions) {
-            if (qname.compareTo(option.getQName()) == 0) {
+            if (qname.equals(option.getQName())) {
                 return option;
             }
         }
         for (final Option option : staticOptions) {
-            if (qname.compareTo(option.getQName()) == 0) {
+            if (qname.equals(option.getQName())) {
                 return option;
             }
         }
