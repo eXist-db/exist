@@ -406,8 +406,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * is executing, or null if there is no
      * HTTP context.
      */
-    @Nullable
-    private HttpContext httpContext = null;
+    private @Nullable HttpContext httpContext = null;
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
     private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
@@ -507,8 +506,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return the HTTP context, or null if the query
      * is not being executed within an HTTP context.
      */
-    public @Nullable
-    HttpContext getHttpContext() {
+    public @Nullable HttpContext getHttpContext() {
         return httpContext;
     }
 
@@ -1207,8 +1205,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return sequence of available documents matching the URI
      * @throws XPathException in case of dynamic error
      */
-    public @Nullable
-    Sequence getDynamicallyAvailableDocument(final String uri) throws XPathException {
+    public @Nullable Sequence getDynamicallyAvailableDocument(final String uri) throws XPathException {
         if (dynamicDocuments == null) {
             return null;
         }
@@ -1231,8 +1228,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return a reader to read the resource content from
      * @throws XPathException in case of a dynamic error
      */
-    public @Nullable
-    Reader getDynamicallyAvailableTextResource(final String uri, final Charset charset)
+    public @Nullable Reader getDynamicallyAvailableTextResource(final String uri, final Charset charset)
             throws XPathException {
         if (dynamicTextResources == null) {
             return null;
@@ -1255,8 +1251,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return a sequence of document nodes
      * @throws XPathException in case of dynamic error
      */
-    public @Nullable
-    Sequence getDynamicallyAvailableCollection(final String uri) throws XPathException {
+    public @Nullable Sequence getDynamicallyAvailableCollection(final String uri) throws XPathException {
         if (dynamicCollections == null) {
             return null;
         }
@@ -1594,8 +1589,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    @Nullable
-    public Module loadBuiltInModule(final String namespaceURI, final String moduleClass) {
+    public @Nullable Module loadBuiltInModule(final String namespaceURI, final String moduleClass) {
         Module[] modules = null;
         if (namespaceURI != null) {
             modules = getModules(namespaceURI);
@@ -1752,8 +1746,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    @Nullable
-    public UserDefinedFunction resolveFunction(final QName name, final int argCount) {
+    public @Nullable UserDefinedFunction resolveFunction(final QName name, final int argCount) {
         final FunctionId id = new FunctionId(name, argCount);
         return declaredFunctions.get(id);
     }
