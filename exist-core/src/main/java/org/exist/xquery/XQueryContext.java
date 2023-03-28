@@ -2826,37 +2826,40 @@ public class XQueryContext implements BinaryValueManager, Context {
         private Map<String, String> staticNamespacesSaved = null;
         private Map<String, String> staticPrefixesSaved = null;
 
-        @SuppressWarnings("unchecked")
         void save() {
-            if (modulesSaved == null) {
-                modulesSaved = new Object2ObjectOpenHashMap<>(modules.size(), Hash.VERY_FAST_LOAD_FACTOR);
-                for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(modules)) {
-                    final Module[] mods = entry.getValue();
-                    modulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
-                }
-
-                allModulesSaved = new Object2ObjectOpenHashMap<>(allModules.size());
-                for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(allModules)) {
-                    final Module[] mods = entry.getValue();
-                    allModulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
-                }
-
-                staticNamespacesSaved = new HashMap<>(staticNamespaces);
-                staticPrefixesSaved = new HashMap<>(staticPrefixes);
+            if (modulesSaved != null) {
+                return;
             }
-        }
+
+            modulesSaved = new Object2ObjectOpenHashMap<>(modules.size(), Hash.VERY_FAST_LOAD_FACTOR);
+            for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(modules)) {
+                final Module[] mods = entry.getValue();
+                modulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
+            }
+
+            allModulesSaved = new Object2ObjectOpenHashMap<>(allModules.size());
+            for (final Object2ObjectMap.Entry<String, Module[]> entry : Object2ObjectMaps.fastIterable(allModules)) {
+                final Module[] mods = entry.getValue();
+                allModulesSaved.put(entry.getKey(), Arrays.copyOf(mods, mods.length));
+            }
+
+            staticNamespacesSaved = new HashMap<>(staticNamespaces);
+            staticPrefixesSaved = new HashMap<>(staticPrefixes);
+    }
 
         void restore() {
-            if (modulesSaved != null) {
-                modules = modulesSaved;
-                modulesSaved = null;
-                allModules = allModulesSaved;
-                allModulesSaved = null;
-                staticNamespaces = staticNamespacesSaved;
-                staticNamespacesSaved = null;
-                staticPrefixes = staticPrefixesSaved;
-                staticPrefixesSaved = null;
+            if (modulesSaved == null) {
+                return;
             }
+
+            modules = modulesSaved;
+            modulesSaved = null;
+            allModules = allModulesSaved;
+            allModulesSaved = null;
+            staticNamespaces = staticNamespacesSaved;
+            staticNamespacesSaved = null;
+            staticPrefixes = staticPrefixesSaved;
+            staticPrefixesSaved = null;
         }
     }
 
