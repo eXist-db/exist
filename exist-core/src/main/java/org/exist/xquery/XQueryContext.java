@@ -195,10 +195,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     private final Deque<UserDefinedFunction> closures = new ArrayDeque<>();
 
     // List of options declared for this query at compile time - i.e. declare option
-    private List<Option> staticOptions = new ArrayList<>();
+    private List<Option> staticOptions = null;
 
     // List of options declared for this query at run time - i.e. util:declare-option()
-    private List<Option> dynamicOptions = new ArrayList<>();
+    private List<Option> dynamicOptions = null;
 
     //The Calendar for this context : may be changed by some options
     private XMLGregorianCalendar calendar = null;
@@ -698,11 +698,11 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.staticNamespaces = new HashMap<>(this.staticNamespaces);
         ctx.staticPrefixes = new HashMap<>(this.staticPrefixes);
 
-        if (!this.dynamicOptions.isEmpty()) {
+        if (this.dynamicOptions != null) {
             ctx.dynamicOptions = new ArrayList<>(this.dynamicOptions);
         }
 
-        if (!this.staticOptions.isEmpty()) {
+        if (this.staticOptions != null) {
             ctx.staticOptions = new ArrayList<>(this.staticOptions);
         }
 
@@ -1394,7 +1394,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             globalVariables.clear();
         }
 
-        if (!dynamicOptions.isEmpty()) {
+        if (dynamicOptions != null) {
             dynamicOptions.clear(); //clear any dynamic options
         }
 
@@ -2881,11 +2881,17 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void addOption(final String name, final String value) throws XPathException {
+        if (staticOptions == null) {
+            staticOptions = new ArrayList<>();
+        }
         addOption(staticOptions, name, value);
     }
 
     @Override
     public void addDynamicOption(final String name, final String value) throws XPathException {
+        if (dynamicOptions == null) {
+            dynamicOptions = new ArrayList<>();
+        }
         addOption(dynamicOptions, name, value);
     }
 
@@ -2943,14 +2949,19 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Option getOption(final QName qname) {
-        for (final Option option : dynamicOptions) {
-            if (qname.equals(option.getQName())) {
-                return option;
+        if (dynamicOptions != null) {
+            for (final Option option : dynamicOptions) {
+                if (qname.equals(option.getQName())) {
+                    return option;
+                }
             }
         }
-        for (final Option option : staticOptions) {
-            if (qname.equals(option.getQName())) {
-                return option;
+
+        if (staticOptions != null) {
+            for (final Option option : staticOptions) {
+                if (qname.equals(option.getQName())) {
+                    return option;
+                }
             }
         }
 
@@ -3144,18 +3155,22 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void checkOptions(final Properties properties) throws XPathException {
         checkLegacyOptions(properties);
-        for (final Option option : dynamicOptions) {
-            if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
-                SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
-                        inScopeNamespaces::get);
+        if (dynamicOptions != null) {
+            for (final Option option : dynamicOptions) {
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
+                    SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
+                            inScopeNamespaces::get);
+                }
             }
         }
 
-        for (final Option option : staticOptions) {
-            if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
-                    && !properties.containsKey(option.getQName().getLocalPart())) {
-                SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
-                        inScopeNamespaces::get);
+        if (staticOptions != null) {
+            for (final Option option : staticOptions) {
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                        && !properties.containsKey(option.getQName().getLocalPart())) {
+                    SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
+                            inScopeNamespaces::get);
+                }
             }
         }
     }
