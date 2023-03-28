@@ -1198,7 +1198,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
-     * Get's a document from the "Available documents" of the
+     * Gets a document from the "Available documents" of the
      * dynamic context.
      *
      * @param uri the URI by which the document was registered
@@ -1220,7 +1220,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
-     * Get's a text resource from the "Available text resources" of the
+     * Gets a text resource from the "Available text resources" of the
      * dynamic context.
      *
      * @param uri the URI by which the document was registered
