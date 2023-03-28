@@ -174,6 +174,13 @@ declare variable $ser:xi-doc := document {
     </article>
 };
 
+declare variable $ser:in-memory-book :=
+    <book>
+        <author>John Doe</author>
+        <author>Robert Smith</author>
+    </book>
+;
+
 declare
     %test:setUp
 function ser:setup() {
@@ -665,126 +672,117 @@ function ser:adaptive-xs-strings-map-params() {
 };
 
 declare
+    %test:args("true")
     %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
-function ser:exist-output-doctype-true() {
-    serialize(doc($ser:collection || "/test-with-doctype.xml"),
-        map { "exist:output-doctype": true() })
-};
-
-declare
-    %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
-function ser:exist-output-doctype-true-QName() {
-    serialize(doc($ser:collection || "/test-with-doctype.xml"),
-        map { xs:QName("exist:output-doctype"): true() })
-};
-
-declare
+    %test:args("false")
     %test:assertXPath("not(contains($result, '-//OASIS//DTD DITA BookMap//EN')) and not(contains($result, 'bookmap.dtd'))")
-function ser:exist-output-doctype-false() {
+function ser:exist-output-doctype-QName($value as xs:boolean) {
     serialize(doc($ser:collection || "/test-with-doctype.xml"),
-        map { "exist:output-doctype": false() })
+        map { xs:QName("exist:output-doctype") : $value })
 };
 
 declare
+    %test:args("true")
+    %test:assertXPath("contains($result, '-//OASIS//DTD DITA BookMap//EN') and contains($result, 'bookmap.dtd')")
+    %test:args("false")
+    %test:assertXPath("not(contains($result, '-//OASIS//DTD DITA BookMap//EN')) and not(contains($result, 'bookmap.dtd'))")
+function ser:exist-output-doctype-string($value as xs:boolean) {
+    serialize(doc($ser:collection || "/test-with-doctype.xml"),
+        map { "exist:output-doctype" : $value })
+};
+
+declare
+    %test:args("true")
+    %test:assertXPath("contains($result, 'comment')")
+    %test:args("false")
     %test:assertXPath("contains($result, 'include')")
-function ser:exist-expand-xinclude-false() {
+function ser:exist-expand-xinclude-QName($value as xs:boolean) {
     serialize($ser:xi-doc,
-        map { "exist:expand-xincludes": false() })
+        map { xs:QName("exist:expand-xincludes"): $value })
 };
 
 declare
+    %test:args("true")
     %test:assertXPath("contains($result, 'comment')")
-function ser:exist-expand-xinclude-true() {
+    %test:args("false")
+    %test:assertXPath("contains($result, 'include')")
+function ser:exist-expand-xinclude-string($value as xs:boolean) {
     serialize($ser:xi-doc,
-        map { "exist:expand-xincludes": true() })
+        map { "exist:expand-xincludes": $value })
 };
 
 declare
-    %test:assertXPath("contains($result, 'comment')")
-function ser:exist-expand-xinclude-true-QName() {
-    serialize($ser:xi-doc,
-        map { xs:QName("exist:expand-xincludes"): true() })
-};
-
-declare
+    %test:args("all")
     %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>')
-function ser:exist-add-exist-id-all() {
-    serialize(doc($ser:collection || "/test.xml"),
-        map { "exist:add-exist-id": "all" })
-};
-
-declare
-    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>')
-function ser:exist-add-exist-id-all-QName() {
-    serialize(doc($ser:collection || "/test.xml"),
-        map { xs:QName("exist:add-exist-id"): "all" })
-};
-
-declare
+    %test:args("element")
     %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>')
-function ser:exist-add-exist-id-element() {
+    %test:args("none")
+    %test:assertXPath("not(contains($result, 'exist:id'))")
+function ser:exist-add-exist-id-QName($value as xs:string) {
     serialize(doc($ser:collection || "/test.xml"),
-        map { "exist:add-exist-id": "element" })
+        map { xs:QName("exist:add-exist-id"): $value })
 };
 
 declare
-     %test:assertXPath("not(contains($result, 'exist:id'))")
-function ser:exist-add-exist-id-none() {
+    %test:args("all")
+    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b exist:id="2.3">123</b></elem>')
+    %test:args("element")
+    %test:assertEquals('<?pi?><elem xmlns:exist="http://exist.sourceforge.net/NS/exist" exist:id="2" exist:source="test.xml" a="abc"><!--comment--><b>123</b></elem>')
+    %test:args("none")
+    %test:assertXPath("not(contains($result, 'exist:id'))")
+function ser:exist-add-exist-id-string($value as xs:string) {
     serialize(doc($ser:collection || "/test.xml"),
-        map { "exist:add-exist-id": "none" })
+        map { "exist:add-exist-id": $value })
 };
 
 declare
+    %test:args("functionName")
     %test:assertEquals('functionName({"author":["John Doe","Robert Smith"]})')
-function ser:exist-jsonp() {
-    serialize(
-        <book>
-            <author>John Doe</author>
-            <author>Robert Smith</author>
-        </book>,
+    %test:args("anotherName")
+    %test:assertEquals('anotherName({"author":["John Doe","Robert Smith"]})')
+function ser:exist-jsonp-QName($value as xs:string) {
+    serialize($ser:in-memory-book,
         map {
             "method": "json",
             "media-type": "application/json",
-            "exist:jsonp": "functionName"
+            xs:QName("exist:jsonp"): $value
         }
     )
 };
 
 declare
+    %test:args("functionName")
     %test:assertEquals('functionName({"author":["John Doe","Robert Smith"]})')
-function ser:exist-jsonp-QName() {
-    serialize(
-        <book>
-            <author>John Doe</author>
-            <author>Robert Smith</author>
-        </book>,
+    %test:args("anotherName")
+    %test:assertEquals('anotherName({"author":["John Doe","Robert Smith"]})')
+function ser:exist-jsonp-string($value as xs:string) {
+    serialize($ser:in-memory-book,
         map {
             "method": "json",
             "media-type": "application/json",
-            xs:QName("exist:jsonp"): "functionName"
+            "exist:jsonp": $value
         }
     )
 };
 
 declare
+    %test:args("true")
     %test:assertEquals('processed')
-function ser:exist-process-xsl-pi-true() {
-    serialize(doc($ser:collection || "/test-xsl.xml"),
-        map { "exist:process-xsl-pi": true() })
-};
-
-declare
-    %test:assertEquals('processed')
-function ser:exist-process-xsl-pi-true-QName() {
-    serialize(doc($ser:collection || "/test-xsl.xml"),
-        map { xs:QName("exist:process-xsl-pi"): true() })
-};
-
-declare
+    %test:args("false")
     %test:assertXPath("contains($result, 'stylesheet')")
-function ser:exist-process-xsl-pi-false() {
+function ser:exist-process-xsl-pi-QName($value as xs:boolean) {
     serialize(doc($ser:collection || "/test-xsl.xml"),
-        map { "exist:process-xsl-pi": false() })
+        map { xs:QName("exist:process-xsl-pi"): $value })
+};
+
+declare
+    %test:args("true")
+    %test:assertEquals('processed')
+    %test:args("false")
+    %test:assertXPath("contains($result, 'stylesheet')")
+function ser:exist-process-xsl-pi-string($value as xs:boolean) {
+    serialize(doc($ser:collection || "/test-xsl.xml"),
+        map { "exist:process-xsl-pi": $value })
 };
 
 declare
