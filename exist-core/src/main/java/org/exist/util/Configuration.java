@@ -866,17 +866,16 @@ public class Configuration implements ErrorHandler
             }
         }
 
-        if(!jobList.isEmpty()) {
-            final JobConfig[] configs = new JobConfig[jobList.size()];
-
-            for(int i = 0; i < jobList.size(); i++) {
-                configs[i] = (JobConfig)jobList.get(i);
-            }
-
-            config.put(JobConfig.PROPERTY_SCHEDULER_JOBS, configs);
+        if (jobList.isEmpty()) {
+            return;
         }
+
+        final JobConfig[] configs = new JobConfig[jobList.size()];
+        for (int i = 0; i < jobList.size(); i++) {
+            configs[i] = (JobConfig) jobList.get(i);
+        }
+        config.put(JobConfig.PROPERTY_SCHEDULER_JOBS, configs);
     }
-    
 
     /**
      * DOCUMENT ME!
