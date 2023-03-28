@@ -312,7 +312,42 @@ public class Configuration implements ErrorHandler
         }
     }
 
-    private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
+    /**
+     * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param value        The string to parse
+     * @param defaultValue The default if the string is null
+     * @return The parsed <code>Boolean</code>
+     */
+    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
+        return Optional.ofNullable(value)
+                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
+                .orElse(defaultValue);
+    }
+
+    /**
+     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param value        The string to parse
+     * @param defaultValue The default if the string is null or empty
+     * @return The parsed <code>int</code>
+     */
+    public static int parseInt(@Nullable final String value, final int defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(value);
+        } catch (final NumberFormatException e) {
+            LOG.warn("Could not parse: {}, as an int: {}", value, e.getMessage());
+            return defaultValue;
+        }
+    }
+
+    private void configureLockManager(final Element lockManager) {
         final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
         final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
         final boolean pathsMultiWriter = parseBoolean(getConfigAttributeValue(lockManager, "paths-multi-writer"), false);
@@ -1609,43 +1644,6 @@ public class Configuration implements ErrorHandler
 
     public void removeProperty(final String name) {
         config.remove(name);
-    }
-
-    /**
-     * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
-     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
-     *
-     * @param   value         The string to parse
-     * @param   defaultValue  The default if the string is null
-     *
-     * @return  The parsed <code>Boolean</code>
-     */
-    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
-        return Optional.ofNullable(value)
-                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
-                .orElse(defaultValue);
-    }
-
-    /**
-     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
-     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
-     *
-     * @param   value         The string to parse
-     * @param   defaultValue  The default if the string is null or empty
-     *
-     * @return  The parsed <code>int</code>
-     */
-    public static int parseInt(@Nullable final String value, final int defaultValue) {
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-
-        try {
-            return Integer.parseInt(value);
-        } catch (final NumberFormatException e) {
-            LOG.warn("Could not parse: {}, as an int: {}", value, e.getMessage());
-            return defaultValue;
-        }
     }
 
     public int getInteger(final String name) {
