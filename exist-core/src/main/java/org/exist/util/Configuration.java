@@ -538,30 +538,26 @@ public class Configuration implements ErrorHandler {
      * @throws DatabaseConfigurationException if the given module class is not an instance
      *                                        of org.exist.xquery.Module
      */
-    private Class<?> lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException {
-        Class<?> mClass = null;
-
+    private Class<?> lookupModuleClass(final String uri, final String clazz) throws DatabaseConfigurationException {
         try {
-            mClass = Class.forName(clazz);
+            final Class<?> mClass = Class.forName(clazz);
 
             if (!(org.exist.xquery.Module.class.isAssignableFrom(mClass))) {
                 throw (new DatabaseConfigurationException("Failed to load module: " + uri + ". " +
                         "Class " + clazz + " is not an instance of org.exist.xquery.Module."));
             }
-
+            return mClass;
         } catch (final ClassNotFoundException e) {
-
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
             LOG.error("Configuration problem: class not found for module '{}' (ClassNotFoundException); " +
                     "class:'{}'; message:'{}'", uri, clazz, e.getMessage());
 
         } catch (final NoClassDefFoundError e) {
-            LOG.error("Module {} could not be initialized due to a missing dependancy (NoClassDefFoundError): " +
+            LOG.error("Module {} could not be initialized due to a missing dependency (NoClassDefFoundError): " +
                     "{}", uri, e.getMessage(), e);
         }
-
-        return mClass;
+        return null;
     }
 
     /**
