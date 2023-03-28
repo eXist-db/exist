@@ -1484,11 +1484,11 @@ public class Configuration implements ErrorHandler
 
                 if (uri != null) {
                     // Substitute string, creating an uri from a local file
-                    if (uri.indexOf("${WEBAPP_HOME}") != -1) {
-                        uri = uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toUri().toString());
+                    if (uri.contains("${WEBAPP_HOME}")) {
+                        uri = uri.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
                     }
-                    if (uri.indexOf("${EXIST_HOME}") != -1) {
-                        uri = uri.replaceAll("\\$\\{EXIST_HOME\\}", dbHome.toString());
+                    if (uri.contains("${EXIST_HOME}")) {
+                        uri = uri.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
                     }
 
                     // Add uri to configuration
