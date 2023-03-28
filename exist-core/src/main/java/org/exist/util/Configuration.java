@@ -1425,7 +1425,7 @@ public class Configuration implements ErrorHandler {
         config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
     }
 
-    private void configureValidation(final Optional<Path> dbHome, final Element validation) throws DatabaseConfigurationException {
+    private void configureValidation(final Optional<Path> dbHome, final Element validation) {
         // Determine validation mode
         final String mode = getConfigAttributeValue(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE);
         if (mode != null) {
@@ -1435,69 +1435,69 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        // Configure the Entity Resolver
-        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
-        if (entityResolver.getLength() > 0) {
-            LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
-
-            final Element elemEntityResolver = (Element) entityResolver.item(0);
-            final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
-
-            // Determine webapps directory. SingleInstanceConfiguration cannot
-            // be used at this phase. Trick is to check whether dbHOME is
-            // pointing to a WEB-INF directory, meaning inside the war file.
-            final Path webappHome = dbHome.map(h -> {
-                if (FileUtils.fileName(h).endsWith("WEB-INF")) {
-                    return h.getParent().toAbsolutePath();
-                } else {
-                    return h.resolve("webapp").toAbsolutePath();
-                }
-            }).orElse(Paths.get("webapp").toAbsolutePath());
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
-                LOG.debug("Using dbHome=" + dbHome);
-                LOG.debug("using webappHome=" + webappHome.toString());
-            }
-
-            // Get the Catalog URIs
-            final List<String> catalogUris = new ArrayList<>();
-            for (int i = 0; i < nlCatalogs.getLength(); i++) {
-                String uri = ((Element) nlCatalogs.item(i)).getAttribute("uri");
-
-                if (uri != null) {
-                    // Substitute string, creating an uri from a local file
-                    if (uri.contains("${WEBAPP_HOME}")) {
-                        uri = uri.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
-                    }
-                    if (uri.contains("${EXIST_HOME}")) {
-                        uri = uri.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
-                    }
-
-                    // Add uri to configuration
-                    LOG.info("Adding Catalog URI: " + uri);
-                    catalogUris.add(uri);
-                }
-            }
-
-            // Store all configured URIs
-            config.put(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
-
-            // Create and Store the resolver
-            try {
-                final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
-                        .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
-                        .collect(Collectors.toList());
-                final Resolver resolver = ResolverFactory.newResolver(catalogs);
-                config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
-            } catch (final URISyntaxException e) {
-                LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
-            }
-        }
-
         // cache
         final GrammarPool gp = new GrammarPool();
         config.put(XMLReaderObjectFactory.GRAMMAR_POOL, gp);
+
+        // Configure the Entity Resolver
+        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
+        if (entityResolver.getLength() == 0) {
+            return;
+        }
+        LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
+
+        final Element elemEntityResolver = (Element) entityResolver.item(0);
+        final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
+
+        // Determine webapps directory. SingleInstanceConfiguration cannot
+        // be used at this phase. Trick is to check whether dbHOME is
+        // pointing to a WEB-INF directory, meaning inside the war file.
+        final Path webappHome = dbHome.map(h -> {
+            if (FileUtils.fileName(h).endsWith("WEB-INF")) {
+                return h.getParent().toAbsolutePath();
+            }
+            return h.resolve("webapp").toAbsolutePath();
+        }).orElse(Paths.get("webapp").toAbsolutePath());
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
+            LOG.debug("Using dbHome=" + dbHome);
+            LOG.debug("using webappHome=" + webappHome.toString());
+        }
+
+        // Get the Catalog URIs
+        final List<String> catalogUris = new ArrayList<>();
+        for (int i = 0; i < nlCatalogs.getLength(); i++) {
+            String uri = ((Element) nlCatalogs.item(i)).getAttribute("uri");
+
+            if (uri != null) {
+                // Substitute string, creating an uri from a local file
+                if (uri.contains("${WEBAPP_HOME}")) {
+                    uri = uri.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
+                }
+                if (uri.contains("${EXIST_HOME}")) {
+                    uri = uri.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
+                }
+
+                // Add uri to configuration
+                LOG.info("Adding Catalog URI: " + uri);
+                catalogUris.add(uri);
+            }
+        }
+
+        // Store all configured URIs
+        config.put(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
+
+        // Create and Store the resolver
+        try {
+            final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
+                    .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
+                    .collect(Collectors.toList());
+            final Resolver resolver = ResolverFactory.newResolver(catalogs);
+            config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
+        } catch (final URISyntaxException e) {
+            LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
+        }
     }
 
     /**
