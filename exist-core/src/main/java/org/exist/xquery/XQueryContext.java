@@ -3022,61 +3022,70 @@ public class XQueryContext implements BinaryValueManager, Context {
     void loadDefaults(@Nullable final Configuration config) {
         loadDefaultNS();
 
-        if (config != null) {
+        if (config == null) {
+            return;
+        }
 
-            // Switch: enable optimizer
-            String param = config.getProperty(PROPERTY_ENABLE_QUERY_REWRITING, "no");
-            this.enableOptimizer = "yes".equals(param);
+        // Switch: enable optimizer
+        final String queryRewritingOption = config.getProperty(PROPERTY_ENABLE_QUERY_REWRITING, "no");
+        this.enableOptimizer = "yes".equals(queryRewritingOption);
 
-            // Switch: Backward compatibility
-            param = config.getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, "yes");
-            this.backwardsCompatible = "yes".equals(param);
+        // Switch: Backward compatibility
+        final String backwardsCompatOption = config.getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, "yes");
+        this.backwardsCompatible = "yes".equals(backwardsCompatOption);
 
-            // Switch: raiseErrorOnFailedRetrieval
-            final Boolean option = config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE);
-            this.raiseErrorOnFailedRetrieval = option;
+        // Switch: raiseErrorOnFailedRetrieval
+        this.raiseErrorOnFailedRetrieval =
+                config.getProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Boolean.FALSE);
 
-            // Get map of built-in modules
-            final Map<String, Class<Module>> builtInModules = (Map<String, Class<Module>>) config.getProperty(PROPERTY_BUILT_IN_MODULES);
-            if (builtInModules != null) {
+        // Get map of built-in modules
+        final Map<String, Class<Module>> builtInModules =
+                (Map<String, Class<Module>>) config.getProperty(PROPERTY_BUILT_IN_MODULES);
 
-                // Iterate on all map entries
-                for (final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet()) {
+        if (builtInModules == null) {
+            return;
+        }
 
-                    // Get URI and class
-                    final String namespaceURI = entry.getKey();
-                    final Class<Module> moduleClass = entry.getValue();
+        // Iterate on all map entries
+        for (final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet()) {
+            addDefaultBuiltInModule(config, entry);
+        }
+    }
 
-                    // first check if the module has already been loaded in the parent context
-                    final Module[] modules = getModules(namespaceURI);
-                    Module foundModule = null;
-                    if (modules != null) {
-                        for (final Module module : modules) {
-                            if (moduleClass.equals(module.getClass())) {
-                                foundModule = module;
-                                break;
-                            }
-                        }
-                    }
+    @SuppressWarnings("unchecked")
+    private void addDefaultBuiltInModule(final Configuration config, final Map.Entry<String, Class<Module>> entry) {
+        final String namespaceURI = entry.getKey();
+        // first check if the module has already been loaded in the parent context
+        final Module[] modules = getModules(namespaceURI);
+        if (modules == null) {
+            return;
+        }
 
+        // we have to instantiate the module class
+        final Class<Module> moduleClass = entry.getValue();
+        Module foundModule = null;
+        for (final Module module : modules) {
+            if (moduleClass.equals(module.getClass())) {
+                foundModule = module;
+                break;
+            }
+        }
 
-                    if (foundModule == null) {
-                        // Module does not exist yet, instantiate
-                        instantiateModule(namespaceURI, moduleClass,
-                                (Map<String, Map<String, List<? extends Object>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
+        if (foundModule == null) {
+            // Module does not exist yet, instantiate
+            instantiateModule(namespaceURI, moduleClass,
+                    (Map<String, Map<String, List<?>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
+            return;
+        }
 
-                    } else if (getPrefixForURI(namespaceURI) == null && !foundModule.getDefaultPrefix().isEmpty()) {
+        if (getPrefixForURI(namespaceURI) == null && !foundModule.getDefaultPrefix().isEmpty()) {
+            // make sure the namespaces of default modules are known,
+            // even if they were imported in a parent context
+            try {
+                declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
 
-                        // make sure the namespaces of default modules are known,
-                        // even if they were imported in a parent context
-                        try {
-                            declareNamespace(foundModule.getDefaultPrefix(), foundModule.getNamespaceURI());
-
-                        } catch (final XPathException e) {
-                            LOG.warn("Internal error while loading default modules: {}", e.getMessage(), e);
-                        }
-                    }
-                }
+            } catch (final XPathException e) {
+                LOG.warn("Internal error while loading default modules: {}", e.getMessage(), e);
             }
         }
     }
