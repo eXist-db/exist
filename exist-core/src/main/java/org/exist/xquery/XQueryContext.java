@@ -2211,7 +2211,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             return;
         }
 
-        baseURI = (uri == null) ? AnyURIValue.EMPTY_URI : uri;
+        // TODO(JL): the previous code hinted that null _should_ be treated differently
+        // baseURI = (uri == null) ? AnyURIValue.EMPTY_URI : uri;
+        baseURI = uri;
         baseURISetInProlog = setInProlog;
     }
 
