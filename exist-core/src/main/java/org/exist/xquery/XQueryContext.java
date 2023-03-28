@@ -1700,11 +1700,9 @@ public class XQueryContext implements BinaryValueManager, Context {
                 }
             }
 
-            // add the module to the modules
-            final int currentLength = modules.length;
-            final Module[] newModules = Arrays.copyOf(modules, currentLength + 1);
-            // previous length is new last index
-            newModules[currentLength] = module;
+            // add the module to the end of current array of modules
+            final Module[] newModules = Arrays.copyOf(modules, modules.length + 1);
+            newModules[newModules.length - 1] = module;
             return newModules;
         };
     }
