@@ -1114,23 +1114,22 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureRecovery(final Optional<Path> dbHome, Element recovery) throws DatabaseConfigurationException {
-        String option = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_ENABLED_ATTRIBUTE);
-        setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean(option, true));
+    private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
+        final String enabled = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_ENABLED_ATTRIBUTE);
+        setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean(enabled, true));
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
 
-        option = getConfigAttributeValue(recovery, Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
-        setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(option, true));
+        final String syncOnCommit = getConfigAttributeValue(recovery, Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
+        setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(syncOnCommit, true));
         LOG.debug(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": {}", config.get(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT));
 
-        option = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE);
-        setProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(option, false));
+        final String groupCommit = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE);
+        setProperty(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(groupCommit, false));
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT));
 
-        option = getConfigAttributeValue(recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE);
-
-        if (option != null) {
-            final Path rf = ConfigurationHelper.lookup(option, dbHome);
+        final String journalDir = getConfigAttributeValue(recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE);
+        if (journalDir != null) {
+            final Path rf = ConfigurationHelper.lookup(journalDir, dbHome);
 
             if (!Files.isReadable(rf)) {
                 throw new DatabaseConfigurationException("cannot read data directory: " + rf);
@@ -1139,16 +1138,15 @@ public class Configuration implements ErrorHandler {
             LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": {}", config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
         }
 
-        option = getConfigAttributeValue(recovery, Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE);
-
-        if (option != null) {
-
-            if (option.endsWith("M") || option.endsWith("m")) {
-                option = option.substring(0, option.length() - 1);
-            }
-
+        final String sizeLimit = getConfigAttributeValue(recovery, Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE);
+        if (sizeLimit != null) {
             try {
-                final Integer size = Integer.valueOf(option);
+                final Integer size;
+                if (sizeLimit.endsWith("M") || sizeLimit.endsWith("m")) {
+                    size = Integer.valueOf(sizeLimit.substring(0, sizeLimit.length() - 1));
+                } else {
+                    size = Integer.valueOf(sizeLimit);
+                }
                 setProperty(Journal.PROPERTY_RECOVERY_SIZE_LIMIT, size);
                 LOG.debug(Journal.PROPERTY_RECOVERY_SIZE_LIMIT + ": {}m", config.get(Journal.PROPERTY_RECOVERY_SIZE_LIMIT));
             } catch (final NumberFormatException e) {
@@ -1156,22 +1154,14 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        option = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE);
-        boolean value = false;
-
-        if (option != null) {
-            value = "yes".equals(option);
-        }
-        setProperty(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, value);
+        final String forceRestart = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE);
+        final boolean forceRestartValue = forceRestart != null && "yes".equals(forceRestart);
+        setProperty(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, forceRestartValue);
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART));
 
-        option = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK);
-        value = false;
-
-        if (option != null) {
-            value = "yes".equals(option);
-        }
-        setProperty(BrokerPool.PROPERTY_RECOVERY_CHECK, value);
+        final String postRecoveryCheck = getConfigAttributeValue(recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK);
+        final boolean postRecoveryCheckValue = postRecoveryCheck != null && "yes".equals(postRecoveryCheck);
+        setProperty(BrokerPool.PROPERTY_RECOVERY_CHECK, postRecoveryCheckValue);
         LOG.debug(BrokerPool.PROPERTY_RECOVERY_CHECK + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_CHECK));
     }
 
