@@ -55,9 +55,9 @@ public class StartupTriggersManager implements BrokerPoolService {
     public void startPreMultiUserSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         for(final Configuration.StartupTriggerConfig startupTriggerConfig : startupTriggerConfigs) {
             try {
-                final Class<StartupTrigger> clazz = (Class<StartupTrigger>) Class.forName(startupTriggerConfig.getClazz());
+                final Class<StartupTrigger> clazz = (Class<StartupTrigger>) Class.forName(startupTriggerConfig.clazz());
                 final StartupTrigger startupTrigger = clazz.newInstance();
-                startupTrigger.execute(systemBroker, transaction, startupTriggerConfig.getParams());
+                startupTrigger.execute(systemBroker, transaction, startupTriggerConfig.params());
             } catch(final ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 LOG.error("Could not call StartupTrigger class: {}. SKIPPING! {}", startupTriggerConfig, e.getMessage(), e);
             } catch(final RuntimeException re) {

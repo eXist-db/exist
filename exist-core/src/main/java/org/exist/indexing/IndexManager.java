@@ -117,8 +117,8 @@ public class IndexManager implements BrokerPoolService {
         try {
             if (modConfigs != null) {
                 for (final Configuration.IndexModuleConfig modConfig : modConfigs) {
-                    final String className = modConfig.getClassName();
-                    initIndex(pool, modConfig.getId(), modConfig.getConfig(), dataDir, className);
+                    final String className = modConfig.className();
+                    initIndex(pool, modConfig.id(), modConfig.config(), dataDir, className);
                 }
             }
             // check if a structural index was configured. If not, create one based on default settings.

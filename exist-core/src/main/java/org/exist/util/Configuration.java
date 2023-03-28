@@ -1228,24 +1228,6 @@ public class Configuration implements ErrorHandler
             }
         }
     }
-    
-    public static class StartupTriggerConfig {
-        private final String clazz;
-        private final Map<String, List<? extends Object>> params;
-
-        public StartupTriggerConfig(final String clazz, final Map<String, List<? extends Object>> params) {
-            this.clazz = clazz;
-            this.params = params;
-        }
-
-        public String getClazz() {
-            return clazz;
-        }
-
-        public Map<String, List<? extends Object>> getParams() {
-            return params;
-        }
-    }
 
     private void configureStartup(final Element startup) {
         // Retrieve <triggers>
@@ -1713,33 +1695,11 @@ public class Configuration implements ErrorHandler
     {
         LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
     }
-    
 
-    public static final class IndexModuleConfig {
-        private final String id;
-        private final String className;
-        private final Element config;
+    public record StartupTriggerConfig(String clazz, Map<String, List<?>> params) {
+    }
 
-        public IndexModuleConfig(final String id, final String className, final Element config) {
-            this.id = id;
-            this.className = className;
-            this.config = config;
-        }
-
-        public String getId()
-        {
-            return( id );
-        }
-
-        public String getClassName()
-        {
-            return( className );
-        }
-
-        public Element getConfig()
-        {
-            return( config );
-        }
+    public record IndexModuleConfig(String id, String className, Element config) {
     }
 
 }
