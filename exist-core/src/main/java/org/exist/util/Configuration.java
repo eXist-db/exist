@@ -427,62 +427,65 @@ public class Configuration implements ErrorHandler
         final NodeList builtins = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
 
         // search under <builtin-modules>
-        if(builtins.getLength() > 0) {
-            Element  elem    = (Element)builtins.item(0);
-            final NodeList modules = elem.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
+        if (builtins.getLength() == 0) {
+            return;
+        }
 
-            if(modules.getLength() > 0) {
+        final Element builtIn = (Element) builtins.item(0);
+        final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
 
-                // iterate over all <module src= uri= class=> entries
-                for(int i = 0; i < modules.getLength(); i++) {
+        if (modules.getLength() == 0) {
+            return;
+        }
 
-                    // Get element.
-                    elem = (Element)modules.item(i);
+        // iterate over all <module src= uri= class=> entries
+        for (int i = 0; i < modules.getLength(); i++) {
+            // Get element.
+            final Element elem = (Element) modules.item(i);
 
-                    // Get attributes uri class and src
-                    final String uri    = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
-                    final String clazz  = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
-                    final String source = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
+            // Get attributes uri class and src
+            final String uri = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
+            final String clazz = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+            final String source = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
 
-                    // uri attribute is the identifier and is always required
-                    if(uri == null) {
-                        throw(new DatabaseConfigurationException("element 'module' requires an attribute 'uri'" ));
-                    }
+            // uri attribute is the identifier and is always required
+            if (uri == null) {
+                throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
+            }
 
-                    // either class or source attribute must be present
-                    if((clazz == null) && (source == null)) {
-                        throw(new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'" ));
-                    }
+            // either class or source attribute must be present
+            if (clazz == null && source == null) {
+                throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
+            }
 
-                    if(source != null) {
-                        // Store src attribute info
+            if (source != null) {
+                // Store src attribute info
 
-                        modulesSourceMap.put(uri, source);
+                modulesSourceMap.put(uri, source);
 
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
-                        }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
+                }
 
-                    } else {
-                        // source class attribute info
+            } else {
+                // source class attribute info
 
-                        // Get class of module
-                        final Class<?> moduleClass = lookupModuleClass(uri, clazz);
+                // Get class of module
+                final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
-                        // Store class if thw module class actually exists
-                        if( moduleClass != null) {
-                            modulesClassMap.put(uri, moduleClass);
-                        }
+                // Store class if thw module class actually exists
+                if (moduleClass != null) {
+                    modulesClassMap.put(uri, moduleClass);
+                }
 
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
-                        }
-                    }
-
-                    //parse any module parameters
-                    moduleParameters.put(uri, ParametersExtractor.extract(elem.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME)));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
                 }
             }
+
+            //parse any module parameters
+            moduleParameters.put(uri, ParametersExtractor.extract(
+                    elem.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME)));
         }
     }
 
