@@ -619,19 +619,24 @@ public class Configuration implements ErrorHandler
 
     private void configureXmlParser(final Element parser) {
         final NodeList nlXml = parser.getElementsByTagName(XMLReaderPool.XmlParser.XML_PARSER_ELEMENT);
-        if(nlXml.getLength() > 0) {
-            final Element xml = (Element)nlXml.item(0);
-
-            final NodeList nlFeatures = xml.getElementsByTagName(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_ELEMENT);
-            if(nlFeatures.getLength() > 0) {
-                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-                if(pFeatures != null) {
-                    final Map<String, Boolean> features = new HashMap<>();
-                    pFeatures.forEach((k,v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-                    config.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, features);
-                }
-            }
+        if (nlXml.getLength() == 0) {
+            return;
         }
+
+        final Element xml = (Element) nlXml.item(0);
+        final NodeList nlFeatures = xml.getElementsByTagName(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_ELEMENT);
+        if (nlFeatures.getLength() == 0) {
+            return;
+        }
+
+        final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
+        if (pFeatures == null) {
+            return;
+        }
+
+        final Map<String, Boolean> features = new HashMap<>();
+        pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+        config.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, features);
     }
 
     private void configureHtmlToXmlParser(final Element parser) {
