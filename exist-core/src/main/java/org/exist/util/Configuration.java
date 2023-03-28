@@ -209,7 +209,7 @@ public class Configuration implements ErrorHandler {
             //indexer settings
             final NodeList indexers = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
             if (indexers.getLength() > 0) {
-                configureIndexer(existHomeDirname, doc, (Element) indexers.item(0));
+                configureIndexer(doc, (Element) indexers.item(0));
             }
 
             //scheduler settings
@@ -1375,7 +1375,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureIndexer(final Optional<Path> dbHome, Document doc, Element indexer) throws DatabaseConfigurationException {
+    private void configureIndexer(final Document doc, final Element indexer) throws DatabaseConfigurationException {
         final String caseSensitive = getConfigAttributeValue(indexer, NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE);
 
         if (caseSensitive != null) {
@@ -1427,28 +1427,29 @@ public class Configuration implements ErrorHandler {
         }
 
         // index modules
-        NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
+        final NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
 
         if (modules.getLength() > 0) {
-            modules = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
-            final IndexModuleConfig[] modConfig = new IndexModuleConfig[modules.getLength()];
-
-            for (int i = 0; i < modules.getLength(); i++) {
-                final Element elem = (Element) modules.item(i);
-                final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
-                final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
-
-                if (className == null || className.isEmpty()) {
-                    throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
-                }
-
-                if (id == null || id.isEmpty()) {
-                    throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
-                }
-                modConfig[i] = new IndexModuleConfig(id, className, elem);
-            }
-            config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
+            return;
         }
+        final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
+        final IndexModuleConfig[] modConfig = new IndexModuleConfig[module.getLength()];
+
+        for (int i = 0; i < modules.getLength(); i++) {
+            final Element elem = (Element) modules.item(i);
+            final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
+            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
+
+            if (className == null || className.isEmpty()) {
+                throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
+            }
+
+            if (id == null || id.isEmpty()) {
+                throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
+            }
+            modConfig[i] = new IndexModuleConfig(id, className, elem);
+        }
+        config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
     }
 
     private void configureValidation(final Optional<Path> dbHome, final Element validation) throws DatabaseConfigurationException {
