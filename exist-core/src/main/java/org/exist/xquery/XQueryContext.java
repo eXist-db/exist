@@ -1248,7 +1248,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
-     * Get's a collection from the "Available collections" of the
+     * Gets a collection from the "Available collections" of the
      * dynamic context.
      *
      * @param uri the URI of the collection to retrieve
@@ -2417,11 +2417,13 @@ public class XQueryContext implements BinaryValueManager, Context {
             throws XPathException {
 
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0070, "The prefix declared for a module import must not be 'xml' or 'xmlns'.");
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The prefix declared for a module import must not be 'xml' or 'xmlns'.");
         }
 
         if (namespaceURI != null && namespaceURI.isEmpty()) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0088, "The first URILiteral in a module import must be of nonzero length.");
+            throw new XPathException(rootExpression, ErrorCodes.XQST0088,
+                    "The first URILiteral in a module import must be of nonzero length.");
         }
 
         Module[] modules = null;
@@ -2780,14 +2782,11 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Get a static decimal format.
      *
      * @param qnDecimalFormat the name of the decimal format, or null for the UNNAMED format.
-     *
      * @return the decimal format, or null if there is no format matching the name
      */
-    public @Nullable DecimalFormat getStaticDecimalFormat(@Nullable QName qnDecimalFormat) {
-        if (qnDecimalFormat == null) {
-            qnDecimalFormat = UNNAMED_DECIMAL_FORMAT;
-        }
-        return staticDecimalFormats.get(qnDecimalFormat);
+    public @Nullable DecimalFormat getStaticDecimalFormat(@Nullable final QName qnDecimalFormat) {
+        final QName format = qnDecimalFormat == null ? UNNAMED_DECIMAL_FORMAT : qnDecimalFormat;
+        return staticDecimalFormats.get(format);
     }
 
     /**
@@ -2959,7 +2958,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public Pragma getPragma(final String name, String contents) throws XPathException {
+    public Pragma getPragma(final String name, final String contents) throws XPathException {
         final QName qname;
         try {
             qname = QName.parse(this, name);
@@ -2968,7 +2967,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
         final String ns = qname.getNamespaceURI();
         if (ns.isEmpty()) {
-            throw new XPathException(rootExpression, ErrorCodes.XPST0081, "XPST0081: pragma's ('" + name + "') namespace URI is empty");
+            throw new XPathException(rootExpression, ErrorCodes.XPST0081,
+                    "The namespace URI for Pragma ('" + name + "') is empty");
         }
 
         if (!Namespaces.EXIST_NS.equals(ns)) {
@@ -3440,7 +3440,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         /**
          * Returns a new HttpContext with the new session set.
-         *
+         * <p>
          * The request and response are referenced from this object.
          *
          * @param newSession the new session to set.
@@ -3451,7 +3451,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return getStringValue();
     }
 
@@ -3545,6 +3546,4 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         return sb.toString();
     }
-
-
 }
