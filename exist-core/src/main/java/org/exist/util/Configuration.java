@@ -361,7 +361,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureRepository(Element element) {
+    private void configureRepository(final Element element) {
         String root = getConfigAttributeValue(element, "root");
         if (root == null || root.isEmpty()) {
             return;
@@ -374,7 +374,7 @@ public class Configuration implements ErrorHandler {
         config.put(Deployment.PROPERTY_APP_ROOT, root);
     }
 
-    private void configureBinaryManager(Element binaryManager) {
+    private void configureBinaryManager(final Element binaryManager) {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
         if (nlCache.getLength() == 0) {
             return;
@@ -452,12 +452,12 @@ public class Configuration implements ErrorHandler {
      * @param xquery           configuration root
      * @param modulesClassMap  map containing all classes of modules
      * @param modulesSourceMap map containing all source uris to external resources
-     * @throws DatabaseConfigurationException
+     * @throws DatabaseConfigurationException if one of the modules is configured incorrectly
      */
-    private void loadModuleClasses(Element xquery,
-                                   Map<String, Class<?>> modulesClassMap,
-                                   Map<String, String> modulesSourceMap,
-                                   Map<String, Map<String, List<? extends Object>>> moduleParameters
+    private void loadModuleClasses(final Element xquery,
+                                   final Map<String, Class<?>> modulesClassMap,
+                                   final Map<String, String> modulesSourceMap,
+                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters
     ) throws DatabaseConfigurationException {
         // add the standard function module
         modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
@@ -563,8 +563,8 @@ public class Configuration implements ErrorHandler {
     /**
      * DOCUMENT ME!
      *
-     * @param xupdate
-     * @throws NumberFormatException
+     * @param xupdate configuration element
+     * @throws NumberFormatException if one of the settings is not parseable
      */
     private void configureXUpdate(final Element xupdate) throws NumberFormatException {
         final String fragmentation = getConfigAttributeValue(xupdate, DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
@@ -705,9 +705,9 @@ public class Configuration implements ErrorHandler {
     /**
      * DOCUMENT ME!
      *
-     * @param serializer
+     * @param serializer element with serializer settings
      */
-    private void configureSerializer(Element serializer) {
+    private void configureSerializer(final Element serializer) {
         final String omitXmlDeclaration = getConfigAttributeValue(serializer, Serializer.OMIT_XML_DECLARATION_ATTRIBUTE);
         if (omitXmlDeclaration != null) {
             config.put(Serializer.PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
@@ -1017,9 +1017,7 @@ public class Configuration implements ErrorHandler {
         }
 
         final String pageSize = getConfigAttributeValue(con, NativeBroker.PAGE_SIZE_ATTRIBUTE);
-
         if (pageSize != null) {
-
             try {
                 config.put(BrokerPool.PROPERTY_PAGE_SIZE, Integer.valueOf(pageSize));
                 LOG.debug(BrokerPool.PROPERTY_PAGE_SIZE + ": {}", config.get(BrokerPool.PROPERTY_PAGE_SIZE));
@@ -1030,9 +1028,7 @@ public class Configuration implements ErrorHandler {
 
         //Not clear : rather looks like a buffers count
         final String collCacheSize = getConfigAttributeValue(con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE);
-
         if (collCacheSize != null) {
-
             try {
                 config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, Integer.valueOf(collCacheSize));
                 LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": {}", config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
@@ -1042,9 +1038,7 @@ public class Configuration implements ErrorHandler {
         }
 
         final String nodesBuffer = getConfigAttributeValue(con, BrokerPool.NODES_BUFFER_ATTRIBUTE);
-
         if (nodesBuffer != null) {
-
             try {
                 config.put(BrokerPool.PROPERTY_NODES_BUFFER, Integer.valueOf(nodesBuffer));
                 LOG.debug(BrokerPool.PROPERTY_NODES_BUFFER + ": {}", config.get(BrokerPool.PROPERTY_NODES_BUFFER));
@@ -1055,9 +1049,7 @@ public class Configuration implements ErrorHandler {
         }
 
         String diskSpace = getConfigAttributeValue(con, BrokerPool.DISK_SPACE_MIN_ATTRIBUTE);
-
         if (diskSpace != null) {
-
             if (diskSpace.endsWith("M") || diskSpace.endsWith("m")) {
                 diskSpace = diskSpace.substring(0, diskSpace.length() - 1);
             }
@@ -1090,25 +1082,21 @@ public class Configuration implements ErrorHandler {
         }
 
         final NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME);
-
         if (poolConf.getLength() > 0) {
             configurePool((Element) poolConf.item(0));
         }
 
         final NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
-
         if (queryPoolConf.getLength() > 0) {
             configureXQueryPool((Element) queryPoolConf.item(0));
         }
 
         final NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
-
         if (watchConf.getLength() > 0) {
             configureWatchdog((Element) watchConf.item(0));
         }
 
         final NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
-
         if (recoveries.getLength() > 0) {
             configureRecovery(dbHome, (Element) recoveries.item(0));
         }
@@ -1168,9 +1156,9 @@ public class Configuration implements ErrorHandler {
     /**
      * DOCUMENT ME!
      *
-     * @param watchDog
+     * @param watchDog element with watchDog settings
      */
-    private void configureWatchdog(Element watchDog) {
+    private void configureWatchdog(final Element watchDog) {
         final String timeout = getConfigAttributeValue(watchDog, "query-timeout");
 
         if (timeout != null) {
@@ -1199,9 +1187,9 @@ public class Configuration implements ErrorHandler {
     /**
      * DOCUMENT ME!
      *
-     * @param queryPool
+     * @param queryPool element with queryPool settings
      */
-    private void configureXQueryPool(Element queryPool) {
+    private void configureXQueryPool(final Element queryPool) {
         final String maxStackSize = getConfigAttributeValue(queryPool, XQueryPool.MAX_STACK_SIZE_ATTRIBUTE);
 
         if (maxStackSize != null) {
@@ -1298,9 +1286,8 @@ public class Configuration implements ErrorHandler {
      *
      * @param pool
      */
-    private void configurePool(Element pool) {
+    private void configurePool(final Element pool) {
         final String min = getConfigAttributeValue(pool, BrokerPool.MIN_CONNECTIONS_ATTRIBUTE);
-
         if (min != null) {
 
             try {
@@ -1312,7 +1299,6 @@ public class Configuration implements ErrorHandler {
         }
 
         final String max = getConfigAttributeValue(pool, BrokerPool.MAX_CONNECTIONS_ATTRIBUTE);
-
         if (max != null) {
 
             try {
@@ -1324,7 +1310,6 @@ public class Configuration implements ErrorHandler {
         }
 
         final String sync = getConfigAttributeValue(pool, BrokerPool.SYNC_PERIOD_ATTRIBUTE);
-
         if (sync != null) {
 
             try {
@@ -1336,7 +1321,6 @@ public class Configuration implements ErrorHandler {
         }
 
         final String maxShutdownWait = getConfigAttributeValue(pool, BrokerPool.SHUTDOWN_DELAY_ATTRIBUTE);
-
         if (maxShutdownWait != null) {
 
             try {
