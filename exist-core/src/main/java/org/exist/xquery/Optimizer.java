@@ -58,13 +58,12 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private static final Logger LOG = LogManager.getLogger(Optimizer.class);
 
-    private XQueryContext context;
+    private final XQueryContext context;
+    private final List<QueryRewriter> rewriters;
 
     private int predicates = 0;
 
     private boolean hasOptimized = false;
-
-    private List<QueryRewriter> rewriters;
 
     public Optimizer(XQueryContext context) {
         this.context = context;
