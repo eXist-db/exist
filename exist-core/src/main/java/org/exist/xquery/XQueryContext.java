@@ -1716,31 +1716,25 @@ public class XQueryContext implements BinaryValueManager, Context {
         // exception will currently break util:eval.
 
         final QName name = function.getSignature().getName();
+        final String uri = name.getNamespaceURI();
 
-        if (XML_NS.equals(name.getNamespaceURI())) {
-            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + XML_NS + "'");
+        if (uri.isEmpty()) {
+            throw new XPathException(function, ErrorCodes.XQST0060,
+                    "Every declared function name must have a non-null namespace URI, " +
+                            "but function '" + name + "' does not meet this requirement.");
         }
 
-        if (Namespaces.SCHEMA_NS.equals(name.getNamespaceURI())) {
-            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'");
-        }
-
-        if (Namespaces.SCHEMA_INSTANCE_NS.equals(name.getNamespaceURI())) {
-            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'");
-        }
-
-        if (Namespaces.XPATH_FUNCTIONS_NS.equals(name.getNamespaceURI())) {
-            throw new XPathException(function, ErrorCodes.XQST0045, "Function '" + name + "' is in the forbidden namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'");
-        }
-
-        if (name.getNamespaceURI().isEmpty()) {
-            throw new XPathException(function, ErrorCodes.XQST0060, "Every declared function name must have a non-null namespace URI, but function '" + name + "' does not meet this requirement.");
+        if (Namespaces.PROTECTED_NS.contains(uri)) {
+            throw new XPathException(function, ErrorCodes.XQST0045,
+                    "Function '" + name + "' is in the forbidden namespace '" + uri + "'");
         }
 
         final FunctionSignature signature = function.getSignature();
         final FunctionId functionKey = signature.getFunctionId();
         if (declaredFunctions.containsKey(functionKey)) {
-            throw new XPathException(function, ErrorCodes.XQST0034, "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount() + " is already defined.");
+            throw new XPathException(function, ErrorCodes.XQST0034,
+                    "Function " +  signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount()
+                            + " is already defined.");
         }
 
         declaredFunctions.put(functionKey, function);

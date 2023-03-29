@@ -24,6 +24,7 @@ package org.exist;
 import org.exist.dom.QName;
 
 import javax.xml.XMLConstants;
+import java.util.Set;
 
 /**
  * Global namespace declarations.
@@ -92,4 +93,7 @@ public interface Namespaces {
     String XHTML_NS = "http://www.w3.org/1999/xhtml";
 
 	String XINCLUDE_NS = "http://www.w3.org/2001/XInclude";
+
+	Set<String> PROTECTED_NS = Set.of(
+			XML_NS, SCHEMA_NS, SCHEMA_INSTANCE_NS, XPATH_FUNCTIONS_NS);
 }
