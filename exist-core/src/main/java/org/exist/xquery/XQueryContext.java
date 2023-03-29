@@ -516,7 +516,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param httpContext the HTTP context within which the XQuery
      *                    is being executed.
      */
-    public void setHttpContext(final HttpContext httpContext) {
+    public void setHttpContext(@Nullable final HttpContext httpContext) {
         this.httpContext = httpContext;
     }
 
@@ -538,7 +538,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public Optional<ExistRepository> getRepository() {
         return or(
                 testRepository,
-            () -> Optional.ofNullable(getBroker()).map(DBBroker::getBrokerPool).flatMap(BrokerPool::getExpathRepo)
+                () -> Optional.ofNullable(getBroker()).map(DBBroker::getBrokerPool).flatMap(BrokerPool::getExpathRepo)
         );
     }
 
@@ -984,14 +984,17 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void setDefaultFunctionNamespace(final String uri) throws XPathException {
         //Not sure for the 2nd clause : eXist-db forces the function NS as default.
-        if ((defaultFunctionNamespace != null) && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS) && !defaultFunctionNamespace.equals(uri)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0066, "Default function namespace is already set to: '" + defaultFunctionNamespace + "'");
+        if (defaultFunctionNamespace != null
+                && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS)
+                && !defaultFunctionNamespace.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0066,
+                    "Default function namespace is already set to: '" + defaultFunctionNamespace + "'");
         }
         defaultFunctionNamespace = uri;
     }
 
     @Override
-    public String getDefaultElementNamespaceSchema() throws XPathException {
+    public String getDefaultElementNamespaceSchema() {
         return defaultElementNamespaceSchema.getStringValue();
     }
 
@@ -1005,7 +1008,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public String getDefaultElementNamespace() throws XPathException {
+    public String getDefaultElementNamespace() {
         return defaultElementNamespace.getStringValue();
     }
 
@@ -1076,7 +1079,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     public void addDynamicallyAvailableDocument(final String uri,
-            final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException> supplier) {
+                                                final TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException> supplier) {
         if (dynamicDocuments == null) {
             dynamicDocuments = new HashMap<>();
         }
@@ -1870,7 +1873,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public Variable resolveVariable(final QName qname) throws XPathException {
         return resolveVariable(null, qname);
     }
-    
+
     @Override
     public Variable resolveVariable(@Nullable final AnalyzeContextInfo contextInfo, final QName qname) throws XPathException {
         // check if the variable is declared local
@@ -2625,7 +2628,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
     private @Nullable ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
-            final Source source) throws XPathException {
+                                                   final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Loading module from {}", location);
         }
@@ -2843,7 +2846,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             staticNamespacesSaved = new HashMap<>(staticNamespaces);
             staticPrefixesSaved = new HashMap<>(staticPrefixes);
-    }
+        }
 
         void restore() {
             if (modulesSaved == null) {
