@@ -1303,10 +1303,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public void addLockedDocument(final DocumentImpl doc) {
-    }
-
-    @Override
     public void setShared(final boolean shared) {
         isShared = shared;
     }
