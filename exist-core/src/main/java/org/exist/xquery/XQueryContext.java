@@ -1622,7 +1622,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             // INOTE: expathrepo
             final Module module = instantiateModule(namespaceURI, (Class<Module>) mClass,
-                    (Map<String, Map<String, List<?>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
+                    (Map<String, Map<String, List<? extends Object>>>) getConfiguration().getProperty(PROPERTY_MODULE_PARAMETERS));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("module {} loaded successfully.", module.getNamespaceURI());
             }
@@ -1634,7 +1634,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> mClazz,
-            final Map<String, Map<String, List<?>>> moduleParameters) {
+                                               final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         try {
             final Constructor<Module> constructor = XQueryContext.getModuleConstructor(mClazz);
 
@@ -3050,33 +3050,32 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         // Iterate on all map entries
         for (final Map.Entry<String, Class<Module>> entry : builtInModules.entrySet()) {
-            addDefaultBuiltInModule(config, entry);
+            addBuiltInModuleOrDeclareNamespace(config, entry);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void addDefaultBuiltInModule(final Configuration config, final Map.Entry<String, Class<Module>> entry) {
+    private void addBuiltInModuleOrDeclareNamespace(final Configuration config, final Map.Entry<String, Class<Module>> entry) {
         final String namespaceURI = entry.getKey();
         // first check if the module has already been loaded in the parent context
         final Module[] modules = getModules(namespaceURI);
-        if (modules == null) {
-            return;
-        }
 
         // we have to instantiate the module class
         final Class<Module> moduleClass = entry.getValue();
         Module foundModule = null;
-        for (final Module module : modules) {
-            if (moduleClass.equals(module.getClass())) {
-                foundModule = module;
-                break;
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (moduleClass.equals(module.getClass())) {
+                    foundModule = module;
+                    break;
+                }
             }
         }
 
         if (foundModule == null) {
             // Module does not exist yet, instantiate
             instantiateModule(namespaceURI, moduleClass,
-                    (Map<String, Map<String, List<?>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
+                    (Map<String, Map<String, List<? extends Object>>>) config.getProperty(PROPERTY_MODULE_PARAMETERS));
             return;
         }
 
