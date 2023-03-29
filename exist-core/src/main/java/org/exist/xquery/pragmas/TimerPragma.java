@@ -30,8 +30,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 
 public class TimerPragma extends Pragma {
-    public final static String LOCAL_NAME = "timer";
-    public final static QName TIMER_PRAGMA = new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public final static String TIMER_PRAGMA_LOCAL_NAME = "timer";
+    public final static QName TIMER_PRAGMA = new QName(TIMER_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
     
     private Logger log = null;
     

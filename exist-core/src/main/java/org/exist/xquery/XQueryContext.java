@@ -2974,11 +2974,11 @@ public class XQueryContext implements BinaryValueManager, Context {
         final String sanitizedContents = StringValue.trimWhitespace(contents);
 
         return switch(qname.getLocalPart()) {
-            case Optimize.LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
-            case TimerPragma.LOCAL_NAME -> new TimerPragma(rootExpression, qname, sanitizedContents);
-            case ProfilePragma.LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
-            case ForceIndexUse.LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
-            case NoIndexPragma.LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);
+            case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
+            case TimerPragma.TIMER_PRAGMA_LOCAL_NAME -> new TimerPragma(rootExpression, qname, sanitizedContents);
+            case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
+            case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
+            case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);
             default -> null;
         };
     }

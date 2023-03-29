@@ -42,8 +42,8 @@ import java.util.List;
 import static java.lang.System.arraycopy;
 
 public class Optimize extends Pragma {
-    public final static String LOCAL_NAME = "optimize";
-    public final static QName OPTIMIZE_PRAGMA = new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public final static String OPTIMIZE_PRAGMA_LOCAL_NAME = "optimize";
+    public final static QName OPTIMIZE_PRAGMA = new QName(OPTIMIZE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
     private final static Logger LOG = LogManager.getLogger(Optimize.class);
 
