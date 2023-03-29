@@ -1610,14 +1610,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @SuppressWarnings("unchecked")
-    Module initBuiltInModule(final String namespaceURI, final String moduleClass) {
+    Module initBuiltInModule(final String namespaceURI, final String moduleClassName) {
         try {
             // lookup the class
             final ClassLoader existClassLoader = getBroker().getBrokerPool().getClassLoader();
-            final Class<?> mClass = Class.forName(moduleClass, false, existClassLoader);
+            final Class<?> mClass = Class.forName(moduleClassName, false, existClassLoader);
 
             if (!(Module.class.isAssignableFrom(mClass))) {
-                LOG.info("failed to load module. {} is not an instance of org.exist.xquery.Module.", moduleClass);
+                LOG.info("failed to load module. {} is not an instance of org.exist.xquery.Module.", moduleClassName);
                 return null;
             }
             // INOTE: expathrepo
@@ -1628,18 +1628,18 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             return module;
         } catch (final ClassNotFoundException e) {
-            LOG.warn("module class {} not found. Skipping...", moduleClass);
+            LOG.warn("module class {} not found. Skipping...", moduleClassName);
             return null;
         }
     }
 
-    private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> mClazz,
+    private @Nullable Module instantiateModule(final String namespaceURI, final Class<Module> moduleClass,
                                                final Map<String, Map<String, List<? extends Object>>> moduleParameters) {
         try {
-            final Constructor<Module> constructor = XQueryContext.getModuleConstructor(mClazz);
+            final Constructor<Module> constructor = XQueryContext.getModuleConstructor(moduleClass);
 
             if (constructor == null) {
-                LOG.warn("Module {} has no matching public constructor!", mClazz.getName());
+                LOG.warn("Module {} has no matching public constructor!", moduleClass.getName());
                 return null;
             }
 
@@ -1668,7 +1668,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             return module;
         } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | XPathException e) {
-            LOG.warn("error while instantiating module class {}", mClazz.getName(), e);
+            LOG.warn("error while instantiating module class {}", moduleClass.getName(), e);
             return null;
         }
     }
