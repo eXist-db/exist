@@ -42,10 +42,10 @@ import java.util.List;
 import static java.lang.System.arraycopy;
 
 public class Optimize extends Pragma {
-    public final static String OPTIMIZE_PRAGMA_LOCAL_NAME = "optimize";
-    public final static QName OPTIMIZE_PRAGMA = new QName(OPTIMIZE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public static final String OPTIMIZE_PRAGMA_LOCAL_NAME = "optimize";
+    public static final QName OPTIMIZE_PRAGMA = new QName(OPTIMIZE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
-    private final static Logger LOG = LogManager.getLogger(Optimize.class);
+    private static final Logger LOG = LogManager.getLogger(Optimize.class);
 
     private boolean enabled = true;
     private XQueryContext context;

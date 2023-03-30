@@ -30,10 +30,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 public class NoIndexPragma extends Pragma {
-    public final static String NO_INDEX_PRAGMA_LOCAL_NAME = "no-index";
-    public final static QName NO_INDEX_PRAGMA = new QName(NO_INDEX_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public static final String NO_INDEX_PRAGMA_LOCAL_NAME = "no-index";
+    public static final QName NO_INDEX_PRAGMA = new QName(NO_INDEX_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
-    private final static Logger LOG = LogManager.getLogger(NoIndexPragma.class);
+    private static final Logger LOG = LogManager.getLogger(NoIndexPragma.class);
 
     public NoIndexPragma(QName qname, String contents) throws XPathException {
         this(null, qname, contents);

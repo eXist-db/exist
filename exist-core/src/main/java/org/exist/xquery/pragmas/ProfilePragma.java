@@ -27,8 +27,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 public class ProfilePragma extends Pragma {
-    public final static String PROFILING_PRAGMA_LOCAL_NAME = "profiling";
-    public final static QName PROFILING_PRAGMA = new QName(PROFILING_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public static final String PROFILING_PRAGMA_LOCAL_NAME = "profiling";
+    public static final QName PROFILING_PRAGMA = new QName(PROFILING_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
     
     public ProfilePragma(QName qname, String contents) throws XPathException {
         this(null, qname, contents);
