@@ -1,0 +1,42 @@
+name: Verify
+on: [push, pull_request]
+jobs:
+  verify:
+    name: Verify (JDK ${{ matrix.jdk }}) 
+    env:
+      MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./
+    strategy:
+      fail-fast: false
+      matrix:
+        jdk: ['17']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.jdk }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.jdk }}
+          cache: 'maven'
+      - name: Maven Verify
+        timeout-minutes: 60
+        run: mvn -V -B -DtrimStackTrace=false -D"maven.resolver.transport"=wagon -D"dependency-check.skip"=true clean verify
+      - name: Maven Code Coverage
+        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+        env:
+          CI_NAME: github
+          BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
+          CI_BUILD_NUMBER: ${{ github.run_id }}
+          CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
+          COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+        run: mvn -V -B jacoco:report coveralls:report
+      - name: Archive verify logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: jdk${{ matrix.jdk }}-verify-logs
+          retention-days: 5
+          path: |
+            **/*.jfr
+            **/hs_err_pid*.log
+            **/target/surefire-reports/*
