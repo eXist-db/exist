@@ -1,15 +1,53 @@
-name: Test
+name: Test & documentation
 on: [push, pull_request]
+permissions:
+  contents: read
+env:
+  MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./ -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
+  DEV_JDK: '17'
 jobs:
+  license:
+    name: License check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+          cache: 'maven'
+      - run: mvn -V -B license:check
+        timeout-minutes: 60
+  dependencies:
+    name: Dependency checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+          cache: 'maven'
+      - run: mvn -V -B dependency-check:check
+        timeout-minutes: 60
+  documentation:
+    name: Javadoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: ${{ env.DEV_JDK }}
+          cache: 'maven'
+      - run: mvn -V -B -q -T 2C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
   test:
     name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test
-    env:
-      MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        jdk: ['17']
+        jdk: [ '17' ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -21,9 +59,9 @@ jobs:
           cache: 'maven'
       - name: Maven Test
         timeout-minutes: 60
-        run: mvn -V -B -DtrimStackTrace=false -D"maven.resolver.transport"="wagon" clean verify
+        run: mvn -V -B verify -D'dependency-check.skip' -D'license.skip'
       - name: Maven Code Coverage
-        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == env.DEV_JDK && matrix.os == 'ubuntu-latest' }}
         env:
           CI_NAME: github
           BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
