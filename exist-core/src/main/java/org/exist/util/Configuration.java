@@ -1386,14 +1386,14 @@ public class Configuration implements ErrorHandler {
         // index modules
         final NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
 
-        if (modules.getLength() > 0) {
+        if (modules.getLength() == 0) {
             return;
         }
         final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
         final IndexModuleConfig[] modConfig = new IndexModuleConfig[module.getLength()];
 
-        for (int i = 0; i < modules.getLength(); i++) {
-            final Element elem = (Element) modules.item(i);
+        for (int i = 0; i < module.getLength(); i++) {
+            final Element elem = (Element) module.item(i);
             final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
             final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
