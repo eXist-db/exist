@@ -1,4 +1,4 @@
-name: Test
+name: Test (Package)
 on: [push, pull_request]
 jobs:
   test:
@@ -21,7 +21,7 @@ jobs:
           cache: 'maven'
       - name: Maven Test
         timeout-minutes: 60
-        run: mvn -V -B -DtrimStackTrace=false -D"maven.resolver.transport"=wagon clean test
+        run: mvn -V -B -DtrimStackTrace=false -D"maven.resolver.transport"=wagon clean package
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v2
