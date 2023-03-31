@@ -1,11 +1,13 @@
 version: 2
 updates:
-- package-ecosystem:
-  - github-actions
-  - maven
+- package-ecosystem: "github-actions"
   directory: "/"
   schedule:
-    interval: daily
+    interval: "weekly"
+- package-ecosystem: "maven"
+  directory: "/"
+  schedule:
+    interval: "daily"
     time: "03:00"
   open-pull-requests-limit: 10
   ignore:
@@ -33,4 +35,4 @@ updates:
   - dependency-name: com.mycila:license-maven-plugin
     versions:
     - "4.0"
-    - 4.0.rc2
+    - "4.0.rc2"
