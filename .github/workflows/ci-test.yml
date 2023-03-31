@@ -33,7 +33,7 @@ jobs:
         run: mvn -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
           retention-days: 5
