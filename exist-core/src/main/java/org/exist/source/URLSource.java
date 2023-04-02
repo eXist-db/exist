@@ -24,7 +24,6 @@ package org.exist.source;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.storage.DBBroker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,7 +98,7 @@ public class URLSource extends AbstractSource {
     }
 
     @Override
-    public Validity isValid(final DBBroker broker) {
+    public Validity isValid() {
         final long modified = getLastModification();
         final Validity validity;
         if (modified == 0 || modified > lastModified) {
@@ -109,11 +108,6 @@ public class URLSource extends AbstractSource {
         }
         lastModified = modified;
         return validity;
-    }
-
-    @Override
-    public Validity isValid(final Source other) {
-        return Validity.INVALID;
     }
 
     @Override

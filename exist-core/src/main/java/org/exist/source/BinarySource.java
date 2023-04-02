@@ -21,8 +21,6 @@
  */
 package org.exist.source;
 
-import org.exist.security.Subject;
-import org.exist.storage.DBBroker;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import java.io.*;
@@ -54,12 +52,7 @@ public class BinarySource extends AbstractSource {
     }
 
     @Override
-    public Validity isValid(final DBBroker broker) {
-        return Source.Validity.VALID;
-    }
-
-    @Override
-    public Validity isValid(final Source other) {
+    public Validity isValid() {
         return Source.Validity.VALID;
     }
 

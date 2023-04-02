@@ -158,7 +158,7 @@ public class SMEvents implements Configurable {
 			final XmldbURI pathUri = XmldbURI.create(scriptURI);
         	try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
 				if (lockedResource != null) {
-					return new DBSource(broker, (BinaryDocument)lockedResource.getDocument(), true);
+					return new DBSource(broker.getBrokerPool(), (BinaryDocument)lockedResource.getDocument(), true);
 				}
         	} catch (final PermissionDeniedException e) {
         		//XXX: log

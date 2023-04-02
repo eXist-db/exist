@@ -69,7 +69,7 @@ class XQueryCompiler {
             
                     //compile the query
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-                    final DBSource source = new DBSource(broker, (BinaryDocument)document, true);
+                    final DBSource source = new DBSource(broker.getBrokerPool(), (BinaryDocument)document, true);
 
                     //set the module load path for any module imports that are relative
                     context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment());

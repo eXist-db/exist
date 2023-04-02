@@ -247,7 +247,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
             if (resource == null) {
                 throw new XMLDBException(ErrorCodes.INVALID_URI, "No stored XQuery exists at: " + uri);
             }
-            return new DBSource(broker, (BinaryDocument) resource, false);
+            return new DBSource(broker.getBrokerPool(), (BinaryDocument) resource, false);
         });
     }
 

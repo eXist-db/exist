@@ -134,7 +134,7 @@ public class Scan extends BasicFunction {
                                 throw new XPathException(this, "XQuery resource: " + uri + " is not an XQuery or " +
                                         "declares a wrong mime-type");
                             }
-                            source = new DBSource(context.getBroker(), (BinaryDocument) doc, false);
+                            source = new DBSource(context.getBroker().getBrokerPool(), (BinaryDocument) doc, false);
                             name = doc.getFileURI().toString();
                         }
                     } catch (LockException e) {

@@ -110,7 +110,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
                             if (LOG.isTraceEnabled()) {
                                 LOG.trace("Resource [{}] exists.", xqueryResourcePath);
                             }
-                            source = new DBSource(broker, (BinaryDocument) lockedResource.getDocument(), true);
+                            source = new DBSource(pool, (BinaryDocument) lockedResource.getDocument(), true);
                         } else {
                             LOG.error("Resource [{}] does not exist.", xqueryResourcePath);
                             return;

@@ -162,7 +162,7 @@ public class XQueryPool implements BrokerPoolService {
                 return null;
             }
 
-            if (!isCompiledQueryValid(broker, source, firstCompiledXQuery)) {
+            if (!isCompiledQueryValid(firstCompiledXQuery)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("{} is invalid, removing from XQuery Pool...", source.pathOrShortIdentifier());
                 }
@@ -199,16 +199,12 @@ public class XQueryPool implements BrokerPoolService {
      *
      * @return true if the compiled query is still valid, false otherwise.
      */
-    private static boolean isCompiledQueryValid(final DBBroker broker, final Source source,
-            final CompiledXQuery compiledXQuery) {
+    private static boolean isCompiledQueryValid(final CompiledXQuery compiledXQuery) {
         final Source cachedSource = compiledXQuery.getSource();
-        Source.Validity validity = cachedSource.isValid(broker);
-        if (validity == Source.Validity.UNKNOWN) {
-            validity = cachedSource.isValid(source);
-        }
+        final Source.Validity validity = cachedSource.isValid();
 
-        if (validity == Source.Validity.INVALID || validity == Source.Validity.UNKNOWN) {
-            return false;    // returning null will remove the entry from the cache
+        if (validity == Source.Validity.INVALID) {
+            return false;    // returning false will remove the entry from the cache
         }
 
         // the compiled query is no longer valid if one of the imported

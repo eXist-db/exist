@@ -33,8 +33,6 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.security.Subject;
-import org.exist.storage.DBBroker;
 
 /**
  * A source implementation reading from the path system.
@@ -82,18 +80,13 @@ public class FileSource extends AbstractSource {
     }
 
     @Override
-    public Validity isValid(final DBBroker broker) {
+    public Validity isValid() {
         final long currentLastModified = lastModifiedSafe(path);
         if (currentLastModified == -1 || currentLastModified > lastModified) {
             return Validity.INVALID;
         } else {
             return Validity.VALID;
         }
-    }
-
-    @Override
-    public Validity isValid(final Source other) {
-        return Validity.INVALID;
     }
 
     @Override

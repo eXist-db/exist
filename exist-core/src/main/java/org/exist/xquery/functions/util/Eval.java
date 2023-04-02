@@ -535,7 +535,7 @@ public class Eval extends BasicFunction {
                         throw new XPathException(this, "source for module " + location + " is not an XQuery or " +
                         "declares a wrong mime-type");
                     }
-                    querySource = new DBSource(context.getBroker(), (BinaryDocument) sourceDoc, true);
+                    querySource = new DBSource(context.getBroker().getBrokerPool(), (BinaryDocument) sourceDoc, true);
                 } catch (final PermissionDeniedException e) {
                     throw new XPathException(this, "permission denied to read module source from " + location);
                 }

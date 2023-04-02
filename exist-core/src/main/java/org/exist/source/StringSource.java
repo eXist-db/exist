@@ -25,8 +25,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.exist.security.Subject;
-import org.exist.storage.DBBroker;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -56,12 +54,7 @@ public class StringSource extends AbstractSource {
     }
 
     @Override
-    public Validity isValid(final DBBroker broker) {
-        return Source.Validity.VALID;
-    }
-
-    @Override
-    public Validity isValid(final Source other) {
+    public Validity isValid() {
         return Source.Validity.VALID;
     }
 

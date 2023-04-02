@@ -2010,7 +2010,7 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to access resource");
             }
 
-            final Source source = new DBSource(broker, xquery, true);
+            final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
 
             try {
                 final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
@@ -2038,7 +2038,7 @@ public class RpcConnection implements RpcAPI {
                 throw new PermissionDeniedException("Insufficient privileges to access resource");
             }
 
-            final Source source = new DBSource(broker, xquery, true);
+            final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
 
             try {
                 final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
