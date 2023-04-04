@@ -379,7 +379,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      *
      * One instance per-database, lazily initialised.
      */
-    private AtomicLazyVal<net.sf.saxon.Configuration> saxonConfig = new AtomicLazyVal<>(net.sf.saxon.Configuration::newConfiguration);
+    private SaxonConfigurationHolder saxonConfigurationHolder;
 
     /**
      * Creates and configures the database instance.
@@ -419,6 +419,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.diskSpaceMin = 1024L * 1024L * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
 
         this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
+
+        this.saxonConfigurationHolder = SaxonConfigurationHolder.GetHolderForBroker(this);
 
         //Configuration is valid, save it
         this.conf = conf;
@@ -1926,7 +1928,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     public net.sf.saxon.Configuration getSaxonConfiguration() {
-        return saxonConfig.get();
+        return saxonConfigurationHolder.getConfiguration();
+    }
+
+    public net.sf.saxon.s9api.Processor getSaxonProcessor() {
+        return saxonConfigurationHolder.getProcessor();
     }
 
     /**
