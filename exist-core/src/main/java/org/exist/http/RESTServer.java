@@ -1540,7 +1540,7 @@ public class RESTServer {
             final Properties outputProperties, final String servletPath, final String pathInfo)
             throws XPathException, BadRequestException, PermissionDeniedException {
 
-        final Source source = new DBSource(broker, (BinaryDocument) resource, true);
+        final Source source = new DBSource(broker.getBrokerPool(), (BinaryDocument) resource, true);
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = null;
         try {

@@ -185,7 +185,7 @@ public class SourceFactory {
             if (lockedResource != null) {
                 final DocumentImpl resource = lockedResource.getDocument();
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-                    source = new DBSource(broker, (BinaryDocument) resource, true);
+                    source = new DBSource(broker.getBrokerPool(), (BinaryDocument) resource, true);
                 } else {
                     final Serializer serializer = broker.borrowSerializer();
                     try {

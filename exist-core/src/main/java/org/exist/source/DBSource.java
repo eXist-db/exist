@@ -23,6 +23,7 @@ package org.exist.source;
 
 import java.io.*;
 
+import org.exist.EXistException;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
@@ -30,6 +31,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
@@ -49,11 +51,11 @@ public class DBSource extends AbstractSource {
     private final long lastModified;
     private String encoding = UTF_8.name();
     private final boolean checkEncoding;
-    private final DBBroker broker;
+    private final BrokerPool brokerPool;
     
-    public DBSource(final DBBroker broker, final BinaryDocument doc, final boolean checkXQEncoding) {
+    public DBSource(final BrokerPool brokerPool, final BinaryDocument doc, final boolean checkXQEncoding) {
         super(hashKey(doc.getURI().toString()));
-        this.broker = broker;
+        this.brokerPool = brokerPool;
         this.doc = doc;
         this.lastModified = doc.getLastModified();
         this.checkEncoding = checkXQEncoding;
@@ -78,9 +80,10 @@ public class DBSource extends AbstractSource {
     }
 
     @Override
-    public Validity isValid(final DBBroker broker) {
+    public Validity isValid() {
         Validity result;
-        try (final LockedDocument lockedDoc = broker.getXMLResource(doc.getURI(), LockMode.READ_LOCK)) {
+        try (final DBBroker broker = brokerPool.getBroker();
+             final LockedDocument lockedDoc = broker.getXMLResource(doc.getURI(), LockMode.READ_LOCK)) {
             if (lockedDoc == null) {
                 result = Validity.INVALID;
             } else if(lockedDoc.getDocument().getLastModified() > lastModified) {
@@ -88,40 +91,34 @@ public class DBSource extends AbstractSource {
             } else {
                 result = Validity.VALID;
             }
-        } catch (final PermissionDeniedException pde) {
+        } catch (final EXistException | PermissionDeniedException pde) {
             result = Validity.INVALID;
         }
 
-        return result;
-    }
-
-    @Override
-    public Validity isValid(final Source other) {
-        final Validity result;
-        if (!(other instanceof DBSource)) {
-            result = Validity.INVALID;
-        } else if (((DBSource)other).getLastModified() > lastModified) {
-            result = Validity.INVALID;
-        } else {
-            result = Validity.VALID;
-        }
-        
         return result;
     }
 
     @Override
     public Reader getReader() throws IOException {
-        final InputStream is = broker.getBinaryResource(doc);
-        final BufferedInputStream bis = new BufferedInputStream(is);
-        bis.mark(64);
-        checkEncoding(bis);
-        bis.reset();
-        return new InputStreamReader(bis, encoding);
+        try (final DBBroker broker = brokerPool.getBroker()) {
+            final InputStream is = broker.getBinaryResource(doc);
+            final BufferedInputStream bis = new BufferedInputStream(is);
+            bis.mark(64);
+            checkEncoding(bis);
+            bis.reset();
+            return new InputStreamReader(bis, encoding);
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return broker.getBinaryResource(doc);
+        try (final DBBroker broker = brokerPool.getBroker()) {
+            return broker.getBinaryResource(doc);
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
+        }
     }
 
     @Override
@@ -131,20 +128,26 @@ public class DBSource extends AbstractSource {
             throw new IOException("Resource too big to be read using this method.");
         }
 
-        try (final InputStream raw = broker.getBinaryResource(doc);
+        try (final DBBroker broker = brokerPool.getBroker();
+                final InputStream raw = broker.getBinaryResource(doc);
                 final UnsynchronizedByteArrayOutputStream buf = new UnsynchronizedByteArrayOutputStream((int)binaryLength)) {
             buf.write(raw);
             try (final InputStream is = buf.toInputStream()) {
                 checkEncoding(is);
                 return buf.toString(encoding);
             }
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 
     @Override
     public QName isModule() throws IOException {
-        try (final InputStream is = broker.getBinaryResource(doc)) {
+        try (final DBBroker broker = brokerPool.getBroker();
+             final InputStream is = broker.getBinaryResource(doc)) {
             return getModuleDecl(is);
+        } catch (final EXistException e) {
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -173,9 +176,13 @@ public class DBSource extends AbstractSource {
     @Deprecated
     public void validate(final int mode) throws PermissionDeniedException {
         //TODO(AR) This check should not even be here! Its up to the database to refuse access not requesting source
-        final Subject subject = broker.getCurrentSubject();
-        if (subject != null) {
-            doValidation(subject, mode);
+        try (final DBBroker broker = brokerPool.getBroker()) {
+            final Subject subject = broker.getCurrentSubject();
+            if (subject != null) {
+                doValidation(subject, mode);
+            }
+        } catch (final EXistException e) {
+            throw new PermissionDeniedException(e.getMessage(), e);
         }
     }
 

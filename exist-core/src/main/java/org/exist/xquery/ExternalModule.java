@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 
 import java.util.Collection;
 import java.util.Map;
@@ -105,10 +104,9 @@ public interface ExternalModule extends Module {
     /**
      * Is this module still valid or should it be reloaded from its source?
      *
-     * @param broker the broker to use for checking
      * @return true if module should be reloaded
      */
-    public boolean moduleIsValid(DBBroker broker);
+    public boolean moduleIsValid();
 
     /**
      * Returns the root expression associated with this context.

@@ -26,7 +26,6 @@ import java.util.*;
 import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
-import org.exist.storage.DBBroker;
 
 import javax.annotation.Nullable;
 
@@ -277,8 +276,8 @@ public class ExternalModuleImpl implements ExternalModule {
     }
 
     @Override
-    public boolean moduleIsValid(final DBBroker broker) {
-        return mSource != null && mSource.isValid(broker) == Source.Validity.VALID;
+    public boolean moduleIsValid() {
+        return mSource != null && mSource.isValid() == Source.Validity.VALID;
     }
 
     @Override

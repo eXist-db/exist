@@ -159,7 +159,7 @@ public class UserXQueryJob extends UserJob {
                 final XmldbURI pathUri = XmldbURI.create(xqueryResource);
                 try(final LockedDocument lockedResource = broker.getXMLResource(pathUri, LockMode.READ_LOCK)) {
                     if (lockedResource != null) {
-                        final Source source = new DBSource(broker, (BinaryDocument) lockedResource.getDocument(), true);
+                        final Source source = new DBSource(pool, (BinaryDocument) lockedResource.getDocument(), true);
                         executeXQuery(pool, broker, source, params);
                         return;
                     }

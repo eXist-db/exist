@@ -1555,7 +1555,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         for (final Module[] modules : allModules.values()) {
             for (final Module module : modules) {
                 if (!module.isInternalModule()) {
-                    if (!((ExternalModule) module).moduleIsValid(getBroker())) {
+                    if (!((ExternalModule) module).moduleIsValid()) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Module with URI {} has changed and needs to be reloaded", module.getNamespaceURI());
                         }
@@ -2511,7 +2511,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         throw moduleLoadException("Module location hint URI '" + location + "' does not refer to an XQuery.", location);
                     }
 
-                    final Source moduleSource = new DBSource(getBroker(), (BinaryDocument) sourceDoc, true);
+                    final Source moduleSource = new DBSource(getBroker().getBrokerPool(), (BinaryDocument) sourceDoc, true);
                     return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
 
                 } catch (final PermissionDeniedException e) {
