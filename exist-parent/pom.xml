@@ -119,7 +119,7 @@
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
         <saxon.version>9.9.1-8</saxon.version>
-        <xmlresolver.version>4.6.4</xmlresolver.version>
+        <xmlresolver.version>5.1.2</xmlresolver.version>
         <xmlunit.version>2.9.1</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.9.2</junit.jupiter.version>
