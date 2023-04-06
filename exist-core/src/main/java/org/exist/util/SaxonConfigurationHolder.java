@@ -22,7 +22,6 @@
 package org.exist.util;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
-import net.sf.saxon.lib.Feature;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.trans.XPathException;
 import org.exist.storage.BrokerPool;
@@ -32,17 +31,16 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public final class SaxonConfigurationHolder {
 
-  public final static String CONFIGURATION_ELEMENT_NAME = "saxon";
-  public final static String CONFIGURATION_FILE_ATTRIBUTE = "configuration-file";
-  public final static String CONFIGURATION_FILE_PROPERTY = "saxon.configuration";
-  private final static String DEFAULT_SAXON_CONFIG_FILE = "saxon-config.xml";
+  public static final String SAXON_CONFIGURATION_ELEMENT_NAME = "saxon";
+  public static final String SAXON_CONFIGURATION_FILE_ATTRIBUTE = "configuration-file";
+  public static final String SAXON_CONFIGURATION_FILE_PROPERTY = "saxon.configuration";
+  private static final String SAXON_DEFAULT_SAXON_CONFIG_FILE = "saxon-config.xml";
 
   /**
    * Maintain a separate, singleton Saxon configuration for each broker pool
@@ -77,11 +75,8 @@ public final class SaxonConfigurationHolder {
    *
    * @return the associated Saxon configuration wrapper
    */
-  public synchronized static SaxonConfigurationHolder GetHolderForBroker(final BrokerPool brokerPool) {
-    if (!perBroker.containsKey(brokerPool)) {
-      perBroker.put(brokerPool, new SaxonConfigurationHolder(brokerPool));
-    }
-    return perBroker.get(brokerPool);
+  public static synchronized SaxonConfigurationHolder getHolderForBroker(final BrokerPool brokerPool) {
+    return perBroker.computeIfAbsent(brokerPool, SaxonConfigurationHolder::new);
   }
 
   /**
@@ -125,20 +120,7 @@ public final class SaxonConfigurationHolder {
     final var saxonConfigFile = getSaxonConfigFile(existConfiguration);
     Optional<net.sf.saxon.Configuration> saxonConfiguration = Optional.empty();
     if (saxonConfigFile.isPresent()) {
-      try {
-        saxonConfiguration = Optional.of(net.sf.saxon.Configuration.readConfiguration(
-            new StreamSource(new FileInputStream(saxonConfigFile.get()))));
-      } catch (XPathException | FileNotFoundException e) {
-        Log.warn("Saxon could not read the configuration file: " + saxonConfigFile.get() +
-            ", with error: " + e.getMessage(), e);
-      } catch (RuntimeException runtimeException) {
-        if (runtimeException.getCause() instanceof ClassNotFoundException e) {
-          Log.warn("Saxon could not honour the configuration file: " + saxonConfigFile.get() +
-              ", with class not found error: " + e.getMessage() + ". You may need to install the SaxonPE or SaxonEE JAR in eXist.");
-        } else {
-          throw runtimeException;
-        }
-      }
+      saxonConfiguration = readSaxonConfigurationFile(saxonConfigFile.get());
     }
     if (saxonConfiguration.isEmpty()) {
       saxonConfiguration = Optional.of(net.sf.saxon.Configuration.newConfiguration());
@@ -146,33 +128,56 @@ public final class SaxonConfigurationHolder {
 
     if (saxonConfigFile.isEmpty()) {
       Log.warn("eXist could not find any Saxon configuration:\n" +
-          "No Saxon configuration file in configuration item " + CONFIGURATION_FILE_PROPERTY + "\n" +
-          "No default eXist Saxon configuration file " + DEFAULT_SAXON_CONFIG_FILE);
+          "No Saxon configuration file in configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + "\n" +
+          "No default eXist Saxon configuration file " + SAXON_DEFAULT_SAXON_CONFIG_FILE);
     }
 
-    saxonConfiguration.ifPresent(net.sf.saxon.Configuration::displayLicenseMessage);
-    saxonConfiguration.ifPresent(configuration -> {
-      final var sb = new StringBuilder();
-      if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.SCHEMA_VALIDATION)) {
-        sb.append(" SCHEMA_VALIDATION");
-      }
-      if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
-        sb.append(" ENTERPRISE_XSLT");
-      }
-      if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.ENTERPRISE_XQUERY)) {
-        sb.append(" ENTERPRISE_XQUERY");
-      }
-      if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
-        sb.append(" PROFESSIONAL_EDITION");
-      }
-      if (sb.length() == 0) {
-        Log.info("Saxon - no licensed features reported.");
-      } else {
-        Log.info("Saxon - licensed features are" + sb + ".");
-      }
-    });
+    saxonConfiguration.ifPresent(SaxonConfigurationHolder::reportLicensedFeatures);
 
     return saxonConfiguration.get();
+  }
+
+  static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final File saxonConfigFile) {
+
+    try {
+      return Optional.of(net.sf.saxon.Configuration.readConfiguration(
+          new StreamSource(new FileInputStream(saxonConfigFile))));
+    } catch (XPathException | FileNotFoundException e) {
+      Log.warn("Saxon could not read the configuration file: " + saxonConfigFile +
+          ", with error: " + e.getMessage(), e);
+    } catch (RuntimeException runtimeException) {
+      if (runtimeException.getCause() instanceof ClassNotFoundException e) {
+        Log.warn("Saxon could not honour the configuration file: " + saxonConfigFile +
+            ", with class not found error: " + e.getMessage() + ". You may need to install the SaxonPE or SaxonEE JAR in eXist.");
+      } else {
+        throw runtimeException;
+      }
+    }
+
+    return Optional.empty();
+  }
+
+  static private void reportLicensedFeatures(final net.sf.saxon.Configuration configuration) {
+    configuration.displayLicenseMessage();
+
+    final var sb = new StringBuilder();
+    if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.SCHEMA_VALIDATION)) {
+      sb.append(" SCHEMA_VALIDATION");
+    }
+    if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.ENTERPRISE_XSLT)) {
+      sb.append(" ENTERPRISE_XSLT");
+    }
+    if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.ENTERPRISE_XQUERY)) {
+      sb.append(" ENTERPRISE_XQUERY");
+    }
+    if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
+      sb.append(" PROFESSIONAL_EDITION");
+    }
+    if (sb.length() == 0) {
+      Log.info("Saxon - no licensed features reported.");
+    } else {
+      Log.info("Saxon - licensed features are" + sb + ".");
+    }
   }
 
   /**
@@ -198,17 +203,17 @@ public final class SaxonConfigurationHolder {
 
   private static Optional<File> getSaxonConfigFile(final Configuration existConfiguration) {
 
-    if (existConfiguration.getProperty(CONFIGURATION_FILE_PROPERTY) instanceof String saxonConfigurationFile) {
+    if (existConfiguration.getProperty(SAXON_CONFIGURATION_FILE_PROPERTY) instanceof String saxonConfigurationFile) {
       final var configurationFile = resolveConfigurationFile(existConfiguration, saxonConfigurationFile);
       if (configurationFile.canRead()) {
         return Optional.of(configurationFile);
       } else {
-        Log.warn("Configuration item " + CONFIGURATION_FILE_PROPERTY + " : " + configurationFile +
+        Log.warn("Configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + " : " + configurationFile +
             " does not refer to a readable file. Continuing search for Saxon configuration.");
       }
     }
 
-    final var configurationFile = resolveConfigurationFile(existConfiguration, DEFAULT_SAXON_CONFIG_FILE);
+    final var configurationFile = resolveConfigurationFile(existConfiguration, SAXON_DEFAULT_SAXON_CONFIG_FILE);
     if (configurationFile.canRead()) {
       return Optional.of(configurationFile);
     }

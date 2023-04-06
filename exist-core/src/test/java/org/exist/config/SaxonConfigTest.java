@@ -41,12 +41,14 @@ public class SaxonConfigTest {
     final var existConfiguration = brokerPool.getConfiguration();
     assertThat(existConfiguration.getProperty("saxon.configuration")).isEqualTo("saxon-config.xml");
 
-    final var saxonConfigurationHolder = SaxonConfigurationHolder.GetHolderForBroker(brokerPool);
+    final var saxonConfigurationHolder = SaxonConfigurationHolder.getHolderForBroker(brokerPool);
     final var saxonConfiguration = saxonConfigurationHolder.getConfiguration();
 
+    // There is no way to install EE at the test/build phase.
+    // Sanity check is to confirm this does indeed return "HE" (Home Edition).
     final var saxonProcessor = saxonConfigurationHolder.getProcessor();
+    assertThat(saxonProcessor.getSaxonEdition()).isEqualTo("HE");
 
-    //TODO (AP) - brokerPool.getSaxonConfiguration() needs to use SaxonConfigurationHolder.GetHolderForBroker(brokerPool)
     final var saxonConfiguration2 = brokerPool.getSaxonConfiguration();
     assertThat(saxonConfiguration2).isSameAs(saxonConfiguration);
 

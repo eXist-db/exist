@@ -34,7 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
-import org.exist.storage.BrokerPool;
 import org.exist.util.Holder;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;

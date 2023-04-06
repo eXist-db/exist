@@ -654,12 +654,12 @@ class Options {
 
     static class SystemProperties {
 
+        private final RetainedStaticContext retainedStaticContext;
+
         private SystemProperties(XQueryContext context) {
             final var saxonConfiguration = context.getBroker().getBrokerPool().getSaxonConfiguration();
             this.retainedStaticContext = new RetainedStaticContext(saxonConfiguration);
         }
-
-        private final RetainedStaticContext retainedStaticContext;
 
         String get(org.exist.dom.QName qName) {
             return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);

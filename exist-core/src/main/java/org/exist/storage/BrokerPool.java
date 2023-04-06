@@ -23,7 +23,6 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
-import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -420,7 +419,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
 
-        this.saxonConfigurationHolder = SaxonConfigurationHolder.GetHolderForBroker(this);
+        this.saxonConfigurationHolder = SaxonConfigurationHolder.getHolderForBroker(this);
 
         //Configuration is valid, save it
         this.conf = conf;

@@ -10,14 +10,14 @@ This is the directory which is prompted for (and or defaulted) by the eXist inst
 
 ## Replace the Saxon JAR file
 
- * Replace the existing `$EXIST_HOME/lib/Saxon-HE-9.9.1-8.jar` with `saxon9ee.jar` fetched by downloading `https://www.saxonica.com/download/SaxonEE9-9-1-8J.zip` and unzipping.
- * At present only Saxon EE (or PE) version 9.9.1.8 is supported.
- * Confirm the JAR is present at `$EXIST_HOME/lib/saxon9ee.jar`
+*   Replace the existing `$EXIST_HOME/lib/Saxon-HE-9.9.1-8.jar` with `saxon9ee.jar` fetched by downloading `https://www.saxonica.com/download/SaxonEE9-9-1-8J.zip` and unzipping.
+*   At present only Saxon EE (or PE) version 9.9.1.8 is supported.
+*   Confirm the JAR is present at `$EXIST_HOME/lib/saxon9ee.jar`
 
 ## Update configuration
 
 In both `$EXIST_HOME/etc/client.xml` and `$EXIST_HOME/etc/startup.xml` replace the dependency
-```
+```xml
 <dependency>
         <groupId>net.sf.saxon</groupId>
         <artifactId>Saxon-HE</artifactId>
@@ -26,7 +26,7 @@ In both `$EXIST_HOME/etc/client.xml` and `$EXIST_HOME/etc/startup.xml` replace t
 </dependency>
 ```
 with a dependency on the JAR you just installed
-```
+```xml
 <dependency>
         <groupId>net.sf.saxon</groupId>
         <artifactId>Saxon-EE</artifactId>
@@ -42,14 +42,14 @@ Place the `saxon-license.lic` file in `$EXIST_HOME/lib`
 ## Update the config file
 
 At a mimimun, you will need to replace
-```
+```xml
 <configuration edition="HE" 
   xmlns="http://saxon.sf.net/ns/configuration"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://saxon.sf.net/ns/configuration config.xsd">
 </configuration>
 ```
 with
-```
+```xml
 <configuration edition="EE" 
   xmlns="http://saxon.sf.net/ns/configuration"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://saxon.sf.net/ns/configuration config.xsd">
