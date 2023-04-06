@@ -134,7 +134,7 @@ public final class SaxonConfigurationHolder {
       } catch (RuntimeException runtimeException) {
         if (runtimeException.getCause() instanceof ClassNotFoundException e) {
           Log.warn("Saxon could not honour the configuration file: " + saxonConfigFile.get() +
-              ", with class not found error: " + e.getMessage(), e);
+              ", with class not found error: " + e.getMessage() + ". You may need to install the SaxonPE or SaxonEE JAR in eXist.");
         } else {
           throw runtimeException;
         }

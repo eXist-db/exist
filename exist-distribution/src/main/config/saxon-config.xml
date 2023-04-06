@@ -1,0 +1,14 @@
+<?xml version="1.0"?><!-- 
+     This configuration file is placed here by eXist-DB as a placeholder.
+     It should be replaced if the user wishes to use a licensed edition of Saxon.
+
+     Example instantiated configuration files for the enterprise edition can be found by visiting
+     https://saxonica.com/html/download/download_page.html
+  
+     For documentation on the contents of a Saxon configuration file, see
+     http://www.saxonica.com/html/documentation/configuration/configuration-file/index.html
+-->
+<configuration edition="HE" 
+  xmlns="http://saxon.sf.net/ns/configuration"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://saxon.sf.net/ns/configuration config.xsd">
+</configuration>

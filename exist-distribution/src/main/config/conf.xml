@@ -1104,4 +1104,10 @@
     -->
     <xupdate allowed-fragmentation="50000" enable-consistency-checks="no"/>
 
+    <!-- 
+        Load this configuration into Saxon
+    -->
+    <saxon configuration-file="saxon-config.xml"/>
+
+
 </exist>
