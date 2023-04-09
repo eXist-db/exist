@@ -58,7 +58,7 @@ jobs:
           cache: 'maven'
       - name: Maven Test
         timeout-minutes: 60
-        run: mvn -V -B verify -D'dependency-check.skip' -D'license.skip'
+        run: mvn -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Code Coverage
         if: ${{ github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
