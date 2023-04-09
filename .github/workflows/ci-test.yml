@@ -40,7 +40,7 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
-      - run: mvn -V -B -q -T 2C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
+      - run: mvn -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
   test:
     name: ${{ matrix.os }} Test
     strategy:
