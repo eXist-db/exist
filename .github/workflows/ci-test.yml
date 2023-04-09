@@ -42,26 +42,25 @@ jobs:
           cache: 'maven'
       - run: mvn -V -B -q -T 2C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
   test:
-    name: (JDK ${{ matrix.jdk }} / ${{ matrix.os }}) Test
+    name: ${{ matrix.os }} Test
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        jdk: [ '17' ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK ${{ matrix.jdk }}
+      - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: ${{ matrix.jdk }}
+          java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - name: Maven Test
         timeout-minutes: 60
         run: mvn -V -B verify -D'dependency-check.skip' -D'license.skip'
       - name: Maven Code Coverage
-        if: ${{ github.ref == 'refs/heads/develop' && matrix.jdk == env.DEV_JDK && matrix.os == 'ubuntu-latest' }}
+        if: ${{ github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
           CI_NAME: github
           BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
@@ -73,7 +72,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
+          name: ${{ runner.os }}-build-logs
           retention-days: 5
           path: |
             **/*.jfr
