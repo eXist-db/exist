@@ -56,6 +56,9 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
+      - name: Maven Build
+        timeout-minutes: 10
+        run: mvn -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
         run: mvn -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
