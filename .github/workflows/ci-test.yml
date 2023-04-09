@@ -30,17 +30,6 @@ jobs:
           cache: 'maven'
       - run: mvn -V -B dependency-check:check
         timeout-minutes: 60
-  documentation:
-    name: Javadoc
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: ${{ env.DEV_JDK }}
-          cache: 'maven'
-      - run: mvn -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
   test:
     name: ${{ matrix.os }} Test
     strategy:
@@ -62,6 +51,9 @@ jobs:
       - name: Maven Test
         timeout-minutes: 60
         run: mvn -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+      - name: Javadoc (Linux only)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: mvn -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
       - name: Maven Code Coverage
         if: ${{ github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
