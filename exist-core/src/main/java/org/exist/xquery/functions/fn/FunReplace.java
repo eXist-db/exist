@@ -120,6 +120,9 @@ public class FunReplace extends BasicFunction {
 
 			try {
 				final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
+				if (regularExpression.matches("")) {
+					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+				}
 
 				//TODO(AR) cache the regular expression... might be possible through Saxon config
 
