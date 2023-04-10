@@ -89,23 +89,15 @@ class DomEnhancingNodeProxyAdapter {
     }
 
     private static Class<? extends Node> getNodeClass(final NodeProxy nodeProxy) {
-        switch (nodeProxy.getType()) {
-            case Type.ELEMENT:
-                return Element.class;
-            case Type.ATTRIBUTE:
-                return Attr.class;
-            case Type.TEXT:
-                return Text.class;
-            case Type.PROCESSING_INSTRUCTION:
-                return ProcessingInstruction.class;
-            case Type.COMMENT:
-                return Comment.class;
-            case Type.DOCUMENT:
-                return Document.class;
-            case Type.CDATA_SECTION:
-                return CDATASection.class;
-            default:
-                return Node.class;
-        }
+        return switch (nodeProxy.getType()) {
+            case Type.ELEMENT -> Element.class;
+            case Type.ATTRIBUTE -> Attr.class;
+            case Type.TEXT -> Text.class;
+            case Type.PROCESSING_INSTRUCTION -> ProcessingInstruction.class;
+            case Type.COMMENT -> Comment.class;
+            case Type.DOCUMENT -> Document.class;
+            case Type.CDATA_SECTION -> CDATASection.class;
+            default -> Node.class;
+        };
     }
 }
