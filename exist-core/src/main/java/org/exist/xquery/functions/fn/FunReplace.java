@@ -28,44 +28,29 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
 import net.sf.saxon.regex.RegularExpression;
 import org.exist.dom.QName;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.util.Error;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public class FunReplace extends FunMatches {
-	
-	private static final String FUNCTION_DESCRIPTION_3_PARAM =
-        "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
-        "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n";
-	private static final String FUNCTION_DESCRIPTION_4_PARAM =
+public class FunReplace extends BasicFunction {
+
+	private static final QName FS_REPLACE_NAME = new QName("replace", Function.BUILTIN_FUNCTION_NS);
+
+	private static final String FS_REPLACE_DESCRIPTION =
         "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
         "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n" + 
         "The $flags argument is interpreted in the same manner as for the fn:matches() function.\n\n" +
         "Calling the four argument version with the $flags argument set to a " +
-        "zero-length string gives the same effect as using the three argument version.\n\n";
-	private static final String FUNCTION_DESCRIPTION_COMMON = 
+        "zero-length string gives the same effect as using the three argument version.\n\n" +
         "If $input is the empty sequence, it is interpreted as the zero-length string.\n\nIf two overlapping " +
         "substrings of $input both match the $pattern, then only the first one (that is, the one whose first " +
         "character comes first in the $input string) is replaced.\n\nWithin the $replacement string, a variable " +
@@ -85,96 +70,49 @@ public class FunReplace extends FunMatches {
         "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
         "formed by stripping off this last digit.";
 
-	protected static final FunctionParameterSequenceType INPUT_ARG = new FunctionParameterSequenceType("input", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
-	protected static final FunctionParameterSequenceType PATTERN_ARG = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.EXACTLY_ONE, "The pattern to match");
-	protected static final FunctionParameterSequenceType REPLACEMENT_ARG = new FunctionParameterSequenceType("replacement", Type.STRING, Cardinality.EXACTLY_ONE, "The string to replace the pattern with");
-	protected static final FunctionParameterSequenceType FLAGS_ARG = new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags");
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the altered string");
-			
-	public final static FunctionSignature[] signatures = {
-		new FunctionSignature(
-			new QName("replace", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION_3_PARAM + FUNCTION_DESCRIPTION_COMMON,
-			new SequenceType[] { INPUT_ARG, PATTERN_ARG, REPLACEMENT_ARG },
-			RETURN_TYPE
-		),
-		new FunctionSignature(
-			new QName("replace", Function.BUILTIN_FUNCTION_NS),
-			FUNCTION_DESCRIPTION_4_PARAM + FUNCTION_DESCRIPTION_COMMON,
-			new SequenceType[] { INPUT_ARG, PATTERN_ARG, REPLACEMENT_ARG, FLAGS_ARG },
-			RETURN_TYPE
-		)
-	};
+	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern to match");
+	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_REPLACEMENT = param("replacement", Type.STRING, "The string to replace the pattern with");
+
+	static final FunctionSignature [] FS_REPLACE = functionSignatures(
+			FS_REPLACE_NAME,
+			FS_REPLACE_DESCRIPTION,
+			returns(Type.STRING, "the altered string"),
+			arities(
+					arity(
+							FS_TOKENIZE_PARAM_INPUT,
+							FS_TOKENIZE_PARAM_PATTERN,
+							FS_TOKENIZE_PARAM_REPLACEMENT
+					),
+					arity(
+							FS_TOKENIZE_PARAM_INPUT,
+							FS_TOKENIZE_PARAM_PATTERN,
+							FS_TOKENIZE_PARAM_REPLACEMENT,
+							param("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")
+					)
+			)
+	);
 
 	public FunReplace(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
 	}
-
-	@Override
-	public void setArguments(List<Expression> arguments) {
-	    steps.clear();
-        Expression arg = arguments.get(0);
-        arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            {arg = new Atomize(context, arg);}
-        steps.add(arg);
-        
-        arg = arguments.get(1);
-        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            {arg = new Atomize(context, arg);}
-        steps.add(arg);
-        
-        arg = arguments.get(2);
-        arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-            {arg = new Atomize(context, arg);}
-        steps.add(arg);
-        
-        if (arguments.size() == 4) {
-            arg = arguments.get(3);
-            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
-                    new Error(Error.FUNC_PARAM_CARDINALITY, "4", getSignature()));
-            if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
-                {arg = new Atomize(context, arg);}
-            steps.add(arg);            
-        }
-	}
 	
 	@Override
-	public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-		if (context.getProfiler().isEnabled()) {
-			context.getProfiler().start(this);
-			context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-			if (contextSequence != null) {
-				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-			}
-			if (contextItem != null) {
-				context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-			}
-		}
-
+	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 		final Sequence result;
-		final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
+		final Sequence stringArg = args[0];
 		if (stringArg.isEmpty()) {
 			result = StringValue.EMPTY_STRING;
 		} else {
 			final String flags;
-			if (getSignature().getArgumentCount() == 4) {
-				flags =	getArgument(3).eval(contextSequence, contextItem).getStringValue();
+			if (args.length == 4) {
+				flags =	args[3].itemAt(0).getStringValue();
 			} else {
 				flags = "";
 			}
-
     		final String string = stringArg.getStringValue();
-    		final Sequence patternSeq = getArgument(1).eval(contextSequence, contextItem);
-    		final String pattern = patternSeq.getStringValue();
-
-			final Sequence replaceSeq = getArgument(2).eval(contextSequence, contextItem);
-			final String replace = replaceSeq.getStringValue();
+    		final String pattern = args[1].itemAt(0).getStringValue();
+			final String replace = args[2].itemAt(0).getStringValue();
 
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 
@@ -210,11 +148,6 @@ public class FunReplace extends FunMatches {
 			}
         }
         
-        if (context.getProfiler().isEnabled()) {
-        	context.getProfiler().end(this, "", result);
-        }
-        
-        return result;   
-        
+        return result;
 	}
 }
