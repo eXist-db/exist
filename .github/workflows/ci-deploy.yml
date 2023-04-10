@@ -24,8 +24,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: deploy-${{ runner.os }}-maven
       - name: Install bats
         run: sudo apt-get install bats    
       - name: Build images

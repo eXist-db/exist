@@ -23,14 +23,14 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          key: sonarcloud-${{ runner.os }}-cache-${{ hashFiles('**/pom.xml') }}
+          restore-keys: sonarcloud-${{ runner.os }}-cache
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: sonarcloud-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: sonarcloud-${{ runner.os }}-maven
       - name: Analyze
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
