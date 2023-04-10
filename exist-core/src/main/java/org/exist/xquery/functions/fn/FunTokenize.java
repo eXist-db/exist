@@ -21,19 +21,13 @@
  */
 package org.exist.xquery.functions.fn;
 
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -46,7 +40,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  * @see <a href="https://www.w3.org/TR/xpath-functions-31/#func-tokenize">https://www.w3.org/TR/xpath-functions-31/#func-tokenize</a>
  */
-public class FunTokenize extends FunMatches {
+public class FunTokenize extends BasicFunction {
 
     private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
@@ -78,20 +72,9 @@ public class FunTokenize extends FunMatches {
     }
 
     @Override
-    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-            if (contextItem != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-            }
-        }
-
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final Sequence result;
-        final Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
+        final Sequence stringArg = args[0];
         if (stringArg.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
@@ -100,34 +83,30 @@ public class FunTokenize extends FunMatches {
                 result = Sequence.EMPTY_SEQUENCE;
             } else {
                 final int flags;
-                if (getSignature().getArgumentCount() == 3) {
-                    flags = parseFlags(this, getArgument(2).eval(contextSequence, contextItem)
-                            .getStringValue());
+                if (args.length == 3) {
+                    flags = parseFlags(this, args[2].itemAt(0).getStringValue());
                 } else {
                     flags = 0;
                 }
 
                 final String pattern;
-                if(getArgumentCount() == 1) {
+                if (args.length == 1) {
                     pattern = " ";
                     string = FunNormalizeSpace.normalize(string);
                 } else {
                     if(hasLiteral(flags)) {
                         // no need to change anything
-                        pattern = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+                        pattern = args[1].itemAt(0).getStringValue();
                     } else {
                         final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                         final boolean caseBlind = hasCaseInsensitive(flags);
-                        pattern = translateRegexp(this, getArgument(1).eval(contextSequence, contextItem).getStringValue(), ignoreWhitespace, caseBlind);
+                        pattern = translateRegexp(this, args[1].itemAt(0).getStringValue(), ignoreWhitespace, caseBlind);
                     }
                 }
 
                 try {
-                    if (pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
-                        pat = PatternFactory.getInstance().getPattern(pattern, flags);
-                    }
-
-                    if(pat.matcher("").matches()) {
+                    final Pattern pat = PatternFactory.getInstance().getPattern(pattern, flags);
+                    if (pat.matcher("").matches()) {
                         throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
                     }
 
@@ -142,10 +121,6 @@ public class FunTokenize extends FunMatches {
                     throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(pattern), e);
                 }
             }
-        }
-
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().end(this, "", result);
         }
 
         return result;
