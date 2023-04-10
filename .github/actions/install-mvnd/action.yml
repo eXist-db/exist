@@ -13,6 +13,10 @@ inputs:
     description: 'Set to true to cache Maven Daemon artifacts per-platform-architecture'
     required: true
     default: 'true'
+  mvnd-connect-timeout:
+    description: 'The timeout (as a duration, e.g. `90 seconds`) for connecting to the Maven Daemon'
+    required: true
+    default: '90 seconds'
 outputs:
   mvnd-dir:
     description: "The directory where the command mvnd is located"
@@ -64,11 +68,18 @@ runs:
       if: steps.cache-mvnd.outputs.cache-hit != 'true'
       shell: bash
       run: unzip ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip -d ${{ inputs.install-path }}/
-    - id: mvnd-location
+    - name: Show Maven Daemon version
+      shell: bash
+      run: |
+        ${{ inputs.install-path }}/${{ env.MVND_NAME }}/bin/mvnd -D'mvnd.connectTimeout=${{ inputs.mvnd-connect-timeout }}' --version
+        ${{ inputs.install-path }}/${{ env.MVND_NAME }}/bin/mvnd -D'mvnd.connectTimeout=${{ inputs.mvnd-connect-timeout }}' --status
+    - name: Set mvnd-dir
+      id: mvnd-location
       shell: bash
       run: |
         MVND_BIN_DIR="${{ inputs.install-path }}/${{ env.MVND_NAME }}/bin"
         if [ "$RUNNER_OS" == "Windows" ]; then
           MVND_BIN_DIR="$(cygpath --absolute --long-name --windows $MVND_BIN_DIR)"
         fi
+        echo "MVND_BIN_DIR=${MVND_BIN_DIR}" >> $GITHUB_ENV
         echo "mvnd-dir=${MVND_BIN_DIR}" >> $GITHUB_OUTPUT
