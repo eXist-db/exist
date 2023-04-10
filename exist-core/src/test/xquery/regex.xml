@@ -127,4 +127,16 @@
         <expected>12 3 5 6</expected>
     </test>
 
+    <test output="text">
+        <task>fn:tokenize-single-input-1</task>
+        <code>fn:tokenize("x,y", ",")</code>
+        <expected>x y</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:tokenize-single-input-2</task>
+        <code>fn:tokenize(("a", "b", "x,y"), ",")</code>
+        <error>XPTY0004</error>
+    </test>
+
 </TestSet>
