@@ -31,6 +31,16 @@ public interface Optimizable extends Expression {
 
     boolean canOptimize(Sequence contextSequence);
 
+    /**
+     * Given a sequence of Items, test each to see if they are optimizable,
+     * and return only those Items that are optimizable.
+     *
+     * @param contextSequence the sequence of items that should be tested to see if each is optimizable.
+     * @return a sequence containing only the items from the {@code contextSequence} that
+     *      can be optimized, if there are no items that can be optimized, the result is the empty sequence.
+     */
+    Sequence canOptimizeSequence(Sequence contextSequence);
+
     boolean optimizeOnSelf();
 
     boolean optimizeOnChild();

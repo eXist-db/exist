@@ -23,6 +23,7 @@ package org.exist.xquery.modules.range;
 
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
@@ -386,7 +387,65 @@ public class Lookup extends Function implements Optimizable {
     }
 
     @Override
-    public boolean canOptimize(Sequence contextSequence) {
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (contextQName == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        ValueSequence optimizables = null;
+
+        NodePath path = contextPath;
+        if (path == null) {
+            path = new NodePath(contextQName);
+        }
+
+        int usesCollationCount = 0;
+        for (int i = 0; i < contextSequence.getItemCount(); i++) {
+            final Item item = contextSequence.itemAt(i);
+            Collection collection = null;
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                final NodeValue node = (NodeValue) item;
+                if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                    final NodeProxy nodeProxy = (NodeProxy) node;
+                    collection = nodeProxy.getOwnerDocument().getCollection();
+                }
+            }
+
+            if (collection == null) {
+                continue;
+            }
+
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
+                continue;
+            }
+            final IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+            if (idxConf != null) {
+                final RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
+                if (config != null) {
+                    RangeIndexConfigElement rice = config.find(path);
+                    if (rice != null && !rice.isComplex()) {
+                        if (optimizables == null) {
+                            optimizables = new ValueSequence(contextSequence.getItemCount());
+                        }
+                        optimizables.add(item);
+                        usesCollationCount += rice.usesCollation() ? 1 : 0;
+                    }
+                }
+            }
+        }
+
+        canOptimize = optimizables != null && optimizables.getItemCount() == contextSequence.getItemCount();
+        usesCollation = usesCollationCount == contextSequence.getItemCount();
+
+        if (!canOptimize && fallback instanceof final Optimizable optimizableFallback) {
+            return optimizableFallback.canOptimizeSequence(contextSequence);
+        }
+
+        return optimizables != null ? optimizables : Sequence.EMPTY_SEQUENCE;
+    }
+
+    @Override
+    public boolean canOptimize(final Sequence contextSequence) {
         if (contextQName == null) {
             return false;
         }

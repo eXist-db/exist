@@ -181,7 +181,17 @@ public class Query extends Function implements Optimizable {
         }
     }
 
-    public boolean canOptimize(Sequence contextSequence) {
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (canOptimize(contextSequence)) {
+            return contextSequence;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+    }
+
+    @Override
+    public boolean canOptimize(final Sequence contextSequence) {
         return contextQName != null;
     }
 
