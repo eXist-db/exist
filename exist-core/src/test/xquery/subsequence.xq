@@ -30,3 +30,27 @@ declare
 function ss:pipeline1() {
     ("x", "y") => subsequence(1, 1) => matches("x")
 };
+
+declare
+    %test:args(1,1)
+    %test:assertEmpty
+    %test:args(3,1)
+    %test:assertEmpty
+    %test:args(5,1)
+    %test:assertEmpty
+    %test:args(1,2)
+    %test:assertEquals(2)
+    %test:args(3,2)
+    %test:assertEquals(4)
+    %test:args(5,2)
+    %test:assertEmpty(4)
+    %test:args(1,3)
+    %test:assertEquals(2,3)
+    %test:args(3,3)
+    %test:assertEquals(4,5)
+    %test:args(1,5)
+    %test:assertEquals(2,3,4,5)
+function ss:tail($start, $length) {
+    tail(
+        subsequence((1 to 5), $start, $length))
+};

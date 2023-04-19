@@ -204,7 +204,7 @@ public class SubSequence extends AbstractSequence {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        return new SubSequence(fromInclusive + 1, toExclusive -1, sequence);
+        return new SubSequence(fromInclusive + 1, toExclusive, sequence);
     }
 
     @Override
