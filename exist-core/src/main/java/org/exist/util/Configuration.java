@@ -261,7 +261,7 @@ public class Configuration implements ErrorHandler
             }
 
             //saxon settings (most importantly license file for PE or EE features)
-            final NodeList saxon = doc.getElementsByTagName(SaxonConfigurationHolder.SAXON_CONFIGURATION_ELEMENT_NAME);
+            final NodeList saxon = doc.getElementsByTagName(SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME);
             if( saxon.getLength() > 0 ) {
                 configureSaxon((Element)saxon.item(0));
             }
@@ -547,9 +547,9 @@ public class Configuration implements ErrorHandler
     private void configureSaxon( Element saxon )
     {
         final String configurationFile = getConfigAttributeValue( saxon,
-            SaxonConfigurationHolder.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
+            SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
         if (configurationFile != null) {
-            config.put(SaxonConfigurationHolder.SAXON_CONFIGURATION_FILE_PROPERTY, configurationFile);
+            config.put(SaxonConfiguration.SAXON_CONFIGURATION_FILE_PROPERTY, configurationFile);
         }
     }
 

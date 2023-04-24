@@ -23,6 +23,7 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.fsm.AtomicFSM;
 import com.evolvedbinary.j8fu.fsm.FSM;
+import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,8 +50,8 @@ import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.impl.QuartzSchedulerImpl;
 import org.exist.scheduler.impl.SystemTaskJobImpl;
-import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.*;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.blob.BlobStore;
 import org.exist.storage.blob.BlobStoreImplService;
@@ -115,6 +116,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final XQuery xqueryService = new XQuery();
 
+    private AtomicLazyVal<SaxonConfiguration> saxonConfiguration = new AtomicLazyVal<>(() -> SaxonConfiguration.loadConfiguration(this));
 
     //TODO : make it non-static since every database instance may have its own policy.
     //TODO : make a default value that could be overwritten by the configuration
@@ -374,13 +376,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private StartupTriggersManager startupTriggersManager;
 
     /**
-     * Configuration for Saxon.
-     *
-     * One instance per-database, lazily initialised.
-     */
-    private SaxonConfigurationHolder saxonConfigurationHolder;
-
-    /**
      * Creates and configures the database instance.
      *
      * @param instanceName A name for the database instance.
@@ -418,8 +413,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.diskSpaceMin = 1024L * 1024L * conf.getProperty(BrokerPool.DISK_SPACE_MIN_PROPERTY, DEFAULT_DISK_SPACE_MIN);
 
         this.pageSize = conf.getProperty(PROPERTY_PAGE_SIZE, DEFAULT_PAGE_SIZE);
-
-        this.saxonConfigurationHolder = SaxonConfigurationHolder.getHolderForBroker(this);
 
         //Configuration is valid, save it
         this.conf = conf;
@@ -1927,11 +1920,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     public net.sf.saxon.Configuration getSaxonConfiguration() {
-        return saxonConfigurationHolder.getConfiguration();
+        return saxonConfiguration.get().getConfiguration();
     }
 
     public net.sf.saxon.s9api.Processor getSaxonProcessor() {
-        return saxonConfigurationHolder.getProcessor();
+        return saxonConfiguration.get().getProcessor();
     }
 
     /**

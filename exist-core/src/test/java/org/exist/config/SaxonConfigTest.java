@@ -23,7 +23,6 @@
 package org.exist.config;
 
 import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.SaxonConfigurationHolder;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -41,12 +40,11 @@ public class SaxonConfigTest {
     final var existConfiguration = brokerPool.getConfiguration();
     assertThat(existConfiguration.getProperty("saxon.configuration")).isEqualTo("saxon-config.xml");
 
-    final var saxonConfigurationHolder = SaxonConfigurationHolder.getHolderForBroker(brokerPool);
-    final var saxonConfiguration = saxonConfigurationHolder.getConfiguration();
+    final var saxonConfiguration = brokerPool.getSaxonConfiguration();
 
     // There is no way to install EE at the test/build phase.
     // Sanity check is to confirm this does indeed return "HE" (Home Edition).
-    final var saxonProcessor = saxonConfigurationHolder.getProcessor();
+    final var saxonProcessor = brokerPool.getSaxonProcessor();
     assertThat(saxonProcessor.getSaxonEdition()).isEqualTo("HE");
 
     final var saxonConfiguration2 = brokerPool.getSaxonConfiguration();

@@ -21,7 +21,7 @@
  */
 package org.exist.util;
 
-import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
+import net.jcip.annotations.ThreadSafe;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.trans.XPathException;
 import org.exist.storage.BrokerPool;
@@ -31,11 +31,10 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
-public final class SaxonConfigurationHolder {
+@ThreadSafe
+public final class SaxonConfiguration {
 
   public static final String SAXON_CONFIGURATION_ELEMENT_NAME = "saxon";
   public static final String SAXON_CONFIGURATION_FILE_ATTRIBUTE = "configuration-file";
@@ -43,78 +42,43 @@ public final class SaxonConfigurationHolder {
   private static final String SAXON_DEFAULT_SAXON_CONFIG_FILE = "saxon-config.xml";
 
   /**
-   * Maintain a separate, singleton Saxon configuration for each broker pool
+   * Holds the Saxon configuration specific to a single broker pool
    */
-  private static final Map<BrokerPool, SaxonConfigurationHolder> perBroker = new HashMap<>();
+  private final net.sf.saxon.Configuration configuration;
+  private final net.sf.saxon.s9api.Processor processor;
 
-  private final BrokerPool brokerPool;
-  /**
-   * Load the Saxon configuration for this broker pool on demand
-   */
-  private final AtomicLazyVal<net.sf.saxon.Configuration> saxonConfiguration = new AtomicLazyVal<>(this::loadConfiguration);
-
-  /**
-   * Create a Saxon processor from the Saxon configuration on demand
-   */
-  private final AtomicLazyVal<Processor> saxonProcessor = new AtomicLazyVal<>(this::createProcessor);
-
-  /**
-   * Holds the Saxon configuration related to a broker pool
-   * Configuration elements are loaded on demand,
-   * initially this just holds a reference to the owning {@link BrokerPool}
-   *
-   * @param brokerPool which owns this Saxon configuration
-   */
-  private SaxonConfigurationHolder(final BrokerPool brokerPool) {
-    this.brokerPool = brokerPool;
+  private SaxonConfiguration(final net.sf.saxon.Configuration configuration) {
+    this.configuration = configuration;
+    this.processor = new Processor(configuration);
   }
 
   /**
-   * Factory for the singleton Saxon configuration wrapper per broker pool
-   * @param brokerPool for which to fetch (and if necessary create) a Saxon configuration
-   *
-   * @return the associated Saxon configuration wrapper
-   */
-  public static synchronized SaxonConfigurationHolder getHolderForBroker(final BrokerPool brokerPool) {
-    return perBroker.computeIfAbsent(brokerPool, SaxonConfigurationHolder::new);
-  }
-
-  /**
-   * Get (lazy loading on first access) the Saxon API's {@link net.sf.saxon.Configuration} object
+   * Get the Saxon API's {@link net.sf.saxon.Configuration} object
    *
    * @return Saxon internal configuration object
    */
   public net.sf.saxon.Configuration getConfiguration() {
-    return saxonConfiguration.get();
+    return configuration;
   }
 
   /**
-   * Get (lazy loading on first access) the Saxon API's {@link Processor} through which Saxon operations
+   * Get the Saxon API's {@link Processor} through which Saxon operations
    * such as transformation can be effected
    *
    * @return the Saxon {@link Processor} associated with the configuration.
    */
   public Processor getProcessor() {
-    return saxonProcessor.get();
-  }
-
-  /**
-   * Create the Saxon {@link Processor} from the {@link net.sf.saxon.Configuration} when it is first needed
-   *
-   * @return a freshly created Saxon processor
-   */
-  private Processor createProcessor() {
-    return new Processor(saxonConfiguration.get());
+    return processor;
   }
 
   /**
    * Load the Saxon {@link net.sf.saxon.Configuration} from a configuration file when it is first needed;
-   * if we cannot find a configuration file (and license) to give to Saxon, it may still be able to find
-   * something.
+   * if we cannot find a configuration file (and license) to give to Saxon, it (Saxon) may still be able to find
+   * something by searching in more "well-known to Saxon" locations.
    *
    * @return a freshly loaded Saxon configuration
    */
-  private net.sf.saxon.Configuration loadConfiguration() {
+  public static SaxonConfiguration loadConfiguration(final BrokerPool brokerPool) {
 
     final var existConfiguration = brokerPool.getConfiguration();
     final var saxonConfigFile = getSaxonConfigFile(existConfiguration);
@@ -132,9 +96,9 @@ public final class SaxonConfigurationHolder {
           "No default eXist Saxon configuration file " + SAXON_DEFAULT_SAXON_CONFIG_FILE);
     }
 
-    saxonConfiguration.ifPresent(SaxonConfigurationHolder::reportLicensedFeatures);
+    saxonConfiguration.ifPresent(SaxonConfiguration::reportLicensedFeatures);
 
-    return saxonConfiguration.get();
+    return new SaxonConfiguration(saxonConfiguration.get());
   }
 
   static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final File saxonConfigFile) {
