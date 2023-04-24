@@ -153,7 +153,7 @@ public class Lookup extends Function implements Optimizable {
     private boolean optimizeChild = false;
     private boolean usesCollation = false;
     @Nullable private Expression fallback = null;
-    @Nullable private final NodePath contextPath;
+    @Nullable private NodePath contextPath;
 
     /**
      * Constructor called via reflection from {@link Function#createFunction(XQueryContext, XQueryAST, Module, FunctionDef)}.
@@ -175,6 +175,24 @@ public class Lookup extends Function implements Optimizable {
      */
     private Lookup(final XQueryContext context, final FunctionSignature signature, @Nullable final NodePath contextPath) {
         super(context, signature);
+        this.contextPath = contextPath;
+    }
+
+    /**
+     * Get the node path of the optimization.
+     *
+     * @return the node path of the optimization, or null if unknown.
+     */
+    public @Nullable NodePath getContextPath() {
+        return contextPath;
+    }
+
+    /**
+     * Set the node path of the optimization.
+     *
+     * @param contextPath the node path of the optimization, or null if unknown.
+     */
+    public void setContextPath(@Nullable final NodePath contextPath) {
         this.contextPath = contextPath;
     }
 
