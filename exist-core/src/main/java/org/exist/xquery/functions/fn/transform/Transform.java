@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.util.Holder;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -177,7 +176,7 @@ public class Transform {
                     final Document document;
                     Source source = sourceNode.get();
                     final Node node = ((DOMSource)sourceNode.get()).getNode();
-                    if (!(node instanceof DocumentImpl)) {
+                    if (!(node instanceof org.exist.dom.memtree.DocumentImpl) && !(node instanceof org.exist.dom.persistent.DocumentImpl)) {
                         //The source may not be a document
                         //If it isn't, it should be part of a document, so we build a DOMSource to use
                         document = node.getOwnerDocument();
@@ -193,7 +192,6 @@ public class Transform {
                 final Transform.TemplateInvocation invocation = new Transform.TemplateInvocation(
                         options, sourceNode, delivery, xslt30Transformer, resultDocuments);
                 return invocation.invoke();
-
             } catch (final SaxonApiException | UncheckedXPathException e) {
                 throw originalXPathException("Could not transform input: ", e, ErrorCodes.FOXT0003);
             }
@@ -205,6 +203,7 @@ public class Transform {
 
 
     private XsltExecutable compileExecutable(final Options options) throws XPathException {
+
         final XsltCompiler xsltCompiler = org.exist.xquery.functions.fn.transform.Transform.SAXON_PROCESSOR.newXsltCompiler();
         final SingleRequestErrorListener errorListener = new SingleRequestErrorListener(Transform.ERROR_LISTENER);
         xsltCompiler.setErrorListener(errorListener);
@@ -223,7 +222,7 @@ public class Transform {
         xsltCompiler.setURIResolver((href, base) -> {
             try {
                 final URI hrefURI = URI.create(href);
-                if (!options.resolvedStylesheetBaseURI.isPresent() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
+                if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
                     final XPathException resolutionException = new XPathException(fnTransform,
                             ErrorCodes.XTSE0165,
                             "transform using a relative href, \n" +
@@ -266,8 +265,7 @@ public class Transform {
 
         cause = e;
         while (cause != null) {
-            if (cause instanceof net.sf.saxon.trans.XPathException) {
-                final net.sf.saxon.trans.XPathException xPathException = (net.sf.saxon.trans.XPathException)cause;
+            if (cause instanceof final net.sf.saxon.trans.XPathException xPathException) {
                 final StructuredQName from = xPathException.getErrorCodeQName();
                 if (from != null) {
                     final QName errorCodeQName = new QName(from.getLocalPart(), from.getURI(), from.getPrefix());
