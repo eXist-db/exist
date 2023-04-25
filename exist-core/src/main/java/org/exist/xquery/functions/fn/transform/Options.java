@@ -32,6 +32,7 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmValue;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.memtree.NamespaceNode;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
@@ -527,7 +528,12 @@ class Options {
                     "Can not access '" + location + "'" + e.getMessage());
         }
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
-            return new DOMSource((Node) document.itemAt(0));
+            if (document instanceof NodeProxy proxy) {
+                return new DOMSource(proxy.getNode());
+            }
+            else if (document.itemAt(0) instanceof Node node) {
+                return new DOMSource(node);
+            }
         }
         throw new XPathException(fnTransform, ErrorCodes.FODC0002,
                 "Location '"+ location + "' returns an item which is not a document node");
