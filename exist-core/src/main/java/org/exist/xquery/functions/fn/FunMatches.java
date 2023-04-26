@@ -538,7 +538,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
      * @param string the value
      * @param pattern the pattern
      * @param flags the flags
-     * @return Whether or not the string matches the given pattern with the given flags
+     * @return Whether the string matches the given pattern with the given flags
      * @throws XPathException if an error occurs
      */
     private boolean match(final String string, final String pattern, final int flags) throws XPathException {
