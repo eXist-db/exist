@@ -382,7 +382,7 @@
                         <xs:attribute name="backwardCompatible" type="yes_no" default="no"/>
                         <xs:attribute name="raise-error-on-failed-retrieval" type="yes_no"
                             default="no"/>
-                        <xs:attribute name="enforce-index-use" default="always">
+                        <xs:attribute name="enforce-index-use" default="strict">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
                                     <xs:enumeration value="always"/>
