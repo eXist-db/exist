@@ -32,6 +32,19 @@ function mt:allowEmptyMatch() {
 };
 
 declare
+    %test:args("a", "[A-Z]", "")
+    %test:assertFalse
+    %test:args("a", "\d", "")
+    %test:assertFalse
+    %test:args("a", "\w", "")
+    %test:assertTrue
+    %test:args("a", "[A-Z]", "i")
+    %test:assertTrue
+function mt:allowEmptyMatch($v, $p, $f) {
+    matches($v,$p, $f)
+};
+
+declare
     %test:args("\")
     %test:assertError("err:FORX0002")
     %test:args("(")
