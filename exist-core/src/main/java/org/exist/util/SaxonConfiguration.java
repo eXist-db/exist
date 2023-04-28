@@ -140,7 +140,7 @@ public final class SaxonConfiguration {
     if (configuration.isLicensedFeature(net.sf.saxon.Configuration.LicenseFeature.PROFESSIONAL_EDITION)) {
       sb.append(" PROFESSIONAL_EDITION");
     }
-    if (sb.length() == 0) {
+    if (sb.isEmpty()) {
       LOG.info("Saxon - no licensed features reported.");
     } else {
       LOG.info("Saxon - licensed features are" + sb + ".");
