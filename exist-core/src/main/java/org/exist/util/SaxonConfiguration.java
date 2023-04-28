@@ -24,8 +24,9 @@ package org.exist.util;
 import net.jcip.annotations.ThreadSafe;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.trans.XPathException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
-import org.jline.utils.Log;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -35,6 +36,8 @@ import java.util.Optional;
 
 @ThreadSafe
 public final class SaxonConfiguration {
+
+  private final static Logger LOG = LogManager.getLogger(SaxonConfiguration.class);
 
   public static final String SAXON_CONFIGURATION_ELEMENT_NAME = "saxon";
   public static final String SAXON_CONFIGURATION_FILE_ATTRIBUTE = "configuration-file";
@@ -91,7 +94,7 @@ public final class SaxonConfiguration {
     }
 
     if (saxonConfigFile.isEmpty()) {
-      Log.warn("eXist could not find any Saxon configuration:\n" +
+      LOG.warn("eXist could not find any Saxon configuration:\n" +
           "No Saxon configuration file in configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + "\n" +
           "No default eXist Saxon configuration file " + SAXON_DEFAULT_SAXON_CONFIG_FILE);
     }
@@ -106,11 +109,11 @@ public final class SaxonConfiguration {
       return Optional.of(net.sf.saxon.Configuration.readConfiguration(
           new StreamSource(new FileInputStream(saxonConfigFile))));
     } catch (XPathException | FileNotFoundException e) {
-      Log.warn("Saxon could not read the configuration file: " + saxonConfigFile +
+      LOG.warn("Saxon could not read the configuration file: " + saxonConfigFile +
           ", with error: " + e.getMessage(), e);
     } catch (RuntimeException runtimeException) {
       if (runtimeException.getCause() instanceof ClassNotFoundException e) {
-        Log.warn("Saxon could not honour the configuration file: " + saxonConfigFile +
+        LOG.warn("Saxon could not honour the configuration file: " + saxonConfigFile +
             ", with class not found error: " + e.getMessage() + ". You may need to install the SaxonPE or SaxonEE JAR in eXist.");
       } else {
         throw runtimeException;
@@ -136,9 +139,9 @@ public final class SaxonConfiguration {
       sb.append(" PROFESSIONAL_EDITION");
     }
     if (sb.length() == 0) {
-      Log.info("Saxon - no licensed features reported.");
+      LOG.info("Saxon - no licensed features reported.");
     } else {
-      Log.info("Saxon - licensed features are" + sb + ".");
+      LOG.info("Saxon - licensed features are" + sb + ".");
     }
   }
 
@@ -169,7 +172,7 @@ public final class SaxonConfiguration {
       if (configurationFile.canRead()) {
         return Optional.of(configurationFile);
       } else {
-        Log.warn("Configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + " : " + configurationFile +
+        LOG.warn("Configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + " : " + configurationFile +
             " does not refer to a readable file. Continuing search for Saxon configuration.");
       }
     }
