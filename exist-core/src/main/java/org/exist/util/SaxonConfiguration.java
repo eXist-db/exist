@@ -45,7 +45,7 @@ public final class SaxonConfiguration {
    * Holds the Saxon configuration specific to a single broker pool
    */
   private final net.sf.saxon.Configuration configuration;
-  private final net.sf.saxon.s9api.Processor processor;
+  private final Processor processor;
 
   private SaxonConfiguration(final net.sf.saxon.Configuration configuration) {
     this.configuration = configuration;
@@ -53,7 +53,7 @@ public final class SaxonConfiguration {
   }
 
   /**
-   * Get the Saxon API's {@link net.sf.saxon.Configuration} object
+   * Get the Saxon API's {@link net.sf.saxon.Configuration} object.
    *
    * @return Saxon internal configuration object
    */
@@ -63,7 +63,7 @@ public final class SaxonConfiguration {
 
   /**
    * Get the Saxon API's {@link Processor} through which Saxon operations
-   * such as transformation can be effected
+   * such as transformation can be effected.
    *
    * @return the Saxon {@link Processor} associated with the configuration.
    */
@@ -102,7 +102,6 @@ public final class SaxonConfiguration {
   }
 
   static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final File saxonConfigFile) {
-
     try {
       return Optional.of(net.sf.saxon.Configuration.readConfiguration(
           new StreamSource(new FileInputStream(saxonConfigFile))));
@@ -117,7 +116,6 @@ public final class SaxonConfiguration {
         throw runtimeException;
       }
     }
-
     return Optional.empty();
   }
 
@@ -166,7 +164,6 @@ public final class SaxonConfiguration {
   }
 
   private static Optional<File> getSaxonConfigFile(final Configuration existConfiguration) {
-
     if (existConfiguration.getProperty(SAXON_CONFIGURATION_FILE_PROPERTY) instanceof String saxonConfigurationFile) {
       final var configurationFile = resolveConfigurationFile(existConfiguration, saxonConfigurationFile);
       if (configurationFile.canRead()) {
