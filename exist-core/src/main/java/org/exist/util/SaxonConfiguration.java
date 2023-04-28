@@ -29,9 +29,10 @@ import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 @ThreadSafe
@@ -89,6 +90,7 @@ public final class SaxonConfiguration {
     if (saxonConfigFile.isPresent()) {
       saxonConfiguration = readSaxonConfigurationFile(saxonConfigFile.get());
     }
+
     if (saxonConfiguration.isEmpty()) {
       saxonConfiguration = Optional.of(net.sf.saxon.Configuration.newConfiguration());
     }
@@ -104,11 +106,11 @@ public final class SaxonConfiguration {
     return new SaxonConfiguration(saxonConfiguration.get());
   }
 
-  static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final File saxonConfigFile) {
+  static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final Path saxonConfigFile) {
     try {
       return Optional.of(net.sf.saxon.Configuration.readConfiguration(
-          new StreamSource(new FileInputStream(saxonConfigFile))));
-    } catch (XPathException | FileNotFoundException e) {
+          new StreamSource(Files.newInputStream(saxonConfigFile))));
+    } catch (final XPathException | IOException e) {
       LOG.warn("Saxon could not read the configuration file: " + saxonConfigFile +
           ", with error: " + e.getMessage(), e);
     } catch (RuntimeException runtimeException) {
@@ -153,23 +155,20 @@ public final class SaxonConfiguration {
    * @param filename the file we are trying to resolve
    * @return the input file, if it is absolute. a file relative to conf.xml, if the input file is relative
    */
-  private static File resolveConfigurationFile(final Configuration existConfiguration, final String filename) {
-    final var configurationFile = new File(filename);
+  private static Path resolveConfigurationFile(final Configuration existConfiguration, final String filename) {
+    final var configurationFile = Paths.get(filename);
     if (configurationFile.isAbsolute()) {
       return configurationFile;
     }
+
     final var configPath = existConfiguration.getConfigFilePath();
-    if (configPath.isPresent()) {
-      final var resolvedPath = configPath.get().getParent().resolve(configurationFile.toPath());
-      return resolvedPath.toFile();
-    }
-    return configurationFile;
+    return configPath.map(p -> p.getParent().resolve(configurationFile)).orElse(configurationFile);
   }
 
-  private static Optional<File> getSaxonConfigFile(final Configuration existConfiguration) {
+  private static Optional<Path> getSaxonConfigFile(final Configuration existConfiguration) {
     if (existConfiguration.getProperty(SAXON_CONFIGURATION_FILE_PROPERTY) instanceof String saxonConfigurationFile) {
       final var configurationFile = resolveConfigurationFile(existConfiguration, saxonConfigurationFile);
-      if (configurationFile.canRead()) {
+      if (Files.isReadable(configurationFile)) {
         return Optional.of(configurationFile);
       } else {
         LOG.warn("Configuration item " + SAXON_CONFIGURATION_FILE_PROPERTY + " : " + configurationFile +
@@ -178,7 +177,7 @@ public final class SaxonConfiguration {
     }
 
     final var configurationFile = resolveConfigurationFile(existConfiguration, SAXON_DEFAULT_SAXON_CONFIG_FILE);
-    if (configurationFile.canRead()) {
+    if (Files.isReadable(configurationFile)) {
       return Optional.of(configurationFile);
     }
 
