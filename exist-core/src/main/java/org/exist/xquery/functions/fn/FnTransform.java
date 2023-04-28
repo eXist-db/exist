@@ -57,16 +57,15 @@ public class FnTransform extends BasicFunction {
             param("options", Type.MAP, "The inputs to the transformation are supplied in the form of a map")
     );
 
-    private Transform transform;
+    private final Transform transform;
 
     public FnTransform(final XQueryContext context, final FunctionSignature signature) {
-
         super(context, signature);
-        transform = new Transform(context, this);
+        this.transform = new Transform(context, this);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         return transform.eval(args, contextSequence);
     }
 }

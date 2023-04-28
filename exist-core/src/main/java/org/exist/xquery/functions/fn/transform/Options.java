@@ -522,7 +522,7 @@ class Options {
      */
     private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
 
-        Sequence document;
+        final Sequence document;
         try {
             document = DocUtils.getDocument(context, location);
         } catch (final PermissionDeniedException e) {
@@ -656,12 +656,12 @@ class Options {
 
         private final RetainedStaticContext retainedStaticContext;
 
-        private SystemProperties(XQueryContext context) {
+        private SystemProperties(final XQueryContext context) {
             final var saxonConfiguration = context.getBroker().getBrokerPool().getSaxonConfiguration();
             this.retainedStaticContext = new RetainedStaticContext(saxonConfiguration);
         }
 
-        String get(org.exist.dom.QName qName) {
+        String get(final org.exist.dom.QName qName) {
             return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);
         }
     }
@@ -686,10 +686,14 @@ class Options {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            XSLTVersion version = (XSLTVersion) o;
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final XSLTVersion version = (XSLTVersion) o;
             return major == version.major && minor == version.minor;
         }
 
@@ -698,7 +702,8 @@ class Options {
             return Objects.hash(major, minor);
         }
 
-        @Override public String toString() {
+        @Override
+        public String toString() {
             return major + "." + minor;
         }
     }
