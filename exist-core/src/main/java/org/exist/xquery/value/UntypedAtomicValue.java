@@ -65,6 +65,16 @@ public class UntypedAtomicValue extends AtomicValue {
                 return strVal == null ? new UntypedAtomicValue(expression, value) : strVal;
             case Type.STRING:
                 return new StringValue(expression, value);
+            case Type.NORMALIZED_STRING:
+            case Type.TOKEN:
+            case Type.LANGUAGE:
+            case Type.NMTOKEN:
+            case Type.NAME:
+            case Type.NCNAME:
+            case Type.ID:
+            case Type.IDREF:
+            case Type.ENTITY:
+                return new StringValue(expression, value, requiredType);
             case Type.ANY_URI:
                 return new AnyURIValue(expression, value);
             case Type.BOOLEAN:
