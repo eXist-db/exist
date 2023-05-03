@@ -170,10 +170,17 @@ public class ClasspathHelper implements BrokerPoolService {
                 try (final BufferedReader reader = Files.newBufferedReader(cp)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        if (!Files.exists(Paths.get(line))) {
-                            LOG.warn("Unable to add '" + line + "' to the classpath for EXPath package: " + pkg.getName() + ", as the file does not exist!");
+                        Path p = Paths.get(line);
+                        if (!p.isAbsolute()) {
+                            final FileSystemStorage.FileSystemResolver res = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
+                            p = res.resolveComponentAsFile(line);
+                        }
+                        p = p.normalize().toAbsolutePath();
+
+                        if (!Files.exists(p)) {
+                            LOG.warn("Unable to add '" + p + "' to the classpath for EXPath package: " + pkg.getName() + ", as the file does not exist!");
                         } else {
-                            classpath.addComponent(line);
+                            classpath.addComponent(p.toString());
                         }
                     }
                 }
