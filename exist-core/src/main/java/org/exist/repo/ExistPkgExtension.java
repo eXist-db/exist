@@ -32,15 +32,12 @@ import org.expath.pkg.repo.parser.XMLStreamHelper;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Set;
 
 /**
  * Handle the exist.xml descriptor in an EXPath package.
@@ -158,23 +155,22 @@ public class ExistPkgExtension
                 throw new PackageException("Impossible to create directory: " + exist);
             }
         }
-        final Set<String> jars = info.getJars();
+
         try(final Writer out = Files.newBufferedWriter(classpath)) {
-            for (final String jar : jars) {
-                StreamSource jar_src;
+            for (final String jar : info.getJars()) {
+
                 try {
-                    jar_src = res.resolveComponent(jar);
+                    res.resolveComponent(jar);
                 } catch (final NotExistException ex) {
-                    final String msg = "Inconsistent package descriptor, the JAR file is not in the package: ";
+                    final String msg = "Inconsistent package descriptor, the JAR file is not in the EXPath package: ";
                     throw new PackageException(msg + jar, ex);
                 }
-                final URI uri = URI.create(jar_src.getSystemId());
-                final Path file = Paths.get(uri);
-                out.write(file.normalize().toString());
-                out.write("\n");
+
+                out.write(jar);
+                out.write('\n');
             }
         } catch (final IOException ex) {
-            throw new PackageException("Error writing the eXist classpath file: " + classpath, ex);
+            throw new PackageException("Error writing the eXist classpath file '" + classpath + "' for the EXPath package: " + pkg.getName(), ex);
         }
     }
 
