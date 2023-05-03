@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
@@ -74,7 +75,7 @@ public class ClasspathHelper implements BrokerPoolService {
         final Path packageDir = resolver.resolveResourceAsFile(".");
         final Classpath cp = new Classpath();
         try {
-            scanPackageDir(cp, packageDir);
+            scanPackageDir(pkg, cp, packageDir);
             ((EXistClassLoader)loader).addURLs(cp);
         } catch (final IOException e) {
             LOG.warn("An error occurred while updating classpath for package {}", pkg.getName(), e);
@@ -93,7 +94,7 @@ public class ClasspathHelper implements BrokerPoolService {
                     try {
                         final FileSystemStorage.FileSystemResolver resolver = (FileSystemStorage.FileSystemResolver) pkg.getResolver();
                         final Path packageDir = resolver.resolveResourceAsFile(".");
-                        scanPackageDir(classpath, packageDir);
+                        scanPackageDir(pkg, classpath, packageDir);
                     } catch (final IOException e) {
                         LOG.warn("An error occurred while updating classpath for package {}", pkg.getName(), e);
                     }
@@ -157,7 +158,7 @@ public class ClasspathHelper implements BrokerPoolService {
         }
     }
 
-    private static void scanPackageDir(Classpath classpath, Path module) throws IOException {
+    private static void scanPackageDir(Package pkg, Classpath classpath, Path module) throws IOException {
         final Path dotExist =  module.resolve(".exist");
         if (Files.exists(dotExist)) {
             if (!Files.isDirectory(dotExist)) {
@@ -169,7 +170,11 @@ public class ClasspathHelper implements BrokerPoolService {
                 try (final BufferedReader reader = Files.newBufferedReader(cp)) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        classpath.addComponent(line);
+                        if (!Files.exists(Paths.get(line))) {
+                            LOG.warn("Unable to add '" + line + "' to the classpath for EXPath package: " + pkg.getName() + ", as the file does not exist!");
+                        } else {
+                            classpath.addComponent(line);
+                        }
                     }
                 }
             }
