@@ -97,6 +97,12 @@ public class ConfigurationDialog extends JDialog {
             if (ports.containsKey("jetty.port")) {
                 httpPort.setValue(ports.get("jetty.port"));
             }
+            if (ports.containsKey("jetty.http.port")) {
+                httpPort.setValue(ports.get("jetty.http.port"));
+            }
+            if (ports.containsKey("ssl.port")) {
+                sslPort.setValue(ports.get("ssl.port"));
+            }
             if (ports.containsKey("jetty.ssl.port")) {
                 sslPort.setValue(ports.get("jetty.ssl.port"));
             }
