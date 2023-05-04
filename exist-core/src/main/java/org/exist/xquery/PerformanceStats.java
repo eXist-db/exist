@@ -28,38 +28,41 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPoolService;
 import org.xml.sax.helpers.AttributesImpl;
 
-import java.util.HashMap;
-import java.util.Comparator;
-import java.util.Arrays;
+import javax.annotation.Nullable;
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class PerformanceStats implements BrokerPoolService {
 
-    public final static String RANGE_IDX_TYPE = "range";
+    public static final String RANGE_IDX_TYPE = "range";
 
-    public final static String XML_NAMESPACE = "http://exist-db.org/xquery/profiling";
-    public final static String XML_PREFIX = "stats";
+    public static final String XML_NAMESPACE = "http://exist-db.org/xquery/profiling";
+    public static final String XML_PREFIX = "stats";
 
     public static final String CONFIG_PROPERTY_TRACE = "xquery.profiling.trace";
     public static final String CONFIG_ATTR_TRACE = "trace";
 
-    public final static int NO_INDEX = 0;
-    public final static int BASIC_INDEX = 1;
-    public final static int OPTIMIZED_INDEX = 2;
+    public static final int NO_INDEX = 0;
+    public static final int BASIC_INDEX = 1;
+    public static final int OPTIMIZED_INDEX = 2;
 
     private static class IndexStats {
 
-        String source;
-        String indexType;
-        int line;
-        int column;
-        int mode = 0;
-        int usageCount = 1;
+        final String source;
+        final String indexType;
+        final int line;
+        final int column;
+        final int mode;
+        int usageCount = 0;
         long executionTime = 0;
 
-        private IndexStats(String indexType, String source, int line, int column, int mode) {
+        private IndexStats(final String indexType, final String source, final int line, final int column, final int mode) {
             this.indexType = indexType;
             this.source = source;
             this.line = line;
@@ -67,88 +70,86 @@ public class PerformanceStats implements BrokerPoolService {
             this.mode = mode;
         }
 
-        public void recordUsage(long elapsed) {
+        public void recordUsage(final long elapsed) {
             executionTime += elapsed;
             usageCount++;
         }
 
+        @Override
         public int hashCode() {
             return indexType.hashCode() + source.hashCode() + line + column + mode;
         }
 
-        public boolean equals(Object obj) {
-        	if (obj != null && obj instanceof IndexStats other) {
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof IndexStats other) {
                 return other.indexType.equals(indexType) && other.source.equals(source) &&
-                    other.line == line && other.column == column && other.mode == mode;
-			}
-        	return false;
+                        other.line == line && other.column == column && other.mode == mode;
+            }
+            return false;
         }
     }
 
     private static class QueryStats {
 
-        String source;
+        final String source;
         long executionTime = 0;
         int callCount = 1;
 
-        QueryStats(String source) {
-            this.source = source;
-            if (this.source == null)
-                {this.source = "";}
+        QueryStats(final String source) {
+            this.source = (source != null ? source : "");
         }
 
-        public void recordCall(long elapsed) {
+        public void recordCall(final long elapsed) {
             executionTime += elapsed;
             callCount++;
         }
 
+        @Override
         public int hashCode() {
             return source.hashCode();
         }
 
-        public boolean equals(Object obj) {
-        	if (obj != null && obj instanceof QueryStats) {
-                return ((QueryStats)obj).source.equals(source);
-			}
-        	return false;
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof QueryStats other) {
+                return other.source.equals(source);
+            }
+            return false;
         }
     }
 
     private static class FunctionStats extends QueryStats {
+        final QName qname;
 
-        QName qname;
-
-        FunctionStats(String source, QName name) {
+        FunctionStats(final String source, final QName name) {
             super(source);
             this.qname = name;
         }
 
+        @Override
         public int hashCode() {
             return 31 * qname.hashCode() + source.hashCode();
         }
 
-        public boolean equals(Object obj) {
-        	if (obj != null && obj instanceof FunctionStats ostats) {
-                return qname.equals(ostats.qname) &&
-                        source.equals(ostats.source);
-			}
-        	return false;
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof FunctionStats other) {
+                return qname.equals(other.qname) &&
+                        source.equals(other.source);
+            }
+            return false;
         }
     }
 
     private static class OptimizationStats {
+        final String source;
+        final OptimizationType type;
+        final int line;
+        final int column;
 
-        String source;
-        OptimizationType type;
-        int line;
-        int column;
-
-        OptimizationStats(String source, OptimizationType type, int line, int column) {
-            if (source == null) {
-                this.source = "";
-            } else {
-                this.source = source;
-            }
+        OptimizationStats(final String source, final OptimizationType type, final int line, final int column) {
+            this.source = source != null ? source : "";
             this.type = type;
             this.line = line;
             this.column = column;
@@ -160,10 +161,10 @@ public class PerformanceStats implements BrokerPoolService {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof OptimizationStats stats) {
-                return source.equals(stats.source) && type == stats.type &&
-                        line == stats.line && column == stats.column;
+        public boolean equals(final Object obj) {
+            if (obj instanceof OptimizationStats other) {
+                return source.equals(other.source) && type == other.type &&
+                        line == other.line && column == other.column;
             }
             return false;
         }
@@ -175,45 +176,46 @@ public class PerformanceStats implements BrokerPoolService {
 
     private static class CompareByTime implements Comparator<FunctionStats> {
 
-        public int compare(FunctionStats o1, FunctionStats o2) {
-            final long t1 = o1.executionTime;
-            final long t2 = o2.executionTime;
-            return t1 == t2 ? 0 : (t1 > t2 ? 1 : -1);
+        @Override
+        public int compare(final FunctionStats o1, final FunctionStats o2) {
+            return Long.compare(o1.executionTime, o2.executionTime);
         }
     }
 
-    private HashMap<String, QueryStats> queries = new HashMap<>();
-    private HashMap<FunctionStats, FunctionStats> functions = new HashMap<>();
-    private HashMap<IndexStats, IndexStats> indexStats = new HashMap<>();
-    private HashSet<OptimizationStats> optimizations = new HashSet<>();
-    
+    private final Map<String, QueryStats> queries = new HashMap<>();
+    private final Map<FunctionStats, FunctionStats> functions = new HashMap<>();
+    private final Map<IndexStats, IndexStats> indexStats = new HashMap<>();
+    private final Set<OptimizationStats> optimizations = new HashSet<>();
+
     private boolean enabled = false;
 
-    private Database db;
+    private final Database db;
 
-    public PerformanceStats(Database db) {
+    public PerformanceStats(final Database db) {
         this.db = db;
         if (db != null) {
             final String config = (String) db.getConfiguration().getProperty(PerformanceStats.CONFIG_PROPERTY_TRACE);
-            if (config != null)
+            if (config != null) {
                 enabled = config.equals("functions") || "yes".equals(config);
+            }
         }
     }
 
-    public void setEnabled(boolean enable) {
+    public void setEnabled(final boolean enable) {
         enabled = enable;
     }
 
     public boolean isEnabled() {
         return enabled ||
-                (db != null 
-            		&& db.getPerformanceStats() != this 
-            		&& db.getPerformanceStats().isEnabled());
+                (db != null
+                        && db.getPerformanceStats() != this
+                        && db.getPerformanceStats().isEnabled());
     }
 
-    public void recordQuery(String source, long elapsed) {
-        if (source == null)
-            {return;}
+    public void recordQuery(@Nullable final String source, final long elapsed) {
+        if (source == null) {
+            return;
+        }
         QueryStats stats = queries.get(source);
         if (stats == null) {
             stats = new QueryStats(source);
@@ -224,7 +226,7 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
-    public void recordFunctionCall(QName qname, String source, long elapsed) {
+    public void recordFunctionCall(final QName qname, final String source, final long elapsed) {
         final FunctionStats newStats = new FunctionStats(source, qname);
         final FunctionStats stats = functions.get(newStats);
         if (stats == null) {
@@ -235,7 +237,7 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
-    public void recordIndexUse(Expression expression, String indexName, String source, int mode, long elapsed) {
+    public void recordIndexUse(final Expression expression, final String indexName, final String source, final int mode, final long elapsed) {
         final IndexStats newStats = new IndexStats(indexName, source, expression.getLine(), expression.getColumn(), mode);
         final IndexStats stats = indexStats.get(newStats);
         if (stats == null) {
@@ -246,13 +248,13 @@ public class PerformanceStats implements BrokerPoolService {
         }
     }
 
-    public void recordOptimization(Expression expression, OptimizationType type, String source) {
+    public void recordOptimization(final Expression expression, final OptimizationType type, final String source) {
         final OptimizationStats newStats = new OptimizationStats(source, type, expression.getLine(), expression.getColumn());
         optimizations.add(newStats);
     }
 
-    public synchronized void merge(PerformanceStats otherStats) {
-        for (final QueryStats other: otherStats.queries.values()) {
+    public synchronized void merge(final PerformanceStats otherStats) {
+        for (final QueryStats other : otherStats.queries.values()) {
             final QueryStats mine = queries.get(other.source);
             if (mine == null) {
                 queries.put(other.source, other);
@@ -261,7 +263,7 @@ public class PerformanceStats implements BrokerPoolService {
                 mine.executionTime += other.executionTime;
             }
         }
-        for (final FunctionStats other: otherStats.functions.values()) {
+        for (final FunctionStats other : otherStats.functions.values()) {
             final FunctionStats mine = functions.get(other);
             if (mine == null) {
                 functions.put(other, other);
@@ -270,32 +272,33 @@ public class PerformanceStats implements BrokerPoolService {
                 mine.executionTime += other.executionTime;
             }
         }
-        for (final IndexStats other: otherStats.indexStats.values()) {
-           final IndexStats mine = indexStats.get(other);
-           if (mine == null) {
-               indexStats.put(other, other);
-           } else {
-               mine.usageCount += other.usageCount;
-               mine.executionTime += other.executionTime;
-           }
-       }
+        for (final IndexStats other : otherStats.indexStats.values()) {
+            final IndexStats mine = indexStats.get(other);
+            if (mine == null) {
+                indexStats.put(other, other);
+            } else {
+                mine.usageCount += other.usageCount;
+                mine.executionTime += other.executionTime;
+            }
+        }
         optimizations.addAll(otherStats.optimizations);
     }
 
     @SuppressWarnings("unused")
-	private String createKey(QName qname, String source) {
+    private String createKey(final QName qname, final String source) {
         return qname.getNamespaceURI() + ":" + qname.getLocalPart() + ":" + source;
     }
 
     public boolean hasData() {
         return !(functions.isEmpty() && queries.isEmpty());
     }
-    
+
+    @Override
     public synchronized String toString() {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
         final FunctionStats[] stats = sort();
-        for (FunctionStats stat : stats) {
+        for (final FunctionStats stat : stats) {
             pw.format("\n%30s %8.3f %8d", stat.qname, stat.executionTime / 1000.0, stat.callCount);
         }
         pw.flush();
@@ -303,9 +306,9 @@ public class PerformanceStats implements BrokerPoolService {
     }
 
     private FunctionStats[] sort() {
-        final FunctionStats stats[] = new FunctionStats[functions.size()];
+        final FunctionStats[] stats = new FunctionStats[functions.size()];
         int j = 0;
-        for (FunctionStats next: functions.values() ) {
+        for (final FunctionStats next : functions.values()) {
             stats[j] = next;
             j++;
         }
@@ -313,7 +316,7 @@ public class PerformanceStats implements BrokerPoolService {
         return stats;
     }
 
-    public synchronized void toXML(MemTreeBuilder builder) {
+    public synchronized void toXML(final MemTreeBuilder builder) {
         final AttributesImpl attrs = new AttributesImpl();
         builder.startElement(new QName("calls", XML_NAMESPACE, XML_PREFIX), null);
         for (final QueryStats stats : queries.values()) {
@@ -324,29 +327,30 @@ public class PerformanceStats implements BrokerPoolService {
             builder.startElement(new QName("query", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
-        for (final FunctionStats stats: functions.values()) {
+        for (final FunctionStats stats : functions.values()) {
             attrs.clear();
             attrs.addAttribute("", "name", "name", "CDATA", stats.qname.getStringValue());
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
-            if (stats.source != null)
-                {attrs.addAttribute("", "source", "source", "CDATA", stats.source);}
+            if (stats.source != null) {
+                attrs.addAttribute("", "source", "source", "CDATA", stats.source);
+            }
             builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
-        for (final IndexStats stats: indexStats.values()) {
+        for (final IndexStats stats : indexStats.values()) {
             attrs.clear();
             attrs.addAttribute("", "type", "type", "CDATA", stats.indexType);
             attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" +
-                stats.column + "]");
+                    stats.column + "]");
             attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.usageCount));
             attrs.addAttribute("", "optimization", "optimization", "CDATA",
-                Integer.toString(stats.mode));
+                    Integer.toString(stats.mode));
             builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
-        for (final OptimizationStats stats: optimizations) {
+        for (final OptimizationStats stats : optimizations) {
             attrs.clear();
             attrs.addAttribute("", "type", "type", "CDATA", stats.type.toString());
             if (stats.source != null) {
