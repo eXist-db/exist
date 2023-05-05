@@ -233,7 +233,7 @@ public class NGramSearch extends Function implements Optimizable {
 
         if( context.getProfiler().traceFunctions() ) {
             // report index use
-            context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
         return preselectResult;
     }
@@ -267,7 +267,7 @@ public class NGramSearch extends Function implements Optimizable {
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
                 if( context.getProfiler().traceFunctions() ) {
                     // report index use
-                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
                 }
             }
         } else {

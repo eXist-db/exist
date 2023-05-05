@@ -111,13 +111,10 @@ public class QueryField extends Query implements Optimizable {
         } catch (final IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
-
         LOG.debug("Lucene query took {}", System.currentTimeMillis() - start);
-
-        if (context.getProfiler().traceFunctions()) {
-            context.getProfiler().traceIndexUsage(context, "lucene", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
+        if( context.getProfiler().traceFunctions() ) {
+            context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
-
         return preselectResult;
     }
 
@@ -158,11 +155,9 @@ public class QueryField extends Query implements Optimizable {
             } catch (final IOException e) {
         		throw new XPathException(this, e.getMessage());
         	}
-
-        	if (context.getProfiler().traceFunctions()) {
-        		context.getProfiler().traceIndexUsage(context, "lucene", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
+        	if( context.getProfiler().traceFunctions() ) {
+        		context.getProfiler().traceIndexUsage( context, "lucene", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
         	}
-
         } else {
             result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);
         }

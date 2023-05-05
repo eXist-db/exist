@@ -241,7 +241,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         }
         if (context.getProfiler().traceFunctions()) {
             context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                    PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
+                    PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start);
         }
         return preselectResult;
     }
@@ -333,7 +333,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                 }
                 if (context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                            PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
+                            PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start);
                 }
             } else {
                 if (context.isProfilingEnabled()) {
@@ -346,7 +346,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                 }
                 if (context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                            PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
+                            PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start);
                 }
             }
         } else {
