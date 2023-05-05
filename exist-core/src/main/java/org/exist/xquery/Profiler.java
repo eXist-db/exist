@@ -31,6 +31,8 @@ import org.exist.source.Source;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
+
 /**
  * XQuery profiling output. Profiling information is written to a
  * logger. The profiler can be enabled/disabled and configured
@@ -83,9 +85,15 @@ public class Profiler {
 
     private Database db;
 
-    public Profiler(Database db) {
+    public Profiler(@Nullable final Database db) {
         this.db = db;
-        this.stats = new PerformanceStats(db);
+
+        boolean performanceStatsEnabled = false;
+        if (db != null) {
+            final String xqueryProfilingTraceEnabled = (String) db.getConfiguration().getProperty(PerformanceStatsImpl.CONFIG_PROPERTY_TRACE);
+            performanceStatsEnabled = ("yes".equals(xqueryProfilingTraceEnabled) || "functions".equals(xqueryProfilingTraceEnabled));
+        }
+        this.stats = new PerformanceStatsImpl(performanceStatsEnabled, locallyEnabled -> locallyEnabled || (db != null && db.getPerformanceStats().isEnabled()));
     }
 
     /**
@@ -198,18 +206,12 @@ public class Profiler {
         }
     }
 
-    public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, int mode, long elapsed) {
-        stats.recordIndexUse(expression, indexType, context.getSource().pathOrShortIdentifier(), mode, elapsed);
+    public final void traceIndexUsage(XQueryContext context, String indexType, Expression expression, PerformanceStats.IndexOptimizationLevel indexOptimizationLevel, long elapsed) {
+        stats.recordIndexUse(expression, indexType, context.getSource().pathOrShortIdentifier(), indexOptimizationLevel, elapsed);
     }
 
     public final void traceOptimization(XQueryContext context, PerformanceStats.OptimizationType type, Expression expression) {
         stats.recordOptimization(expression, type, context.getSource().pathOrShortIdentifier());
-    }
-
-    private void save() {
-        if (db != null) {
-            db.getPerformanceStats().merge(stats);
-        }
     }
 
     /**
@@ -416,9 +418,16 @@ public class Profiler {
         if (!stack.isEmpty()) {
             log.debug("QUERY RESET");
         }
+
         stack.clear();
-        if (stats.isEnabled() && stats.hasData()) {
-            save();
+
+        if (stats.isEnabled()) {
+            // merge these stats into the central BrokerPool stats
+            if (db != null) {
+                final PerformanceStats brokerPoolPerformanceStats = db.getPerformanceStats();
+                brokerPoolPerformanceStats.recordAll(stats);
+            }
+
             stats.reset();
         }
     }
