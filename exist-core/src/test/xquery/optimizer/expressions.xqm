@@ -28,7 +28,7 @@ xquery version "3.0";
  : Expressions use the @test:stats annotation to retrieve execution statistics
  : for each test function.
  :)
-module namespace ot="http://exist-db.org/xquery/optimizer/test";
+module namespace ot="http://exist-db.org/xquery/optimizer/test/expressions";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace stats="http://exist-db.org/xquery/profiling";
