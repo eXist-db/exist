@@ -91,7 +91,8 @@ public class JingXsdTest {
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
         executeAndEvaluate(query,"valid");
@@ -99,7 +100,8 @@ public class JingXsdTest {
 
     @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
         executeAndEvaluate(query,"invalid");
@@ -107,7 +109,8 @@ public class JingXsdTest {
 
     @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
         executeAndEvaluate(query, "valid");
@@ -115,7 +118,8 @@ public class JingXsdTest {
 
     @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
         executeAndEvaluate(query,"invalid");

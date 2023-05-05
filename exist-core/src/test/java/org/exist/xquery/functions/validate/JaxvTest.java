@@ -89,7 +89,8 @@ public class JaxvTest {
 
     @Test
     public void xsd_stored_valid() throws XMLDBException {
-        final String query = "validation:jaxv( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxv( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
@@ -101,7 +102,8 @@ public class JaxvTest {
 
     @Test
     public void xsd_stored_report_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxv-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxv-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
@@ -114,7 +116,8 @@ public class JaxvTest {
 
     @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxv-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxv-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.xsd') )";
 
@@ -127,7 +130,8 @@ public class JaxvTest {
 
     @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxv-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 
@@ -140,7 +144,8 @@ public class JaxvTest {
 
     @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxv-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxv-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.xsd') )";
 

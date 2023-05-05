@@ -132,6 +132,7 @@ public class TransformTest {
             "xquery version \"3.0\";\n" +
             "\n" +
             "(:Read document with xsl:for-each and look for key in the dictionary document :)\n" +
+            "import module namespace transform = \"http://exist-db.org/xquery/transform\";\n" +
             "declare variable $xsltPath as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath() + "';\n" +
             "declare variable $listOpsFileUri as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath()+ "/listOpsErr.xml';\n" +
             "declare variable $inputFileUri as xs:string := '" + TEST_IDS_COLLECTION.getCollectionPath() + "/inputListOps.xml';\n" +

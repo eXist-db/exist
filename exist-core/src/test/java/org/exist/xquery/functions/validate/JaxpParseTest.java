@@ -90,17 +90,21 @@ public class JaxpParseTest {
 
     @Before
     public void clearGrammarCache() throws XMLDBException {
-        final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        final ResourceSet results = existEmbeddedServer.executeQuery(
+                "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
     @Test
     public void parse_and_fill_defaults() throws XMLDBException, IOException, SAXException {
-        String query = "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
+        String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:pre-parse-grammar(xs:anyURI('/db/parse_validate/defaultValue.xsd'))";
         String result = execute(query);
         assertEquals(result, "defaultTest");
 
-        query = "declare option exist:serialize 'indent=no'; " +
+        query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "declare option exist:serialize 'indent=no'; " +
                 "validation:jaxp-parse(xs:anyURI('/db/parse_validate/defaultValue.xml'), true(), ())";
         result = execute(query);
 

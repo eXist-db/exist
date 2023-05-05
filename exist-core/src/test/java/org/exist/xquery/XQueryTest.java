@@ -922,7 +922,7 @@ public class XQueryTest {
 
         String query =
                 "xquery version \"1.0\";\n" +
-                "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
+                "import module namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
                 "declare variable $xml {\n" +
                 "	<node>text</node>\n" +
                 "};\n" +

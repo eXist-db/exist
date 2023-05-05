@@ -55,12 +55,18 @@ public class CollectionConfigurationValidationModeTest {
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        existEmbeddedServer.executeQuery(
+                "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:clear-grammar-cache()"
+        );
     }
 
     @Before
     public void setUp() throws Exception {
-        existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        existEmbeddedServer.executeQuery(
+                "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:clear-grammar-cache()"
+        );
     }
 
     private void createCollection(final String collection) throws XMLDBException {

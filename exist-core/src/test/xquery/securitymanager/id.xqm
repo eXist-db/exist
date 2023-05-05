@@ -25,7 +25,8 @@ module namespace id = "http://exist-db.org/test/securitymanager/id";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
 declare namespace mod1 = "http://module1";
-declare namespace sm = "http://exist-db.org/xquery/securitymanager";
+import module namespace inspect = "http://exist-db.org/xquery/inspection";
+import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 declare variable $id:TEST_COLLECTION_NAME := "test-id";
 declare variable $id:TEST_COLLECTION_PATH := "/db/test-id";
@@ -38,6 +39,7 @@ function id:setup() {
     xmldb:store($id:TEST_COLLECTION_PATH, $id:TEST_MODULE_NAME, 'xquery version "3.0";
 
 module namespace mod1 = "http://module1";
+import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 declare function mod1:function1() {
     <mod1>{sm:id()}</mod1>

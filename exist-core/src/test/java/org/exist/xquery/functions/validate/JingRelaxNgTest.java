@@ -88,7 +88,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rng_stored_valid_boolean() throws XMLDBException {
-        final String query = "validation:jing( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
@@ -99,7 +100,8 @@ public class JingRelaxNgTest {
     
     @Test
     public void rng_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
         executeAndEvaluate(query,"valid");
@@ -107,7 +109,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rng_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "doc('/db/personal/personal.rng') )";
         executeAndEvaluate(query,"invalid");
@@ -115,7 +118,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rng_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
         executeAndEvaluate(query,"valid");
@@ -123,7 +127,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rng_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rng') )";
         executeAndEvaluate(query,"invalid");
@@ -131,7 +136,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rnc_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-valid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
         executeAndEvaluate(query,"valid");
@@ -139,7 +145,8 @@ public class JingRelaxNgTest {
 
     @Test
     public void rnc_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/personal/personal-invalid.xml'), " +
                 "util:binary-doc('/db/personal/personal.rnc') )";
         executeAndEvaluate(query,"invalid");
@@ -147,14 +154,16 @@ public class JingRelaxNgTest {
 
     @Test
     public void rnc_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
         executeAndEvaluate(query,"valid");
     }
 
     @Test
     public void rnc_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( xs:anyURI('xmldb:exist:///db/personal/personal-invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/personal/personal.rnc') )";
         executeAndEvaluate(query,"invalid");
     }

@@ -141,6 +141,7 @@ public class ForwardReferenceTest {
                 "\n" +
                 "import module namespace xqsuite = \"http://exist-db.org/xquery/xqsuite\"\n" +
                 "    at \"resource:org/exist/xquery/lib/xqsuite/xqsuite.xql\";\n" +
+                "import module namespace inspect = \"http://exist-db.org/xquery/inspection\";" +
                 "\n" +
                 "xqsuite:suite((\n" +
                 "    inspect:module-functions(xs:anyURI(\"xmldb:exist://" + TEST_PAGES_MODULE_URI + "\"))\n" +

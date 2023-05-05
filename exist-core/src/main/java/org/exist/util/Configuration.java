@@ -393,11 +393,13 @@ public class Configuration implements ErrorHandler
         config.put( PerformanceStats.CONFIG_PROPERTY_TRACE, trace );
 
         // built-in-modules
-        final Map<String, Class<?>> classMap      = new HashMap<>();
-        final Map<String, String>   knownMappings = new HashMap<>();
+        final Map<String, Class<?>> eagerModuleClassMap = new HashMap<>();
+        final Map<String, Class<?>> lazyModuleClassMap  = new HashMap<>();
+        final Map<String, String>   knownMappings       = new HashMap<>();
         final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<>();
-        loadModuleClasses(xquery, classMap, knownMappings, moduleParameters);
-        config.put( XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
+        loadModuleClasses(xquery, eagerModuleClassMap, lazyModuleClassMap, knownMappings, moduleParameters);
+        config.put( XQueryContext.PROPERTY_BUILT_IN_MODULES, eagerModuleClassMap);
+        config.put( XQueryContext.PROPERTY_BUILT_IN_LAZY_MODULES, lazyModuleClassMap);
         config.put( XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
         config.put( XQueryContext.PROPERTY_MODULE_PARAMETERS, moduleParameters);
     }
@@ -407,14 +409,15 @@ public class Configuration implements ErrorHandler
      * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
      *
      * @param   xquery            configuration root
-     * @param   modulesClassMap   map containing all classes of modules
-     * @param   modulesSourceMap  map containing all source uris to external resources
+     * @param   eagerModuleClassMap map containing all classes of modules which are always loaded to XQueryContext
+     * @param   lazyModuleClassMap  map containing all classes of modules which are lazy loaded to XQueryContext only if they are explicitly imported
+     * @param   modulesSourceMap    map containing all source uris to external resources
      *
      * @throws  DatabaseConfigurationException
      */
-    private void loadModuleClasses( Element xquery, Map<String, Class<?>> modulesClassMap, Map<String, String> modulesSourceMap, Map<String, Map<String, List<? extends Object>>> moduleParameters) throws DatabaseConfigurationException {
+    private void loadModuleClasses( Element xquery, Map<String, Class<?>> eagerModuleClassMap, Map<String, Class<?>> lazyModuleClassMap, Map<String, String> modulesSourceMap, Map<String, Map<String, List<? extends Object>>> moduleParameters) throws DatabaseConfigurationException {
         // add the standard function module
-        modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
+        eagerModuleClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
         // add other modules specified in configuration
         final NodeList builtins = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
@@ -436,6 +439,8 @@ public class Configuration implements ErrorHandler
                     final String uri    = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
                     final String clazz  = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
                     final String source = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
+                    final String load   = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE);
+
 
                     // uri attribute is the identifier and is always required
                     if(uri == null) {
@@ -445,6 +450,10 @@ public class Configuration implements ErrorHandler
                     // either class or source attribute must be present
                     if((clazz == null) && (source == null)) {
                         throw(new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'" ));
+                    }
+
+                    if (load != null && !(XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER.equals(load) || XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY.equals(load))) {
+                        throw new DatabaseConfigurationException(String.format("parameter '{}' on module can only contain the value: '{}' or '{}'", XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE, XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_EAGER, XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY));
                     }
 
                     if(source != null) {
@@ -462,13 +471,17 @@ public class Configuration implements ErrorHandler
                         // Get class of module
                         final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
-                        // Store class if thw module class actually exists
-                        if( moduleClass != null) {
-                            modulesClassMap.put(uri, moduleClass);
-                        }
+                        // Store class if the module class actually exists
+                        if (moduleClass != null) {
+                            if (XQueryContext.BUILT_IN_MODULE_LOAD_ATTRIBUTE_VALUE_LAZY.equals(load)) {
+                                lazyModuleClassMap.put(uri, moduleClass);
+                            } else {
+                                eagerModuleClassMap.put(uri, moduleClass);
+                            }
 
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                            }
                         }
                     }
 

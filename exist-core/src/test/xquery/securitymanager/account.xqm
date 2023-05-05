@@ -24,7 +24,7 @@ xquery version "3.1";
 module namespace account = "http://exist-db.org/test/securitymanager/account";
 
 declare namespace test = "http://exist-db.org/xquery/xqsuite";
-declare namespace sm = "http://exist-db.org/xquery/securitymanager";
+import module namespace sm = "http://exist-db.org/xquery/securitymanager";
 
 declare
     %test:assertFalse

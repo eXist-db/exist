@@ -124,13 +124,16 @@ public class JaxpXsdCatalogTest {
 
     @Before
     public void clearGrammarCache() throws XMLDBException {
-        final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        final ResourceSet results = existEmbeddedServer.executeQuery(
+                "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
     @Test
     public void xsd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"valid");
@@ -138,7 +141,8 @@ public class JaxpXsdCatalogTest {
 
     @Test
     public void xsd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"invalid");
@@ -146,7 +150,8 @@ public class JaxpXsdCatalogTest {
 
     @Test
     public void xsd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"valid");
@@ -154,7 +159,8 @@ public class JaxpXsdCatalogTest {
 
     @Test
     public void xsd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"invalid");
@@ -162,7 +168,8 @@ public class JaxpXsdCatalogTest {
 
     @Test
     public void xsd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         executeAndEvaluate(query,"valid");
@@ -170,7 +177,8 @@ public class JaxpXsdCatalogTest {
 
     @Test
     public void xsd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         executeAndEvaluate(query,"invalid");
@@ -179,7 +187,8 @@ public class JaxpXsdCatalogTest {
     // test boolean function
     @Test
     public void xsd_searched_valid_boolean() throws XMLDBException {
-        final String query = "validation:jaxp( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         assertEquals("true", existEmbeddedServer.executeOneValue(query));
@@ -188,7 +197,8 @@ public class JaxpXsdCatalogTest {
     // test boolean function
     @Test
     public void xsd_searched_invalid_boolean() throws XMLDBException {
-        final String query = "validation:jaxp( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         assertEquals("false", existEmbeddedServer.executeOneValue(query));
@@ -197,7 +207,8 @@ public class JaxpXsdCatalogTest {
     // test parse function
     @Test
     public void xsd_searched_parse_valid() throws SAXException, IOException, XpathException, XMLDBException {
-        final String query = "validation:jaxp-parse( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/valid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         final String r = existEmbeddedServer.executeOneValue(query);
@@ -207,7 +218,8 @@ public class JaxpXsdCatalogTest {
     // test parse function
     @Test
     public void xsd_searched_parse_invalid() throws SAXException, IOException, XpathException, XMLDBException {
-        final String query = "validation:jaxp-parse( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-parse( " +
                 "doc('/db/parse/instance/invalid.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         final String r = existEmbeddedServer.executeOneValue(query);

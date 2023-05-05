@@ -370,6 +370,14 @@
                                                 <xs:attribute name="class" type="xs:string"/>
                                                 <xs:attribute name="uri" type="xs:anyURI"/>
                                                 <xs:attribute name="src" type="xs:string"/>
+                                                <xs:attribute name="load" default="always">
+                                                    <xs:simpleType>
+                                                        <xs:restriction base="xs:string">
+                                                            <xs:enumeration value="eager" />
+                                                            <xs:enumeration value="lazy" />
+                                                        </xs:restriction>
+                                                    </xs:simpleType>
+                                                </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>

@@ -118,7 +118,9 @@ public class JaxpDtdCatalogTest {
 
     @Before
     public void clearGrammarCache() throws XMLDBException {
-        final ResourceSet results = existEmbeddedServer.executeQuery("validation:clear-grammar-cache()");
+        final ResourceSet results = existEmbeddedServer.executeQuery(
+                "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:clear-grammar-cache()");
         results.getResource(0).getContent();
     }
 
@@ -127,7 +129,8 @@ public class JaxpDtdCatalogTest {
      */
     @Test
     public void dtd_stored_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"valid");
@@ -135,7 +138,8 @@ public class JaxpDtdCatalogTest {
 
     @Test
     public void dtd_stored_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "doc('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"invalid");
@@ -143,7 +147,8 @@ public class JaxpDtdCatalogTest {
 
     @Test
     public void dtd_anyURI_catalog_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
         executeAndEvaluate(query,"valid");
@@ -151,7 +156,8 @@ public class JaxpDtdCatalogTest {
 
     @Test
     public void dtd_anyURI_catalog_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/catalog.xml') )";
        executeAndEvaluate(query,"invalid");
@@ -165,7 +171,8 @@ public class JaxpDtdCatalogTest {
      */
     @Test
     public void dtd_searched_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/valid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         executeAndEvaluate(query,"valid");
@@ -173,7 +180,8 @@ public class JaxpDtdCatalogTest {
 
     @Test
     public void dtd_searched_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jaxp-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jaxp-report( " +
                 "xs:anyURI('/db/parse/instance/invalid-dtd.xml'), false()," +
                 "xs:anyURI('/db/parse/') )";
         executeAndEvaluate(query,"invalid");

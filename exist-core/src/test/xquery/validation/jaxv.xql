@@ -25,6 +25,8 @@ module namespace val ="http://exist-db.org/xquery/test/validation";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+import module namespace validation = "http://exist-db.org/xquery/validation";
+
 declare variable $val:XML := <root>
                                 <value1>20</value1>
                                 <value2>30</value2>

@@ -96,7 +96,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_valid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
-        final String query = "let $a := " + XML_DATA1 +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $a := " + XML_DATA1 +
                 "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                 "return " +
                 "validation:jing-report($a,$b)";
@@ -105,7 +106,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_invalid() throws XPathException, IOException, XpathException, SAXException, XMLDBException {
-        final String query = "let $a := <test/>" +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "let $a := <test/>" +
                     "let $b := xs:anyURI('/db/validate-test/test.nvdl')" +
                     "return " +
                     "validation:jing-report($a,$b)";
@@ -115,7 +117,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_stored_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/validate-test/valid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
         executeAndEvaluate(query,"valid");
@@ -123,7 +126,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_stored_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "doc('/db/validate-test/invalid.xml'), " +
                 "doc('/db/validate-test/test.nvdl') )";
         executeAndEvaluate(query,"invalid");
@@ -131,7 +135,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_anyuri_valid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
         executeAndEvaluate(query,"valid");
@@ -139,7 +144,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_anyuri_invalid() throws XMLDBException, SAXException, XpathException, IOException {
-        final String query = "validation:jing-report( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing-report( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/invalid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
         executeAndEvaluate(query,"invalid");
@@ -147,7 +153,8 @@ public class JingOnvdlTest {
 
     @Test
     public void onvdl_anyuri_valid_boolean() throws XMLDBException {
-        final String query = "validation:jing( " +
+        final String query = "import module namespace validation = \"http://exist-db.org/xquery/validation\";\n" +
+                "validation:jing( " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/valid.xml'), " +
                 "xs:anyURI('xmldb:exist:///db/validate-test/test.nvdl') )";
 
