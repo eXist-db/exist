@@ -49,7 +49,7 @@
         <assemble.dir>${project.build.directory}/exist-docker-${project.version}-docker-dir</assemble.dir>
         <exist.uber.jar.filename>exist.uber.jar</exist.uber.jar.filename>
         <docker.tag>latest</docker.tag>
-        <docker.debug.tag>debug</docker.debug.tag>
+<!--        <docker.debug.tag>debug</docker.debug.tag>-->
     </properties>
 
     <dependencies>
@@ -213,10 +213,11 @@
                   <verbose>true</verbose>
                     <images>
                         <image>
-                            <name>existdb/existdb:%v</name>
+                            <name>existdb/existdb</name>
                             <alias>exist</alias>
                             <build>
                                 <tags>
+                                    <tag>%v</tag>
                                     <tag>${docker.tag}</tag>
                                 </tags>
                                 <dockerFile>${project.build.outputDirectory}/Dockerfile</dockerFile>
@@ -224,11 +225,11 @@
                             </build>
                         </image>
                         <image>
-                            <name>existdb/existdb:%v-DEBUG</name>
+                            <name>existdb/existdb:debug</name>
                             <alias>exist-debug</alias>
                             <build>
                                 <tags>
-                                    <tag>${docker.debug.tag}</tag>
+                                    <tag>%v-debug</tag>
                                 </tags>
                                 <dockerFile>${project.build.outputDirectory}/Dockerfile-DEBUG</dockerFile>
                                 <contextDir>${assemble.dir}</contextDir>
