@@ -525,7 +525,12 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             return regex.containsMatch(string);
 
         } catch (final net.sf.saxon.trans.XPathException e) {
-            throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage(), new StringValue(this, pattern), e);
+            switch (e.getErrorCodeLocalPart()) {
+                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
+                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
+                // no FORX0003 here since fn:matches is allowed to match an empty string
+                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
+            }
         }
     }
 
@@ -533,7 +538,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
      * @param string the value
      * @param pattern the pattern
      * @param flags the flags
-     * @return Whether or not the string matches the given pattern with the given flags
+     * @return Whether the string matches the given pattern with the given flags
      * @throws XPathException if an error occurs
      */
     private boolean match(final String string, final String pattern, final int flags) throws XPathException {

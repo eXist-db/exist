@@ -151,14 +151,10 @@ public class FunAnalyzeString extends BasicFunction {
             }
         } catch (final net.sf.saxon.trans.XPathException e) {
             switch (e.getErrorCodeLocalPart()) {
-                case "FORX0001":
-                    throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
-                case "FORX0002":
-                    throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
-                case "FORX0003":
-                    throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
-                default:
-                    throw new XPathException(this, e.getMessage());
+                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
+                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
+                case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
+                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
             }
         }
     }
