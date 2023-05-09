@@ -78,35 +78,35 @@
         <task>Test empty element content</task>
         <code>doc("/db/test/text1.xml")//a[. = 'A1']</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Test empty element content</task>
         <code>doc("/db/test/text1.xml")//a[. = '']</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Simple query on xs:integer</task>
         <code>doc("/db/test/text1.xml")//b[. = 1]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Greater than on xs:integer</task>
         <code>doc("/db/test/text1.xml")//b[. > 1]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Greater than on xs:string</task>
         <code>doc("/db/test/text1.xml")//b[. > "1"]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <!-- Will fail: -->
@@ -119,42 +119,42 @@
         <task>Greater than on xs:double</task>
         <code>doc("/db/test/text1.xml")//c[. > xs:integer(1)]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Greater than on xs:double</task>
         <code>doc("/db/test/text1.xml")//c[. > 1.0]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test id="emptyInt" output="xml" trace="yes">
         <task>Lookup xs:integer</task>
         <code>doc("/db/test/text1.xml")//d[. = 20]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test id="inconsistent" output="xml" trace="yes">
         <task>Lookup xs:double on element containing numbers and strings</task>
         <code>doc("/db/test/text1.xml")//e[. = 50.0]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test id="inconsistent2" output="xml" trace="yes">
         <task>Compare xs:double on element containing numbers and strings</task>
         <code>doc("/db/test/text1.xml")//e[. > 50.0]</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
     <test output="xml" trace="yes">
         <task>Query inside document constructor</task>
         <code>document { doc("/db/test/text1.xml")//b[. = 1] }</code>
         <xpath xmlns:prof="http://exist-db.org/xquery/profiling">
-            //prof:index[@type = 'range'][@optimization = 2]
+            //prof:index[@type eq 'range'][@optimization-level eq 'OPTIMIZED']
         </xpath>
     </test>
 </TestSet>

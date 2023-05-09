@@ -403,27 +403,27 @@
 	<test output="xml" trace="yes">
 		<task>Query test: optimizer test, query on element</task>
 		<code> doc("/db/lucene/text1.xml")//p[ft:query(b, "neun")] </code>
-		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+		<xpath>$output/stats:index[@type eq 'lucene']/@optimization-level eq 'OPTIMIZED'</xpath>
 	</test>
 	<test output="xml" trace="yes">
 		<task>Query test: optimizer test, query on self</task>
 		<code> doc("/db/lucene/text1.xml")//p[ft:query(., "acht")] </code>
-		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+		<xpath>$output/stats:index[@type eq 'lucene']/@optimization-level eq 'OPTIMIZED'</xpath>
 	</test>
 	<test output="xml" trace="yes">
 		<task>Query test: optimizer test, query on wildcard</task>
 		<code> doc("/db/lucene/text1.xml")/test[ft:query(*, "acht")] </code>
-		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+		<xpath>$output/stats:index[@type eq 'lucene']/@optimization-level eq 'OPTIMIZED'</xpath>
 	</test>
 	<test output="xml" trace="yes">
 		<task>Optimizer test: wildcard context, self/descendant</task>
 		<code> doc("/db/lucene/text1.xml")//x[ft:query(.//*, "nodes")] </code>
-		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+		<xpath>$output/stats:index[@type eq 'lucene']/@optimization-level eq 'OPTIMIZED'</xpath>
 	</test>
 	<test output="xml" trace="yes">
 		<task>Optimizer test: wildcard context, long path</task>
 		<code> doc("/db/lucene/text1.xml")//x[ft:query(./y/*, "nodes")] </code>
-		<xpath>$output/stats:index[@type = 'lucene']/@optimization = 2</xpath>
+		<xpath>$output/stats:index[@type eq 'lucene']/@optimization-level eq 'OPTIMIZED'</xpath>
 	</test>
 	<test output="xml">
 		<task>Phrase highlighting 1</task>

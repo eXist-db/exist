@@ -180,7 +180,7 @@ function ot:cleanup() {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name = $name]
 };
@@ -188,7 +188,7 @@ function ot:optimize-eq-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ne-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name != $name]
 };
@@ -196,7 +196,7 @@ function ot:optimize-ne-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ne-string2($name as xs:string) {
     collection($ot:COLLECTION)//address[name ne $name]
 };
@@ -204,7 +204,7 @@ function ot:optimize-ne-string2($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ne-string-self($name as xs:string) {
     collection($ot:COLLECTION)//address/name[. ne $name]
 };
@@ -212,7 +212,7 @@ function ot:optimize-ne-string-self($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-starts-with-string($name as xs:string) {
     collection($ot:COLLECTION)//address[starts-with(name, $name)]
 };
@@ -220,7 +220,7 @@ function ot:optimize-starts-with-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ends-with-string($name as xs:string) {
     collection($ot:COLLECTION)//address[ends-with(name, $name)]
 };
@@ -228,7 +228,7 @@ function ot:optimize-ends-with-string($name as xs:string) {
 declare
     %test:stats
     %test:args("udi ")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-contains-string($name as xs:string) {
     collection($ot:COLLECTION)//address[contains(name, $name)]
 };
@@ -236,7 +236,7 @@ function ot:optimize-contains-string($name as xs:string) {
 declare
     %test:stats
     %test:args("[rR]udi .*")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-matches-string($name as xs:string) {
     collection($ot:COLLECTION)//address[range:matches(name, $name)]
 };
@@ -244,7 +244,7 @@ function ot:optimize-matches-string($name as xs:string) {
 declare
     %test:stats
     %test:args("[rR]udi .*")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 1]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'BASIC']")
 function ot:optimize-matches-string-filtered($name as xs:string) {
     let $address := collection($ot:COLLECTION)//address
     return
@@ -254,7 +254,7 @@ function ot:optimize-matches-string-filtered($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-string-self($name as xs:string) {
     collection($ot:COLLECTION)//address/name[. = $name]
 };
@@ -270,7 +270,7 @@ function ot:eq-string-self-filtered($name as xs:string) {
 declare
     %test:stats
     %test:args(65428)
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-int-attribute($code as xs:integer) {
     collection($ot:COLLECTION)//address/city[@code = $code]
 };
@@ -278,7 +278,7 @@ function ot:optimize-eq-int-attribute($code as xs:integer) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-lt-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name < $name]
 };
@@ -307,7 +307,7 @@ function ot:lt-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-le-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name <= $name]
 };
@@ -322,7 +322,7 @@ function ot:le-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-gt-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name > $name]
 };
@@ -337,7 +337,7 @@ function ot:gt-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rudi Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ge-string($name as xs:string) {
     collection($ot:COLLECTION)//address[name > $name]
 };
@@ -352,7 +352,7 @@ function ot:ge-string($name as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city = $city]
 };
@@ -367,7 +367,7 @@ function ot:eq-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ne-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city != $city]
 };
@@ -382,7 +382,7 @@ function ot:ne-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-gt-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city > $city]
 };
@@ -397,7 +397,7 @@ function ot:gt-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ge-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city >= $city]
 };
@@ -412,7 +412,7 @@ function ot:ge-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-lt-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city < $city]
 };
@@ -427,7 +427,7 @@ function ot:lt-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-le-field($city as xs:string) {
     collection($ot:COLLECTION)//address[city <= $city]
 };
@@ -442,7 +442,7 @@ function ot:le-field($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-starts-with-field($city as xs:string) {
     collection($ot:COLLECTION)//address[starts-with(city, $city)]
 };
@@ -450,7 +450,7 @@ function ot:optimize-starts-with-field($city as xs:string) {
 declare
     %test:stats
     %test:args("heim")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-ends-with-field($city as xs:string) {
     collection($ot:COLLECTION)//address[ends-with(city, $city)]
 };
@@ -458,7 +458,7 @@ function ot:optimize-ends-with-field($city as xs:string) {
 declare
     %test:stats
     %test:args("üssel")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-contains-field($city as xs:string) {
     collection($ot:COLLECTION)//address[contains(city, $city)]
 };
@@ -466,7 +466,7 @@ function ot:optimize-contains-field($city as xs:string) {
 declare
     %test:stats
     %test:args("[rR]üssel.*")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-matches-field($city as xs:string) {
     collection($ot:COLLECTION)//address[range:matches(city, $city)]
 };
@@ -482,7 +482,7 @@ function ot:matches-field-filtered($city as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-field-multi($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[city = $city][street = $street]
 };
@@ -506,7 +506,7 @@ function ot:eq-field-multi-filtered($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-mixed-op-field($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[city > $city][street = $street]
 };
@@ -528,7 +528,7 @@ function ot:mixed-op-field2($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("Rüsselsheim", "Elefantenweg 67")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:no-optimize-field-multi($city as xs:string, $street as xs:string) {
     collection($ot:COLLECTION)//address[street = $street][1]
 };
@@ -536,7 +536,7 @@ function ot:no-optimize-field-multi($city as xs:string, $street as xs:string) {
 declare
     %test:stats
     %test:args("berta@milchview.org")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-eq-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email = $email]
 };
@@ -544,7 +544,7 @@ function ot:optimize-eq-field-nested($email as xs:string) {
 declare
     %test:stats
     %test:args("berta@milchview.org")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
 };
@@ -563,7 +563,7 @@ function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $na
 declare
     %test:stats
     %test:args("main", "official", "Hofthiergarten")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name as xs:string) {
     collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
@@ -576,7 +576,7 @@ function ot:parent-attr-equals() {
 
 declare 
     %test:stats
-    %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 0]")
+    %test:assertXPath("$result//stats:index[@type eq 'range'][@optimization-level eq 'NONE']")
 function ot:optimize-parent-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address/@id = "rüssel"]/text()
 };
@@ -589,7 +589,7 @@ function ot:parent-nested-attr-equals() {
 
 declare 
     %test:stats
-    %test:assertXPath("$result//stats:index[@type = 'range'][@optimization = 0]")
+    %test:assertXPath("$result//stats:index[@type eq 'range'][@optimization-level eq 'NONE']")
 function ot:optimize-parent-nested-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address[@id = "rüssel"]]/text()
 };
