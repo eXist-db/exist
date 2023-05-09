@@ -135,7 +135,7 @@ function tt:eq-date($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-date-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date = $date]
 };
@@ -152,7 +152,7 @@ function tt:eq-date-type-conversion($date as xs:string) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-date-type-conversion-optimize($date as xs:string) {
     collection($tt:COLLECTION)//entry[date = $date]
 };
@@ -169,7 +169,7 @@ function tt:eq-date-field($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-date-field-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date2 = $date]
 };
@@ -186,7 +186,7 @@ function tt:eq-date-field-type-conversion($date as xs:string) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-date-field-type-conversion-optimize($date as xs:string) {
     collection($tt:COLLECTION)//entry[date2 = $date]
 };
@@ -205,7 +205,7 @@ function tt:gt-date($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:gt-date-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date > $date]/id/string()
 };
@@ -224,7 +224,7 @@ function tt:gt-date-field($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:gt-date-field-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date2 > $date]/id/string()
 };
@@ -243,7 +243,7 @@ function tt:lt-date($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:lt-date-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date < $date]/id/string()
 };
@@ -262,7 +262,7 @@ function tt:lt-date-field($date as xs:date) {
 declare 
     %test:stats
     %test:args("2012-01-20")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:lt-date-field-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date2 < $date]/id/string()
 };
@@ -279,7 +279,7 @@ function tt:eq-time($time as xs:time) {
 declare 
     %test:stats
     %test:args("10:00:00Z")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-time-optimize($time as xs:time) {
     collection($tt:COLLECTION)//entry[time = $time]/id/string()
 };
@@ -312,7 +312,7 @@ function tt:eq-dateTime($dateTime as xs:dateTime) {
 declare 
     %test:stats
     %test:args("2012-01-20T10:00:00Z")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-dateTime-optimize($dateTime as xs:dateTime) {
     collection($tt:COLLECTION)//entry[dateTime = $dateTime]/id/string()
 };
@@ -366,7 +366,7 @@ function tt:int-field-wrong-type($n as xs:string) {
 declare
     %test:stats
     %test:args("up")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:string-contains-optimized($string as xs:string) {
     collection($tt:COLLECTION)//entry[contains(string, $string)]/id/string()
 };

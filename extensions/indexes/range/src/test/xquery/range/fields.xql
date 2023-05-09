@@ -118,7 +118,7 @@ function rt:field-div-eq($id as xs:string) {
 declare
     %test:stats
     %test:args("sha-mac101")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function rt:field-div-eq-optimize($id as xs:string) {
     count(collection($rt:COLLECTION)//tei:div[@xml:id = $id])
 };
@@ -126,7 +126,7 @@ function rt:field-div-eq-optimize($id as xs:string) {
 declare
     %test:stats
     %test:args("sha-mac101005")
-    %test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
 function rt:field-l-eq-optimize-no($id as xs:string) {
     collection($rt:COLLECTION)//tei:sp/tei:l[@xml:id = $id]
 };
@@ -134,7 +134,7 @@ function rt:field-l-eq-optimize-no($id as xs:string) {
 declare
     %test:stats
     %test:args("sha-mac101005")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function rt:field-l-eq-optimize($id as xs:string) {
     collection($rt:COLLECTION)//tei:div[tei:sp/tei:l/@xml:id = $id]
 };
@@ -158,7 +158,7 @@ function rt:field-speaker-eq($id as xs:string) {
 declare
     %test:stats
     %test:args("First Witch")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function rt:field-speaker-eq-optimize($id as xs:string) {
     count(collection($rt:COLLECTION)//tei:div[tei:sp/tei:speaker = $id])
 };
@@ -173,7 +173,7 @@ function rt:field-stage-eq($stage as xs:string) {
 declare
     %test:stats
     %test:args("Enter three Witches.")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function rt:field-stage-eq-optimize($stage as xs:string) {
     count(collection($rt:COLLECTION)//tei:div[tei:stage = $stage])
 };
@@ -195,7 +195,7 @@ function rt:field-head-ends-with($head as xs:string) {
 declare
     %test:stats
     %test:args("Scene 1")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function rt:field-head-ends-with-optimize($head as xs:string) {
     count(collection($rt:COLLECTION)//tei:div[ends-with(tei:head, $head)])
 };
