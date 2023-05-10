@@ -69,8 +69,6 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.Namespaces.XSL_NS;
 import static org.exist.xquery.functions.fn.transform.Options.Option.*;
-import static org.exist.xquery.functions.fn.transform.Transform.SAXON_CONFIGURATION;
-import static org.exist.xquery.functions.fn.transform.Transform.toSaxon;
 
 /**
  * Read options into class values in a single place.
@@ -126,10 +124,15 @@ class Options {
 
     private final XQueryContext context;
     private final FnTransform fnTransform;
+    private final Convert.ToSaxon toSaxon;
 
-    Options(final XQueryContext context, final FnTransform fnTransform, final MapType options) throws XPathException {
+    private final SystemProperties systemProperties;
+
+    Options(final XQueryContext context, final FnTransform fnTransform, final Convert.ToSaxon toSaxon, final MapType options) throws XPathException {
         this.context = context;
         this.fnTransform = fnTransform;
+        this.toSaxon = toSaxon;
+        this.systemProperties = new SystemProperties(context);
 
         xsltSource = getStylesheet(options);
 
@@ -282,7 +285,7 @@ class Options {
                                 " is not a " + Type.getTypeName(Type.STRING) +
                                 " or a " + Type.getTypeName(Type.BOOLEAN));
             }
-            final String actualPropertyValue = SystemProperties.get(((QNameValue) key).getQName());
+            final String actualPropertyValue = systemProperties.get(((QNameValue) key).getQName());
             if (!actualPropertyValue.equalsIgnoreCase(requiredPropertyValue)) {
                 throw new XPathException(ErrorCodes.FOXT0001,
                         "The XSLT processor cannot provide the requested-property: " + key +
@@ -519,7 +522,7 @@ class Options {
      */
     private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
 
-        Sequence document;
+        final Sequence document;
         try {
             document = DocUtils.getDocument(context, location);
         } catch (final PermissionDeniedException e) {
@@ -651,13 +654,14 @@ class Options {
 
     static class SystemProperties {
 
-        private SystemProperties() {
-            super();
+        private final RetainedStaticContext retainedStaticContext;
+
+        private SystemProperties(final XQueryContext context) {
+            final var saxonConfiguration = context.getBroker().getBrokerPool().getSaxonConfiguration();
+            this.retainedStaticContext = new RetainedStaticContext(saxonConfiguration);
         }
 
-        private static final RetainedStaticContext retainedStaticContext = new RetainedStaticContext(SAXON_CONFIGURATION);
-
-        static String get(org.exist.dom.QName qName) {
+        String get(final org.exist.dom.QName qName) {
             return SystemProperty.getProperty(qName.getNamespaceURI(), qName.getLocalPart(), retainedStaticContext);
         }
     }
@@ -682,10 +686,14 @@ class Options {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            XSLTVersion version = (XSLTVersion) o;
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final XSLTVersion version = (XSLTVersion) o;
             return major == version.major && minor == version.minor;
         }
 
@@ -694,7 +702,8 @@ class Options {
             return Objects.hash(major, minor);
         }
 
-        @Override public String toString() {
+        @Override
+        public String toString() {
             return major + "." + minor;
         }
     }

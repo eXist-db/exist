@@ -25,7 +25,6 @@ package org.exist.xquery.functions.fn.transform;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.lacuna.bifurcan.IEntry;
-import net.sf.saxon.Configuration;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.serialize.SerializationProperties;
@@ -85,14 +84,10 @@ public class Transform {
     private static final Logger LOGGER =  LogManager.getLogger(org.exist.xquery.functions.fn.transform.Transform.class);
     private static final org.exist.xquery.functions.fn.transform.Transform.ErrorListenerLog4jAdapter ERROR_LISTENER = new Transform.ErrorListenerLog4jAdapter(Transform.LOGGER);
 
-    //TODO(AR) if you want Saxon-EE features we need to set those in the Configuration
-    static final Configuration SAXON_CONFIGURATION = new Configuration();
-    private static final Processor SAXON_PROCESSOR = new Processor(org.exist.xquery.functions.fn.transform.Transform.SAXON_CONFIGURATION);
-
-    static final Convert.ToSaxon toSaxon = new Convert.ToSaxon() {
+    final Convert.ToSaxon toSaxon = new Convert.ToSaxon() {
         @Override
         DocumentBuilder newDocumentBuilder() {
-            return SAXON_PROCESSOR.newDocumentBuilder();
+            return context.getBroker().getBrokerPool().getSaxonProcessor().newDocumentBuilder();
         }
     };
 
@@ -104,6 +99,7 @@ public class Transform {
     private final XQueryContext context;
     private final FnTransform fnTransform;
 
+
     public Transform(final XQueryContext context, final FnTransform fnTransform) {
         this.context = context;
         this.fnTransform = fnTransform;
@@ -111,7 +107,7 @@ public class Transform {
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
-        final Options options = new Options(context, fnTransform, (MapType) args[0].itemAt(0));
+        final Options options = new Options(context, fnTransform, toSaxon, (MapType) args[0].itemAt(0));
 
         //TODO(AR) Saxon recommends to use a <code>StreamSource</code> or <code>SAXSource</code> instead of DOMSource for performance
         final Optional<Source> sourceNode = Transform.getSourceNode(options.sourceNode, context.getBaseURI());
@@ -183,7 +179,8 @@ public class Transform {
                         document = node.getOwnerDocument();
                         source = new DOMSource(document);
                     }
-                    final DocumentBuilder sourceBuilder = Transform.SAXON_PROCESSOR.newDocumentBuilder();
+                    final var brokerPool = context.getBroker().getBrokerPool();
+                    final DocumentBuilder sourceBuilder = brokerPool.getSaxonProcessor().newDocumentBuilder();
                     final XdmNode xdmNode = sourceBuilder.build(source);
                     xslt30Transformer.setGlobalContextItem(xdmNode);
                 } else {
@@ -205,7 +202,7 @@ public class Transform {
 
 
     private XsltExecutable compileExecutable(final Options options) throws XPathException {
-        final XsltCompiler xsltCompiler = org.exist.xquery.functions.fn.transform.Transform.SAXON_PROCESSOR.newXsltCompiler();
+        final XsltCompiler xsltCompiler = context.getBroker().getBrokerPool().getSaxonProcessor().newXsltCompiler();
         final SingleRequestErrorListener errorListener = new SingleRequestErrorListener(Transform.ERROR_LISTENER);
         xsltCompiler.setErrorListener(errorListener);
 
