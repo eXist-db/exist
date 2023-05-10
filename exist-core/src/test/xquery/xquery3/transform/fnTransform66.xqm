@@ -63,6 +63,6 @@ function testTransform:transform-66-black() {
         "initial-template": fn:QName('','main'),
                     "delivery-format" : "serialized",
                     "serialization-params": map{'suppress-indentation': (QName('http://www.w3.org/fots/fn/transform/myfunctions','c'), QName('', 'c'))}})
-    return matches($result("output"), ">\s+<t>black</t>\s+<")
+    return fn:matches($result("output"), ">\s+<t>black</t>\s+<")
 };
 

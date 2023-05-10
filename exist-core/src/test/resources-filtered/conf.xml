@@ -931,4 +931,13 @@
     -->
     <xupdate allowed-fragmentation="50000" enable-consistency-checks="no"/>
 
+    <!-- 
+        Load this configuration into Saxon
+        If `configuration-file` is a relative filename, it is relative to $EXIST_HOME/etc
+        (this is the same directory as the eXist-db configuration file `conf.xml`)
+        `configuration-file` may also be an absolute filename.
+
+    -->
+    <saxon configuration-file="saxon-config.xml"/>
+
 </exist>

@@ -130,6 +130,9 @@ public class FunAnalyzeString extends BasicFunction {
 
         try {
             final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
+            if (regularExpression.matches("")) {
+                throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+            }
 
             //TODO(AR) cache the regular expression... might be possible through Saxon config
 
@@ -148,14 +151,10 @@ public class FunAnalyzeString extends BasicFunction {
             }
         } catch (final net.sf.saxon.trans.XPathException e) {
             switch (e.getErrorCodeLocalPart()) {
-                case "FORX0001":
-                    throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
-                case "FORX0002":
-                    throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
-                case "FORX0003":
-                    throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
-                default:
-                    throw new XPathException(this, e.getMessage());
+                case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
+                case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
+                case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
+                default -> throw new XPathException(this, ErrorCodes.ERROR, e.getMessage());
             }
         }
     }

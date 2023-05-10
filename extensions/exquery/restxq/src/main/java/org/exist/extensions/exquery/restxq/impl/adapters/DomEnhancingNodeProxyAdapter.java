@@ -26,19 +26,25 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import net.sf.cglib.proxy.Callback;
-import net.sf.cglib.proxy.CallbackFilter;
-import net.sf.cglib.proxy.Dispatcher;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.NoOp;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.matcher.ElementMatchers;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Comment;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
+
+import java.lang.reflect.InvocationTargetException;
+
 
 /**
  * A NodeProxy Proxy which enhances NodeProxy
@@ -49,103 +55,49 @@ import org.w3c.dom.Text;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class DomEnhancingNodeProxyAdapter {
-    
+
     public static NodeProxy create(final NodeProxy nodeProxy) {
-        
-        final Class<? extends Node> clazzes[] = getNodeClasses(nodeProxy);
-         
-        // NoOp Callback is for NodeProxy calls
-        // NodeDispatched Callback is for the underlying Node calls
-        final Callback[] callbacks = {
-          NoOp.INSTANCE,
-          new NodeDispatcher(nodeProxy)
-        };
-        
-        final CallbackFilter callbackFilter = method -> {
 
-            final Class declaringClass = method.getDeclaringClass();
+        final Class<? extends Node> domClazz = getNodeClass(nodeProxy);
 
-            //look for nodes
-            boolean isMethodOnNode = false;
-            if(declaringClass.equals(Node.class)) {
-                isMethodOnNode = true;
-            } else {
-                //search parent interfaces
-                for(final Class iface : declaringClass.getInterfaces()) {
-                    if(iface.equals(Node.class)) {
-                        isMethodOnNode = true;
-                        break;
-                    }
-                }
-            }
+        final DynamicType.Builder<? extends NodeProxy> byteBuddyBuilder = new ByteBuddy()
+                .subclass(NodeProxy.class)
+                .implement(domClazz)
 
-            if(isMethodOnNode) {
-                return 1; //The NodeDispatcher
-            } else {
-                return 0; //The NoOp pass through
-            }
-        };
-        
-        final Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(NodeProxy.class);
-        enhancer.setInterfaces(clazzes);
-        enhancer.setCallbackFilter(callbackFilter);
-        enhancer.setCallbacks(callbacks);
-        
-        return (NodeProxy)enhancer.create(
-            new Class[] {
-                NodeHandle.class
-            },
-            new Object[] {
-                nodeProxy
-            });
-    }
-    
-    private static Class<? extends Node>[] getNodeClasses(final NodeProxy nodeProxy) {
-        switch(nodeProxy.getType()) {
-            
-            case Type.DOCUMENT:
-                return new Class[] {
-                    Document.class,
-                    Node.class
-                };
-            
-            case Type.ELEMENT:
-                return new Class[] {
-                    Element.class,
-                    Node.class
-                };
+                .method(ElementMatchers.isDeclaredBy(NodeProxy.class))
+                .intercept(MethodCall.invokeSelf().on(nodeProxy).withAllArguments())
 
-            case Type.ATTRIBUTE:
-                return new Class[] {
-                    Attr.class,
-                    Node.class
-                };
-                
-            case Type.TEXT:
-                return new Class[] {
-                    Text.class,
-                    Node.class
-                };
+                .method(ElementMatchers.isDeclaredBy(domClazz).or(ElementMatchers.isDeclaredBy(Node.class)))
+                .intercept(MethodCall.invokeSelf().on(nodeProxy.getNode()).withAllArguments())
 
-            default:
-                return new Class[] {
-                    Node.class
-                };
+                .method(ElementMatchers.isHashCode())
+                .intercept(MethodCall.invokeSelf().on(nodeProxy));
+
+        try {
+            final NodeProxy nodeProxyProxy = byteBuddyBuilder
+                    .make()
+                    .load(nodeProxy.getClass().getClassLoader())
+                    .getLoaded()
+                    .getDeclaredConstructor(Expression.class, NodeHandle.class)
+                    .newInstance(nodeProxy.getExpression(), nodeProxy);
+
+            return nodeProxyProxy;
+        } catch (final NoSuchMethodException | InstantiationException | IllegalAccessException |
+                       InvocationTargetException e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
-    
-    public static class NodeDispatcher implements Dispatcher {
-        
-        private final NodeProxy nodeProxy;
-        
-        public NodeDispatcher(final NodeProxy nodeProxy) {
-            this.nodeProxy = nodeProxy;
-        }
-        
-        @Override
-        public Object loadObject() throws Exception {
-            return nodeProxy.getNode();
-        }
+
+    private static Class<? extends Node> getNodeClass(final NodeProxy nodeProxy) {
+        return switch (nodeProxy.getType()) {
+            case Type.ELEMENT -> Element.class;
+            case Type.ATTRIBUTE -> Attr.class;
+            case Type.TEXT -> Text.class;
+            case Type.PROCESSING_INSTRUCTION -> ProcessingInstruction.class;
+            case Type.COMMENT -> Comment.class;
+            case Type.DOCUMENT -> Document.class;
+            case Type.CDATA_SECTION -> CDATASection.class;
+            default -> Node.class;
+        };
     }
 }

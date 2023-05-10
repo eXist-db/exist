@@ -681,6 +681,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 return Type.ATTRIBUTE;
             case Node.TEXT_NODE:
                 return Type.TEXT;
+            case Node.CDATA_SECTION_NODE:
+                return Type.CDATA_SECTION;
             case Node.PROCESSING_INSTRUCTION_NODE:
                 return Type.PROCESSING_INSTRUCTION;
             case Node.COMMENT_NODE:

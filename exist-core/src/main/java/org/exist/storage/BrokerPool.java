@@ -50,8 +50,8 @@ import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.impl.QuartzSchedulerImpl;
 import org.exist.scheduler.impl.SystemTaskJobImpl;
-import org.exist.security.*;
 import org.exist.security.SecurityManager;
+import org.exist.security.*;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.blob.BlobStore;
 import org.exist.storage.blob.BlobStoreImplService;
@@ -116,6 +116,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final XQuery xqueryService = new XQuery();
 
+    private AtomicLazyVal<SaxonConfiguration> saxonConfiguration = new AtomicLazyVal<>(() -> SaxonConfiguration.loadConfiguration(this));
 
     //TODO : make it non-static since every database instance may have its own policy.
     //TODO : make a default value that could be overwritten by the configuration
@@ -373,13 +374,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     private Optional<ExistRepository> expathRepo = Optional.empty();
 
     private StartupTriggersManager startupTriggersManager;
-
-    /**
-     * Configuration for Saxon.
-     *
-     * One instance per-database, lazily initialised.
-     */
-    private AtomicLazyVal<net.sf.saxon.Configuration> saxonConfig = new AtomicLazyVal<>(net.sf.saxon.Configuration::newConfiguration);
 
     /**
      * Creates and configures the database instance.
@@ -1926,7 +1920,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     }
 
     public net.sf.saxon.Configuration getSaxonConfiguration() {
-        return saxonConfig.get();
+        return saxonConfiguration.get().getConfiguration();
+    }
+
+    public net.sf.saxon.s9api.Processor getSaxonProcessor() {
+        return saxonConfiguration.get().getProcessor();
     }
 
     /**

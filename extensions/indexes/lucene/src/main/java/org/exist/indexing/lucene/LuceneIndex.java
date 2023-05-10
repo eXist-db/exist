@@ -92,7 +92,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             try {
                 bufferSize = Double.parseDouble(bufferSizeParam);
             } catch (NumberFormatException e) {
-                LOG.warn("Invalid buffer size setting for lucene index: {}", bufferSizeParam, e);
+                LOG.warn("Invalid buffer size setting for Lucene index: {}", bufferSizeParam, e);
             }
 
         if (LOG.isDebugEnabled())
@@ -138,7 +138,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             searcherManager = new SearcherTaxonomyManager(cachedWriter, true, null, cachedTaxonomyWriter);
             readerManager = new ReaderManager(cachedWriter, true);
         } catch (IOException e) {
-            throw new DatabaseConfigurationException("Exception while reading lucene index directory: " +
+            throw new DatabaseConfigurationException("Exception while reading Lucene index directory: " +
                 e.getMessage(), e);
         } finally {
             releaseWriter(writer);
@@ -167,7 +167,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             taxoDirectory.close();
             directory.close();
         } catch (IOException e) {
-            throw new DBException("Caught exception while closing lucene indexes: " + e.getMessage());
+            throw new DBException("Caught exception while closing Lucene indexes: " + e.getMessage());
         }
     }
 
@@ -229,7 +229,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
         try {
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Committing lucene index");
+                LOG.debug("Committing Lucene index");
             }
         	if (cachedWriter != null) {
                 cachedTaxonomyWriter.commit();
@@ -237,9 +237,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             }
             needsCommit = false;
         } catch(CorruptIndexException cie) {
-            LOG.error("Detected corrupt Lucence index on writer release and commit: {}", cie.getMessage(), cie);
+            LOG.error("Detected corrupt Lucene index on writer release and commit: {}", cie.getMessage(), cie);
         } catch(IOException ioe) {
-            LOG.error("Detected Lucence index issue on writer release and commit: {}", ioe.getMessage(), ioe);
+            LOG.error("Detected Lucene index issue on writer release and commit: {}", ioe.getMessage(), ioe);
         }
     }
 

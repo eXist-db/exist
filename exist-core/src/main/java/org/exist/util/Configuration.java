@@ -260,6 +260,12 @@ public class Configuration implements ErrorHandler
                 configureTransformer((Element)transformers.item(0));
             }
 
+            //saxon settings (most importantly license file for PE or EE features)
+            final NodeList saxon = doc.getElementsByTagName(SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME);
+            if( saxon.getLength() > 0 ) {
+                configureSaxon((Element)saxon.item(0));
+            }
+
             //parser settings
             final NodeList parsers = doc.getElementsByTagName(HtmlToXmlParser.PARSER_ELEMENT_NAME);
             if(parsers.getLength() > 0) {
@@ -538,6 +544,14 @@ public class Configuration implements ErrorHandler
         }
     }
 
+    private void configureSaxon( Element saxon )
+    {
+        final String configurationFile = getConfigAttributeValue( saxon,
+            SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
+        if (configurationFile != null) {
+            config.put(SaxonConfiguration.SAXON_CONFIGURATION_FILE_PROPERTY, configurationFile);
+        }
+    }
 
     private void configureTransformer( Element transformer )
     {
