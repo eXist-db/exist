@@ -85,7 +85,7 @@ class RESTLib {
     return adapter.getDocument().getDocumentElement();
   }
 
-  static String queryGet(final String collectionURI, final String query) throws IOException {
+  static String httpQueryGet(final String collectionURI, final String query) throws IOException {
     final String uri = collectionURI
         + "?_query="
         + URLEncoder
@@ -104,7 +104,7 @@ class RESTLib {
     }
   }
 
-  static String get(final String uri, final Map<String, String> properties) throws IOException {
+  static String httpGet(final String uri, final Map<String, String> properties) throws IOException {
     final HttpURLConnection connect = getConnection(uri);
     try {
       connect.setRequestMethod("GET");
@@ -115,13 +115,13 @@ class RESTLib {
       if (HttpStatus.isSuccess(code)) {
         return readResponse(connect.getInputStream());
       }
-      throw new IOException("Server returned response code " + code + " " + readResponse(connect.getErrorStream()));
+      throw new IOException("GET returned response code " + code + " " + readResponse(connect.getErrorStream()));
     } finally {
       connect.disconnect();
     }
   }
 
-  static void put(final String resourceURI, final String xmlData, final Map<String, String> properties) throws IOException {
+  static String httpPut(final String resourceURI, final String xmlData, final Map<String, String> properties) throws IOException {
     final HttpURLConnection connect = getConnection(resourceURI);
     try {
       connect.setRequestMethod("PUT");
@@ -134,7 +134,32 @@ class RESTLib {
       }
 
       final int code = connect.getResponseCode();
-      assertEquals("Server returned response code " + code, HttpStatus.CREATED_201, code);
+      if (HttpStatus.isSuccess(code)) {
+        return readResponse(connect.getInputStream());
+      }
+      throw new IOException("PUT returned response code " + code + " " + readResponse(connect.getErrorStream()));
+    } finally {
+      connect.disconnect();
+    }
+  }
+
+  static String httpPost(final String resourceURI, final String xmlData, final Map<String, String> properties) throws IOException {
+    final HttpURLConnection connect = getConnection(resourceURI);
+    try {
+      connect.setRequestMethod("POST");
+      connect.setDoOutput(true);
+      properties.forEach(connect::setRequestProperty);
+
+      connect.connect();
+      try (final Writer writer = new OutputStreamWriter(connect.getOutputStream(), UTF_8)) {
+        writer.write(xmlData);
+      }
+
+      final int code = connect.getResponseCode();
+      if (HttpStatus.isSuccess(code)) {
+        return readResponse(connect.getInputStream());
+      }
+      throw new IOException("PUT returned response code " + code + " " + readResponse(connect.getErrorStream()));
     } finally {
       connect.disconnect();
     }
@@ -161,6 +186,10 @@ class RESTLib {
 
     String getRootURI(final String path) {
       return getServerUri() + XmldbURI.ROOT_COLLECTION + path;
+    }
+
+    String getRestXQURI(final String path) {
+      return "http://localhost:" + getPort() + "/exist/restq" + path;
     }
   }
 }
