@@ -48,7 +48,7 @@
     <properties>
         <jakarta.mail-api.version>2.1.1</jakarta.mail-api.version>
         <eclipse.angus-mail.version>2.0.1</eclipse.angus-mail.version>
-        <jakarta.activation-api.version>2.1.1</jakarta.activation-api.version>
+        <jakarta.activation-api.version>2.1.2</jakarta.activation-api.version>
         <greenmail.version>2.1.0-alpha-1</greenmail.version>
     </properties>
 
