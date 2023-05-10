@@ -177,10 +177,10 @@ public class ClasspathHelper implements BrokerPoolService {
                         }
                         p = p.normalize().toAbsolutePath();
 
-                        if (!Files.exists(p)) {
-                            LOG.warn("Unable to add '" + p + "' to the classpath for EXPath package: " + pkg.getName() + ", as the file does not exist!");
-                        } else {
+                        if (Files.exists(p)) {
                             classpath.addComponent(p.toString());
+                        } else {
+                            LOG.warn("Unable to add '" + p + "' to the classpath for EXPath package: " + pkg.getName() + ", as the file does not exist!");
                         }
                     }
                 }
