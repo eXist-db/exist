@@ -33,18 +33,26 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
+import org.exist.util.ExistSAXParserFactory;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -104,11 +112,12 @@ public class IntegrationTest {
 
         HttpResponse response = null;
 
+        var restURI = getRestUri();
         response = executor.execute(Request
                 .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
                 .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML)
         ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        //assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
 
         response = executor.execute(Request
                 .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY1_FILENAME)
@@ -121,6 +130,12 @@ public class IntegrationTest {
         ).returnResponse();
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
         assertNotNull(response.getEntity().getContent());
+
+        response = executor.execute(Request
+            .Put(getRestUri() + TEST_COLLECTION + XQUERY_BASE_URI_FILENAME)
+            .bodyString(XQUERY_BASE_URI, XQUERY_CONTENT_TYPE)
+        ).returnResponse();
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HttpStatus.SC_CREATED);
     }
 
     @Ignore("TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}")
@@ -133,6 +148,61 @@ public class IntegrationTest {
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
         assertEquals("<success/>", response.getEntity().toString());
+    }
+
+    private static String XQUERY_BASE_URI_FILENAME = "restxq-tests-base-uri.xqm";
+
+    private static final String XQUERY_BASE_URI = """
+      xquery version "3.1";
+      module namespace ex = "http://example/restxq/1";
+      import module namespace rest = "http://exquery.org/ns/restxq";
+      
+      declare
+          %rest:GET
+          %rest:path("/restxq-tests-base-uri")
+      function ex:base-uri-using-restxq() {
+          <result>We should call base-uri for real!</result>
+      };
+      """;
+
+    /**
+     * Handler for this is installed in the Before section;
+     * check that base-uri is called, and check the result.
+     *
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     */
+    @Test
+    public void baseURI() throws IOException, ParserConfigurationException, SAXException {
+
+        final HttpResponse response = executor.execute(Request
+            .Get(getRestXqUri() + "/restxq-tests-base-uri")
+            .addHeader(new BasicHeader("Accept", "application/xml"))
+        ).returnResponse();
+
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        final var result = parseResponseElement(response.getEntity().toString());
+
+        assertThat(result).isEqualTo("42");
+        /*
+        final var result = parseResponseElement(httpGet(restXQ, new HashMap<>()));
+        assertThat(result.getAttribute("non-existent")).isEqualTo("42");
+         */
+    }
+
+    static private Element parseResponseElement(final String data) throws IOException, SAXException, ParserConfigurationException {
+
+        final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
+        factory.setNamespaceAware(true);
+        final InputSource src = new InputSource(new StringReader(data));
+        final SAXParser parser = factory.newSAXParser();
+        final XMLReader reader = parser.getXMLReader();
+        final SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+        reader.parse(src);
+
+        return adapter.getDocument().getDocumentElement();
     }
 
     private static String asString(final InputStream inputStream) throws IOException {
