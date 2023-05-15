@@ -22,11 +22,13 @@
 package org.exist.util;
 
 import net.jcip.annotations.ThreadSafe;
+import net.sf.saxon.lib.Feature;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.trans.XPathException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.xquery.functions.fn.transform.URIResolution;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
@@ -54,6 +56,7 @@ public final class SaxonConfiguration {
   private SaxonConfiguration(final net.sf.saxon.Configuration configuration) {
     this.configuration = configuration;
     this.processor = new Processor(configuration);
+    //TODO (AP) We could further configure URI/Resource resolution for Saxon within eXist here
   }
 
   /**

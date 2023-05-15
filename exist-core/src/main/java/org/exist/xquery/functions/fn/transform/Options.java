@@ -507,39 +507,11 @@ class Options {
 
         final URI uri = URI.create(stylesheetLocation);
         if (uri.isAbsolute()) {
-            return resolvePossibleStylesheetLocation(stylesheetLocation);
+            return URIResolution.resolveDocument(stylesheetLocation, context, fnTransform);
         } else {
             final AnyURIValue resolved = resolveURI(new AnyURIValue(stylesheetLocation), context.getBaseURI());
-            return resolvePossibleStylesheetLocation(resolved.getStringValue());
+            return URIResolution.resolveDocument(resolved.getStringValue(), context, fnTransform);
         }
-    }
-
-    /**
-     * Resolve an absolute stylesheet location
-     *
-     * @param location of the stylesheet
-     * @return the resolved stylesheet as a source
-     * @throws XPathException if the item does not exist, or is not a document
-     */
-    private Source resolvePossibleStylesheetLocation(final String location) throws XPathException {
-
-        final Sequence document;
-        try {
-            document = DocUtils.getDocument(context, location);
-        } catch (final PermissionDeniedException e) {
-            throw new XPathException(fnTransform, ErrorCodes.FODC0002,
-                    "Can not access '" + location + "'" + e.getMessage());
-        }
-        if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
-            if (document instanceof NodeProxy proxy) {
-                return new DOMSource(proxy.getNode());
-            }
-            else if (document.itemAt(0) instanceof Node node) {
-                return new DOMSource(node);
-            }
-        }
-        throw new XPathException(fnTransform, ErrorCodes.FODC0002,
-                "Location '"+ location + "' returns an item which is not a document node");
     }
 
     /**
@@ -550,18 +522,10 @@ class Options {
      * @throws XPathException if resolution is not possible
      */
     private AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws XPathException {
-        final URI relativeURI;
-        final URI baseURI;
         try {
-            relativeURI = new URI(relative.getStringValue());
-            baseURI = new URI(base.getStringValue() );
+            return URIResolution.resolveURI(relative, base);
         } catch (final URISyntaxException e) {
             throw new XPathException(fnTransform, ErrorCodes.FORG0009, "unable to resolve a relative URI against a base URI in fn:transform(): " + e.getMessage(), null, e);
-        }
-        if (relativeURI.isAbsolute()) {
-            return relative;
-        } else {
-            return new AnyURIValue(baseURI.resolve(relativeURI));
         }
     }
 
