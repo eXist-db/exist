@@ -26,6 +26,7 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -33,7 +34,6 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.SAXAdapter;
@@ -51,42 +51,66 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 
 public class IntegrationTest {
 
-    private static String COLLECTION_CONFIG =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-            "    <triggers>\n" +
-            "        <trigger class=\"org.exist.extensions.exquery.restxq.impl.RestXqTrigger\"/>\n" +
-            "    </triggers>\n" +
-            "</collection>";
+    private static final String COLLECTION_CONFIG = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <triggers>
+                <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
+            </triggers>
+        </collection>
+        """;
 
     private static String TEST_COLLECTION = "/db/restxq/integration-test";
 
     private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", "UTF-8");
-    private static String XQUERY1 =
-            "xquery version \"3.0\";\n" +
-            "\n" +
-            "module namespace mod1 = \"http://mod1\";\n" +
-            "\n" +
-            "declare namespace output = \"https://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-            "\n" +
-            "declare\n" +
-            "    %rest:GET\n" +
-            "    %rest:path(\"/media-type-json1\")\n" +
-            "    %output:media-type(\"application/json\")\n" +
-            "    %output:method(\"json\")\n" +
-            "function mod1:media-type-json1() {\n" +
-            "    <success/>\n" +
-            "};";
-    private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
+
+    private static String XQUERY_MEDIA_FILENAME = "restxq-tests-media.xqm";
+
+    private static final String XQUERY_MEDIA_BODY =
+        """
+            xquery version "3.0";
+                    
+            module namespace mod1 = "http://mod1";
+                    
+            declare namespace output = "https://www.w3.org/2010/xslt-xquery-serialization";
+                    
+            declare
+                %rest:GET
+                %rest:path("/media-type-json1")
+                %rest:produces("application/json")
+            function mod1:media-type-json1() {
+                <success/>
+            };
+            """;
+
+    private static String XQUERY_BASE_URI_FILENAME = "restxq-tests-base-uri.xqm";
+
+    private static final String XQUERY_BASE_URI_BODY =
+        """
+            xquery version "3.1";
+                    
+            module namespace ex = "http://example/restxq/1";
+            import module namespace rest = "http://exquery.org/ns/restxq";
+                    
+            declare
+                %rest:GET
+                %rest:path("/base-uri")
+            function ex:base-uri-using-restxq() {
+                <result>{static-base-uri()}</result>
+            };
+            """;
+
     private static Executor executor = null;
 
     @ClassRule
@@ -105,65 +129,81 @@ public class IntegrationTest {
     }
 
     @BeforeClass
-    public static void storeResourceFunctions() throws IOException {
+    public static void storeResourceFunctions() throws IOException, ParserConfigurationException, SAXException {
         executor = Executor.newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+            .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+            .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
 
         HttpResponse response = null;
 
-        var restURI = getRestUri();
         response = executor.execute(Request
-                .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
-                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML)
-        ).returnResponse();
-        //assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
-
-        response = executor.execute(Request
-                .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY1_FILENAME)
-                .bodyString(XQUERY1, XQUERY_CONTENT_TYPE)
+            .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+            .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML)
         ).returnResponse();
         assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
 
         response = executor.execute(Request
-                .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
+            .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
         ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(SC_OK, response.getStatusLine().getStatusCode());
         assertNotNull(response.getEntity().getContent());
 
         response = executor.execute(Request
-            .Put(getRestUri() + TEST_COLLECTION + XQUERY_BASE_URI_FILENAME)
-            .bodyString(XQUERY_BASE_URI, XQUERY_CONTENT_TYPE)
+            .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY_BASE_URI_FILENAME)
+            .bodyString(XQUERY_BASE_URI_BODY, XQUERY_CONTENT_TYPE)
         ).returnResponse();
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HttpStatus.SC_CREATED);
+
+        response = executor.execute(Request
+            .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY_MEDIA_FILENAME)
+            .bodyString(XQUERY_MEDIA_BODY, XQUERY_CONTENT_TYPE)
+        ).returnResponse();
+        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+
+        response = executor.execute(Request
+            .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
+        ).returnResponse();
+        assertEquals(SC_OK, response.getStatusLine().getStatusCode());
+        assertNotNull(response.getEntity().getContent());
+        var result = parseEntityElement(response.getEntity());
+
+        // Validate that the resource functions have been set up as expected
+        assertThat(result.getNodeName()).isEqualTo("exist:result");
+        var children = result.getChildNodes();
+        Element functions = null;
+        for (int i = 0; i < children.getLength(); i++) {
+            var child = children.item(i);
+            if (child instanceof Element childElement && childElement.getTagName().equals("rest:resource-functions")) {
+                functions = childElement;
+            }
+        }
+        assertThat(functions).isNotNull();
+        children = functions.getChildNodes();
+        List<Element> resourceFunctions = new ArrayList<>();
+        for (int i = 0; i < children.getLength(); i++) {
+            var child = children.item(i);
+            if (child instanceof Element childElement && childElement.getTagName().equals("rest:resource-function")) {
+                resourceFunctions.add(childElement);
+            }
+        }
+        assertThat(resourceFunctions.size()).isEqualTo(2);
     }
 
-    @Ignore("TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}")
+    @Ignore("Test the return of non XML media types - TBD")
     @Test
-    public void mediaTypeJson1() throws IOException {
+    public void mediaTypeJson1() throws IOException, ParserConfigurationException, SAXException {
         final HttpResponse response = executor.execute(Request
-                .Get(getRestXqUri() + "/media-type-json1")
-                .addHeader(new BasicHeader("Accept", "application/json"))
+            .Get(getRestXqUri() + "/media-type-json1")
+            .addHeader(new BasicHeader("Accept", "application/json"))
         ).returnResponse();
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        assertEquals("<success/>", response.getEntity().toString());
+        assertEquals(SC_OK, response.getStatusLine().getStatusCode());
+
+        final var entity = response.getEntity();
+        assertThat(entity.getContentType().getValue()).isEqualTo("application/json; charset=UTF-8");
+        var result = parseEntityElement(entity);
+        assertThat(result.getNodeName()).isEqualTo("success");
     }
-
-    private static String XQUERY_BASE_URI_FILENAME = "restxq-tests-base-uri.xqm";
-
-    private static final String XQUERY_BASE_URI = """
-      xquery version "3.1";
-      module namespace ex = "http://example/restxq/1";
-      import module namespace rest = "http://exquery.org/ns/restxq";
-      
-      declare
-          %rest:GET
-          %rest:path("/restxq-tests-base-uri")
-      function ex:base-uri-using-restxq() {
-          <result>We should call base-uri for real!</result>
-      };
-      """;
 
     /**
      * Handler for this is installed in the Before section;
@@ -176,45 +216,30 @@ public class IntegrationTest {
     @Test
     public void baseURI() throws IOException, ParserConfigurationException, SAXException {
 
-        final HttpResponse response = executor.execute(Request
-            .Get(getRestXqUri() + "/restxq-tests-base-uri")
+        var response = executor.execute(Request
+            .Get(getRestXqUri() + "/base-uri")
             .addHeader(new BasicHeader("Accept", "application/xml"))
         ).returnResponse();
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        final var result = parseResponseElement(response.getEntity().toString());
-
-        assertThat(result).isEqualTo("42");
-        /*
-        final var result = parseResponseElement(httpGet(restXQ, new HashMap<>()));
-        assertThat(result.getAttribute("non-existent")).isEqualTo("42");
-         */
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        final var entity = response.getEntity();
+        assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
+        var result = parseEntityElement(entity);
+        assertThat(result.getNodeName()).isEqualTo("result");
+        assertThat(result.getTextContent()).isEqualTo("Yadda yadda!");
     }
 
-    static private Element parseResponseElement(final String data) throws IOException, SAXException, ParserConfigurationException {
+    static private Element parseEntityElement(final HttpEntity entity) throws IOException, SAXException, ParserConfigurationException {
+        final var inputSource = new InputSource(entity.getContent());
 
         final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
         factory.setNamespaceAware(true);
-        final InputSource src = new InputSource(new StringReader(data));
         final SAXParser parser = factory.newSAXParser();
         final XMLReader reader = parser.getXMLReader();
         final SAXAdapter adapter = new SAXAdapter();
         reader.setContentHandler(adapter);
-        reader.parse(src);
+        reader.parse(inputSource);
 
         return adapter.getDocument().getDocumentElement();
     }
-
-    private static String asString(final InputStream inputStream) throws IOException {
-        final StringBuilder builder = new StringBuilder();
-        try(final Reader reader = new InputStreamReader(inputStream, UTF_8)) {
-            final char cbuf[] = new char[4096];
-            int read = -1;
-            while((read = reader.read(cbuf)) > -1) {
-                builder.append(cbuf, 0, read);
-            }
-        }
-        return builder.toString();
-    }
-
 }

@@ -23,9 +23,14 @@
 -->
 <configuration xmlns="http://exist.sourceforge.net/NS/exist">
 
-    <forward pattern="/rest" servlet="EXistServlet"/>
-	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
+    <!-- REST interface -->
+    <forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
+
+    <forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
+
+    <!-- RESTXQ -->
+    <forward pattern="/restxq/" servlet="RestXqServlet"/>
 
     <root pattern="/db.*" path="xmldb:exist:///db"/>
     <root pattern=".*" path="xmldb:exist:///db/apps"/>

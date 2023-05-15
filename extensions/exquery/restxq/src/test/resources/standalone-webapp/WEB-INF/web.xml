@@ -73,6 +73,15 @@
         <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
     </servlet>
 
+    <!--
+    EXQuery - RESTXQ
+-->
+    <servlet>
+        <servlet-name>RestXqServlet</servlet-name>
+        <servlet-class>org.exist.extensions.exquery.restxq.impl.RestXqServlet</servlet-class>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>XQueryURLRewrite</servlet-name>
         <url-pattern>/*</url-pattern>
