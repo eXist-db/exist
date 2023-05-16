@@ -194,11 +194,11 @@ public class XQueryFunctionsTest {
 
     @Test
     public void distinctValues() throws XMLDBException {
-        ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c { distinct-values(('a', 'a')) }; $c");
+        ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c := distinct-values(('a', 'a')); $c");
         String r = (String) result.getResource(0).getContent();
         assertEquals("a", r);
 
-        result = existEmbeddedServer.executeQuery("declare variable $c { distinct-values((<a>a</a>, <b>a</b>)) }; $c");
+        result = existEmbeddedServer.executeQuery("declare variable $c := distinct-values((<a>a</a>, <b>a</b>)); $c");
         r = (String) result.getResource(0).getContent();
         assertEquals("a", r);
 
@@ -213,16 +213,16 @@ public class XQueryFunctionsTest {
 
     @Test
     public void sum() throws XMLDBException {
-        ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c { sum((1, 2)) }; $c");
+        ResourceSet result = existEmbeddedServer.executeQuery("declare variable $c := sum((1, 2)); $c");
         String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
 
-        result = existEmbeddedServer.executeQuery("declare variable $c { sum((<a>1</a>, <b>2</b>)) }; $c");
+        result = existEmbeddedServer.executeQuery("declare variable $c := sum((<a>1</a>, <b>2</b>)); $c");
         r = (String) result.getResource(0).getContent();
         //Any untyped atomic values in the sequence are converted to xs:double values ([MK Xpath 2.0], p. 432)
         assertEquals("3", r);
 
-        result = existEmbeddedServer.executeQuery("declare variable $c { sum((), 3) }; $c");
+        result = existEmbeddedServer.executeQuery("declare variable $c := sum((), 3); $c");
         r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
     }

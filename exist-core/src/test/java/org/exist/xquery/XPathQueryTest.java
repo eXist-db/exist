@@ -839,23 +839,23 @@ public class XPathQueryTest {
         assertEquals("XPath: " + query, "1", resource.getContent().toString());
             
 
-        query = "declare variable $doc { <root>" +
+        query = "declare variable $doc := <root>" +
                 "<a>1</a><a>2</a><a>3</a><a>4</a><a>5</a><a>6</a><a>7</a>" +
-                "</root> }; " +
+                "</root>; " +
                 "(for $x in $doc/a return $x)[position() mod 3 = 2]";
         result = service.queryResource("numbers.xml", query);
         assertEquals("XPath: " + query, 2, result.getSize());
 
-        query = "declare variable $doc { <root>" +
+        query = "declare variable $doc := <root>" +
                 "<a>1</a><a>2</a><a>3</a><a>4</a><a>5</a><a>6</a><a>7</a>" +
-                "</root> }; " +
+                "</root>; " +
                 "for $x in $doc/a return $x[position() mod 3 = 2]";
         result = service.queryResource("numbers.xml", query);
         assertEquals("XPath: " + query, 0, result.getSize());
 
-        query = "declare variable $doc { <root>" +
+        query = "declare variable $doc := <root>" +
                 "<a>1</a><a>2</a><a>3</a><a>4</a><a>5</a><a>6</a><a>7</a>" +
-                "</root> }; " +
+                "</root>; " +
                 "for $x in $doc/a[position() mod 3 = 2] return $x";
         result = service.queryResource("numbers.xml", query);
         assertEquals("XPath: " + query, 2, result.getSize());

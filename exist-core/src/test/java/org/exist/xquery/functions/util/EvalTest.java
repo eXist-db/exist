@@ -232,7 +232,7 @@ public class EvalTest {
         final String configModuleName = "config-test.xqm";
         final String configModule = "xquery version \"1.0\";\r\n" +
             "module namespace ct = \"http://config/test\";\r\n" +
-            "declare variable $ct:var1 { request:get-parameter(\"var1\", ()) };";
+            "declare variable $ct:var1 := request:get-parameter(\"var1\", ());";
 
         writeModule(testHome, configModuleName, configModule);
 

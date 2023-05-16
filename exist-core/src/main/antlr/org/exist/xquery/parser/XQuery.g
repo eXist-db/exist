@@ -359,8 +359,6 @@ varDecl [XQueryAST decl, XQueryAST ann] throws XPathException
 	(
 		"external" ( COLON! EQ! e3:expr )?
 		|
-		LCURLY! e1:expr RCURLY! // deprecated
-		|
 		COLON! EQ! e2:expr
 	)
 	{
