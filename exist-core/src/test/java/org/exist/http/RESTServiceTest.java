@@ -122,7 +122,7 @@ public class RESTServiceTest {
 
     private static final String TEST_MODULE =
             "module namespace t=\"http://test.foo\";\n" +
-                    "declare variable $t:VAR { 'World!' };";
+                    "declare variable $t:VAR := 'World!';";
 
     private static final String TEST_XQUERY =
             "xquery version \"1.0\";\n" +
@@ -143,7 +143,7 @@ public class RESTServiceTest {
     private static final String TEST_XQUERY_PARAMETER_MODULE =
             "module namespace requestparametermod = \"http://exist-db.org/xquery/requestparametermod\";\n" +
                     "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "declare variable $requestparametermod:request { request:get-parameter(\"doc\",())};\n";
+                    "declare variable $requestparametermod:request := request:get-parameter(\"doc\",());\n";
 
     private static final String TEST_XQUERY_WITH_PATH_PARAMETER =
             "xquery version \"1.0\";\n" +
