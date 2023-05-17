@@ -927,7 +927,7 @@
     <!-- TODO: add attribute 'enabled="yes/no"' -->
     <xquery enable-java-binding="no" disable-deprecated-functions="no"
             enable-query-rewriting="yes" backwardCompatible="no"
-            enforce-index-use="always"
+            enforce-index-use="strict"
             raise-error-on-failed-retrieval="no">
 
         <builtin-modules>
