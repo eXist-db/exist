@@ -56,6 +56,12 @@ public class FunTransformTest {
         });
     }
 
+    @Test public void emptyResolution() throws XPathException, URISyntaxException {
+        var base = new AnyURIValue("");
+        var relative = new AnyURIValue("path/to/functions1.xsl");
+        assertEquals(new AnyURIValue("path/to/functions1.xsl"), URIResolution.resolveURI(relative, base));
+    }
+
     @Test public void resolution() throws XPathException, URISyntaxException {
         var base = new AnyURIValue("xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl");
         var relative = new AnyURIValue("functions1.xsl");

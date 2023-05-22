@@ -51,20 +51,21 @@ public class URIResolution {
      * @return resolved URI
      * @throws URISyntaxException if resolution is not possible
      */
-    static AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws URISyntaxException {
+    static AnyURIValue resolveURI(final AnyURIValue relative, final AnyURIValue base) throws URISyntaxException, XPathException {
         var relativeURI = new URI(relative.getStringValue());
         if (relativeURI.isAbsolute()) {
             return relative;
         }
         var baseURI = new URI(base.getStringValue() );
+        if (!baseURI.isAbsolute()) {
+            return relative;
+        }
         try {
             var xBase = XmldbURI.xmldbUriFor(baseURI);
             var resolved = xBase.getURI().resolve(relativeURI);
             return new AnyURIValue(XmldbURI.XMLDB_URI_PREFIX + resolved);
         } catch (URISyntaxException e) {
             return new AnyURIValue(baseURI.resolve(relativeURI));
-        } catch (XPathException e) {
-            throw new RuntimeException(e);
         }
     }
 
