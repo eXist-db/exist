@@ -1,11 +1,11 @@
 # Contributing to eXist-db
 We welcome everyone to contribute to eXist-db. We will consider each individual contribution on its own merits.
-We strongly suggest that you join the [eXist-db Slack Channel](https://exist-db.slack.com), so that you can collaborate with the eXist-db community. It is often valuable to discuss a potential contribution before undertaking any work.
+We strongly suggest that you join the [eXist-db Slack Workspace](https://exist-db.slack.com), so that you can collaborate with the eXist-db community. It is often valuable to discuss a potential contribution before undertaking any work.
 
-We follow a "Hub and Spoke" like development model, therefore you should fork our eXist-db repository, work on branches within your own fork, and then send Pull-Requests for your branches to our GitHub repository.
+We follow a "Hub and Spoke" like development model; therefore you should fork our eXist-db repository, work on branches within your own fork, and then send pull requests for your branches to our GitHub repository.
 
 ## Branch Naming
-eXist-db uses a [GitFlow](http://nvie.com/git-model) like branching model for development.
+eXist-db uses a [GitFlow](http://nvie.com/git-model)-like branching model for development.
 
 The names of each branch should reflect their purpose, the following branches may be of interest:
 * `develop` - the main line of development for the next version of eXist-db.
@@ -21,7 +21,7 @@ When contributing to eXist-db you should branch one of the development branches 
 * `feature/<name-of-my-feature>`
     This naming convention should be used when contributing new features to eXist-db. For example `feature/xquery31-sliding-window`
 * `hotfix/<name-of-my-fix>`
-  This naming convention should be used when contributing bug fixes to eXist-db. For example `feature/xquery31-sliding-window`
+  This naming convention should be used when contributing bug fixes to eXist-db. For example `hotfix/memory-leak-xquery-context`
 
 Additionally, if you are back-porting a feature or bug fix to a previous version of eXist-db, you should prefix your branch name with a `V.x.x/` where `V` is the major version number, for example: `6.x.x/feature/xquery31-sliding-window`.
 
@@ -68,11 +68,11 @@ We now store the path of Jar files in each EXPath Package's `.exist/classpath.tx
 ```
 
 ## Pull Requests and Code Review
-Pull Requests are reviewed and tested before they're merged by the eXist-db Core Development Team.
-We have a policy around how Pull Requests are reviewed in a timely and fair manner. That policy is available here - [Community Code Review and Merge Policy for the exist-db/exist Git Repository](PR-CODE-REVIEW-POLICY.md). 
+Pull requests are reviewed and tested before they're merged by the eXist-db Core Development Team.
+We have a policy around how pull requests are reviewed in a timely and fair manner. That policy is available here - [Community Code Review and Merge Policy for the exist-db/exist Git Repository](PR-CODE-REVIEW-POLICY.md). 
 Worth restating, is the one "golden rule", even within the Core Team, **no developer should merge their own pull request**. This simple-but-important rule ensures that at least two people have considered the change.
 
-Although the following are taken from our [Developer Manifesto](http://www.exist-db.org/exist/apps/doc/devguide_manifesto.xml "eXist Project Developer Manifesto") and [Code Review Guide](http://www.exist-db.org/exist/apps/doc/devguide_codereview.xml "eXist Project Code Review Guide"), the main things that get a Pull Request accepted are:
+Although the following are taken from our [Developer Manifesto](http://www.exist-db.org/exist/apps/doc/devguide_manifesto.xml "eXist Project Developer Manifesto") and [Code Review Guide](http://www.exist-db.org/exist/apps/doc/devguide_codereview.xml "eXist Project Code Review Guide"), the main things that get a pull request accepted are:
 
 -   **Only change what you need to.** If you must reformat code, keep it in a separate commit to any syntax or functionality changes.
 -   **Test.** If you fix something prove it, write a test that illustrates the issue and validate the test. If you add a new feature it also requires tests, so that we can understand its intent and try to avoid regressions in future as much as possible.
@@ -94,9 +94,9 @@ If the answer to either of those two questions are "yes", then you're probably d
 eXist follows a Semantic Versioning scheme, this is further documented in the [eXist Versioning Scheme and Release Process](exist-versioning-release.md) document.
 
 ### Porting during Release Candidate development phase
-When developing one of more stable release lines and/or a release-candidate in parallel, this may require commits to be both back- and forward-ported until the release-candidate has become the next stable release.
+When developing one or more stable release lines and/or a release-candidate in parallel, this may require commits to be both back- and forward-ported until the release-candidate has become the next stable release.
 
-Under these circumstance pull-request for the same purpose may be opened multiple times against different `develop`* branches
+In these circumstances pull request(s) for the same purpose may be opened multiple times against different `develop`* branches.
 
 #### Backport
 Assuming the stable is `6.x.x` and the RC is `7.x.x`
@@ -150,10 +150,10 @@ If you wish to contribute, the general approach using GitFlow AVH Edition is:
 -   Do your stuff! :-)
 -   Commit to your repo. We like small, atomic commits that don't mix concerns.
 -   **Do NOT** finish the `hotfix` or `feature` with GitFlow.
--   Make sure your branch is based on the latest eXist develop branch before making a pull-request. This will ensure that we can easily merge in your changes. See [Syncing a Fork](#syncing-a-fork).
+-   Make sure your branch is based on the latest eXist develop branch before making a pull request. This will ensure that we can easily merge in your changes. See [Syncing a Fork](#syncing-a-fork).
 -   Push your hotfix or feature branch to your GitHub using GitFlow: `git flow feature publish my-feature`.
--   Send us a Pull Request on GitHub from your branch to our develop branch.
--   Once the Pull Request is merged you can delete your branch, you need not finish or merge it, you will however want to sync your develop branch to bring back your changes. See [Syncing a Fork](#syncing-a-fork).
+-   Send us a pull request on GitHub from your branch to our develop branch.
+-   Once the pull request is merged you can delete your branch, you need not finish or merge it, you will however want to sync your develop branch to bring back your changes. See [Syncing a Fork](#syncing-a-fork).
 
 ### Our `git-flow init` settings
 When we started working with the eXist repo we needed to configure it for GitFlow:
