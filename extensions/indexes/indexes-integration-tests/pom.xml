@@ -104,6 +104,11 @@
                         </goals>
                         <configuration>
                             <failOnWarning>false</failOnWarning>
+
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>xml-apis:xml-apis:jar</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>exist-index-ngram:${project.version}</ignoredUnusedDeclaredDependency>
