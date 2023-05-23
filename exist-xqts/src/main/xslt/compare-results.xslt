@@ -105,8 +105,9 @@
         <xsl:param name="current-results" as="element(cr:results)" required="yes"/>
         <xsl:param name="attr-name" as="xs:string" required="yes"/>
         <xsl:variable name="elem-name" as="xs:QName" select="xs:QName(concat('cr:', $attr-name))"/>
+        <xsl:variable name="previous-results-names" as="xs:string*" select="$previous-results/element()[node-name(.) eq $elem-name]/testcase/@name/string(.)"/>
         <xsl:element name="cr:{$attr-name}">
-            <xsl:apply-templates mode="simple" select="$current-results/element()[node-name(.) eq $elem-name]/testcase[@name except $previous-results/element()[node-name(.) eq $elem-name]/testcase/@name]"/>
+            <xsl:apply-templates mode="simple" select="$current-results/element()[node-name(.) eq $elem-name]/testcase[not(@name = $previous-results-names)]"/>
         </xsl:element>
     </xsl:function>
 
