@@ -108,8 +108,9 @@
                             </ignoredUsedUndeclaredDependencies>
 
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>exist-index-ngram:${project.version}</ignoredUnusedDeclaredDependency>
+                                <!-- needed for running XQSuite tests that depend on lucene and ngarm modules -->
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-ngram:jar:${project.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
