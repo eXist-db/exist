@@ -101,7 +101,7 @@
                             <goal>analyze-only</goal>
                         </goals>
                         <configuration>
-                            <failOnWarning>false</failOnWarning>
+                            <failOnWarning>true</failOnWarning>
 
                             <ignoredUsedUndeclaredDependencies>
                                 <ignoredUsedUndeclaredDependency>xml-apis:xml-apis:jar</ignoredUsedUndeclaredDependency>
