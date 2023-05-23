@@ -106,14 +106,15 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-                            <ignoredUnusedDeclaredDependencies>
-                                <!-- needed for running tests that depend on file module -->
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-file:jar:${project.version}</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
 
                             <ignoredUsedUndeclaredDependencies>
                                 <ignoredUsedUndeclaredDependency>xml-apis:xml-apis:jar</ignoredUsedUndeclaredDependency>
                             </ignoredUsedUndeclaredDependencies>
+
+                            <ignoredUnusedDeclaredDependencies>
+                                <!-- needed for running XQSuite tests that depend on file module -->
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-file:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
