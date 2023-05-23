@@ -110,8 +110,8 @@
         <icu.version>59.1</icu.version>
         <izpack.version>5.1.3</izpack.version>
         <jansi.version>2.4.0</jansi.version>
-        <jaxb.api.version>3.0.1</jaxb.api.version>
-        <jaxb.impl.version>3.0.2</jaxb.impl.version>
+        <jaxb.api.version>4.0.0</jaxb.api.version>
+        <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.1</eclipse.angus-activation.version>
         <jetty.version>11.0.15</jetty.version>
         <log4j.version>2.20.0</log4j.version>
@@ -158,13 +158,6 @@
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
                 <version>${jaxb.api.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- use newer Eclipse Angus Activation -->
-                        <groupId>com.sun.activation</groupId>
-                        <artifactId>jakarta.activation</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -796,13 +789,6 @@
                             <groupId>org.glassfish.jaxb</groupId>
                             <artifactId>jaxb-runtime</artifactId>
                             <version>${jaxb.impl.version}</version>
-                            <exclusions>
-                                <exclusion>
-                                    <!-- use newer Eclipse Angus Activation -->
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>jakarta.activation</artifactId>
-                                </exclusion>
-                            </exclusions>
                         </dependency>
                         <dependency>
                             <groupId>org.eclipse.angus</groupId>
