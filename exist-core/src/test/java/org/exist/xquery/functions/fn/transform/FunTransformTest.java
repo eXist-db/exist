@@ -22,9 +22,12 @@
 package org.exist.xquery.functions.fn.transform;
 
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 
@@ -49,20 +52,23 @@ public class FunTransformTest {
         assertEquals(Options.XSLTVersion.fromDecimal(new BigDecimal("3.1")), Options.XSLTVersion.fromDecimal(new BigDecimal("3.1")));
     }
 
-    @Test void badVersionNumber() throws Transform.PendingException {
+    @Test
+    void badVersionNumber() throws Transform.PendingException {
 
         assertThrows(Transform.PendingException.class, () -> {
             Options.XSLTVersion version311 = Options.XSLTVersion.fromDecimal(new BigDecimal("3.11"));
         });
     }
 
-    @Test public void emptyResolution() throws XPathException, URISyntaxException {
+    @Test
+    public void emptyResolution() throws XPathException, URISyntaxException {
         var base = new AnyURIValue("");
         var relative = new AnyURIValue("path/to/functions1.xsl");
         assertEquals(new AnyURIValue("path/to/functions1.xsl"), URIResolution.resolveURI(relative, base));
     }
 
-    @Test public void resolution() throws XPathException, URISyntaxException {
+    @Test
+    public void resolution() throws XPathException, URISyntaxException {
         var base = new AnyURIValue("xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl");
         var relative = new AnyURIValue("functions1.xsl");
         assertEquals(new AnyURIValue("xmldb:exist:/db/apps/fn_transform/functions1.xsl"),
@@ -106,5 +112,68 @@ public class FunTransformTest {
         var relative5 = new AnyURIValue("https://127.0.0.1:8088/a/b/c/functions1.xsl");
         assertEquals(new AnyURIValue("https://127.0.0.1:8088/a/b/c/functions1.xsl"),
             URIResolution.resolveURI(relative5, base5));
+    }
+
+    /**
+     * Create some UT coverage of the CompileTimeURIResolver
+     * This is more significantly exercised by XQTS tests
+     * Results are the same as above, wrapped in a {@code Source}
+     *
+     * @throws TransformerException
+     */
+    @Test
+    public void resolverObject() throws TransformerException {
+        var resolver = new URIResolution.CompileTimeURIResolver(new XQueryContext(), null) {
+            @Override protected SourceWithLocation resolveDocument(final String location) {
+                return new SourceWithLocation("RESOLVED::" + location);
+            }
+        };
+
+        assertEquals("RESOLVED::xmldb:exist:/db/apps/fn_transform/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+        assertEquals("RESOLVED::xmldb:exist:/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("/functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+
+        assertEquals("RESOLVED::xmldb:exist:/fn_transform/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("/fn_transform/functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+
+        assertEquals("RESOLVED::xmldb:exist:/fn_transform/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("/fn_transform/functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+
+        assertEquals("RESOLVED::https://127.0.0.1:8088/db/apps/fn_transform/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("functions1.xsl", "https://127.0.0.1:8088/db/apps/fn_transform/tei-toc2.xsl")).location);
+
+        assertEquals("RESOLVED::https://127.0.0.1:8088/db/apps/fn_transform/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("functions1.xsl", "https://127.0.0.1:8088/db/apps/fn_transform/")).location);
+
+        assertEquals("RESOLVED::https://127.0.0.1:8088/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("/functions1.xsl", "https://127.0.0.1:8088/db/apps/fn_transform/")).location);
+
+        assertEquals("RESOLVED::xmldb:exist:///a/b/c/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("xmldb:exist:///a/b/c/functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+
+        assertEquals("RESOLVED::https://127.0.0.1:8088/a/b/c/functions1.xsl",
+            ((SourceWithLocation)resolver.resolve("https://127.0.0.1:8088/a/b/c/functions1.xsl", "xmldb:exist:///db/apps/fn_transform/tei-toc2.xsl")).location);
+    }
+
+    /**
+     * Skeleton implementation for test
+     */
+    private static class SourceWithLocation implements Source {
+
+        final String location;
+        SourceWithLocation(final String location) {
+            this.location = location;
+        }
+
+        @Override
+        public void setSystemId(String systemId) {
+
+        }
+
+        @Override
+        public String getSystemId() {
+            return null;
+        }
     }
 }

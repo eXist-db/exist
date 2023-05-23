@@ -69,7 +69,7 @@ public class URIResolution {
         }
     }
 
-    static public class CompileTimeURIResolver implements URIResolver {
+    public static class CompileTimeURIResolver implements URIResolver {
 
         private final XQueryContext xQueryContext;
         private final Expression containingExpression;
@@ -86,7 +86,7 @@ public class URIResolution {
                 final AnyURIValue baseURI = new AnyURIValue(base);
                 final AnyURIValue hrefURI = new AnyURIValue(href);
                 var resolved = resolveURI(hrefURI, baseURI);
-                return resolveDocument(resolved.getStringValue(), xQueryContext, containingExpression);
+                return resolveDocument(resolved.getStringValue());
             } catch (URISyntaxException e) {
                 throw new TransformerException("Failed to resolve " +
                     href +
@@ -98,6 +98,10 @@ public class URIResolution {
                     " against " +
                     base, e);
             }
+        }
+
+        protected Source resolveDocument(final String location) throws XPathException {
+            return URIResolution.resolveDocument(location, xQueryContext, containingExpression);
         }
     }
 
