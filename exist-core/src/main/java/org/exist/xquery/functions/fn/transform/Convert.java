@@ -120,6 +120,9 @@ class Convert {
         }
 
         XdmValue of(final Item item) throws XPathException {
+            if (item instanceof NodeProxy nodeProxy) {
+                return ofNode(nodeProxy.getNode());
+            }
             final int itemType = item.getType();
             if (Type.subTypeOf(itemType, Type.ATOMIC)) {
                 return ofAtomic((AtomicValue) item);

@@ -25,9 +25,16 @@ module namespace testTransform="http://exist-db.org/xquery/test/function_transfo
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-declare variable $testTransform:stylesheet := <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+declare variable $testTransform:stylesheet1 := <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
     <xsl:param name='v'/>
     <xsl:template match='/'>
+        <v><xsl:value-of select='$v'/></v>
+    </xsl:template>
+</xsl:stylesheet>;
+
+declare variable $testTransform:stylesheet2 := <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+    <xsl:param name='v'/>
+    <xsl:template name='named-template' match='/'>
         <v><xsl:value-of select='$v'/></v>
     </xsl:template>
 </xsl:stylesheet>;
@@ -60,9 +67,10 @@ declare
     %test:setUp
 function testTransform:setup() {
     let $coll := xmldb:create-collection("/db", "regression-test")
-    let $storeStylesheet := xmldb:store($coll, "stylesheet.xsl", $testTransform:stylesheet, "application/xslt+xml")
-    return ( xmldb:store($coll, "document.xml", $testTransform:document, "application/document")
-    )
+    let $storeStylesheet1 := xmldb:store($coll, "stylesheet1.xsl", $testTransform:stylesheet1, "application/xslt+xml")
+    let $storeStylesheet2 := xmldb:store($coll, "stylesheet2.xsl", $testTransform:stylesheet2, "application/xslt+xml")
+    let $storeDocument := xmldb:store($coll, "document.xml", $testTransform:document, "application/document")
+    return ()
 };
 
 declare
@@ -80,8 +88,27 @@ function testTransform:regression-test-1() {
     let $in := parse-xml("<dummy/>")
     let $result := ( fn:transform(map{
         "source-node":$in,
-        "stylesheet-node":doc("/db/regression-test/stylesheet.xsl"),
+        "stylesheet-node":doc("/db/regression-test/stylesheet1.xsl"),
         "stylesheet-params": map { QName("","v"): doc("/db/regression-test/document.xml") } } ) )?output
     return $result
 };
+
+declare
+    %test:assertEquals("<v>Gambardella, MatthewXML Developer's GuideComputer44.952000-10-01An in-depth look at creating applications
+           with XML.Ralls, KimMidnight RainFantasy5.952000-12-16A former architect battles corporate zombies,
+           an evil sorceress, and her own childhood to become queen
+           of the world.</v>")
+function testTransform:regression-test-2() {
+    let $in := parse-xml("<dummy/>")
+    let $result := ( fn:transform(map{
+           "source-node":$in,
+           "stylesheet-node":doc("/db/regression-test/stylesheet2.xsl"),
+           "initial-template": QName('', 'named-template'),
+           "global-context-item" : fn:doc("/db/regression-test/document.xml"),
+           "stylesheet-params": map {
+             QName('', 'v'): fn:doc("/db/regression-test/document.xml")
+           }}))?output
+    return $result
+};
+
 
