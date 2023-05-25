@@ -54,7 +54,8 @@ public final class SaxonConfiguration {
   private SaxonConfiguration(final net.sf.saxon.Configuration configuration) {
     this.configuration = configuration;
     this.processor = new Processor(configuration);
-    //TODO (AP) We could further configure URI/Resource resolution for Saxon within eXist here
+    //TODO (AP) This is a better place to configure URI/Resource resolution for Saxon within eXist
+    //At present the configuration for Saxon to resolve xmldb:exist: URIs is restricted to fn:transform
   }
 
   /**

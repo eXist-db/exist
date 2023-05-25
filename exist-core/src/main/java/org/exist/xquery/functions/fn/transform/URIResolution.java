@@ -88,15 +88,11 @@ public class URIResolution {
                 var resolved = resolveURI(hrefURI, baseURI);
                 return resolveDocument(resolved.getStringValue());
             } catch (URISyntaxException e) {
-                throw new TransformerException("Failed to resolve " +
-                    href +
-                    " against " +
-                    base, e);
-            } catch (org.exist.xquery.XPathException e) {
-                throw new TransformerException("Failed to find document as result of resolving " +
-                    href +
-                    " against " +
-                    base, e);
+                throw new TransformerException(
+                    "Failed to resolve " + href + " against " + base, e);
+            } catch (XPathException e) {
+                throw new TransformerException(
+                    "Failed to find document as result of resolving " + href + " against " + base, e);
             }
         }
 
