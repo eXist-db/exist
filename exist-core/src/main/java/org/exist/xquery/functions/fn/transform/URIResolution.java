@@ -108,17 +108,17 @@ public class URIResolution {
      * @return the resolved stylesheet as a source
      * @throws org.exist.xquery.XPathException if the item does not exist, or is not a document
      */
-    static Source resolveDocument(final String location, final XQueryContext xQueryContext, Expression containingExpression) throws org.exist.xquery.XPathException {
+    static Source resolveDocument(final String location, final XQueryContext xQueryContext, Expression containingExpression) throws XPathException {
 
         final Sequence document;
         try {
             document = DocUtils.getDocument(xQueryContext, location);
         } catch (final PermissionDeniedException e) {
-            throw new org.exist.xquery.XPathException(containingExpression, ErrorCodes.FODC0002,
+            throw new XPathException(containingExpression, ErrorCodes.FODC0002,
                 "Can not access '" + location + "'" + e.getMessage());
         }
         if (document == null || document.isEmpty()) {
-            throw new org.exist.xquery.XPathException(containingExpression, ErrorCodes.FODC0002,
+            throw new XPathException(containingExpression, ErrorCodes.FODC0002,
                 "No document found at location '"+ location);
         }
         if (document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
@@ -129,7 +129,7 @@ public class URIResolution {
                 return new DOMSource(node);
             }
         }
-        throw new org.exist.xquery.XPathException(containingExpression, ErrorCodes.FODC0002,
+        throw new XPathException(containingExpression, ErrorCodes.FODC0002,
             "Location '"+ location + "' returns an item which is not a document node");
     }
 }
