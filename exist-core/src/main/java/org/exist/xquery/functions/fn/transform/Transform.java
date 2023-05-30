@@ -214,22 +214,24 @@ public class Transform {
             xsltCompiler.setParameter(new net.sf.saxon.s9api.QName(qKey.getPrefix(), qKey.getLocalPart()), value);
         }
 
-        // Take URI resolution into our own hands when there is no base
-        xsltCompiler.setURIResolver((href, base) -> {
-            try {
-                final URI hrefURI = URI.create(href);
-                if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
-                    final XPathException resolutionException = new XPathException(fnTransform,
+        xsltCompiler.setURIResolver(new URIResolution.CompileTimeURIResolver(context, fnTransform) {
+            @Override  public Source resolve(final String href, final String base) throws TransformerException {
+                // Correct error from URI resolution when there is no base
+                try {
+                    final URI hrefURI = URI.create(href);
+                    if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
+                        final XPathException resolutionException = new XPathException(fnTransform,
                             ErrorCodes.XTSE0165,
                             "transform using a relative href, \n" +
-                                    "using option stylesheet-text, but without stylesheet-base-uri");
-                    throw new TransformerException(resolutionException);
+                                "using option stylesheet-text, but without stylesheet-base-uri");
+                        throw new TransformerException(resolutionException);
+                    }
+                } catch (final IllegalArgumentException e) {
+                    throw new TransformerException(e);
                 }
-            } catch (final IllegalArgumentException e) {
-                throw new TransformerException(e);
+                // Checked the special error case, defer to eXist resolution
+                return super.resolve(href, base);
             }
-            // Pass it back
-            return null;
         });
 
         try {
