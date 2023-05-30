@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
         "src/test/xquery/xquery3",
         "src/test/xquery/xquery3/transform",
         // To add an individual test or only run a specific set of tests -
-//         "src/test/xquery/xquery3/serialize.xql",
+        //"src/test/xquery/xquery3/serialize.xql",
 })
 public class XQuery3Tests {
 }
