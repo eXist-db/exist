@@ -175,7 +175,11 @@ public class FunTransformTest {
         public void setSystemId(String systemId) {
         }
 
-        // implementation solely to conform to interface for test use
+        /**
+         * implementation solely to conform to interface for test use
+         *
+         * @return always returns null; not expected to be called
+         */
         @Override
         public String getSystemId() {
             return null;
