@@ -45,15 +45,22 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
+      - name: Install Maven Daemon
+        id: install-mvnd
+        uses: ./.github/actions/install-mvnd
+        with:
+          version: '1.0-m6'
+          file-version-suffix: '-m40'
+          cache: 'true'
       - name: Maven Build
         timeout-minutes: 10
-        run: mvn -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
-        run: mvn -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Javadoc (Linux only)
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: mvn -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
       - name: Maven Code Coverage (Develop branch on Linux only)
         if: ${{ github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
@@ -62,7 +69,7 @@ jobs:
           CI_BUILD_NUMBER: ${{ github.run_id }}
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: mvn -V -B jacoco:report coveralls:report
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v3
