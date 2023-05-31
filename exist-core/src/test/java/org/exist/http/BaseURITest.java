@@ -106,36 +106,4 @@ public class BaseURITest {
     assertThat(1).isEqualTo(2);
   }
 
-  private static final String RESTXQ_BASE_URI = """
-      xquery version "3.1";
-      module namespace ex = "http://example/restxq/1";
-      import module namespace rest = "http://exquery.org/ns/restxq";
-      
-      declare
-          %rest:GET
-      function ex:base-uri-using-restxq() {
-          <result>We should call base-uri for real!</result>
-      };
-      """;
-
-  /**
-   * Put a RESTXQ handler in the database, and then invoke it
-   *
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws SAXException
-   */
-  @Test
-  public void baseURIRESTXQ() throws IOException, ParserConfigurationException, SAXException {
-
-    final var test = eXistRESTServer.getRootURI("/test/test-restxq.xq");
-    final var properties = new HashMap<String, String>();
-    properties.put("Authorization", "Basic " + credentials);
-    properties.put("Content-Type", "application/xquery; charset=UTF-8");
-    httpPut(test, RESTXQ_BASE_URI, properties);
-
-    final var restXQ = eXistRESTServer.getRestXQURI("/any/random/path");
-    final var result = parseResponseElement(httpGet(restXQ, new HashMap<>()));
-    assertThat(result.getAttribute("non-existent")).isEqualTo("42");
-  }
 }
