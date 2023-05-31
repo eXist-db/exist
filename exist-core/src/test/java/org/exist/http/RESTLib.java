@@ -189,7 +189,7 @@ class RESTLib {
     }
 
     String getRestXQURI(final String path) {
-      return "http://localhost:" + getPort() + "/exist/restq" + path;
+      return "http://localhost:" + getPort() + "/exist/restxq" + path;
     }
   }
 }

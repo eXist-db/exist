@@ -82,6 +82,8 @@ import org.exquery.xquery.TypedArgumentValue;
 import org.exquery.xquery.TypedValue;
 import org.exquery.xquery3.FunctionSignature;
 
+import static org.exist.util.BaseURI.dbBaseURIFromLocation;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -135,7 +137,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             xqueryContext.setAttribute(EXQ_REQUEST_ATTR, request);
 
             //the base URI is the location of the function in the DB
-            var baseURI = xmldbURIFromLocation(resourceFunction.getXQueryLocation());
+            var baseURI = dbBaseURIFromLocation(resourceFunction.getXQueryLocation());
             xqueryContext.setBaseURI(baseURI);
             
             //TODO this is a workaround?
@@ -243,25 +245,6 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
         }
 
         return effectiveSubject;
-    }
-
-    /**
-     * Convert the location of a resource function into an XML database URI
-     * @param uri the location of the resource function
-     * @return the input uri with an xmldb:exist:// prefix (if it had no scheme before)
-     * if uri has a scheme (is absolute) the original uri is wrapped, unaltered
-     */
-    private AnyURIValue xmldbURIFromLocation(final URI uri) {
-        if (uri.getScheme() == null) {
-            try {
-                return new AnyURIValue(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + uri);
-            } catch (XPathException e) {
-                LOG.warn("Could not create {} URI from {}", XmldbURI.XMLDB_URI_PREFIX, uri);
-                throw new RuntimeException(e);
-            }
-        }
-        // already absolute
-        return new AnyURIValue(uri);
     }
 
     private void declareVariables(final XQueryContext xqueryContext) throws XPathException {

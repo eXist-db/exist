@@ -26,6 +26,7 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -51,16 +52,22 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
-public class IntegrationTest {
+public class BaseURITest {
 
     private static final String COLLECTION_CONFIG = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -126,6 +133,10 @@ public class IntegrationTest {
 
     private static String getRestXqUri() {
         return getServerUri() + "/restxq";
+    }
+
+    private static String getRestServerUri() {
+        return getServerUri() + "/rest";
     }
 
     @BeforeClass
@@ -214,7 +225,7 @@ public class IntegrationTest {
      * @throws SAXException
      */
     @Test
-    public void baseURI() throws IOException, ParserConfigurationException, SAXException {
+    public void baseURIRestXQ() throws IOException, ParserConfigurationException, SAXException {
 
         var response = executor.execute(Request
             .Get(getRestXqUri() + "/base-uri")
@@ -227,6 +238,97 @@ public class IntegrationTest {
         var result = parseEntityElement(entity);
         assertThat(result.getNodeName()).isEqualTo("result");
         assertThat(result.getTextContent()).isEqualTo("xmldb:exist:///db/restxq/integration-test/restxq-tests-base-uri.xqm");
+    }
+
+    @Test public void baseURIRestServerQuery() throws IOException {
+
+        var query = URLEncoder.encode("static-base-uri()", StandardCharsets.UTF_8);
+        var response = executor.execute(Request
+            .Get(getRestServerUri() + "/db/restserver/baseuri?_query=" + query)
+            .addHeader(new BasicHeader("Accept", "application/xml"))
+        ).returnResponse();
+
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        final var entity = response.getEntity();
+        assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
+
+        var result = readEntityElement(entity);
+        assertThat(result).contains("<exist:value exist:type=\"xs:anyURI\">xmldb:exist:///db/restserver/baseuri</exist:value>");
+    }
+
+    private static final String XML_QUERY_BASE_URI = """
+      xquery version "3.1";
+      <tests>
+          <static-base-uri>{ static-base-uri() }</static-base-uri>
+          <does-sbu-exist>{ exists(static-base-uri()) }</does-sbu-exist>
+          <rel>{ resolve-uri('#foobar') }</rel>
+      </tests>
+      """;
+
+    @Test public void baseURIRestServerScript() throws IOException {
+
+        final var credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
+
+        var response = executor.execute(Request
+            .Put(getRestServerUri() + "/db/test/test.xq")
+            .addHeader(new BasicHeader("Authorization", "Basic " + credentials))
+            .addHeader(new BasicHeader("Accept", "*/*"))
+            .addHeader(new BasicHeader("Content-Type", "application/xquery; charset=UTF-8"))
+            .bodyString(XML_QUERY_BASE_URI, ContentType.TEXT_XML)
+        ).returnResponse();
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_CREATED);
+
+        response = executor.execute(Request
+            .Get(getRestServerUri() + "/db/test/test.xq")
+            .addHeader(new BasicHeader("Accept", "application/xml"))
+            .addHeader(new BasicHeader("Authorization", "Basic " + credentials))
+        ).returnResponse();
+        final var entity = response.getEntity();
+        final var content = readEntityElement(entity);
+        assertThat(response.getStatusLine().getStatusCode()).as("Message was: %s", content).isEqualTo(SC_OK);
+        assertThat(content).contains("<staticEEE-base-uri>xmldb:exist:///db/test-rest-static-base-uri</static-base-uri>");
+    }
+
+
+    private static final String XML_QUERY_EXTENDED_BASE_URI = """
+      <query xmlns="http://exist.sourceforge.net/NS/exist" start="1" max="10">
+      <text><![CDATA[%s]]></text>
+      </query>
+      """.formatted(XML_QUERY_BASE_URI);
+
+    @Test public void baseURIExtendedQuery() throws IOException, ParserConfigurationException, SAXException {
+
+        final var credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
+
+        var response = executor.execute(Request
+            .Post(getRestServerUri() + "/db/test-rest-static-base-uri")
+            .addHeader(new BasicHeader("Authorization", "Basic " + credentials))
+            .addHeader(new BasicHeader("Accept", "*/*"))
+            .addHeader(new BasicHeader("Content-Type", "application/xml; charset=UTF-8"))
+            .bodyString(XML_QUERY_EXTENDED_BASE_URI, ContentType.TEXT_XML)
+        ).returnResponse();
+
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        final var entity = response.getEntity();
+        assertThat(readEntityElement(entity)).contains("<static-base-uri>xmldb:exist:///db/test-rest-static-base-uri</static-base-uri>");
+    }
+
+    @Test public void baseURIRestServerExecute() {
+
+        fail();
+    }
+
+    static private String readEntityElement(final HttpEntity entity) throws IOException {
+        final var inputStream = entity.getContent();
+        final var textBuilder = new StringBuilder();
+        try (Reader reader = new BufferedReader(new InputStreamReader
+            (inputStream, StandardCharsets.UTF_8))) {
+            int c = 0;
+            while ((c = reader.read()) != -1) {
+                textBuilder.append((char) c);
+            }
+        }
+        return textBuilder.toString();
     }
 
     static private Element parseEntityElement(final HttpEntity entity) throws IOException, SAXException, ParserConfigurationException {

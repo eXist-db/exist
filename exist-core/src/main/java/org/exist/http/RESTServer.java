@@ -1374,7 +1374,7 @@ public class RESTServer {
             }
 
             context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-            context.setBaseURI(new AnyURIValue(pathUri.toString()));
+            context.setBaseURI(BaseURI.dbBaseURIFromLocation(pathUri.getURI()));
 
             declareNamespaces(context, namespaces);
             declareVariables(context, variables, request, response);
