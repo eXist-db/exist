@@ -226,7 +226,7 @@ public class IntegrationTest {
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
         var result = parseEntityElement(entity);
         assertThat(result.getNodeName()).isEqualTo("result");
-        assertThat(result.getTextContent()).isEqualTo("Yadda yadda!");
+        assertThat(result.getTextContent()).isEqualTo("xmldb:exist:///db/restxq/integration-test/restxq-tests-base-uri.xqm");
     }
 
     static private Element parseEntityElement(final HttpEntity entity) throws IOException, SAXException, ParserConfigurationException {
