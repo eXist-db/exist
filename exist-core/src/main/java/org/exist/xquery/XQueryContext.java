@@ -1091,6 +1091,11 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public Collator getCollator(String uri) throws XPathException {
+        return getCollator(uri, ErrorCodes.XQST0076);
+    }
+
+    @Override
+    public Collator getCollator(String uri, final ErrorCodes.ErrorCode errorCode) throws XPathException {
         if (uri == null) {
             return defaultCollator;
         }
@@ -1108,7 +1113,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             // no-op
         }
 
-        return Collations.getCollationFromURI(uri, rootExpression);
+        return Collations.getCollationFromURI(uri, rootExpression, errorCode);
     }
 
     @Override
