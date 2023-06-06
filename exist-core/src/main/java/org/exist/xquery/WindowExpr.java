@@ -152,14 +152,14 @@ public class WindowExpr extends BindingExpression {
 
 
         // when `window` is not null, we have started
-        Sequence window = null;
+        Window window = null;
         int windowStartIdx = -1;
 
         LocalVariable windowStartMark = null;
-        WindowConditionVariables windowStartConditionVariables = null;
+        WindowContextVariables windowStartConditionVariables = null;
 
         LocalVariable windowEndMark = null;
-        WindowConditionVariables windowEndConditionVariables = null;
+        WindowContextVariables windowEndConditionVariables = null;
 
         Item previousItem = null;
 
@@ -189,7 +189,8 @@ public class WindowExpr extends BindingExpression {
                 if (startWhen.effectiveBooleanValue()) {
 
                     // signal we have started
-                    window = new ValueSequence(false);
+                    window = new Window();
+                    window.start(windowStartConditionVariables);
                     windowStartIdx = i;
                 }
             }
@@ -208,6 +209,9 @@ public class WindowExpr extends BindingExpression {
 
                     final boolean endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
                     if (endWhen) {
+
+                        window.end(windowEndConditionVariables);
+
                         // eval the return expression on the window binding
                         returnEvalWindowBinding(in, window, resultSequence);
 
@@ -219,15 +223,17 @@ public class WindowExpr extends BindingExpression {
                             windowEndMark = null;
 
                         }
+
+                        // signal the start of a new window
+                        window = new Window();
+                        window.start(windowStartConditionVariables);
+
                         if (windowStartMark != null) {
                             context.popLocalVariables(windowStartMark, resultSequence);
-                            windowStartConditionVariables.destroy(context, resultSequence);
                             windowStartConditionVariables = null;
                             windowStartMark = null;
                         }
 
-                        // signal the start of a new window
-                        window = new ValueSequence(false);
                         windowStartIdx = i;
                     }
                 }
@@ -256,6 +262,9 @@ public class WindowExpr extends BindingExpression {
                 if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (!windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
 
                     if (window != null) {
+
+                        window.end(windowEndConditionVariables);
+
                         // eval the return expression on the window binding
                         returnEvalWindowBinding(in, window, resultSequence);
 
@@ -293,6 +302,8 @@ public class WindowExpr extends BindingExpression {
 
         if (window != null && (windowEndCondition == null || !windowEndCondition.isOnly())) {
             // output the remaining binding sequence as a final window
+
+            window.end(windowEndConditionVariables);
 
             // eval the return expression on the window binding
             returnEvalWindowBinding(in, window, resultSequence);
@@ -332,7 +343,7 @@ public class WindowExpr extends BindingExpression {
         return resultSequence;
     }
 
-    private void returnEvalWindowBinding(final Sequence in, final Sequence window, final Sequence resultSequence) throws XPathException {
+    private void returnEvalWindowBinding(final Sequence in, final Window window, final Sequence resultSequence) throws XPathException {
         // Save the local variable stack
         final LocalVariable mark = context.markLocalVariables(false);
 
@@ -340,7 +351,7 @@ public class WindowExpr extends BindingExpression {
 
             // check that the type of the window binding var can accept the window data
             final SequenceType windowVarType = sequenceType != null ? sequenceType : new SequenceType(Type.ITEM, Cardinality.ONE_OR_MORE);
-            final SequenceType windowDataType = new SequenceType(window.getItemType(), window.getCardinality());
+            final SequenceType windowDataType = new SequenceType(window.items.getItemType(), window.items.getCardinality());
             if (!Type.subTypeOf(windowDataType.getPrimaryType(), windowVarType.getPrimaryType())
                     || !windowDataType.getCardinality().isSubCardinalityOrEqualOf(windowVarType.getCardinality())) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Window variable expects type: " + windowVarType + ", but window binding sequence is of type: " + windowDataType);
@@ -359,14 +370,24 @@ public class WindowExpr extends BindingExpression {
                 windowVar.setContextDocs(null);
             }
 
-            // set the binding for the window
-            windowVar.setValue(new ValueSequence(window, false));
+            // set the binding for the window for the return expression
+            windowVar.setValue(window.items);
+
+            // bind the start and end variables for the return expression
+            @Nullable final WindowContextVariables windowReturnStartVariables = declareWindowReturnVariableBindings(window.startVariables);
+            @Nullable final WindowContextVariables windowReturnEndVariables = declareWindowReturnVariableBindings(window.endVariables);
 
         // eval the return expression on the window binding
         resultSequence.addAll(returnExpr.eval(null, null));
 
             // free resources
-            windowVar.destroy(context, resultSequence); // TODO(AR) is this in the correct place?
+            if (windowReturnEndVariables != null) {
+                windowReturnEndVariables.destroy(context, resultSequence);
+            }
+            if (windowReturnStartVariables != null) {
+                windowReturnStartVariables.destroy(context, resultSequence);
+            }
+            windowVar.destroy(context, resultSequence);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark, resultSequence);
@@ -407,7 +428,6 @@ public class WindowExpr extends BindingExpression {
         dumper.display(" in ");
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
-        //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr) {
             dumper.display(" ", returnExpr.getLine());
         } else {
@@ -433,7 +453,6 @@ public class WindowExpr extends BindingExpression {
         if (windowEndCondition != null) {
             result.append(" end ").append(windowEndCondition.toString());
         }
-        //TODO : QuantifiedExpr
         if (returnExpr instanceof LetExpr) {
             result.append(" ");
         } else {
@@ -453,11 +472,11 @@ public class WindowExpr extends BindingExpression {
         return true;
     }
 
-    private @Nullable WindowConditionVariables declareWindowConditionVariables(final boolean analyzePhase, @Nullable final WindowCondition windowCondition) throws XPathException {
+    private @Nullable WindowContextVariables declareWindowConditionVariables(final boolean analyzePhase, @Nullable final WindowCondition windowCondition) throws XPathException {
         if (windowCondition == null) {
             return null;
         }
-        return new WindowConditionVariables(
+        return new WindowContextVariables(
                 declareWindowConditionVariable(analyzePhase, windowCondition.getCurrentItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)),
                 declareWindowConditionVariable(analyzePhase, windowCondition.getPosVar(), Type.INTEGER, POSITIONAL_VAR_TYPE),
                 declareWindowConditionVariable(analyzePhase, windowCondition.getPreviousItem(), Type.ITEM, new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)),
@@ -482,7 +501,7 @@ public class WindowExpr extends BindingExpression {
         return windowConditionVariable;
     }
 
-    private static void setWindowConditionVariables(final WindowConditionVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item nextItem) {
+    private static void setWindowConditionVariables(final WindowContextVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item nextItem) {
         // set the current-item
         if (windowConditionVariables.currentItem != null) {
             windowConditionVariables.currentItem.setValue(currentItem.toSequence());
@@ -504,7 +523,37 @@ public class WindowExpr extends BindingExpression {
         }
     }
 
-    private static class WindowConditionVariables {
+    private @Nullable WindowContextVariables declareWindowReturnVariableBindings(@Nullable final WindowContextVariables windowContextVariables) throws XPathException {
+        if (windowContextVariables == null) {
+            return null;
+        }
+        return new WindowContextVariables(
+                declareWindowReturnVariableBinding(windowContextVariables.currentItem),
+                declareWindowReturnVariableBinding(windowContextVariables.posVar),
+                declareWindowReturnVariableBinding(windowContextVariables.previousItem),
+                declareWindowReturnVariableBinding(windowContextVariables.nextItem)
+        );
+    }
+
+    private @Nullable LocalVariable declareWindowReturnVariableBinding(@Nullable final LocalVariable windowContextVariable) throws XPathException {
+        if (windowContextVariable == null) {
+            return null;
+        }
+
+        final LocalVariable windowReturnVariable = createVariable(windowContextVariable.getQName());
+        windowReturnVariable.setSequenceType(windowContextVariable.getSequenceType());
+        windowReturnVariable.setStaticType(windowContextVariable.getStaticType());
+
+        // bind the value
+        windowReturnVariable.setValue(windowContextVariable.getValue());
+
+        // declare it
+        context.declareVariableBinding(windowReturnVariable);
+
+        return windowReturnVariable;
+    }
+
+    private static class WindowContextVariables {
         final @Nullable
         LocalVariable currentItem;
         final @Nullable
@@ -514,11 +563,15 @@ public class WindowExpr extends BindingExpression {
         final @Nullable
         LocalVariable nextItem;
 
-        private WindowConditionVariables(@Nullable final LocalVariable currentItem, @Nullable final LocalVariable posVar, @Nullable final LocalVariable previousItem, @Nullable final LocalVariable nextItem) {
+        private WindowContextVariables(@Nullable final LocalVariable currentItem, @Nullable final LocalVariable posVar, @Nullable final LocalVariable previousItem, @Nullable final LocalVariable nextItem) {
             this.currentItem = currentItem;
             this.posVar = posVar;
             this.previousItem = previousItem;
             this.nextItem = nextItem;
+        }
+
+        public boolean isDefined() {
+            return currentItem != null || posVar != null || previousItem != null || nextItem != null;
         }
 
         public void destroy(final XQueryContext context, final Sequence contextSequence) {
@@ -578,4 +631,54 @@ public class WindowExpr extends BindingExpression {
 
         return vars;
     }
+
+    private static class Window {
+        @Nullable Sequence items;
+        @Nullable
+        WindowContextVariables startVariables;
+        @Nullable
+        WindowContextVariables endVariables;
+        @Nullable private State state;
+
+        private enum State {
+            STARTED,
+            ENDED;
+        }
+
+        public void start(@Nullable final WindowContextVariables startVariables) {
+            if (state != null) {
+                throw new IllegalStateException("Window has already been started");
+            }
+
+            if (startVariables != null && startVariables.isDefined()) {
+                this.startVariables = startVariables;
+            }
+
+            state = State.STARTED;
+        }
+
+        public void add(final Item item) throws XPathException {
+            if (state != State.STARTED) {
+                throw new IllegalStateException("Window is not in the started state");
+            }
+
+            if (items == null) {
+                items = new ValueSequence(false);
+            }
+            items.add(item);
+        }
+
+        public void end(@Nullable final WindowContextVariables endVariables) {
+            if (state != State.STARTED) {
+                throw new IllegalStateException("Window is not in the started state");
+            }
+
+            if (endVariables != null && endVariables.isDefined()) {
+                this.endVariables = endVariables;
+            }
+
+            state = State.ENDED;
+        }
+    }
+
 }
