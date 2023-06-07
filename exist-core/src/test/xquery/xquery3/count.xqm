@@ -101,6 +101,21 @@ function ct:order-descending-index1-after() {
 };
 
 declare
+%test:assertEquals(
+        '<x index1="2" index2="1">b</x>',
+        '<x index1="1" index2="2">a</x>'
+    )
+function ct:order-alpha-ascending-indexes() {
+  for $x in ('a', 'b')
+  count $index1
+  let $remainder := $index1 mod 2
+  order by $remainder, $index1
+  count $index2
+  return
+    <x index1="{$index1}" index2="{$index2}">{$x}</x>
+};
+
+declare
     %test:assertEquals(
         '<x index1="1" index2="1">1</x>',
         '<x index1="2" index2="2">2</x>',
