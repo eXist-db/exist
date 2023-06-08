@@ -631,7 +631,7 @@ function groupby:issue-967() {
 };
 
 declare
-  %test:assertEquals("<result><working-time><person>Anton</person><other><person>Anton</person></other></working-time><working-time><person>Barbara</person><other><person>Barbara</person></other></working-time><working-time><person>Clara</person><other><person>Clara</person></other></working-time><working-time><person/><other/></working-time></result>")
+  %test:assertEquals("<result><working-time><person/><other/></working-time><working-time><person>Anton</person><other><person>Anton</person></other></working-time><working-time><person>Barbara</person><other><person>Barbara</person></other></working-time><working-time><person>Clara</person><other><person>Clara</person></other></working-time></result>")
 function groupby:atomize-group-vars() {
   let $data := document {
     <stream>
