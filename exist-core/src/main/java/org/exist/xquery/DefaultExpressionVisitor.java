@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire
@@ -32,6 +31,7 @@ import java.util.List;
  */
 public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
+    @Override
     public void visitPathExpr(PathExpr expression) {
         for (int i = 0; i < expression.getLength(); i++) {
             final Expression next = expression.getExpression(i);
@@ -39,10 +39,12 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         }
     }
 
+    @Override
     public void visitUserFunction(UserDefinedFunction function) {
         function.getFunctionBody().accept(this);
     }
 
+    @Override
     public void visitBuiltinFunction(Function function) {
         for (int i = 0; i < function.getArgumentCount(); i++) {
             final Expression arg = function.getArgument(i);
@@ -59,16 +61,19 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         call.getFunction().accept(this);
     }
 
+    @Override
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
         forExpr.getReturnExpression().accept(this);
     }
 
+    @Override
     public void visitLetExpression(LetExpr letExpr) {
         letExpr.getInputSequence().accept(this);
         letExpr.getReturnExpression().accept(this);
     }
 
+    @Override
     public void visitWindowExpression(final WindowExpr windowExpr) {
         windowExpr.getInputSequence().accept(this);
         windowExpr.getReturnExpression().accept(this);
@@ -96,6 +101,7 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         where.getReturnExpression().accept(this);
     }
 
+    @Override
     public void visitConditional(ConditionalExpression conditional) {
         conditional.getTestExpr().accept(this);
         conditional.getThenExpr().accept(this);
@@ -112,14 +118,17 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         }
     }
 
+    @Override
     public void visitPredicate(Predicate predicate) {
         predicate.getExpression(0).accept(this);
     }
 
+    @Override
     public void visitDocumentConstructor(DocumentConstructor constructor) {
     	constructor.getContent().accept(this);
     }
-    
+
+    @Override
     public void visitElementConstructor(ElementConstructor constructor) {
         constructor.getNameExpr().accept(this);
         if (constructor.getAttributes() != null) {
@@ -131,10 +140,12 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
             {constructor.getContent().accept(this);}
     }
 
+    @Override
     public void visitTextConstructor(DynamicTextConstructor constructor) {
         constructor.getContent().accept(this);
     }
 
+    @Override
     public void visitAttribConstructor(AttributeConstructor constructor) {
         for (final Iterator<Object> i = constructor.contentIterator(); i.hasNext(); ) {
             final Object next = i.next();
@@ -143,17 +154,20 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         }
     }
 
+    @Override
     public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
         constructor.getNameExpr().accept(this);
         if (constructor.getContentExpr() != null)
             {constructor.getContentExpr().accept(this);}
     }
 
+    @Override
     public void visitUnionExpr(Union union) {
         union.left.accept(this);
         union.right.accept(this);
     }
 
+    @Override
     public void visitIntersectionExpr(Intersect intersect) {
         intersect.left.accept(this);
         intersect.right.accept(this);

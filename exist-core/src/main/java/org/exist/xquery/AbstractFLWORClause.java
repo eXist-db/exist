@@ -30,7 +30,7 @@ import org.exist.xquery.value.Type;
  */
 public abstract class AbstractFLWORClause extends AbstractExpression implements FLWORClause {
 
-    protected LocalVariable firstVar = null;
+    protected LocalVariable firstVariable = null;
     private FLWORClause previousClause  = null;
     protected Expression returnExpr;
     private int actualReturnType = Type.ITEM;
@@ -41,9 +41,9 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
 
     @Override
     public LocalVariable createVariable(final QName name) throws XPathException {
-        final LocalVariable var = new LocalVariable(name);
-        firstVar = var;
-        return var;
+        final LocalVariable variable = new LocalVariable(name);
+        firstVariable = variable;
+        return variable;
     }
 
     @Override
@@ -58,7 +58,7 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     @Override
     public Sequence postEval(Sequence seq) throws XPathException {
         // reset variable after evaluation has completed
-        firstVar = null;
+        firstVariable = null;
         return seq;
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
 
     @Override
     public LocalVariable getStartVariable() {
-        return firstVar;
+        return firstVariable;
     }
 
     @Override
@@ -100,7 +100,7 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
-        firstVar = null;
+        firstVariable = null;
     }
 
     @Override

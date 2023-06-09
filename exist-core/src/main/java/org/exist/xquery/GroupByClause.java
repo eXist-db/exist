@@ -204,8 +204,7 @@ public class GroupByClause extends AbstractFLWORClause {
                 for (final GroupSpec spec : groupSpecs) {
                     final QName keyVarName = spec.getKeyVarName();
 
-                    if (spec.getGroupExpression() instanceof VariableReference) {
-                        final VariableReference groupExpressionVariableRef = ((VariableReference) spec.getGroupExpression());
+                    if (spec.getGroupExpression() instanceof VariableReference groupExpressionVariableRef) {
                         if (groupExpressionVariableRef.getName().equals(keyVarName)
                                 && !preGroupingTupleVariables.contains(keyVarName)) {
                             throw new XPathException(this, ErrorCodes.XQST0094, "Undeclared grouping variable: $" + keyVarName);
@@ -293,6 +292,7 @@ public class GroupByClause extends AbstractFLWORClause {
 
         @Override
         public boolean equals(final Sequence s1, final Sequence s2) {
+            // NOTE(AR): intentional reference equality check
             if (s1 == s2) {
                 return true;
             }
@@ -336,16 +336,16 @@ public class GroupByClause extends AbstractFLWORClause {
                     try {
                         hashCode = 31 * hashCode + collator.getCollationKey(v.getStringValue()).hashCode();
                     } catch (final XPathException e) {
-                        if (v instanceof AbstractDateTimeValue) {
-                            hashCode = 31 * hashCode + ((AbstractDateTimeValue)v).hashCodeWithTimeZone();  // best attempt fallback?
+                        if (v instanceof AbstractDateTimeValue adtv) {
+                            hashCode = 31 * hashCode + adtv.hashCodeWithTimeZone();  // best attempt fallback?
                         } else {
                             hashCode = 31 * hashCode + v.hashCode();  // best attempt fallback?
                         }
                     }
 
                 } else {
-                    if (v instanceof AbstractDateTimeValue) {
-                        hashCode = 31 * hashCode + ((AbstractDateTimeValue)v).hashCodeWithTimeZone();
+                    if (v instanceof AbstractDateTimeValue adtv) {
+                        hashCode = 31 * hashCode + adtv.hashCodeWithTimeZone();
                     } else {
                         hashCode = 31 * hashCode + v.hashCode();
                     }

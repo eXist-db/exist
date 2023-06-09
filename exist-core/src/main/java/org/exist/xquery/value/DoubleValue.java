@@ -161,14 +161,14 @@ public class DoubleValue extends NumericValue {
             comparison = () -> other.isNegativeInfinity() ? Constants.EQUAL : Constants.INFERIOR;
         } else if (other.isNegativeInfinity()) {
             comparison = () -> Constants.SUPERIOR;
-        } else if (other instanceof IntegerValue) {
-            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(((IntegerValue) other).value));
-        } else if (other instanceof DecimalValue) {
-            comparison = () -> BigDecimal.valueOf(value).compareTo(((DecimalValue) other).value);
-        } else if (other instanceof DoubleValue) {
-            comparison = () -> Double.compare(value, ((DoubleValue) other).value);
-        } else if (other instanceof FloatValue) {
-            comparison = () -> Double.compare(value, ((FloatValue) other).value);
+        } else if (other instanceof IntegerValue iv) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(iv.value));
+        } else if (other instanceof DecimalValue dv) {
+            comparison = () -> BigDecimal.valueOf(value).compareTo(dv.value);
+        } else if (other instanceof DoubleValue dv) {
+            comparison = () -> Double.compare(value, dv.value);
+        } else if (other instanceof FloatValue fv) {
+            comparison = () -> Double.compare(value, fv.value);
         } else {
             comparison = null;
         }

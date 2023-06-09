@@ -106,4 +106,9 @@ public class GroupSpec {
     public boolean equals(final Object obj) {
         return obj instanceof GroupSpec && ((GroupSpec)obj).keyVarName.equals(keyVarName);
     }
+
+    @Override
+    public int hashCode() {
+        return keyVarName.hashCode();
+    }
 }

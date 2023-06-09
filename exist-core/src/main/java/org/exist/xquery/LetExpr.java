@@ -235,16 +235,16 @@ public class LetExpr extends BindingExpression {
 
     @Override
     public Set<QName> getTupleStreamVariables() {
-        final Set<QName> vars = new HashSet<>();
+        final Set<QName> variables = new HashSet<>();
 
-        final QName var = getVariable();
-        vars.add(var);
+        final QName variable = getVariable();
+        variables.add(variable);
 
         final LocalVariable startVar = getStartVariable();
         if (startVar != null) {
-            vars.add(startVar.getQName());
+            variables.add(startVar.getQName());
         }
 
-        return vars;
+        return variables;
     }
 }
