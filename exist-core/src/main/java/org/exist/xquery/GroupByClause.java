@@ -206,10 +206,9 @@ public class GroupByClause extends AbstractFLWORClause {
 
                     if (spec.getGroupExpression() instanceof VariableReference) {
                         final VariableReference groupExpressionVariableRef = ((VariableReference) spec.getGroupExpression());
-                        if (groupExpressionVariableRef.getName().equals(keyVarName)) {
-                            if (!preGroupingTupleVariables.contains(keyVarName)) {
-                                throw new XPathException(this, ErrorCodes.XQST0094, "Undeclared grouping variable: $" + keyVarName);
-                            }
+                        if (groupExpressionVariableRef.getName().equals(keyVarName)
+                                && !preGroupingTupleVariables.contains(keyVarName)) {
+                            throw new XPathException(this, ErrorCodes.XQST0094, "Undeclared grouping variable: $" + keyVarName);
                         }
                     }
 

@@ -27,6 +27,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -144,12 +145,9 @@ public class WindowExpr extends BindingExpression {
         registerUpdateListener(in);
 
         // pre-eval the return expr if it is a FLWORClause and we are the outer for-loop
-        if (isOuterFor) {
-            if (returnExpr instanceof FLWORClause) {
-                in = ((FLWORClause) returnExpr).preEval(in);
-            }
+        if (isOuterFor && returnExpr instanceof FLWORClause) {
+            in = ((FLWORClause) returnExpr).preEval(in);
         }
-
 
         // when `window` is not null, we have started
         Window window = null;
@@ -405,12 +403,12 @@ public class WindowExpr extends BindingExpression {
         FLWORClause prev = getPreviousClause();
         while (prev != null) {
             switch (prev.getType()) {
-                case LET:
-                case FOR:
+                case LET, FOR -> {
                     return false;
-                case ORDERBY:
-                case GROUPBY:
+                }
+                case ORDERBY, GROUPBY -> {
                     return true;
+                }
             }
             prev = prev.getPreviousClause();
         }
@@ -593,43 +591,33 @@ public class WindowExpr extends BindingExpression {
     @Override
     public Set<QName> getTupleStreamVariables() {
         final Set<QName> vars = new HashSet<>();
-        if (varName != null) {
-            vars.add(varName);
-        }
 
-        if (windowStartCondition.getPreviousItem() != null) {
-            vars.add(windowStartCondition.getPreviousItem());
-        }
-        if (windowStartCondition.getCurrentItem() != null) {
-            vars.add(windowStartCondition.getCurrentItem());
-        }
-        if (windowStartCondition.getNextItem() != null) {
-            vars.add(windowStartCondition.getNextItem());
-        }
+        addQName(vars, varName);
+
+        addQName(vars, windowStartCondition.getPreviousItem());
+        addQName(vars, windowStartCondition.getCurrentItem());
+        addQName(vars, windowStartCondition.getNextItem());
 
         if (windowEndCondition != null) {
-            if (windowEndCondition.getPreviousItem() != null) {
-                vars.add(windowEndCondition.getPreviousItem());
-            }
-            if (windowEndCondition.getCurrentItem() != null) {
-                vars.add(windowEndCondition.getCurrentItem());
-            }
-            if (windowEndCondition.getNextItem() != null) {
-                vars.add(windowEndCondition.getNextItem());
-            }
+            addQName(vars, windowEndCondition.getPreviousItem());
+            addQName(vars, windowEndCondition.getCurrentItem());
+            addQName(vars, windowEndCondition.getNextItem());
         }
 
-        final QName var = getVariable();
-        if (var != null) {
-            vars.add(var);
-        }
+        addQName(vars, getVariable());
 
         final LocalVariable startVar = getStartVariable();
         if (startVar != null) {
-            vars.add(startVar.getQName());
+            addQName(vars, startVar.getQName());
         }
 
         return vars;
+    }
+
+    private void addQName(final Collection<QName> qnames, @Nullable final QName qname) {
+        if (qname != null) {
+            qnames.add(qname);
+        }
     }
 
     private static class Window {
