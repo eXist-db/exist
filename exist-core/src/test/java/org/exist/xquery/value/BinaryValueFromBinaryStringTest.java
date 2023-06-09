@@ -57,7 +57,7 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void cast_base64_to_hexBinary() throws XPathException, IOException {
+    public void castBase64ToHexBinary() throws XPathException, IOException {
 
         final String testData = "testdata";
         final String expectedResult = Hex.encodeHexString(testData.getBytes()).trim();
@@ -71,7 +71,7 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void cast_hexBinary_to_base64() throws XPathException, IOException {
+    public void castHexBinaryToBase64() throws XPathException, IOException {
         final String testData = "testdata";
         final String expectedResult = Base64.encodeBase64String(testData.getBytes()).trim();
 

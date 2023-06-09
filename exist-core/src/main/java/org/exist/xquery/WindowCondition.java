@@ -90,33 +90,15 @@ public class WindowCondition {
     @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
+
         if (this.only) {
             result.append("only");
         }
-        if (currentItem != null) {
-            if (result.length() != 0) {
-                result.append(' ');
-            }
-            result.append("current $").append(currentItem);
-        }
-        if (posVar != null) {
-            if (result.length() != 0) {
-                result.append(' ');
-            }
-            result.append("at $").append(posVar);
-        }
-        if (previousItem != null) {
-            if (result.length() != 0) {
-                result.append(' ');
-            }
-            result.append("previous $").append(previousItem);
-        }
-        if (nextItem != null) {
-            if (result.length() != 0) {
-                result.append(' ');
-            }
-            result.append("next $").append(nextItem);
-        }
+
+        appendVar(result, "current", currentItem);
+        appendVar(result, "at", posVar);
+        appendVar(result, "previous", previousItem);
+        appendVar(result, "next", nextItem);
 
         if (result.length() != 0) {
             result.append(' ');
@@ -124,5 +106,14 @@ public class WindowCondition {
         result.append("when ").append(whenExpression);
 
         return result.toString();
+    }
+
+    private void appendVar(final StringBuilder builder, final String expressionStr, @Nullable final QName varName) {
+        if (varName != null) {
+            if (!builder.isEmpty()) {
+                builder.append(' ');
+            }
+            builder.append(expressionStr).append(' ').append('$').append(varName);
+        }
     }
 }

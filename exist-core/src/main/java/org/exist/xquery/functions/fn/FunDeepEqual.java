@@ -392,6 +392,7 @@ public class FunDeepEqual extends CollatingFunction {
             b = findNextTextOrElementNode(b.getNextSibling());
         }
 
+        // NOTE(AR): intentional reference equality check
         if (a == b) {
             return Constants.EQUAL; // both null
         } else if (a == null) {
@@ -488,6 +489,7 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static int safeCompare(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
+        // NOTE(AR): intentional reference equality check
         if (a == b) {
             return Constants.EQUAL;
         }
