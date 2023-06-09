@@ -169,6 +169,8 @@ public class FunDeepEqual extends CollatingFunction {
      * @param collator a collator to use for the comparison, or null to use the default collator.
      *
      * @return a negative integer, zero, or a positive integer, if the first argument is less than, equal to, or greater than the second.
+     *
+     * @throws UnexpectedItemTypeException if an item has an unknown type.
      */
     public static int deepCompare(final Item item1, final Item item2, @Nullable final Collator collator) {
         if (item1 == item2) {
@@ -245,8 +247,7 @@ public class FunDeepEqual extends CollatingFunction {
                         }
                     }
 
-                    final int comparison = ValueComparison.compareAtomic(collator, av, bv);
-                    return comparison;
+                    return ValueComparison.compareAtomic(collator, av, bv);
                 } catch (final XPathException e) {
                     if (logger.isTraceEnabled()) {
                         logger.trace(e.getMessage());
@@ -260,6 +261,7 @@ public class FunDeepEqual extends CollatingFunction {
             }
             final NodeValue nva = (NodeValue) item1;
             final NodeValue nvb = (NodeValue) item2;
+            // NOTE(AR): intentional reference equality check
             if (nva == nvb) {
                 return Constants.EQUAL;
             }
@@ -279,8 +281,8 @@ public class FunDeepEqual extends CollatingFunction {
             final Node node2;
             switch (item1.getType()) {
                 case Type.DOCUMENT:
-                    node1 = nva instanceof Node ? (Node) nva : ((NodeProxy) nva).getOwnerDocument();
-                    node2 = nvb instanceof Node ? (Node) nvb : ((NodeProxy) nvb).getOwnerDocument();
+                    node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
+                    node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
                     return compareContents(node1, node2, collator);
 
                 case Type.ELEMENT:
@@ -312,11 +314,17 @@ public class FunDeepEqual extends CollatingFunction {
                     return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
 
                 default:
-                    throw new RuntimeException("unexpected item type " + Type.getTypeName(item1.getType()));
+                    throw new UnexpectedItemTypeException(item1);
             }
         } catch (final XPathException e) {
             logger.error(e.getMessage(), e);
             return Constants.INFERIOR;
+        }
+    }
+
+    public static class UnexpectedItemTypeException extends RuntimeException {
+        public UnexpectedItemTypeException(final Item item) {
+            super("Unexpected item type: " + Type.getTypeName(item.getType()));
         }
     }
 

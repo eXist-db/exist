@@ -54,10 +54,10 @@ public class ForExpr extends BindingExpression {
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
      * 
-     * @param var the name of the variable to set
+     * @param variable the name of the variable to set
      */
-    public void setPositionalVariable(final QName var) {
-        positionalVariable = var;
+    public void setPositionalVariable(final QName variable) {
+        positionalVariable = variable;
     }
 
 	/* (non-Javadoc)
@@ -274,9 +274,7 @@ public class ForExpr extends BindingExpression {
         return super.preEval(seq);
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-         */
+    @Override
     public void dump(ExpressionDumper dumper) {
         dumper.display("for ", line);
         dumper.startIndent();
@@ -302,6 +300,7 @@ public class ForExpr extends BindingExpression {
         dumper.endIndent().nl();
     }
 
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("for ");
@@ -326,34 +325,33 @@ public class ForExpr extends BindingExpression {
         return result.toString();
     }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.AbstractExpression#resetState()
-    */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
     }
 
-    public void accept(ExpressionVisitor visitor) {
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
         visitor.visitForExpression(this);
     }
 
     @Override
     public Set<QName> getTupleStreamVariables() {
-        final Set<QName> vars = new HashSet<>();
+        final Set<QName> variables = new HashSet<>();
         if (positionalVariable != null) {
-            vars.add(positionalVariable);
+            variables.add(positionalVariable);
         }
 
-        final QName var = getVariable();
-        if (var != null) {
-            vars.add(var);
+        final QName variable = getVariable();
+        if (variable != null) {
+            variables.add(variable);
         }
 
         final LocalVariable startVar = getStartVariable();
         if (startVar != null) {
-            vars.add(startVar.getQName());
+            variables.add(startVar.getQName());
         }
 
-        return vars;
+        return variables;
     }
 }

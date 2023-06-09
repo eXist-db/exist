@@ -145,8 +145,8 @@ public class WindowExpr extends BindingExpression {
         registerUpdateListener(in);
 
         // pre-eval the return expr if it is a FLWORClause and we are the outer for-loop
-        if (isOuterFor && returnExpr instanceof FLWORClause) {
-            in = ((FLWORClause) returnExpr).preEval(in);
+        if (isOuterFor && returnExpr instanceof FLWORClause flworClause) {
+            in = flworClause.preEval(in);
         }
 
         // when `window` is not null, we have started
@@ -257,7 +257,7 @@ public class WindowExpr extends BindingExpression {
                 } else {
                     endWhen = false;
                 }
-                if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (!windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
+                if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (windowEndCondition != null && !windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
 
                     if (window != null) {
 
@@ -502,12 +502,12 @@ public class WindowExpr extends BindingExpression {
     private static void setWindowConditionVariables(final WindowContextVariables windowConditionVariables, @Nullable final Item currentItem, final int idx, @Nullable final Item previousItem, @Nullable final Item nextItem) {
         // set the current-item
         if (windowConditionVariables.currentItem != null) {
-            windowConditionVariables.currentItem.setValue(currentItem.toSequence());
+            windowConditionVariables.currentItem.setValue(currentItem != null ? currentItem.toSequence() : Sequence.EMPTY_SEQUENCE);
         }
 
         // set the position
         if (windowConditionVariables.posVar != null) {
-            windowConditionVariables.posVar.setValue(new IntegerValue(idx + 1));
+            windowConditionVariables.posVar.setValue(new IntegerValue(idx + 1L));
         }
 
         // set the previous-item
@@ -590,28 +590,28 @@ public class WindowExpr extends BindingExpression {
 
     @Override
     public Set<QName> getTupleStreamVariables() {
-        final Set<QName> vars = new HashSet<>();
+        final Set<QName> variables = new HashSet<>();
 
-        addQName(vars, varName);
+        addQName(variables, varName);
 
-        addQName(vars, windowStartCondition.getPreviousItem());
-        addQName(vars, windowStartCondition.getCurrentItem());
-        addQName(vars, windowStartCondition.getNextItem());
+        addQName(variables, windowStartCondition.getPreviousItem());
+        addQName(variables, windowStartCondition.getCurrentItem());
+        addQName(variables, windowStartCondition.getNextItem());
 
         if (windowEndCondition != null) {
-            addQName(vars, windowEndCondition.getPreviousItem());
-            addQName(vars, windowEndCondition.getCurrentItem());
-            addQName(vars, windowEndCondition.getNextItem());
+            addQName(variables, windowEndCondition.getPreviousItem());
+            addQName(variables, windowEndCondition.getCurrentItem());
+            addQName(variables, windowEndCondition.getNextItem());
         }
 
-        addQName(vars, getVariable());
+        addQName(variables, getVariable());
 
-        final LocalVariable startVar = getStartVariable();
-        if (startVar != null) {
-            addQName(vars, startVar.getQName());
+        final LocalVariable startVariable = getStartVariable();
+        if (startVariable != null) {
+            addQName(variables, startVariable.getQName());
         }
 
-        return vars;
+        return variables;
     }
 
     private void addQName(final Collection<QName> qnames, @Nullable final QName qname) {

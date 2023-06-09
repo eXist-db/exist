@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.value;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
@@ -51,6 +53,8 @@ public abstract class AbstractSequence implements Sequence {
 
     protected boolean isEmpty = true;
     protected boolean hasOne = false;
+
+    private static final Logger BASE_LOG = LogManager.getLogger(AbstractSequence.class);
 
     @Override
     public Cardinality getCardinality() {
@@ -290,6 +294,43 @@ public abstract class AbstractSequence implements Sequence {
     }
 
     @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || this.getClass() != other.getClass()) {
+            return false;
+        }
+
+        final AbstractSequence that = (AbstractSequence) other;
+        if (this.isEmpty && that.isEmpty) {
+            return true;
+        }
+
+        try {
+            final SequenceIterator thisIterator = iterate();
+            final SequenceIterator thatIterator = that.iterate();
+            while (thisIterator.hasNext() && thatIterator.hasNext()) {
+                final Item thisItem = thisIterator.nextItem();
+                final Item thatItem = thatIterator.nextItem();
+                if (!thisItem.equals(thatItem)) {
+                    return false;
+                }
+            }
+
+            if (thisIterator.hasNext() || thatIterator.hasNext()) {
+                return false;
+            }
+
+        } catch (final XPathException e) {
+            BASE_LOG.error(e.getMessage(), e);
+            return false;  // best fallback option?
+        }
+
+        return true;
+    }
+
+    @Override
     public int hashCode() {
         int hashCode = 1;
         try {
@@ -299,6 +340,7 @@ public abstract class AbstractSequence implements Sequence {
                 hashCode = 31 * hashCode + item.hashCode();
             }
         } catch (final XPathException e) {
+            BASE_LOG.error(e.getMessage(), e);
             hashCode = super.hashCode();  // best fallback option?
         }
         return hashCode;

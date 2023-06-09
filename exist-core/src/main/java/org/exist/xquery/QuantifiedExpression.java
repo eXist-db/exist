@@ -202,19 +202,19 @@ public class QuantifiedExpression extends BindingExpression {
 
 	@Override
 	public Set<QName> getTupleStreamVariables() {
-		final Set<QName> vars = new HashSet<>();
+		final Set<QName> variables = new HashSet<>();
 
-		final QName var = getVariable();
-		if (var != null) {
-			vars.add(var);
+		final QName variable = getVariable();
+		if (variable != null) {
+			variables.add(variable);
 		}
 
 		final LocalVariable startVar = getStartVariable();
 		if (startVar != null) {
-			vars.add(startVar.getQName());
+			variables.add(startVar.getQName());
 		}
 
-		return vars;
+		return variables;
 	}
 
 }

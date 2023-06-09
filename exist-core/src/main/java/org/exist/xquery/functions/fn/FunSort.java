@@ -183,8 +183,9 @@ public class FunSort extends BasicFunction {
     }
 
     /**
-     * The function deep-less-than is defined as the boolean result of the expression:
+     * The function `deep-less-than` is defined as the boolean result of the expression:
      *
+     * <code>
      * if (fn:empty($A))
      *      then fn:exists($B)
      * else if (fn:empty($B))           See - https://xmlcom.slack.com/archives/C011NLXE4DU/p1659977972377909
@@ -196,6 +197,7 @@ public class FunSort extends BasicFunction {
      * else if (is-string($A[1]) and is-string($B[1])
      *      then fn:compare($A[1], $B[1], $C) lt 0
      * else $A[1] lt $B[1]
+     * </code>
      */
     private static boolean deepLessThan(final Sequence seq1, final Sequence seq2, @Nullable final Collator collator) throws XPathException {
       if (seq1.isEmpty()) {
