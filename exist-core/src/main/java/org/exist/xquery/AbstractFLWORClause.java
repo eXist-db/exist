@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.dom.QName.IllegalQNameException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
