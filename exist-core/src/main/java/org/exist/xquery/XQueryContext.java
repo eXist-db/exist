@@ -91,7 +91,7 @@ import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
-import org.exist.xquery.update.Modification;
+import org.exist.xquery.update.legacy.Modification;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
