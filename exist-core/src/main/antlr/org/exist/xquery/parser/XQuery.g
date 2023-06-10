@@ -2342,6 +2342,8 @@ reservedKeywords returns [String name]
     "after" { name = "after"; }
     |
     "before" { name = "before"; }
+    |
+    "copy" { name = "copy"; }
 	;
 
 /**
