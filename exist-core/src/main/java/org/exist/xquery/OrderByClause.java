@@ -113,6 +113,19 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("order by ");
+        for (int i = 0; i < orderSpecs.length; i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(orderSpecs[i]);
+        }
+        return builder.toString();
+    }
+
+    @Override
     public void accept(ExpressionVisitor visitor) {
         visitor.visitOrderByClause(this);
     }

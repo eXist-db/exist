@@ -197,6 +197,13 @@ public class CountClause extends AbstractFLWORClause {
         dumper.endIndent().nl();
     }
 
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+        result.append("count ");
+        result.append("$").append(this.varName);
+        return result.toString();
+    }
+
     @Override
     public void accept(final ExpressionVisitor visitor) {
         visitor.visitCountClause(this);
