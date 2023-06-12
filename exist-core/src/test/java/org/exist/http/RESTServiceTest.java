@@ -21,43 +21,60 @@
  */
 package org.exist.http;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Optional;
+import javax.xml.parsers.ParserConfigurationException;
+
+import com.googlecode.junittoolbox.ParallelRunner;
 import org.apache.commons.codec.binary.Base64;
 import org.eclipse.jetty.http.HttpStatus;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.ExistWebServer;
+import org.exist.test.TestConstants;
+import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
+import org.junit.runner.RunWith;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.transform.Source;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xml.sax.SAXException;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URLEncoder;
-import java.util.Optional;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.http.RESTLib.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -69,7 +86,7 @@ import static org.junit.Assume.assumeThat;
 public class RESTServiceTest {
 
     @ClassRule
-    public static final ExistRESTServer existRESTServer = new ExistRESTServer();
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private static final String XML_DATA = "<test>"
             + "<para>\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC</para>"
@@ -205,6 +222,14 @@ public class RESTServiceTest {
     private static final XmldbURI DELETE_METHOD_ENCODED_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-delete-method-encoded").append(ENCODED_NAME);
     private static final XmldbURI DELETE_METHOD_ENCODED_DOC_URI = DELETE_METHOD_ENCODED_COLLECTION_URI.append(ENCODED_NAME + ".xml");
 
+    private static String getServerUri() {
+        return "http://localhost:" + existWebServer.getPort() + "/rest";
+    }
+
+    private static String getServerUriRedirected() {
+        return "http://localhost:" + existWebServer.getPort();
+    }
+
     private static String getCollectionUri() {
         return getServerUri() + XmldbURI.ROOT_COLLECTION + "/test";
     }
@@ -219,14 +244,6 @@ public class RESTServiceTest {
 
     private static String getResourceWithDocTypeUri() {
         return getServerUri() + TEST_DOCTYPE_COLLECTION_URI.append(TEST_XML_DOC_WITH_DOCTYPE_URI);
-    }
-
-    private static String getServerUri() {
-        return existRESTServer.getServerUri();
-    }
-
-    private static String getServerUriRedirected() {
-        return existRESTServer.getServerUriRedirected();
     }
 
     private static String getResourceWithXmlDeclUri() {
@@ -1646,5 +1663,39 @@ try {
         } finally {
             connect.disconnect();
         }
+    }
+
+    private String readResponse(final InputStream is) throws IOException {
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(is, UTF_8))) {
+            String line;
+            final StringBuilder out = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            return out.toString();
+        }
+    }
+
+    private int parseResponse(final String data) throws IOException, SAXException, ParserConfigurationException {
+        final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
+        factory.setNamespaceAware(true);
+        final InputSource src = new InputSource(new StringReader(data));
+        final SAXParser parser = factory.newSAXParser();
+        final XMLReader reader = parser.getXMLReader();
+        final SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+        reader.parse(src);
+
+        final Document doc = adapter.getDocument();
+
+        final Element root = doc.getDocumentElement();
+        final String hits = root.getAttributeNS(Namespaces.EXIST_NS, "hits");
+        return Integer.parseInt(hits);
+    }
+
+    private HttpURLConnection getConnection(final String url) throws IOException {
+        final URL u = new URL(url);
+        return (HttpURLConnection) u.openConnection();
     }
 }
