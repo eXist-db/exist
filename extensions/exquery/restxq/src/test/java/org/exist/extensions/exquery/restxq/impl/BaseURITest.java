@@ -130,8 +130,13 @@ public class BaseURITest {
         return getServerUri() + "/rest";
     }
 
+    /**
+     * Upload RESTXQ resource functions prior to tests using them
+     *
+     * @throws IOException
+     */
     @BeforeClass
-    public static void storeResourceFunctions() throws IOException, ParserConfigurationException, SAXException {
+    public static void storeResourceFunctions() throws IOException {
         executor = Executor.newInstance()
             .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
             .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
@@ -189,15 +194,13 @@ public class BaseURITest {
     }
 
     /**
-     * Handler for this is installed in the Before section;
-     * check that base-uri is called, and check the result.
+     * XQUERY_BASE_URI_BODY function/script has been stored at XQUERY_BASE_URI_FILENAME in @Before
+     * check that the installed function using base-uri is called, and check the result.
      *
      * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws SAXException
      */
     @Test
-    public void baseURIRestXQ() throws IOException, ParserConfigurationException, SAXException {
+    public void baseURIRestXQ() throws IOException {
 
         var response = executor.execute(Request
             .Get(getRestXqUri() + "/base-uri")
@@ -208,9 +211,13 @@ public class BaseURITest {
         final var entity = response.getEntity();
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
         var result = readEntityElement(entity);
-        assertThat(result).contains("<result>xmldb:exist:///db/restxq/integration-test/restxq-tests-base-uri.xqm</result>");
+        assertThat(result).contains("<result>xmldb:///db/restxq/integration-test/restxq-tests-base-uri.xqm</result>");
     }
 
+    /**
+     * Execute XQuery as the _query parameter of a request
+     * @throws IOException
+     */
     @Test public void baseURIRestServerQuery() throws IOException {
 
         var query = URLEncoder.encode("static-base-uri()", StandardCharsets.UTF_8);
@@ -224,7 +231,7 @@ public class BaseURITest {
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
 
         var result = readEntityElement(entity);
-        assertThat(result).contains("<exist:value exist:type=\"xs:anyURI\">xmldb:exist:///db/restserver/baseuri</exist:value>");
+        assertThat(result).contains("<exist:value exist:type=\"xs:anyURI\">xmldb:///db/restserver/baseuri</exist:value>");
     }
 
     private static final String XML_QUERY_BASE_URI = """
@@ -232,11 +239,19 @@ public class BaseURITest {
       <tests>
           <static-base-uri>{ static-base-uri() }</static-base-uri>
           <does-sbu-exist>{ exists(static-base-uri()) }</does-sbu-exist>
-          <rel>{ resolve-uri('#foobaz', static-base-uri() ) }</rel>
-          <rel>{ resolve-uri('#foobar') }</rel>
+          <rel-ex>{ resolve-uri('#foobaz', static-base-uri() ) }</rel-ex>
+          <rel-impl>{ resolve-uri('#foobar') }</rel-impl>
       </tests>
       """;
 
+    /**
+     * Execute XML_QUERY_BASE_URI supplied as the body of a REST server put request
+     *
+     * 1. PUT the script
+     * 2. GET the result of executing the script
+     *
+     * @throws IOException
+     */
     @Test public void baseURIRestServerScript() throws IOException {
 
         final var credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
@@ -258,10 +273,10 @@ public class BaseURITest {
         final var entity = response.getEntity();
         final var content = readEntityElement(entity);
         assertThat(response.getStatusLine().getStatusCode()).as("Message was: %s", content).isEqualTo(SC_OK);
-        assertThat(content).contains("<static-base-uri>xmldb:exist:///db/test/test.xq</static-base-uri>");
+        assertThat(content).contains("<static-base-uri>xmldb:///db/test/test.xq</static-base-uri>");
         assertThat(content).contains("<does-sbu-exist>true</does-sbu-exist>");
-        assertThat(content).contains("<rel>xmldb:exist:///db/test/test.xq#foobaz</rel>");
-        assertThat(content).contains("<rel>#foobarXXXXXXXX</rel>");
+        assertThat(content).contains("<rel-impl>xmldb:/db/test/test.xq#foobar</rel-impl>");
+        assertThat(content).contains("<rel-ex>xmldb:/db/test/test.xq#foobaz</rel-ex>");
     }
 
 
@@ -271,7 +286,7 @@ public class BaseURITest {
       </query>
       """.formatted(XML_QUERY_BASE_URI);
 
-    @Test public void baseURIExtendedQuery() throws IOException, ParserConfigurationException, SAXException {
+    @Test public void baseURIExtendedQuery() throws IOException {
 
         final var credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
 
@@ -285,12 +300,7 @@ public class BaseURITest {
 
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         final var entity = response.getEntity();
-        assertThat(readEntityElement(entity)).contains("<static-base-uri>xmldb:exist:///db/test-rest-static-base-uri</static-base-uri>");
-    }
-
-    @Test public void baseURIRestServerExecute() {
-
-        fail();
+        assertThat(readEntityElement(entity)).contains("<static-base-uri>xmldb:///db/test-rest-static-base-uri</static-base-uri>");
     }
 
     static private String readEntityElement(final HttpEntity entity) throws IOException {

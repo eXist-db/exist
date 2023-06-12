@@ -36,13 +36,13 @@ public class BaseURI {
     /**
      * Convert the location of a resource function into an XML database URI
      * @param uri the location of the resource function
-     * @return the input uri with an xmldb:exist:// prefix (if it had no scheme before)
+     * @return the input uri with an xmldb:// prefix (if it had no scheme before)
      * if uri has a scheme (is absolute) the original uri is wrapped, unaltered
      */
     public static AnyURIValue dbBaseURIFromLocation(final URI uri) {
         if (uri.getScheme() == null) {
             try {
-                return new AnyURIValue(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + uri);
+                return new AnyURIValue(XmldbURI.XMLDB_SCHEME + "://" + uri);
             } catch (XPathException e) {
                 LOG.warn("Could not create {} URI from {}", XmldbURI.XMLDB_URI_PREFIX, uri);
                 throw new RuntimeException(e);
