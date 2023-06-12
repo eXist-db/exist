@@ -37,29 +37,20 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
 import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
-import org.exist.util.ExistSAXParserFactory;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_CREATED;
@@ -176,28 +167,9 @@ public class BaseURITest {
         ).returnResponse();
         assertEquals(SC_OK, response.getStatusLine().getStatusCode());
         assertNotNull(response.getEntity().getContent());
-        var result = parseEntityElement(response.getEntity());
-
-        // Validate that the resource functions have been set up as expected
-        assertThat(result.getNodeName()).isEqualTo("exist:result");
-        var children = result.getChildNodes();
-        Element functions = null;
-        for (int i = 0; i < children.getLength(); i++) {
-            var child = children.item(i);
-            if (child instanceof Element childElement && childElement.getTagName().equals("rest:resource-functions")) {
-                functions = childElement;
-            }
-        }
-        assertThat(functions).isNotNull();
-        children = functions.getChildNodes();
-        List<Element> resourceFunctions = new ArrayList<>();
-        for (int i = 0; i < children.getLength(); i++) {
-            var child = children.item(i);
-            if (child instanceof Element childElement && childElement.getTagName().equals("rest:resource-function")) {
-                resourceFunctions.add(childElement);
-            }
-        }
-        assertThat(resourceFunctions.size()).isEqualTo(2);
+        var result = readEntityElement(response.getEntity());
+        assertThat(result).contains("<rest:resource-function xquery-uri=\"/db/restxq/integration-test/restxq-tests-base-uri.xqm\">");
+        assertThat(result).contains("<rest:resource-function xquery-uri=\"/db/restxq/integration-test/restxq-tests-media.xqm\">");
     }
 
     @Ignore("Test the return of non XML media types - TBD")
@@ -212,8 +184,8 @@ public class BaseURITest {
 
         final var entity = response.getEntity();
         assertThat(entity.getContentType().getValue()).isEqualTo("application/json; charset=UTF-8");
-        var result = parseEntityElement(entity);
-        assertThat(result.getNodeName()).isEqualTo("success");
+        var result = readEntityElement(entity);
+        assertThat(result).contains("<success");
     }
 
     /**
@@ -235,9 +207,8 @@ public class BaseURITest {
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         final var entity = response.getEntity();
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
-        var result = parseEntityElement(entity);
-        assertThat(result.getNodeName()).isEqualTo("result");
-        assertThat(result.getTextContent()).isEqualTo("xmldb:exist:///db/restxq/integration-test/restxq-tests-base-uri.xqm");
+        var result = readEntityElement(entity);
+        assertThat(result).contains("<result>xmldb:exist:///db/restxq/integration-test/restxq-tests-base-uri.xqm</result>");
     }
 
     @Test public void baseURIRestServerQuery() throws IOException {
@@ -261,6 +232,7 @@ public class BaseURITest {
       <tests>
           <static-base-uri>{ static-base-uri() }</static-base-uri>
           <does-sbu-exist>{ exists(static-base-uri()) }</does-sbu-exist>
+          <rel>{ resolve-uri('#foobaz', static-base-uri() ) }</rel>
           <rel>{ resolve-uri('#foobar') }</rel>
       </tests>
       """;
@@ -286,7 +258,10 @@ public class BaseURITest {
         final var entity = response.getEntity();
         final var content = readEntityElement(entity);
         assertThat(response.getStatusLine().getStatusCode()).as("Message was: %s", content).isEqualTo(SC_OK);
-        assertThat(content).contains("<staticEEE-base-uri>xmldb:exist:///db/test-rest-static-base-uri</static-base-uri>");
+        assertThat(content).contains("<static-base-uri>xmldb:exist:///db/test/test.xq</static-base-uri>");
+        assertThat(content).contains("<does-sbu-exist>true</does-sbu-exist>");
+        assertThat(content).contains("<rel>xmldb:exist:///db/test/test.xq#foobaz</rel>");
+        assertThat(content).contains("<rel>#foobarXXXXXXXX</rel>");
     }
 
 
@@ -329,19 +304,5 @@ public class BaseURITest {
             }
         }
         return textBuilder.toString();
-    }
-
-    static private Element parseEntityElement(final HttpEntity entity) throws IOException, SAXException, ParserConfigurationException {
-        final var inputSource = new InputSource(entity.getContent());
-
-        final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
-        factory.setNamespaceAware(true);
-        final SAXParser parser = factory.newSAXParser();
-        final XMLReader reader = parser.getXMLReader();
-        final SAXAdapter adapter = new SAXAdapter();
-        reader.setContentHandler(adapter);
-        reader.parse(inputSource);
-
-        return adapter.getDocument().getDocumentElement();
     }
 }
