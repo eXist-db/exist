@@ -142,6 +142,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
         
         @Override
         public void documentUpdated(final DocumentImpl document, final int event) {
+			// no-op
         }
 
         @Override
@@ -156,6 +157,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 
         @Override
         public void debug() {
+			// no-op
         }
     }
 
@@ -191,6 +193,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	
 	@Override
 	public void remove(final Expression oldExpr) throws XPathException {
+		// no-op
 	}
 	
 	/* END RewritableExpression API */
