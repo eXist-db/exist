@@ -105,12 +105,12 @@ public class CountClause extends AbstractFLWORClause {
         FLWORClause prev = getPreviousClause();
         while (prev != null) {
             switch (prev.getType()) {
-                case LET:
-                case GROUPBY:
-                case FOR:
+                case LET, GROUPBY, FOR -> {
                     return false;
-                case ORDERBY:
-                   return isDescending(((OrderByClause) prev).getOrderSpecs());
+                }
+                case ORDERBY -> {
+                    return isDescending(((OrderByClause) prev).getOrderSpecs());
+                }
             }
             prev = prev.getPreviousClause();
         }
