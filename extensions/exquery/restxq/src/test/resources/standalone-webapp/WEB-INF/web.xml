@@ -82,6 +82,40 @@
         <load-on-startup>3</load-on-startup>
     </servlet>
 
+    <!--
+    XQueryServlet generates HTML from an XQuery file.
+-->
+    <servlet>
+        <servlet-name>XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>form-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>container-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>hide-error-messages</param-name>
+            <param-value>false</param-value>
+        </init-param>
+
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>XQueryURLRewrite</servlet-name>
         <url-pattern>/*</url-pattern>

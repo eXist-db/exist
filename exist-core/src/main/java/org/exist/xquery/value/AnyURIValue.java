@@ -34,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.BitSet;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -431,6 +432,56 @@ public class    AnyURIValue extends AtomicValue {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                     "failed to convert " + uri + " into an URI: " + e.getMessage(),
                     e);
+        }
+    }
+
+    final Pattern nonstandardScheme = Pattern.compile("(\\w+:)(\\w+:)?");
+
+    /**
+     * Resolution of AnyURI which resolves non-standard XmldbURI-style URIs
+     * as well as the URIs the rest of the world understands.
+     *
+     * @param relativeURI to resolve using this as the base
+     * @return a resolved AnyURI by the rules of resolution in
+     * {@link <a href="https://datatracker.ietf.org/doc/html/rfc3986">...</a>}
+     *
+     * @throws XPathException if the URIs are not valid or resolvable
+     */
+    public AnyURIValue resolve(AnyURIValue relativeURI) throws XPathException {
+        try {
+            var base = escape(uri);
+            var relative = new URI(escape(relativeURI.uri));
+            if (relative.isAbsolute()) {
+                return relativeURI;
+            }
+            var matcher = nonstandardScheme.matcher(base);
+            if (matcher.find(0) && matcher.groupCount() > 1 && matcher.group(2) != null) {
+                // rewrite non-standard URIs for resolution:
+                // "xmldb:exist:<path>" --> "xmldb:<path>"
+                // "https:<path>" is unchanged
+                var compliantBase = matcher.group(1) + base.substring(matcher.end(0));
+                var resolved = escape(new URI(compliantBase).resolve(relative).toString());
+                var resolvedMatcher = nonstandardScheme.matcher(resolved);
+                if (!resolvedMatcher.find(0)) {
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0009,
+                        "Failed to resolve " + relativeURI + " against " + this +
+                        ", resolved string " + resolved + " did not have the expected pattern " +
+                        nonstandardScheme);
+                }
+                if (matcher.group().startsWith(resolvedMatcher.group())) {
+                    // reverse the rewrite
+                    // "xmldb:<path>" --> "xmldb:exist:<path>"
+                    resolved = matcher.group() + resolved.substring(resolvedMatcher.end(0));
+                }
+                return new AnyURIValue(resolved);
+            }
+
+            return new AnyURIValue(escape(new URI(base).resolve(relative).toString()));
+
+        } catch (URISyntaxException e) {
+            throw new XPathException(getExpression(),
+                ErrorCodes.FORG0009,
+                "Failed to resolve " + relativeURI + " against " + this, e);
         }
     }
 

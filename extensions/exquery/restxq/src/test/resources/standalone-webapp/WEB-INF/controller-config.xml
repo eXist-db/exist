@@ -33,6 +33,13 @@
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
 
     <root pattern="/db.*" path="xmldb:exist:///db"/>
-    <root pattern=".*" path="xmldb:exist:///db/apps"/>
+    <!-- <root pattern=".*" path="xmldb:exist:///db/apps"/> -->
+
+    <!--
+    ++ Order is important. The following forward rule for XQuery resources has
+    ++ to be last in this document. Otherwise, all XQuery files would be immediately
+    ++ forwarded to the XQueryServlet without ever going through controllers.
+-->
+    <forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
 
 </configuration>

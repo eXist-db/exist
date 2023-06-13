@@ -56,7 +56,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class BaseURITest {
 
@@ -105,7 +106,13 @@ public class BaseURITest {
                 %rest:GET
                 %rest:path("/base-uri")
             function ex:base-uri-using-restxq() {
-                <result>{static-base-uri()}</result>
+                <result>
+                  <static>{static-base-uri()}</static>
+                  <exists>{ exists(static-base-uri()) }</exists>
+                  <resolve-explicit>{ resolve-uri('#foobaz', static-base-uri() ) }</resolve-explicit>
+                  <resolve-implicit>{ resolve-uri('#foobar') }</resolve-implicit>
+                  <resolve-path>{ resolve-uri('path/to/file#foobar') }</resolve-path>
+                </result>
             };
             """;
 
@@ -211,7 +218,12 @@ public class BaseURITest {
         final var entity = response.getEntity();
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
         var result = readEntityElement(entity);
-        assertThat(result).contains("<result>xmldb:///db/restxq/integration-test/restxq-tests-base-uri.xqm</result>");
+        assertThat(result).contains("<static>xmldb:exist://" +TEST_COLLECTION + "/" + XQUERY_BASE_URI_FILENAME +
+            "</static>");
+        assertThat(result).contains("<exists>true</exists>");
+        assertThat(result).contains("<resolve-explicit>xmldb:exist:" + TEST_COLLECTION + "/" + XQUERY_BASE_URI_FILENAME + "#foobaz</resolve-explicit>");
+        assertThat(result).contains("<resolve-implicit>xmldb:exist:" + TEST_COLLECTION + "/" + XQUERY_BASE_URI_FILENAME + "#foobar</resolve-implicit>");
+        assertThat(result).contains("<resolve-path>xmldb:exist:" + TEST_COLLECTION + "/path/to/file#foobar</resolve-path>");
     }
 
     /**
@@ -231,16 +243,16 @@ public class BaseURITest {
         assertThat(entity.getContentType().getValue()).isEqualTo("application/xml; charset=UTF-8");
 
         var result = readEntityElement(entity);
-        assertThat(result).contains("<exist:value exist:type=\"xs:anyURI\">xmldb:///db/restserver/baseuri</exist:value>");
+        assertThat(result).contains("<exist:value exist:type=\"xs:anyURI\">xmldb:exist:///db/restserver/baseuri</exist:value>");
     }
 
     private static final String XML_QUERY_BASE_URI = """
       xquery version "3.1";
       <tests>
           <static-base-uri>{ static-base-uri() }</static-base-uri>
-          <does-sbu-exist>{ exists(static-base-uri()) }</does-sbu-exist>
-          <rel-ex>{ resolve-uri('#foobaz', static-base-uri() ) }</rel-ex>
-          <rel-impl>{ resolve-uri('#foobar') }</rel-impl>
+          <exists>{ exists(static-base-uri()) }</exists>
+          <resolve-explicit>{ resolve-uri('#foobaz', static-base-uri() ) }</resolve-explicit>
+          <resolve-implicit>{ resolve-uri('#foobar') }</resolve-implicit>
       </tests>
       """;
 
@@ -273,10 +285,10 @@ public class BaseURITest {
         final var entity = response.getEntity();
         final var content = readEntityElement(entity);
         assertThat(response.getStatusLine().getStatusCode()).as("Message was: %s", content).isEqualTo(SC_OK);
-        assertThat(content).contains("<static-base-uri>xmldb:///db/test/test.xq</static-base-uri>");
-        assertThat(content).contains("<does-sbu-exist>true</does-sbu-exist>");
-        assertThat(content).contains("<rel-impl>xmldb:/db/test/test.xq#foobar</rel-impl>");
-        assertThat(content).contains("<rel-ex>xmldb:/db/test/test.xq#foobaz</rel-ex>");
+        assertThat(content).contains("<static-base-uri>xmldb:exist:///db/test/test.xq</static-base-uri>");
+        assertThat(content).contains("<exists>true</exists>");
+        assertThat(content).contains("<resolve-implicit>xmldb:exist:/db/test/test.xq#foobar</resolve-implicit>");
+        assertThat(content).contains("<resolve-explicit>xmldb:exist:/db/test/test.xq#foobaz</resolve-explicit>");
     }
 
 
@@ -300,7 +312,33 @@ public class BaseURITest {
 
         assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
         final var entity = response.getEntity();
-        assertThat(readEntityElement(entity)).contains("<static-base-uri>xmldb:///db/test-rest-static-base-uri</static-base-uri>");
+        assertThat(readEntityElement(entity)).contains("<static-base-uri>xmldb:exist:///db/test-rest-static-base-uri</static-base-uri>");
+    }
+
+    @Test public void baseURIXQueryServlet() throws IOException {
+
+        final var credentials = Base64.encodeBase64String("admin:".getBytes(UTF_8));
+
+        var response = executor.execute(Request
+            .Get(getServerUri() + "/dir1/base-uri-xqueryservlet.xqy")
+            .addHeader(new BasicHeader("Authorization", "Basic " + credentials))
+            .addHeader(new BasicHeader("Accept", "*/*"))
+        ).returnResponse();
+
+        final var entity = response.getEntity();
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(SC_OK);
+        final var content = readEntityElement(entity);
+        // The static-base-uri is the DB root URI, not a subpath - as we are executing an external file, this seems reasonable
+        //assertThat(content).contains("<static-base-uri>xmldb:exist:///db</static-base-uri>");
+        assertThat(content).contains("<static-base-uri>file:/");
+        assertThat(content).contains("/dir1/base-uri-xqueryservlet.xqy</static-base-uri>");
+        assertThat(content).contains("<does-sbu-xqs-exist>true</does-sbu-xqs-exist>");
+        assertThat(content).contains("<resolve-implicit>file:/");
+        assertThat(content).contains("/dir1/base-uri-xqueryservlet.xqy#foobar</resolve-implicit>");
+        assertThat(content).contains("<resolve-explicit>file:/");
+        assertThat(content).contains("/dir1/base-uri-xqueryservlet.xqy#foobaz</resolve-explicit>");
+        assertThat(content).contains("<resolve-path>file:/");
+        assertThat(content).contains("/dir1/path/to/file#foobar</resolve-path>");
     }
 
     static private String readEntityElement(final HttpEntity entity) throws IOException {
