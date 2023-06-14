@@ -83,8 +83,8 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 
     @Override
     public Sequence postEval(Sequence seq) throws XPathException {
-        if (returnExpr instanceof FLWORClause) {
-            seq = ((FLWORClause)returnExpr).postEval(seq);
+        if (returnExpr instanceof FLWORClause flworClause) {
+            seq = flworClause.postEval(seq);
         }
         return super.postEval(seq);
     }

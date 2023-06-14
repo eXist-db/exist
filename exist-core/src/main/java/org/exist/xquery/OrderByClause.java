@@ -95,8 +95,8 @@ public class OrderByClause extends AbstractFLWORClause {
         orderedResult.sort();
         Sequence result = orderedResult;
 
-        if (getReturnExpression() instanceof FLWORClause) {
-            result = ((FLWORClause) getReturnExpression()).postEval(result);
+        if (getReturnExpression() instanceof FLWORClause flworClause) {
+            result = flworClause.postEval(result);
         }
         return super.postEval(result);
     }

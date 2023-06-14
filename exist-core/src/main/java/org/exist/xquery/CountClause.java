@@ -111,8 +111,8 @@ public class CountClause extends AbstractFLWORClause {
                 case ORDERBY -> {
                     return isDescending(((OrderByClause) prev).getOrderSpecs());
                 }
+                default -> prev = prev.getPreviousClause();
             }
-            prev = prev.getPreviousClause();
         }
         return true;
     }
@@ -183,8 +183,8 @@ public class CountClause extends AbstractFLWORClause {
 
     @Override
     public Sequence postEval(Sequence seq) throws XPathException {
-        if (returnExpr instanceof FLWORClause) {
-            seq = ((FLWORClause)returnExpr).postEval(seq);
+        if (returnExpr instanceof FLWORClause flworClause) {
+            seq = flworClause.postEval(seq);
         }
         return super.postEval(seq);
     }

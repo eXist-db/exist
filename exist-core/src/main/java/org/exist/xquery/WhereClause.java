@@ -133,8 +133,8 @@ public class WhereClause extends AbstractFLWORClause {
     @Override
     public Sequence postEval(Sequence seq) throws XPathException {
         fastTrack = false;
-        if (returnExpr instanceof FLWORClause) {
-            seq = ((FLWORClause) returnExpr).postEval(seq);
+        if (returnExpr instanceof FLWORClause flworClause) {
+            seq = flworClause.postEval(seq);
         }
         return super.postEval(seq);
     }
