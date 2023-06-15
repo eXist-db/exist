@@ -22,7 +22,11 @@
 package org.exist.xquery.functions.fn;
 
 import com.ibm.icu.text.Collator;
-import org.exist.xquery.*;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 

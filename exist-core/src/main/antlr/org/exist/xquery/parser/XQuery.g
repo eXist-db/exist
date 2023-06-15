@@ -86,7 +86,7 @@ options {
 
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
-		this.lexer= lexer;
+		this.lexer = lexer;
 		setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
 
@@ -95,8 +95,8 @@ options {
 	}
 
 	public String getErrorMessage() {
-		StringBuilder buf= new StringBuilder();
-		for (Iterator i= exceptions.iterator(); i.hasNext();) {
+		StringBuilder buf = new StringBuilder();
+		for (Iterator i = exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');
 		}
@@ -104,6 +104,9 @@ options {
 	}
 
 	public Exception getLastException() {
+		if (!foundError) {
+			return null;
+		}
 		return (Exception) exceptions.get(exceptions.size() - 1);
 	}
 
@@ -112,7 +115,7 @@ options {
 	}
 
 	protected void handleException(Exception e) {
-		foundError= true;
+		foundError = true;
 		exceptions.add(e);
 	}
 }
