@@ -21,24 +21,20 @@
  */
 package org.exist.management.impl;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 /**
- * Interface SystemInfoMXBean
- *
- * @author wessels
- * @author ljo
+ * Interface for all eXist-db provided MBeans.
  */
-public interface SystemInfoMXBean extends ExistMBean {
-    String getProductName();
+public interface ExistMBean {
 
-    String getProductVersion();
-
-    String getProductBuild();
-
-    String getGitCommit();
-
-    String getOperatingSystem();
-
-    String getDefaultLocale();
-
-    String getDefaultEncoding();
+    /**
+     * Get the name of the MBean.
+     *
+     * @return the name of the mbean.
+     *
+     * @throws MalformedObjectNameException if the name cannot be constructed.
+     */
+    ObjectName getName() throws MalformedObjectNameException;
 }
