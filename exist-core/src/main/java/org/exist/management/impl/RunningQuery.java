@@ -29,13 +29,13 @@ import org.exist.xquery.XQueryWatchDog;
  */
 public class RunningQuery {
 
-    int id;
-    String sourceType;
-    String sourceKey;
-    boolean terminating;
-    String requestURI;
-    String thread;
-    long elapsed;
+    private final int id;
+    private final String sourceType;
+    private final String sourceKey;
+    private final boolean terminating;
+    private final String requestURI;
+    private final String thread;
+    private final long startTime;
 
     public RunningQuery(final XQueryWatchDog watchdog, final String requestURI) {
         this.id = watchdog.getContext().hashCode();
@@ -44,7 +44,7 @@ public class RunningQuery {
         this.terminating = watchdog.isTerminating();
         this.requestURI = requestURI;
         this.thread = watchdog.getRunningThread();
-        this.elapsed = System.currentTimeMillis() - watchdog.getStartTime();
+        this.startTime = watchdog.getStartTime();
     }
 
     public int getId() {
@@ -71,7 +71,11 @@ public class RunningQuery {
         return thread;
     }
 
+    public long getStartTime() {
+        return startTime;
+    }
+
     public long getElapsed() {
-        return elapsed;
+        return System.currentTimeMillis() - startTime;
     }
 }
