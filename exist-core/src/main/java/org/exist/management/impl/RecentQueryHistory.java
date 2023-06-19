@@ -29,14 +29,14 @@ import org.exist.storage.ProcessMonitor;
  */
 public class RecentQueryHistory {
 
-    private int idx;
-    private String sourceKey;
-    private int recentInvocationCount;
-    private long mostRecentExecutionTime;
-    private long mostRecentExecutionDuration;
-    private String requestURI;
+    private final int idx;
+    private final String sourceKey;
+    private final int recentInvocationCount;
+    private final long mostRecentExecutionTime;
+    private final long mostRecentExecutionDuration;
+    private final String requestURI;
 
-    public RecentQueryHistory(int idx, ProcessMonitor.QueryHistory queryHistory) {
+    public RecentQueryHistory(final int idx, final ProcessMonitor.QueryHistory queryHistory) {
         this.idx = idx;
         this.sourceKey = queryHistory.getSource();
         this.recentInvocationCount = queryHistory.getInvocationCount();
