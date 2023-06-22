@@ -21,18 +21,18 @@
  */
 package org.exist.management.impl;
 
-import java.util.List;
+import java.util.Map;
 
 public interface
 ProcessReportMXBean extends PerInstanceMBean {
 
-    List<Job> getScheduledJobs();
+    Map<String, Job> getScheduledJobs();
 
-    List<Job> getRunningJobs();
+    Map<String, Job> getRunningJobs();
 
-    List<RunningQuery> getRunningQueries();
+    Map<QueryKey, RunningQuery> getRunningQueries();
 
-    List<RecentQueryHistory> getRecentQueryHistory();
+    Map<QueryKey, RecentQueryHistory> getRecentQueryHistory();
 
     void killQuery(int id);
 
@@ -77,4 +77,54 @@ ProcessReportMXBean extends PerInstanceMBean {
     void setTrackRequestURI(boolean track);
 
     boolean getTrackRequestURI();
+
+    class QueryKey implements Comparable<QueryKey> {
+        private final int id;
+        private final String key;
+
+        public QueryKey(final int id, final String key) {
+            this.id = id;
+            this.key = key;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (other == null || getClass() != other.getClass()) {
+                return false;
+            }
+
+            QueryKey queryKey = (QueryKey) other;
+            if (id != queryKey.id) {
+                return false;
+            }
+            return key.equals(queryKey.key);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = id;
+            result = 31 * result + key.hashCode();
+            return result;
+        }
+
+        @Override
+        public int compareTo(final QueryKey other) {
+            if (other == null) {
+                return 1;
+            }
+
+            return key.compareTo(other.key);
+        }
+    }
 }

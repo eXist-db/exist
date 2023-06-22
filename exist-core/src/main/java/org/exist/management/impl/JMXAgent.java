@@ -70,7 +70,8 @@ public final class JMXAgent implements Agent {
 
     private void registerSystemMBeans() {
         try {
-            addMBean(new ObjectName(SystemInfo.OBJECT_NAME), new org.exist.management.impl.SystemInfo());
+            final SystemInfoMXBean systemInfoMXBean = new org.exist.management.impl.SystemInfo();
+            addMBean(systemInfoMXBean.getName(), systemInfoMXBean);
         } catch (final MalformedObjectNameException | DatabaseConfigurationException e) {
             LOG.warn("Exception while registering cache mbean.", e);
         }
