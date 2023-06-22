@@ -21,8 +21,10 @@
  */
 package org.exist.management.impl;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
@@ -66,30 +68,30 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public List<Job> getScheduledJobs() {
-        final List<Job> jobList = new ArrayList<>();
+    public Map<String, Job> getScheduledJobs() {
+        final Map<String, Job> jobList = new HashMap<>();
 
         final List<ScheduledJobInfo> jobs = scheduler.getScheduledJobs();
         for (final ScheduledJobInfo job : jobs) {
-            jobList.add(new Job(job.getName(), job.getGroup(), job.getTriggerExpression()));
+            jobList.put(job.getName(), new Job(job.getName(), job.getGroup(), job.getTriggerExpression()));
         }
         return jobList;
     }
 
     @Override
-    public List<Job> getRunningJobs() {
-        final List<Job> jobList = new ArrayList<>();
+    public Map<String, Job> getRunningJobs() {
+        final Map<String, Job> jobList = new HashMap<>();
 
         final ProcessMonitor.JobInfo[] jobs = processMonitor.runningJobs();
         for (final ProcessMonitor.JobInfo job : jobs) {
-            jobList.add(new Job(job.getThread().getName(), job.getAction(), job.getAddInfo().toString()));
+            jobList.put(job.getThread().getName(), new Job(job.getThread().getName(), job.getAction(), job.getAddInfo().toString()));
         }
         return jobList;
     }
 
     @Override
-    public List<RunningQuery> getRunningQueries() {
-        final List<RunningQuery> queries = new ArrayList<>();
+    public Map<QueryKey, RunningQuery> getRunningQueries() {
+        final Map<QueryKey, RunningQuery> queries = new TreeMap<>();
 
         final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
         for (final XQueryWatchDog watchdog : watchdogs) {
@@ -98,7 +100,8 @@ public class ProcessReport implements ProcessReportMXBean {
                 requestURI = ProcessMonitor.getRequestURI(watchdog);
             }
 
-            queries.add(new RunningQuery(watchdog, requestURI));
+            final RunningQuery runningQuery = new RunningQuery(watchdog, requestURI);
+            queries.put(new QueryKey(runningQuery.getId(), runningQuery.getSourceKey()), runningQuery);
         }
         return queries;
     }
@@ -119,12 +122,12 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public List<RecentQueryHistory> getRecentQueryHistory() {
-        final List<RecentQueryHistory> history = new ArrayList<>();
+    public Map<QueryKey, RecentQueryHistory> getRecentQueryHistory() {
+        final Map<QueryKey, RecentQueryHistory> history = new TreeMap<>();
         final QueryHistory[] queryHistories = processMonitor.getRecentQueryHistory();
-        int i = 0;
-        for (final QueryHistory queryHistory : queryHistories) {
-            history.add(new RecentQueryHistory(i++, queryHistory));
+        for (int i = 0; i < queryHistories.length; i++) {
+            final QueryHistory queryHistory = queryHistories[i];
+            history.put(new QueryKey(i, queryHistory.getSource()), new RecentQueryHistory(i, queryHistory));
         }
         return history;
     }

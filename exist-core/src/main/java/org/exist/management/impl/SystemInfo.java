@@ -26,6 +26,9 @@ import java.util.Locale;
 
 import org.exist.SystemProperties;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 /**
  * Class SystemInfo
  * 
@@ -35,6 +38,11 @@ import org.exist.SystemProperties;
 public class SystemInfo implements SystemInfoMXBean {
 
     public static final String OBJECT_NAME = "org.exist.management:type=SystemInfo";
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(OBJECT_NAME);
+    }
 
     @Override
     public String getProductName() {

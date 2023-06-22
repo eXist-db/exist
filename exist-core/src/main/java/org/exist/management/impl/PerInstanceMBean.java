@@ -22,10 +22,6 @@
 
 package org.exist.management.impl;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-public interface PerInstanceMBean {
+public interface PerInstanceMBean extends ExistMBean {
     String getInstanceId();
-    ObjectName getName() throws MalformedObjectNameException;
 }
