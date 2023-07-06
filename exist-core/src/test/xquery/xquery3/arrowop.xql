@@ -278,3 +278,24 @@ function ao:for-each-pair-with-contextitem () {
         => string-join()
 };
 
+(:~
+  check if CastExpression#toFuntion has correct cardinality check
+  see https://github.com/eXist-db/exist/issues/4971
+:)
+declare
+    %test:assertEmpty
+function ao:type-constructor-after-arrow-empty-sequence () {
+    () => xs:string()
+};
+
+declare
+    %test:assertEquals("1")
+function ao:type-constructor-after-arrow-integer () {
+    1 => xs:string()
+};
+
+declare
+    %test:assertError("XPTY0004")
+function ao:type-constructor-after-arrow-integer-sequence () {
+    (1,2) => xs:string()
+};
