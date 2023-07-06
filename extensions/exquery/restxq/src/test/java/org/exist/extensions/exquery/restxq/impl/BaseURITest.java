@@ -35,6 +35,9 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.test.ExistWebServer;
@@ -49,8 +52,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.http.HttpStatus.SC_CREATED;
@@ -116,6 +125,16 @@ public class BaseURITest {
             };
             """;
 
+    private static final String XMLRPC_BASE_URI_BODY =
+        """
+            <result>
+                <static>{static-base-uri()}</static>
+                <exists>{ exists(static-base-uri()) }</exists>
+                <resolve-implicit>{ resolve-uri('#foobar') }</resolve-implicit>
+                <resolve-path>{ resolve-uri('path/to/file#foobar') }</resolve-path>
+            </result>
+        """;
+
     private static Executor executor = null;
 
     @ClassRule
@@ -135,6 +154,10 @@ public class BaseURITest {
 
     private static String getRestServerUri() {
         return getServerUri() + "/rest";
+    }
+
+    private static String getXmlRpcUri() {
+        return getServerUri() + "/xmlrpc";
     }
 
     /**
@@ -341,6 +364,29 @@ public class BaseURITest {
         assertThat(content).contains("/dir1/path/to/file#foobar</resolve-path>");
     }
 
+    @Test public void baseURIXmlRpc() throws MalformedURLException, XmlRpcException {
+        final XmlRpcClient xmlrpc = getXmlRpcClient();
+
+        //sanity check
+        var result = xmlrpc.execute("hasCollection", List.of("/db"));
+        assertThat(result instanceof Boolean b).isTrue();
+
+        List<Object> params = new ArrayList<>();
+        params.add(XMLRPC_BASE_URI_BODY.getBytes(UTF_8));
+        params.add(new HashMap<>());
+        var handle = xmlrpc.execute("executeQuery", params);
+        assertThat(handle).isInstanceOf(Integer.class);
+
+        params.clear();
+        params.add(handle);
+        params.add(0);
+        params.add(new HashMap());
+        byte[] item = (byte[]) xmlrpc.execute("retrieve", params);
+        assertThat(item).isNotNull();
+        var s = new String(item, UTF_8);
+        assertThat(s).isNotEmpty();
+    }
+
     static private String readEntityElement(final HttpEntity entity) throws IOException {
         final var inputStream = entity.getContent();
         final var textBuilder = new StringBuilder();
@@ -353,4 +399,16 @@ public class BaseURITest {
         }
         return textBuilder.toString();
     }
+
+    static private XmlRpcClient getXmlRpcClient() throws MalformedURLException {
+        XmlRpcClient client = new XmlRpcClient();
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+        config.setEnabledForExtensions(true);
+        config.setServerURL(new URL(getXmlRpcUri()));
+        config.setBasicUserName("admin");
+        config.setBasicPassword("");
+        client.setConfig(config);
+        return client;
+    }
+
 }
