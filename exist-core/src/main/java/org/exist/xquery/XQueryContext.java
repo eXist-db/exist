@@ -465,7 +465,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         this(db, null, profiler);
     }
 
-    private XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler) {
+    public XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler) {
         this(db, configuration, profiler, true);
     }
 

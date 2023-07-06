@@ -97,7 +97,7 @@ public class GetData extends StrictRequestFunction {
             isRequest = request.getInputStream();
 
             //was there any POST content?
-            if (isRequest != null && isRequest.available() > 0) {
+            if (isRequest != null) {
                 // 1) determine if exists mime database considers this binary data
                 String contentType = request.getContentType();
                 if (contentType != null) {
@@ -123,7 +123,7 @@ public class GetData extends StrictRequestFunction {
                     try {
                         //we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
                         cache = FilterInputStreamCacheFactory.getCacheInstance(()
-                                -> (String) context.getBroker().getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), isRequest);
+                                -> (String) context.getConfiguration().getProperty(Configuration.BINARY_CACHE_CLASS_PROPERTY), isRequest);
                         is = new CachingFilterInputStream(cache);
 
                         //mark the start of the stream
