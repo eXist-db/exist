@@ -137,10 +137,6 @@ class RestXqServiceImpl extends AbstractRestXqService {
             //first, get the content of the request
             is = new CloseShieldInputStream(request.getInputStream());
 
-            if (is.available() <= 0) {
-                return null;
-            }
-
             //if marking is not supported, we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
             if (!is.markSupported()) {
                 cache = FilterInputStreamCacheFactory.getCacheInstance(() -> {
@@ -160,7 +156,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
         try {
 
             //was there any POST content?
-            if (is != null && is.available() > 0) {
+            if (is != null) {
                 String contentType = request.getContentType();
                 // 1) determine if exists mime database considers this binary data
                 if (contentType != null) {
@@ -214,8 +210,6 @@ class RestXqServiceImpl extends AbstractRestXqService {
                     }
                 }
             }
-        } catch (IOException e) {
-            throw new RestXqServiceException(e.getMessage());
         } finally {
 
             if (cache != null) {
