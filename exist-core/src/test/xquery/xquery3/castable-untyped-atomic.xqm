@@ -75,5 +75,3 @@ function ca:s-cast-castable($d) {
     let $n := $el/@n, $ncname := xs:NCName($n)
     return <result name="{$n}" nc="{$ncname castable as xs:NCName}"/>
 };
-
-
