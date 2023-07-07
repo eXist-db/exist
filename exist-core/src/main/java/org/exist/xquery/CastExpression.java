@@ -190,7 +190,7 @@ public class CastExpression extends AbstractExpression {
 	    try {
             final QName qname = QName.parse(context, typeName);
             final FunctionSignature signature = new FunctionSignature(qname);
-            final SequenceType argType = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE);
+            final SequenceType argType = new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE);
             signature.setArgumentTypes(new SequenceType[]{argType});
             signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
             return new FunctionWrapper(this, signature);
