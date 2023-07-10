@@ -528,11 +528,11 @@ class Options {
                     "Can not access '" + location + "'" + e.getMessage());
         }
         if (document != null && document.hasOne() && Type.subTypeOf(document.getItemType(), Type.NODE)) {
-            if (document instanceof NodeProxy proxy) {
-                return new DOMSource(proxy.getNode());
+            if (document instanceof NodeProxy) {
+                return new DOMSource(((NodeProxy) document).getNode());
             }
-            else if (document.itemAt(0) instanceof Node node) {
-                return new DOMSource(node);
+            else if (document.itemAt(0) instanceof Node) {
+                return new DOMSource((Node) document.itemAt(0));
             }
         }
         throw new XPathException(fnTransform, ErrorCodes.FODC0002,

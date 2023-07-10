@@ -222,7 +222,7 @@ public class Transform {
         xsltCompiler.setURIResolver((href, base) -> {
             try {
                 final URI hrefURI = URI.create(href);
-                if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
+                if ((!options.resolvedStylesheetBaseURI.isPresent()) && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
                     final XPathException resolutionException = new XPathException(fnTransform,
                             ErrorCodes.XTSE0165,
                             "transform using a relative href, \n" +
@@ -265,8 +265,8 @@ public class Transform {
 
         cause = e;
         while (cause != null) {
-            if (cause instanceof final net.sf.saxon.trans.XPathException xPathException) {
-                final StructuredQName from = xPathException.getErrorCodeQName();
+            if (cause instanceof net.sf.saxon.trans.XPathException) {
+                final StructuredQName from = ((net.sf.saxon.trans.XPathException) cause).getErrorCodeQName();
                 if (from != null) {
                     final QName errorCodeQName = new QName(from.getLocalPart(), from.getURI(), from.getPrefix());
                     final ErrorCodes.ErrorCode errorCode = new ErrorCodes.ErrorCode(errorCodeQName, cause.getMessage());
