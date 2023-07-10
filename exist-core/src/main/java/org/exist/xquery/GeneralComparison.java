@@ -245,21 +245,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (canOptimize(contextSequence)) {
+        if (contextQName != null && Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM) {
             return contextSequence;
-        } else {
-            return Sequence.EMPTY_SEQUENCE;
         }
+        return Sequence.EMPTY_SEQUENCE;
     }
-
-    @Override
-    public boolean canOptimize(final Sequence contextSequence) {
-        if (contextQName == null) {
-            return false;
-        }
-        return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
-    }
-
 
     public boolean optimizeOnSelf()
     {

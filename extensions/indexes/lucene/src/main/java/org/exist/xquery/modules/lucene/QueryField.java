@@ -101,16 +101,7 @@ public class QueryField extends Query implements Optimizable {
 
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (canOptimize(contextSequence)) {
-            return contextSequence;
-        } else {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-    }
-
-    @Override
-    public boolean canOptimize(final Sequence contextSequence) {
-    	return true;
+        return contextSequence;  // always optimizable!
     }
 
     public int getOptimizeAxis() {

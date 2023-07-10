@@ -444,24 +444,6 @@ public class Lookup extends Function implements Optimizable {
         return optimizables != null ? optimizables : Sequence.EMPTY_SEQUENCE;
     }
 
-    @Override
-    public boolean canOptimize(final Sequence contextSequence) {
-        if (contextQName == null) {
-            return false;
-        }
-        RangeIndexConfigElement rice = findConfiguration(contextSequence);
-        if (rice == null) {
-            canOptimize = false;
-            if (fallback instanceof Optimizable) {
-                return ((Optimizable)fallback).canOptimize(contextSequence);
-            }
-            return false;
-        }
-        usesCollation = rice.usesCollation();
-        canOptimize = true;
-        return canOptimize;
-    }
-
     private RangeIndexConfigElement findConfiguration(Sequence contextSequence) {
         NodePath path = contextPath;
         if (path == null) {
