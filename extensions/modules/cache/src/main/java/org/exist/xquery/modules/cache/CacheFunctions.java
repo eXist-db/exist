@@ -62,7 +62,7 @@ public class CacheFunctions extends BasicFunction {
             "Explicitly create a cache with a specific configuration",
             returns(Type.BOOLEAN, "true if the cache was created, false if the cache already exists"),
             FS_PARAM_CACHE_NAME,
-            param("config", Type.MAP, "A map with configuration for the cache. At present cache LRU and permission groups may be specified, for operations on the cache. `maximumSize` is optional and specifies the maximum number of entries. `expireAfterAccess` is optional and specifies the expiry period for infrequently accessed entries (in milliseconds). If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: map { \"maximumSize\": 1000, \"expireAfterAccess\": 120000, \"permissions\": map { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
+            param("config", Type.MAP, "A map with configuration for the cache. At present cache LRU and permission groups may be specified, for operations on the cache. `maximumSize` is optional and specifies the maximum number of entries. `expireAfterAccess` is optional and specifies the expiry period for infrequently accessed entries (in milliseconds). `expireAfterWrite` is optional and specifies the expiry period after the entry's creation, or the most recent replacement of its value (in milliseconds). If a permission group is not specified for an operation, then permissions are not checked for that operation. Should have the format: map { \"maximumSize\": 1000, \"expireAfterAccess\": 120000, \"expireAfterWrite\": 240000, \"permissions\": map { \"put-group\": \"group1\", \"get-group\": \"group2\", \"remove-group\": \"group3\", \"clear-group\": \"group4\"} }")
     );
 
     private static final String FS_NAMES_NAME = "names";
@@ -277,7 +277,16 @@ public class CacheFunctions extends BasicFunction {
             expireAfterAccess = Optional.empty();
         }
 
-        return new CacheConfig(permissions, maximumSize, expireAfterAccess);
+        final Sequence expireAfterWriteSeq = configMap.get(new StringValue(this, "expireAfterWrite"));
+        final Optional<Long> expireAfterWrite;
+        if(expireAfterWriteSeq != null && expireAfterWriteSeq.getItemCount() == 1) {
+            final long l = expireAfterWriteSeq.itemAt(0).toJavaObject(Long.class);
+            expireAfterWrite = Optional.of(l);
+        } else {
+            expireAfterWrite = Optional.empty();
+        }
+
+        return new CacheConfig(permissions, maximumSize, expireAfterAccess, expireAfterWrite);
     }
 
     private Optional<String> getStringValue(final String key, final AbstractMapType map) {
