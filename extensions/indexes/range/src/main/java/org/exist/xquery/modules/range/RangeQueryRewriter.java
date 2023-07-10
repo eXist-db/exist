@@ -21,7 +21,7 @@
  */
 package org.exist.xquery.modules.range;
 
-import org.exist.indexing.range.RangeIndex;
+import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
@@ -127,7 +127,7 @@ public class RangeQueryRewriter extends QueryRewriter {
 
     protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
         ArrayList<Expression> eqArgs = new ArrayList<>(2);
-        if (expression instanceof GeneralComparison comparison) {
+        if (expression instanceof final GeneralComparison comparison) {
             eqArgs.add(comparison.getLeft());
             eqArgs.add(comparison.getRight());
             Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
@@ -136,9 +136,9 @@ public class RangeQueryRewriter extends QueryRewriter {
                 return func;
             }
 
-        } else if (expression instanceof InternalFunctionCall fcall) {
+        } else if (expression instanceof final InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
-            if (function != null && function instanceof Lookup) {
+            if (function instanceof Lookup) {
                 final RangeIndex.Operator operator = RangeIndex.Operator.getByName(function.getName().getLocalPart());
                 eqArgs.add(function.getArgument(0));
                 eqArgs.add(function.getArgument(1));
