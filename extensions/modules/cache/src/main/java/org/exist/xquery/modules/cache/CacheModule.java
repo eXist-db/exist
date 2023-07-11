@@ -71,6 +71,7 @@ public class CacheModule extends AbstractInternalModule {
     private static final String PARAM_NAME_ENABLE_LAZY_CREATION = "enableLazyCreation";
     private static final String PARAM_NAME_LAZY_MAXIMUM_SIZE = "lazy.maximumSize";
     private static final String PARAM_NAME_LAZY_EXPIRE_AFTER_ACCESS = "lazy.expireAfterAccess";
+    private static final String PARAM_NAME_LAZY_EXPIRE_AFTER_WRITE = "lazy.expireAfterWrite";
     private static final String PARAM_NAME_LAZY_PUT_GROUP = "lazy.putGroup";
     private static final String PARAM_NAME_LAZY_GET_GROUP = "lazy.getGroup";
     private static final String PARAM_NAME_LAZY_REMOVE_GROUP = "lazy.removeGroup";
@@ -78,6 +79,7 @@ public class CacheModule extends AbstractInternalModule {
 
     private static final long DEFAULT_LAZY_MAXIMUM_SIZE = 128;  // 128 items
     private static final long DEFAULT_LAZY_EXPIRE_AFTER_ACCESS = 1000 * 60 * 5;  // 5 minutes
+    private static final long DEFAULT_LAZY_EXPIRE_AFTER_WRITE = 1000 * 60 * 5;  // 5 minutes
 
     static final Map<String, Cache> caches = new ConcurrentHashMap<>();
 
@@ -167,8 +169,18 @@ public class CacheModule extends AbstractInternalModule {
                     }
                 });
 
+        final Optional<Long> expireAfterWrite = getFirstString(parameters, PARAM_NAME_LAZY_EXPIRE_AFTER_WRITE)
+                .map(s -> {
+                    try {
+                        return Long.parseLong(s);
+                    } catch (final NumberFormatException e) {
+                        LOG.warn("Unable to set {} to: {}. Using default: ", PARAM_NAME_LAZY_EXPIRE_AFTER_WRITE, s, DEFAULT_LAZY_EXPIRE_AFTER_WRITE);
+                        return DEFAULT_LAZY_EXPIRE_AFTER_ACCESS;
+                    }
+                });
 
-        return Optional.of(new CacheConfig(permissions, maximumSize, expireAfterAccess));
+
+        return Optional.of(new CacheConfig(permissions, maximumSize, expireAfterAccess, expireAfterWrite));
     }
 
     private static Optional<String> getFirstString(final Map<String, List<?>> parameters, final String paramName) {

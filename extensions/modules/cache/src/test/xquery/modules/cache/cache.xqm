@@ -33,6 +33,8 @@ declare variable $c:maximumSize := 5;
 declare variable $c:maximumSize-options := map { "maximumSize": $c:maximumSize };
 declare variable $c:expireAfterAccess := 1000;
 declare variable $c:expireAfterAccess-options := map { "expireAfterAccess": $c:expireAfterAccess };
+declare variable $c:expireAfterWrite := 1000;
+declare variable $c:expireAfterWrite-options := map { "expireAfterWrite": $c:expireAfterWrite };
 
 declare function c:_create-simple() {
     cache:create($c:cache-name, $c:simple-options)
@@ -44,6 +46,10 @@ declare function c:_create-maximumSize() {
 
 declare function c:_create-expireAfterAccess() {
     cache:create($c:cache-name, $c:expireAfterAccess-options)
+};
+
+declare function c:_create-expireAfterWrite() {
+    cache:create($c:cache-name, $c:expireAfterWrite-options)
 };
 
 declare function c:_populate($size as xs:integer) {
@@ -164,7 +170,22 @@ function c:exercise-expireAfterAccess() {
             c:_destroy(),
             c:_create-expireAfterAccess(),
             c:_populate(5),
-            util:wait(xs:integer(fn:ceiling($c:expireAfterAccess * 1.1))),
+            util:wait(xs:integer($c:expireAfterAccess * 1.1)),
+            c:_cleanup()
+        )
+    return
+        count(c:_keys())
+};
+
+declare
+    %test:assertEquals(0)
+function c:exercise-expireAfterWrite() {
+    let $setup := 
+        (
+            c:_destroy(),
+            c:_create-expireAfterWrite(),
+            c:_populate(5),
+            util:wait(xs:integer($c:expireAfterWrite * 1.1)),
             c:_cleanup()
         )
     return
