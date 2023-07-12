@@ -48,6 +48,7 @@ class Cache {
 
         config.getMaximumSize().map(cacheBuilder::maximumSize);
         config.getExpireAfterAccess().map(ms -> cacheBuilder.expireAfterAccess(ms, TimeUnit.MILLISECONDS));
+        config.getExpireAfterWrite().map(ms -> cacheBuilder.expireAfterWrite(ms, TimeUnit.MILLISECONDS));
 
         this.store = cacheBuilder.build();
 	}

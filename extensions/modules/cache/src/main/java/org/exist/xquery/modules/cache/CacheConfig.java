@@ -33,16 +33,19 @@ public class CacheConfig {
     private final Optional<Permissions> permissions;
     private final Optional<Long> maximumSize;
     private final Optional<Long> expireAfterAccess;
+    private final Optional<Long> expireAfterWrite;
 
     /**
      * @param permissions Any restrictions on cache operations
      * @param maximumSize The maximimum number of entries in the cache
      * @param expireAfterAccess The time in milliseconds after the entry is last accessed, that it should expire
+     * @param expireAfterWrite The time in milliseconds after the entry is last modified, that it should expire
      */
-    public CacheConfig(final Optional<Permissions> permissions, final Optional<Long> maximumSize, final Optional<Long> expireAfterAccess) {
+    public CacheConfig(final Optional<Permissions> permissions, final Optional<Long> maximumSize, final Optional<Long> expireAfterAccess, final Optional<Long> expireAfterWrite) {
         this.permissions = permissions;
         this.maximumSize = maximumSize;
         this.expireAfterAccess = expireAfterAccess;
+        this.expireAfterWrite = expireAfterWrite;
     }
 
     public Optional<Permissions> getPermissions() {
@@ -55,6 +58,10 @@ public class CacheConfig {
 
     public Optional<Long> getExpireAfterAccess() {
         return expireAfterAccess;
+    }
+
+    public Optional<Long> getExpireAfterWrite() {
+        return expireAfterWrite;
     }
 
     public static class Permissions {
