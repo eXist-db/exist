@@ -243,10 +243,15 @@ public class NodePath implements Comparable<NodePath> {
     public String toString() {
         final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < pos; i++) {
-        	buf.append("/");
+
+            if (!(SKIP.equals(components[i]) || (i > 0 && SKIP.equals(components[i - 1])))) {
+                buf.append("/");
+            }
+
             if (components[i].getNameType() == ElementValue.ATTRIBUTE) {
                 buf.append("@");
             }
+
             buf.append(components[i]);
         }
         return buf.toString();
