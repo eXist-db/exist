@@ -144,15 +144,15 @@ public class Lookup extends Function implements Optimizable {
     }
 
     private LocationStep contextStep = null;
-    protected QName contextQName = null;
-    protected int axis = Constants.UNKNOWN_AXIS;
+    private QName contextQName = null;
+    private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
-    protected boolean canOptimize = false;
-    protected boolean optimizeSelf = false;
-    protected boolean optimizeChild = false;
-    protected boolean usesCollation = false;
-    protected Expression fallback = null;
-    protected NodePath contextPath = null;
+    private boolean canOptimize = false;
+    private boolean optimizeSelf = false;
+    private boolean optimizeChild = false;
+    private boolean usesCollation = false;
+    private Expression fallback = null;
+    private NodePath contextPath;
 
     public Lookup(XQueryContext context, FunctionSignature signature) {
         this(context, signature, null);
