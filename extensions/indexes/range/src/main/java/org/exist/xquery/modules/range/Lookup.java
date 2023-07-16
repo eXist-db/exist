@@ -38,6 +38,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -134,7 +135,7 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
-    public static Lookup create(final XQueryContext context, final RangeIndex.Operator operator, final NodePath contextPath) {
+    public static @Nullable Lookup create(final XQueryContext context, final RangeIndex.Operator operator, final NodePath contextPath) {
         for (final FunctionSignature sig : signatures) {
             if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
@@ -143,29 +144,29 @@ public class Lookup extends Function implements Optimizable {
         return null;
     }
 
-    private LocationStep contextStep = null;
-    private QName contextQName = null;
+    @Nullable private LocationStep contextStep = null;
+    @Nullable private QName contextQName = null;
     private int axis = Constants.UNKNOWN_AXIS;
-    private NodeSet preselectResult = null;
+    @Nullable private NodeSet preselectResult = null;
     private boolean canOptimize = false;
     private boolean optimizeSelf = false;
     private boolean optimizeChild = false;
     private boolean usesCollation = false;
-    private Expression fallback = null;
-    private final NodePath contextPath;
+    @Nullable private Expression fallback = null;
+    @Nullable private final NodePath contextPath;
 
     public Lookup(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, null);
     }
 
-    private Lookup(final XQueryContext context, final FunctionSignature signature, final NodePath contextPath) {
+    private Lookup(final XQueryContext context, final FunctionSignature signature, @Nullable final NodePath contextPath) {
         super(context, signature);
         this.contextPath = contextPath;
     }
 
-    public void setFallback(Expression expression, int optimizeAxis) {
-        if (expression instanceof InternalFunctionCall) {
-            expression = ((InternalFunctionCall)expression).getFunction();
+    public void setFallback(@Nullable Expression expression, final int optimizeAxis) {
+        if (expression instanceof final InternalFunctionCall fcall) {
+            expression = fcall.getFunction();
         }
         this.fallback = expression;
         // we need to know the axis at this point. the optimizer will call
@@ -173,7 +174,7 @@ public class Lookup extends Function implements Optimizable {
         this.axis = optimizeAxis;
     }
 
-    public Expression getFallback() {
+    public @Nullable Expression getFallback() {
         return fallback;
     }
 
