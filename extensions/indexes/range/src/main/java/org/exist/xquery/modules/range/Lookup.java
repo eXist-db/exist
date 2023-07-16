@@ -134,8 +134,8 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
-    public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
-        for (FunctionSignature sig: signatures) {
+    public static Lookup create(final XQueryContext context, final RangeIndex.Operator operator, final NodePath contextPath) {
+        for (final FunctionSignature sig : signatures) {
             if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
             }
@@ -152,13 +152,13 @@ public class Lookup extends Function implements Optimizable {
     private boolean optimizeChild = false;
     private boolean usesCollation = false;
     private Expression fallback = null;
-    private NodePath contextPath;
+    private final NodePath contextPath;
 
-    public Lookup(XQueryContext context, FunctionSignature signature) {
+    public Lookup(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, null);
     }
 
-    private Lookup(XQueryContext context, FunctionSignature signature, NodePath contextPath) {
+    private Lookup(final XQueryContext context, final FunctionSignature signature, final NodePath contextPath) {
         super(context, signature);
         this.contextPath = contextPath;
     }
