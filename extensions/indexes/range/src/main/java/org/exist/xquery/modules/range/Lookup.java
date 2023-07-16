@@ -158,7 +158,7 @@ public class Lookup extends Function implements Optimizable {
         this(context, signature, null);
     }
 
-    public Lookup(XQueryContext context, FunctionSignature signature, NodePath contextPath) {
+    private Lookup(XQueryContext context, FunctionSignature signature, NodePath contextPath) {
         super(context, signature);
         this.contextPath = contextPath;
     }
