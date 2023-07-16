@@ -155,10 +155,24 @@ public class Lookup extends Function implements Optimizable {
     @Nullable private Expression fallback = null;
     @Nullable private final NodePath contextPath;
 
+    /**
+     * Constructor called via reflection from {@link Function#createFunction(XQueryContext, XQueryAST, Module, FunctionDef)}.
+     *
+     * @param context The XQuery Context.
+     * @param signature The signature of the Lookup function.
+     */
+    @SuppressWarnings("unused")
     public Lookup(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, null);
     }
 
+    /**
+     * Constructor called via {@link #create(XQueryContext, RangeIndex.Operator, NodePath)}.
+     *
+     * @param context The XQuery Context.
+     * @param signature The signature of the Lookup function.
+     * @param contextPath the node path of the optimization.
+     */
     private Lookup(final XQueryContext context, final FunctionSignature signature, @Nullable final NodePath contextPath) {
         super(context, signature);
         this.contextPath = contextPath;
