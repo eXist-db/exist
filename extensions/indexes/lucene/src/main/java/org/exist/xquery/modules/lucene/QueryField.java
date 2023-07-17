@@ -99,8 +99,9 @@ public class QueryField extends Query implements Optimizable {
         this.contextId = contextInfo.getContextId();
     }
 
-    public boolean canOptimize(Sequence contextSequence) {
-    	return true;
+    @Override
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        return contextSequence;  // always optimizable!
     }
 
     public int getOptimizeAxis() {

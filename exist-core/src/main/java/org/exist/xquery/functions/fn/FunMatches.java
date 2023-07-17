@@ -176,11 +176,12 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     }
 
     @Override
-    public boolean canOptimize(final Sequence contextSequence) {
-        if (contextQName == null) {
-            return false;
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (contextQName != null && Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING)) {
+            return contextSequence;
         }
-        return Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING);
+
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     @Override

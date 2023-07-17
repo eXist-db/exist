@@ -193,8 +193,12 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     @Override
-    public boolean canOptimize(Sequence contextSequence) {
-        return contextQName != null;
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        if (contextQName != null) {
+            return contextSequence;
+        } else {
+            return Sequence.EMPTY_SEQUENCE;
+        }
     }
 
     @Override

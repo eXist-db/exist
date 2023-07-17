@@ -359,8 +359,8 @@ public class FieldLookup extends Function implements Optimizable {
     }
 
     @Override
-    public boolean canOptimize(Sequence contextSequence) {
-        return true;
+    public Sequence canOptimizeSequence(final Sequence contextSequence) {
+        return contextSequence;  // always optimizable!
     }
 
     @Override

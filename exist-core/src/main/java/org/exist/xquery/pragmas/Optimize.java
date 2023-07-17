@@ -109,12 +109,19 @@ public class Optimize extends Pragma {
                 optimize = cachedOptimize;
             } else {
                 if (optimizables != null && optimizables.length > 0) {
-                    for (Optimizable optimizable : optimizables) {
-                        if (optimizable.canOptimize(contextSequence)) {
-                            optimize = true;
-                        } else {
+                    for (final Optimizable optimizable : optimizables) {
+                        final Sequence canBeOptimized = optimizable.canOptimizeSequence(contextSequence);
+                        if (canBeOptimized == null) {
                             optimize = false;
-                            break;
+                            break;  // exit for-each loop
+                        }
+                        if (canBeOptimized.getItemCount() == contextSequence.getItemCount()) {
+                            // everything in sequence can be optimized
+                            optimize = true;  // so far so good, head to next for-loop of `optimizable`
+                        } else {
+                            // nothing or only some bits can be optimized
+                            optimize = false;
+                            break;  // exit for-each loop
                         }
                     }
                 }
