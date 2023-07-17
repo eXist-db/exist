@@ -308,8 +308,6 @@ public interface Context {
      */
     boolean lockDocumentsOnLoad();
 
-    void addLockedDocument(DocumentImpl doc);
-
     void setShared(boolean shared);
 
     boolean isShared();

@@ -27,8 +27,8 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 public class ForceIndexUse extends Pragma {
-    public static final String LOCAL_NAME = "force-index-use";
-    public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA =  new QName(LOCAL_NAME, Namespaces.EXIST_NS, "exist");
+    public static final String FORCE_INDEX_USE_PRAGMA_LOCAL_NAME = "force-index-use";
+    public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA =  new QName(FORCE_INDEX_USE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
 	Expression expression;
 	boolean bailout = true;
