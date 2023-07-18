@@ -119,14 +119,14 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
         // check argumentTypes
         final SequenceType[] arguments = sig.getArgumentTypes();
         for (int i = 0; i < arguments.length; i++) {
-            final int atype = arguments[i].getPrimaryType();
-            final int btype = parameters[i].getPrimaryType();
+            final int argumentType = arguments[i].getPrimaryType();
+            final int parameterType = parameters[i].getPrimaryType();
             // ITEM is likely unspecified return type - catch error later
-            if (atype != Type.ITEM && !Type.subTypeOf(atype, btype)) {
+            if (argumentType != Type.ITEM && !Type.subTypeOf(argumentType, parameterType)) {
                 // throw
                 throw new XPathException(ErrorCodes.XPTY0004,
-                        "Type error: expected type: " + Type.getTypeName(btype)
-                                + "; got: " + Type.getTypeName(atype));
+                        "Type error: expected type: " + Type.getTypeName(parameterType)
+                                + "; got: " + Type.getTypeName(argumentType));
             }
         }
         return true;
@@ -134,9 +134,17 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
 
     private void arityMatches (final FunctionSignature sig) throws XPathException {
         if (arityUnspecified()) { return; }
-        if (sig.isOverloaded()) { return; }
-        // expected arity is specified and the reference is not isOverloaded
-        final int otherArity = sig.getArgumentCount();
+        final int otherArity;
+
+        if (sig.isOverloaded()) {
+            // concat#3 will not return the correct argument count but the number of
+            // argument types matches the concrete reference with three entries
+            otherArity = sig.getArgumentTypes().length;
+        } else {
+            // expected arity is specified and the reference is not isOverloaded
+            otherArity = sig.getArgumentCount();
+        }
+//        final int otherArity = sig.getArgumentCount();
         if (arity == otherArity) { return; }
         // arity mismatch
         throw new XPathException(ErrorCodes.XPTY0004,
