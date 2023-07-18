@@ -166,3 +166,18 @@ declare
 function hofs:type-constructor () {
     filter((0 to 1), xs:boolean(?))
 };
+
+(:~
+ : this was taken from XQTS:fn-for-each-pair-015
+ : allowed return values are
+    <any-of>
+      <error code="XPTY0004" />
+      <error code="XPST0005" />
+      <assert-empty/>
+    </any-of>
+ :)
+declare
+    %test:assertError("XPTY0004")
+function hofs:reference-to-overloaded-function-arity-mismatch () {
+    for-each-pair((), (), concat#3)
+};
