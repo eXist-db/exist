@@ -38,11 +38,11 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * Abstract base class for all built-in and user-defined functions.
- *
+ * <p>
  * Built-in functions just extend this class. A new function instance
  * will be created for each function call. Subclasses <b>have</b> to
  * provide a function signature to the constructor.
- *
+ * <p>
  * User-defined functions extend class {@link org.exist.xquery.UserDefinedFunction},
  * which is again a subclass of Function. They will not be called directly, but through a
  * {@link org.exist.xquery.FunctionCall} object, which checks the type and cardinality of
@@ -53,24 +53,12 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 public abstract class Function extends PathExpr {
 
     // Declare it in Namespaces instead? /ljo
-    public final static String BUILTIN_FUNCTION_NS =
-            "http://www.w3.org/2005/xpath-functions";
+    public final static String BUILTIN_FUNCTION_NS = "http://www.w3.org/2005/xpath-functions";
 
     /**
      * The module that declared the function.
      */
     protected Module parentModule;
-
-    /**
-     * The signature of the function.
-     */
-    private FunctionSignature mySignature;
-
-    /**
-     * The parent expression from which this function is called.
-     */
-    private Expression parent;
-
     /**
      * Flag to indicate if argument types are statically checked.
      * This is set to true by default (meaning: no further checks needed).
@@ -78,62 +66,43 @@ public abstract class Function extends PathExpr {
      * (unless overwritten), thus enforcing a check.
      */
     protected boolean argumentsChecked = true;
+    /**
+     * The signature of the function.
+     */
+    private FunctionSignature mySignature;
+    /**
+     * The parent expression from which this function is called.
+     */
+    private Expression parent;
 
     /**
      * Internal constructor. Subclasses should <b>always</b> call this and
      * pass the current context and their function signature.
      *
-     * @param context the xquery context.
+     * @param context   the xquery context.
      * @param signature the function signature.
      */
     protected Function(final XQueryContext context, final FunctionSignature signature) {
         super(context);
         this.mySignature = signature;
     }
-    /**
-     * Returns the module to which this function belongs.
-     *
-     * @return the parent module or null.
-     */
-    protected Module getParentModule() {
-        return parentModule;
-    }
-
-    @Override
-    public int returnsType() {
-        if (mySignature == null) {
-            return Type.ITEM;
-        } // Type is not known yet
-        if (mySignature.getReturnType() == null) {
-            throw new IllegalArgumentException("Return type for function " +
-                    mySignature.getName() + " is not defined");
-        }
-        return mySignature.getReturnType().getPrimaryType();
-    }
-
-    @Override
-    public Cardinality getCardinality() {
-        if (mySignature.getReturnType() == null) {
-            throw new IllegalArgumentException("Return type for function " +
-                    mySignature.getName() + " is not defined");
-        }
-        return mySignature.getReturnType().getCardinality();
-    }
 
     /**
      * Create a built-in function from the specified class.
      *
      * @param context the xquery context
-     * @param ast the ast node
-     * @param module the module from whence the function came
-     * @param def the function definition
-     *
+     * @param ast     the ast node
+     * @param module  the module from whence the function came
+     * @param def     the function definition
      * @return the created function or null if the class could not be initialized.
-     *
      * @throws XPathException if the function could not be created
      */
-    public static Function createFunction(final XQueryContext context, final XQueryAST ast,
-            final Module module, final FunctionDef def) throws XPathException {
+    public static Function createFunction(
+            final XQueryContext context,
+            final XQueryAST ast,
+            final Module module,
+            final FunctionDef def
+    ) throws XPathException {
         if (def == null) {
             throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
         }
@@ -176,18 +145,36 @@ public abstract class Function extends PathExpr {
         }
     }
 
+    /**
+     * Returns the module to which this function belongs.
+     *
+     * @return the parent module or null.
+     */
+    protected Module getParentModule() {
+        return parentModule;
+    }
+
     private void setParentModule(final Module parentModule) {
         this.parentModule = parentModule;
     }
 
-    /**
-     * Set the parent expression of this function, i.e. the
-     * expression from which the function is called.
-     *
-     * @param parent the parent expression
-     */
-    public void setParent(final Expression parent) {
-        this.parent = parent;
+    @Override
+    public int returnsType() {
+        if (mySignature == null) {
+            return Type.ITEM;
+        } // Type is not known yet
+        if (mySignature.getReturnType() == null) {
+            throw new IllegalArgumentException("Return type for function " + mySignature.getName() + " is not defined");
+        }
+        return mySignature.getReturnType().getPrimaryType();
+    }
+
+    @Override
+    public Cardinality getCardinality() {
+        if (mySignature.getReturnType() == null) {
+            throw new IllegalArgumentException("Return type for function " + mySignature.getName() + " is not defined");
+        }
+        return mySignature.getReturnType().getCardinality();
     }
 
     /**
@@ -201,25 +188,34 @@ public abstract class Function extends PathExpr {
     }
 
     /**
-     * Set the (static) arguments for this function from a list of expressions.
+     * Set the parent expression of this function, i.e. the
+     * expression from which the function is called.
      *
+     * @param parent the parent expression
+     */
+    public void setParent(final Expression parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * Set the (static) arguments for this function from a list of expressions.
+     * <p>
      * This will also trigger a check on the type and cardinality of the
      * passed argument expressions. By default, the method sets the
      * argumentsChecked property to false, thus triggering the analyze method to
      * perform a type check.
-     *
+     * <p>
      * Classes overwriting this method are typically optimized functions and will
      * handle type checks for arguments themselves.
      *
      * @param arguments the function arguments.
-     *
      * @throws XPathException if an error occurs setting the arguments
      */
     public void setArguments(final List<Expression> arguments) throws XPathException {
         if ((!mySignature.isOverloaded()) && arguments.size() != mySignature.getArgumentCount()) {
             throw new XPathException(this, ErrorCodes.XPST0017,
-                    "Number of arguments of function " + getName() + " doesn't match function signature (expected " +
-                            mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
+                    "Number of arguments of function " + getName() + " doesn't match function signature (expected "
+                            + mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
         }
         steps.clear();
 
@@ -233,15 +229,18 @@ public abstract class Function extends PathExpr {
     /**
      * Check the function arguments.
      *
-     * @param argument the argument
-     * @param argType the type of the argument if known, or null
+     * @param argument       the argument
+     * @param argType        the type of the argument if known, or null
      * @param argContextInfo the context info from analyzing the argument
-     * @param argPosition the position of the argument
-     *
+     * @param argPosition    the position of the argument
      * @throws XPathException if an error occurs when checking the arguments.
      */
-    protected void checkArgument(final Expression argument, @Nullable final SequenceType argType,
-            final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
+    protected void checkArgument(
+            final Expression argument,
+            @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo,
+            final int argPosition
+    ) throws XPathException {
         final Expression next = checkArgumentType(argument, argType, argContextInfo, argPosition);
         steps.set(argPosition - 1, next);
     }
@@ -250,17 +249,19 @@ public abstract class Function extends PathExpr {
      * Statically check an argument against the sequence type specified in
      * the signature.
      *
-     * @param argument the argument
-     * @param argType the type of the argument if known, or null
+     * @param argument       the argument
+     * @param argType        the type of the argument if known, or null
      * @param argContextInfo the context info from analyzing the argument
-     * @param argPosition the position of the argument
-     *
+     * @param argPosition    the position of the argument
      * @return The passed expression
-     *
      * @throws XPathException if an error occurs whilst checking the argument
      */
-    private Expression checkArgumentType(Expression argument, @Nullable final SequenceType argType,
-            final AnalyzeContextInfo argContextInfo, final int argPosition) throws XPathException {
+    private Expression checkArgumentType(
+            Expression argument,
+            @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo,
+            final int argPosition
+    ) throws XPathException {
         if (argType == null || argument instanceof Placeholder) {
             return argument;
         }
@@ -325,8 +326,11 @@ public abstract class Function extends PathExpr {
         return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
     }
 
-    protected boolean checkArgumentTypeCardinality(final Expression argument, @Nullable final SequenceType argType,
-            final int argPosition) throws XPathException {
+    protected boolean checkArgumentTypeCardinality(
+            final Expression argument,
+            @Nullable final SequenceType argType,
+            final int argPosition
+    ) throws XPathException {
         boolean cardinalityMatches = argument instanceof VariableReference
                 || argType.getCardinality() == Cardinality.ZERO_OR_MORE;
 
@@ -345,9 +349,13 @@ public abstract class Function extends PathExpr {
         return cardinalityMatches;
     }
 
-    protected Tuple2<Expression, Integer> looseCheckArgumentType(Expression argument,
-            @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
-            int returnType) {
+    protected Tuple2<Expression, Integer> looseCheckArgumentType(
+            Expression argument,
+            @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo,
+            final int argPosition,
+            int returnType
+    ) {
         if (Type.subTypeOf(argType.getPrimaryType(), Type.STRING)) {
             if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
                 argument = new Atomize(context, argument);
@@ -377,9 +385,13 @@ public abstract class Function extends PathExpr {
         return Tuple(argument, returnType);
     }
 
-    protected Tuple2<Expression, Integer> strictCheckArgumentType(Expression argument,
-            @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
-            int returnType) {
+    protected Tuple2<Expression, Integer> strictCheckArgumentType(
+            Expression argument,
+            @Nullable final SequenceType argType,
+            final AnalyzeContextInfo argContextInfo,
+            final int argPosition,
+            int returnType
+    ) {
 
         // if the required type is an atomic type, convert the argument to an atomic
         if (Type.subTypeOf(argType.getPrimaryType(), Type.ATOMIC)) {
@@ -425,8 +437,7 @@ public abstract class Function extends PathExpr {
         argumentsChecked = true;
     }
 
-    public Sequence[] getArguments(Sequence contextSequence, final Item contextItem)
-            throws XPathException {
+    public Sequence[] getArguments(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
@@ -443,7 +454,6 @@ public abstract class Function extends PathExpr {
      * argument list.
      *
      * @param pos the position of the argument
-     *
      * @return the expression.
      */
     public Expression getArgument(final int pos) {
@@ -552,8 +562,7 @@ public abstract class Function extends PathExpr {
         }
 
         @Override
-        public void analyze(final AnalyzeContextInfo contextInfo)
-                throws XPathException {
+        public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         }
 
         @Override
@@ -562,9 +571,9 @@ public abstract class Function extends PathExpr {
         }
 
         @Override
-        public Sequence eval(final Sequence contextSequence, final Item contextItem)
-                throws XPathException {
-            throw new XPathException(this, ErrorCodes.EXXQDY0001, "Internal error: function argument placeholder not expanded.");
+        public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+            throw new XPathException(this, ErrorCodes.EXXQDY0001,
+                    "Internal error: function argument placeholder not expanded.");
         }
 
         @Override
