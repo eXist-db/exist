@@ -281,8 +281,8 @@ public abstract class Function extends PathExpr {
                 argument = new DynamicNameCheck(context,
                         new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
             }
-            if (argType instanceof FunctionParameterFunctionSequenceType) {
-                return new FunctionTypeCheck(context, (FunctionParameterFunctionSequenceType) argType, argument);
+            if (argType instanceof final FunctionParameterFunctionSequenceType functionParameterType) {
+                return new FunctionTypeCheck(context, functionParameterType, argument);
             }
 
             return argument;
@@ -318,8 +318,8 @@ public abstract class Function extends PathExpr {
             argument = new DynamicNameCheck(context,
                     new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
         }
-        if (argType instanceof FunctionParameterFunctionSequenceType) {
-            return new FunctionTypeCheck(context, (FunctionParameterFunctionSequenceType) argType, argument);
+        if (argType instanceof final FunctionParameterFunctionSequenceType functionParameterType) {
+            return new FunctionTypeCheck(context, functionParameterType, argument);
         }
 
         return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
