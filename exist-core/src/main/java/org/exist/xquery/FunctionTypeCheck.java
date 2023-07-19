@@ -32,8 +32,8 @@ import org.exist.xquery.value.*;
  */
 public class FunctionTypeCheck extends AbstractExpression {
 
-    final private Expression expression;
-    final private FunctionParameterFunctionSequenceType requiredType;
+    private final Expression expression;
+    private final FunctionParameterFunctionSequenceType requiredType;
 
     public FunctionTypeCheck(XQueryContext context, final FunctionParameterFunctionSequenceType requiredType, Expression expr) {
         super(context);
@@ -52,26 +52,10 @@ public class FunctionTypeCheck extends AbstractExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
-    public Sequence eval (Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final Sequence seq = expression.eval(contextSequence, contextItem);
         return (requiredType.checkType(seq) ? seq : null);
     }
-
-//    private void check(Sequence result, Item item) throws XPathException {
-//        int type = item.getType();
-//        if (!(Type.subTypeOf(type, requiredType.getPrimaryType()))) {
-//            throw new XPathException(expression, ErrorCodes.XPTY0004,
-//                    Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
-//                                    ") is not a sub-type of " + Type.getTypeName(requiredType.getPrimaryType()));
-//
-//        }
-//        else {
-//            throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
-//                        Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-//                        item.getStringValue() + ")'");}
-//        }
-//        if (result != null) { result.add(item); }
-//    }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
@@ -84,7 +68,9 @@ public class FunctionTypeCheck extends AbstractExpression {
             dumper.display(", ");
         }
         expression.dump(dumper);
-        if (dumper.verbosity() > 1) { dumper.display("]"); }
+        if (dumper.verbosity() > 1) {
+            dumper.display("]");
+        }
     }
 
     @Override
@@ -102,6 +88,7 @@ public class FunctionTypeCheck extends AbstractExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#getDependencies()
      */
+    @Override
     public int getDependencies() {
         return expression.getDependencies();
     }
@@ -109,36 +96,45 @@ public class FunctionTypeCheck extends AbstractExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
+    @Override
     public void resetState(boolean postOptimization) {
         super.resetState(postOptimization);
         expression.resetState(postOptimization);
     }
 
+    @Override
     public void setContextDocSet(DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
         expression.setContextDocSet(contextSet);
     }
 
+    @Override
     public int getLine() {
         return expression.getLine();
     }
 
+    @Override
     public int getColumn() {
         return expression.getColumn();
     }
 
+    @Override
     public void accept(ExpressionVisitor visitor) {
         expression.accept(visitor);
     }
 
+    @Override
     public int getSubExpressionCount() {
         return 1;
     }
 
+    @Override
     public Expression getSubExpression(int index) {
-        if (index == 0) {return expression;}
+        if (index == 0) {
+            return expression;
+        }
 
-        throw new IndexOutOfBoundsException("Index: "+index+", Size: "+getSubExpressionCount());
+        throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + getSubExpressionCount());
     }
 
 }
