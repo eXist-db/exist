@@ -62,7 +62,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
         "$target-collection-uri. " + 
         XMLDBModule.COLLECTION_URI,
         new SequenceType[]{ ARG_SOURCE, ARG_TARGET },
-        new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE)),
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
 
         new FunctionSignature(
         new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -70,7 +70,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
         "into collection $target-collection-uri. " +
         XMLDBModule.COLLECTION_URI,
         new SequenceType[]{ ARG_SOURCE, ARG_TARGET, ARG_RESOURCE },
-        new SequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE))
+        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE))
     };
 
     public XMLDBMove(XQueryContext context, FunctionSignature signature) {
