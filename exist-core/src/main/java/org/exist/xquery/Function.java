@@ -104,16 +104,16 @@ public abstract class Function extends PathExpr {
             final FunctionDef def
     ) throws XPathException {
         if (def == null) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+            throw new XPathException(ast, ErrorCodes.EXXQST0001, "Class for function is null");
         }
         final Class<? extends Function> fclazz = def.getImplementingClass();
         if (fclazz == null) {
-            throw new XPathException(ast.getLine(), ast.getColumn(), "Class for function is null");
+            throw new XPathException(ast, ErrorCodes.EXXQST0001, "Class for function is null");
         }
 
         try {
 
-            Function function = null;
+            Function function;
             try {
                 // attempt for a constructor that takes 1 argument
                 final Constructor<? extends Function> cstr1 = fclazz.getConstructor(XQueryContext.class);
@@ -124,7 +124,7 @@ public abstract class Function extends PathExpr {
                     final Constructor<? extends Function> cstr2 = fclazz.getConstructor(XQueryContext.class, FunctionSignature.class);
                     function = cstr2.newInstance(context, def.getSignature());
                 } catch (final NoSuchMethodException nsme2) {
-                    throw new XPathException(ast.getLine(), ast.getColumn(), "Constructor not found");
+                    throw new XPathException(ast, ErrorCodes.EXXQST0001, "Constructor not found");
                 }
             }
 
@@ -140,8 +140,8 @@ public abstract class Function extends PathExpr {
             }
 
             LOG.debug(e.getMessage(), e);
-            throw new XPathException(ast.getLine(), ast.getColumn(),
-                    "Function implementation class " + fclazz.getName() + " not found", e);
+            throw new XPathException(ast, ErrorCodes.EXXQST0001,
+                    "Function implementation class " + fclazz.getName() + " not found");
         }
     }
 
@@ -457,7 +457,7 @@ public abstract class Function extends PathExpr {
      * @return the expression.
      */
     public Expression getArgument(final int pos) {
-        return getExpression(pos);
+        return getSubExpression(pos);
     }
 
     /**
