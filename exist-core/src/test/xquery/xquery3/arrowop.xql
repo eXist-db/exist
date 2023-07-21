@@ -277,4 +277,3 @@ function ao:for-each-pair-with-contextitem () {
         => for-each-pair((<a/>,<b/>,<a/>,<b/>), function ($a, $b) { node-name($a) || node-name($b) })
         => string-join()
 };
-
