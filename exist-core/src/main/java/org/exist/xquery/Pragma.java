@@ -25,17 +25,19 @@ import org.exist.dom.QName;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
+
 public abstract class Pragma {
 
     private QName qname;
-    private String contents;
+    private @Nullable String contents;
     private Expression expression;
     
-    public Pragma(QName qname, String contents) throws XPathException {
+    public Pragma(final QName qname, final @Nullable String contents) throws XPathException {
         this(null, qname, contents);
     }
     
-    public Pragma(final Expression expression, QName qname, String contents) throws XPathException {
+    public Pragma(final Expression expression, final QName qname, @Nullable final String contents) throws XPathException {
         this.expression = expression;
         this.qname = qname;
         this.contents = contents;
@@ -45,21 +47,21 @@ public abstract class Pragma {
         return expression;
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
     }
 
-    public Sequence eval(Sequence contextSequence, Item contextItem)
+    public Sequence eval(final Sequence contextSequence, @Nullable final Item contextItem)
     throws XPathException {
         return null;
     }
     
-    public abstract void before(XQueryContext context, Sequence contextSequence) throws XPathException;
+    public abstract void before(final XQueryContext context, final Sequence contextSequence) throws XPathException;
     
-    public abstract void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException;
+    public abstract void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException;
     
-    public abstract void after(XQueryContext context) throws XPathException;
+    public abstract void after(final XQueryContext context) throws XPathException;
     
-    public abstract void after(XQueryContext context, final Expression expression) throws XPathException;
+    public abstract void after(final XQueryContext context, final Expression expression) throws XPathException;
 
     protected String getContents() {
         return contents;
@@ -69,9 +71,10 @@ public abstract class Pragma {
         return qname;
     }
 
-    public void resetState(boolean postOptimization) {    
+    public void resetState(final boolean postOptimization) {
     }
 
+    @Override
     public String toString() {
         return "(# " + qname + ' ' + contents + "#)";
     }

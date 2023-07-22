@@ -102,16 +102,18 @@ public class LuceneConfig {
     	this.facetsConfig = other.facetsConfig;
     }
     
-    public boolean matches(NodePath path) {
+    public boolean matches(final NodePath path) {
         LuceneIndexConfig idxConf = paths.get(path.getLastComponent());
         while (idxConf != null) {
-            if (idxConf.match(path))
+            if (idxConf.match(path)) {
                 return true;
+            }
             idxConf = idxConf.getNext();
         }
-        for (LuceneIndexConfig config : wildcardPaths) {
-            if (config.match(path))
+        for (final LuceneIndexConfig config : wildcardPaths) {
+            if (config.match(path)) {
                 return true;
+            }
         }
         return false;
     }

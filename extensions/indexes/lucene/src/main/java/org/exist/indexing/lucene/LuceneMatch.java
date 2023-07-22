@@ -25,13 +25,8 @@ import org.apache.lucene.facet.Facets;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.ValueSequence;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 /**
  * Match class containing the score of a match and a reference to
@@ -39,13 +34,11 @@ import java.util.Map;
  */
 public class LuceneMatch extends Match {
 
-    private int luceneDocId = -1;
+    private final int luceneDocId;
     private float score = 0.0f;
     private final Query query;
 
-    private LuceneIndexWorker.LuceneFacets facets;
-
-    private Map<String, FieldValue[]> fields = null;
+    private final LuceneIndexWorker.LuceneFacets facets;
 
     LuceneMatch(final int contextId, final int luceneDocId, final NodeId nodeId, final Query query, final LuceneIndexWorker.LuceneFacets facets) {
         super(contextId, nodeId, null);
@@ -54,18 +47,17 @@ public class LuceneMatch extends Match {
         this.facets = facets;
     }
 
-    private LuceneMatch(LuceneMatch copy) {
+    private LuceneMatch(final LuceneMatch copy) {
         super(copy);
         this.score = copy.score;
         this.luceneDocId = copy.luceneDocId;
         this.query = copy.query;
         this.facets = copy.facets;
-        this.fields = copy.fields;
     }
 
     @Override
-    public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
-        return null;
+    public Match createInstance(final int contextId, final NodeId nodeId, @Nullable final String matchTerm) {
+        throw new UnsupportedOperationException("Not supported from Lucene Full-Text Index");
     }
 
     public int getLuceneDocId() {
@@ -90,7 +82,7 @@ public class LuceneMatch extends Match {
         return score;
     }
 
-    protected void setScore(float score) {
+    protected void setScore(final float score) {
         this.score = score;
     }
 
@@ -98,41 +90,14 @@ public class LuceneMatch extends Match {
         return this.facets.getFacets();
     }
 
-    public @Nullable
-    Sequence getField(String name, int type) throws XPathException {
-        if (fields == null) {
-            return null;
-        }
-        final FieldValue[] values = fields.get(name);
-        if (values.length == 1) {
-            return values[0].getValue(type);
-        }
-        final ValueSequence result = new ValueSequence(values.length);
-        for (FieldValue value: values) {
-            result.add(value.getValue(type));
-        }
-        return result;
-    }
-
     // DW: missing hashCode() ?
     @Override
-    public boolean equals(Object other) {
-        if (!(other instanceof LuceneMatch)) {
+    public boolean equals(final Object obj) {
+        if (obj instanceof LuceneMatch other) {
+            return getNodeId().equals(other.getNodeId())
+                    && query == (other).query;
+        } else {
             return false;
         }
-        LuceneMatch o = (LuceneMatch) other;
-        return (nodeId == o.nodeId || nodeId.equals(o.nodeId))
-                && query == ((LuceneMatch) other).query;
     }
-
-    @Override
-    public boolean matchEquals(Match other) {
-        return equals(other);
-    }
-
-    private interface FieldValue {
-
-        AtomicValue getValue(int type) throws XPathException;
-    }
-
 }

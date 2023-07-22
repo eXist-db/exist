@@ -37,7 +37,6 @@ import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * Processes all location path steps (like descendant::*, ancestor::XXX).

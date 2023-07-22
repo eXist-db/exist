@@ -65,7 +65,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private boolean hasOptimized = false;
 
-    public Optimizer(XQueryContext context) {
+    public Optimizer(final XQueryContext context) {
         this.context = context;
         final DBBroker broker = context.getBroker();
         this.rewriters = broker != null ? broker.getIndexController().getQueryRewriters(context) : Collections.emptyList();
@@ -117,14 +117,15 @@ public class Optimizer extends DefaultExpressionVisitor {
         if (optimize) {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
-            if (!(parent instanceof RewritableExpression)) {
-            	if (LOG.isTraceEnabled())
-            		{
-                        LOG.trace("Parent expression of step is not a PathExpr: {}", parent);}
+            if (!(parent instanceof final RewritableExpression path)) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Parent expression of step is not a PathExpr: {}", parent);
+                }
                 return;
             }
+
             hasOptimized = true;
-            final RewritableExpression path = (RewritableExpression) parent;
+
             try {
                 // Create the pragma
                 final ExtensionExpression extension = new ExtensionExpression(context);
@@ -137,9 +138,9 @@ public class Optimizer extends DefaultExpressionVisitor {
                 // Replace the old expression with the pragma
                 path.replace(locationStep, extension);
 
-                if (LOG.isTraceEnabled())
-                    {
-                        LOG.trace("Rewritten expression: {}", ExpressionDumper.dump(parent));}
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Rewritten expression: {}", ExpressionDumper.dump(parent));
+                }
             } catch (final XPathException e) {
                 LOG.warn("Failed to optimize expression: {}: {}", locationStep, e.getMessage(), e);
             }
@@ -154,16 +155,16 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    public void visitFilteredExpr(FilteredExpression filtered) {
+    @Override
+    public void visitFilteredExpr(final FilteredExpression filtered) {
         super.visitFilteredExpr(filtered);
 
         // check if filtered expression can be simplified:
         // handles expressions like //foo/(baz)[...]
-        if (filtered.getExpression() instanceof LocationStep) {
+        if (filtered.getExpression() instanceof final LocationStep step) {
             // single location step: simplify by directly attaching it to the parent path expression
-            final LocationStep step = (LocationStep) filtered.getExpression();
             final Expression parent = filtered.getParent();
-            if (parent instanceof RewritableExpression) {
+            if (parent instanceof final RewritableExpression rewritableParentExpression) {
                 final List<Predicate> preds = filtered.getPredicates();
                 final boolean optimizable = hasOptimizable(preds);
                 if (optimizable) {
@@ -171,7 +172,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                     for (Predicate pred : preds) {
                         step.addPredicate(pred);
                     }
-                    ((RewritableExpression) parent).replace(filtered, step);
+                    rewritableParentExpression.replace(filtered, step);
                     step.setParent(parent);
                     visitLocationStep(step);
                     return;
@@ -186,17 +187,18 @@ public class Optimizer extends DefaultExpressionVisitor {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
             final Expression parent = filtered.getParent();
-            if (!(parent instanceof RewritableExpression)) {
-            	if (LOG.isTraceEnabled())
-            		{
-                        LOG.trace("Parent expression: {} of step does not implement RewritableExpression", parent.getClass().getName());}
+            if (!(parent instanceof final RewritableExpression path)) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Parent expression: {} of step does not implement RewritableExpression", parent.getClass().getName());
+                }
                 return;
             }
-            if (LOG.isTraceEnabled())
-                {
-                    LOG.trace("Rewriting expression: {}", ExpressionDumper.dump(filtered));}
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Rewriting expression: {}", ExpressionDumper.dump(filtered));
+            }
+
             hasOptimized = true;
-            final RewritableExpression path = (RewritableExpression) parent;
+
             try {
                 // Create the pragma
                 final ExtensionExpression extension = new ExtensionExpression(context);
@@ -210,7 +212,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean hasOptimizable(List<Predicate> preds) {
+    private boolean hasOptimizable(final List<Predicate> preds) {
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
@@ -225,19 +227,21 @@ public class Optimizer extends DefaultExpressionVisitor {
         return false;
     }
 
-    public void visitAndExpr(OpAnd and) {
+    @Override
+    public void visitAndExpr(final OpAnd and) {
         if (predicates > 0) {
             // inside a filter expression, we can often replace a logical and with
             // a chain of filters, which can then be further optimized
             Expression parent = and.getParent();
             if (!(parent instanceof PathExpr)) {
-            	if (LOG.isTraceEnabled())
-            		{
-                        LOG.trace("Parent expression of boolean operator is not a PathExpr: {}", parent);}
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Parent expression of boolean operator is not a PathExpr: {}", parent);
+                }
                 return;
             }
-            PathExpr path;
-            Predicate predicate;
+
+            final PathExpr path;
+            final Predicate predicate;
             if (parent instanceof Predicate) {
                 predicate = (Predicate) parent;
                 path = predicate;
@@ -250,9 +254,10 @@ public class Optimizer extends DefaultExpressionVisitor {
                 }
                 predicate = (Predicate) parent;
             }
-            if (LOG.isTraceEnabled())
-                {
-                    LOG.trace("Rewriting boolean expression: {}", ExpressionDumper.dump(and));}
+
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Rewriting boolean expression: {}", ExpressionDumper.dump(and));
+            }
             hasOptimized = true;
             final LocationStep step = (LocationStep) predicate.getParent();
             final Predicate newPred = new Predicate(context);
@@ -265,7 +270,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-	public void visitOrExpr(OpOr or) {
+    @Override
+    public void visitOrExpr(final OpOr or) {
     	if (or.isRewritable()) {
         	or.getLeft().accept(this);
 			or.getRight().accept(this);
@@ -273,7 +279,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 	}
 
     @Override
-    public void visitGeneralComparison(GeneralComparison comparison) {
+    public void visitGeneralComparison(final GeneralComparison comparison) {
         // Check if the left operand is a path expression ending in a
         // text() step. This step is unnecessary and makes it hard
         // to further optimize the expression. We thus try to remove
@@ -292,7 +298,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         comparison.getRight().accept(this);
     }
 
-    public void visitPredicate(Predicate predicate) {
+    @Override
+    public void visitPredicate(final Predicate predicate) {
         ++predicates;
         super.visitPredicate(predicate);
         --predicates;
@@ -322,11 +329,11 @@ public class Optimizer extends DefaultExpressionVisitor {
                                 expression.accept(visitor);
                                 if (visitor.isInlineable()) {
                                     final Expression parent = ref.getParent();
-                                    if (parent instanceof RewritableExpression) {
+                                    if (parent instanceof final RewritableExpression parentRewritableExpression) {
                                         if (LOG.isDebugEnabled()) {
                                             LOG.debug("{} line {}: inlining variable {}", ref.getSource().toString(), ref.getLine(), ref.getName());
                                         }
-                                        ((RewritableExpression) parent).replace(ref, expression);
+                                        parentRewritableExpression.replace(ref, expression);
                                     }
                                 }
 
@@ -339,7 +346,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean canOptimize(List<Optimizable> list) {
+    private boolean canOptimize(final List<Optimizable> list) {
         for (final Optimizable optimizable : list) {
             final int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
@@ -352,26 +359,24 @@ public class Optimizer extends DefaultExpressionVisitor {
         return true;
     }
 
-    private int reverseAxis(int axis) {
-    	switch (axis) {
-    	case Constants.CHILD_AXIS:
-    		return Constants.PARENT_AXIS;
-    	case Constants.DESCENDANT_AXIS:
-    		return Constants.ANCESTOR_AXIS;
-    	case Constants.DESCENDANT_SELF_AXIS:
-    		return Constants.ANCESTOR_SELF_AXIS;
-    	}
-    	return Constants.UNKNOWN_AXIS;
+    private int reverseAxis(final int axis) {
+        return switch (axis) {
+            case Constants.CHILD_AXIS -> Constants.PARENT_AXIS;
+            case Constants.DESCENDANT_AXIS -> Constants.ANCESTOR_AXIS;
+            case Constants.DESCENDANT_SELF_AXIS -> Constants.ANCESTOR_SELF_AXIS;
+            default -> Constants.UNKNOWN_AXIS;
+        };
     }
 
-    private Expression simplifyPath(Expression expression) {
-        if (!(expression instanceof PathExpr)) {
+    private Expression simplifyPath(final Expression expression) {
+        if (!(expression instanceof final PathExpr path)) {
             return expression;
         }
-        final PathExpr path = (PathExpr) expression;
+
         if (path.getLength() != 1) {
             return path;
         }
+
         return path.getExpression(0);
     }
 
@@ -380,30 +385,34 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
 
-        List<Optimizable> optimizables = new ArrayList<>();
+        private final List<Optimizable> optimizables = new ArrayList<>();
 
         public List<Optimizable> getOptimizables() {
             return optimizables;
         }
 
-        public void visitPathExpr(PathExpr expression) {
+        @Override
+        public void visitPathExpr(final PathExpr expression) {
             for (int i = 0; i < expression.getLength(); i++) {
                 final Expression next = expression.getExpression(i);
                 next.accept(this);
             }
         }
 
-        public void visitGeneralComparison(GeneralComparison comparison) {
+        @Override
+        public void visitGeneralComparison(final GeneralComparison comparison) {
             optimizables.add(comparison);
         }
 
-        public void visitPredicate(Predicate predicate) {
+        @Override
+        public void visitPredicate(final Predicate predicate) {
             predicate.getExpression(0).accept(this);
         }
 
-        public void visitBuiltinFunction(Function function) {
-            if (function instanceof Optimizable) {
-                optimizables.add((Optimizable) function);
+        @Override
+        public void visitBuiltinFunction(final Function function) {
+            if (function instanceof final Optimizable optimizable) {
+                optimizables.add(optimizable);
             }
         }
     }
@@ -420,17 +429,18 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         @Override
-        public void visit(Expression expr) {
+        public void visit(final Expression expr) {
             if (expr instanceof LiteralValue) {
                 return;
             }
+
             if (expr instanceof Atomize ||
-                expr instanceof DynamicCardinalityCheck ||
-                expr instanceof DynamicNameCheck ||
-                expr instanceof DynamicTypeCheck ||
-                expr instanceof UntypedValueCheck ||
-                expr instanceof ConcatExpr ||
-                expr instanceof ArrayConstructor) {
+                    expr instanceof DynamicCardinalityCheck ||
+                    expr instanceof DynamicNameCheck ||
+                    expr instanceof DynamicTypeCheck ||
+                    expr instanceof UntypedValueCheck ||
+                    expr instanceof ConcatExpr ||
+                    expr instanceof ArrayConstructor) {
                 expr.accept(this);
             } else {
                 inlineable = false;
@@ -438,12 +448,12 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         @Override
-        public void visitPathExpr(PathExpr expr) {
+        public void visitPathExpr(final PathExpr expr) {
             // continue to check for numeric operators and other simple constructs,
             // abort for all other path expressions with length > 1
             if (expr instanceof OpNumeric ||
-                expr instanceof SequenceConstructor ||
-                expr.getLength() == 1) {
+                    expr instanceof SequenceConstructor ||
+                    expr.getLength() == 1) {
                 super.visitPathExpr(expr);
             } else {
                 inlineable = false;
@@ -451,106 +461,106 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         @Override
-        public void visitUserFunction(UserDefinedFunction function) {
+        public void visitUserFunction(final UserDefinedFunction function) {
             inlineable = false;
         }
 
         @Override
-        public void visitBuiltinFunction(Function function) {
+        public void visitBuiltinFunction(final Function function) {
             inlineable = false;
         }
 
         @Override
-        public void visitFunctionCall(FunctionCall call) {
+        public void visitFunctionCall(final FunctionCall call) {
             inlineable = false;
         }
 
         @Override
-        public void visitForExpression(ForExpr forExpr) {
+        public void visitForExpression(final ForExpr forExpr) {
             inlineable = false;
         }
 
         @Override
-        public void visitLetExpression(LetExpr letExpr) {
+        public void visitLetExpression(final LetExpr letExpr) {
             inlineable = false;
         }
 
         @Override
-        public void visitOrderByClause(OrderByClause orderBy) {
+        public void visitOrderByClause(final OrderByClause orderBy) {
             inlineable = false;
         }
 
         @Override
-        public void visitGroupByClause(GroupByClause groupBy) {
+        public void visitGroupByClause(final GroupByClause groupBy) {
             inlineable = false;
         }
 
         @Override
-        public void visitWhereClause(WhereClause where) {
+        public void visitWhereClause(final WhereClause where) {
             inlineable = false;
         }
 
         @Override
-        public void visitConditional(ConditionalExpression conditional) {
+        public void visitConditional(final ConditionalExpression conditional) {
             inlineable = false;
         }
 
         @Override
-        public void visitLocationStep(LocationStep locationStep) {
+        public void visitLocationStep(final LocationStep locationStep) {
         }
 
         @Override
-        public void visitPredicate(Predicate predicate) {
+        public void visitPredicate(final Predicate predicate) {
             super.visitPredicate(predicate);
         }
 
         @Override
-        public void visitDocumentConstructor(DocumentConstructor constructor) {
+        public void visitDocumentConstructor(final DocumentConstructor constructor) {
             inlineable = false;
         }
 
         @Override
-        public void visitElementConstructor(ElementConstructor constructor) {
+        public void visitElementConstructor(final ElementConstructor constructor) {
             inlineable = false;
         }
 
         @Override
-        public void visitTextConstructor(DynamicTextConstructor constructor) {
+        public void visitTextConstructor(final DynamicTextConstructor constructor) {
             inlineable = false;
         }
 
         @Override
-        public void visitAttribConstructor(AttributeConstructor constructor) {
+        public void visitAttribConstructor(final AttributeConstructor constructor) {
             inlineable = false;
         }
 
         @Override
-        public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
+        public void visitAttribConstructor(final DynamicAttributeConstructor constructor) {
             inlineable = false;
         }
 
         @Override
-        public void visitUnionExpr(Union union) {
+        public void visitUnionExpr(final Union union) {
             inlineable = false;
         }
 
         @Override
-        public void visitIntersectionExpr(Intersect intersect) {
+        public void visitIntersectionExpr(final Intersect intersect) {
             inlineable = false;
         }
 
         @Override
-        public void visitVariableDeclaration(VariableDeclaration decl) {
+        public void visitVariableDeclaration(final VariableDeclaration decl) {
             inlineable = false;
         }
 
         @Override
-        public void visitTryCatch(TryCatchExpression tryCatch) {
+        public void visitTryCatch(final TryCatchExpression tryCatch) {
             inlineable = false;
         }
 
         @Override
-        public void visitCastExpr(CastExpression expression) {
+        public void visitCastExpr(final CastExpression expression) {
             inlineable = false;
         }
 
@@ -560,22 +570,22 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         @Override
-        public void visitAndExpr(OpAnd and) {
+        public void visitAndExpr(final OpAnd and) {
             inlineable = false;
         }
 
         @Override
-        public void visitOrExpr(OpOr or) {
+        public void visitOrExpr(final OpOr or) {
             inlineable = false;
         }
 
         @Override
-        public void visitFilteredExpr(FilteredExpression filtered) {
+        public void visitFilteredExpr(final FilteredExpression filtered) {
             inlineable = false;
         }
 
         @Override
-        public void visitVariableReference(VariableReference ref) {
+        public void visitVariableReference(final VariableReference ref) {
             inlineable = false;
         }
     }
