@@ -21,9 +21,11 @@
  :)
 xquery version "3.1";
 
-module namespace facet="http://exist-db.org/xquery/lucene/test/facets";
+module namespace facet = "http://exist-db.org/xquery/lucene/test/facets";
 
-declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace test = "http://exist-db.org/xquery/xqsuite";
+
+import module namespace ft = "http://exist-db.org/xquery/lucene";
 
 declare variable $facet:XML :=
     <letters>
@@ -900,4 +902,52 @@ function facet:query-and-sort-by-binary-dateTime() {
     order by ft:binary-field($letter, "dateTime-binary", "xs:dateTime")
     return
         $letter/from/text()
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-count() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result)
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        ft:facets($result, "language")?en
+};
+
+declare
+    %test:assertEquals("1 1")
+function facet:query-no-default-index-count-and-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//div[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result) || " " || ft:facets($result, "language")?en
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-bracketed-element-count() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result)
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-bracketed-element-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        ft:facets($result, "language")?en
+};
+
+declare
+    %test:assertEquals("1 1")
+function facet:query-no-default-index-bracketed-element-count-and-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result) || " " || ft:facets($result, "language")?en
 };
