@@ -101,14 +101,15 @@ public class Optimizer extends DefaultExpressionVisitor {
             // walk through the predicates attached to the current location step.
             // try to find a predicate containing an expression which is an instance
             // of Optimizable.
+            final FindOptimizable find = new FindOptimizable();
             for (final Predicate pred : preds) {
-                final FindOptimizable find = new FindOptimizable();
                 pred.accept(find);
                 @Nullable final List<Optimizable> list = find.getOptimizables();
                 if (list != null && canOptimize(list)) {
                     optimize = true;
                     break;
                 }
+                find.reset();
             }
         }
 
@@ -216,13 +217,14 @@ public class Optimizer extends DefaultExpressionVisitor {
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
+        final FindOptimizable find = new FindOptimizable();
         for (final Predicate pred : preds) {
-            final FindOptimizable find = new FindOptimizable();
             pred.accept(find);
             @Nullable final List<Optimizable> list = find.getOptimizables();
             if (list != null && canOptimize(list)) {
                 return true;
             }
+            find.reset();
         }
         return false;
     }
@@ -418,6 +420,17 @@ public class Optimizer extends DefaultExpressionVisitor {
                     optimizables = new ArrayList<>(4);
                 }
                 optimizables.add(optimizable);
+            }
+        }
+
+        /**
+         * Reset this visitor for reuse.
+         *
+         * Clears the known {@link #optimizables}.
+         */
+        public void reset() {
+            if (optimizables != null) {
+                optimizables.clear();
             }
         }
     }
