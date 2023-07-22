@@ -76,6 +76,6 @@ public abstract class Pragma {
 
     @Override
     public String toString() {
-        return "(# " + qname + ' ' + contents + "#)";
+        return "(# " + qname + (contents == null ? "" : ' ' + contents) + " #)";
     }
 }
