@@ -104,8 +104,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             for (final Predicate pred : preds) {
                 final FindOptimizable find = new FindOptimizable();
                 pred.accept(find);
-                final List<Optimizable> list = find.getOptimizables();
-                if (list.size() > 0 && canOptimize(list)) {
+                @Nullable final List<Optimizable> list = find.getOptimizables();
+                if (list != null && canOptimize(list)) {
                     optimize = true;
                     break;
                 }
@@ -219,8 +219,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         for (final Predicate pred : preds) {
             final FindOptimizable find = new FindOptimizable();
             pred.accept(find);
-            final List<Optimizable> list = find.getOptimizables();
-            if (list.size() > 0 && canOptimize(list)) {
+            @Nullable final List<Optimizable> list = find.getOptimizables();
+            if (list != null && canOptimize(list)) {
                 return true;
             }
         }
@@ -384,10 +384,9 @@ public class Optimizer extends DefaultExpressionVisitor {
      * Try to find an expression object implementing interface Optimizable.
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
+        private List<Optimizable> optimizables = null;
 
-        private final List<Optimizable> optimizables = new ArrayList<>();
-
-        public List<Optimizable> getOptimizables() {
+        public @Nullable List<Optimizable> getOptimizables() {
             return optimizables;
         }
 
@@ -401,6 +400,9 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         @Override
         public void visitGeneralComparison(final GeneralComparison comparison) {
+            if (optimizables == null) {
+                optimizables = new ArrayList<>(4);
+            }
             optimizables.add(comparison);
         }
 
@@ -412,6 +414,9 @@ public class Optimizer extends DefaultExpressionVisitor {
         @Override
         public void visitBuiltinFunction(final Function function) {
             if (function instanceof final Optimizable optimizable) {
+                if (optimizables == null) {
+                    optimizables = new ArrayList<>(4);
+                }
                 optimizables.add(optimizable);
             }
         }
