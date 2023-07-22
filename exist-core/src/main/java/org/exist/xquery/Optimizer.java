@@ -81,17 +81,17 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         // check query rewriters if they want to rewrite the location step
         Pragma optimizePragma = null;
-        for (QueryRewriter rewriter : rewriters) {
-            try {
+        try {  // Keep try-catch out of loop
+            for (final QueryRewriter rewriter : rewriters) {
                 optimizePragma = rewriter.rewriteLocationStep(locationStep);
                 if (optimizePragma != null) {
                     // expression was rewritten: return
                     hasOptimized = true;
                     break;
                 }
-            } catch (XPathException e) {
-                LOG.warn("Exception called while rewriting location step: {}", e.getMessage(), e);
             }
+        } catch (final XPathException e) {
+            LOG.warn("Exception called while rewriting location step: {}", e.getMessage(), e);
         }
 
         boolean optimize = false;
