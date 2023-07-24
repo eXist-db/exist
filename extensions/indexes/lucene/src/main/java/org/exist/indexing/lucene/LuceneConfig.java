@@ -31,6 +31,7 @@ import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
+import org.exist.storage.NodePath2;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -100,6 +101,31 @@ public class LuceneConfig {
     	this.boost = other.boost;
     	this.analyzers = other.analyzers;
     	this.facetsConfig = other.facetsConfig;
+    }
+
+    /**
+     * Determines probabilistically if there might be a configured index
+     * for the QName. False positive matches are possible,
+     * but false negatives are not.
+     *
+     * @param qname the element/attribute to look for an index configuration for.
+     *
+     * @return true indicates that there might be a config, false indicates
+     *     that there definitely is not a config.
+     */
+    public boolean hasConfig(final QName qname) {
+        if (paths.containsKey(qname)) {
+            return true;
+        } else {
+            final NodePath2 path = new NodePath2();
+            path.addComponent(qname);
+            for (final LuceneIndexConfig config : wildcardPaths) {
+                if (config.match(path)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     public boolean matches(final NodePath path) {

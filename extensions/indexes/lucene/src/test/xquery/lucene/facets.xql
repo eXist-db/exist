@@ -951,3 +951,27 @@ function facet:query-no-default-index-bracketed-element-count-and-facets() {
     return
         count($result) || " " || ft:facets($result, "language")?en
 };
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-bracketed-element-one-nonexistent-element-count() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div|other)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result)
+};
+
+declare
+    %test:assertEquals(1)
+function facet:query-no-default-index-bracketed-element-one-nonexistent-element-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div|other)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        ft:facets($result, "language")?en
+};
+
+declare
+    %test:assertEquals("1 1")
+function facet:query-no-default-index-bracketed-element-one-nonexistent-element-count-and-facets() {
+    let $result := doc("/db/lucenetest/multi-lang.xml")//(div|other)[ft:query(., "english:*", map { "leading-wildcard": "yes" })]
+    return
+        count($result) || " " || ft:facets($result, "language")?en
+};
