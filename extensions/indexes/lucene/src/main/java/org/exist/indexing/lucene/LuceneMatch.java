@@ -93,6 +93,10 @@ public class LuceneMatch extends Match {
     // DW: missing hashCode() ?
     @Override
     public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
         if (obj instanceof LuceneMatch other) {
             return getNodeId().equals(other.getNodeId())
                     && query.equals(other.query);

@@ -391,6 +391,10 @@ public abstract class Match implements Comparable<Match> {
 
     @Override
     public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
         if (obj instanceof Match other) {
             return other.matchTerm != null
                     && other.matchTerm.equals(matchTerm)
