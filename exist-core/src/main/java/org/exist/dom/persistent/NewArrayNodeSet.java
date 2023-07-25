@@ -107,7 +107,11 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     private NodeProxy nodes[];
 
     public NewArrayNodeSet() {
-        nodes = new NodeProxy[INITIAL_SIZE];
+        this(INITIAL_SIZE);
+    }
+
+    public NewArrayNodeSet(final int initialSize) {
+        nodes = new NodeProxy[initialSize];
     }
 
     public NewArrayNodeSet(final NewArrayNodeSet other) {

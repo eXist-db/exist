@@ -33,6 +33,7 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.StreamFilter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -486,26 +487,37 @@ public class LocationStep extends Step {
             final MemoryNodeSet nodes = contextSequence.toMemNodeSet();
             return nodes.getSelf(test);
         }
-        if (hasPreloadedData() && !test.isWildcardTest()) {
-            final NodeSet ns;
+
+        if (hasPreloadedData()) {
+            @Nullable final NodeSet ns;
             if (contextSequence instanceof NodeSet) {
                 ns = (NodeSet) contextSequence;
             } else {
                 ns = null;
             }
 
-            for (final NodeProxy p : currentSet) {
-                p.addContextNode(contextId, p);
-
-                if (ns != null) {
-                    final NodeProxy np = ns.get(p);
-
-                    if (np != null && np.getMatches() != null) {
-                        p.addMatch(np.getMatches());
+            final NewArrayNodeSet newCurrentSet = new NewArrayNodeSet(currentSet.getItemCount());
+            for (NodeProxy p : currentSet) {
+                if (test.isWildcardTest()) {
+                    if (ns != null) {
+                        @Nullable final NodeProxy np = ns.get(p);
+                        if (np != null) {
+                            p = np;
+                        }
+                    }
+                } else {
+                    if (ns != null) {
+                        @Nullable final NodeProxy np = ns.get(p);
+                        if (np != null && np.getMatches() != null) {
+                            p.addMatch(np.getMatches());
+                        }
                     }
                 }
+                p.addContextNode(contextId, p);
+                newCurrentSet.add(p);
             }
-            return currentSet;
+            currentSet = newCurrentSet;
+            return newCurrentSet;
         }
 
         final NodeSet contextSet = contextSequence.toNodeSet();
