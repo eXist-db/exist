@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -84,7 +86,7 @@ public class Query extends Function implements Optimizable {
     );
 
     private LocationStep contextStep = null;
-    protected QName contextQName = null;
+    @Nullable private QName contextQNames[] = null;
     protected int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
     protected boolean optimizeSelf = false;
@@ -124,36 +126,26 @@ public class Query extends Function implements Optimizable {
             final LocationStep lastStep = steps.get(steps.size() - 1);
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 final Expression outerExpr = contextInfo.getContextStep();
-                if (outerExpr instanceof final LocationStep outerStep) {
-                    final NodeTest test = outerStep.getTest();
-
-                    final byte contextQNameType;
-                    if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                        contextQNameType = ElementValue.ATTRIBUTE;
-                    } else {
-                        contextQNameType = ElementValue.ELEMENT;
+                if (outerExpr instanceof final LocationStep outerLocationStep) {
+                    analyzeLocationStep(firstStep, outerLocationStep);
+                } else if (outerExpr instanceof final FilteredExpression outerStep) {
+                    // NOTE(AR) fix for https://github.com/eXist-db/exist/issues/3207
+                    if (outerStep.getExpression() instanceof final LocationStep outerLocationStep) {
+                        analyzeLocationStep(firstStep, outerLocationStep);
+                    } else if (outerStep.getExpression() instanceof final Union union) {
+                        analyzeUnion(firstStep, union);
                     }
-
-                    if (test.getName() == null) {
-                        contextQName = new QName(null, null, contextQNameType);
-                    } else {
-                        contextQName = new QName(test.getName(), contextQNameType);
-                    }
-
-                    contextStep = firstStep;
-                    axis = outerStep.getAxis();
-                    optimizeSelf = true;
                 }
             } else if (lastStep != null && firstStep != null) {
                 final NodeTest test = lastStep.getTest();
                 if (test.getName() == null) {
-                    contextQName = new QName(null, null, null);
+                    contextQNames = new QName[]{ new QName(null, null, null) };
                 } else if (test.isWildcardTest()) {
-                    contextQName = test.getName();
+                    contextQNames = new QName[]{ test.getName() };
                 } else if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
-                    contextQName = new QName(test.getName(), ElementValue.ATTRIBUTE);
+                    contextQNames = new QName[]{ new QName(test.getName(), ElementValue.ATTRIBUTE) };
                 } else {
-                    contextQName = new QName(test.getName());
+                    contextQNames = new QName[]{ new QName(test.getName()) };
                 }
                 axis = firstStep.getAxis();
                 optimizeChild = steps.size() == 1 &&
@@ -163,9 +155,53 @@ public class Query extends Function implements Optimizable {
         }
     }
 
+    private void analyzeLocationStep(final LocationStep firstStep, final LocationStep locationStep) {
+        contextQNames = new QName[]{ getContextQName(locationStep) };
+        contextStep = firstStep;
+        axis = locationStep.getAxis();
+        optimizeSelf = true;
+    }
+
+    private void analyzeUnion(final LocationStep firstStep, final Union union) {
+        final PathExpr left = union.getLeft();
+        final PathExpr right = union.getRight();
+
+        if (left.getPrimaryAxis() != right.getPrimaryAxis()) {
+            return;
+        }
+
+        if (left.getSubExpressionCount() == 1 && left.getSubExpression(0) instanceof final LocationStep leftLocationStep
+                && right.getSubExpressionCount() == 1 && right.getSubExpression(0) instanceof final LocationStep rightLocationStep) {
+            contextQNames = new QName[] { getContextQName(leftLocationStep), getContextQName(rightLocationStep) };
+            contextStep = firstStep;
+            axis = left.getPrimaryAxis();
+            optimizeSelf = true;
+        }
+    }
+
+    private QName getContextQName(final LocationStep locationStep) {
+        final QName contextQName;
+
+        final byte contextQNameType;
+        if (locationStep.getAxis() == Constants.ATTRIBUTE_AXIS || locationStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
+            contextQNameType = ElementValue.ATTRIBUTE;
+        } else {
+            contextQNameType = ElementValue.ELEMENT;
+        }
+
+        final NodeTest test = locationStep.getTest();
+        if (test.getName() == null) {
+            contextQName = new QName(null, null, contextQNameType);
+        } else {
+            contextQName = new QName(test.getName(), contextQNameType);
+        }
+
+        return contextQName;
+    }
+
     @Override
     public Sequence canOptimizeSequence(final Sequence contextSequence) {
-        if (contextQName != null) {
+        if (contextQNames != null) {
             return contextSequence;
         }
         return Sequence.EMPTY_SEQUENCE;
@@ -201,8 +237,7 @@ public class Query extends Function implements Optimizable {
 
         final DocumentSet docs = contextSequence.getDocumentSet();
         final Item key = getKey(contextSequence, null);
-        final List<QName> qnames = new ArrayList<>(1);
-        qnames.add(contextQName);
+        @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
         final QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -250,14 +285,7 @@ public class Query extends Function implements Optimizable {
                 final DocumentSet docs = inNodes.getDocumentSet();
                 final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 final Item key = getKey(contextSequence, contextItem);
-
-                @Nullable final List<QName> qnames;
-                if (contextQName != null) {
-                    qnames = List.of(contextQName);
-                } else {
-                    qnames = null;
-                }
-
+                @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -278,7 +306,7 @@ public class Query extends Function implements Optimizable {
 
         } else {
             // DW: contextSequence can be null
-            contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
+            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }
 
