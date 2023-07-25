@@ -47,6 +47,7 @@ import javax.xml.transform.Source;
 
 import java.util.Arrays;
 
+import static javax.xml.transform.OutputKeys.INDENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -94,7 +95,7 @@ public class SerializationTest {
 
 	private static final String XML_WITH_DOCTYPE =
 			"<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
-			"<bookmap id=\"bookmap-1\"/>";
+			"<bookmap id=\"bookmap-1\">\n   asdf\n   </bookmap>";
 
 	private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
@@ -177,6 +178,10 @@ public class SerializationTest {
 	@Test
 	public void getDocTypeDefault() throws XMLDBException {
 		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
+		// FIXME (JL): local and remote collections apparently have different output properties set
+		// INDENT is set to "no" for remote collections that's why it is explicitly set to true here
+		// Also, setting INDENT to "no" does not work for local collections and only somewhat for remote ones.
+		testCollection.setProperty(INDENT, "yes");
 		assertEquals(XML_WITH_DOCTYPE, res.getContent());
 	}
 
