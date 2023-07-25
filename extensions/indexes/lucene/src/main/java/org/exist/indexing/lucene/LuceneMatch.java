@@ -95,7 +95,7 @@ public class LuceneMatch extends Match {
     public boolean equals(final Object obj) {
         if (obj instanceof LuceneMatch other) {
             return getNodeId().equals(other.getNodeId())
-                    && query == (other).query;
+                    && query.equals(other.query);
         } else {
             return false;
         }
