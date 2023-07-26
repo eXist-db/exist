@@ -396,9 +396,8 @@ public abstract class Match implements Comparable<Match> {
         }
 
         if (obj instanceof Match other) {
-            return other.matchTerm != null
-                    && other.matchTerm.equals(matchTerm)
-                    && other.nodeId.equals(nodeId);
+            return other.nodeId.equals(nodeId)
+                    && ((other.matchTerm != null && other.matchTerm.equals(matchTerm)) || matchTerm == null);
         } else {
             return false;
         }
