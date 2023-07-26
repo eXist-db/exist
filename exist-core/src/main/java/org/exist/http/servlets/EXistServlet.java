@@ -331,7 +331,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
         } catch (final BadRequestException e) {
             if (response.isCommitted()) {
-                throw new ServletException(e.getMessage());
+                throw new ServletException(e.getMessage(), e);
             }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
