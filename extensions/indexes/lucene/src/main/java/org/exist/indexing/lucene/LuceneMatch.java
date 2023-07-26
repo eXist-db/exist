@@ -98,8 +98,9 @@ public class LuceneMatch extends Match {
         }
 
         if (obj instanceof LuceneMatch other) {
-            return getNodeId().equals(other.getNodeId())
-                    && query.equals(other.query);
+            return luceneDocId == other.luceneDocId
+                    && query.equals(other.query)
+                    && super.equals(other);
         } else {
             return false;
         }
