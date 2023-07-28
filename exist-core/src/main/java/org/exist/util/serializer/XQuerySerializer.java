@@ -105,8 +105,8 @@ public class XQuerySerializer {
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
         // backwards compatibility: if the sequence contains a single element, we assume
         // it should be transformed to JSON following the rules of the old JSON writer
-        if (sequence.hasOne() && Type.subTypeOf(sequence.getItemType(), Type.ELEMENT)) {
-            serializeXML(sequence, 1, sequence.getItemCount(), false, false, compilationTime, executionTime);
+        if (sequence.hasOne() && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
+            serializeXML(sequence, 1, 1, false, false, compilationTime, executionTime);
         } else {
             JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
             serializer.serialize(sequence, writer);
