@@ -27,42 +27,24 @@
 package org.exist.extensions.exquery.restxq.impl;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
-import org.exist.TestUtils;
-import org.exist.collections.CollectionConfiguration;
-import org.exist.test.ExistWebServer;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertNotNull;
 
-public class MediaTypeIntegrationTest {
-
-    private static String COLLECTION_CONFIG =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-            "    <triggers>\n" +
-            "        <trigger class=\"org.exist.extensions.exquery.restxq.impl.RestXqTrigger\"/>\n" +
-            "    </triggers>\n" +
-            "</collection>";
+public class MediaTypeIntegrationTest extends AbstractIntegrationTest {
 
     private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 
-    private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
     private static String XQUERY1 =
             "xquery version \"3.0\";\n" +
             "\n" +
@@ -110,48 +92,12 @@ public class MediaTypeIntegrationTest {
             "    $mod1:data/person\n" +
             "};\n";
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
-    private static Executor executor = null;
-
-    @ClassRule
-    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
-
-    private static String getServerUri() {
-        return "http://localhost:" + existWebServer.getPort();
-    }
-
-    private static String getRestUri() {
-        return getServerUri() + "/rest";
-    }
-
-    private static String getRestXqUri() {
-        return getServerUri() + "/restxq";
-    }
 
     @BeforeClass
     public static void storeResourceFunctions() throws IOException {
-        executor = Executor.newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
-
-        HttpResponse response = null;
-
-        response = executor.execute(Request
-                .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
-                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
-
-        response = executor.execute(Request
-                .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY1_FILENAME)
-                .bodyString(XQUERY1, XQUERY_CONTENT_TYPE)
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
-
-        response = executor.execute(Request
-                .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        assertNotNull(response.getEntity().getContent());
+        enableRestXqTrigger(TEST_COLLECTION);
+        storeXquery(TEST_COLLECTION, XQUERY1_FILENAME, XQUERY1);
+        assertRestXqResourceFunctionsCount(4);
     }
 
     @Test
@@ -199,17 +145,4 @@ public class MediaTypeIntegrationTest {
         }
         assertEquals(expectedResponseBody, responseBody);
     }
-
-    private static String asString(final InputStream inputStream) throws IOException {
-        final StringBuilder builder = new StringBuilder();
-        try (final Reader reader = new InputStreamReader(inputStream, UTF_8)) {
-            final char cbuf[] = new char[4096];
-            int read = -1;
-            while((read = reader.read(cbuf)) > -1) {
-                builder.append(cbuf, 0, read);
-            }
-        }
-        return builder.toString();
-    }
-
 }
