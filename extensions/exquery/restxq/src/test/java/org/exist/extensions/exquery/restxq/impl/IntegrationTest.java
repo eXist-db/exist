@@ -26,6 +26,7 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -38,7 +39,6 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.test.ExistWebServer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class IntegrationTest {
             "    %output:media-type(\"application/json\")\n" +
             "    %output:method(\"json\")\n" +
             "function mod1:media-type-json1() {\n" +
-            "    <success/>\n" +
+            "    <person><firstName>Adam</firstName><lastName>Retter</lastName></person>\n" +
             "};";
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
     private static Executor executor = null;
@@ -108,7 +108,7 @@ public class IntegrationTest {
                 .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
                 .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
         ).returnResponse();
-        //assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
 
         response = executor.execute(Request
                 .Put(getRestUri() + TEST_COLLECTION + "/" + XQUERY1_FILENAME)
@@ -123,7 +123,6 @@ public class IntegrationTest {
         assertNotNull(response.getEntity().getContent());
     }
 
-    @Ignore("TODO(AR) need to figure out how to access the RESTXQ API from {@link ExistWebServer}")
     @Test
     public void mediaTypeJson1() throws IOException {
         final HttpResponse response = executor.execute(Request
@@ -132,7 +131,15 @@ public class IntegrationTest {
         ).returnResponse();
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        assertEquals("<success/>", response.getEntity().toString());
+
+        final HttpEntity responseEntity = response.getEntity();
+        assertEquals("application/json; charset=utf-8", responseEntity.getContentType().getValue());
+
+        final String responseBody;
+        try (final InputStream is = responseEntity.getContent()) {
+            responseBody = asString(is);
+        }
+        assertEquals("{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }", responseBody);
     }
 
     private static String asString(final InputStream inputStream) throws IOException {
