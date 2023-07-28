@@ -78,6 +78,15 @@ public class IntegrationTest {
             "    %output:media-type(\"application/json\")\n" +
             "    %output:method(\"json\")\n" +
             "function mod1:media-type-json1() {\n" +
+            "    $mod1:data\n" +
+            "};\n" +
+            "\n" +
+            "declare\n" +
+            "    %rest:GET\n" +
+            "    %rest:path(\"/media-type-json2\")\n" +
+            "    %output:media-type(\"application/json\")\n" +
+            "    %output:method(\"json\")\n" +
+            "function mod1:media-type-json2() {\n" +
             "    $mod1:data/person\n" +
             "};\n" +
             "\n" +
@@ -88,6 +97,16 @@ public class IntegrationTest {
             "    %output:method(\"xml\")\n" +
             "    %output:indent(\"no\")\n" +
             "function mod1:media-type-xml1() {\n" +
+            "    $mod1:data\n" +
+            "};\n" +
+            "\n" +
+            "declare\n" +
+            "    %rest:GET\n" +
+            "    %rest:path(\"/media-type-xml2\")\n" +
+            "    %output:media-type(\"application/xml\")\n" +
+            "    %output:method(\"xml\")\n" +
+            "    %output:indent(\"no\")\n" +
+            "function mod1:media-type-xml2() {\n" +
             "    $mod1:data/person\n" +
             "};\n";
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
@@ -137,40 +156,48 @@ public class IntegrationTest {
 
     @Test
     public void mediaTypeJson1() throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Get(getRestXqUri() + "/media-type-json1")
-                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_JSON.toString()))
-        ).returnResponse();
+        assertMediaTypeResponse("/media-type-json1", ContentType.APPLICATION_JSON,
+                "application/json; charset=utf-8",
+                "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
+    }
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-
-        final HttpEntity responseEntity = response.getEntity();
-        assertEquals("application/json; charset=utf-8", responseEntity.getContentType().getValue());
-
-        final String responseBody;
-        try (final InputStream is = responseEntity.getContent()) {
-            responseBody = asString(is);
-        }
-        assertEquals("{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }", responseBody);
+    @Test
+    public void mediaTypeJson2() throws IOException {
+        assertMediaTypeResponse("/media-type-json2", ContentType.APPLICATION_JSON,
+                "application/json; charset=utf-8",
+                "{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }");
     }
 
     @Test
     public void mediaTypeXml1() throws IOException {
+        assertMediaTypeResponse("/media-type-xml1", ContentType.APPLICATION_XML.withCharset(UTF_8),
+                ContentType.APPLICATION_XML.withCharset(UTF_8).toString(),
+                "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");
+    }
+
+    @Test
+    public void mediaTypeXml2() throws IOException {
+        assertMediaTypeResponse("/media-type-xml2", ContentType.APPLICATION_XML.withCharset(UTF_8),
+                ContentType.APPLICATION_XML.withCharset(UTF_8).toString(),
+                "<person><firstName>Adam</firstName><lastName>Retter</lastName></person>");
+    }
+
+    private void assertMediaTypeResponse(final String uriEndpoint, final ContentType acceptContentType, final String expectedResponseContentType, final String expectedResponseBody) throws IOException {
         final HttpResponse response = executor.execute(Request
-                .Get(getRestXqUri() + "/media-type-xml1")
-                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.withCharset(UTF_8).toString()))
+                .Get(getRestXqUri() + uriEndpoint)
+                .addHeader(new BasicHeader("Accept", acceptContentType.toString()))
         ).returnResponse();
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
         final HttpEntity responseEntity = response.getEntity();
-        assertEquals(ContentType.APPLICATION_XML.withCharset(UTF_8).toString(), responseEntity.getContentType().getValue());
+        assertEquals(expectedResponseContentType, responseEntity.getContentType().getValue());
 
         final String responseBody;
         try (final InputStream is = responseEntity.getContent()) {
             responseBody = asString(is);
         }
-        assertEquals("<person><firstName>Adam</firstName><lastName>Retter</lastName></person>", responseBody);
+        assertEquals(expectedResponseBody, responseBody);
     }
 
     private static String asString(final InputStream inputStream) throws IOException {
