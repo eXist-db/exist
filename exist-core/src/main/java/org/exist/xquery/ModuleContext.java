@@ -98,6 +98,27 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
+    protected @Nullable Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {
+        // guard against self-recursive import - see: https://github.com/eXist-db/exist/issues/3448
+        if (moduleNamespace.equals(namespaceURI) && location.equals(locationHint.toString())) {
+            final StringBuilder builder = new StringBuilder("The XQuery Library Module '");
+            builder.append(namespaceURI);
+            builder.append("'");
+            if (locationHint != null) {
+                builder.append(" at '");
+                builder.append(location);
+                builder.append("'");
+            }
+            builder.append(" has invalidly attempted to import itself; this will be skipped!");
+            LOG.warn(builder.toString());
+
+            return null;
+        }
+
+        return super.importModuleFromLocation(namespaceURI, prefix, locationHint);
+    }
+
+    @Override
     protected void setModulesChanged() {
         parentContext.setModulesChanged();
     }
