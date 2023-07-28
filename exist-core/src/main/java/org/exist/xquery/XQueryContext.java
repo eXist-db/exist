@@ -2641,7 +2641,6 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
-            addModule(namespaceURI, modExternal);
             final XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
             modExternal.setContext(modContext);
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
