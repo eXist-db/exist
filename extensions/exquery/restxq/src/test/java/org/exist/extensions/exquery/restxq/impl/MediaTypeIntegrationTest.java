@@ -50,7 +50,7 @@ import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 
-public class IntegrationTest {
+public class MediaTypeIntegrationTest {
 
     private static String COLLECTION_CONFIG =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -60,7 +60,7 @@ public class IntegrationTest {
             "    </triggers>\n" +
             "</collection>";
 
-    private static String TEST_COLLECTION = "/db/restxq/integration-test";
+    private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 
     private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
     private static String XQUERY1 =
