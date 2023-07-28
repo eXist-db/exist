@@ -70,14 +70,26 @@ public class IntegrationTest {
             "\n" +
             "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
             "\n" +
+            "declare %private variable $mod1:data := document { <person><firstName>Adam</firstName><lastName>Retter</lastName></person> } ;\n" +
+            "\n" +
             "declare\n" +
             "    %rest:GET\n" +
             "    %rest:path(\"/media-type-json1\")\n" +
             "    %output:media-type(\"application/json\")\n" +
             "    %output:method(\"json\")\n" +
             "function mod1:media-type-json1() {\n" +
-            "    <person><firstName>Adam</firstName><lastName>Retter</lastName></person>\n" +
-            "};";
+            "    $mod1:data/person\n" +
+            "};\n" +
+            "\n" +
+            "declare\n" +
+            "    %rest:GET\n" +
+            "    %rest:path(\"/media-type-xml1\")\n" +
+            "    %output:media-type(\"application/xml\")\n" +
+            "    %output:method(\"xml\")\n" +
+            "    %output:indent(\"no\")\n" +
+            "function mod1:media-type-xml1() {\n" +
+            "    $mod1:data/person\n" +
+            "};\n";
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
     private static Executor executor = null;
 
@@ -140,6 +152,25 @@ public class IntegrationTest {
             responseBody = asString(is);
         }
         assertEquals("{ \"firstName\" : \"Adam\", \"lastName\" : \"Retter\" }", responseBody);
+    }
+
+    @Test
+    public void mediaTypeXml1() throws IOException {
+        final HttpResponse response = executor.execute(Request
+                .Get(getRestXqUri() + "/media-type-xml1")
+                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.withCharset(UTF_8).toString()))
+        ).returnResponse();
+
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+
+        final HttpEntity responseEntity = response.getEntity();
+        assertEquals(ContentType.APPLICATION_XML.withCharset(UTF_8).toString(), responseEntity.getContentType().getValue());
+
+        final String responseBody;
+        try (final InputStream is = responseEntity.getContent()) {
+            responseBody = asString(is);
+        }
+        assertEquals("<person><firstName>Adam</firstName><lastName>Retter</lastName></person>", responseBody);
     }
 
     private static String asString(final InputStream inputStream) throws IOException {
