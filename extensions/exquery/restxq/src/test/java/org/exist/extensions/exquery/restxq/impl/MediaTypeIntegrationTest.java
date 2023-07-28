@@ -41,7 +41,7 @@ import java.io.InputStream;
 import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class MediaTypeIntegrationTest extends AbstractIntegrationTest {
+public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
     private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 

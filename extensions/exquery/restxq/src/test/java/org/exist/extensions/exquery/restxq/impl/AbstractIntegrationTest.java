@@ -26,20 +26,16 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.exist.TestUtils;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
 import org.exist.util.ExistSAXParserFactory;
 import org.exquery.restxq.Namespace;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -59,12 +55,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class AbstractIntegrationTest {
-
-    @ClassRule
-    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
-
-    protected static Executor executor = null;
+public abstract class AbstractIntegrationTest {
 
     private static String COLLECTION_CONFIG =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -76,44 +67,48 @@ public class AbstractIntegrationTest {
 
     private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
 
-    protected static String getServerUri() {
+    protected static String getServerUri(final ExistWebServer existWebServer) {
         return "http://localhost:" + existWebServer.getPort();
     }
 
-    protected static String getRestUri() {
-        return getServerUri() + "/rest";
+    protected static String getRestUri(final ExistWebServer existWebServer) {
+        return getServerUri(existWebServer) + "/rest";
     }
 
-    protected static String getRestXqUri() {
-        return getServerUri() + "/restxq";
+    protected static String getRestXqUri(final ExistWebServer existWebServer) {
+        return getServerUri(existWebServer) + "/restxq";
     }
 
-    @BeforeClass
-    public static void setupExecutor() {
-        executor = Executor.newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
-    }
-
-    protected static void enableRestXqTrigger(final String collectionPath) throws IOException {
+    protected static void enableRestXqTrigger(final ExistWebServer existWebServer, final Executor executor, final String collectionPath) throws IOException {
         final HttpResponse response = executor.execute(Request
-                .Put(getRestUri() + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+                .Put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
                 .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
         ).returnResponse();
         assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
     }
 
-    protected static void storeXquery(final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
+    protected static void storeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
         final HttpResponse response = executor.execute(Request
-                .Put(getRestUri() + collectionPath + "/" + xqueryFilename)
+                .Put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
                 .bodyString(xquery, XQUERY_CONTENT_TYPE)
         ).returnResponse();
         assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
     }
 
-    protected static void assertRestXqResourceFunctionsCount(final int expectedCount) throws IOException {
+    protected static void removeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename) throws IOException {
         final HttpResponse response = executor.execute(Request
-                .Get(getRestUri() + "/db/?_query=rest:resource-functions()")
+                .Delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+        ).returnResponse();
+        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+    }
+
+    protected static void assertRestXqResourceFunctionsCount(final ExistWebServer existWebServer, final Executor executor, final int expectedCount) throws IOException {
+        assertEquals(expectedCount, getRestXqResourceFunctions(existWebServer, executor).getLength());
+    }
+
+    protected static NodeList getRestXqResourceFunctions(final ExistWebServer existWebServer, final Executor executor) throws IOException {
+        final HttpResponse response = executor.execute(Request
+                .Get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
         ).returnResponse();
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
@@ -130,8 +125,7 @@ public class AbstractIntegrationTest {
         assertEquals(1, resourceFunctionsList.getLength());
 
         final Element resourceFunctionsElem = (Element) resourceFunctionsList.item(0);
-        final NodeList resourceFunctionList = resourceFunctionsElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-function");
-        assertEquals(expectedCount, resourceFunctionList.getLength());
+        return resourceFunctionsElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-function");
     }
 
     protected static Document parseXml(final InputStream inputStream) throws IOException {

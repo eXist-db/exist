@@ -26,52 +26,50 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
+import org.apache.http.HttpHost;
+import org.apache.http.client.fluent.Executor;
+import org.exist.TestUtils;
+import org.exist.test.ExistWebServer;
 import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.ClassRule;
 
 import java.io.IOException;
 
-/**
- * Test for XQuery Library Modules that import themselves, i.e. a self circular dependency.
- * See issue <a href="https://github.com/eXist-db/exist/issues/3448#issue-640018884">#3448</a>.
- */
-public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIntegrationTest {
+public abstract class AbstractClassIntegrationTest extends AbstractIntegrationTest {
 
-    private static String TEST_COLLECTION = "/db/restxq/self-import-circular-dependency-integration-test";
+    @ClassRule
+    public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private static String XQUERY_FILENAME = "mod1.xqm";
-
-    private static String STAGE1_XQUERY =
-            "xquery version \"3.1\";\n" +
-            "\n" +
-            "module namespace test = \"test\";\n" +
-            "\n" +
-            "declare function test:f1() {\n" +
-            "    <f1/>\n" +
-            "};";
-
-    private static String STAGE2_XQUERY =
-            "xquery version \"3.1\";\n" +
-            "\n" +
-            "module namespace test = \"test\";\n" +
-            "\n" +
-            "import module namespace test = \"test\" at \"" + XQUERY_FILENAME + "\";\n" +
-            "\n" +
-            "declare function test:f1() {\n" +
-            "    <f1/>\n" +
-            "};";
-
-    private static String STAGE3_XQUERY = STAGE1_XQUERY;
+    protected static Executor executor = null;
 
     @BeforeClass
-    public static void storeResourceFunctions() throws IOException {
-        enableRestXqTrigger(TEST_COLLECTION);
+    public static void setupExecutor() {
+        executor = Executor.newInstance()
+                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
     }
 
-    @Test
-    public void storeSelfDependentXqueryLibraryModule() throws IOException {
-        storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE1_XQUERY);
-        storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE2_XQUERY);
-        storeXquery(TEST_COLLECTION, XQUERY_FILENAME, STAGE3_XQUERY);
+    protected static String getServerUri() {
+        return getServerUri(existWebServer);
+    }
+
+    protected static String getRestUri() {
+        return getRestUri(existWebServer);
+    }
+
+    protected static String getRestXqUri() {
+        return getRestXqUri(existWebServer);
+    }
+
+    protected static void enableRestXqTrigger(final String collectionPath) throws IOException {
+        enableRestXqTrigger(existWebServer, executor, collectionPath);
+    }
+
+    protected static void storeXquery(final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
+        storeXquery(existWebServer, executor, collectionPath, xqueryFilename, xquery);
+    }
+
+    protected static void assertRestXqResourceFunctionsCount(final int expectedCount) throws IOException {
+        assertRestXqResourceFunctionsCount(existWebServer, executor, expectedCount);
     }
 }
