@@ -68,7 +68,7 @@ public class IntegrationTest {
             "\n" +
             "module namespace mod1 = \"http://mod1\";\n" +
             "\n" +
-            "declare namespace output = \"https://www.w3.org/2010/xslt-xquery-serialization\";\n" +
+            "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
             "\n" +
             "declare\n" +
             "    %rest:GET\n" +
