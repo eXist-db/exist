@@ -760,8 +760,6 @@ public interface Context {
      */
     boolean tailRecursiveCall(FunctionSignature signature);
 
-    void mapModule(String namespace, XmldbURI uri);
-
     /**
      * Import one or more library modules into the function signatures and in-scope variables of the importing module.
      *
@@ -783,7 +781,7 @@ public interface Context {
      *      XQST0070
      *      XQST0088
      */
-    Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException;
+    @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException;
 
     /**
      * Returns the static location mapped to an XQuery source module, if known.

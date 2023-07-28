@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;
-import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.AnyURIValue;

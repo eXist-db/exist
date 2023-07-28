@@ -62,7 +62,7 @@ public class IntegrationTest {
 
     private static String TEST_COLLECTION = "/db/restxq/integration-test";
 
-    private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", "UTF-8");
+    private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
     private static String XQUERY1 =
             "xquery version \"3.0\";\n" +
             "\n" +
@@ -106,7 +106,7 @@ public class IntegrationTest {
 
         response = executor.execute(Request
                 .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
-                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML)
+                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
         ).returnResponse();
         assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
 
@@ -128,7 +128,7 @@ public class IntegrationTest {
     public void mediaTypeJson1() throws IOException {
         final HttpResponse response = executor.execute(Request
                 .Get(getRestXqUri() + "/media-type-json1")
-                .addHeader(new BasicHeader("Accept", "application/json"))
+                .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_JSON.toString()))
         ).returnResponse();
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
@@ -137,7 +137,7 @@ public class IntegrationTest {
 
     private static String asString(final InputStream inputStream) throws IOException {
         final StringBuilder builder = new StringBuilder();
-        try(final Reader reader = new InputStreamReader(inputStream, UTF_8)) {
+        try (final Reader reader = new InputStreamReader(inputStream, UTF_8)) {
             final char cbuf[] = new char[4096];
             int read = -1;
             while((read = reader.read(cbuf)) > -1) {

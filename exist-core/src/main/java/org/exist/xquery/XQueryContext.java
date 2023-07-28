@@ -164,8 +164,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     // Inherited prefix/namespace mappings in the current context
     private Map<String, String> inheritedInScopePrefixes = new HashMap<>();
 
-    private Map<String, XmldbURI> mappedModules = new HashMap<>();
-
     private boolean preserveNamespaces = true;
 
     private boolean inheritNamespaces = true;
@@ -654,7 +652,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.updateListener = from.updateListener;
         this.modules = from.modules;
         this.allModules = from.allModules;
-        this.mappedModules = from.mappedModules;
         this.dynamicOptions = from.dynamicOptions;
         this.staticOptions = from.staticOptions;
         this.db = from.db;
@@ -716,7 +713,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
-        ctx.mappedModules = new HashMap<>(this.mappedModules);
         ctx.staticNamespaces = new HashMap<>(this.staticNamespaces);
         ctx.staticPrefixes = new HashMap<>(this.staticPrefixes);
 
@@ -1430,10 +1426,6 @@ public class XQueryContext implements BinaryValueManager, Context {
             for (final Module module : modules) {
                 module.reset(this, keepGlobals);
             }
-        }
-
-        if (!keepGlobals) {
-            mappedModules.clear();
         }
 
         savedState.restore();
@@ -2418,13 +2410,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public void mapModule(final String namespace, final XmldbURI uri) {
-        mappedModules.put(namespace, uri);
-    }
-
-    @Override
-    public Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints)
-            throws XPathException {
+    public @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException {
 
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
@@ -2500,15 +2486,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         return modules;
     }
 
-    private Module importModuleFromLocation(
-            final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint
-    ) throws XPathException {
+    protected @Nullable Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {
         String location = locationHint.toString();
-
-        //Is the module's namespace mapped to a URL ?
-        if (mappedModules.containsKey(location)) {
-            location = mappedModules.get(location).toString();
-        }
 
         // is it a Java module?
         if (location.startsWith(JAVA_URI_START)) {
