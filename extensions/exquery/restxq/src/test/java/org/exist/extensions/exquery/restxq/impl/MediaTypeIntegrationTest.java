@@ -50,6 +50,7 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
             "\n" +
             "module namespace mod1 = \"http://mod1\";\n" +
             "\n" +
+            "declare namespace rest = \"http://exquery.org/ns/restxq\";\n" +
             "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
             "\n" +
             "declare %private variable $mod1:data := document { <person><firstName>Adam</firstName><lastName>Retter</lastName></person> } ;\n" +
