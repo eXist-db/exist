@@ -591,7 +591,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 }
 
                 // build a module object from the source
-                final ExternalModule module = compileOrBorrowModule(prefix, namespace, location, src);
+                final ExternalModule module = compileOrBorrowModule(namespace, prefix, location, src);
                 return module;
 
             } catch (final PermissionDeniedException e) {
@@ -2522,7 +2522,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                     }
 
                     final Source moduleSource = new DBSource(getBroker().getBrokerPool(), (BinaryDocument) sourceDoc, true);
-                    return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+                    return compileOrBorrowModule(namespaceURI, prefix, location, moduleSource);
 
                 } catch (final PermissionDeniedException e) {
                     throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
@@ -2559,7 +2559,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
         }
 
-        return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+        return compileOrBorrowModule(namespaceURI, prefix, location, moduleSource);
     }
 
     protected XPathException moduleLoadException(final String message, final String moduleLocation)
@@ -2591,8 +2591,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Compile of borrow an already compile module from the cache.
      *
-     * @param prefix the module namespace prefix
      * @param namespaceURI the module namespace URI
+     * @param prefix the module namespace prefix
      * @param location the location hint
      * @param source the source for the module
      *
@@ -2600,9 +2600,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private ExternalModule compileOrBorrowModule(final String prefix, final String namespaceURI, final String location,
+    private ExternalModule compileOrBorrowModule(final String namespaceURI, final String prefix, final String location,
                                                  final Source source) throws XPathException {
-        final ExternalModule module = compileModule(prefix, namespaceURI, location, source);
+        final ExternalModule module = compileModule(namespaceURI, prefix, location, source);
         if (module != null) {
             addModule(module.getNamespaceURI(), module);
             declareModuleVars(module);
@@ -2613,14 +2613,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Compile an XQuery Module
      *
-     * @param prefix       the namespace prefix of the module.
      * @param namespaceURI the namespace URI of the module.
+     * @param prefix       the namespace prefix of the module.
      * @param location     the location of the module
      * @param source       the source of the module.
      * @return The compiled module, or null if the source is not a module
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private @Nullable ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
+    private @Nullable ExternalModule compileModule(String namespaceURI, final String prefix, final String location,
                                                    final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Loading module from {}", location);
@@ -2641,7 +2641,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
-            final XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
+            final XQueryContext modContext = new ModuleContext(this, namespaceURI, prefix, location);
             modExternal.setContext(modContext);
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
             final XQueryParser parser = new XQueryParser(lexer);

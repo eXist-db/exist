@@ -58,19 +58,17 @@ public class ModuleContext extends XQueryContext {
     private static final Logger LOG = LogManager.getLogger(ModuleContext.class);
 
     private XQueryContext parentContext;
-    private String modulePrefix;
     private String moduleNamespace;
+    private String modulePrefix;
     private final String location;
 
-    public ModuleContext(final XQueryContext parentContext, final String modulePrefix, final String moduleNamespace,
-            final String location) {
+    public ModuleContext(final XQueryContext parentContext, final String moduleNamespace, final String modulePrefix, final String location) {
         super(parentContext != null ? parentContext.db : null,
                 parentContext != null ? parentContext.getConfiguration() : null,
                 null,
                 false);
-
-        this.modulePrefix = modulePrefix;
         this.moduleNamespace = moduleNamespace;
+        this.modulePrefix = modulePrefix;
         this.location = location;
 
         setParentContext(parentContext);
@@ -196,7 +194,7 @@ public class ModuleContext extends XQueryContext {
 
     @Override
     public XQueryContext copyContext() {
-        final ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace, location);
+        final ModuleContext ctx = new ModuleContext(parentContext, moduleNamespace, modulePrefix, location);
         copyFields(ctx);
         try {
             ctx.declareNamespace(modulePrefix, moduleNamespace);
