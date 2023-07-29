@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -94,6 +95,13 @@ import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.alg.shortestpath.TransitNodeRoutingShortestPath;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultGraphType;
+import org.jgrapht.opt.graph.fastutil.FastutilMapGraph;
+import org.jgrapht.util.ConcurrencyUtil;
+import org.jgrapht.util.SupplierUtil;
 import org.w3c.dom.Node;
 
 import static com.evolvedbinary.j8fu.OptionalUtil.or;
@@ -223,6 +231,11 @@ public class XQueryContext implements BinaryValueManager, Context {
      * The format of the map is: <code>Map&lt;NamespaceURI, Modules&gt;</code>
      */
     private Object2ObjectMap<String, Module[]> allModules = new Object2ObjectOpenHashMap<>();
+
+    /**
+     * Describes a graph of all the modules and how they import each other.
+     */
+    private @Nullable final FastutilMapGraph<ModuleVertex, DefaultEdge> modulesDependencyGraph;
 
     /**
      * Used to save current state when modules are imported dynamically
@@ -454,6 +467,10 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     protected XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler, final boolean loadDefaults) {
+        this(db, configuration, profiler, loadDefaults, new FastutilMapGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), DefaultGraphType.directedPseudograph().asUnweighted()));
+    }
+
+    protected XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler, final boolean loadDefaults, final @Nullable FastutilMapGraph<ModuleVertex, DefaultEdge> modulesDependencyGraph) {
         this.db = db;
 
         // if needed, fallback to db.getConfiguration
@@ -473,6 +490,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         } else {
             this.profiler = new Profiler(null);
         }
+
+        this.modulesDependencyGraph = modulesDependencyGraph;
 
         this.watchdog = new XQueryWatchDog(this);
 
@@ -1527,6 +1546,65 @@ public class XQueryContext implements BinaryValueManager, Context {
             this.modules.compute(namespaceURI, addToMapValueArray(module));
         }
         addRootModule(namespaceURI, module);
+    }
+
+    /**
+     * Add a vertex to the Modules Dependency Graph.
+     *
+     * @param moduleVertex the module vertex
+     */
+    protected void addModuleVertex(final ModuleVertex moduleVertex) {
+        modulesDependencyGraph.addVertex(moduleVertex);
+    }
+
+    /**
+     * Check if a vertex exists in the Modules Dependency Graph.
+     *
+     * @param moduleVertex the module vertex to look for
+     *
+     * @return true if the module vertex exists, false otherwise
+     */
+    protected boolean hasModuleVertex(final ModuleVertex moduleVertex) {
+        return modulesDependencyGraph.containsVertex(moduleVertex);
+    }
+
+    /**
+     * Add an edge between two Modules in the Dependency Graph.
+     *
+     * @param source the importing module
+     * @param sink the imported module
+     */
+    protected void addModuleEdge(final ModuleVertex source, final ModuleVertex sink) {
+        modulesDependencyGraph.addEdge(source, sink);
+    }
+
+    /**
+     * Look for a path between two Modules in the Dependency Graph.
+     *
+     * @param source the module to start searching from
+     * @param sink the destination module to attempt to reach
+     *
+     * @return true, if there is a path between the mdoules, false otherwise
+     */
+    protected boolean hasModulePath(final ModuleVertex source, final ModuleVertex sink) {
+        if (modulesDependencyGraph == null) {
+            return false;
+        }
+
+        ThreadPoolExecutor executor = null;
+        try {
+            executor = ConcurrencyUtil.createThreadPoolExecutor(2);
+            final ShortestPathAlgorithm<ModuleVertex, DefaultEdge> spa = new TransitNodeRoutingShortestPath<>(modulesDependencyGraph, executor);
+            return spa.getPath(source, sink) != null;
+        } finally {
+            if (executor != null) {
+                try {
+                    ConcurrencyUtil.shutdownExecutionService(executor);
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
     }
 
     protected void setRootModules(final String namespaceURI, @Nullable final Module[] modules) {
@@ -2641,6 +2719,11 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
+
+            // NOTE(AR) this is needed to support cyclic imports in XQuery 3.1, see: https://github.com/eXist-db/exist/pull/4996
+            addModule(namespaceURI, modExternal);
+            addModuleVertex(new ModuleVertex(namespaceURI, location));
+
             final XQueryContext modContext = new ModuleContext(this, namespaceURI, prefix, location);
             modExternal.setContext(modContext);
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
@@ -3546,5 +3629,53 @@ public class XQueryContext implements BinaryValueManager, Context {
         sb.append('}');
 
         return sb.toString();
+    }
+
+    @Immutable
+    public static class ModuleVertex {
+        private final String namespaceURI;
+        private final String location;
+
+        public ModuleVertex(final String namespaceURI) {
+            this.namespaceURI = namespaceURI;
+            this.location = null;
+        }
+
+        public ModuleVertex(final String namespaceURI, final String location) {
+            this.namespaceURI = namespaceURI;
+            this.location = location;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            final ModuleVertex that = (ModuleVertex) o;
+            if (!namespaceURI.equals(that.namespaceURI)) {
+                return false;
+            }
+            return location.equals(that.location);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = namespaceURI.hashCode();
+            result = 31 * result + location.hashCode();
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Module{" +
+                    "namespaceURI='" + namespaceURI + '\'' +
+                    "location='" + location + '\'' +
+                    '}';
+        }
     }
 }
