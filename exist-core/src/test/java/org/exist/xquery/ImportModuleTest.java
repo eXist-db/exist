@@ -51,7 +51,6 @@ import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.w3c.dom.Element;
@@ -1277,37 +1276,39 @@ public class ImportModuleTest {
         }
     }
 
-
     /**
-     * Checks that XQST0093 is raised if there exists a sequence of modules M1 ... Mi ... M1.
+     * Check that for XQuery 1.0. eXist-db raises XQTS0093 error when there exists a sequence of library modules MM -> LM1 -> LM2 -> LM1.
+     *
+     * See issue <a href="https://github.com/eXist-db/exist/pull/4996">#4996</a>.
+     * See the XQuery 1.0 spec. section: <a href="https://www.w3.org/TR/2010/REC-xquery-20101214/#id-module-import">4.11 Module Import</a>
      */
-    @Ignore("eXist-db does not have cyclic import checks, but it should!")
     @Test
-    public void cyclic1() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
+    public void xq10CyclicTwoLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
-                "module namespace impl1 = \"http://example.com/impl1\";\n" +
-                "import module namespace impl2 = \"http://example.com/impl2\"" +
-                "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "declare function impl1:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
+                        "import module namespace impl2 = \"http://example.com/impl2\"" +
+                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
+                        "declare function impl1:f1($a as xs:string) {\n" +
+                        "    <impl1>{$a}</impl1>\n" +
+                        "};\n";
 
         final String module2 =
                 "xquery version \"1.0\";\n" +
-                "module namespace impl2 = \"http://example.com/impl2\";\n" +
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "declare function impl2:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
+                        "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "declare function impl2:f1($a as xs:string) as xs:string {\n" +
+                        "    <impl2>{$a}</impl2>\n" +
+                        "};\n";
 
         final String query =
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl1:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                "xquery version \"1.0\";\n" +
+                        "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "<result>\n" +
+                        "    {impl1:f1(\"from main\")}" +
+                        "</result>\n";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1340,18 +1341,96 @@ public class ImportModuleTest {
     }
 
     /**
-     * Checks that XQST0093 is raised if there exists a sequence of modules M1 ... Mi ... M1.
+     * Check that for XQuery 3.1 eXist-db executes the query even when there exists a sequence of library modules MM -> LM1 -> LM2 -> LM1.
+     *
+     * See issue <a href="https://github.com/eXist-db/exist/pull/4996">#4996</a>.
+     * See the XQuery 3.1 spec. section: <a href="https://www.w3.org/TR/xquery-31/#id-module-handling-cycles">4.12.4 Cycles</a>
      */
-    @Ignore("eXist-db does not have cyclic import checks, but it should!")
     @Test
-    public void cyclic2() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
+    public void xq31CyclicTwoLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
+        final String module1 =
+                "xquery version \"3.1\";\n" +
+                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
+                        "import module namespace impl2 = \"http://example.com/impl2\"" +
+                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
+                        "declare function impl1:f1($a as xs:string) {\n" +
+                        "    <impl1>{$a}</impl1>\n" +
+                        "};\n";
+
+        final String module2 =
+                "xquery version \"3.1\";\n" +
+                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
+                        "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "declare function impl2:f1($a as xs:string) as xs:string {\n" +
+                        "    <impl2>{$a}</impl2>\n" +
+                        "};\n";
+
+        final String query =
+                "xquery version \"3.1\";\n" +
+                "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "<result>\n" +
+                        "    {impl1:f1(\"from main\")}" +
+                        "</result>\n";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Source source = new StringSource(query);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            // store modules
+            storeModules(broker, transaction,"/db",
+                    Tuple("impl1.xqm", module1),
+                    Tuple("impl2.xqm", module2)
+            );
+
+            // execute query
+            final Tuple2<XQueryContext, Sequence> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
+                final Sequence result = executeQuery(broker, compiledXQuery);
+                return Tuple(compiledXQuery.getContext(), result);
+            });
+
+            // check that the result was correct
+            assertNotNull(contextAndResult._2);
+            assertEquals(1, contextAndResult._2.getItemCount());
+            final Element doc = (Element) contextAndResult._2.itemAt(0);
+            assertNotNull(doc);
+
+            final javax.xml.transform.Source actual = Input.fromDocument(doc.getOwnerDocument()).build();
+            final javax.xml.transform.Source expected = Input.fromString(
+                    "<result>" +
+                      "<impl1>from main</impl1>" +
+                    "</result>"
+            ).build();
+
+            final Diff diff = DiffBuilder
+                    .compare(expected)
+                    .withTest(actual)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+            transaction.commit();
+        }
+    }
+
+    /**
+     * Check that for XQuery 1.0. eXist-db raises XQTS0093 error when there exists a sequence of library modules MM -> LM1 -> LM2 -> LM3 -> LM1.
+     *
+     * See issue <a href="https://github.com/eXist-db/exist/pull/4996">#4996</a>.
+     * See the XQuery 1.0 spec. section: <a href="https://www.w3.org/TR/2010/REC-xquery-20101214/#id-module-import">4.11 Module Import</a>
+     */
+    @Test
+    public void xq10CyclicThreeLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
                 "xquery version \"1.0\";\n" +
                 "module namespace impl1 = \"http://example.com/impl1\";\n" +
                 "import module namespace impl2 = \"http://example.com/impl2\"" +
                 "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "declare function impl1:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
+                "declare function impl1:f1($a as xs:string) {\n" +
+                "    <impl1>{$a}</impl1>\n" +
                 "};\n";
 
         final String module2 =
@@ -1359,8 +1438,8 @@ public class ImportModuleTest {
                 "module namespace impl2 = \"http://example.com/impl2\";\n" +
                 "import module namespace impl3 = \"http://example.com/impl3\"" +
                 "        at \"xmldb:exist:///db/impl3.xqm\";\n" +
-                "declare function impl2:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
+                "declare function impl2:f1($a as xs:string) {\n" +
+                "    <impl2>{$a}</impl2>\n" +
                 "};\n";
 
         final String module3 =
@@ -1368,15 +1447,16 @@ public class ImportModuleTest {
                 "module namespace impl3 = \"http://example.com/impl3\";\n" +
                 "import module namespace impl1 = \"http://example.com/impl1\"" +
                 "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "declare function impl3:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
+                "declare function impl3:f1($a as xs:string) {\n" +
+                "    <impl3>{$a}</impl3>\n" +
                 "};\n";
 
         final String query =
+                "xquery version \"1.0\";\n" +
                 "import module namespace impl1 = \"http://example.com/impl1\"" +
                 "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
                 "<result>\n" +
-                "    <impl1>{impl1:f1(\"to impl1\")}</impl1>" +
+                "    {impl1:f1(\"from main\")}" +
                 "</result>\n";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -1407,6 +1487,92 @@ public class ImportModuleTest {
 
                 assertEquals(ErrorCodes.XQST0093, e.getErrorCode());
             }
+        }
+    }
+
+    /**
+     * Check that for XQuery 3.1 eXist-db executes the query even when there exists a sequence of library modules MM -> LM1 -> LM2 -> LM3 -> LM1.
+     *
+     * See issue <a href="https://github.com/eXist-db/exist/pull/4996">#4996</a>.
+     * See the XQuery 3.1 spec. section: <a href="https://www.w3.org/TR/xquery-31/#id-module-handling-cycles">4.12.4 Cycles</a>
+     */
+    @Test
+    public void xq31CyclicThreeLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
+        final String module1 =
+                "xquery version \"3.1\";\n" +
+                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
+                        "import module namespace impl2 = \"http://example.com/impl2\"" +
+                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
+                        "declare function impl1:f1($a as xs:string) {\n" +
+                        "    <impl1>{$a}</impl1>\n" +
+                        "};\n";
+
+        final String module2 =
+                "xquery version \"3.1\";\n" +
+                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
+                        "import module namespace impl3 = \"http://example.com/impl3\"" +
+                        "        at \"xmldb:exist:///db/impl3.xqm\";\n" +
+                        "declare function impl2:f1($a as xs:string) {\n" +
+                        "    <impl2>{$a}</impl2>\n" +
+                        "};\n";
+
+        final String module3 =
+                "xquery version \"3.1\";\n" +
+                        "module namespace impl3 = \"http://example.com/impl3\";\n" +
+                        "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "declare function impl3:f1($a as xs:string) {\n" +
+                        "    <impl3>{$a}</impl3>\n" +
+                        "};\n";
+
+        final String query =
+                "xquery version \"3.1\";\n" +
+                "import module namespace impl1 = \"http://example.com/impl1\"" +
+                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
+                        "<result>\n" +
+                        "    {impl1:f1(\"from main\")}" +
+                        "</result>\n";
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        final Source source = new StringSource(query);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            // store modules
+            storeModules(broker, transaction,"/db",
+                    Tuple("impl1.xqm", module1),
+                    Tuple("impl2.xqm", module2),
+                    Tuple("impl3.xqm", module3)
+            );
+
+            // execute query
+            final Tuple2<XQueryContext, Sequence> contextAndResult = withCompiledQuery(broker, source, compiledXQuery -> {
+                final Sequence result = executeQuery(broker, compiledXQuery);
+                return Tuple(compiledXQuery.getContext(), result);
+            });
+
+            // check that the result was correct
+            assertNotNull(contextAndResult._2);
+            assertEquals(1, contextAndResult._2.getItemCount());
+            final Element doc = (Element) contextAndResult._2.itemAt(0);
+            assertNotNull(doc);
+
+            final javax.xml.transform.Source actual = Input.fromDocument(doc.getOwnerDocument()).build();
+            final javax.xml.transform.Source expected = Input.fromString(
+                    "<result>" +
+                      "<impl1>from main</impl1>" +
+                    "</result>"
+            ).build();
+
+            final Diff diff = DiffBuilder
+                    .compare(expected)
+                    .withTest(actual)
+                    .checkForSimilar()
+                    .build();
+
+            assertFalse(diff.toString(), diff.hasDifferences());
+
+            transaction.commit();
         }
     }
 
