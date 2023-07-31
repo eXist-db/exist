@@ -248,8 +248,8 @@ public class NativeBroker implements DBBroker {
         this.indexConfiguration = (IndexSpec) config.getProperty(Indexer.PROPERTY_INDEXER_CONFIG);
         this.xmlSerializerPool = new XmlSerializerPool(this, config, 5);
 
+        pushSubject(pool.getSecurityManager().getSystemSubject());
         try {
-            pushSubject(pool.getSecurityManager().getSystemSubject());
             //TODO : refactor so that we can,
             //1) customize the different properties (file names, cache settings...)
             //2) have a consistent READ-ONLY behaviour (based on *mandatory* files ?)

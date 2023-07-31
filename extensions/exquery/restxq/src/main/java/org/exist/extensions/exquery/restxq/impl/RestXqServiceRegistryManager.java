@@ -32,20 +32,31 @@ import org.exist.storage.BrokerPool;
 import org.exquery.restxq.RestXqServiceRegistry;
 import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public final class RestXqServiceRegistryManager {
     
-    private final static Logger LOG = LogManager.getLogger(RestXqServiceRegistryManager.class);
+    private static final Logger LOG = LogManager.getLogger(RestXqServiceRegistryManager.class);
     
-    private static RestXqServiceRegistryImpl registry = null;
+    private static Map<BrokerPool, RestXqServiceRegistryImpl> registries = null;
     
     
     public static synchronized RestXqServiceRegistry getRegistry(final BrokerPool pool) {
-        
-        if(registry == null) {
+
+        RestXqServiceRegistryImpl registry = null;
+        if (registries == null) {
+            registries = new IdentityHashMap<>();
+        } else {
+            registry = registries.get(pool);
+        }
+
+        if (registry == null) {
             LOG.info("Initialising RESTXQ...");
             registry = new RestXqServiceRegistryImpl();
             
@@ -64,7 +75,9 @@ public final class RestXqServiceRegistryManager {
             //NOTE: must load registry before listening for registered events
             registry.addListener(persistence);
             
-            LOG.info("RESTXQ is ready.");
+            LOG.info("RESTXQ is ready for eXist-db BrokerPool: " + pool.getId());
+
+            registries.put(pool, registry);
         }
         
         return registry;
