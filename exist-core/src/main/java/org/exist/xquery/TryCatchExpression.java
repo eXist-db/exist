@@ -530,7 +530,7 @@ public class TryCatchExpression extends AbstractExpression {
     
     private void addJavaTrace(final Throwable t) throws XPathException  {
         final LocalVariable localVar = new LocalVariable(QN_JAVA_STACK_TRACE);
-        localVar.setSequenceType(new SequenceType(Type.QNAME, Cardinality.ZERO_OR_MORE));
+        localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
         final Sequence trace;
 		if (t != null && t.getStackTrace() != null) {
