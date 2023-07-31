@@ -95,6 +95,7 @@ import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
+import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.alg.shortestpath.TransitNodeRoutingShortestPath;
 import org.jgrapht.graph.DefaultEdge;
@@ -235,7 +236,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Describes a graph of all the modules and how they import each other.
      */
-    private @Nullable final FastutilMapGraph<ModuleVertex, DefaultEdge> modulesDependencyGraph;
+    private @Nullable Graph<ModuleVertex, DefaultEdge> modulesDependencyGraph;
+    private @Nullable ThreadPoolExecutor modulesDependencyGraphSPExecutor;
 
     /**
      * Used to save current state when modules are imported dynamically
@@ -467,10 +469,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     protected XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler, final boolean loadDefaults) {
-        this(db, configuration, profiler, loadDefaults, new FastutilMapGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), DefaultGraphType.directedPseudograph().asUnweighted()));
-    }
-
-    protected XQueryContext(@Nullable final Database db, @Nullable final Configuration configuration, @Nullable final Profiler profiler, final boolean loadDefaults, final @Nullable FastutilMapGraph<ModuleVertex, DefaultEdge> modulesDependencyGraph) {
         this.db = db;
 
         // if needed, fallback to db.getConfiguration
@@ -490,8 +488,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         } else {
             this.profiler = new Profiler(null);
         }
-
-        this.modulesDependencyGraph = modulesDependencyGraph;
 
         this.watchdog = new XQueryWatchDog(this);
 
@@ -1459,6 +1455,15 @@ public class XQueryContext implements BinaryValueManager, Context {
             httpContext = null;
         }
 
+        if (modulesDependencyGraphSPExecutor != null) {
+            try {
+                ConcurrencyUtil.shutdownExecutionService(modulesDependencyGraphSPExecutor);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            modulesDependencyGraphSPExecutor = null;
+        }
+
         analyzed = false;
     }
 
@@ -1548,13 +1553,21 @@ public class XQueryContext implements BinaryValueManager, Context {
         addRootModule(namespaceURI, module);
     }
 
+    private Graph<ModuleVertex, DefaultEdge> getModulesDependencyGraph() {
+        // NOTE(AR) intentionally lazily initialised!
+        if (modulesDependencyGraph == null) {
+            this.modulesDependencyGraph = new FastutilMapGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), DefaultGraphType.directedPseudograph().asUnweighted());
+        }
+        return modulesDependencyGraph;
+    }
+
     /**
      * Add a vertex to the Modules Dependency Graph.
      *
      * @param moduleVertex the module vertex
      */
     protected void addModuleVertex(final ModuleVertex moduleVertex) {
-        modulesDependencyGraph.addVertex(moduleVertex);
+        getModulesDependencyGraph().addVertex(moduleVertex);
     }
 
     /**
@@ -1565,7 +1578,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return true if the module vertex exists, false otherwise
      */
     protected boolean hasModuleVertex(final ModuleVertex moduleVertex) {
-        return modulesDependencyGraph.containsVertex(moduleVertex);
+        return getModulesDependencyGraph().containsVertex(moduleVertex);
     }
 
     /**
@@ -1575,7 +1588,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param sink the imported module
      */
     protected void addModuleEdge(final ModuleVertex source, final ModuleVertex sink) {
-        modulesDependencyGraph.addEdge(source, sink);
+        getModulesDependencyGraph().addEdge(source, sink);
     }
 
     /**
@@ -1591,20 +1604,13 @@ public class XQueryContext implements BinaryValueManager, Context {
             return false;
         }
 
-        ThreadPoolExecutor executor = null;
-        try {
-            executor = ConcurrencyUtil.createThreadPoolExecutor(2);
-            final ShortestPathAlgorithm<ModuleVertex, DefaultEdge> spa = new TransitNodeRoutingShortestPath<>(modulesDependencyGraph, executor);
-            return spa.getPath(source, sink) != null;
-        } finally {
-            if (executor != null) {
-                try {
-                    ConcurrencyUtil.shutdownExecutionService(executor);
-                } catch (final InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
+        // NOTE(AR) intentionally lazily initialised!
+        if (modulesDependencyGraphSPExecutor == null) {
+            modulesDependencyGraphSPExecutor = ConcurrencyUtil.createThreadPoolExecutor(2);
         }
+
+        final ShortestPathAlgorithm<ModuleVertex, DefaultEdge> spa = new TransitNodeRoutingShortestPath<>(getModulesDependencyGraph(), modulesDependencyGraphSPExecutor);
+        return spa.getPath(source, sink) != null;
     }
 
     protected void setRootModules(final String namespaceURI, @Nullable final Module[] modules) {

@@ -66,8 +66,7 @@ public class ModuleContext extends XQueryContext {
         super(parentContext != null ? parentContext.db : null,
                 parentContext != null ? parentContext.getConfiguration() : null,
                 null,
-                false,
-                null);
+                false);
         this.moduleNamespace = moduleNamespace;
         this.modulePrefix = modulePrefix;
         this.location = location;
