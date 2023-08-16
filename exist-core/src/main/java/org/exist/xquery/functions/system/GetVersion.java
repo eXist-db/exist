@@ -22,7 +22,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -57,6 +57,6 @@ public class GetVersion extends BasicFunction {
      */
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(SystemProperties.getInstance().getSystemProperty("product-version", "unknown version"));
+        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown version"));
     }
 }

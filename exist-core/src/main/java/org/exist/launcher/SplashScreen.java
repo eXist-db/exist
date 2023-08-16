@@ -30,7 +30,7 @@ import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 
 /**
  * Display a splash screen showing the eXist-db logo and a status line.
@@ -67,10 +67,10 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
         // version label
         final StringBuilder builder = new StringBuilder();
 	builder.append("Version ");
-        builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-	if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+	if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, ""))) {
 	    builder.append(" (");
-	    builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
+	    builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "(unknown Git commit ID)"));
 	    builder.append(")");
 	}
         versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
