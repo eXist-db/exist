@@ -109,7 +109,7 @@ public class ConfigurationHelper {
         final Path userHomeRelativeConfig = userHome.resolve(config);
         if (Files.isDirectory(userHome) && Files.isRegularFile(userHomeRelativeConfig)) {
             final Path existHome = userHomeRelativeConfig.getParent().normalize();
-            LOG.debug("Got eXist home: {} from system property 'user.home': {}", existHome.toAbsolutePath().toString(), userHome.toAbsolutePath().toString());
+            LOG.debug("Got eXist home: {} from system property 'user.home': {}", existHome.toAbsolutePath(), userHome.toAbsolutePath());
             return Optional.of(existHome);
         }
         
@@ -119,7 +119,7 @@ public class ConfigurationHelper {
         final Path userDirRelativeConfig = userDir.resolve(config);
         if (Files.isDirectory(userDir) && Files.isRegularFile(userDirRelativeConfig)) {
             final Path existHome = userDirRelativeConfig.getParent().normalize();
-            LOG.debug("Got eXist home: {} from system property 'user.dir': {}", existHome.toAbsolutePath().toString(), userDir.toAbsolutePath().toString());
+            LOG.debug("Got eXist home: {} from system property 'user.dir': {}", existHome.toAbsolutePath(), userDir.toAbsolutePath());
             return Optional.of(existHome);
         }
         
@@ -132,7 +132,7 @@ public class ConfigurationHelper {
                     existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent().normalize();
                     LOG.warn("{} file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", config, existHome);
                 } else {
-                    existHome = Paths.get(configUrl.toURI()).getParent();
+                    existHome = Paths.get(configUrl.toURI()).getParent().normalize();
                     if (FileUtils.fileName(existHome).equals("etc")) {
                         existHome = existHome.getParent().normalize();
                     }
@@ -179,15 +179,14 @@ public class ConfigurationHelper {
      * @return the file handle
      */
     public static Path lookup(final String path, final Optional<Path> parent) {
-        // resolvePath is used for things like ~user/folder
-        final Path p = decodeUserHome(path);
-        if (p.isAbsolute()) {
-            return p;
+        // attempt to first resolve the path that is used for things like ~user/folder
+        Path p = decodeUserHome(path);
+        if (!p.isAbsolute()) {
+            p = parent
+                    .orElse(getExistHome().orElse(Paths.get(System.getProperty("user.dir"))))
+                    .resolve(path);
         }
-
-        return parent
-                .orElse(getExistHome().orElse(Paths.get(System.getProperty("user.dir"))))
-                .resolve(path);
+        return p.normalize().toAbsolutePath();
     }
     
     

@@ -127,6 +127,8 @@ public class Configuration implements ErrorHandler
         InputStream is = null;
         try {
 
+            existHomeDirname = existHomeDirname.map(Path::normalize);
+
             if(configFilename == null) {
                 // Default file name
                 configFilename = DatabaseImpl.CONF_XML;
@@ -163,7 +165,6 @@ public class Configuration implements ErrorHandler
                         configFilename = FileUtils.fileName(absoluteConfigFile);
                     }
                 }
-
 
                 Path configFile = Paths.get(configFilename);
 
@@ -863,15 +864,15 @@ public class Configuration implements ErrorHandler
         final String dataFiles = getConfigAttributeValue( con, BrokerPool.DATA_DIR_ATTRIBUTE );
 
         if (dataFiles != null) {
-            final Path df = ConfigurationHelper.lookup( dataFiles, dbHome );
+            final Path df = ConfigurationHelper.lookup(dataFiles, dbHome);
             if (!Files.isReadable(df)) {
                 try {
                     Files.createDirectories(df);
                 } catch (final IOException ioe) {
-                    throw new DatabaseConfigurationException("cannot read data directory: " + df.toAbsolutePath().toString(), ioe);
+                    throw new DatabaseConfigurationException("cannot read data directory: " + df, ioe);
                 }
             }
-            config.put(BrokerPool.PROPERTY_DATA_DIR, df.toAbsolutePath());
+            config.put(BrokerPool.PROPERTY_DATA_DIR, df);
             LOG.debug(BrokerPool.PROPERTY_DATA_DIR + ": {}", config.get(BrokerPool.PROPERTY_DATA_DIR));
         }
 
@@ -1090,9 +1091,9 @@ public class Configuration implements ErrorHandler
             final Path rf = ConfigurationHelper.lookup( option, dbHome );
 
             if(!Files.isReadable(rf)) {
-                throw new DatabaseConfigurationException( "cannot read data directory: " + rf.toAbsolutePath());
+                throw new DatabaseConfigurationException( "cannot read data directory: " + rf);
             }
-            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, rf.toAbsolutePath());
+            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, rf);
             LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": {}", config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
         }
 
