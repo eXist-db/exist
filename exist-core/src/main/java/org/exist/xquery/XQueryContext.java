@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -588,9 +589,28 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             // use the resolved file or return null
             if (resolved != null) {
-                // build a module object from the file
-                final Source src = new FileSource(resolved, false);
-                return compileOrBorrowModule(prefix, namespace, "", src);
+
+                String location = "";
+
+                try {
+
+                    // see if the src exists in the database and if so, use that instead
+                    Source src = repo.get().resolveStoredXQueryModuleFromDb(getBroker(), resolved);
+                    if (src != null) {
+                        // NOTE(AR) set the location of the module to import relative to this module's load path - so that transient imports of the imported module will resolve correctly!
+                        location = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath()).relativize(Paths.get(((DBSource)src).getDocumentPath().getCollectionPath())).toString();
+                    } else {
+                        // else, fallback to the one from the filesystem
+                        src = new FileSource(resolved, false);
+                    }
+
+                    // build a module object from the source
+                    final ExternalModule module = compileOrBorrowModule(prefix, namespace, location, src);
+                    return module;
+
+                } catch (final PermissionDeniedException e) {
+                    throw new XPathException(e.getMessage(), e);
+                }
             }
         }
 

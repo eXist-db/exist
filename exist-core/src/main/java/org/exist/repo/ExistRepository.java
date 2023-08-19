@@ -23,12 +23,17 @@ package org.exist.repo;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.DBSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
+import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Module;
@@ -41,7 +46,9 @@ import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.URISpace;
+import org.w3c.dom.Document;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
@@ -270,6 +277,38 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * Attempt to lookup an XQuery from the filesystem in the database.
+     *
+     * @param broker the database broker
+     * @param xqueryPath the path to the xquery within the EXPath filesystem repo.
+     *
+     * @return the database source for the xquery, or null.
+     */
+    public @Nullable org.exist.source.Source resolveStoredXQueryModuleFromDb(final DBBroker broker, final Path xqueryPath) throws PermissionDeniedException {
+        if (!xqueryPath.startsWith(expathDir)) {
+            return null;
+        }
+
+        final String relXQueryPath = expathDir.relativize(xqueryPath).toString();
+
+        // 1. attempt to locate it within a library
+        XmldbURI xqueryDbPath = XmldbURI.create("xmldb:exist:///db/system/repo/" + relXQueryPath);
+        @Nullable Document doc = broker.getXMLResource(xqueryDbPath);
+        if (doc != null && doc instanceof BinaryDocument) {
+            return new DBSource(broker, (BinaryDocument) doc, false);
+        }
+
+        // 2. attempt to locate it within an app
+        xqueryDbPath = XmldbURI.create("xmldb:exist:///db/apps/" + relXQueryPath);
+        doc = broker.getXMLResource(xqueryDbPath);
+        if (doc != null && doc instanceof BinaryDocument) {
+            return new DBSource(broker, (BinaryDocument) doc, false);
+        }
+
         return null;
     }
 
