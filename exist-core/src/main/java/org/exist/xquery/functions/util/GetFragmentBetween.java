@@ -89,7 +89,8 @@ public class GetFragmentBetween extends BasicFunction {
                             new FunctionParameterSequenceType("make-fragment", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "The flag make a fragment."),
                             new FunctionParameterSequenceType("display-root-namespace", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, "Display the namespace of the root node of the fragment.")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the fragment between the two node/milestone elements."), true);
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the fragment between the two node/milestone elements.")
+            );
 
     public GetFragmentBetween(final XQueryContext context) {
         super(context, signature);
