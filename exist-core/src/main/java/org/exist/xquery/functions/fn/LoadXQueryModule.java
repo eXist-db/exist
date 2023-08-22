@@ -251,7 +251,7 @@ public class LoadXQueryModule extends BasicFunction {
             if (!signature.isPrivate()) {
                 if (module.isInternalModule()) {
                     int arity;
-                    if (signature.isOverloaded()) {
+                    if (signature.isVariadic()) {
                         arity = signature.getArgumentTypes().length;
                     }
                     else {

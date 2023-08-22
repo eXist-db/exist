@@ -252,7 +252,7 @@ public class FunHigherOrderFun extends BasicFunction {
     }
 
     private boolean funcRefHasDifferentArity(final FunctionReference ref, final int n) {
-        return (!ref.getSignature().isOverloaded() &&
+        return (!ref.getSignature().isVariadic() &&
                 ref.getSignature().getArgumentCount() != n);
     }
 }

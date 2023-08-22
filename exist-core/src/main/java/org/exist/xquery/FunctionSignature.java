@@ -60,7 +60,7 @@ public class FunctionSignature {
     private final QName name;
     private SequenceType[] arguments;
     private SequenceType returnType;
-    private boolean isOverloaded = false;
+    private boolean isVariadic = false;
     private String description = null;
     private String deprecated = null;
     private Map<String, String> metadata = null;
@@ -70,7 +70,7 @@ public class FunctionSignature {
         this.arguments = other.arguments != null ? Arrays.copyOf(other.arguments, other.arguments.length) : null;
         this.returnType = other.returnType;
         this.annotations = other.annotations != null ? Arrays.copyOf(other.annotations, other.annotations.length) : null;
-        this.isOverloaded = other.isOverloaded;
+        this.isVariadic = other.isVariadic;
         this.deprecated = other.deprecated;
         this.description = other.description;
         this.metadata = other.metadata != null ? new HashMap<>(other.metadata) : null;
@@ -84,8 +84,8 @@ public class FunctionSignature {
         this(name, null, arguments, returnType);
     }
 
-    public FunctionSignature(final QName name, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded) {
-        this(name, null, arguments, returnType, overloaded);
+    public FunctionSignature(final QName name, final SequenceType[] arguments, final SequenceType returnType, final boolean variadic) {
+        this(name, null, arguments, returnType, variadic);
     }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType) {
@@ -101,8 +101,8 @@ public class FunctionSignature {
 //        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
 //    }
 
-    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded, final String deprecated) {
-        this(name, description, arguments, returnType, overloaded);
+    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean variadic, final String deprecated) {
+        this(name, description, arguments, returnType, variadic);
         setDeprecated(deprecated);
     }
 	
@@ -113,13 +113,13 @@ public class FunctionSignature {
      * @param description documentation string describing the function
      * @param arguments the sequence types of all expected arguments
      * @param returnType the sequence type returned by the function
-     * @param overloaded set to true if the function may expect additional parameters
+     * @param variadic set to true if the function may expect additional parameters
      */		
-    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean overloaded) {
+    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean variadic) {
         this.name = name;
         this.arguments = arguments;
         this.returnType = returnType;
-        this.isOverloaded = overloaded;
+        this.isVariadic = variadic;
         this.description = description;
     }
 
@@ -132,7 +132,7 @@ public class FunctionSignature {
     }
 
     public int getArgumentCount() {
-        if(isOverloaded) {
+        if(isVariadic) {
             return -1;
         }
         return arguments != null ? arguments.length : 0;
@@ -193,8 +193,8 @@ public class FunctionSignature {
         return metadata;
     }
 
-    public boolean isOverloaded() {
-        return isOverloaded;
+    public boolean isVariadic() {
+        return isVariadic;
     }
 
     public boolean isDeprecated() {
@@ -247,7 +247,7 @@ public class FunctionSignature {
                 buf.append(arguments[i].toString());
             }
             
-            if(isOverloaded) {
+            if(isVariadic) {
                 buf.append(", ...");
             }
         }
@@ -289,7 +289,7 @@ public class FunctionSignature {
         final SequenceType[] argumentsCopy = arguments != null ? Arrays.copyOf(arguments, arguments.length) : null;
         final FunctionSignature newFunctionSignature = new FunctionSignature(newName, description, argumentsCopy, returnType, deprecated);
         newFunctionSignature.annotations = annotations != null ? Arrays.copyOf(annotations, annotations.length) : null;
-        newFunctionSignature.isOverloaded = isOverloaded;
+        newFunctionSignature.isVariadic = isVariadic;
         newFunctionSignature.metadata = metadata != null ? new HashMap<>(metadata) : null;
         return newFunctionSignature;
     }
