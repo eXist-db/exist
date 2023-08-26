@@ -71,16 +71,16 @@ public class FunNamespaceURI extends Function {
                     new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_0_PARAM + FUNCTION_DESCRIPTION_COMMON,
                     new SequenceType[0],
-                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
-                    false),
+                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI")
+            ),
             new FunctionSignature(
                     new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
                     FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,
                     new SequenceType[] {
                             new FunctionParameterSequenceType("arg", Type.NODE, Cardinality.ZERO_OR_ONE, "The input node")
                     },
-                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI"),
-                    false)
+                    new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE, "the namespace URI")
+            )
     };
 
     public FunNamespaceURI(final XQueryContext context, final FunctionSignature signature) {
