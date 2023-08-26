@@ -369,6 +369,17 @@ function rt:equality-field-nested($type as xs:string, $subtype as xs:string, $na
     collection("/db/rangetest")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
 };
 
+(: Test multi-value field lookups :)
+declare
+    %test:assertEquals("Hofthiergarten", "Dorfprozelten")
+function rt:equality-field-nested-multi() {
+    collection("/db/rangetest")
+        //range:field-eq(
+            ("type", "subtype", "name"),
+            "main", "official", ("Hofthiergarten", "Dorfprozelten"))
+        /text()
+};
+
 declare 
     %test:assertEquals("Almweide")
 function rt:remove-document() {
