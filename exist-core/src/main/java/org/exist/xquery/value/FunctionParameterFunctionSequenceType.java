@@ -31,14 +31,9 @@ import org.exist.xquery.FunctionSignature;
  */
 public class FunctionParameterFunctionSequenceType extends FunctionParameterSequenceType {
 
-    private SequenceType[] parameters = null;
+    private final int arity;
+    private final SequenceType[] parameters;
     private SequenceType returnType = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
-
-    /**
-     * mimics isOverloaded property of FunctionSignature
-     * @see org.exist.xquery.FunctionSignature
-     */
-    private int arity = -1;
 
     /**
      * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
@@ -72,16 +67,8 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
         this.arity = parameterTypes.length;
     }
 
-    /**
-     * FIXME: is this constructor needed?
-     * @param attributeName
-     */
-    public FunctionParameterFunctionSequenceType(final String attributeName) {
-        super(attributeName);
-    }
-
     @Override
-    public boolean checkType(Sequence seq) throws XPathException {
+    public boolean checkType(final Sequence seq) throws XPathException {
         // all functions?
         if (!Type.subTypeOf(seq.getItemType(), getPrimaryType())) {
             throw new XPathException(ErrorCodes.XPTY0004,
@@ -92,31 +79,69 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
         }
 
         // check each ref
-        FunctionReference next;
         for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            next = (FunctionReference) i.nextItem();
-            if (!checkType(next)) {
-                throw new XPathException(ErrorCodes.XPTY0004,
-                        "Type error: expected type: "
-                                + Type.getTypeName(getPrimaryType())
-                                + "; got: "
-                                + Type.getTypeName(seq.getItemType()));
-            }
+            final FunctionReference next = (FunctionReference) i.nextItem();
+            checkType(next);
         }
         return true;
     }
 
     public boolean checkType(final FunctionReference ref) throws XPathException {
         final FunctionSignature sig = ref.getSignature();
-        // check arity of referenced function call
-        arityMatches(sig);
 
         // check return type
         returnTypeMatches(sig);
-
-        if (arityUnspecified()) { return true; }
-
+        // check arity of referenced function call
+        arityMatches(sig);
         // check argumentTypes
+        parameterTypesMatch(sig);
+
+        return true;
+    }
+
+    private void returnTypeMatches (final FunctionSignature sig) throws XPathException {
+        final int primaryReturnType = returnType.getPrimaryType();
+        if (primaryReturnType == Type.ITEM) {
+            return;
+        }
+        final int otherPrimaryReturnType = sig.getReturnType().getPrimaryType();
+        if (Type.subTypeOf(otherPrimaryReturnType, primaryReturnType)) {
+            return;
+        }
+        // ITEM is likely unspecified return type - catch error later
+        if (otherPrimaryReturnType == Type.ITEM) {
+            return;
+        }
+        // return type mismatch
+        throw new XPathException(ErrorCodes.XPTY0004,
+                "Type error: unexpected return type: " + Type.getTypeName(primaryReturnType)
+                        + "; got: " + Type.getTypeName(otherPrimaryReturnType));
+    }
+
+    private void arityMatches (final FunctionSignature sig) throws XPathException {
+        final int otherArity;
+
+        if (sig.isVariadic()) {
+            // variadic functions do return -1 as their argument count
+            // but a function reference will return the exact number of
+            // argument types that has to match
+            // Example: a reference to concat#3 will have an argumentTypes length of 3
+            otherArity = sig.getArgumentTypes().length;
+        } else {
+            // all non-variadic functions
+            otherArity = sig.getArgumentCount();
+        }
+
+        if (arity == otherArity) {
+            return;
+        }
+        // arity mismatch
+        throw new XPathException(ErrorCodes.XPTY0004,
+                "Type error: Function does not have expected arity of "
+                        + arity + "; got " + otherArity);
+    }
+
+    private void parameterTypesMatch(FunctionSignature sig) throws XPathException {
         final SequenceType[] arguments = sig.getArgumentTypes();
         for (int i = 0; i < arguments.length; i++) {
             final int argumentType = arguments[i].getPrimaryType();
@@ -129,43 +154,5 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
                                 + "; got: " + Type.getTypeName(argumentType));
             }
         }
-        return true;
-    }
-
-    private void arityMatches (final FunctionSignature sig) throws XPathException {
-        if (arityUnspecified()) { return; }
-        final int otherArity;
-
-        if (sig.isOverloaded()) {
-            // concat#3 will not return the correct argument count but the number of
-            // argument types matches the concrete reference with three entries
-            otherArity = sig.getArgumentTypes().length;
-        } else {
-            // expected arity is specified and the reference is not isOverloaded
-            otherArity = sig.getArgumentCount();
-        }
-//        final int otherArity = sig.getArgumentCount();
-        if (arity == otherArity) { return; }
-        // arity mismatch
-        throw new XPathException(ErrorCodes.XPTY0004,
-                "Type error: Function does not have expected arity of "
-                        + arity + "; got " + otherArity);
-    }
-
-    private void returnTypeMatches (final FunctionSignature sig) throws XPathException {
-        final int primaryReturnType = returnType.getPrimaryType();
-        if (primaryReturnType == Type.ITEM) { return; }
-        final int otherPrimaryReturnType = sig.getReturnType().getPrimaryType();
-        if (Type.subTypeOf(otherPrimaryReturnType, primaryReturnType)) { return; }
-        // ITEM is likely unspecified return type - catch error later
-        if (otherPrimaryReturnType == Type.ITEM) { return; }
-        // return type mismatch
-        throw new XPathException(ErrorCodes.XPTY0004,
-                "Type error: unexpected return type: " + Type.getTypeName(primaryReturnType)
-                        + "; got: " + Type.getTypeName(otherPrimaryReturnType));
-    }
-
-    private boolean arityUnspecified () {
-        return arity < 0;
     }
 }
