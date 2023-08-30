@@ -66,7 +66,7 @@ public class SingleInstanceConfiguration extends Configuration {
     public static Optional<Path> getPath() {
         if (!_configFile.isPresent()) {
             final Path f = ConfigurationHelper.lookup("conf.xml");
-            return Optional.of(f.toAbsolutePath());
+            return Optional.of(f);
         }
         return _configFile;
     }
