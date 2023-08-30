@@ -81,7 +81,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -139,23 +138,19 @@ public class Configuration implements ErrorHandler {
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     protected Optional<Path> configFilePath = Optional.empty();
     protected Optional<Path> existHome = Optional.empty();
-    protected DocumentBuilder builder = null;
-    protected HashMap<String, Object> config = new HashMap<>(); //Configuration
+    protected Map<String, Object> config = new HashMap<>(); //Configuration
 
     public Configuration() throws DatabaseConfigurationException {
         this(DatabaseImpl.CONF_XML, Optional.empty());
     }
 
-    public Configuration(final String configFilename) throws DatabaseConfigurationException {
+    public Configuration(@Nullable String configFilename) throws DatabaseConfigurationException {
         this(configFilename, Optional.empty());
     }
 
-    public Configuration(String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
+    public Configuration(@Nullable String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
         InputStream is = null;
         try {
-
-            existHomeDirname = existHomeDirname.map(Path::normalize);
-
             if (configFilename == null) {
                 // Default file name
                 configFilename = DatabaseImpl.CONF_XML;
@@ -176,12 +171,15 @@ public class Configuration implements ErrorHandler {
                 LOG.debug(e);
             }
 
+            existHomeDirname = existHomeDirname.map(Path::normalize);
+
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
-                existHome = existHomeDirname.map(Optional::of).orElse(ConfigurationHelper.getExistHome(configFilename));
+                existHome = existHomeDirname.map(Optional::of)
+                        .orElse(ConfigurationHelper.getExistHome(configFilename));
 
-                if (!existHome.isPresent()) {
+                if (existHome.isEmpty()) {
 
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
@@ -504,10 +502,6 @@ public class Configuration implements ErrorHandler {
         final Element builtIn = (Element) builtIns.item(0);
         final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
 
-        if (modules.getLength() == 0) {
-            return;
-        }
-
         // iterate over all <module src= uri= class=> entries
         for (int i = 0; i < modules.getLength(); i++) {
             // Get element.
@@ -643,23 +637,17 @@ public class Configuration implements ErrorHandler {
 
                 if (name == null || name.isEmpty()) {
                     LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name not specified", className);
-
                 } else if (type == null || type.isEmpty() || type.equalsIgnoreCase("string")) {
                     attributes.put(name, value);
-
                 } else if (type.equalsIgnoreCase("boolean")) {
                     attributes.put(name, Boolean.valueOf(value));
-
                 } else if (type.equalsIgnoreCase("integer")) {
-
                     try {
                         attributes.put(name, Integer.valueOf(value));
                     } catch (final NumberFormatException nfe) {
                         LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name: {}, value not integer: {}", className, name, value, nfe);
                     }
-
                 } else {
-
                     // Assume string type
                     attributes.put(name, value);
                 }
@@ -695,7 +683,8 @@ public class Configuration implements ErrorHandler {
         }
 
         final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-        if (pFeatures == null) {
+
+        if (pFeatures.isEmpty()) {
             return;
         }
 
@@ -711,6 +700,10 @@ public class Configuration implements ErrorHandler {
         }
 
         final Element htmlToXml = (Element) nlHtmlToXml.item(0);
+        if (htmlToXml == null) {
+            return;
+        }
+
         final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
         config.put(HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
 
@@ -756,57 +749,49 @@ public class Configuration implements ErrorHandler {
         }
 
         final String xinclude = getConfigAttributeValue(serializer, ENABLE_XINCLUDE_ATTRIBUTE);
-
         if (xinclude != null) {
             config.put(PROPERTY_ENABLE_XINCLUDE, xinclude);
             LOG.debug(PROPERTY_ENABLE_XINCLUDE + ": {}", config.get(PROPERTY_ENABLE_XINCLUDE));
         }
 
         final String xsl = getConfigAttributeValue(serializer, ENABLE_XSL_ATTRIBUTE);
-
         if (xsl != null) {
             config.put(PROPERTY_ENABLE_XSL, xsl);
             LOG.debug(PROPERTY_ENABLE_XSL + ": {}", config.get(PROPERTY_ENABLE_XSL));
         }
 
         final String indent = getConfigAttributeValue(serializer, INDENT_ATTRIBUTE);
-
         if (indent != null) {
             config.put(PROPERTY_INDENT, indent);
             LOG.debug(PROPERTY_INDENT + ": {}", config.get(PROPERTY_INDENT));
         }
 
         final String compress = getConfigAttributeValue(serializer, COMPRESS_OUTPUT_ATTRIBUTE);
-
         if (compress != null) {
             config.put(PROPERTY_COMPRESS_OUTPUT, compress);
             LOG.debug(PROPERTY_COMPRESS_OUTPUT + ": {}", config.get(PROPERTY_COMPRESS_OUTPUT));
         }
 
         final String internalId = getConfigAttributeValue(serializer, ADD_EXIST_ID_ATTRIBUTE);
-
         if (internalId != null) {
             config.put(PROPERTY_ADD_EXIST_ID, internalId);
             LOG.debug(PROPERTY_ADD_EXIST_ID + ": {}", config.get(PROPERTY_ADD_EXIST_ID));
         }
 
         final String tagElementMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ELEMENTS_ATTRIBUTE);
-
         if (tagElementMatches != null) {
             config.put(PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
             LOG.debug(PROPERTY_TAG_MATCHING_ELEMENTS + ": {}", config.get(PROPERTY_TAG_MATCHING_ELEMENTS));
         }
 
         final String tagAttributeMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ATTRIBUTES_ATTRIBUTE);
-
         if (tagAttributeMatches != null) {
             config.put(PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
             LOG.debug(PROPERTY_TAG_MATCHING_ATTRIBUTES + ": {}", config.get(PROPERTY_TAG_MATCHING_ATTRIBUTES));
         }
 
         final NodeList nlFilters = serializer.getElementsByTagName(CustomMatchListenerFactory.CONFIGURATION_ELEMENT);
-
-        if (nlFilters != null) {
+        if (nlFilters.getLength() > 0) {
             final List<String> filters = new ArrayList<>(nlFilters.getLength());
 
             for (int i = 0; i < nlFilters.getLength(); i++) {
@@ -824,25 +809,23 @@ public class Configuration implements ErrorHandler {
         }
 
         final NodeList backupFilters = serializer.getElementsByTagName(SystemExport.CONFIGURATION_ELEMENT);
-        if (backupFilters == null) {
-            return;
-        }
+        if (backupFilters.getLength() > 0) {
+            final List<String> filters = new ArrayList<>(backupFilters.getLength());
 
-        final List<String> filters = new ArrayList<>(backupFilters.getLength());
+            for (int i = 0; i < backupFilters.getLength(); i++) {
+                final Element filterElem = (Element) backupFilters.item(i);
+                final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-        for (int i = 0; i < backupFilters.getLength(); i++) {
-            final Element filterElem = (Element) backupFilters.item(i);
-            final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
-
-            if (filterClass != null) {
-                filters.add(filterClass);
-                LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
-            } else {
-                LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                if (filterClass != null) {
+                    filters.add(filterClass);
+                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
+                } else {
+                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                }
+                if (!filters.isEmpty()) {
+                    config.put(SystemExport.CONFIG_FILTERS, filters);
+                }
             }
-        }
-        if (!filters.isEmpty()) {
-            config.put(SystemExport.CONFIG_FILTERS, filters);
         }
     }
 
@@ -853,82 +836,12 @@ public class Configuration implements ErrorHandler {
      */
     private void configureScheduler(final Element scheduler) {
         final NodeList nlJobs = scheduler.getElementsByTagName(JobConfig.CONFIGURATION_JOB_ELEMENT_NAME);
-
-        if (nlJobs == null) {
-            return;
-        }
-
         final List<JobConfig> jobList = new ArrayList<>();
 
         for (int i = 0; i < nlJobs.getLength(); i++) {
             final Element job = (Element) nlJobs.item(i);
-
-            //get the job type
-            final String strJobType = getConfigAttributeValue(job, JobConfig.JOB_TYPE_ATTRIBUTE);
-
-            final JobType jobType;
-            if (strJobType == null) {
-                jobType = JobType.USER; //default to user if unspecified
-            } else {
-                jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
-            }
-
-            final String jobName = getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE);
-
-            //get the job resource
-            String jobResource = getConfigAttributeValue(job, JOB_CLASS_ATTRIBUTE);
-            if (jobResource == null) {
-                jobResource = getConfigAttributeValue(job, JOB_XQUERY_ATTRIBUTE);
-            }
-
-            //get the job schedule
-            String jobSchedule = getConfigAttributeValue(job, JOB_CRON_TRIGGER_ATTRIBUTE);
-            if (jobSchedule == null) {
-                jobSchedule = getConfigAttributeValue(job, JOB_PERIOD_ATTRIBUTE);
-            }
-
-            final String jobUnschedule = getConfigAttributeValue(job, JOB_UNSCHEDULE_ON_EXCEPTION);
-
-            //create the job config
-            try {
-                final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
-
-                //get and set the job delay
-                final String jobDelay = getConfigAttributeValue(job, JOB_DELAY_ATTRIBUTE);
-
-                if ((jobDelay != null) && (!jobDelay.isEmpty())) {
-                    jobConfig.setDelay(Long.parseLong(jobDelay));
-                }
-
-                //get and set the job repeat
-                final String jobRepeat = getConfigAttributeValue(job, JOB_REPEAT_ATTRIBUTE);
-
-                if ((jobRepeat != null) && (!jobRepeat.isEmpty())) {
-                    jobConfig.setRepeat(Integer.parseInt(jobRepeat));
-                }
-
-                final NodeList nlParam = job.getElementsByTagName(PARAMETER_ELEMENT_NAME);
-                final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
-
-                for (final Entry<String, List<? extends Object>> param : params.entrySet()) {
-                    final List<? extends Object> values = param.getValue();
-                    if (values != null && !values.isEmpty()) {
-                        jobConfig.addParameter(param.getKey(), values.get(0).toString());
-
-                        if (values.size() > 1) {
-                            LOG.warn("Parameter '{}' for job '{}' has more than one value, ignoring further values.", param.getKey(), jobName);
-                        }
-                    }
-                }
-
-                jobList.add(jobConfig);
-
-                LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource,
-                        (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule),
-                        (jobDelay == null) ? "" : ("' with delay '" + jobDelay),
-                        (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
-            } catch (final JobException je) {
-                LOG.error(je);
+            if (job != null) {
+                addJobToList(jobList, job);
             }
         }
 
@@ -936,11 +849,79 @@ public class Configuration implements ErrorHandler {
             return;
         }
 
-        final JobConfig[] configs = new JobConfig[jobList.size()];
+        final JobConfig[] jobConfigs = new JobConfig[jobList.size()];
         for (int i = 0; i < jobList.size(); i++) {
-            configs[i] = (JobConfig) jobList.get(i);
+            jobConfigs[i] = jobList.get(i);
         }
-        config.put(PROPERTY_SCHEDULER_JOBS, configs);
+        config.put(PROPERTY_SCHEDULER_JOBS, jobConfigs);
+    }
+
+    private void addJobToList(final List<JobConfig> jobList, final Element job) {
+        //get the job type
+        final String strJobType = getConfigAttributeValue(job, JOB_TYPE_ATTRIBUTE);
+
+        final JobType jobType;
+        if (strJobType == null) {
+            jobType = JobType.USER; //default to user if unspecified
+        } else {
+            jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
+        }
+
+        final String jobName = getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE);
+
+        //get the job resource
+        String jobResource = getConfigAttributeValue(job, JOB_CLASS_ATTRIBUTE);
+        if (jobResource == null) {
+            jobResource = getConfigAttributeValue(job, JOB_XQUERY_ATTRIBUTE);
+        }
+
+        //get the job schedule
+        String jobSchedule = getConfigAttributeValue(job, JOB_CRON_TRIGGER_ATTRIBUTE);
+        if (jobSchedule == null) {
+            jobSchedule = getConfigAttributeValue(job, JOB_PERIOD_ATTRIBUTE);
+        }
+
+        final String jobUnschedule = getConfigAttributeValue(job, JOB_UNSCHEDULE_ON_EXCEPTION);
+
+        //create the job config
+        try {
+            final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
+
+            //get and set the job delay
+            final String jobDelay = getConfigAttributeValue(job, JOB_DELAY_ATTRIBUTE);
+            if (jobDelay != null && !jobDelay.isEmpty()) {
+                jobConfig.setDelay(Long.parseLong(jobDelay));
+            }
+
+            //get and set the job repeat
+            final String jobRepeat = getConfigAttributeValue(job, JOB_REPEAT_ATTRIBUTE);
+            if (jobRepeat != null && !jobRepeat.isEmpty()) {
+                jobConfig.setRepeat(Integer.parseInt(jobRepeat));
+            }
+
+            final NodeList nlParam = job.getElementsByTagName(PARAMETER_ELEMENT_NAME);
+            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
+
+            for (final Entry<String, List<? extends Object>> param : params.entrySet()) {
+                final List<? extends Object> values = param.getValue();
+                if (values != null && !values.isEmpty()) {
+                    jobConfig.addParameter(param.getKey(), values.get(0).toString());
+
+                    if (values.size() > 1) {
+                        LOG.warn("Parameter '{}' for job '{}' has more than one value, ignoring further values.", param.getKey(), jobName);
+                    }
+                }
+            }
+
+            jobList.add(jobConfig);
+
+            LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource,
+                    (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule),
+                    (jobDelay == null) ? "" : ("' with delay '" + jobDelay),
+                    (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
+        } catch (final JobException je) {
+            LOG.error(je);
+        }
     }
 
     /**
@@ -991,16 +972,16 @@ public class Configuration implements ErrorHandler {
 
         // Process the Check Max Cache value
 
-        String checkMaxCache = getConfigAttributeValue(con, DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE);
+        String checkMaxCache = getConfigAttributeValue(con, CACHE_CHECK_MAX_SIZE_ATTRIBUTE);
 
         if (checkMaxCache == null) {
-            checkMaxCache = DefaultCacheManager.DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
+            checkMaxCache = DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
         }
 
         config.put(PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean(checkMaxCache, true));
         LOG.debug(PROPERTY_CACHE_CHECK_MAX_SIZE + ": {}", config.get(PROPERTY_CACHE_CHECK_MAX_SIZE));
 
-        String cacheShrinkThreshold = getConfigAttributeValue(con, DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE);
+        String cacheShrinkThreshold = getConfigAttributeValue(con, SHRINK_THRESHOLD_ATTRIBUTE);
 
         if (cacheShrinkThreshold == null) {
             cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
@@ -1090,16 +1071,16 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        final String posixChownRestrictedStr = getConfigAttributeValue(con, DBBroker.POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
+        final String posixChownRestrictedStr = getConfigAttributeValue(con, POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
         final boolean posixChownRestricted = posixChownRestrictedStr == null || Boolean.parseBoolean(posixChownRestrictedStr);
-        config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
+        config.put(POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
 
-        final String preserveOnCopyStr = getConfigAttributeValue(con, DBBroker.PRESERVE_ON_COPY_ATTRIBUTE);
+        final String preserveOnCopyStr = getConfigAttributeValue(con, PRESERVE_ON_COPY_ATTRIBUTE);
         // default or configuration explicitly specifies that attributes should be preserved on copy
-        final DBBroker.PreserveType preserveOnCopy = Boolean.parseBoolean(preserveOnCopyStr)
-                ? DBBroker.PreserveType.PRESERVE
-                : DBBroker.PreserveType.NO_PRESERVE;
-        config.put(DBBroker.PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
+        final PreserveType preserveOnCopy = Boolean.parseBoolean(preserveOnCopyStr)
+                ? PreserveType.PRESERVE
+                : PreserveType.NO_PRESERVE;
+        config.put(PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
 
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
         if (startupConf.getLength() > 0) {
@@ -1158,11 +1139,11 @@ public class Configuration implements ErrorHandler {
         final String sizeLimit = getConfigAttributeValue(recovery, RECOVERY_SIZE_LIMIT_ATTRIBUTE);
         if (sizeLimit != null) {
             try {
-                final Integer size;
+                final int size;
                 if (sizeLimit.endsWith("M") || sizeLimit.endsWith("m")) {
-                    size = Integer.valueOf(sizeLimit.substring(0, sizeLimit.length() - 1));
+                    size = Integer.parseInt(sizeLimit.substring(0, sizeLimit.length() - 1));
                 } else {
-                    size = Integer.valueOf(sizeLimit);
+                    size = Integer.parseInt(sizeLimit);
                 }
                 setProperty(PROPERTY_RECOVERY_SIZE_LIMIT, size);
                 LOG.debug(PROPERTY_RECOVERY_SIZE_LIMIT + ": {}m", config.get(PROPERTY_RECOVERY_SIZE_LIMIT));
@@ -1172,12 +1153,12 @@ public class Configuration implements ErrorHandler {
         }
 
         final String forceRestart = getConfigAttributeValue(recovery, RECOVERY_FORCE_RESTART_ATTRIBUTE);
-        final boolean forceRestartValue = forceRestart != null && "yes".equals(forceRestart);
+        final boolean forceRestartValue = "yes".equals(forceRestart);
         setProperty(PROPERTY_RECOVERY_FORCE_RESTART, forceRestartValue);
         LOG.debug(PROPERTY_RECOVERY_FORCE_RESTART + ": {}", config.get(PROPERTY_RECOVERY_FORCE_RESTART));
 
         final String postRecoveryCheck = getConfigAttributeValue(recovery, RECOVERY_POST_RECOVERY_CHECK);
-        final boolean postRecoveryCheckValue = postRecoveryCheck != null && "yes".equals(postRecoveryCheck);
+        final boolean postRecoveryCheckValue = "yes".equals(postRecoveryCheck);
         setProperty(PROPERTY_RECOVERY_CHECK, postRecoveryCheckValue);
         LOG.debug(PROPERTY_RECOVERY_CHECK + ": {}", config.get(PROPERTY_RECOVERY_CHECK));
     }
@@ -1249,7 +1230,7 @@ public class Configuration implements ErrorHandler {
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
 
         // If <triggers> exists
-        if (nlTriggers == null || nlTriggers.getLength() == 0) {
+        if (nlTriggers.getLength() == 0) {
             return;
         }
         // Get <triggers>
@@ -1259,7 +1240,7 @@ public class Configuration implements ErrorHandler {
         final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
 
         // If <trigger> exists and there are more than 0
-        if (nlTrigger == null || nlTrigger.getLength() == 0) {
+        if (nlTrigger.getLength() == 0) {
             return;
         }
 
@@ -1433,6 +1414,7 @@ public class Configuration implements ErrorHandler {
             if (id == null || id.isEmpty()) {
                 throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
             }
+
             modConfig[i] = new IndexModuleConfig(id, className, elem);
         }
         config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
@@ -1475,21 +1457,23 @@ public class Configuration implements ErrorHandler {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
             LOG.debug("Using dbHome=" + dbHome);
-            LOG.debug("using webappHome=" + webappHome.toString());
+            LOG.debug("using webappHome=" + webappHome);
         }
 
         // Get the Catalog URIs
         final List<String> catalogUris = new ArrayList<>();
         for (int i = 0; i < nlCatalogs.getLength(); i++) {
-            String uri = ((Element) nlCatalogs.item(i)).getAttribute("uri");
+            final String uriAttributeValue = ((Element) nlCatalogs.item(i)).getAttribute("uri");
 
-            if (uri != null) {
+            if (!uriAttributeValue.isEmpty()) {
+                final String uri;
                 // Substitute string, creating an uri from a local file
-                if (uri.contains("${WEBAPP_HOME}")) {
-                    uri = uri.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
-                }
-                if (uri.contains("${EXIST_HOME}")) {
-                    uri = uri.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
+                if (uriAttributeValue.contains("${WEBAPP_HOME}")) {
+                    uri = uriAttributeValue.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
+                } else if (uriAttributeValue.contains("${EXIST_HOME}")) {
+                    uri = uriAttributeValue.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
+                } else {
+                    uri = uriAttributeValue;
                 }
 
                 // Add uri to configuration
@@ -1643,7 +1627,7 @@ public class Configuration implements ErrorHandler {
                 exception.getLineNumber(), exception.getMessage(), exception);
     }
 
-    public record StartupTriggerConfig(String clazz, Map<String, List<?>> params) {
+    public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
     }
 
     public record IndexModuleConfig(String id, String className, Element config) {
