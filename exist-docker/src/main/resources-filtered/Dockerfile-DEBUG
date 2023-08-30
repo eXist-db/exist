@@ -46,10 +46,11 @@ LABEL org.label-schema.build-date=${maven.build.timestamp} \
 
 EXPOSE 8080 8443 5005
 
-# make CACHE_MEM, MAX_BROKER, and JVM_MAX_RAM_PERCENTAGE available to users
+# make CACHE_MEM, MAX_BROKER, JVM_MAX_RAM_PERCENTAGE, and JVM_JDWP_SUSPEND available to users at build time
 ARG CACHE_MEM
 ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
+ARG JVM_JDWP_SUSPEND
 
 ENV EXIST_HOME "/exist"
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
@@ -71,7 +72,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
   -XX:+ExitOnOutOfMemoryError \
-  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${JVM_JDWP_SUSPEND:-n},address=5005
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
