@@ -34,7 +34,7 @@ import java.util.*;
  * Implements the array type (XQuery 3.1). An array is also a function. This class thus extends
  * {@link FunctionReference} to allow the item to be called in a dynamic function
  * call.
- *
+ * <p>
  * Based on immutable, persistent vectors. Operations like append, head, tail, reverse should be fast.
  * Remove and insert-before require copying the array.
  *
@@ -44,20 +44,19 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
+            new FunctionSignature(
+                    new QName("get", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+                    "Internal accessor function for arrays.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
+                    },
+                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
-        new FunctionSignature(
-            new QName("get", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
-            "Internal accessor function for arrays.",
-            new SequenceType[] {
-                    new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
-            },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
-
-    private InternalFunctionCall accessorFunc;
+    private final InternalFunctionCall accessorFunc;
 
     private IPersistentVector<Sequence> vector;
 
-    private XQueryContext context;
+    private final XQueryContext context;
 
     public ArrayType(XQueryContext context, List<Sequence> items) {
         this(null, context, items);
@@ -75,7 +74,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public ArrayType(final Expression expression, XQueryContext context, Sequence items) throws XPathException {
         this(expression, context);
 
-        List<Sequence> itemList = new ArrayList<>(items.getItemCount());
+        final List<Sequence> itemList = new ArrayList<>(items.getItemCount());
         for (SequenceIterator i = items.iterate(); i.hasNext(); ) {
             itemList.add(i.nextItem().toSequence());
         }
@@ -105,13 +104,15 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     @Override
     public Sequence get(final AtomicValue key) throws XPathException {
         if (!Type.subTypeOf(key.getType(), Type.INTEGER)) {
-            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Position argument for array lookup must be a positive integer");
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "Position argument for array lookup must be a positive integer");
         }
-        final int pos = ((IntegerValue)key).getInt();
+        final int pos = ((IntegerValue) key).getInt();
         if (pos <= 0 || pos > getSize()) {
             final String startIdx = vector.length() == 0 ? "0" : "1";
             final String endIdx = String.valueOf(vector.length());
-            throw new XPathException(getExpression(), ErrorCodes.FOAY0001, "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
+            throw new XPathException(getExpression(), ErrorCodes.FOAY0001,
+                    "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
         }
         return get(pos - 1);
     }
@@ -129,26 +130,26 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return new ArrayType(getExpression(), context, RT.subvec(vector, 1, vector.length()));
     }
 
-    public ArrayType subarray(int start, int end) throws XPathException {
+    public ArrayType subarray(int start, int end) {
         return new ArrayType(getExpression(), context, RT.subvec(vector, start, end));
     }
 
     public ArrayType remove(int position) throws XPathException {
         ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
 
-        for(int i = 0; i < vector.length(); i++) {
+        for (int i = 0; i < vector.length(); i++) {
             if (position != i) {
                 ret = ret.conj(vector.nth(i));
             }
         }
 
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     public ArrayType insertBefore(int position, Sequence member) throws XPathException {
         ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
 
-        for(int i = 0; i < vector.length(); i++) {
+        for (int i = 0; i < vector.length(); i++) {
             if (position == i) {
                 ret = ret.conj(member);
             }
@@ -158,21 +159,21 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
             ret = ret.conj(member);
         }
 
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     public ArrayType put(int position, Sequence member) throws XPathException {
-        return new ArrayType(getExpression(), context, vector.assocN(position,member));
+        return new ArrayType(getExpression(), context, vector.assocN(position, member));
     }
 
     public static ArrayType join(XQueryContext context, List<ArrayType> arrays) {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
-        for (ArrayType type: arrays) {
+        for (ArrayType type : arrays) {
             for (ISeq<Sequence> seq = type.vector.seq(); seq != null; seq = seq.next()) {
                 ret.conj(seq.first());
             }
         }
-        return new ArrayType(null, context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(null, context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     /**
@@ -233,7 +234,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     @Override
     public Sequence evalFunction(final Sequence contextSequence, final Item contextItem, final Sequence[] seq) throws XPathException {
-        final AccessorFunc af =  (AccessorFunc) accessorFunc.getFunction();
+        final AccessorFunc af = (AccessorFunc) accessorFunc.getFunction();
         return af.eval(seq, contextSequence);
     }
 
@@ -261,12 +262,15 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public AtomicValue atomize() throws XPathException {
         if (vector.length() == 0) {
             return null;
-        } else if (vector.length() > 1) {
-            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Expected single atomic value but found array with length " + vector.length());
+        }
+        if (vector.length() > 1) {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "Expected single atomic value but found array with length " + vector.length());
         }
         final Sequence member = vector.nth(0);
         if (member.hasMany()) {
-            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Expected single atomic value but found sequence of length " + member.getItemCount());
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "Expected single atomic value but found sequence of length " + member.getItemCount());
         }
         return member.itemAt(0).atomize();
     }
@@ -274,29 +278,29 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public ArrayType sort(@Nullable final Collator collator, final FunctionReference keyFunRef) throws XPathException {
         final Map<Sequence, List<Sequence>> sortedMap = new TreeMap<>(new SequenceComparator(collator));
 
-        final Sequence fargs[] = new Sequence[1];
+        final Sequence[] functionArguments = new Sequence[1];
         for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
-            fargs[0] = seq.first();
+            functionArguments[0] = seq.first();
 
-            final Sequence sortKey = keyFunRef.evalFunction(null, null, fargs);
+            final Sequence sortKey = keyFunRef.evalFunction(null, null, functionArguments);
             sortedMap.compute(sortKey, (k, v) -> {
                 if (v == null) {
                     v = new ArrayList<>();
                 }
-                v.add(fargs[0]);
+                v.add(functionArguments[0]);
                 return v;
             });
         }
 
         final List<Sequence> sorted = sortedMap
-            .values()
-            .stream()
-            .reduce(new ArrayList<>(), (a,b) -> {
-                a.addAll(b);
-                return a;
-            });
+                .values()
+                .stream()
+                .reduce(new ArrayList<>(), (a, b) -> {
+                    a.addAll(b);
+                    return a;
+                });
 
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)PersistentVector.create(sorted));
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) PersistentVector.create(sorted));
     }
 
     public ArrayType forEach(FunctionReference ref) throws XPathException {
@@ -306,15 +310,15 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
             fargs[0] = seq.first();
             ret.conj(ref.evalFunction(null, null, fargs));
         }
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     public ArrayType forEachPair(ArrayType other, FunctionReference ref) throws XPathException {
         final ITransientCollection<Sequence> ret = PersistentVector.emptyVector().asTransient();
         for (ISeq<Sequence> i1 = vector.seq(), i2 = other.vector.seq(); i1 != null && i2 != null; i1 = i1.next(), i2 = i2.next()) {
-            ret.conj(ref.evalFunction(null, null, new Sequence[]{ i1.first(), i2.first() }));
+            ret.conj(ref.evalFunction(null, null, new Sequence[]{i1.first(), i2.first()}));
         }
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     public ArrayType filter(FunctionReference ref) throws XPathException {
@@ -327,12 +331,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
                 ret.conj(fargs[0]);
             }
         }
-        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>)ret.persistent());
+        return new ArrayType(getExpression(), context, (IPersistentVector<Sequence>) ret.persistent());
     }
 
     public Sequence foldLeft(FunctionReference ref, Sequence zero) throws XPathException {
         for (ISeq<Sequence> seq = vector.seq(); seq != null; seq = seq.next()) {
-            zero = ref.evalFunction(null, null, new Sequence[] { zero, seq.first() });
+            zero = ref.evalFunction(null, null, new Sequence[]{zero, seq.first()});
         }
         return zero;
     }
@@ -348,14 +352,14 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         }
         final Sequence head = seq.first();
         final Sequence tailResult = foldRight(ref, zero, seq.next());
-        return ref.evalFunction(null, null, new Sequence[] { head, tailResult });
+        return ref.evalFunction(null, null, new Sequence[]{head, tailResult});
     }
 
     protected static Sequence flatten(Sequence input, ValueSequence result) throws XPathException {
         for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             if (item.getType() == Type.ARRAY) {
-                final Sequence members = ((ArrayType)item).asSequence();
+                final Sequence members = ((ArrayType) item).asSequence();
                 flatten(members, result);
             } else {
                 result.add(item);
@@ -366,7 +370,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     public static Sequence flatten(Item item) throws XPathException {
         if (item.getType() == Type.ARRAY) {
-            final Sequence members = ((ArrayType)item).asSequence();
+            final Sequence members = ((ArrayType) item).asSequence();
             return flatten(members, new ValueSequence(members.getItemCount()));
         }
         return item.toSequence();
