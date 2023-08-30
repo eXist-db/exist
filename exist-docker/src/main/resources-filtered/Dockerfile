@@ -22,6 +22,8 @@
 
 # Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
 FROM debian:stretch-slim as updated-jre
+RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
+RUN echo "deb http://archive.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
 RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get install -y openjdk-8-jre-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
