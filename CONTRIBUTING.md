@@ -169,3 +169,34 @@ Support branches? [support/]
 Version tag prefix? [] eXist-
 Hooks and filters directory? [.git/hooks]
 ```
+
+
+## Commit Naming
+Commits to eXist-db by developers *must* follow a naming convention. This convention expects a prefix to be prepended to each of your commit messages. The prefixes enable us to better understand the commit and also to generate Change Logs. The prefixes in use are:  
+
+* `[feature]`
+    This should be used when a commit adds a new feature.
+* `[bugfix]`
+    This should be used when a commit addresses a bug or issue.
+* `[refactor]`
+    This should be used when a commit is simply refactoring existing code.
+* `[ignore]`
+    This should be used when code is cleaned up by automated means, e.g. reformatting.
+* `[doc]`
+    This should be used for documentation.
+* `[test]`
+    This should be used when a commit solely contains changes to existing tests or adds further tests.
+* `[ci]`
+    This should be used when a commit solely makes changes to CI configuration.
+
+In addition any commit that addresses a GitHub issues, should have an additonal line in its commit message like:
+```
+Closes https://github.com/eXist-db/exist/issues/<github-issue-number>
+```
+
+For example, here is a correctly formatted commit message:
+
+```
+[bugfix] Store the path of Jar files in each EXPath Package's `.exist/classpath.txt` file relative to the package's `content/` sub-folder.
+Closes https://github.com/eXist-db/exist/issues/4901
+```
