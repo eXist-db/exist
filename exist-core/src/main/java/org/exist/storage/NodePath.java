@@ -39,6 +39,7 @@ import javax.xml.XMLConstants;
 public class NodePath implements Comparable<NodePath> {
 
     static final int DEFAULT_NODE_PATH_SIZE = 5;
+    static final int MAX_OVER_ALLOCATION_FACTOR = 2;
 
     private static final Logger LOG = LogManager.getLogger(NodePath.class);
 
@@ -117,8 +118,8 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void reset() {
-        // when resetting if this object has twice the capacity of a new object, then set it back to the default capacity
-        if (pos > DEFAULT_NODE_PATH_SIZE * 2) {
+        // when resetting if this object has more than twice the capacity of a new object, then set it back to the default capacity
+        if (pos > DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR) {
             components = new QName[DEFAULT_NODE_PATH_SIZE];
         } else {
             Arrays.fill(components, null);
