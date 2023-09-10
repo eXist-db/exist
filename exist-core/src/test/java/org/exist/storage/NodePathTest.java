@@ -115,5 +115,35 @@ public class NodePathTest {
         assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
     }
 
+    @Test
+    public void reset() {
+        // simple allocation of DEFAULT_NODE_PATH_SIZE and then reset: size of components should remain at DEFAULT_NODE_PATH_SIZE
+        NodePath path = new NodePath(null, "/a");
+        path.reset();
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
+
+        // another simple allocation of DEFAULT_NODE_PATH_SIZE and then reset: size of components should remain at DEFAULT_NODE_PATH_SIZE
+        path = new NodePath(null, "/a/b");
+        path.reset();
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
+
+        // allocate upto DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR and then reset: size of components should remain at DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR
+        StringBuilder pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR; i++) {
+            pathStrBuilder.append("/a");
+        }
+        path = new NodePath(null, pathStrBuilder.toString());
+        path.reset();
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR, path.componentsSize());
+
+        // allocate over DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR and then reset: size of components should return to DEFAULT_NODE_PATH_SIZE
+        pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR * 2; i++) {
+            pathStrBuilder.append("/a");
+        }
+        path = new NodePath(null, pathStrBuilder.toString());
+        path.reset();
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
+    }
 
 }
