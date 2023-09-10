@@ -303,10 +303,24 @@ public class NodePath implements Comparable<NodePath> {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj != null && obj instanceof NodePath) {
-            final NodePath otherNodePath = (NodePath) obj;
-            return Arrays.equals(components, otherNodePath.components);
+        if (this == obj) {
+            return true;
         }
+
+        if (obj instanceof NodePath) {
+            final NodePath otherNodePath = (NodePath) obj;
+
+            // NOTE(AR) we cannot use Array.equals on the components of the NodePaths as they may be over-allocated!
+            if (pos == otherNodePath.pos) {
+                for (int i = 0; i < pos; i++) {
+                    if (!components[i].equals(otherNodePath.components[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
         return false;
     }
 
