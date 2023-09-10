@@ -47,7 +47,7 @@ import javax.xml.XMLConstants;
  */
 public class NodePath implements Comparable<NodePath> {
 
-    static final int DEFAULT_NODE_PATH_SIZE = 5;
+    static final int DEFAULT_NODE_PATH_SIZE = 4;
     static final int MAX_OVER_ALLOCATION_FACTOR = 2;
 
     private static final Logger LOG = LogManager.getLogger(NodePath.class);
