@@ -147,6 +147,69 @@ public class NodePathTest {
     }
 
     @Test
+    public void appendAllocationStrategy() {
+        // `expected` has less occupied components than DEFAULT_NODE_PATH_SIZE, `actual` has no components, when appending `expected` to `actual` then `actual` should have less occupied components than DEFAULT_NODE_PATH_SIZE
+        StringBuilder strPath = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE - 1; i++) {
+            strPath.append("/a");
+        }
+        NodePath expected = new NodePath(null, strPath.toString());
+        NodePath actual = new NodePath();
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, actual.componentsSize());
+
+        // `expected` has less occupied components than DEFAULT_NODE_PATH_SIZE, `actual` has the same number of components, when appending `expected` to `actual` then `actual` should now be twice the size of DEFAULT_NODE_PATH_SIZE
+        strPath = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE - 1; i++) {
+            strPath.append("/a");
+        }
+        expected = new NodePath(null, strPath.toString());
+        actual = new NodePath(null, strPath.toString());
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE * 2, actual.componentsSize());
+
+        // `expected` has exactly DEFAULT_NODE_PATH_SIZE occupied components, `actual` has no components, when appending `expected` to `actual` then `actual` should have less occupied components than DEFAULT_NODE_PATH_SIZE
+        strPath = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE; i++) {
+            strPath.append("/a");
+        }
+        expected = new NodePath(null, strPath.toString());
+        actual = new NodePath();
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, actual.componentsSize());
+
+        // `expected` has exactly DEFAULT_NODE_PATH_SIZE occupied components, `actual` has the same number of components, when appending `expected` to `actual` then `actual` should now be twice the size of DEFAULT_NODE_PATH_SIZE
+        strPath = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE; i++) {
+            strPath.append("/a");
+        }
+        expected = new NodePath(null, strPath.toString());
+        actual = new NodePath(null, strPath.toString());
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE * 2, actual.componentsSize());
+
+        // `expected` has more occupied components than DEFAULT_NODE_PATH_SIZE, `actual` has no components, when appending `expected` to `actual` then `actual` should now be twice the size of DEFAULT_NODE_PATH_SIZE
+        strPath = new StringBuilder();
+        for (int i = 0; i <= NodePath.DEFAULT_NODE_PATH_SIZE; i++) {
+            strPath.append("/a");
+        }
+        expected = new NodePath(null, strPath.toString());
+        actual = new NodePath();
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE * 2, actual.componentsSize());
+
+        // `expected` has more occupied components than DEFAULT_NODE_PATH_SIZE, `actual` has the same number of components, when appending `expected` to `actual` then `actual` should now be thrice the size of DEFAULT_NODE_PATH_SIZE
+        strPath = new StringBuilder();
+        for (int i = 0; i <= NodePath.DEFAULT_NODE_PATH_SIZE; i++) {
+            strPath.append("/a");
+        }
+        expected = new NodePath(null, strPath.toString());
+        actual = new NodePath(null, strPath.toString());
+        actual.append(expected);
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE * 3, actual.componentsSize());
+    }
+
+    @Test
     public void equalsAfterResetAndAppend() {
         final String strPath = "/a/b/c";
 

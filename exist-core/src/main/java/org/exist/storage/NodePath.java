@@ -90,11 +90,19 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void append(final NodePath other) {
-        // expand the array
-        final int newLength = pos + other.length();
-        this.components = Arrays.copyOf(components, newLength);
-        System.arraycopy(other.components, 0, components, pos, other.length());
-        this.pos = newLength;
+        // do we have enough space to accommodate the components from `other`
+        final int available = components.length - pos;
+        final int numOtherComponentsToAppend = other.length();
+        if (available < numOtherComponentsToAppend) {
+            // we need more space, allocate a multiple of DEFAULT_NODE_PATH_SIZE
+            final int allocationFactor = (int) Math.ceil((numOtherComponentsToAppend - available + components.length) / ((float) DEFAULT_NODE_PATH_SIZE));
+            final int newSize = allocationFactor * DEFAULT_NODE_PATH_SIZE;
+            this.components = Arrays.copyOf(components, newSize);
+        }
+
+        // at this point we have enough space, append the components from `other`
+        System.arraycopy(other.components, 0, components, pos, numOtherComponentsToAppend);
+        this.pos += numOtherComponentsToAppend;
     }
 
     public void addComponent(final QName component) {
