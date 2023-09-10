@@ -109,5 +109,11 @@ public class NodePathTest {
         assertEquals("/a/b/c/d/1/2/3", path.toString());
     }
 
+    @Test
+    public void largerComponentsBuffer() {
+        final NodePath path = new NodePath(null, "/a");
+        assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
+    }
+
 
 }
