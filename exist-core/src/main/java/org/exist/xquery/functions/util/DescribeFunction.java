@@ -199,7 +199,7 @@ public class DescribeFunction extends Function {
 		if (annots != null) {
 			for (final Annotation annot : annots) {
 				attribs.clear();
-				attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
+				attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().getStringValue());
 				attribs.addAttribute(null, "namespace", "namespace", "CDATA", annot.getName().getNamespaceURI());
 				builder.startElement(ANNOTATION_QNAME, attribs);
 				final LiteralValue[] value = annot.getValue();
