@@ -146,4 +146,111 @@ public class NodePathTest {
         assertEquals(NodePath.DEFAULT_NODE_PATH_SIZE, path.componentsSize());
     }
 
+    @Test
+    public void equalsAfterResetAndAppend() {
+        final String strPath = "/a/b/c";
+
+        final NodePath expected = new NodePath(null, strPath);
+
+        // simple path, reset, and then append: expected.equals(actual) should equal 'true'
+        NodePath actual = new NodePath(null, "/a");
+        actual.reset();
+        actual.append(expected);
+        assertEquals(expected, actual);
+
+        // another simple path, reset, and then append: expected.equals(actual) should equal 'true'
+        actual = new NodePath(null, "/a/b");
+        actual.reset();
+        actual.append(expected);
+        assertEquals(expected, actual);
+
+        // allocate less than DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        StringBuilder pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < (NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR) - 1; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        actual.append(expected);
+        assertEquals(expected, actual);
+
+        // allocate exactly DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        actual.append(expected);
+        assertEquals(expected, actual);
+
+        // allocate over DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR * 2; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        actual.append(expected);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void equalsAfterResetAndAddComponent() throws QName.IllegalQNameException {
+        final String strPath = "/a/b/c";
+
+        final NodePath expected = new NodePath(null, strPath);
+
+        // simple path, reset, and then append: expected.equals(actual) should equal 'true'
+        NodePath actual = new NodePath(null, "/a");
+        actual.reset();
+        addComponents(actual, strPath);
+        assertEquals(expected, actual);
+
+        // another simple path, reset, and then append: expected.equals(actual) should equal 'true'
+        actual = new NodePath(null, "/a/b");
+        actual.reset();
+        addComponents(actual, strPath);
+        assertEquals(expected, actual);
+
+        // allocate less than DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        StringBuilder pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < (NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR) - 1; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        addComponents(actual, strPath);
+        assertEquals(expected, actual);
+
+        // allocate exactly DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        addComponents(actual, strPath);
+        assertEquals(expected, actual);
+
+        // allocate over DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR, reset, and then append: expected.equals(actual) should equal 'true'
+        pathStrBuilder = new StringBuilder();
+        for (int i = 0; i < NodePath.DEFAULT_NODE_PATH_SIZE * NodePath.MAX_OVER_ALLOCATION_FACTOR * 2; i++) {
+            pathStrBuilder.append("/a");
+        }
+        actual = new NodePath(null, pathStrBuilder.toString());
+        actual.reset();
+        addComponents(actual, strPath);
+        assertEquals(expected, actual);
+    }
+
+    private void addComponents(final NodePath destination, final String path) throws QName.IllegalQNameException {
+        final String[] components = path.split("/");
+        for (int i = 0; i < components.length; i++) {
+            final String component = components[i];
+            if (!component.isEmpty()) {
+                destination.addComponent(new QName(component));
+            }
+        }
+    }
 }
