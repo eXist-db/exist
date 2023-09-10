@@ -33,8 +33,17 @@ import javax.xml.XMLConstants;
 
 
 /**
+ * Represents a Node Path.
+ *
+ * Internally the node path is held as an array of {@link QName} components.
+ * Upon construction the array of `components` is sized such that it will be exactly
+ * what is required to represent the Node Path.
+ * Mutation operations however will over-allocate the array as an optmisation, so that
+ * we need not allocate/free memory on every mutation operation, but only
+ * every {@link #DEFAULT_NODE_PATH_SIZE} operations.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
- * @author Adam Retter
  */
 public class NodePath implements Comparable<NodePath> {
 
@@ -91,14 +100,8 @@ public class NodePath implements Comparable<NodePath> {
 
     public void append(final NodePath other) {
         // do we have enough space to accommodate the components from `other`
-        final int available = components.length - pos;
         final int numOtherComponentsToAppend = other.length();
-        if (available < numOtherComponentsToAppend) {
-            // we need more space, allocate a multiple of DEFAULT_NODE_PATH_SIZE
-            final int allocationFactor = (int) Math.ceil((numOtherComponentsToAppend - available + components.length) / ((float) DEFAULT_NODE_PATH_SIZE));
-            final int newSize = allocationFactor * DEFAULT_NODE_PATH_SIZE;
-            this.components = Arrays.copyOf(components, newSize);
-        }
+        allocateIfNeeded(numOtherComponentsToAppend);
 
         // at this point we have enough space, append the components from `other`
         System.arraycopy(other.components, 0, components, pos, numOtherComponentsToAppend);
@@ -106,11 +109,21 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void addComponent(final QName component) {
-        if (pos == components.length) {
-            // extend the array
-            this.components = Arrays.copyOf(components, pos + 1);
-        }
+        // do we have enough space to add the component
+        allocateIfNeeded(1);
+
+        // at this point we have enough space, add the component
         components[pos++] = component;
+    }
+
+    private void allocateIfNeeded(final int numOtherComponentsToAppend) {
+        final int available = components.length - pos;
+        if (available < numOtherComponentsToAppend) {
+            // we need more space, allocate a multiple of DEFAULT_NODE_PATH_SIZE
+            final int allocationFactor = (int) Math.ceil((numOtherComponentsToAppend - available + components.length) / ((float) DEFAULT_NODE_PATH_SIZE));
+            final int newSize = allocationFactor * DEFAULT_NODE_PATH_SIZE;
+            this.components = Arrays.copyOf(components, newSize);
+        }
     }
 
     /**
