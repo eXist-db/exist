@@ -41,6 +41,8 @@ public class QName implements Comparable<QName> {
 
     public static final String WILDCARD = "*";
     private static final char COLON = ':';
+    private static final char LEFT_BRACE = '{';
+    private static final char RIGHT_BRACE = '}';
 
     public static final QName EMPTY_QNAME = new QName("", XMLConstants.NULL_NS_URI);
     public static final QName DOCUMENT_QNAME = EMPTY_QNAME;
@@ -127,8 +129,10 @@ public class QName implements Comparable<QName> {
     }
 
     public String getStringValue() {
-        if (prefix != null && prefix.length() > 0) {
+        if (prefix != null && !prefix.isEmpty()) {
             return prefix + COLON + localPart;
+        } else if (namespaceURI != null && !XMLConstants.NULL_NS_URI.equals(namespaceURI)) {
+            return LEFT_BRACE + namespaceURI + RIGHT_BRACE + localPart;
         }
         return localPart;
     }
