@@ -126,34 +126,44 @@ public class QName implements Comparable<QName> {
         return nameType;
     }
 
+    /**
+     * Get a string representation of this qualified name.
+     *
+     * Will either be of the format `local-name` or `prefix:local-name`.
+     *
+     * @return the string representation of this qualified name.
+     * */
     public String getStringValue() {
-        if (prefix != null && !prefix.isEmpty()) {
-            return prefix + COLON + localPart;
-        } else if (namespaceURI != null && !XMLConstants.NULL_NS_URI.equals(namespaceURI)) {
-            return LEFT_BRACE + namespaceURI + RIGHT_BRACE + localPart;
-        }
-        return localPart;
+        return getStringRepresentation(false);
     }
 
     /**
-     * Only for debugging purposes,
-     * use {@link #getStringValue()} for production
+     * Get a string representation of this qualified name.
+     *
+     * Will either be of the format `local-name`, `prefix:local-name`, or `{namespace}local-name`.
+     *
+     * @return the string representation of this qualified name.
      */
     @Override
     public String toString() {
-        //TODO : remove this copy of getStringValue()
-        return getStringValue();
-        //TODO : replace by something like this
-        /*
-        if (prefix != null && prefix.length() > 0)
+        return getStringRepresentation(true);
+    }
+
+    /**
+     * Get a string representation of this qualified name.
+     *
+     * @param showNsWithoutPrefix true if the namespace should be shown even when there is no prefix, false otherwise.
+     *         When shown, it will be output using Clark notation, e.g. `{http://namespace}local-name`.
+     *
+     * @return the string representation of this qualified name.
+     */
+    private String getStringRepresentation(final boolean showNsWithoutPrefix) {
+        if (prefix != null && !prefix.isEmpty()) {
             return prefix + COLON + localPart;
-        if (hasNamespace()) {
-            if (prefix != null && prefix.length() > 0)
-                return "{" + namespaceURI + "}" + prefix + COLON + localPart;
-            return "{" + namespaceURI + "}" + localPart;
-        } else 
-            return localPart;
-        */
+        } else if (showNsWithoutPrefix && namespaceURI != null && !XMLConstants.NULL_NS_URI.equals(namespaceURI)) {
+            return LEFT_BRACE + namespaceURI + RIGHT_BRACE + localPart;
+        }
+        return localPart;
     }
 
     /**
