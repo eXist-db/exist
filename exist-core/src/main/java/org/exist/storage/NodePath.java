@@ -38,7 +38,7 @@ import javax.xml.XMLConstants;
  */
 public class NodePath implements Comparable<NodePath> {
 
-    private static final int DEFAULT_NODE_PATH_SIZE = 5;
+    static final int DEFAULT_NODE_PATH_SIZE = 5;
 
     private static final Logger LOG = LogManager.getLogger(NodePath.class);
 
@@ -128,6 +128,18 @@ public class NodePath implements Comparable<NodePath> {
 
     public int length() {
         return pos;
+    }
+
+    /**
+     * Return the size of the components array.
+     *
+     * This function is intentionally marked as package-private
+     * so that it may only be called for testing purposes!
+     *
+     * @return the size of the components array.
+     */
+    int componentsSize() {
+        return components.length;
     }
 
     protected void reverseComponents() {
