@@ -63,7 +63,7 @@ public class InspectFunctionHelper {
         XQDocHelper.parse(sig);
 
         final AttributesImpl attribs = new AttributesImpl();
-        attribs.addAttribute("", "name", "name", "CDATA", sig.getName().toString());
+        attribs.addAttribute("", "name", "name", "CDATA", sig.getName().getStringValue());
         attribs.addAttribute("", "module", "module", "CDATA", sig.getName().getNamespaceURI());
         final int nodeNr = builder.startElement(FUNCTION_QNAME, attribs);
         writeParameters(sig, builder);
@@ -130,7 +130,7 @@ public class InspectFunctionHelper {
         if (annots != null) {
             for (final Annotation annot : annots) {
                 attribs.clear();
-                attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().toString());
+                attribs.addAttribute(null, "name", "name", "CDATA", annot.getName().getStringValue());
                 attribs.addAttribute(null, "namespace", "namespace", "CDATA", annot.getName().getNamespaceURI());
                 builder.startElement(ANNOTATION_QNAME, attribs);
                 final LiteralValue[] value = annot.getValue();
@@ -164,7 +164,7 @@ public class InspectFunctionHelper {
         final AttributesImpl attribs = new AttributesImpl();
         for (final FunctionSignature signature : signatures) {
             attribs.clear();
-            attribs.addAttribute(null, "name", "name", "CDATA", signature.getName().toString());
+            attribs.addAttribute(null, "name", "name", "CDATA", signature.getName().getStringValue());
             attribs.addAttribute("", "module", "module", "CDATA", signature.getName().getNamespaceURI());
             attribs.addAttribute("", "arity", "arity", "CDATA", Integer.toString(signature.getArgumentCount()));
 
