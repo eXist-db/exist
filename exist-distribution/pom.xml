@@ -710,9 +710,9 @@
             </plugin>
 
             <plugin>
-                <groupId>ch.mfrey.maven.plugin</groupId>
+                <groupId>com.evolvedbinary.maven.mfrey</groupId>
                 <artifactId>copy-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>2.1.0</version>
                 <configuration>
                     <showfiles>true</showfiles>
                 </configuration>
