@@ -1550,7 +1550,7 @@ public class Configuration implements ErrorHandler {
 
         property.insert(0, "org.");
 
-        return (property.toString());
+        return property.toString();
     }
 
     public Optional<Path> getConfigFilePath() {
