@@ -1726,7 +1726,7 @@ public class XPathQueryTest {
             "$local:string";
         expr = service.compile(query);
         //TODO : we should virtually pass any kind of value
-        service.declareVariable("local:string", new Integer(1));
+        service.declareVariable("local:string", Integer.valueOf(1));
 
         String message = "";
         try {

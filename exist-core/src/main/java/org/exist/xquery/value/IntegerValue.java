@@ -40,7 +40,7 @@ import java.util.function.IntSupplier;
  * This results in the standard mathematical concept of the integer numbers.
  * The value space of integer is the infinite set {...,-2,-1,0,1,2,...}.
  * The base type of integer is decimal.
- * See http://www.w3.org/TR/xmlschema-2/#integer
+ * See <a href="http://www.w3.org/TR/xmlschema-2/#integer">http://www.w3.org/TR/xmlschema-2/#integer</a>
  */
 public class IntegerValue extends NumericValue {
 
@@ -526,7 +526,6 @@ public class IntegerValue extends NumericValue {
         if (target.isAssignableFrom(IntegerValue.class)) {
             return (T) this;
         } else if (target == Long.class || target == long.class) {
-            // ?? jmv: return new Long(value);
             return (T) Long.valueOf(value.longValue());
         } else if (target == Integer.class || target == int.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.INT);
@@ -554,7 +553,7 @@ public class IntegerValue extends NumericValue {
         } else if (target == BigInteger.class) {
             return (T) new BigInteger(value.toByteArray());
         } else if (target == Object.class) {
-            return (T) value; // Long(value);
+            return (T) value;
         }
 
         throw new XPathException(getExpression(), "cannot convert value of type " + Type.getTypeName(getType()) +
