@@ -50,15 +50,12 @@ import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
-import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
-import org.exist.storage.NativeValueIndex;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.CustomMatchListenerFactory;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
@@ -67,8 +64,6 @@ import org.exist.xslt.TransformerFactoryAllocator;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import java.net.MalformedURLException;
 
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -86,50 +81,77 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.exist.Namespaces;
 import org.exist.scheduler.JobType;
 import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static org.exist.Namespaces.XPATH_FUNCTIONS_NS;
+import static org.exist.scheduler.JobConfig.*;
+import static org.exist.storage.BrokerFactory.PROPERTY_DATABASE;
+import static org.exist.storage.BrokerPoolConstants.*;
+import static org.exist.Indexer.CONFIGURATION_INDEX_ELEMENT_NAME;
+import static org.exist.Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE;
+import static org.exist.Indexer.PROPERTY_INDEXER_CONFIG;
+import static org.exist.Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT;
+import static org.exist.Indexer.PROPERTY_SUPPRESS_WHITESPACE;
+import static org.exist.Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE;
+import static org.exist.collections.CollectionCache.PROPERTY_CACHE_SIZE_BYTES;
+import static org.exist.storage.DBBroker.*;
+import static org.exist.storage.DefaultCacheManager.*;
+import static org.exist.storage.NativeBroker.INDEX_DEPTH_ATTRIBUTE;
+import static org.exist.storage.NativeBroker.PROPERTY_INDEX_DEPTH;
+import static org.exist.storage.NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE;
+import static org.exist.storage.NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE;
+import static org.exist.storage.XQueryPool.MAX_STACK_SIZE_ATTRIBUTE;
+import static org.exist.storage.XQueryPool.POOL_SIZE_ATTTRIBUTE;
+import static org.exist.storage.XQueryPool.PROPERTY_MAX_STACK_SIZE;
+import static org.exist.storage.XQueryPool.PROPERTY_POOL_SIZE;
+import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_JOURNAL_DIR;
+import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SIZE_LIMIT;
+import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT;
+import static org.exist.storage.journal.Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE;
+import static org.exist.storage.journal.Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE;
+import static org.exist.storage.journal.Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE;
+import static org.exist.storage.serializers.Serializer.*;
+import static org.exist.util.HtmlToXmlParser.*;
+import static org.exist.util.ParametersExtractor.PARAMETER_ELEMENT_NAME;
+import static org.exist.util.XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE;
+import static org.exist.util.XMLReaderPool.XmlParser.*;
+import static org.exist.xquery.FunctionFactory.*;
+import static org.exist.xquery.XQueryContext.*;
+import static org.exist.xquery.XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT;
+import static org.exist.xquery.XQueryWatchDog.PROPERTY_QUERY_TIMEOUT;
+import static org.exist.xslt.TransformerFactoryAllocator.*;
 
 
-public class Configuration implements ErrorHandler
-{
-    private final static Logger       LOG            = LogManager.getLogger(Configuration.class); //Logger
-    protected Optional<Path>          configFilePath = Optional.empty();
-    protected Optional<Path>          existHome      = Optional.empty();
-
-    protected DocumentBuilder         builder        = null;
-    protected HashMap<String, Object> config         = new HashMap<>(); //Configuration
-
+public class Configuration implements ErrorHandler {
+    public static final String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    private static final Logger LOG = LogManager.getLogger(Configuration.class); //Logger
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
-    
-    public final static String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
-    
+    private final Map<String, Object> config = new HashMap<>(); //Configuration
+    protected Optional<Path> configFilePath = Optional.empty();
+    protected Optional<Path> existHome = Optional.empty();
+
     public Configuration() throws DatabaseConfigurationException {
         this(DatabaseImpl.CONF_XML, Optional.empty());
     }
 
-
-    public Configuration(final String configFilename) throws DatabaseConfigurationException {
+    public Configuration(@Nullable String configFilename) throws DatabaseConfigurationException {
         this(configFilename, Optional.empty());
     }
 
-
-    public Configuration(String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
+    public Configuration(@Nullable String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
         InputStream is = null;
         try {
-
-            existHomeDirname = existHomeDirname.map(Path::normalize);
-
-            if(configFilename == null) {
+            if (configFilename == null) {
                 // Default file name
                 configFilename = DatabaseImpl.CONF_XML;
             }
@@ -139,28 +161,31 @@ public class Configuration implements ErrorHandler
             try {
                 is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
 
-                if(is != null) {
+                if (is != null) {
                     LOG.info("Reading configuration from classloader");
                     configFilePath = Optional.of(Paths.get(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
                 }
-            } catch(final Exception e) {
+            } catch (final Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
                 // file name for configFileName
-                LOG.debug( e );
+                LOG.debug(e);
             }
+
+            existHomeDirname = existHomeDirname.map(Path::normalize);
 
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
-            if(is == null) {
-                existHome = existHomeDirname.map(Optional::of).orElse(ConfigurationHelper.getExistHome(configFilename));
+            if (is == null) {
+                existHome = existHomeDirname.map(Optional::of)
+                        .orElse(ConfigurationHelper.getExistHome(configFilename));
 
-                if(!existHome.isPresent()) {
+                if (existHome.isEmpty()) {
 
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
                     final Path absoluteConfigFile = Paths.get(configFilename);
 
-                    if(absoluteConfigFile.isAbsolute() && Files.exists(absoluteConfigFile) && Files.isReadable(absoluteConfigFile)) {
+                    if (absoluteConfigFile.isAbsolute() && Files.exists(absoluteConfigFile) && Files.isReadable(absoluteConfigFile)) {
                         existHome = Optional.of(absoluteConfigFile.getParent());
                         configFilename = FileUtils.fileName(absoluteConfigFile);
                     }
@@ -168,7 +193,7 @@ public class Configuration implements ErrorHandler
 
                 Path configFile = Paths.get(configFilename);
 
-                if(!configFile.isAbsolute() && existHome.isPresent()) {
+                if (!configFile.isAbsolute() && existHome.isPresent()) {
 
                     // try the passed or constructed existHome first
                     configFile = existHome.get().resolve(configFilename);
@@ -178,14 +203,10 @@ public class Configuration implements ErrorHandler
                     }
                 }
 
-                //if( configFile == null ) {
-                //    configFile = ConfigurationHelper.lookup( configFilename );
-                //}
-
-                if(!Files.exists(configFile) || !Files.isReadable(configFile)) {
+                if (!Files.exists(configFile) || !Files.isReadable(configFile)) {
                     throw new DatabaseConfigurationException("Unable to read configuration file at " + configFile);
                 }
-                
+
                 configFilePath = Optional.of(configFile.toAbsolutePath());
                 is = Files.newInputStream(configFile);
             }
@@ -202,8 +223,6 @@ public class Configuration implements ErrorHandler
             final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
             factory.setNamespaceAware(true);
 
-//            factory.setFeature("http://apache.org/xml/features/validation/schema", true);
-//            factory.setFeature("http://apache.org/xml/features/validation/dynamic", true);
             final InputSource src = new InputSource(is);
             final SAXParser parser = factory.newSAXParser();
             final XMLReader reader = parser.getXMLReader();
@@ -221,98 +240,132 @@ public class Configuration implements ErrorHandler
 
             //indexer settings
             final NodeList indexers = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
-            if(indexers.getLength() > 0) {
-                configureIndexer( existHomeDirname, doc, (Element)indexers.item( 0 ) );
+            if (indexers.getLength() > 0) {
+                configureIndexer(doc, (Element) indexers.item(0));
             }
 
             //scheduler settings
             final NodeList schedulers = doc.getElementsByTagName(JobConfig.CONFIGURATION_ELEMENT_NAME);
-            if(schedulers.getLength() > 0) {
-                configureScheduler((Element)schedulers.item(0));
+            if (schedulers.getLength() > 0) {
+                configureScheduler((Element) schedulers.item(0));
             }
 
             //db connection settings
-            final NodeList dbcon = doc.getElementsByTagName(BrokerPool.CONFIGURATION_CONNECTION_ELEMENT_NAME);
-            if(dbcon.getLength() > 0) {
-                configureBackend(existHomeDirname, (Element)dbcon.item(0));
+            final NodeList dbConnection = doc.getElementsByTagName(CONFIGURATION_CONNECTION_ELEMENT_NAME);
+            if (dbConnection.getLength() > 0) {
+                configureBackend(existHomeDirname, (Element) dbConnection.item(0));
             }
 
             // lock-table settings
             final NodeList lockManager = doc.getElementsByTagName("lock-manager");
-            if(lockManager.getLength() > 0) {
+            if (lockManager.getLength() > 0) {
                 configureLockManager((Element) lockManager.item(0));
             }
 
             // repository settings
             final NodeList repository = doc.getElementsByTagName("repository");
-            if(repository.getLength() > 0) {
+            if (repository.getLength() > 0) {
                 configureRepository((Element) repository.item(0));
             }
 
             // binary manager settings
             final NodeList binaryManager = doc.getElementsByTagName("binary-manager");
-            if(binaryManager.getLength() > 0) {
-                configureBinaryManager((Element)binaryManager.item(0));
+            if (binaryManager.getLength() > 0) {
+                configureBinaryManager((Element) binaryManager.item(0));
             }
-            
+
             //transformer settings
             final NodeList transformers = doc.getElementsByTagName(TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME);
-            if( transformers.getLength() > 0 ) {
-                configureTransformer((Element)transformers.item(0));
+            if (transformers.getLength() > 0) {
+                configureTransformer((Element) transformers.item(0));
             }
 
             //saxon settings (most importantly license file for PE or EE features)
             final NodeList saxon = doc.getElementsByTagName(SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME);
-            if( saxon.getLength() > 0 ) {
+            if (saxon.getLength() > 0) {
                 configureSaxon((Element)saxon.item(0));
             }
 
             //parser settings
             final NodeList parsers = doc.getElementsByTagName(HtmlToXmlParser.PARSER_ELEMENT_NAME);
-            if(parsers.getLength() > 0) {
-                configureParser((Element)parsers.item(0));
+            if (parsers.getLength() > 0) {
+                configureParser((Element) parsers.item(0));
             }
 
             //serializer settings
             final NodeList serializers = doc.getElementsByTagName(Serializer.CONFIGURATION_ELEMENT_NAME);
-            if(serializers.getLength() > 0) {
-                configureSerializer((Element)serializers.item(0));
+            if (serializers.getLength() > 0) {
+                configureSerializer((Element) serializers.item(0));
             }
 
             //XUpdate settings
             final NodeList xupdates = doc.getElementsByTagName(DBBroker.CONFIGURATION_ELEMENT_NAME);
-            if(xupdates.getLength() > 0) {
-                configureXUpdate((Element)xupdates.item(0));
+            if (xupdates.getLength() > 0) {
+                configureXUpdate((Element) xupdates.item(0));
             }
 
             //XQuery settings
             final NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME);
-            if(xquery.getLength() > 0) {
-                configureXQuery((Element)xquery.item(0));
+            if (xquery.getLength() > 0) {
+                configureXQuery((Element) xquery.item(0));
             }
 
             //Validation
             final NodeList validations = doc.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME);
-            if(validations.getLength() > 0) {
-                configureValidation(existHomeDirname, (Element)validations.item(0));
+            if (validations.getLength() > 0) {
+                configureValidation(existHomeDirname, (Element) validations.item(0));
             }
 
-        }
-        catch(final SAXException | IOException | ParserConfigurationException e) {
+        } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
         } finally {
-            if(is != null) {
+            if (is != null) {
                 try {
                     is.close();
-                } catch(final IOException ioe) {
+                } catch (final IOException ioe) {
                     LOG.error(ioe);
                 }
             }
         }
     }
 
-    private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
+    /**
+     * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param value        The string to parse
+     * @param defaultValue The default if the string is null
+     * @return The parsed <code>Boolean</code>
+     */
+    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
+        return Optional.ofNullable(value)
+                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
+                .orElse(defaultValue);
+    }
+
+    /**
+     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
+     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
+     *
+     * @param value        The string to parse
+     * @param defaultValue The default if the string is null or empty
+     * @return The parsed <code>int</code>
+     */
+    public static int parseInt(@Nullable final String value, final int defaultValue) {
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+
+        try {
+            return Integer.parseInt(value);
+        } catch (final NumberFormatException e) {
+            LOG.warn("Could not parse: {}, as an int: {}", value, e.getMessage());
+            return defaultValue;
+        }
+    }
+
+    private void configureLockManager(final Element lockManager) {
         final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
         final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
         final boolean pathsMultiWriter = parseBoolean(getConfigAttributeValue(lockManager, "paths-multi-writer"), false);
@@ -322,8 +375,8 @@ public class Configuration implements ErrorHandler
         config.put(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, pathsMultiWriter);
 
         final NodeList nlLockTable = lockManager.getElementsByTagName("lock-table");
-        if(nlLockTable.getLength() > 0) {
-            final Element lockTable = (Element)nlLockTable.item(0);
+        if (nlLockTable.getLength() > 0) {
+            final Element lockTable = (Element) nlLockTable.item(0);
             final boolean lockTableDisabled = parseBoolean(getConfigAttributeValue(lockTable, "disabled"), false);
             final int lockTableTraceStackDepth = parseInt(getConfigAttributeValue(lockTable, "trace-stack-depth"), 0);
 
@@ -332,221 +385,231 @@ public class Configuration implements ErrorHandler
         }
 
         final NodeList nlDocument = lockManager.getElementsByTagName("document");
-        if(nlDocument.getLength() > 0) {
-            final Element document = (Element)nlDocument.item(0);
+        if (nlDocument.getLength() > 0) {
+            final Element document = (Element) nlDocument.item(0);
             final boolean documentUsePathLocks = parseBoolean(getConfigAttributeValue(document, "use-path-locks"), false);
 
             config.put(LockManager.CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS, documentUsePathLocks);
         }
     }
 
-    private void configureRepository(Element element) {
+    private void configureRepository(final Element element) {
         String root = getConfigAttributeValue(element, "root");
-        if (root != null && !root.isEmpty()) {
-            if (!root.endsWith("/"))
-                {root += "/";}
-            config.put(Deployment.PROPERTY_APP_ROOT, root);
+        if (root == null || root.isEmpty()) {
+            return;
         }
+
+        if (!root.endsWith("/")) {
+            root += "/";
+        }
+
+        config.put(Deployment.PROPERTY_APP_ROOT, root);
     }
 
-    private void configureBinaryManager(Element binaryManager) throws DatabaseConfigurationException {
+    private void configureBinaryManager(final Element binaryManager) {
         final NodeList nlCache = binaryManager.getElementsByTagName("cache");
-        if(nlCache.getLength() > 0) {
-            final Element cache = (Element)nlCache.item(0);
-            final String binaryCacheClass = getConfigAttributeValue(cache, "class");
-            config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
-            LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": {}", config.get(BINARY_CACHE_CLASS_PROPERTY));
+        if (nlCache.getLength() == 0) {
+            return;
         }
+
+        final Element cache = (Element) nlCache.item(0);
+        final String binaryCacheClass = getConfigAttributeValue(cache, "class");
+        config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
+        LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": {}", config.get(BINARY_CACHE_CLASS_PROPERTY));
     }
-    
-    private void configureXQuery( Element xquery ) throws DatabaseConfigurationException
-    {
+
+    private void configureXQuery(final Element xquery) throws DatabaseConfigurationException {
         //java binding
-        final String javabinding = getConfigAttributeValue( xquery, FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE );
+        final String javabinding = getConfigAttributeValue(xquery, ENABLE_JAVA_BINDING_ATTRIBUTE);
 
-        if( javabinding != null ) {
-            config.put( FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING, javabinding );
-            LOG.debug(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING + ": {}", config.get(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING));
+        if (javabinding != null) {
+            config.put(PROPERTY_ENABLE_JAVA_BINDING, javabinding);
+            LOG.debug(PROPERTY_ENABLE_JAVA_BINDING + ": {}",
+                    config.get(PROPERTY_ENABLE_JAVA_BINDING));
         }
 
-        final String disableDeprecated = getConfigAttributeValue( xquery, FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE );
-        config.put( FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Configuration.parseBoolean( disableDeprecated, FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT ) );
-        LOG.debug(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS + ": {}", config.get(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS));
+        final String disableDeprecated = getConfigAttributeValue(xquery, DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE);
+        config.put(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS,
+                Configuration.parseBoolean(disableDeprecated, DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT));
+        LOG.debug(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS + ": {}",
+                config.get(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS));
 
-        final String optimize = getConfigAttributeValue( xquery, XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE );
+        final String optimize = getConfigAttributeValue(xquery, ENABLE_QUERY_REWRITING_ATTRIBUTE);
 
-        if( ( optimize != null ) && (!optimize.isEmpty()) ) {
-            config.put( XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize );
-            LOG.debug(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": {}", config.get(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING));
+        if (optimize != null && !optimize.isEmpty()) {
+            config.put(PROPERTY_ENABLE_QUERY_REWRITING, optimize);
+            LOG.debug(PROPERTY_ENABLE_QUERY_REWRITING + ": {}", config.get(PROPERTY_ENABLE_QUERY_REWRITING));
         }
 
-        final String enforceIndexUse = getConfigAttributeValue( xquery, XQueryContext.ENFORCE_INDEX_USE_ATTRIBUTE );
+        final String enforceIndexUse = getConfigAttributeValue(xquery, ENFORCE_INDEX_USE_ATTRIBUTE);
         if (enforceIndexUse != null) {
-        	config.put( XQueryContext.PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse );
-        }
-        
-        final String backwardCompatible = getConfigAttributeValue( xquery, XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE );
-
-        if( ( backwardCompatible != null ) && (!backwardCompatible.isEmpty()) ) {
-            config.put( XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible );
-            LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": {}", config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
+            config.put(PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse);
         }
 
-        final String raiseErrorOnFailedRetrieval = getConfigAttributeValue( xquery, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE );
-        config.put( XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration.parseBoolean( raiseErrorOnFailedRetrieval, XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT ) );
-        LOG.debug(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": {}", config.get(XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
+        final String backwardCompatible = getConfigAttributeValue(xquery, XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE);
 
-        final String trace = getConfigAttributeValue( xquery, PerformanceStats.CONFIG_ATTR_TRACE );
-        config.put( PerformanceStats.CONFIG_PROPERTY_TRACE, trace );
+        if ((backwardCompatible != null) && (!backwardCompatible.isEmpty())) {
+            config.put(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
+            LOG.debug(PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": {}",
+                    config.get(PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
+        }
+
+        final String raiseErrorOnFailedRetrieval = getConfigAttributeValue(xquery,
+                XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE);
+        config.put(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL,
+                Configuration.parseBoolean(raiseErrorOnFailedRetrieval, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT));
+        LOG.debug(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": {}",
+                config.get(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
+
+        final String trace = getConfigAttributeValue(xquery, PerformanceStats.CONFIG_ATTR_TRACE);
+        config.put(PerformanceStats.CONFIG_PROPERTY_TRACE, trace);
 
         // built-in-modules
-        final Map<String, Class<?>> classMap      = new HashMap<>();
-        final Map<String, String>   knownMappings = new HashMap<>();
+        final Map<String, Class<?>> classMap = new HashMap<>();
+        final Map<String, String> knownMappings = new HashMap<>();
         final Map<String, Map<String, List<? extends Object>>> moduleParameters = new HashMap<>();
         loadModuleClasses(xquery, classMap, knownMappings, moduleParameters);
-        config.put( XQueryContext.PROPERTY_BUILT_IN_MODULES, classMap);
-        config.put( XQueryContext.PROPERTY_STATIC_MODULE_MAP, knownMappings);
-        config.put( XQueryContext.PROPERTY_MODULE_PARAMETERS, moduleParameters);
+        config.put(PROPERTY_BUILT_IN_MODULES, classMap);
+        config.put(PROPERTY_STATIC_MODULE_MAP, knownMappings);
+        config.put(PROPERTY_MODULE_PARAMETERS, moduleParameters);
     }
 
     /**
      * Read list of built-in modules from the configuration. This method will only make sure
      * that the specified module class exists and is a subclass of {@link org.exist.xquery.Module}.
      *
-     * @param   xquery            configuration root
-     * @param   modulesClassMap   map containing all classes of modules
-     * @param   modulesSourceMap  map containing all source uris to external resources
-     *
-     * @throws  DatabaseConfigurationException
+     * @param xquery           configuration root
+     * @param modulesClassMap  map containing all classes of modules
+     * @param modulesSourceMap map containing all source uris to external resources
+     * @throws DatabaseConfigurationException if one of the modules is configured incorrectly
      */
-    private void loadModuleClasses( Element xquery, Map<String, Class<?>> modulesClassMap, Map<String, String> modulesSourceMap, Map<String, Map<String, List<? extends Object>>> moduleParameters) throws DatabaseConfigurationException {
+    private void loadModuleClasses(final Element xquery,
+                                   final Map<String, Class<?>> modulesClassMap,
+                                   final Map<String, String> modulesSourceMap,
+                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters
+    ) throws DatabaseConfigurationException {
         // add the standard function module
-        modulesClassMap.put(Namespaces.XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
+        modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
         // add other modules specified in configuration
-        final NodeList builtins = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
+        final NodeList builtIns = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
 
         // search under <builtin-modules>
-        if(builtins.getLength() > 0) {
-            Element  elem    = (Element)builtins.item(0);
-            final NodeList modules = elem.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
+        if (builtIns.getLength() == 0) {
+            return;
+        }
 
-            if(modules.getLength() > 0) {
+        final Element builtIn = (Element) builtIns.item(0);
+        final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
 
-                // iterate over all <module src= uri= class=> entries
-                for(int i = 0; i < modules.getLength(); i++) {
+        // iterate over all <module src= uri= class=> entries
+        for (int i = 0; i < modules.getLength(); i++) {
+            // Get element.
+            final Element elem = (Element) modules.item(i);
 
-                    // Get element.
-                    elem = (Element)modules.item(i);
+            // Get attributes uri class and src
+            final String uri = elem.getAttribute(BUILT_IN_MODULE_URI_ATTRIBUTE);
+            final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+            final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
 
-                    // Get attributes uri class and src
-                    final String uri    = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE);
-                    final String clazz  = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE);
-                    final String source = elem.getAttribute(XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
+            // uri attribute is the identifier and is always required
+            if (uri == null) {
+                throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
+            }
 
-                    // uri attribute is the identifier and is always required
-                    if(uri == null) {
-                        throw(new DatabaseConfigurationException("element 'module' requires an attribute 'uri'" ));
-                    }
+            // either class or source attribute must be present
+            if (clazz == null && source == null) {
+                throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
+            }
 
-                    // either class or source attribute must be present
-                    if((clazz == null) && (source == null)) {
-                        throw(new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'" ));
-                    }
+            if (source != null) {
+                // Store src attribute info
 
-                    if(source != null) {
-                        // Store src attribute info
+                modulesSourceMap.put(uri, source);
 
-                        modulesSourceMap.put(uri, source);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
+                }
 
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
-                        }
+            } else {
+                // source class attribute info
 
-                    } else {
-                        // source class attribute info
+                // Get class of module
+                final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
-                        // Get class of module
-                        final Class<?> moduleClass = lookupModuleClass(uri, clazz);
+                // Store class if thw module class actually exists
+                if (moduleClass != null) {
+                    modulesClassMap.put(uri, moduleClass);
+                }
 
-                        // Store class if thw module class actually exists
-                        if( moduleClass != null) {
-                            modulesClassMap.put(uri, moduleClass);
-                        }
-
-                        if(LOG.isDebugEnabled()) {
-                            LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
-                        }
-                    }
-
-                    //parse any module parameters
-                    moduleParameters.put(uri, ParametersExtractor.extract(elem.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME)));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
                 }
             }
+
+            //parse any module parameters
+            moduleParameters.put(uri, ParametersExtractor.extract(
+                    elem.getElementsByTagName(PARAMETER_ELEMENT_NAME)));
         }
     }
 
     /**
-     *  Returns the Class object associated with the with the given module class name. All
+     * Returns the Class object associated with the given module class name. All
      * important exceptions are caught. @see org.exist.xquery.Module
      *
      * @param uri   namespace of class. For logging purposes only.
      * @param clazz the fully qualified name of the desired module class.
-     * @return      the module Class object for the module with the specified name.
-     * @throws      DatabaseConfigurationException if the given module class is not an instance
-     *              of org.exist.xquery.Module
+     * @return the module Class object for the module with the specified name.
+     * @throws DatabaseConfigurationException if the given module class is not an instance
+     *                                        of org.exist.xquery.Module
      */
-    private Class<?> lookupModuleClass(String uri, String clazz) throws DatabaseConfigurationException
-    {
-        Class<?> mClass = null;
-
+    private Class<?> lookupModuleClass(final String uri, final String clazz) throws DatabaseConfigurationException {
         try {
-            mClass = Class.forName( clazz );
+            final Class<?> mClass = Class.forName(clazz);
 
-            if( !( org.exist.xquery.Module.class.isAssignableFrom( mClass ) ) ) {
-                throw( new DatabaseConfigurationException( "Failed to load module: " + uri
-                        + ". Class " + clazz + " is not an instance of org.exist.xquery.Module." ) );
+            if (!(org.exist.xquery.Module.class.isAssignableFrom(mClass))) {
+                throw (new DatabaseConfigurationException("Failed to load module: " + uri + ". " +
+                        "Class " + clazz + " is not an instance of org.exist.xquery.Module."));
             }
-
-        } catch( final ClassNotFoundException e ) {
-
+            return mClass;
+        } catch (final ClassNotFoundException e) {
             // Note: can't throw an exception here since this would create
             // problems with test cases and jar dependencies
-            LOG.error("Configuration problem: class not found for module '{}' (ClassNotFoundException); class:'{}'; message:'{}'", uri, clazz, e.getMessage());
+            LOG.error("Configuration problem: class not found for module '{}' (ClassNotFoundException); " +
+                    "class:'{}'; message:'{}'", uri, clazz, e.getMessage());
 
-        } catch( final NoClassDefFoundError e ) {
-            LOG.error("Module {} could not be initialized due to a missing dependancy (NoClassDefFoundError): {}", uri, e.getMessage(), e);
+        } catch (final NoClassDefFoundError e) {
+            LOG.error("Module {} could not be initialized due to a missing dependency (NoClassDefFoundError): " +
+                    "{}", uri, e.getMessage(), e);
         }
-
-        return mClass;
+        return null;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param   xupdate
-     *
-     * @throws  NumberFormatException
+     * @param xupdate configuration element
+     * @throws NumberFormatException if one of the settings is not parseable
      */
-    private void configureXUpdate( Element xupdate ) throws NumberFormatException
-    {
-        final String fragmentation = getConfigAttributeValue( xupdate, DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE );
+    private void configureXUpdate(final Element xupdate) throws NumberFormatException {
+        final String fragmentation = getConfigAttributeValue(xupdate, XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
 
-        if( fragmentation != null ) {
-            config.put( DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, Integer.valueOf(fragmentation) );
-            LOG.debug(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": {}", config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
+        if (fragmentation != null) {
+            config.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, Integer.valueOf(fragmentation));
+            LOG.debug(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": {}",
+                    config.get(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
 
-        final String consistencyCheck = getConfigAttributeValue( xupdate, DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE );
+        final String consistencyCheck = getConfigAttributeValue(xupdate, XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE);
 
-        if( consistencyCheck != null ) {
-            config.put( DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean( consistencyCheck, false ) );
-            LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": {}", config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
+        if (consistencyCheck != null) {
+            config.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean(consistencyCheck, false));
+            LOG.debug(PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": {}",
+                    config.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
     }
 
-    private void configureSaxon( Element saxon )
-    {
+    private void configureSaxon(final Element saxon) {
         final String configurationFile = getConfigAttributeValue( saxon,
             SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
         if (configurationFile != null) {
@@ -554,58 +617,51 @@ public class Configuration implements ErrorHandler
         }
     }
 
-    private void configureTransformer( Element transformer )
-    {
-        final String className = getConfigAttributeValue( transformer, TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE );
+    private void configureTransformer(final Element transformer) {
+        final String className = getConfigAttributeValue(transformer, TRANSFORMER_CLASS_ATTRIBUTE);
 
-        if( className != null ) {
-            config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className );
-            LOG.debug(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": {}", config.get(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS));
+        if (className != null) {
+            config.put(PROPERTY_TRANSFORMER_CLASS, className);
+            LOG.debug(PROPERTY_TRANSFORMER_CLASS + ": {}", config.get(PROPERTY_TRANSFORMER_CLASS));
 
             // Process any specified attributes that should be passed to the transformer factory
 
-            final NodeList                  attrs      = transformer.getElementsByTagName( TransformerFactoryAllocator.CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME );
+            final NodeList attrs = transformer.getElementsByTagName(CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME);
             final Hashtable<Object, Object> attributes = new Properties();
 
-            for( int a = 0; a < attrs.getLength(); a++ ) {
-                final Element attr  = (Element)attrs.item( a );
-                final String  name  = attr.getAttribute( "name" );
-                final String  value = attr.getAttribute( "value" );
-                final String  type  = attr.getAttribute( "type" );
+            for (int a = 0; a < attrs.getLength(); a++) {
+                final Element attr = (Element) attrs.item(a);
+                final String name = attr.getAttribute("name");
+                final String value = attr.getAttribute("value");
+                final String type = attr.getAttribute("type");
 
-                if( ( name == null ) || (name.isEmpty()) ) {
+                if (name == null || name.isEmpty()) {
                     LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name not specified", className);
-
-                } else if( ( type == null ) || (type.isEmpty()) || type.equalsIgnoreCase( "string" ) ) {
-                    attributes.put( name, value );
-
-                } else if( type.equalsIgnoreCase( "boolean" ) ) {
-                    attributes.put( name, Boolean.valueOf( value ) );
-
-                } else if( type.equalsIgnoreCase( "integer" ) ) {
-
+                } else if (type == null || type.isEmpty() || type.equalsIgnoreCase("string")) {
+                    attributes.put(name, value);
+                } else if (type.equalsIgnoreCase("boolean")) {
+                    attributes.put(name, Boolean.valueOf(value));
+                } else if (type.equalsIgnoreCase("integer")) {
                     try {
-                        attributes.put( name, Integer.valueOf( value ) );
-                    }
-                    catch( final NumberFormatException nfe ) {
+                        attributes.put(name, Integer.valueOf(value));
+                    } catch (final NumberFormatException nfe) {
                         LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name: {}, value not integer: {}", className, name, value, nfe);
                     }
-
                 } else {
-
                     // Assume string type
-                    attributes.put( name, value );
+                    attributes.put(name, value);
                 }
             }
 
-            config.put( TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTES, attributes );
+            config.put(PROPERTY_TRANSFORMER_ATTRIBUTES, attributes);
         }
 
-        final String cachingValue = getConfigAttributeValue( transformer, TransformerFactoryAllocator.TRANSFORMER_CACHING_ATTRIBUTE );
+        final String cachingValue = getConfigAttributeValue(transformer, TRANSFORMER_CACHING_ATTRIBUTE);
 
-        if( cachingValue != null ) {
-            config.put( TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE, parseBoolean( cachingValue, false ) );
-            LOG.debug(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE + ": {}", config.get(TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE));
+        if (cachingValue != null) {
+            config.put(PROPERTY_CACHING_ATTRIBUTE, parseBoolean(cachingValue, false));
+            LOG.debug(PROPERTY_CACHING_ATTRIBUTE + ": {}",
+                    config.get(PROPERTY_CACHING_ATTRIBUTE));
         }
     }
 
@@ -615,128 +671,127 @@ public class Configuration implements ErrorHandler
     }
 
     private void configureXmlParser(final Element parser) {
-        final NodeList nlXml = parser.getElementsByTagName(XMLReaderPool.XmlParser.XML_PARSER_ELEMENT);
-        if(nlXml.getLength() > 0) {
-            final Element xml = (Element)nlXml.item(0);
-
-            final NodeList nlFeatures = xml.getElementsByTagName(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_ELEMENT);
-            if(nlFeatures.getLength() > 0) {
-                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-                if(pFeatures != null) {
-                    final Map<String, Boolean> features = new HashMap<>();
-                    pFeatures.forEach((k,v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-                    config.put(XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY, features);
-                }
-            }
+        final NodeList nlXml = parser.getElementsByTagName(XML_PARSER_ELEMENT);
+        if (nlXml.getLength() == 0) {
+            return;
         }
+
+        final Element xml = (Element) nlXml.item(0);
+        final NodeList nlFeatures = xml.getElementsByTagName(XML_PARSER_FEATURES_ELEMENT);
+        if (nlFeatures.getLength() == 0) {
+            return;
+        }
+
+        final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
+
+        if (pFeatures.isEmpty()) {
+            return;
+        }
+
+        final Map<String, Boolean> features = new HashMap<>();
+        pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+        config.put(XML_PARSER_FEATURES_PROPERTY, features);
     }
 
     private void configureHtmlToXmlParser(final Element parser) {
-        final NodeList nlHtmlToXml = parser.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_ELEMENT);
-        if(nlHtmlToXml.getLength() > 0) {
-            final Element htmlToXml = (Element)nlHtmlToXml.item(0);
-            final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
-            config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
+        final NodeList nlHtmlToXml = parser.getElementsByTagName(HTML_TO_XML_PARSER_ELEMENT);
+        if (nlHtmlToXml.getLength() == 0) {
+            return;
+        }
 
-            final NodeList nlProperties = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
-            if(nlProperties.getLength() > 0) {
-                final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
-                if(pProperties != null) {
-                    final Map<String, Object> properties = new HashMap<>();
-                    pProperties.forEach((k,v) -> properties.put(k.toString(), v));
-                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
-                }
-            }
+        final Element htmlToXml = (Element) nlHtmlToXml.item(0);
+        if (htmlToXml == null) {
+            return;
+        }
 
-            final NodeList nlFeatures = htmlToXml.getElementsByTagName(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT);
-            if(nlFeatures.getLength() > 0) {
-                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-                if(pFeatures != null) {
-                    final Map<String, Boolean> features = new HashMap<>();
-                    pFeatures.forEach((k,v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-                    config.put(HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
-                }
-            }
+        final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
+        config.put(HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
+
+        final NodeList nlProperties = htmlToXml.getElementsByTagName(HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
+        if (nlProperties.getLength() > 0) {
+            final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
+            final Map<String, Object> properties = new HashMap<>();
+            pProperties.forEach((k, v) -> properties.put(k.toString(), v));
+            config.put(HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
+        }
+
+        final NodeList nlFeatures = htmlToXml.getElementsByTagName(HTML_TO_XML_PARSER_FEATURES_ELEMENT);
+        if (nlFeatures.getLength() > 0) {
+            final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
+            final Map<String, Boolean> features = new HashMap<>();
+            pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+            config.put(HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
         }
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  serializer
+     * @param serializer element with serializer settings
      */
-    private void configureSerializer( Element serializer )
-    {
-        final String omitXmlDeclaration = getConfigAttributeValue( serializer, Serializer.OMIT_XML_DECLARATION_ATTRIBUTE );
+    private void configureSerializer(final Element serializer) {
+        final String omitXmlDeclaration = getConfigAttributeValue(serializer, OMIT_XML_DECLARATION_ATTRIBUTE);
         if (omitXmlDeclaration != null) {
-            config.put(Serializer.PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
-            LOG.debug(Serializer.PROPERTY_OMIT_XML_DECLARATION + ": {}", config.get(Serializer.PROPERTY_OMIT_XML_DECLARATION));
+            config.put(PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
+            LOG.debug(PROPERTY_OMIT_XML_DECLARATION + ": {}", config.get(PROPERTY_OMIT_XML_DECLARATION));
         }
 
-        final String omitOriginalXmlDeclaration = getConfigAttributeValue( serializer, Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE );
+        final String omitOriginalXmlDeclaration = getConfigAttributeValue(serializer, OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE);
         if (omitOriginalXmlDeclaration != null) {
-            config.put(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-            LOG.debug(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION + ": {}", config.get(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION));
+            config.put(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
+            LOG.debug(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION + ": {}", config.get(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION));
         }
 
-        final String outputDocType = getConfigAttributeValue( serializer, Serializer.OUTPUT_DOCTYPE_ATTRIBUTE );
+        final String outputDocType = getConfigAttributeValue(serializer, OUTPUT_DOCTYPE_ATTRIBUTE);
         if (outputDocType != null) {
-            config.put(Serializer.PROPERTY_OUTPUT_DOCTYPE, outputDocType);
-            LOG.debug(Serializer.PROPERTY_OUTPUT_DOCTYPE + ": {}", config.get(Serializer.PROPERTY_OUTPUT_DOCTYPE));
+            config.put(PROPERTY_OUTPUT_DOCTYPE, outputDocType);
+            LOG.debug(PROPERTY_OUTPUT_DOCTYPE + ": {}", config.get(PROPERTY_OUTPUT_DOCTYPE));
         }
 
-        final String xinclude = getConfigAttributeValue( serializer, Serializer.ENABLE_XINCLUDE_ATTRIBUTE );
-
-        if( xinclude != null ) {
-            config.put( Serializer.PROPERTY_ENABLE_XINCLUDE, xinclude );
-            LOG.debug(Serializer.PROPERTY_ENABLE_XINCLUDE + ": {}", config.get(Serializer.PROPERTY_ENABLE_XINCLUDE));
+        final String xinclude = getConfigAttributeValue(serializer, ENABLE_XINCLUDE_ATTRIBUTE);
+        if (xinclude != null) {
+            config.put(PROPERTY_ENABLE_XINCLUDE, xinclude);
+            LOG.debug(PROPERTY_ENABLE_XINCLUDE + ": {}", config.get(PROPERTY_ENABLE_XINCLUDE));
         }
 
-        final String xsl = getConfigAttributeValue( serializer, Serializer.ENABLE_XSL_ATTRIBUTE );
-
-        if( xsl != null ) {
-            config.put( Serializer.PROPERTY_ENABLE_XSL, xsl );
-            LOG.debug(Serializer.PROPERTY_ENABLE_XSL + ": {}", config.get(Serializer.PROPERTY_ENABLE_XSL));
+        final String xsl = getConfigAttributeValue(serializer, ENABLE_XSL_ATTRIBUTE);
+        if (xsl != null) {
+            config.put(PROPERTY_ENABLE_XSL, xsl);
+            LOG.debug(PROPERTY_ENABLE_XSL + ": {}", config.get(PROPERTY_ENABLE_XSL));
         }
 
-        final String indent = getConfigAttributeValue( serializer, Serializer.INDENT_ATTRIBUTE );
-
-        if( indent != null ) {
-            config.put( Serializer.PROPERTY_INDENT, indent );
-            LOG.debug(Serializer.PROPERTY_INDENT + ": {}", config.get(Serializer.PROPERTY_INDENT));
+        final String indent = getConfigAttributeValue(serializer, INDENT_ATTRIBUTE);
+        if (indent != null) {
+            config.put(PROPERTY_INDENT, indent);
+            LOG.debug(PROPERTY_INDENT + ": {}", config.get(PROPERTY_INDENT));
         }
 
-        final String compress = getConfigAttributeValue( serializer, Serializer.COMPRESS_OUTPUT_ATTRIBUTE );
-
-        if( compress != null ) {
-            config.put( Serializer.PROPERTY_COMPRESS_OUTPUT, compress );
-            LOG.debug(Serializer.PROPERTY_COMPRESS_OUTPUT + ": {}", config.get(Serializer.PROPERTY_COMPRESS_OUTPUT));
+        final String compress = getConfigAttributeValue(serializer, COMPRESS_OUTPUT_ATTRIBUTE);
+        if (compress != null) {
+            config.put(PROPERTY_COMPRESS_OUTPUT, compress);
+            LOG.debug(PROPERTY_COMPRESS_OUTPUT + ": {}", config.get(PROPERTY_COMPRESS_OUTPUT));
         }
 
-        final String internalId = getConfigAttributeValue( serializer, Serializer.ADD_EXIST_ID_ATTRIBUTE );
-
-        if( internalId != null ) {
-            config.put( Serializer.PROPERTY_ADD_EXIST_ID, internalId );
-            LOG.debug(Serializer.PROPERTY_ADD_EXIST_ID + ": {}", config.get(Serializer.PROPERTY_ADD_EXIST_ID));
+        final String internalId = getConfigAttributeValue(serializer, ADD_EXIST_ID_ATTRIBUTE);
+        if (internalId != null) {
+            config.put(PROPERTY_ADD_EXIST_ID, internalId);
+            LOG.debug(PROPERTY_ADD_EXIST_ID + ": {}", config.get(PROPERTY_ADD_EXIST_ID));
         }
 
-        final String tagElementMatches = getConfigAttributeValue( serializer, Serializer.TAG_MATCHING_ELEMENTS_ATTRIBUTE );
-
-        if( tagElementMatches != null ) {
-            config.put( Serializer.PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches );
-            LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS + ": {}", config.get(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS));
+        final String tagElementMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ELEMENTS_ATTRIBUTE);
+        if (tagElementMatches != null) {
+            config.put(PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
+            LOG.debug(PROPERTY_TAG_MATCHING_ELEMENTS + ": {}", config.get(PROPERTY_TAG_MATCHING_ELEMENTS));
         }
 
-        final String tagAttributeMatches = getConfigAttributeValue( serializer, Serializer.TAG_MATCHING_ATTRIBUTES_ATTRIBUTE );
-
-        if( tagAttributeMatches != null ) {
-            config.put( Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches );
-            LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES + ": {}", config.get(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES));
+        final String tagAttributeMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ATTRIBUTES_ATTRIBUTE);
+        if (tagAttributeMatches != null) {
+            config.put(PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
+            LOG.debug(PROPERTY_TAG_MATCHING_ATTRIBUTES + ": {}", config.get(PROPERTY_TAG_MATCHING_ATTRIBUTES));
         }
 
-        final NodeList nlFilters = serializer.getElementsByTagName( CustomMatchListenerFactory.CONFIGURATION_ELEMENT );
-
-        if( nlFilters != null ) {
+        final NodeList nlFilters = serializer.getElementsByTagName(CustomMatchListenerFactory.CONFIGURATION_ELEMENT);
+        if (nlFilters.getLength() > 0) {
             final List<String> filters = new ArrayList<>(nlFilters.getLength());
 
             for (int i = 0; i < nlFilters.getLength(); i++) {
@@ -753,9 +808,8 @@ public class Configuration implements ErrorHandler
             config.put(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters);
         }
 
-        final NodeList backupFilters = serializer.getElementsByTagName( SystemExport.CONFIGURATION_ELEMENT );
-
-        if( backupFilters != null ) {
+        final NodeList backupFilters = serializer.getElementsByTagName(SystemExport.CONFIGURATION_ELEMENT);
+        if (backupFilters.getLength() > 0) {
             final List<String> filters = new ArrayList<>(backupFilters.getLength());
 
             for (int i = 0; i < backupFilters.getLength(); i++) {
@@ -768,126 +822,124 @@ public class Configuration implements ErrorHandler
                 } else {
                     LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
                 }
+                if (!filters.isEmpty()) {
+                    config.put(SystemExport.CONFIG_FILTERS, filters);
+                }
             }
-            if (!filters.isEmpty()) config.put(SystemExport.CONFIG_FILTERS, filters);
         }
     }
-
 
     /**
      * Reads the scheduler configuration.
      *
-     * @param  scheduler  DOCUMENT ME!
+     * @param scheduler DOCUMENT ME!
      */
-    private void configureScheduler(final Element scheduler)
-    {
+    private void configureScheduler(final Element scheduler) {
         final NodeList nlJobs = scheduler.getElementsByTagName(JobConfig.CONFIGURATION_JOB_ELEMENT_NAME);
+        final List<JobConfig> jobList = new ArrayList<>();
 
-        if(nlJobs == null) {
+        for (int i = 0; i < nlJobs.getLength(); i++) {
+            final Element job = (Element) nlJobs.item(i);
+            if (job != null) {
+                addJobToList(jobList, job);
+            }
+        }
+
+        if (jobList.isEmpty()) {
             return;
         }
 
-        final List<JobConfig> jobList = new ArrayList<>();
+        final JobConfig[] jobConfigs = new JobConfig[jobList.size()];
+        for (int i = 0; i < jobList.size(); i++) {
+            jobConfigs[i] = jobList.get(i);
+        }
+        config.put(PROPERTY_SCHEDULER_JOBS, jobConfigs);
+    }
 
-        for(int i = 0; i < nlJobs.getLength(); i++) {
-            final Element job = (Element)nlJobs.item( i );
+    private void addJobToList(final List<JobConfig> jobList, final Element job) {
+        //get the job type
+        final String strJobType = getConfigAttributeValue(job, JOB_TYPE_ATTRIBUTE);
 
-            //get the job type
-            final String strJobType = getConfigAttributeValue(job, JobConfig.JOB_TYPE_ATTRIBUTE);
+        final JobType jobType;
+        if (strJobType == null) {
+            jobType = JobType.USER; //default to user if unspecified
+        } else {
+            jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
+        }
 
-            final JobType jobType;
-            if(strJobType == null) {
-                jobType = JobType.USER; //default to user if unspecified
-            } else {
-                jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
+        final String jobName = getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE);
+
+        //get the job resource
+        String jobResource = getConfigAttributeValue(job, JOB_CLASS_ATTRIBUTE);
+        if (jobResource == null) {
+            jobResource = getConfigAttributeValue(job, JOB_XQUERY_ATTRIBUTE);
+        }
+
+        //get the job schedule
+        String jobSchedule = getConfigAttributeValue(job, JOB_CRON_TRIGGER_ATTRIBUTE);
+        if (jobSchedule == null) {
+            jobSchedule = getConfigAttributeValue(job, JOB_PERIOD_ATTRIBUTE);
+        }
+
+        final String jobUnschedule = getConfigAttributeValue(job, JOB_UNSCHEDULE_ON_EXCEPTION);
+
+        //create the job config
+        try {
+            final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
+
+            //get and set the job delay
+            final String jobDelay = getConfigAttributeValue(job, JOB_DELAY_ATTRIBUTE);
+            if (jobDelay != null && !jobDelay.isEmpty()) {
+                jobConfig.setDelay(Long.parseLong(jobDelay));
             }
 
-            final String jobName = getConfigAttributeValue(job, JobConfig.JOB_NAME_ATTRIBUTE);
-
-            //get the job resource
-            String jobResource = getConfigAttributeValue(job, JobConfig.JOB_CLASS_ATTRIBUTE);
-            if(jobResource == null) {
-                jobResource = getConfigAttributeValue(job, JobConfig.JOB_XQUERY_ATTRIBUTE);
+            //get and set the job repeat
+            final String jobRepeat = getConfigAttributeValue(job, JOB_REPEAT_ATTRIBUTE);
+            if (jobRepeat != null && !jobRepeat.isEmpty()) {
+                jobConfig.setRepeat(Integer.parseInt(jobRepeat));
             }
 
-            //get the job schedule
-            String jobSchedule = getConfigAttributeValue(job, JobConfig.JOB_CRON_TRIGGER_ATTRIBUTE);
-            if(jobSchedule == null) {
-                jobSchedule = getConfigAttributeValue(job, JobConfig.JOB_PERIOD_ATTRIBUTE);
-            }
+            final NodeList nlParam = job.getElementsByTagName(PARAMETER_ELEMENT_NAME);
+            final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
 
-            final String jobUnschedule = getConfigAttributeValue(job, JobConfig.JOB_UNSCHEDULE_ON_EXCEPTION);
-            
-            //create the job config
-            try {
-                final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
+            for (final Entry<String, List<? extends Object>> param : params.entrySet()) {
+                final List<? extends Object> values = param.getValue();
+                if (values != null && !values.isEmpty()) {
+                    jobConfig.addParameter(param.getKey(), values.get(0).toString());
 
-                //get and set the job delay
-                final String jobDelay = getConfigAttributeValue(job, JobConfig.JOB_DELAY_ATTRIBUTE);
-
-                if((jobDelay != null) && (!jobDelay.isEmpty())) {
-                    jobConfig.setDelay(Long.parseLong(jobDelay));
-                }
-
-                //get and set the job repeat
-                final String jobRepeat = getConfigAttributeValue(job, JobConfig.JOB_REPEAT_ATTRIBUTE);
-
-                if((jobRepeat != null) && (!jobRepeat.isEmpty())) {
-                    jobConfig.setRepeat(Integer.parseInt(jobRepeat));
-                }
-
-                final NodeList nlParam = job.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME);
-                final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
-                
-                for(final Entry<String, List<? extends Object>> param : params.entrySet()) {
-                    final List<? extends Object> values = param.getValue();
-                    if(values != null && !values.isEmpty()) {
-                        jobConfig.addParameter(param.getKey(), values.get(0).toString());
-                        
-                        if(values.size() > 1) {
-                            LOG.warn("Parameter '{}' for job '{}' has more than one value, ignoring further values.", param.getKey(), jobName);
-                        }
+                    if (values.size() > 1) {
+                        LOG.warn("Parameter '{}' for job '{}' has more than one value, ignoring further values.", param.getKey(), jobName);
                     }
                 }
-
-                jobList.add(jobConfig);
-
-                LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource, (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule), (jobDelay == null) ? "" : ("' with delay '" + jobDelay), (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
-            } catch(final JobException je) {
-                LOG.error(je);
-            }
-        }
-
-        if(!jobList.isEmpty()) {
-            final JobConfig[] configs = new JobConfig[jobList.size()];
-
-            for(int i = 0; i < jobList.size(); i++) {
-                configs[i] = (JobConfig)jobList.get(i);
             }
 
-            config.put(JobConfig.PROPERTY_SCHEDULER_JOBS, configs);
+            jobList.add(jobConfig);
+
+            LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource,
+                    (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule),
+                    (jobDelay == null) ? "" : ("' with delay '" + jobDelay),
+                    (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
+        } catch (final JobException je) {
+            LOG.error(je);
         }
     }
-    
 
     /**
      * DOCUMENT ME!
      *
-     * @param   dbHome
-     * @param   con
-     *
-     * @throws  DatabaseConfigurationException
+     * @param dbHome
+     * @param con
+     * @throws DatabaseConfigurationException
      */
-    private void configureBackend( final Optional<Path> dbHome, Element con ) throws DatabaseConfigurationException
-    {
-        final String database = getConfigAttributeValue(con, BrokerFactory.PROPERTY_DATABASE);
+    private void configureBackend(final Optional<Path> dbHome, Element con) throws DatabaseConfigurationException {
+        final String database = getConfigAttributeValue(con, PROPERTY_DATABASE);
         if (database != null) {
-            config.put(BrokerFactory.PROPERTY_DATABASE, database);
-            LOG.debug(BrokerFactory.PROPERTY_DATABASE + ": {}", config.get(BrokerFactory.PROPERTY_DATABASE));
+            config.put(PROPERTY_DATABASE, database);
+            LOG.debug(PROPERTY_DATABASE + ": {}", config.get(PROPERTY_DATABASE));
         }
 
         // directory for database files
-        final String dataFiles = getConfigAttributeValue( con, BrokerPool.DATA_DIR_ATTRIBUTE );
+        final String dataFiles = getConfigAttributeValue(con, DATA_DIR_ATTRIBUTE);
 
         if (dataFiles != null) {
             final Path df = ConfigurationHelper.lookup(dataFiles, dbHome);
@@ -898,721 +950,628 @@ public class Configuration implements ErrorHandler
                     throw new DatabaseConfigurationException("cannot read data directory: " + df, ioe);
                 }
             }
-            config.put(BrokerPool.PROPERTY_DATA_DIR, df);
-            LOG.debug(BrokerPool.PROPERTY_DATA_DIR + ": {}", config.get(BrokerPool.PROPERTY_DATA_DIR));
+            config.put(PROPERTY_DATA_DIR, df);
+            LOG.debug(PROPERTY_DATA_DIR + ": {}", config.get(PROPERTY_DATA_DIR));
         }
 
-        String cacheMem = getConfigAttributeValue( con, DefaultCacheManager.CACHE_SIZE_ATTRIBUTE );
+        String cacheMem = getConfigAttributeValue(con, CACHE_SIZE_ATTRIBUTE);
 
-        if( cacheMem != null ) {
+        if (cacheMem != null) {
 
-            if( cacheMem.endsWith( "M" ) || cacheMem.endsWith( "m" ) ) {
-                cacheMem = cacheMem.substring( 0, cacheMem.length() - 1 );
+            if (cacheMem.endsWith("M") || cacheMem.endsWith("m")) {
+                cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             }
 
             try {
-                config.put( DefaultCacheManager.PROPERTY_CACHE_SIZE, Integer.valueOf(cacheMem) );
-                LOG.debug(DefaultCacheManager.PROPERTY_CACHE_SIZE + ": {}m", config.get(DefaultCacheManager.PROPERTY_CACHE_SIZE));
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + DefaultCacheManager.PROPERTY_CACHE_SIZE + " value to integer: {}", cacheMem, nfe);
+                config.put(PROPERTY_CACHE_SIZE, Integer.valueOf(cacheMem));
+                LOG.debug(PROPERTY_CACHE_SIZE + ": {}m", config.get(PROPERTY_CACHE_SIZE));
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + PROPERTY_CACHE_SIZE + " value to integer: {}", cacheMem, nfe);
             }
         }
-        
+
         // Process the Check Max Cache value
-        
-        String checkMaxCache = getConfigAttributeValue( con, DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE );
-        
-        if( checkMaxCache == null ) {
-            checkMaxCache = DefaultCacheManager.DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
+
+        String checkMaxCache = getConfigAttributeValue(con, CACHE_CHECK_MAX_SIZE_ATTRIBUTE);
+
+        if (checkMaxCache == null) {
+            checkMaxCache = DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
         }
-        
-        config.put( DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean( checkMaxCache, true ) );
-        LOG.debug(DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE + ": {}", config.get(DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE));
 
-        String cacheShrinkThreshold = getConfigAttributeValue( con, DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE );
+        config.put(PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean(checkMaxCache, true));
+        LOG.debug(PROPERTY_CACHE_CHECK_MAX_SIZE + ": {}", config.get(PROPERTY_CACHE_CHECK_MAX_SIZE));
 
-        if( cacheShrinkThreshold == null ) {
+        String cacheShrinkThreshold = getConfigAttributeValue(con, SHRINK_THRESHOLD_ATTRIBUTE);
+
+        if (cacheShrinkThreshold == null) {
             cacheShrinkThreshold = DefaultCacheManager.DEFAULT_SHRINK_THRESHOLD_STRING;
         }
 
         try {
-            config.put(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold));
-            LOG.debug(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + ": {}", config.get(DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY));
-        } catch(final NumberFormatException nfe) {
-            LOG.warn("Cannot convert " + DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY + " value to integer: {}", cacheShrinkThreshold, nfe);
+            config.put(SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold));
+            LOG.debug(SHRINK_THRESHOLD_PROPERTY + ": {}", config.get(SHRINK_THRESHOLD_PROPERTY));
+        } catch (final NumberFormatException nfe) {
+            LOG.warn("Cannot convert " + SHRINK_THRESHOLD_PROPERTY + " value to integer: {}", cacheShrinkThreshold, nfe);
         }
 
         String collectionCache = getConfigAttributeValue(con, CollectionCache.CACHE_SIZE_ATTRIBUTE);
-        if(collectionCache != null) {
+        if (collectionCache != null) {
             collectionCache = collectionCache.toLowerCase();
 
             try {
                 final int collectionCacheBytes;
-                if(collectionCache.endsWith("k")) {
+                if (collectionCache.endsWith("k")) {
                     collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
-                } else if(collectionCache.endsWith("kb")) {
+                } else if (collectionCache.endsWith("kb")) {
                     collectionCacheBytes = 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
-                } else if(collectionCache.endsWith("m")) {
+                } else if (collectionCache.endsWith("m")) {
                     collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
-                } else if(collectionCache.endsWith("mb")) {
+                } else if (collectionCache.endsWith("mb")) {
                     collectionCacheBytes = 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
-                } else if(collectionCache.endsWith("g")) {
+                } else if (collectionCache.endsWith("g")) {
                     collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 1));
-                } else if(collectionCache.endsWith("gb")) {
+                } else if (collectionCache.endsWith("gb")) {
                     collectionCacheBytes = 1024 * 1024 * 1024 * Integer.parseInt(collectionCache.substring(0, collectionCache.length() - 2));
                 } else {
                     collectionCacheBytes = Integer.parseInt(collectionCache);
                 }
 
-                config.put(CollectionCache.PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
+                config.put(PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
 
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("Set config {} = {}", CollectionCache.PROPERTY_CACHE_SIZE_BYTES, config.get(CollectionCache.PROPERTY_CACHE_SIZE_BYTES));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Set config {} = {}", PROPERTY_CACHE_SIZE_BYTES, config.get(PROPERTY_CACHE_SIZE_BYTES));
                 }
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + CollectionCache.PROPERTY_CACHE_SIZE_BYTES + " value to integer: {}", collectionCache, nfe);
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + PROPERTY_CACHE_SIZE_BYTES + " value to integer: {}", collectionCache, nfe);
             }
         }
 
-        final String pageSize = getConfigAttributeValue( con, NativeBroker.PAGE_SIZE_ATTRIBUTE );
-
-        if( pageSize != null ) {
-
+        final String pageSize = getConfigAttributeValue(con, NativeBroker.PAGE_SIZE_ATTRIBUTE);
+        if (pageSize != null) {
             try {
-                config.put( BrokerPool.PROPERTY_PAGE_SIZE, Integer.valueOf(pageSize) );
-                LOG.debug(BrokerPool.PROPERTY_PAGE_SIZE + ": {}", config.get(BrokerPool.PROPERTY_PAGE_SIZE));
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_PAGE_SIZE + " value to integer: {}", pageSize, nfe);
+                config.put(PROPERTY_PAGE_SIZE, Integer.valueOf(pageSize));
+                LOG.debug(PROPERTY_PAGE_SIZE + ": {}", config.get(PROPERTY_PAGE_SIZE));
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + PROPERTY_PAGE_SIZE + " value to integer: {}", pageSize, nfe);
             }
         }
 
         //Not clear : rather looks like a buffers count
-        final String collCacheSize = getConfigAttributeValue( con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE );
-
-        if( collCacheSize != null ) {
-
+        final String collCacheSize = getConfigAttributeValue(con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE);
+        if (collCacheSize != null) {
             try {
-                config.put( BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, Integer.valueOf(collCacheSize) );
-                LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": {}", config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: {}", collCacheSize, nfe);
+                config.put(PROPERTY_COLLECTION_CACHE_SIZE, Integer.valueOf(collCacheSize));
+                LOG.debug(PROPERTY_COLLECTION_CACHE_SIZE + ": {}", config.get(PROPERTY_COLLECTION_CACHE_SIZE));
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: {}", collCacheSize, nfe);
             }
         }
 
-        final String nodesBuffer = getConfigAttributeValue( con, BrokerPool.NODES_BUFFER_ATTRIBUTE );
-
-        if( nodesBuffer != null ) {
-
+        final String nodesBuffer = getConfigAttributeValue(con, BrokerPool.NODES_BUFFER_ATTRIBUTE);
+        if (nodesBuffer != null) {
             try {
-                config.put( BrokerPool.PROPERTY_NODES_BUFFER, Integer.valueOf(nodesBuffer) );
-                LOG.debug(BrokerPool.PROPERTY_NODES_BUFFER + ": {}", config.get(BrokerPool.PROPERTY_NODES_BUFFER));
+                config.put(PROPERTY_NODES_BUFFER, Integer.valueOf(nodesBuffer));
+                LOG.debug(PROPERTY_NODES_BUFFER + ": {}", config.get(PROPERTY_NODES_BUFFER));
 
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + BrokerPool.PROPERTY_NODES_BUFFER + " value to integer: {}", nodesBuffer, nfe);
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + PROPERTY_NODES_BUFFER + " value to integer: {}", nodesBuffer, nfe);
             }
         }
 
         String diskSpace = getConfigAttributeValue(con, BrokerPool.DISK_SPACE_MIN_ATTRIBUTE);
-
-        if( diskSpace != null ) {
-
-            if( diskSpace.endsWith( "M" ) || diskSpace.endsWith( "m" ) ) {
-                diskSpace = diskSpace.substring( 0, diskSpace.length() - 1 );
+        if (diskSpace != null) {
+            if (diskSpace.endsWith("M") || diskSpace.endsWith("m")) {
+                diskSpace = diskSpace.substring(0, diskSpace.length() - 1);
             }
 
             try {
-                config.put(BrokerPool.DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
-            }
-            catch( final NumberFormatException nfe ) {
-                LOG.warn("Cannot convert " + BrokerPool.DISK_SPACE_MIN_PROPERTY + " value to integer: {}", diskSpace, nfe);
+                config.put(DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
+            } catch (final NumberFormatException nfe) {
+                LOG.warn("Cannot convert " + DISK_SPACE_MIN_PROPERTY + " value to integer: {}", diskSpace, nfe);
             }
         }
 
-        final String posixChownRestrictedStr = getConfigAttributeValue(con,  DBBroker.POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
-        final boolean posixChownRestricted;
-        if(posixChownRestrictedStr == null) {
-            posixChownRestricted = true;  // default
-        } else {
-            if(Boolean.parseBoolean(posixChownRestrictedStr)) {
-                posixChownRestricted = true;
-            } else {
-                // configuration explicitly specifies that posix chown should NOT be restricted
-                posixChownRestricted = false;
-            }
-        }
-        config.put(DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
+        final String posixChownRestrictedStr = getConfigAttributeValue(con, POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
+        final boolean posixChownRestricted = posixChownRestrictedStr == null || Boolean.parseBoolean(posixChownRestrictedStr);
+        config.put(POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
 
-        final String preserveOnCopyStr = getConfigAttributeValue(con,  DBBroker.PRESERVE_ON_COPY_ATTRIBUTE);
-        final DBBroker.PreserveType preserveOnCopy;
-        if(preserveOnCopyStr == null) {
-            preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;  // default
-        } else {
-            if(Boolean.parseBoolean(preserveOnCopyStr)) {
-                // configuration explicitly specifies that attributes should be preserved on copy
-                preserveOnCopy = DBBroker.PreserveType.PRESERVE;
-            } else {
-                preserveOnCopy = DBBroker.PreserveType.NO_PRESERVE;
-            }
-        }
-        config.put(DBBroker.PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
+        final String preserveOnCopyStr = getConfigAttributeValue(con, PRESERVE_ON_COPY_ATTRIBUTE);
+        // default or configuration explicitly specifies that attributes should be preserved on copy
+        final PreserveType preserveOnCopy = Boolean.parseBoolean(preserveOnCopyStr)
+                ? PreserveType.PRESERVE
+                : PreserveType.NO_PRESERVE;
+        config.put(PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
 
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
-        if(startupConf.getLength() > 0) {
-            configureStartup((Element)startupConf.item(0));
+        if (startupConf.getLength() > 0) {
+            configureStartup((Element) startupConf.item(0));
         } else {
             // Prevent NPE
             final List<StartupTriggerConfig> startupTriggers = new ArrayList<>();
-            config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-        }
-        
-        final NodeList poolConf = con.getElementsByTagName( BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME );
-
-        if( poolConf.getLength() > 0 ) {
-            configurePool( (Element)poolConf.item( 0 ) );
+            config.put(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
 
-        final NodeList queryPoolConf = con.getElementsByTagName( XQueryPool.CONFIGURATION_ELEMENT_NAME );
-
-        if( queryPoolConf.getLength() > 0 ) {
-            configureXQueryPool( (Element)queryPoolConf.item( 0 ) );
+        final NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME);
+        if (poolConf.getLength() > 0) {
+            configurePool((Element) poolConf.item(0));
         }
 
-        final NodeList watchConf = con.getElementsByTagName( XQueryWatchDog.CONFIGURATION_ELEMENT_NAME );
-
-        if( watchConf.getLength() > 0 ) {
-            configureWatchdog( (Element)watchConf.item( 0 ) );
+        final NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
+        if (queryPoolConf.getLength() > 0) {
+            configureXQueryPool((Element) queryPoolConf.item(0));
         }
 
-        final NodeList recoveries = con.getElementsByTagName( BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME );
+        final NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
+        if (watchConf.getLength() > 0) {
+            configureWatchdog((Element) watchConf.item(0));
+        }
 
-        if( recoveries.getLength() > 0 ) {
-            configureRecovery( dbHome, (Element)recoveries.item( 0 ) );
+        final NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
+        if (recoveries.getLength() > 0) {
+            configureRecovery(dbHome, (Element) recoveries.item(0));
         }
     }
 
+    private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
+        final String enabled = getConfigAttributeValue(recovery, RECOVERY_ENABLED_ATTRIBUTE);
+        setProperty(PROPERTY_RECOVERY_ENABLED, parseBoolean(enabled, true));
+        LOG.debug(PROPERTY_RECOVERY_ENABLED + ": {}", config.get(PROPERTY_RECOVERY_ENABLED));
 
-    private void configureRecovery( final Optional<Path> dbHome, Element recovery ) throws DatabaseConfigurationException
-    {
-        String option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_ENABLED_ATTRIBUTE );
-        setProperty( BrokerPool.PROPERTY_RECOVERY_ENABLED, parseBoolean( option, true ) );
-        LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
+        final String syncOnCommit = getConfigAttributeValue(recovery, RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
+        setProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(syncOnCommit, true));
+        LOG.debug(PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": {}", config.get(PROPERTY_RECOVERY_SYNC_ON_COMMIT));
 
-        option = getConfigAttributeValue( recovery, Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE );
-        setProperty( Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean( option, true ) );
-        LOG.debug(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": {}", config.get(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT));
+        final String groupCommit = getConfigAttributeValue(recovery, RECOVERY_GROUP_COMMIT_ATTRIBUTE);
+        setProperty(PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(groupCommit, false));
+        LOG.debug(PROPERTY_RECOVERY_GROUP_COMMIT + ": {}", config.get(PROPERTY_RECOVERY_GROUP_COMMIT));
 
-        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_GROUP_COMMIT_ATTRIBUTE );
-        setProperty( BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean( option, false ) );
-        LOG.debug(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_GROUP_COMMIT));
+        final String journalDir = getConfigAttributeValue(recovery, RECOVERY_JOURNAL_DIR_ATTRIBUTE);
+        if (journalDir != null) {
+            final Path rf = ConfigurationHelper.lookup(journalDir, dbHome);
 
-        option = getConfigAttributeValue( recovery, Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE );
-
-        if(option != null) {
-            //DWES
-            final Path rf = ConfigurationHelper.lookup( option, dbHome );
-
-            if(!Files.isReadable(rf)) {
-                throw new DatabaseConfigurationException( "cannot read data directory: " + rf);
+            if (!Files.isReadable(rf)) {
+                throw new DatabaseConfigurationException("cannot read data directory: " + rf);
             }
-            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, rf);
-            LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": {}", config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
+            setProperty(PROPERTY_RECOVERY_JOURNAL_DIR, rf);
+            LOG.debug(PROPERTY_RECOVERY_JOURNAL_DIR + ": {}", config.get(PROPERTY_RECOVERY_JOURNAL_DIR));
         }
 
-        option = getConfigAttributeValue( recovery, Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE );
-
-        if( option != null ) {
-
-            if( option.endsWith( "M" ) || option.endsWith( "m" ) ) {
-                option = option.substring( 0, option.length() - 1 );
-            }
-
+        final String sizeLimit = getConfigAttributeValue(recovery, RECOVERY_SIZE_LIMIT_ATTRIBUTE);
+        if (sizeLimit != null) {
             try {
-                final Integer size = Integer.valueOf( option );
-                setProperty( Journal.PROPERTY_RECOVERY_SIZE_LIMIT, size );
-                LOG.debug(Journal.PROPERTY_RECOVERY_SIZE_LIMIT + ": {}m", config.get(Journal.PROPERTY_RECOVERY_SIZE_LIMIT));
+                final int size;
+                if (sizeLimit.endsWith("M") || sizeLimit.endsWith("m")) {
+                    size = Integer.parseInt(sizeLimit.substring(0, sizeLimit.length() - 1));
+                } else {
+                    size = Integer.parseInt(sizeLimit);
+                }
+                setProperty(PROPERTY_RECOVERY_SIZE_LIMIT, size);
+                LOG.debug(PROPERTY_RECOVERY_SIZE_LIMIT + ": {}m", config.get(PROPERTY_RECOVERY_SIZE_LIMIT));
+            } catch (final NumberFormatException e) {
+                throw (new DatabaseConfigurationException("size attribute in recovery section needs to be a number"));
             }
-            catch( final NumberFormatException e ) {
-                throw( new DatabaseConfigurationException( "size attribute in recovery section needs to be a number" ) );
-            }
         }
 
-        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_FORCE_RESTART_ATTRIBUTE );
-        boolean value = false;
+        final String forceRestart = getConfigAttributeValue(recovery, RECOVERY_FORCE_RESTART_ATTRIBUTE);
+        final boolean forceRestartValue = "yes".equals(forceRestart);
+        setProperty(PROPERTY_RECOVERY_FORCE_RESTART, forceRestartValue);
+        LOG.debug(PROPERTY_RECOVERY_FORCE_RESTART + ": {}", config.get(PROPERTY_RECOVERY_FORCE_RESTART));
 
-        if( option != null ) {
-            value = "yes".equals(option);
-        }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART, value);
-        LOG.debug(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_FORCE_RESTART));
-
-        option = getConfigAttributeValue( recovery, BrokerPool.RECOVERY_POST_RECOVERY_CHECK );
-        value  = false;
-
-        if( option != null ) {
-            value = "yes".equals(option);
-        }
-        setProperty( BrokerPool.PROPERTY_RECOVERY_CHECK, value);
-        LOG.debug(BrokerPool.PROPERTY_RECOVERY_CHECK + ": {}", config.get(BrokerPool.PROPERTY_RECOVERY_CHECK));
+        final String postRecoveryCheck = getConfigAttributeValue(recovery, RECOVERY_POST_RECOVERY_CHECK);
+        final boolean postRecoveryCheckValue = "yes".equals(postRecoveryCheck);
+        setProperty(PROPERTY_RECOVERY_CHECK, postRecoveryCheckValue);
+        LOG.debug(PROPERTY_RECOVERY_CHECK + ": {}", config.get(PROPERTY_RECOVERY_CHECK));
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @param  watchDog
+     * @param watchDog element with watchDog settings
      */
-    private void configureWatchdog( Element watchDog )
-    {
-        final String timeout = getConfigAttributeValue( watchDog, "query-timeout" );
+    private void configureWatchdog(final Element watchDog) {
+        final String timeout = getConfigAttributeValue(watchDog, "query-timeout");
 
-        if( timeout != null ) {
+        if (timeout != null) {
 
             try {
-                config.put( XQueryWatchDog.PROPERTY_QUERY_TIMEOUT, Long.valueOf(timeout) );
-                LOG.debug(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT + ": {}", config.get(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_QUERY_TIMEOUT, Long.valueOf(timeout));
+                LOG.debug(PROPERTY_QUERY_TIMEOUT + ": {}", config.get(PROPERTY_QUERY_TIMEOUT));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
 
-        final String maxOutput = getConfigAttributeValue( watchDog, "output-size-limit" );
+        final String maxOutput = getConfigAttributeValue(watchDog, "output-size-limit");
 
-        if( maxOutput != null ) {
+        if (maxOutput != null) {
 
             try {
-                config.put( XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT, Integer.valueOf(maxOutput) );
-                LOG.debug(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT + ": {}", config.get(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_OUTPUT_SIZE_LIMIT, Integer.valueOf(maxOutput));
+                LOG.debug(PROPERTY_OUTPUT_SIZE_LIMIT + ": {}", config.get(PROPERTY_OUTPUT_SIZE_LIMIT));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
     }
-
 
     /**
      * DOCUMENT ME!
      *
-     * @param  queryPool
+     * @param queryPool element with queryPool settings
      */
-    private void configureXQueryPool( Element queryPool )
-    {
-        final String maxStackSize = getConfigAttributeValue( queryPool, XQueryPool.MAX_STACK_SIZE_ATTRIBUTE );
+    private void configureXQueryPool(final Element queryPool) {
+        final String maxStackSize = getConfigAttributeValue(queryPool, MAX_STACK_SIZE_ATTRIBUTE);
 
-        if( maxStackSize != null ) {
-
-            try {
-                config.put( XQueryPool.PROPERTY_MAX_STACK_SIZE, Integer.valueOf(maxStackSize) );
-                LOG.debug(XQueryPool.PROPERTY_MAX_STACK_SIZE + ": {}", config.get(XQueryPool.PROPERTY_MAX_STACK_SIZE));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
-            }
-        }
-
-        final String maxPoolSize = getConfigAttributeValue( queryPool, XQueryPool.POOL_SIZE_ATTTRIBUTE );
-
-        if( maxPoolSize != null ) {
+        if (maxStackSize != null) {
 
             try {
-                config.put( XQueryPool.PROPERTY_POOL_SIZE, Integer.valueOf(maxPoolSize) );
-                LOG.debug(XQueryPool.PROPERTY_POOL_SIZE + ": {}", config.get(XQueryPool.PROPERTY_POOL_SIZE));
+                config.put(PROPERTY_MAX_STACK_SIZE, Integer.valueOf(maxStackSize));
+                LOG.debug(PROPERTY_MAX_STACK_SIZE + ": {}", config.get(PROPERTY_MAX_STACK_SIZE));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+        }
+
+        final String maxPoolSize = getConfigAttributeValue(queryPool, POOL_SIZE_ATTTRIBUTE);
+
+        if (maxPoolSize != null) {
+
+            try {
+                config.put(PROPERTY_POOL_SIZE, Integer.valueOf(maxPoolSize));
+                LOG.debug(PROPERTY_POOL_SIZE + ": {}", config.get(PROPERTY_POOL_SIZE));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
-        }
-    }
-    
-    public static class StartupTriggerConfig {
-        private final String clazz;
-        private final Map<String, List<? extends Object>> params;
-
-        public StartupTriggerConfig(final String clazz, final Map<String, List<? extends Object>> params) {
-            this.clazz = clazz;
-            this.params = params;
-        }
-
-        public String getClazz() {
-            return clazz;
-        }
-
-        public Map<String, List<? extends Object>> getParams() {
-            return params;
         }
     }
 
     private void configureStartup(final Element startup) {
         // Retrieve <triggers>
         final NodeList nlTriggers = startup.getElementsByTagName("triggers");
-        
-        // If <triggers> exists
-        if(nlTriggers != null && nlTriggers.getLength() > 0) {
-            // Get <triggers>
-            final Element triggers = (Element)nlTriggers.item(0);
-            
-            // Get <trigger>
-            final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
-            
-            // If <trigger> exists and there are more than 0
-            if(nlTrigger != null && nlTrigger.getLength() > 0) {
-                
-                // Initialize trigger configuration
-                List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>)config.get(BrokerPool.PROPERTY_STARTUP_TRIGGERS);
-                if(startupTriggers == null) {
-                    startupTriggers = new ArrayList<>();
-                    config.put(BrokerPool.PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-                }
-                
-                // Iterate over <trigger> elements
-                for(int i = 0; i < nlTrigger.getLength(); i++) {
-                    
-                    // Get <trigger> element
-                    final Element trigger = (Element)nlTrigger.item(i);
-                    
-                    // Get @class
-                    final String startupTriggerClass = trigger.getAttribute("class");
-                    
-                    boolean isStartupTrigger = false;
-                    try {
-                        // Verify if class is StartupTrigger
-                        for(final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
-                            if("org.exist.storage.StartupTrigger".equals(iface.getName())) {
-                                isStartupTrigger = true;
-                                break;
-                            }
-                        }
 
-                        // if it actually is a StartupTrigger
-                        if(isStartupTrigger) {
-                            // Parse additional parameters
-                            final Map<String, List<? extends Object>> params 
-                                    = ParametersExtractor.extract(trigger.getElementsByTagName(ParametersExtractor.PARAMETER_ELEMENT_NAME));
-                            
-                            // Register trigger
-                            startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
-                            
-                            // Done
-                            LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
-                            
-                        } else {
-                            LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
-                        }
-                        
-                    } catch(final ClassNotFoundException cnfe) {
-                        LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
+        // If <triggers> exists
+        if (nlTriggers.getLength() == 0) {
+            return;
+        }
+        // Get <triggers>
+        final Element triggers = (Element) nlTriggers.item(0);
+
+        // Get <trigger>
+        final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
+
+        // If <trigger> exists and there are more than 0
+        if (nlTrigger.getLength() == 0) {
+            return;
+        }
+
+        // Initialize trigger configuration
+        List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(PROPERTY_STARTUP_TRIGGERS);
+        if (startupTriggers == null) {
+            startupTriggers = new ArrayList<>();
+            config.put(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+        }
+
+        // Iterate over <trigger> elements
+        for (int i = 0; i < nlTrigger.getLength(); i++) {
+
+            // Get <trigger> element
+            final Element trigger = (Element) nlTrigger.item(i);
+
+            // Get @class
+            final String startupTriggerClass = trigger.getAttribute("class");
+
+            boolean isStartupTrigger = false;
+            try {
+                // Verify if class is StartupTrigger
+                for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                    if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
+                        isStartupTrigger = true;
+                        break;
                     }
                 }
+
+                // if it actually is a StartupTrigger
+                if (isStartupTrigger) {
+                    // Parse additional parameters
+                    final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(PARAMETER_ELEMENT_NAME));
+
+                    // Register trigger
+                    startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
+
+                    // Done
+                    LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
+
+                } else {
+                    LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
+                }
+
+            } catch (final ClassNotFoundException cnfe) {
+                LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
             }
         }
     }
-    
 
     /**
      * DOCUMENT ME!
      *
-     * @param  pool
+     * @param pool
      */
-    private void configurePool( Element pool )
-    {
-        final String min = getConfigAttributeValue( pool, BrokerPool.MIN_CONNECTIONS_ATTRIBUTE );
-
-        if( min != null ) {
+    private void configurePool(final Element pool) {
+        final String min = getConfigAttributeValue(pool, MIN_CONNECTIONS_ATTRIBUTE);
+        if (min != null) {
 
             try {
-                config.put( BrokerPool.PROPERTY_MIN_CONNECTIONS, Integer.valueOf(min) );
-                LOG.debug(BrokerPool.PROPERTY_MIN_CONNECTIONS + ": {}", config.get(BrokerPool.PROPERTY_MIN_CONNECTIONS));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_MIN_CONNECTIONS, Integer.valueOf(min));
+                LOG.debug(PROPERTY_MIN_CONNECTIONS + ": {}", config.get(PROPERTY_MIN_CONNECTIONS));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
 
-        final String max = getConfigAttributeValue( pool, BrokerPool.MAX_CONNECTIONS_ATTRIBUTE );
-
-        if( max != null ) {
+        final String max = getConfigAttributeValue(pool, MAX_CONNECTIONS_ATTRIBUTE);
+        if (max != null) {
 
             try {
-                config.put( BrokerPool.PROPERTY_MAX_CONNECTIONS, Integer.valueOf(max) );
-                LOG.debug(BrokerPool.PROPERTY_MAX_CONNECTIONS + ": {}", config.get(BrokerPool.PROPERTY_MAX_CONNECTIONS));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_MAX_CONNECTIONS, Integer.valueOf(max));
+                LOG.debug(PROPERTY_MAX_CONNECTIONS + ": {}", config.get(PROPERTY_MAX_CONNECTIONS));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
 
-        final String sync = getConfigAttributeValue( pool, BrokerPool.SYNC_PERIOD_ATTRIBUTE );
-
-        if( sync != null ) {
+        final String sync = getConfigAttributeValue(pool, SYNC_PERIOD_ATTRIBUTE);
+        if (sync != null) {
 
             try {
-                config.put( BrokerPool.PROPERTY_SYNC_PERIOD, Long.valueOf(sync) );
-                LOG.debug(BrokerPool.PROPERTY_SYNC_PERIOD + ": {}", config.get(BrokerPool.PROPERTY_SYNC_PERIOD));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_SYNC_PERIOD, Long.valueOf(sync));
+                LOG.debug(PROPERTY_SYNC_PERIOD + ": {}", config.get(PROPERTY_SYNC_PERIOD));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
 
-        final String maxShutdownWait = getConfigAttributeValue( pool, BrokerPool.SHUTDOWN_DELAY_ATTRIBUTE );
-
-        if( maxShutdownWait != null ) {
+        final String maxShutdownWait = getConfigAttributeValue(pool, SHUTDOWN_DELAY_ATTRIBUTE);
+        if (maxShutdownWait != null) {
 
             try {
-                config.put( BrokerPool.PROPERTY_SHUTDOWN_DELAY, Long.valueOf(maxShutdownWait) );
-                LOG.debug(BrokerPool.PROPERTY_SHUTDOWN_DELAY + ": {}", config.get(BrokerPool.PROPERTY_SHUTDOWN_DELAY));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_SHUTDOWN_DELAY, Long.valueOf(maxShutdownWait));
+                LOG.debug(PROPERTY_SHUTDOWN_DELAY + ": {}", config.get(PROPERTY_SHUTDOWN_DELAY));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
     }
 
+    private void configureIndexer(final Document doc, final Element indexer) throws DatabaseConfigurationException {
+        final String caseSensitive = getConfigAttributeValue(indexer, INDEX_CASE_SENSITIVE_ATTRIBUTE);
 
-    private void configureIndexer( final Optional<Path> dbHome, Document doc, Element indexer ) throws DatabaseConfigurationException, MalformedURLException
-    {
-        final String caseSensitive = getConfigAttributeValue( indexer, NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE );
-
-        if( caseSensitive != null ) {
-            config.put( NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean( caseSensitive, false ) );
-            LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": {}", config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
+        if (caseSensitive != null) {
+            config.put(PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean(caseSensitive, false));
+            LOG.debug(PROPERTY_INDEX_CASE_SENSITIVE + ": {}", config.get(PROPERTY_INDEX_CASE_SENSITIVE));
         }
 
-        int    depth      = 3;
-        final String indexDepth = getConfigAttributeValue( indexer, NativeBroker.INDEX_DEPTH_ATTRIBUTE );
+        int depth = 3;
+        final String indexDepth = getConfigAttributeValue(indexer, INDEX_DEPTH_ATTRIBUTE);
 
-        if( indexDepth != null ) {
+        if (indexDepth != null) {
 
             try {
-                depth = Integer.parseInt( indexDepth );
+                depth = Integer.parseInt(indexDepth);
 
-                if( depth < 3 ) {
-                    LOG.warn( "parameter index-depth should be >= 3 or you will experience a severe " + "performance loss for node updates (XUpdate or XQuery update extensions)" );
+                if (depth < 3) {
+                    LOG.warn("parameter index-depth should be >= 3 or you will experience a severe "
+                            + "performance loss for node updates (XUpdate or XQuery update extensions)");
                     depth = 3;
                 }
-                config.put( NativeBroker.PROPERTY_INDEX_DEPTH, depth);
-                LOG.debug(NativeBroker.PROPERTY_INDEX_DEPTH + ": {}", config.get(NativeBroker.PROPERTY_INDEX_DEPTH));
-            }
-            catch( final NumberFormatException e ) {
-                LOG.warn( e );
+                config.put(PROPERTY_INDEX_DEPTH, depth);
+                LOG.debug(PROPERTY_INDEX_DEPTH + ": {}", config.get(PROPERTY_INDEX_DEPTH));
+            } catch (final NumberFormatException e) {
+                LOG.warn(e);
             }
         }
 
-        final String suppressWS = getConfigAttributeValue( indexer, Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE );
+        final String suppressWS = getConfigAttributeValue(indexer, SUPPRESS_WHITESPACE_ATTRIBUTE);
 
-        if( suppressWS != null ) {
-            config.put( Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS );
-            LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": {}", config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
+        if (suppressWS != null) {
+            config.put(PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
+            LOG.debug(PROPERTY_SUPPRESS_WHITESPACE + ": {}", config.get(PROPERTY_SUPPRESS_WHITESPACE));
         }
 
-        final String suppressWSmixed = getConfigAttributeValue( indexer, Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE );
+        final String suppressWSmixed = getConfigAttributeValue(indexer, PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE);
 
-        if( suppressWSmixed != null ) {
-            config.put( Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean( suppressWSmixed, false ) );
-            LOG.debug(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": {}", config.get(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT));
+        if (suppressWSmixed != null) {
+            config.put(PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean(suppressWSmixed, false));
+            LOG.debug(PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": {}", config.get(PROPERTY_PRESERVE_WS_MIXED_CONTENT));
         }
 
         // index settings
-        final NodeList cl = doc.getElementsByTagName( Indexer.CONFIGURATION_INDEX_ELEMENT_NAME );
+        final NodeList cl = doc.getElementsByTagName(CONFIGURATION_INDEX_ELEMENT_NAME);
 
-        if( cl.getLength() > 0 ) {
-            final Element   elem = (Element)cl.item( 0 );
-            final IndexSpec spec = new IndexSpec( null, elem );
-            config.put( Indexer.PROPERTY_INDEXER_CONFIG, spec );
-            //LOG.debug(Indexer.PROPERTY_INDEXER_CONFIG + ": " + config.get(Indexer.PROPERTY_INDEXER_CONFIG));
+        if (cl.getLength() > 0) {
+            final Element elem = (Element) cl.item(0);
+            final IndexSpec spec = new IndexSpec(null, elem);
+            config.put(PROPERTY_INDEXER_CONFIG, spec);
         }
 
         // index modules
-        NodeList modules = indexer.getElementsByTagName( IndexManager.CONFIGURATION_ELEMENT_NAME );
+        final NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
 
-        if( modules.getLength() > 0 ) {
-            modules = ( (Element)modules.item( 0 ) ).getElementsByTagName( IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME );
-            final IndexModuleConfig[] modConfig = new IndexModuleConfig[modules.getLength()];
-
-            for( int i = 0; i < modules.getLength(); i++ ) {
-                final Element elem      = (Element)modules.item( i );
-                final String  className = elem.getAttribute( IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE );
-                final String  id        = elem.getAttribute( IndexManager.INDEXER_MODULES_ID_ATTRIBUTE );
-
-                if( ( className == null ) || (className.isEmpty()) ) {
-                    throw( new DatabaseConfigurationException( "Required attribute class is missing for module" ) );
-                }
-
-                if( ( id == null ) || (id.isEmpty()) ) {
-                    throw( new DatabaseConfigurationException( "Required attribute id is missing for module" ) );
-                }
-                modConfig[i] = new IndexModuleConfig( id, className, elem );
-            }
-            config.put( IndexManager.PROPERTY_INDEXER_MODULES, modConfig );
+        if (modules.getLength() == 0) {
+            return;
         }
+        final NodeList module = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
+        final IndexModuleConfig[] modConfig = new IndexModuleConfig[module.getLength()];
+
+        for (int i = 0; i < module.getLength(); i++) {
+            final Element elem = (Element) module.item(i);
+            final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
+            final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
+
+            if (className == null || className.isEmpty()) {
+                throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
+            }
+
+            if (id == null || id.isEmpty()) {
+                throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
+            }
+
+            modConfig[i] = new IndexModuleConfig(id, className, elem);
+        }
+        config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
     }
 
-
-    private void configureValidation(final Optional<Path> dbHome, final Element validation) throws DatabaseConfigurationException {
+    private void configureValidation(final Optional<Path> dbHome, final Element validation) {
         // Determine validation mode
         final String mode = getConfigAttributeValue(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE);
         if (mode != null) {
-            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE, mode);
+            config.put(PROPERTY_VALIDATION_MODE, mode);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE + ": {}", config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE));
-            }
-        }
-
-        // Configure the Entity Resolver
-        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
-        if (entityResolver.getLength() > 0) {
-            LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
-
-            final Element elemEntityResolver = (Element) entityResolver.item(0);
-            final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
-
-            // Determine webapps directory. SingleInstanceConfiguration cannot
-            // be used at this phase. Trick is to check whether dbHOME is
-            // pointing to a WEB-INF directory, meaning inside the war file.
-            final Path webappHome = dbHome.map(h -> {
-                if(FileUtils.fileName(h).endsWith("WEB-INF")) {
-                    return h.getParent().toAbsolutePath();
-                } else {
-                    return h.resolve("webapp").toAbsolutePath();
-                }
-            }).orElse(Paths.get("webapp").toAbsolutePath());
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
-                LOG.debug("Using dbHome=" + dbHome);
-                LOG.debug("using webappHome=" + webappHome.toString());
-            }
-
-            // Get the Catalog URIs
-            final List<String> catalogUris = new ArrayList<>();
-            for (int i = 0; i < nlCatalogs.getLength(); i++) {
-                String uri = ((Element) nlCatalogs.item(i)).getAttribute("uri");
-
-                if (uri != null) {
-                    // Substitute string, creating an uri from a local file
-                    if (uri.indexOf("${WEBAPP_HOME}") != -1) {
-                        uri = uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toUri().toString());
-                    }
-                    if (uri.indexOf("${EXIST_HOME}") != -1) {
-                        uri = uri.replaceAll("\\$\\{EXIST_HOME\\}", dbHome.toString());
-                    }
-
-                    // Add uri to configuration
-                    LOG.info("Adding Catalog URI: " + uri);
-                    catalogUris.add(uri);
-                }
-            }
-
-            // Store all configured URIs
-            config.put(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
-
-            // Create and Store the resolver
-            try {
-                final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream().map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty())).collect(Collectors.toList());
-                final Resolver resolver = ResolverFactory.newResolver(catalogs);
-                config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
-            } catch (final URISyntaxException e) {
-                LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
+                LOG.debug(PROPERTY_VALIDATION_MODE + ": {}", config.get(PROPERTY_VALIDATION_MODE));
             }
         }
 
         // cache
         final GrammarPool gp = new GrammarPool();
-        config.put( XMLReaderObjectFactory.GRAMMAR_POOL, gp);
-    }
-    
-     /**
-     * Gets the value of a configuration attribute
-     *
-     * The value typically is specified in the conf.xml file, but can be overridden with using a System Property
-     *
-     * @param   element        The attribute's parent element
-     * @param   attributeName  The name of the attribute
-     *
-     * @return  The value of the attribute
-     */
-    private String getConfigAttributeValue( Element element, String attributeName )
-    {
-    	String value = null;
-    	
-    	if( element != null && attributeName != null ) {
-    		final String property = getAttributeSystemPropertyName( element, attributeName );
-    		
-    		value = System.getProperty( property );
-    		
-    		// If the value has not been overriden in a system property, then get it from the configuration
-    		
-    		if( value != null ) {
-                LOG.warn("Configuration value overridden by system property: {}, with value: {}", property, value);
-    		} else {
-    			value = element.getAttribute( attributeName );
-    		}
-    	}
-    	
-    	return( value );
-    }
-    
-    /**
-     * Generates a suitable system property name from the given config attribute and parent element.
-     *
-     * values are of the form org.element.element.....attribute and follow the heirarchical structure of the conf.xml file. 
-     * For example, the db-connection cacheSize property name would be org.exist.db-connection.cacheSize
-     *
-     * @param   element        The attribute's parent element
-     * @param   attributeName  The name of the attribute
-     *
-     * @return  The generated system property name
-     */
-    private String getAttributeSystemPropertyName( Element element, String attributeName )
-    {
-    	final StringBuilder  	property 	= new StringBuilder( attributeName );
-    	Node			parent		= element.getParentNode();
-    	
-    	property.insert( 0, "." );
-    	property.insert( 0,  element.getLocalName() );
-    	
-    	while( parent != null && parent instanceof Element ) {
-    		final String parentName = ((Element)parent).getLocalName();
-    		
-    		property.insert( 0, "." );
-    		property.insert( 0, parentName );
-    		
-    		parent   = parent.getParentNode();
-    	}
-    	
-    	property.insert( 0, "org." );
-    	
-    	return( property.toString() );
+        config.put(XMLReaderObjectFactory.GRAMMAR_POOL, gp);
+
+        // Configure the Entity Resolver
+        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
+        if (entityResolver.getLength() == 0) {
+            return;
+        }
+        LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
+
+        final Element elemEntityResolver = (Element) entityResolver.item(0);
+        final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
+
+        // Determine webapps directory. SingleInstanceConfiguration cannot
+        // be used at this phase. Trick is to check whether dbHOME is
+        // pointing to a WEB-INF directory, meaning inside the war file.
+        final Path webappHome = dbHome.map(h -> {
+            if (FileUtils.fileName(h).endsWith("WEB-INF")) {
+                return h.getParent().toAbsolutePath();
+            }
+            return h.resolve("webapp").toAbsolutePath();
+        }).orElse(Paths.get("webapp").toAbsolutePath());
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
+            LOG.debug("Using dbHome=" + dbHome);
+            LOG.debug("using webappHome=" + webappHome);
+        }
+
+        // Get the Catalog URIs
+        final List<String> catalogUris = new ArrayList<>();
+        for (int i = 0; i < nlCatalogs.getLength(); i++) {
+            final String uriAttributeValue = ((Element) nlCatalogs.item(i)).getAttribute("uri");
+
+            if (!uriAttributeValue.isEmpty()) {
+                final String uri;
+                // Substitute string, creating an uri from a local file
+                if (uriAttributeValue.contains("${WEBAPP_HOME}")) {
+                    uri = uriAttributeValue.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
+                } else if (uriAttributeValue.contains("${EXIST_HOME}")) {
+                    uri = uriAttributeValue.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
+                } else {
+                    uri = uriAttributeValue;
+                }
+
+                // Add uri to configuration
+                LOG.info("Adding Catalog URI: " + uri);
+                catalogUris.add(uri);
+            }
+        }
+
+        // Store all configured URIs
+        config.put(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
+
+        // Create and Store the resolver
+        try {
+            final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
+                    .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
+                    .collect(Collectors.toList());
+            final Resolver resolver = ResolverFactory.newResolver(catalogs);
+            config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
+        } catch (final URISyntaxException e) {
+            LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
+        }
     }
 
+    /**
+     * Gets the value of a configuration attribute
+     * <p>
+     * The value typically is specified in the conf.xml file, but can be overridden with using a System Property
+     *
+     * @param element       The attribute's parent element
+     * @param attributeName The name of the attribute
+     * @return The value of the attribute
+     */
+    private String getConfigAttributeValue(final Element element, final String attributeName) {
+        if (element == null || attributeName == null) {
+            return null;
+        }
+
+        final String property = getAttributeSystemPropertyName(element, attributeName);
+        final String value = System.getProperty(property);
+
+        if (value != null) {
+            LOG.warn("Configuration value overridden by system property: {}, with value: {}", property, value);
+            return value;
+        }
+        // If the value has not been overridden in a system property, then get it from the configuration
+        return element.getAttribute(attributeName);
+    }
+
+    /**
+     * Generates a suitable system property name from the given config attribute and parent element.
+     * <p>
+     * values are of the form org.element.element.....attribute and follow the hierarchical structure of the conf.xml file.
+     * For example, the db-connection cacheSize property name would be org.exist.db-connection.cacheSize
+     *
+     * @param element       The attribute's parent element
+     * @param attributeName The name of the attribute
+     * @return The generated system property name
+     */
+    private String getAttributeSystemPropertyName(Element element, String attributeName) {
+        final StringBuilder property = new StringBuilder(attributeName);
+        Node parent = element.getParentNode();
+
+        property.insert(0, ".");
+        property.insert(0, element.getLocalName());
+
+        while (parent instanceof Element) {
+            final String parentName = parent.getLocalName();
+
+            property.insert(0, ".");
+            property.insert(0, parentName);
+
+            parent = parent.getParentNode();
+        }
+
+        property.insert(0, "org.");
+
+        return property.toString();
+    }
 
     public Optional<Path> getConfigFilePath() {
         return configFilePath;
     }
 
-
     public Optional<Path> getExistHome() {
         return existHome;
     }
-
 
     public Object getProperty(final String name) {
         return config.get(name);
     }
 
     public <T> T getProperty(final String name, final T defaultValue) {
-        return Optional.ofNullable((T)config.get(name)).orElse(defaultValue);
+        return Optional.ofNullable((T) config.get(name)).orElse(defaultValue);
     }
 
     public boolean hasProperty(final String name) {
         return config.containsKey(name);
     }
-
 
     public void setProperty(final String name, final Object obj) {
         config.put(name, obj);
@@ -1622,124 +1581,56 @@ public class Configuration implements ErrorHandler
         config.remove(name);
     }
 
-    /**
-     * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
-     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
-     *
-     * @param   value         The string to parse
-     * @param   defaultValue  The default if the string is null
-     *
-     * @return  The parsed <code>Boolean</code>
-     */
-    public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
-        return Optional.ofNullable(value)
-                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
-                .orElse(defaultValue);
-    }
-
-    /**
-     * Takes the passed string and converts it to a non-null <code>int</code> value. If value is null, the specified default value is used.
-     * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
-     *
-     * @param   value         The string to parse
-     * @param   defaultValue  The default if the string is null or empty
-     *
-     * @return  The parsed <code>int</code>
-     */
-    public static int parseInt(@Nullable final String value, final int defaultValue) {
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-
-        try {
-            return Integer.parseInt(value);
-        } catch (final NumberFormatException e) {
-            LOG.warn("Could not parse: {}, as an int: {}", value, e.getMessage());
-            return defaultValue;
-        }
-    }
-
     public int getInteger(final String name) {
         return Optional.ofNullable(getProperty(name))
                 .filter(v -> v instanceof Integer)
-                .map(v -> (int)v)
+                .map(v -> (int) v)
                 .orElse(-1);
     }
 
+    /**
+     * (non-Javadoc).
+     *
+     * @param exception DOCUMENT ME!
+     * @throws SAXException DOCUMENT ME!
+     * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
+     */
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
+    }
 
     /**
      * (non-Javadoc).
      *
-     * @param   exception  DOCUMENT ME!
-     *
-     * @throws  SAXException  DOCUMENT ME!
-     *
-     * @see     org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
+     * @param exception DOCUMENT ME!
+     * @throws SAXException DOCUMENT ME!
+     * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
      */
     @Override
-    public void error( SAXParseException exception ) throws SAXException
-    {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+    public void fatalError(SAXParseException exception) throws SAXException {
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
     }
-
 
     /**
      * (non-Javadoc).
      *
-     * @param   exception  DOCUMENT ME!
-     *
-     * @throws  SAXException  DOCUMENT ME!
-     *
-     * @see     org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
+     * @param exception DOCUMENT ME!
+     * @throws SAXException DOCUMENT ME!
+     * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
     @Override
-    public void fatalError( SAXParseException exception ) throws SAXException
-    {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+    public void warning(SAXParseException exception) throws SAXException {
+        LOG.error("error occurred while reading configuration file [line: {}]:{}",
+                exception.getLineNumber(), exception.getMessage(), exception);
     }
 
-
-    /**
-     * (non-Javadoc).
-     *
-     * @param   exception  DOCUMENT ME!
-     *
-     * @throws  SAXException  DOCUMENT ME!
-     *
-     * @see     org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
-     */
-    @Override
-    public void warning( SAXParseException exception ) throws SAXException
-    {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}", exception.getLineNumber(), exception.getMessage(), exception);
+    public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
     }
-    
 
-    public static final class IndexModuleConfig {
-        private final String id;
-        private final String className;
-        private final Element config;
-
-        public IndexModuleConfig(final String id, final String className, final Element config) {
-            this.id = id;
-            this.className = className;
-            this.config = config;
-        }
-
-        public String getId()
-        {
-            return( id );
-        }
-
-        public String getClassName()
-        {
-            return( className );
-        }
-
-        public Element getConfig()
-        {
-            return( config );
-        }
+    public record IndexModuleConfig(String id, String className, Element config) {
     }
 
 }
