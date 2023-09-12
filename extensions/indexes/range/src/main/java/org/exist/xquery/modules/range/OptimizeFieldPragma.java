@@ -259,7 +259,7 @@ public class OptimizeFieldPragma extends Pragma {
                 Expression optimizedExpr = new InternalFunctionCall(func);
                 if (!notOptimizable.isEmpty()) {
                     final FilteredExpression filtered = new FilteredExpression(context, optimizedExpr);
-                    for (Predicate pred : notOptimizable) {
+                    for (final Predicate pred : notOptimizable) {
                         filtered.addPredicate(pred);
                     }
                     optimizedExpr = filtered;

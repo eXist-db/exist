@@ -144,4 +144,12 @@ public abstract class CombiningExpression extends AbstractExpression {
         left.accept(visitor);
         right.accept(visitor);
     }
+
+	public PathExpr getLeft() {
+		return left;
+	}
+
+	public PathExpr getRight() {
+		return right;
+	}
 }

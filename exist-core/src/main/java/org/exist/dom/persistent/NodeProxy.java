@@ -213,8 +213,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
         this.nodeType = UNKNOWN_NODE_TYPE;
         this.internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
         this.nodeId = element.getNodeId();
-        match = null;
-        context = null;
+        this.match = null;
+        this.context = null;
     }
 
     /**
@@ -477,36 +477,41 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public void addMatch(final Match m) {
-        if(match == null) {
-            match = m;
-            match.nextMatch = null;
+        if (this.match == null) {
+            this.match = m;
+            if (match.getNextMatch() != null) {
+                match.setNextMatch(null);
+            }
             return;
         }
+
         Match next = match;
-        while(next != null) {
-            if(next.matchEquals(m)) {
+        while (next != null) {
+            if (next.equals(m)) {
                 next.mergeOffsets(m);
                 return;
             }
-            if(next.nextMatch == null) {
-                next.nextMatch = m;
+            if (next.getNextMatch() == null) {
+                next.setNextMatch(m);
                 break;
             }
-            next = next.nextMatch;
+            next = next.getNextMatch();
         }
     }
 
     public void addMatches(final NodeProxy p) {
-        if(p == this) {
+        if (p == this) {
             return;
         }
+
         Match m = p.getMatches();
-        if(Match.matchListEquals(m, this.match)) {
+        if (Match.matchListEquals(m, this.match)) {
             return;
         }
-        while(m != null) {
+
+        while (m != null) {
             addMatch(m.newCopy());
-            m = m.nextMatch;
+            m = m.getNextMatch();
         }
     }
 

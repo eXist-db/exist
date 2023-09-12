@@ -26,20 +26,20 @@ import org.exist.numbering.NodeId;
 
 public class NGramMatch extends Match {
 
-    public NGramMatch(int contextId, NodeId nodeId, String matchTerm) {
+    public NGramMatch(final int contextId, final NodeId nodeId, final String matchTerm) {
         super(contextId, nodeId, matchTerm);
     }
 
-    public NGramMatch(int contextId, NodeId nodeId, String matchTerm, int frequency) {
+    public NGramMatch(final int contextId, final NodeId nodeId, final String matchTerm, final int frequency) {
         super(contextId, nodeId, matchTerm, frequency);
     }
 
-    public NGramMatch(Match match) {
+    public NGramMatch(final Match match) {
         super(match);
     }
 
     @Override
-    public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
+    public Match createInstance(final int contextId, final NodeId nodeId, final String matchTerm) {
         return new NGramMatch(contextId, nodeId, matchTerm);
     }
 

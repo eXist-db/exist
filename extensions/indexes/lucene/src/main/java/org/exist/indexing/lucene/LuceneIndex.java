@@ -253,7 +253,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
     }
 
-    public <R> R withSearcher(Function2E<SearcherTaxonomyManager.SearcherAndTaxonomy, R, IOException, XPathException> consumer) throws IOException, XPathException {
+    public <R> R withSearcher(final Function2E<SearcherTaxonomyManager.SearcherAndTaxonomy, R, IOException, XPathException> consumer) throws IOException, XPathException {
         searcherManager.maybeRefreshBlocking();
         final SearcherTaxonomyManager.SearcherAndTaxonomy searcher = searcherManager.acquire();
         try {

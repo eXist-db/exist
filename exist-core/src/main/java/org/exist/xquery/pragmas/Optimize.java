@@ -48,7 +48,7 @@ public class Optimize extends Pragma {
     private static final Logger LOG = LogManager.getLogger(Optimize.class);
 
     private boolean enabled = true;
-    private XQueryContext context;
+    private final XQueryContext context;
     private Optimizable[] optimizables;
     private Expression innerExpr = null;
     private LocationStep contextStep = null;
@@ -59,11 +59,11 @@ public class Optimize extends Pragma {
     private int cachedTimestamp;
     private boolean cachedOptimize;
 
-    public Optimize(XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
+    public Optimize(final XQueryContext context, final QName pragmaName, @Nullable final String contents, final boolean explicit) throws XPathException {
         this(null, context, pragmaName, contents, explicit);
     }
 
-    public Optimize(final Expression expression, final XQueryContext context, final QName pragmaName, final String contents, boolean explicit) throws XPathException {
+    public Optimize(@Nullable final Expression expression, final XQueryContext context, final QName pragmaName, @Nullable final String contents, boolean explicit) throws XPathException {
         super(expression, pragmaName, contents);
         this.context = context;
         this.enabled = explicit || context.optimizationsEnabled();
@@ -80,12 +80,14 @@ public class Optimize extends Pragma {
         }
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         this.contextId = contextInfo.getContextId();
     }
 
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    @Override
+    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
@@ -108,7 +110,7 @@ public class Optimize extends Pragma {
             if (useCached) {
                 optimize = cachedOptimize;
             } else {
-                if (optimizables != null && optimizables.length > 0) {
+                if (optimizables != null) {
                     for (final Optimizable optimizable : optimizables) {
                         final Sequence canBeOptimized = optimizable.canOptimizeSequence(contextSequence);
                         if (canBeOptimized == null) {
@@ -131,15 +133,15 @@ public class Optimize extends Pragma {
             cachedContext = originalContext;
             cachedTimestamp = originalContext == null ? 0 : originalContext.getState();
             cachedOptimize = true;
-            NodeSet ancestors;
             NodeSet result = null;
             for (int current = 0; current < optimizables.length; current++) {
-                NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
+                final NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("exist:optimize: pre-selection: {}", selection.getLength());
                 }
                 // determine the set of potential ancestors for which the predicate has to
                 // be re-evaluated to filter out wrong matches
+                final NodeSet ancestors;
                 if (selection.isEmpty()) {
                     ancestors = selection;
                 } else if (contextStep == null || current > 0) {
@@ -197,11 +199,13 @@ public class Optimize extends Pragma {
         }
     }
 
-    public void before(XQueryContext context, Sequence contextSequence) throws XPathException {
+    @Override
+    public void before(final XQueryContext context, final Sequence contextSequence) throws XPathException {
         before(context, null, contextSequence);
     }
 
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
+    @Override
+    public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
         if (innerExpr != null) {
             return;
         }
@@ -211,7 +215,8 @@ public class Optimize extends Pragma {
         }
         innerExpr.accept(new BasicExpressionVisitor() {
 
-            public void visitPathExpr(PathExpr expression) {
+            @Override
+            public void visitPathExpr(final PathExpr expression) {
                 for (int i = 0; i < expression.getSubExpressionCount(); i++) {
                     final Expression next = expression.getSubExpression(i);
                     next.accept(this);
@@ -228,7 +233,8 @@ public class Optimize extends Pragma {
                 }
             }
 
-            public void visitFilteredExpr(FilteredExpression filtered) {
+            @Override
+            public void visitFilteredExpr(final FilteredExpression filtered) {
                 final Expression filteredExpr = filtered.getExpression();
                 if (filteredExpr instanceof VariableReference) {
                     contextVar = (VariableReference) filteredExpr;
@@ -240,22 +246,26 @@ public class Optimize extends Pragma {
                 }
             }
 
-            public void visit(Expression expression) {
+            @Override
+            public void visit(final Expression expression) {
                 super.visit(expression);
             }
 
-            public void visitGeneralComparison(GeneralComparison comparison) {
+            @Override
+            public void visitGeneralComparison(final GeneralComparison comparison) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("exist:optimize: found optimizable: {}", comparison.getClass().getName());
                 }
                 addOptimizable(comparison);
             }
 
-            public void visitPredicate(Predicate predicate) {
+            @Override
+            public void visitPredicate(final Predicate predicate) {
                 predicate.getExpression(0).accept(this);
             }
 
-            public void visitBuiltinFunction(Function function) {
+            @Override
+            public void visitBuiltinFunction(final Function function) {
                 if (function instanceof Optimizable) {
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("exist:optimize: found optimizable function: {}", function.getClass().getName());
@@ -275,14 +285,16 @@ public class Optimize extends Pragma {
         }
     }
 
-    public void after(XQueryContext context) throws XPathException {
+    @Override
+    public void after(final XQueryContext context) throws XPathException {
         after(context, null);
     }
 
-    public void after(XQueryContext context, Expression expression) throws XPathException {
+    @Override
+    public void after(final XQueryContext context, @Nullable final Expression expression) throws XPathException {
     }
 
-    private void addOptimizable(Optimizable optimizable) {
+    private void addOptimizable(final Optimizable optimizable) {
         final int axis = optimizable.getOptimizeAxis();
 
         if (!(axis == Constants.CHILD_AXIS || axis == Constants.SELF_AXIS || axis == Constants.DESCENDANT_AXIS ||
@@ -304,7 +316,8 @@ public class Optimize extends Pragma {
         optimizables = o;
     }
 
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         cachedContext = null;
     }
@@ -318,7 +331,7 @@ public class Optimize extends Pragma {
      * @return the type of a usable index or {@link org.exist.xquery.value.Type#ITEM} if there is no common
      * index.
      */
-    public static int getQNameIndexType(XQueryContext context, Sequence contextSequence, QName qname) {
+    public static int getQNameIndexType(final XQueryContext context, @Nullable final Sequence contextSequence, @Nullable final QName qname) {
         if (contextSequence == null || qname == null) {
             return Type.ITEM;
         }
@@ -331,7 +344,7 @@ public class Optimize extends Pragma {
         int indexType = Type.ITEM;
 
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            try (Collection collection = i.next()) {
+            try (final Collection collection = i.next()) {
                 // always skip system collection
                 if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
                     continue;
