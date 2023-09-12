@@ -33,12 +33,22 @@ import javax.xml.XMLConstants;
 
 
 /**
+ * Represents a Node Path.
+ *
+ * Internally the node path is held as an array of {@link QName} components.
+ * Upon construction the array of `components` is sized such that it will be exactly
+ * what is required to represent the Node Path.
+ * Mutation operations however will over-allocate the array as an optmisation, so that
+ * we need not allocate/free memory on every mutation operation, but only
+ * every {@link #DEFAULT_NODE_PATH_SIZE} operations.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
- * @author Adam Retter
  */
 public class NodePath implements Comparable<NodePath> {
 
-    private static final int DEFAULT_NODE_PATH_SIZE = 5;
+    static final int DEFAULT_NODE_PATH_SIZE = 4;
+    static final int MAX_OVER_ALLOCATION_FACTOR = 2;
 
     private static final Logger LOG = LogManager.getLogger(NodePath.class);
 
@@ -89,19 +99,31 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void append(final NodePath other) {
-        // expand the array
-        final int newLength = pos + other.length();
-        this.components = Arrays.copyOf(components, newLength);
-        System.arraycopy(other.components, 0, components, pos, other.length());
-        this.pos = newLength;
+        // do we have enough space to accommodate the components from `other`
+        final int numOtherComponentsToAppend = other.length();
+        allocateIfNeeded(numOtherComponentsToAppend);
+
+        // at this point we have enough space, append the components from `other`
+        System.arraycopy(other.components, 0, components, pos, numOtherComponentsToAppend);
+        this.pos += numOtherComponentsToAppend;
     }
 
     public void addComponent(final QName component) {
-        if (pos == components.length) {
-            // extend the array
-            this.components = Arrays.copyOf(components, pos + 1);
-        }
+        // do we have enough space to add the component
+        allocateIfNeeded(1);
+
+        // at this point we have enough space, add the component
         components[pos++] = component;
+    }
+
+    private void allocateIfNeeded(final int numOtherComponentsToAppend) {
+        final int available = components.length - pos;
+        if (available < numOtherComponentsToAppend) {
+            // we need more space, allocate a multiple of DEFAULT_NODE_PATH_SIZE
+            final int allocationFactor = (int) Math.ceil((numOtherComponentsToAppend - available + components.length) / ((float) DEFAULT_NODE_PATH_SIZE));
+            final int newSize = allocationFactor * DEFAULT_NODE_PATH_SIZE;
+            this.components = Arrays.copyOf(components, newSize);
+        }
     }
 
     /**
@@ -117,8 +139,8 @@ public class NodePath implements Comparable<NodePath> {
     }
 
     public void reset() {
-        // when resetting if this object has twice the capacity of a new object, then set it back to the default capacity
-        if (pos > DEFAULT_NODE_PATH_SIZE * 2) {
+        // when resetting if this object has more than twice the capacity of a new object, then set it back to the default capacity
+        if (pos > DEFAULT_NODE_PATH_SIZE * MAX_OVER_ALLOCATION_FACTOR) {
             components = new QName[DEFAULT_NODE_PATH_SIZE];
         } else {
             Arrays.fill(components, null);
@@ -128,6 +150,18 @@ public class NodePath implements Comparable<NodePath> {
 
     public int length() {
         return pos;
+    }
+
+    /**
+     * Return the size of the components array.
+     *
+     * This function is intentionally marked as package-private
+     * so that it may only be called for testing purposes!
+     *
+     * @return the size of the components array.
+     */
+    int componentsSize() {
+        return components.length;
     }
 
     protected void reverseComponents() {
@@ -290,10 +324,24 @@ public class NodePath implements Comparable<NodePath> {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj != null && obj instanceof NodePath) {
-            final NodePath otherNodePath = (NodePath) obj;
-            return Arrays.equals(components, otherNodePath.components);
+        if (this == obj) {
+            return true;
         }
+
+        if (obj instanceof NodePath) {
+            final NodePath otherNodePath = (NodePath) obj;
+
+            // NOTE(AR) we cannot use Array.equals on the components of the NodePaths as they may be over-allocated!
+            if (pos == otherNodePath.pos) {
+                for (int i = 0; i < pos; i++) {
+                    if (!components[i].equals(otherNodePath.components[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
         return false;
     }
 
