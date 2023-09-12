@@ -57,7 +57,7 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (Linux only)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
