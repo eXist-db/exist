@@ -128,14 +128,4 @@ public abstract class AbstractCachedResult implements Closeable {
     public final void free() {
         close();
     }
-
-    @Override
-    protected void finalize() throws Throwable {
-        // Calling free to reclaim pinned resources
-        try {
-            close();
-        } finally {
-            super.finalize();
-        }
-    }
 }
