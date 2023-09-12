@@ -116,7 +116,7 @@ public class InspectModule extends BasicFunction {
                 // variables
                 for (final VariableDeclaration var : externalModule.getVariableDeclarations()) {
                     attribs.clear();
-                    attribs.addAttribute("", "name", "name", "CDATA", var.getName().toString());
+                    attribs.addAttribute("", "name", "name", "CDATA", var.getName().getStringValue());
                     final SequenceType type = var.getSequenceType();
                     if (type != null) {
                         attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
