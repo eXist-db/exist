@@ -172,10 +172,10 @@ public class DirectoryList extends BasicFunction {
             builder.endElement();
 
             return (NodeValue) builder.getDocument().getDocumentElement();
-        } catch (final IllegalStateException e) {
-          throw new XPathException(this, e.getMessage());
-        } catch (final IOException e) {
+
+        } catch (final IOException | IllegalStateException e) {
             throw new XPathException(this, e.getMessage());
+            
         } finally {
             context.popDocumentContext();
         }
