@@ -55,7 +55,8 @@ public class XMLDBModule extends AbstractInternalModule {
     public final static String ANY_URI = "Resource URIs can be specified either as a simple collection path, an XMLDB URI or any URI.";
 
     public final static FunctionDef[] functions = {
-            new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
+            new FunctionDef(XMLDBCreateCollection.SIGNATURE_WITH_URI, XMLDBCreateCollection.class),
+            new FunctionDef(XMLDBCreateCollection.SIGNATURE_WITH_PARENT, XMLDBCreateCollection.class),
             new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
             new FunctionDef(XMLDBStore.FS_STORE[0], XMLDBStore.class),
             new FunctionDef(XMLDBStore.FS_STORE[1], XMLDBStore.class),
