@@ -129,7 +129,7 @@ public class ConcurrencyTest {
                 }
                 try {
                     if (start > 0) {
-                        service.declareVariable("start", new Integer(start));
+                        service.declareVariable("start", Integer.valueOf(start));
                     }
                     service.query(query);
                 } finally {
@@ -147,17 +147,18 @@ public class ConcurrencyTest {
     @BeforeClass
     public static void initDB() throws XMLDBException {
         final CollectionManagementService mgmt = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
-        final Collection test = mgmt.createCollection("test");
+        try (final Collection test = mgmt.createCollection("test")) {
 
-        for (int i = 1; i <= DOC_COUNT; i++) {
-            final Resource r = test.createResource("test" + i + ".xml", XMLResource.class);
-            final String XML =
-                "<test id='" + i + "'>" +
-                "   <a>b</a>" +
-                "   <c>d</c>" +
-                "</test>";
-            r.setContent(XML);
-            test.storeResource(r);
+            for (int i = 1; i <= DOC_COUNT; i++) {
+                final Resource r = test.createResource("test" + i + ".xml", XMLResource.class);
+                final String XML =
+                        "<test id='" + i + "'>" +
+                                "   <a>b</a>" +
+                                "   <c>d</c>" +
+                                "</test>";
+                r.setContent(XML);
+                test.storeResource(r);
+            }
         }
     }
 

@@ -97,7 +97,7 @@ public class TestDataGenerator {
                 generatedFiles[i] = Files.createTempFile(prefix, ".xml");
 
                 context.declareVariable("filename", generatedFiles[i].getFileName().toString());
-                context.declareVariable("count", new Integer(i));
+                context.declareVariable("count", Integer.valueOf(i));
                 final Sequence results = service.execute(broker, compiled, Sequence.EMPTY_SEQUENCE);
 
                 final Serializer serializer = broker.borrowSerializer();
@@ -140,8 +140,9 @@ public class TestDataGenerator {
                 try(final Writer out = Files.newBufferedWriter(generatedFiles[i], StandardCharsets.UTF_8)) {
                     final SAXSerializer sax = new SAXSerializer(out, outputProps);
                     for (ResourceIterator iter = result.getIterator(); iter.hasMoreResources(); ) {
-                        XMLResource r = (XMLResource) iter.nextResource();
-                        r.getContentAsSAX(sax);
+                        try (XMLResource r = (XMLResource) iter.nextResource()) {
+                            r.getContentAsSAX(sax);
+                        }
                     }
                 }
             }
