@@ -171,8 +171,11 @@ Hooks and filters directory? [.git/hooks]
 ```
 
 
-## Commit Naming
-Commits to eXist-db by developers *must* follow a naming convention. This convention expects a prefix to be prepended to each of your commit messages. The prefixes enable us to better understand the commit and also to generate Change Logs. The prefixes in use are:  
+## Commit Messages
+Commits to eXist-db by developers *should* follow the Git [Commit Guidelines](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines). In addition the summary line of the commit message *must* be prefixed with a label from our controlled list that helps us to better understand the commit and also to generate Change Logs.
+
+### Commit Labels
+Our controlled list of commit labels that should be prefixed to each commit summary is:
 
 * `[feature]`
     This should be used when a commit adds a new feature.
@@ -180,6 +183,8 @@ Commits to eXist-db by developers *must* follow a naming convention. This conven
     This should be used when a commit addresses a bug or issue.
 * `[refactor]`
     This should be used when a commit is simply refactoring existing code.
+* `[optimize]`
+    This should be used when a commit is refactoring existing code to provide a performance and/or memory optimization.
 * `[ignore]`
     This should be used when code is cleaned up by automated means, e.g. reformatting.
 * `[doc]`
@@ -189,14 +194,17 @@ Commits to eXist-db by developers *must* follow a naming convention. This conven
 * `[ci]`
     This should be used when a commit solely makes changes to CI configuration.
 
-In addition any commit that addresses a GitHub issues, should have an additonal line in its commit message like:
+In addition any commit that addresses a GitHub issue, should have an additonal line in its commit after the summary and before any fuller explaination that takes this form:
 ```
 Closes https://github.com/eXist-db/exist/issues/<github-issue-number>
 ```
 
+### Commit Message Example
 For example, here is a correctly formatted commit message:
 
 ```
-[bugfix] Store the path of Jar files in each EXPath Package's `.exist/classpath.txt` file relative to the package's `content/` sub-folder.
+[bugfix] Fix relative paths in EXPath classpath.txt files.
+
 Closes https://github.com/eXist-db/exist/issues/4901
+We now store the path of Jar files in each EXPath Package's `.exist/classpath.txt` file relative to the package's `content/` sub-folder.
 ```
