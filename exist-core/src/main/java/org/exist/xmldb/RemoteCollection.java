@@ -519,6 +519,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         } catch (final URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI, e);
         }
+        params.add(res.getMimeType());
         params.add(1);
         if (res.getCreationTime() != null) {
             params.add(res.getCreationTime());
