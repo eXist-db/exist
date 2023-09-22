@@ -169,3 +169,42 @@ Support branches? [support/]
 Version tag prefix? [] eXist-
 Hooks and filters directory? [.git/hooks]
 ```
+
+
+## Commit Messages
+Commits to eXist-db by developers *should* follow the Git [Commit Guidelines](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines). In addition the summary line of the commit message *must* be prefixed with a label from our controlled list that helps us to better understand the commit and also to generate Change Logs.
+
+### Commit Labels
+Our controlled list of commit labels that should be prefixed to each commit summary is:
+
+* `[feature]`
+    This should be used when a commit adds a new feature.
+* `[bugfix]`
+    This should be used when a commit addresses a bug or issue.
+* `[refactor]`
+    This should be used when a commit is simply refactoring existing code.
+* `[optimize]`
+    This should be used when a commit is refactoring existing code to provide a performance and/or memory optimization.
+* `[ignore]`
+    This should be used when code is cleaned up by automated means, e.g. reformatting.
+* `[doc]`
+    This should be used for documentation.
+* `[test]`
+    This should be used when a commit solely contains changes to existing tests or adds further tests.
+* `[ci]`
+    This should be used when a commit solely makes changes to CI configuration.
+
+In addition any commit that addresses a GitHub issue, should have an additonal line in its commit after the summary and before any fuller explaination that takes this form:
+```
+Closes https://github.com/eXist-db/exist/issues/<github-issue-number>
+```
+
+### Commit Message Example
+For example, here is a correctly formatted commit message:
+
+```
+[bugfix] Fix relative paths in EXPath classpath.txt files.
+
+Closes https://github.com/eXist-db/exist/issues/4901
+We now store the path of Jar files in each EXPath Package's `.exist/classpath.txt` file relative to the package's `content/` sub-folder.
+```
