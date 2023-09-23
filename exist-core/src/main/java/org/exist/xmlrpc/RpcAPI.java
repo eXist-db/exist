@@ -545,16 +545,25 @@ public interface RpcAPI {
      *
      * @param xmlData The document data
      * @param docName The path where the document will be stored
+     * @param mimeType the mimeType to check for
      * @param overwrite Overwrite an existing document with the same path?
+     * @param created Specifies the creattion date
+     * @param modified Specifies the last modification date
      * @return true, if the document is valid XML
      * @throws EXistException If an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      * @throws URISyntaxException If the URI contains syntax errors
      */
-    boolean parse(byte[] xmlData, String docName, int overwrite)
+    boolean parse(byte[] xmlData, String docName, String mimeType, int overwrite, Date created, Date modified)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean parse(byte[] xmlData, String docName, int overwrite, Date created, Date modified)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    boolean parse(byte[] xmlData, String docName, String mimeType, int overwrite)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
+    boolean parse(byte[] xmlData, String docName, int overwrite)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean parse(String xml, String docName, int overwrite)
