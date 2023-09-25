@@ -1336,18 +1336,24 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean parse(byte[] xml, String documentPath, int overwrite) throws URISyntaxException, EXistException, PermissionDeniedException {
-        return parse(xml, documentPath, overwrite, null, null);
+        return parse(xml, documentPath, null, overwrite, null, null);
+    }
+
+    @Override
+    public boolean parse(final byte[] xml, final String documentPath, final String mimeType, final int overwrite) throws URISyntaxException, EXistException, PermissionDeniedException {
+        return parse(xml, documentPath, mimeType, overwrite, null, null);
     }
 
     @Override
     public boolean parse(final byte[] xml, final String documentPath,
                          final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
-        return parse(xml, XmldbURI.xmldbUriFor(documentPath), overwrite, created, modified);
+        return parse(xml, documentPath, null, overwrite, created, modified);
     }
 
-    private boolean parse(final byte[] xml, final XmldbURI docUri,
-                          final int overwrite, @Nullable final Date created, @Nullable final Date modified) throws EXistException, PermissionDeniedException {
-
+    @Override
+    public boolean parse(final byte[] xml, final String documentPath, @Nullable String mimeType,
+                         final int overwrite, @Nullable final Date created, @Nullable final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
+        final XmldbURI docUri = XmldbURI.xmldbUriFor(documentPath);
         return this.<Boolean>writeCollection(docUri.removeLastSegment()).apply((collection, broker, transaction) -> {
 
             try(final ManagedDocumentLock lockedDocument = broker.getBrokerPool().getLockManager().acquireDocumentWriteLock(docUri)) {
@@ -1366,7 +1372,7 @@ public class RpcConnection implements RpcAPI {
 
                 final long startTime = System.currentTimeMillis();
 
-                final MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri.lastSegment());
+                final MimeType mime = lookupMimeType(mimeType, docUri.lastSegment());
                 broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
                 // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
@@ -1377,6 +1383,14 @@ public class RpcConnection implements RpcAPI {
                 return true;
             }
         });
+    }
+
+    private MimeType lookupMimeType(@Nullable final String mimeType, final XmldbURI fileName) {
+        final MimeTable mimeTable = MimeTable.getInstance();
+        if (mimeType == null) {
+            return Optional.ofNullable(mimeTable.getContentTypeFor(fileName)).orElse(MimeType.BINARY_TYPE);
+        }
+        return Optional.ofNullable(mimeTable.getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
     }
 
     /**
@@ -1492,7 +1506,7 @@ public class RpcConnection implements RpcAPI {
 
                 // parse the source
                 try (final FileInputSource source = sourceSupplier.get()) {
-                    final MimeType mime = Optional.ofNullable(MimeTable.getInstance().getContentType(mimeType)).orElse(MimeType.BINARY_TYPE);
+                    final MimeType mime = lookupMimeType(mimeType, docUri.lastSegment());
 
                     broker.storeDocument(transaction, docUri.lastSegment(), source, mime, created, modified, null, null, null, collection);
 
