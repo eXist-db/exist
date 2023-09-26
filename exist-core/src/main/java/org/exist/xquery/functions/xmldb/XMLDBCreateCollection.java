@@ -24,14 +24,25 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.QName;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Item;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
 import java.net.URISyntaxException;
 import java.util.Optional;
 
@@ -42,6 +53,7 @@ import java.util.Optional;
  */
 public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	private static final Logger logger = LogManager.getLogger(XMLDBCreateCollection.class);
+
 	public final static FunctionSignature SIGNATURE_WITH_PARENT = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
@@ -64,7 +76,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 					new FunctionParameterSequenceType("new-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The new collection URI")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if successfully created, otherwise the empty sequence"));
 
-	public XMLDBCreateCollection(XQueryContext context,  FunctionSignature signature) {
+	public XMLDBCreateCollection(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -96,6 +108,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 		}
 	}
+
 
 	/**
 	 * Override of the eval method so we can create
