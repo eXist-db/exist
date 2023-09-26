@@ -195,4 +195,28 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		}
 		return rootCollection;
 	}
+
+	public  String cleanCollectionUri(final String collectionUri) throws XPathException{
+		final String newCollectionUri;
+		if (!collectionUri.startsWith("xmldb:")) {
+			newCollectionUri = collectionUri;
+		} else if (collectionUri.startsWith("xmldb:exist:///")) {
+			newCollectionUri = collectionUri.replaceFirst("xmldb:exist://", "");
+		} else if (collectionUri.startsWith("xmldb:exist://embedded-eXist-server")) {
+			newCollectionUri = collectionUri.replaceFirst("xmldb:exist://embedded-eXist-server", "");
+		} else if (collectionUri.startsWith("xmldb:exist://localhost")) {
+			newCollectionUri = collectionUri.replaceFirst("xmldb:exist://localhost", "");
+		} else if (collectionUri.startsWith("xmldb:exist://127.0.0.1")) {
+			newCollectionUri = collectionUri.replaceFirst("xmldb:exist://127.0.0.1", "");
+		} else {
+			// Maybe it's better to check for the existence of /db/ and remove the preceding part. @@TODO
+			throw new XPathException(this, "The collection name provided is incorrect.");
+		}
+
+		if (newCollectionUri.startsWith("/db/")) {
+			return newCollectionUri.replaceFirst("/db", "");
+		}
+
+		return newCollectionUri;
+	}
 }
