@@ -172,7 +172,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 		Sequence s = Sequence.EMPTY_SEQUENCE;
 		try {
-			collection = getRootCollection(context, collectionURI);
+			collection = getRootCollection(context);
 			s = evalWithCollection(collection, args, contextSequence);
 		} finally {
 			if (collectionNeedsClose && collection != null) {
@@ -186,7 +186,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		return s;
 	}
 
-	public  Collection getRootCollection(final XQueryContext context, final String collectionUri) throws XPathException {
+	public  Collection getRootCollection(final XQueryContext context) throws XPathException {
 		Collection rootCollection = null;
 		try {
 			rootCollection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(),  XmldbURI.xmldbUriFor("/db", false));
