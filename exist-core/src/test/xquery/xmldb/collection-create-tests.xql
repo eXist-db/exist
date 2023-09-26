@@ -27,7 +27,8 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 
 declare variable $t:parent-collection-name := "/parent-collection";
 declare variable $t:parent-collection := "/db" || $t:parent-collection-name;
-declare variable $t:path-collection := "/path/to/new-collection";
+declare variable $t:path-collection := $t:parent-collection-name || "/path/to/new-collection";
+declare variable $t:path-collection-from-root := "/db/path/to/new-collection-from-root";
 
 declare
     %test:setUp
@@ -38,14 +39,20 @@ function t:setup() {
 declare
     %test:tearDown
 function t:cleanup() {
-    xmldb:remove($t:parent-collection)
+    xmldb:remove($t:parent-collection),
+    xmldb:remove($t:path-collection-from-root)
 };
 
 declare
-    %test:assertEquals("/db/path/to/new-collection")
-function t:fnDocAvailableOnHiddenResource() {
+    %test:assertEquals("/db/parent-collection/path/to/new-collection")
+function t:fnCreateNewRecursiveCollection() {
     let $collection := xmldb:create-collection($t:path-collection)
-    return (
-         $collection
-    )
+    return $collection
+};
+
+declare
+    %test:assertEquals("/db/path/to/new-collection-from-root")
+function t:fnCreateNewRecursiveCollectionFromRoot() {
+    let $collection := xmldb:create-collection($t:path-collection-from-root)
+    return $collection
 };
