@@ -80,11 +80,13 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		super(context, signature);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
-	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	/**
+	 * Creates a new collection using the provided arguments.
+	 * @param collection The parent collection.
+	 * @param args The arguments given to the function.
+	 * @param contextSequence The context sequence for the function or null.
+	 * @return Sequence The collection uri.
+	 * @throws XPathException
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)  throws XPathException {
 		final String collectionName;
@@ -110,10 +112,14 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	}
 
 
+
 	/**
-	 * Override of the eval method so we can create
-	 * a collection using just its path.
-	 * */
+	 * Override of the eval method, so we can create a collection using just its path.
+	 * @param args The arguments given to the function.
+	 * @param contextSequence The context sequence for the function or null.
+	 * @return Sequence The collection uri.
+	 * @throws XPathException
+	 */
 	@Override
 	public Sequence eval(final Sequence[] args, final Sequence contextSequence)
 			throws XPathException {
