@@ -69,11 +69,11 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature SIGNATURE_WITH_URI = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Create a new collection by specifying the full uri  $new-collection-uri. " + XMLDBModule.COLLECTION_URI +
+			"Create a new collection by specifying the full uri  $collection-uri. " + XMLDBModule.COLLECTION_URI +
 					"Returns the path to the new collection if successfully created, " +
 					"otherwise the empty sequence.",
 			new SequenceType[]{
-					new FunctionParameterSequenceType("new-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The new collection URI")},
+					new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The new collection URI")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if successfully created, otherwise the empty sequence"));
 
 	public XMLDBCreateCollection(XQueryContext context, FunctionSignature signature) {
