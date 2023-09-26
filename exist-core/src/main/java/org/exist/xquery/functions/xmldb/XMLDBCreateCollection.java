@@ -136,20 +136,14 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		final Item item = args[paramNumber].itemAt(0);
 		if (Type.subTypeOf(item.getType(), Type.NODE)) {
 			final NodeValue node = (NodeValue) item;
-			if (logger.isDebugEnabled()) {
-				logger.debug("Found node");
-			}
 			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
-				if (logger.isDebugEnabled()) {
-					logger.debug("Found node");
-				}
 				try {
 					//TODO: use xmldbURI
 					collection = getLocalCollection(this, context, internalCol.getURI().toString());
 					return new StringValue(this, collection.getName());
 				} catch (final XMLDBException e) {
-					if (logger.isDebugEnabled()) {
+					if (logger.isTraceEnabled()) {
 						logger.debug("Couldn't find parent collection, creating a new one.");
 					}
 				}
@@ -164,7 +158,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 				collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty());
 				return new StringValue(this, collection.getName());
 			} catch (final XMLDBException xe) {
-				if (logger.isDebugEnabled()) {
+				if (logger.isTraceEnabled()) {
 					logger.debug("Couldn't find parent collection, creating a new one.");
 				}
 			}
