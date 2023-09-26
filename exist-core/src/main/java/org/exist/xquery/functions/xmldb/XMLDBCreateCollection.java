@@ -86,13 +86,12 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet,
 	 *         org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		String collectionName = null;
-		if(2 == args.length) {
+	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)  throws XPathException {
+		final String collectionName;
+		if (args.length > 1) {
 			collectionName = args[1].getStringValue();
-		} else if(1 == args.length) {
-			collectionName = args[0].getStringValue();
+		} else {
+			collectionName = cleanCollectionUri(args[0].getStringValue());
 		}
 
 		try {
@@ -105,7 +104,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 		} catch (final XMLDBException e) {
 			logger.error("Unable to create new collection {}", collectionName, e);
-			throw new XPathException(this, "failed to create new collection " + collectionName + ": " + e.getMessage(), e);
+			throw new XPathException(this, "Failed to create new collection " + collectionName + ": " + e.getMessage(), e);
 		}
 	}
 
