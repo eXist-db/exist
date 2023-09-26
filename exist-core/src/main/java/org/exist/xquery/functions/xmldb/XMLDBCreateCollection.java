@@ -165,8 +165,8 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		} else {
 			try {
 				return new StringValue(this, collection.getName());
-			} catch (XMLDBException e) {
-                throw new RuntimeException(e);
+			} catch (final XMLDBException e) {
+				throw new XPathException(this, "Unable to get collection name.", e);
             }
         }
 
@@ -178,7 +178,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			if (collectionNeedsClose && collection != null) {
 				try {
 					collection.close();
-				} catch (final Exception e) {
+				} catch (final XMLDBException e) {
 					throw new XPathException(this, "Unable to close collection", e);
 				}
 			}
