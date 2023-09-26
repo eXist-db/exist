@@ -25,9 +25,9 @@ module namespace t="http://exist-db.org/testsuite/collection-create";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
 
-declare variable $t:parent-collection-name := "parent-collection";
-declare variable $t:parent-collection := "/db/" || $t:parent-collection-name;
-declare variable $t:path-collection := "path/to/new-collection";
+declare variable $t:parent-collection-name := "/parent-collection";
+declare variable $t:parent-collection := "/db" || $t:parent-collection-name;
+declare variable $t:path-collection := "/path/to/new-collection";
 
 declare
     %test:setUp
