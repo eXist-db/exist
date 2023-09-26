@@ -54,7 +54,7 @@ import java.util.Optional;
 public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	private static final Logger logger = LogManager.getLogger(XMLDBCreateCollection.class);
 
-	public final static FunctionSignature SIGNATURE_WITH_PARENT = new FunctionSignature(
+	public static final FunctionSignature SIGNATURE_WITH_PARENT = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Create a new collection with name $new-collection as a child of " +
@@ -66,7 +66,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 					new FunctionParameterSequenceType("new-collection", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the new collection to create")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "the path to the new collection if successfully created, otherwise the empty sequence"));
 
-	public final static FunctionSignature SIGNATURE_WITH_URI = new FunctionSignature(
+	public static final FunctionSignature SIGNATURE_WITH_URI = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Create a new collection by specifying the full uri  $collection-uri. " + XMLDBModule.COLLECTION_URI +
