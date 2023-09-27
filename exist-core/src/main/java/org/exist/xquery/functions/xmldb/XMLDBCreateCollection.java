@@ -189,7 +189,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 	public  Collection getRootCollection(final XQueryContext context) throws XPathException {
 		Collection rootCollection = null;
 		try {
-			rootCollection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(),  XmldbURI.xmldbUriFor("/db", false));
+			rootCollection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(),  XmldbURI.xmldbUriFor(XmldbURI.ROOT_COLLECTION, false));
 		} catch (final XMLDBException | URISyntaxException e) {
 			throw new XPathException(this, "Failed to access the root collection", e);
 		}
