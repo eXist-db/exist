@@ -29,29 +29,26 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 
-public class TimerPragma extends Pragma {
+public class TimerPragma extends AbstractPragma {
     public static final String TIMER_PRAGMA_LOCAL_NAME = "timer";
     public static final QName TIMER_PRAGMA = new QName(TIMER_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
     private Logger log = null;
-    
+
     private long start;
     private boolean verbose = true;
 
-    public TimerPragma(QName qname, String contents) throws XPathException {
-        this(null, qname, contents);
-    }
-
-    public TimerPragma(final Expression expression, QName qname, String contents) throws XPathException {
+    public TimerPragma(final Expression expression, final QName qname, final String contents) throws XPathException {
         super(expression, qname, contents);
-        if (contents != null && contents.length() > 0) {
-            final String options[] = Option.tokenize(contents);
-            for (String option : options) {
-                final String param[] = Option.parseKeyValuePair(option);
+        if (contents != null && !contents.isEmpty()) {
+
+            final String[] options = Option.tokenize(contents);
+            for (final String option : options) {
+                final String[] param = Option.parseKeyValuePair(option);
                 if (param == null) {
-                    throw new XPathException((Expression) null, "Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() +
-                            ": " + contents);
+                    throw new XPathException((Expression) null, "Invalid content found for pragma " + TIMER_PRAGMA.getStringValue() + ": " + contents);
                 }
+
                 if ("verbose".equals(param[0])) {
                     verbose = "yes".equals(param[1]);
                 } else if ("logger".equals(param[0])) {
@@ -59,31 +56,25 @@ public class TimerPragma extends Pragma {
                 }
             }
         }
-        if (log == null)
-            {log = LogManager.getLogger(TimerPragma.class);}
-    }
-
-    public void after(XQueryContext context) throws XPathException {
-        after(context, null);
-    }
-
-    public void after(XQueryContext context, Expression expression) throws XPathException {
-        final long elapsed = System.currentTimeMillis() - start;
-        if (log.isTraceEnabled()) {
-            if (verbose)
-                {
-                    log.trace("Elapsed: {}ms. for expression:\n{}", elapsed, ExpressionDumper.dump(expression));}
-            else
-                {
-                    log.trace("Elapsed: {}ms.", elapsed);}
+        if (log == null) {
+            log = LogManager.getLogger(TimerPragma.class);
         }
     }
 
-    public void before(XQueryContext context, Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
+    @Override
+    public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
+        this.start = System.currentTimeMillis();
     }
 
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
-        start = System.currentTimeMillis();
+    @Override
+    public void after(final XQueryContext context, final Expression expression) throws XPathException {
+        final long elapsed = System.currentTimeMillis() - start;
+        if (log.isTraceEnabled()) {
+            if (verbose) {
+                log.trace("Elapsed: {}ms. for expression:\n{}", elapsed, ExpressionDumper.dump(expression));
+            } else {
+                log.trace("Elapsed: {}ms.", elapsed);
+            }
+        }
     }
 }

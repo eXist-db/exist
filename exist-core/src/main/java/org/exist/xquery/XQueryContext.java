@@ -2984,6 +2984,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         } catch (final QName.IllegalQNameException e) {
             throw new XPathException(rootExpression, ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
+
         final String ns = qname.getNamespaceURI();
         if (ns.isEmpty()) {
             throw new XPathException(rootExpression, ErrorCodes.XPST0081,
