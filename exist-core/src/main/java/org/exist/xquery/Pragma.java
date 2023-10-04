@@ -22,57 +22,30 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-public abstract class Pragma {
+import javax.annotation.Nullable;
 
-    private QName qname;
-    private String contents;
-    private Expression expression;
-    
-    public Pragma(QName qname, String contents) throws XPathException {
-        this(null, qname, contents);
-    }
-    
-    public Pragma(final Expression expression, QName qname, String contents) throws XPathException {
-        this.expression = expression;
-        this.qname = qname;
-        this.contents = contents;
-    }
+/**
+ * Interface for implementing an XQuery Pragma expression.
+ *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
+public interface Pragma {
 
-    public Expression getExpression() {
-        return expression;
-    }
+    QName getName();
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    }
+    void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
 
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-    throws XPathException {
-        return null;
-    }
-    
-    public abstract void before(XQueryContext context, Sequence contextSequence) throws XPathException;
-    
-    public abstract void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException;
-    
-    public abstract void after(XQueryContext context) throws XPathException;
-    
-    public abstract void after(XQueryContext context, final Expression expression) throws XPathException;
+    void before(XQueryContext context, @Nullable Expression expression, Sequence contextSequence) throws XPathException;
 
-    protected String getContents() {
-        return contents;
-    }
+    Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
 
-    protected QName getQName() {
-        return qname;
-    }
+    void after(XQueryContext context, @Nullable Expression expression) throws XPathException;
 
-    public void resetState(boolean postOptimization) {    
-    }
+    void dump(final ExpressionDumper dumper);
 
-    public String toString() {
-        return "(# " + qname + ' ' + contents + "#)";
-    }
+    void resetState(boolean postOptimization);
 }

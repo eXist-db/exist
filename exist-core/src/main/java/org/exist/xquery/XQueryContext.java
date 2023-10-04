@@ -3076,7 +3076,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         } else if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
             contents = StringValue.trimWhitespace(contents);
 
-            if (TimerPragma.TIMER_PRAGMA.equals(qname)) {
+            if (TimerPragma.TIMER_PRAGMA_NAME.equals(qname)) {
                 return new TimerPragma(rootExpression, qname, contents);
             }
 

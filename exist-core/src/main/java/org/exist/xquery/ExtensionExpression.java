@@ -33,24 +33,23 @@ import java.util.List;
  * Implements an XQuery extension expression. An extension expression starts with
  * a list of pragmas, followed by an expression enclosed in curly braces. For evaluation
  * details check {{@link #eval(Sequence, Item)}.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public class ExtensionExpression extends AbstractExpression {
 
     private Expression innerExpression;
-    private List<Pragma> pragmas = new ArrayList<>(3);
+    private final List<Pragma> pragmas = new ArrayList<>(3);
 
-    public ExtensionExpression(XQueryContext context) {
+    public ExtensionExpression(final XQueryContext context) {
         super(context);
     }
 
-    public void setExpression(Expression inner) {
+    public void setExpression(final Expression inner) {
         this.innerExpression = inner;
     }
 
-    public void addPragma(Pragma pragma) {
+    public void addPragma(final Pragma pragma) {
         pragmas.add(pragma);
     }
 
@@ -62,19 +61,20 @@ public class ExtensionExpression extends AbstractExpression {
      * will be thrown. If all pragmas return null, we call eval on the original expression and return
      * that.
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem)
-            throws XPathException {
+    @Override
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         callBefore(contextSequence);
         Sequence result = null;
         for (final Pragma pragma : pragmas) {
-            Sequence temp = pragma.eval(contextSequence, contextItem);
+            final Sequence temp = pragma.eval(contextSequence, contextItem);
             if (temp != null) {
                 result = temp;
                 break;
             }
         }
-        if (result == null)
-            {result = innerExpression.eval(contextSequence, contextItem);}
+        if (result == null) {
+            result = innerExpression.eval(contextSequence, contextItem);
+        }
         callAfter();
         return result;
     }
@@ -85,7 +85,7 @@ public class ExtensionExpression extends AbstractExpression {
         }
     }
 
-    private void callBefore(Sequence contextSequence) throws XPathException {
+    private void callBefore(final Sequence contextSequence) throws XPathException {
         for (final Pragma pragma : pragmas) {
             pragma.before(context, innerExpression, contextSequence);
         }
@@ -95,7 +95,7 @@ public class ExtensionExpression extends AbstractExpression {
         return innerExpression.returnsType();
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
         for (final Pragma pragma : pragmas) {
             pragma.analyze(newContext);
@@ -103,23 +103,19 @@ public class ExtensionExpression extends AbstractExpression {
         innerExpression.analyze(newContext);
     }
 
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         for (final Pragma pragma : pragmas) {
-            dumper.display("(# " + pragma.getQName().getStringValue(), line);
-            if (pragma.getContents() != null)
-                {dumper.display(' ').display(pragma.getContents());}
-            dumper.display("#)").nl();
+            pragma.dump(dumper);
+            dumper.nl();
         }
         dumper.display('{');
         dumper.startIndent();
         innerExpression.dump(dumper);
         dumper.endIndent();
-        dumper.nl().display('}').nl();
+        dumper.nl().display("}", line).nl();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.AbstractExpression#getDependencies()
-     */
+    @Override
     public int getDependencies() {
         return innerExpression.getDependencies();
     }
@@ -129,23 +125,24 @@ public class ExtensionExpression extends AbstractExpression {
         return innerExpression.getCardinality();
     }
 
-    public void setContextDocSet(DocumentSet contextSet) {
+    @Override
+    public void setContextDocSet(final DocumentSet contextSet) {
         super.setContextDocSet(contextSet);
         innerExpression.setContextDocSet(contextSet);
     }
 
-    public void setPrimaryAxis(int axis) {
+    @Override
+    public void setPrimaryAxis(final int axis) {
         innerExpression.setPrimaryAxis(axis);
     }
 
+    @Override
     public int getPrimaryAxis() {
         return innerExpression.getPrimaryAxis();
     }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.AbstractExpression#resetState()
-    */
-    public void resetState(boolean postOptimization) {
+    @Override
+    public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);
         for (final Pragma pragma : pragmas) {
@@ -153,7 +150,8 @@ public class ExtensionExpression extends AbstractExpression {
         }
     }
 
-    public void accept(ExpressionVisitor visitor) {
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
         visitor.visit(innerExpression);
     }
 }
