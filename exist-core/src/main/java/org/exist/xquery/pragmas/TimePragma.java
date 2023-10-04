@@ -29,16 +29,21 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 
-public class TimerPragma extends AbstractPragma {
+/**
+ * An XQuery Pragma that will record the execution
+ * time of the associated expression.
+ */
+public class TimePragma extends AbstractPragma {
 
-    public static final QName TIMER_PRAGMA_NAME = new QName("timer", Namespaces.EXIST_NS, "exist");
+    public static final QName TIME_PRAGMA_NAME = new QName("time", Namespaces.EXIST_NS, "exist");
+    public static final QName DEPRECATED_TIMER_PRAGMA_NAME = new QName("timer", Namespaces.EXIST_NS, "exist");
 
     private Logger log = null;
 
     private long start;
     private boolean verbose = true;
 
-    public TimerPragma(final Expression expression, final QName qname, final String contents) throws XPathException {
+    public TimePragma(final Expression expression, final QName qname, final String contents) throws XPathException {
         super(expression, qname, contents);
         if (contents != null && !contents.isEmpty()) {
 
@@ -46,7 +51,7 @@ public class TimerPragma extends AbstractPragma {
             for (final String option : options) {
                 final String[] param = Option.parseKeyValuePair(option);
                 if (param == null) {
-                    throw new XPathException((Expression) null, "Invalid content found for pragma " + TIMER_PRAGMA_NAME.getStringValue() + ": " + contents);
+                    throw new XPathException((Expression) null, "Invalid content found for pragma " + TIME_PRAGMA_NAME.getStringValue() + ": " + contents);
                 }
 
                 if ("verbose".equals(param[0])) {
@@ -57,7 +62,7 @@ public class TimerPragma extends AbstractPragma {
             }
         }
         if (log == null) {
-            log = LogManager.getLogger(TimerPragma.class);
+            log = LogManager.getLogger(TimePragma.class);
         }
     }
 
