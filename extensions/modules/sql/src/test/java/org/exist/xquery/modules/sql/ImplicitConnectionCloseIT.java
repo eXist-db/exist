@@ -47,7 +47,12 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
+
+import org.exist.xquery.ExternalModule;
+import org.exist.xquery.Module;
+import org.exist.xquery.ModuleContext;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;

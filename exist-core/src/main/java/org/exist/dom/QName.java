@@ -21,7 +21,7 @@
  */
 package org.exist.dom;
 
-import org.exist.interpreter.Context;
+import org.exist.xquery.Context;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;

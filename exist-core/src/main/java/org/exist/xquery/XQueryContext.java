@@ -68,7 +68,6 @@ import org.exist.debuggee.DebuggeeJoint;
 import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
 import org.exist.http.servlets.*;
-import org.exist.interpreter.Context;
 import org.exist.dom.memtree.InMemoryXMLStreamReader;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
