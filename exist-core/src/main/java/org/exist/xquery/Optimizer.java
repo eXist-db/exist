@@ -21,15 +21,12 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -82,7 +79,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         // check query rewriters if they want to rewrite the location step
         Pragma optimizePragma = null;
-        for (QueryRewriter rewriter : rewriters) {
+        for (final QueryRewriter rewriter : rewriters) {
             try {
                 optimizePragma = rewriter.rewriteLocationStep(locationStep);
                 if (optimizePragma != null) {
@@ -90,7 +87,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                     hasOptimized = true;
                     break;
                 }
-            } catch (XPathException e) {
+            } catch (final XPathException e) {
                 LOG.warn("Exception called while rewriting location step: {}", e.getMessage(), e);
             }
         }
