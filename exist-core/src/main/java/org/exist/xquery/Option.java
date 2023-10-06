@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 
+import javax.annotation.Nullable;
+
 /**
  * Represents an XQuery option declared via "declare option".
  * 
@@ -89,9 +91,9 @@ public class Option {
 		return items;
     }
 
-    public static String[] parseKeyValuePair(final String s) {
+    public static @Nullable String[] parseKeyValuePair(final String s) {
         final Matcher matcher = pattern.matcher(s);
-		if(matcher.matches()) {
+		if (matcher.matches()) {
 			String value = matcher.group(2);
 			if(value.charAt(0) == '\'' || value.charAt(0) == '"') {
 				value = value.substring(1, value.length() - 1);

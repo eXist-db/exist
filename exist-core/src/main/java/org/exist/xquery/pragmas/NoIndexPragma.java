@@ -26,45 +26,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
 
-public class NoIndexPragma extends Pragma {
+public class NoIndexPragma extends AbstractPragma {
     public static final String NO_INDEX_PRAGMA_LOCAL_NAME = "no-index";
     public static final QName NO_INDEX_PRAGMA = new QName(NO_INDEX_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
     private static final Logger LOG = LogManager.getLogger(NoIndexPragma.class);
 
-    public NoIndexPragma(QName qname, String contents) throws XPathException {
-        this(null, qname, contents);
-    }
-
-    public NoIndexPragma(final Expression expression, QName qname, String contents) throws XPathException {
+    public NoIndexPragma(final Expression expression, final QName qname, final String contents) {
         super(expression, qname, contents);
     }
 
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         if (LOG.isTraceEnabled()) {
             LOG.trace("Switching indexes off ...");
         }
         contextInfo.addFlag(Expression.USE_TREE_TRAVERSAL);
-    }
-
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        return null;
-    }
-
-    public void before(XQueryContext context, Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
-    }
-
-    public void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException {
-    }
-
-    public void after(XQueryContext context) throws XPathException {
-        after(context, null);
-    }
-
-    public void after(XQueryContext context, final Expression expression) throws XPathException {
     }
 }

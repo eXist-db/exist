@@ -26,34 +26,24 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
-public class ProfilePragma extends Pragma {
+public class ProfilePragma extends AbstractPragma {
     public static final String PROFILING_PRAGMA_LOCAL_NAME = "profiling";
     public static final QName PROFILING_PRAGMA = new QName(PROFILING_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
     
-    public ProfilePragma(QName qname, String contents) throws XPathException {
-        this(null, qname, contents);
-    }
-    
-    public ProfilePragma(final Expression expression, QName qname, String contents) throws XPathException {
+    public ProfilePragma(final Expression expression, final QName qname, final String contents) {
         super(expression, qname, contents);
     }
 
-    public void after(XQueryContext context) throws XPathException {
-        after(context, null);
+    @Override
+    public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
+        final Profiler profiler = context.getProfiler();
+        final Option pragma = new Option(getExpression(), getName(), getContents());
+        profiler.configure(pragma);
     }
 
-    public void after(XQueryContext context, Expression expression) throws XPathException {
+    @Override
+    public void after(final XQueryContext context, final Expression expression) throws XPathException {
     	final Profiler profiler = context.getProfiler();
     	profiler.setEnabled(false);
-    }
-
-    public void before(XQueryContext context,Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
-    }
-
-    public void before(XQueryContext context, Expression expression, Sequence contextSequence) throws XPathException {
-    	final Profiler profiler = context.getProfiler();
-    	final Option pragma = new Option(getExpression(), getQName(), getContents());
-    	profiler.configure(pragma);
     }
 }

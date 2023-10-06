@@ -24,47 +24,34 @@ package org.exist.xquery.pragmas;
 import org.exist.xquery.*;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.xquery.value.Sequence;
 
-public class ForceIndexUse extends Pragma {
+public class ForceIndexUse extends AbstractPragma {
     public static final String FORCE_INDEX_USE_PRAGMA_LOCAL_NAME = "force-index-use";
     public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA =  new QName(FORCE_INDEX_USE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
-	Expression expression;
-	boolean bailout = true;
+    private boolean bailout = true;
 
-    public ForceIndexUse(QName qname, String contents) throws XPathException {
-        this(null, qname, contents);
+    public ForceIndexUse(final Expression expression, final QName qname, final String contents) {
+        super(expression, qname, contents);
     }
 
-    public ForceIndexUse(final Expression expression, QName qname, String contents) throws XPathException {
-    	super(expression, qname, contents);
-    }
-    
-    public void before(XQueryContext context,Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
-    }
-    
-    public void before(XQueryContext context, final Expression expression, Sequence contextSequence) throws XPathException {
-    }
-    
-    public void after(XQueryContext context) throws XPathException {
-        after(context, null);
-    }
-    
-    public void after(XQueryContext context, final Expression expression) throws XPathException {
-    	expression.accept(new DefaultExpressionVisitor() {
-        	public void visitGeneralComparison(GeneralComparison expression) {
-        		bailout = !expression.hasUsedIndex();
-        	}
-        	public void visitBuiltinFunction(Function expression) {
-                if (expression instanceof IndexUseReporter)
-                	{bailout = !((IndexUseReporter)expression).hasUsedIndex();}
+    @Override
+    public void after(final XQueryContext context, final Expression expression) throws XPathException {
+        expression.accept(new DefaultExpressionVisitor() {
+            public void visitGeneralComparison(final GeneralComparison expression) {
+                bailout = !expression.hasUsedIndex();
             }
-    	});
-    	
-    	if (bailout)
-    		{throw new XPathException(expression, "XQDYxxxx: Can not use index on expression '" + expression + "'");}
+
+            public void visitBuiltinFunction(final Function expression) {
+                if (expression instanceof IndexUseReporter) {
+                    bailout = !((IndexUseReporter) expression).hasUsedIndex();
+                }
+            }
+        });
+
+        if (bailout) {
+            throw new XPathException(expression, "XQDYxxxx: Can not use index on expression '" + expression + "'");
+        }
         	
     	/*
     	if (expression instanceof PathExpr) {

@@ -39,9 +39,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
-import static java.lang.System.arraycopy;
-
-public class Optimize extends Pragma {
+public class Optimize extends AbstractPragma {
     public static final String OPTIMIZE_PRAGMA_LOCAL_NAME = "optimize";
     public static final QName OPTIMIZE_PRAGMA = new QName(OPTIMIZE_PRAGMA_LOCAL_NAME, Namespaces.EXIST_NS, "exist");
 
@@ -59,11 +57,7 @@ public class Optimize extends Pragma {
     private int cachedTimestamp;
     private boolean cachedOptimize;
 
-    public Optimize(final XQueryContext context, final QName pragmaName, @Nullable final String contents, final boolean explicit) throws XPathException {
-        this(null, context, pragmaName, contents, explicit);
-    }
-
-    public Optimize(@Nullable final Expression expression, final XQueryContext context, final QName pragmaName, @Nullable final String contents, boolean explicit) throws XPathException {
+    public Optimize(@Nullable final Expression expression, final XQueryContext context, final QName pragmaName, @Nullable final String contents, final boolean explicit) throws XPathException {
         super(expression, pragmaName, contents);
         this.context = context;
         this.enabled = explicit || context.optimizationsEnabled();
@@ -200,11 +194,6 @@ public class Optimize extends Pragma {
     }
 
     @Override
-    public void before(final XQueryContext context, final Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
-    }
-
-    @Override
     public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
         if (innerExpr != null) {
             return;
@@ -214,7 +203,6 @@ public class Optimize extends Pragma {
             return;
         }
         innerExpr.accept(new BasicExpressionVisitor() {
-
             @Override
             public void visitPathExpr(final PathExpr expression) {
                 for (int i = 0; i < expression.getSubExpressionCount(); i++) {
@@ -286,17 +274,11 @@ public class Optimize extends Pragma {
     }
 
     @Override
-    public void after(final XQueryContext context) throws XPathException {
-        after(context, null);
-    }
-
-    @Override
     public void after(final XQueryContext context, @Nullable final Expression expression) throws XPathException {
     }
 
     private void addOptimizable(final Optimizable optimizable) {
         final int axis = optimizable.getOptimizeAxis();
-
         if (!(axis == Constants.CHILD_AXIS || axis == Constants.SELF_AXIS || axis == Constants.DESCENDANT_AXIS ||
                 axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
                 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
@@ -311,7 +293,7 @@ public class Optimize extends Pragma {
         }
 
         Optimizable[] o = new Optimizable[optimizables.length + 1];
-        arraycopy(optimizables, 0, o, 0, optimizables.length);
+        System.arraycopy(optimizables, 0, o, 0, optimizables.length);
         o[optimizables.length] = optimizable;
         optimizables = o;
     }
