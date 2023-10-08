@@ -103,7 +103,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     }
 
     /**
-     * Calls {@link FunctionCall#eval(Sequence)}.
+     * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
      * @return evaluation result of the function call
@@ -114,7 +114,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     }
 
     /**
-     * Calls {@link FunctionCall#eval(Sequence, Item)}.
+     * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
      * @param contextItem optional: the current context item
@@ -126,7 +126,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     }
 
     /**
-     * Calls {@link FunctionCall#evalFunction(Sequence, Item, Sequence[])}.
+     * Evaluates the referenced function.
      *
      * @param contextSequence the input sequence
      * @param contextItem optional: the current context item
