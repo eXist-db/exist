@@ -89,7 +89,7 @@ public class TypeswitchExpression extends AbstractExpression {
             throws XPathException {
         if (contextItem != null)
             {contextSequence = contextItem.toSequence();}
-        final Sequence opSeq = operand.eval(contextSequence);
+        final Sequence opSeq = operand.eval(contextSequence, null);
         Sequence result = null;
         
         final LocalVariable mark = context.markLocalVariables(false);
@@ -107,7 +107,7 @@ public class TypeswitchExpression extends AbstractExpression {
                             context.declareVariableBinding(var);
                         }
 
-                        result = next.returnClause.eval(contextSequence);
+                        result = next.returnClause.eval(contextSequence, null);
                         break;
                     }
                 }
@@ -121,7 +121,7 @@ public class TypeswitchExpression extends AbstractExpression {
         			context.declareVariableBinding(var);
         		}
         		
-        		result = defaultClause.returnClause.eval(contextSequence);
+        		result = defaultClause.returnClause.eval(contextSequence, null);
         	}
         } finally {
         	context.popLocalVariables(mark, result);

@@ -221,7 +221,7 @@ public class NGramSearch extends Function implements Optimizable {
         NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(
             NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
-        String key = getArgument(1).eval(contextSequence).getStringValue();
+        String key = getArgument(1).eval(contextSequence, null).getStringValue();
         List<QName> qnames = new ArrayList<>(1);
         qnames.add(contextQName);
         preselectResult = processMatches(index, docs, qnames, key, useContext ? contextSequence.toNodeSet() : null,
@@ -268,7 +268,7 @@ public class NGramSearch extends Function implements Optimizable {
             }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence).toNodeSet();
+            result = getArgument(0).eval(contextSequence, null).toNodeSet();
         }
         return result;
     }

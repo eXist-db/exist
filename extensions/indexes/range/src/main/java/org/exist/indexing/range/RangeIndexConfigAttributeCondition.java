@@ -387,11 +387,11 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
                 final Sequence contextSequence;
                 final ContextItemDeclaration cid = expr.getContext().getContextItemDeclartion();
                 if(cid != null) {
-                    contextSequence = cid.eval(null);
+                    contextSequence = cid.eval(null, null);
                 } else {
                     contextSequence = null;
                 }
-                final Sequence result = expr.eval(contextSequence);
+                final Sequence result = expr.eval(contextSequence, null);
                 if (result instanceof AtomicValue) {
                     return (AtomicValue) result;
                 }

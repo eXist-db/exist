@@ -87,7 +87,7 @@ public class FunString extends Function {
         // if the function is called with an argument and it is empty,
         // return the empty string
         if(getArgumentCount() == 1) {
-			contextSequence = getArgument(0).eval(contextSequence);
+			contextSequence = getArgument(0).eval(contextSequence, null);
             if (contextSequence.isEmpty()) {
             	return StringValue.EMPTY_STRING;
             }

@@ -83,8 +83,8 @@ public class FunCodepointEqual extends BasicFunction {
             result = new BooleanValue(this, Collations.compare(
                 //TODO : how ugly ! We should be able to use Collations.UNICODE_CODEPOINT_COLLATION_URI here ! -pb
                 context.getDefaultCollator(),
-                getArgument(0).eval(contextSequence).getStringValue(), 
-                getArgument(1).eval(contextSequence).getStringValue())
+                getArgument(0).eval(contextSequence, null).getStringValue(),
+                getArgument(1).eval(contextSequence, null).getStringValue())
                 == Constants.EQUAL);
         }
         if (context.getProfiler().isEnabled()) 

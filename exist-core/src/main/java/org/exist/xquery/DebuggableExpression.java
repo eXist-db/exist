@@ -61,10 +61,6 @@ public class DebuggableExpression implements Expression, RewritableExpression {
         }
     }
 
-    public Sequence eval(Sequence contextSequence) throws XPathException {
-        return eval(contextSequence, null);
-    }
-
     public void setPrimaryAxis(int axis) {
         expression.setPrimaryAxis(axis);
     }

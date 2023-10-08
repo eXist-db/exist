@@ -102,7 +102,7 @@ public class FunStrLength extends Function {
 
 
         if (getSignature().getArgumentCount() == 1) {
-            contextSequence = getArgument(0).eval(contextSequence);
+            contextSequence = getArgument(0).eval(contextSequence, null);
         }
 
         if (contextSequence == null) {

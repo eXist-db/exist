@@ -81,7 +81,7 @@ public class Lookup extends AbstractExpression {
         } else if (contextExpression == null) {
             leftSeq = contextSequence;
         } else {
-            leftSeq = contextExpression.eval(contextSequence);
+            leftSeq = contextExpression.eval(contextSequence, null);
         }
         final int contextType = leftSeq.getItemType();
 
@@ -96,7 +96,7 @@ public class Lookup extends AbstractExpression {
                     "expression to the left of a lookup operator needs to be a sequence of maps or arrays");
         }
         if (keyExpression != null) {
-            keys = keyExpression.eval(contextSequence);
+            keys = keyExpression.eval(contextSequence, null);
             if (keys.isEmpty()) {
                 return Sequence.EMPTY_SEQUENCE;
             }

@@ -246,7 +246,7 @@ public class Query extends Function implements Optimizable {
         NodeSet result;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
-            Sequence input = getArgument(0).eval(contextSequence);
+            Sequence input = getArgument(0).eval(contextSequence, null);
             if (!(input instanceof VirtualNodeSet) && input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
@@ -281,7 +281,7 @@ public class Query extends Function implements Optimizable {
         } else {
             // DW: contextSequence can be null
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence).toNodeSet();
+            result = getArgument(0).eval(contextSequence, null).toNodeSet();
         }
         return result;
     }

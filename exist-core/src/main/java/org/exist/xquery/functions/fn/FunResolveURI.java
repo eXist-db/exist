@@ -112,7 +112,7 @@ public class FunResolveURI extends Function {
 			base = context.getBaseURI();
 		} else {
 			try {
-				final Item item = getArgument(1).eval(contextSequence).itemAt(0).convertTo(Type.ANY_URI);
+				final Item item = getArgument(1).eval(contextSequence, null).itemAt(0).convertTo(Type.ANY_URI);
 				base = (AnyURIValue)item;
 			} catch (final XPathException e) {
 	        	throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), null, e);
@@ -121,7 +121,7 @@ public class FunResolveURI extends Function {
 		
 		Sequence result;
 
-		final Sequence seq = getArgument(0).eval(contextSequence);
+		final Sequence seq = getArgument(0).eval(contextSequence, null);
 		if (seq.isEmpty()) {			
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {

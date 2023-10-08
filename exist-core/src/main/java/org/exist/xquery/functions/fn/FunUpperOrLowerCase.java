@@ -77,7 +77,7 @@ public class FunUpperOrLowerCase extends Function {
 			{contextSequence = contextItem.toSequence();}
         
         Sequence result;
-		final Sequence seq = getArgument(0).eval(contextSequence);
+		final Sequence seq = getArgument(0).eval(contextSequence, null);
 		if (seq.isEmpty())
             {result = StringValue.EMPTY_STRING;}
         else {

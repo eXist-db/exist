@@ -75,7 +75,7 @@ public class WhereClause extends AbstractFLWORClause {
                 BindingExpression.setContext(getExpressionId(), in);
             }
             try {
-                final Sequence seq = in.isEmpty() ? in : whereExpr.eval(in);
+                final Sequence seq = in.isEmpty() ? in : whereExpr.eval(in, null);
                 //But *now*, we are ;-)
                 if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
                     final NodeSet nodes = seq.toNodeSet();
@@ -125,7 +125,7 @@ public class WhereClause extends AbstractFLWORClause {
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (applyWhereExpression()) {
-            return returnExpr.eval(null);
+            return returnExpr.eval(null, null);
         }
         return Sequence.EMPTY_SEQUENCE;
     }
@@ -143,7 +143,7 @@ public class WhereClause extends AbstractFLWORClause {
         if (fastTrack) {
             return true;
         }
-        final Sequence innerSeq = whereExpr.eval(null);
+        final Sequence innerSeq = whereExpr.eval(null, null);
         return innerSeq.effectiveBooleanValue();
     }
 

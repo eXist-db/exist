@@ -67,11 +67,6 @@ public abstract class AbstractExpression implements Expression {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence) throws XPathException {
-        return eval(contextSequence, null);
-    }
-
-    @Override
     public void resetState(boolean postOptimization) {
         contextDocSet = null;
     }
