@@ -68,7 +68,7 @@ public class FunElementWithId extends BasicFunction {
         final Sequence result;
         boolean processInMem = false;
         final Expression arg = getArgument(0);
-        final Sequence idval = arg.eval(contextSequence);
+        final Sequence idval = arg.eval(contextSequence, null);
 
         if (idval.isEmpty() || (getArgumentCount() == 1 && contextSequence != null && contextSequence.isEmpty())) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -76,7 +76,7 @@ public class FunElementWithId extends BasicFunction {
             String nextId;
             DocumentSet docs = null;
             if (getArgumentCount() == 2) {
-                final Sequence nodes = getArgument(1).eval(contextSequence);
+                final Sequence nodes = getArgument(1).eval(contextSequence, null);
                 if (nodes.isEmpty()) {
                     throw new XPathException(this, ErrorCodes.XPDY0002, "XPDY0002: no node or context item for fn:id", nodes);
                 } else if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) {

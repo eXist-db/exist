@@ -98,7 +98,7 @@ public class QueryField extends Query implements Optimizable {
         preselectResult = null;
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final String field = getArgument(0).eval(contextSequence).getStringValue();
+        final String field = getArgument(0).eval(contextSequence, null).getStringValue();
         final DocumentSet docs = contextSequence.getDocumentSet();
         final Item query = getKey(contextSequence, null);
         final QueryOptions options = parseOptions(this, contextSequence, null, 3);
@@ -130,7 +130,7 @@ public class QueryField extends Query implements Optimizable {
         final NodeSet result;
         if (preselectResult == null) {
         	final long start = System.currentTimeMillis();
-        	final String field = getArgument(0).eval(contextSequence).getStringValue();
+        	final String field = getArgument(0).eval(contextSequence, null).getStringValue();
         	final Item query = getKey(contextSequence, null);
         	
         	final DocumentSet docs;

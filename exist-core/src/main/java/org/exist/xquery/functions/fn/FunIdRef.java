@@ -114,7 +114,7 @@ public class FunIdRef extends Function {
         Sequence result;
         boolean processInMem = false;
         final Expression arg = getArgument(0);        
-		final Sequence idrefval = arg.eval(contextSequence);
+		final Sequence idrefval = arg.eval(contextSequence, null);
 		if(idrefval.isEmpty())
             {result = Sequence.EMPTY_SEQUENCE;}
         else {
@@ -123,7 +123,7 @@ public class FunIdRef extends Function {
             if (getArgumentCount() == 2) {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
-                final Sequence nodes = getArgument(1).eval(contextSequence);
+                final Sequence nodes = getArgument(1).eval(contextSequence, null);
                 if (nodes.isEmpty())
                     {throw new XPathException(this, ErrorCodes.XPDY0002, 
                     		"no node or context item for fn:idref");}

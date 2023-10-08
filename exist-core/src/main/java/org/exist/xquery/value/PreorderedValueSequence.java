@@ -62,7 +62,7 @@ public class PreorderedValueSequence extends AbstractSequence {
     private void processAll() throws XPathException {
         for (int i = 0; i < orderSpecs.length; i++) {
             final Expression expr = orderSpecs[i].getSortExpression();
-            final NodeSet result = expr.eval(null).toNodeSet();
+            final NodeSet result = expr.eval(null, null).toNodeSet();
             for (final NodeProxy p : result) {
                 ContextItem context = p.getContext();
                 //TODO : review to consider transverse context

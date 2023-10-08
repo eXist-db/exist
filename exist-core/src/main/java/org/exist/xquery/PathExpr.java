@@ -277,7 +277,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     result = exprResult;
                 } else {
                     try {
-                        result = expr.eval(currentContext);
+                        result = expr.eval(currentContext, null);
                     } catch (XPathException ex){
                         // enrich exception when information is available
                         if (ex.getLine() < 1 || ex.getColumn() < 1) {

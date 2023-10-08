@@ -217,7 +217,7 @@ public class CastExpression extends AbstractExpression {
 
         @Override
         public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-            return castExpression.eval(contextSequence);
+            return castExpression.eval(contextSequence, null);
         }
     }
 }

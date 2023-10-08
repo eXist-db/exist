@@ -85,13 +85,13 @@ public class FunTranslate extends Function {
 			{contextSequence = contextItem.toSequence();}
 		
         Sequence result;
-        final Sequence seq = getArgument(0).eval(contextSequence);
+        final Sequence seq = getArgument(0).eval(contextSequence, null);
 		if(seq.isEmpty())
             {result = StringValue.EMPTY_STRING;}
         else {
     		final ValueSequence arg = FunStringToCodepoints.getCodePoints(this, seq.getStringValue());
-    		final ValueSequence mapStr = FunStringToCodepoints.getCodePoints(this, getArgument(1).eval(contextSequence).getStringValue());
-            final ValueSequence transStr = FunStringToCodepoints.getCodePoints(this, getArgument(2).eval(contextSequence).getStringValue());
+    		final ValueSequence mapStr = FunStringToCodepoints.getCodePoints(this, getArgument(1).eval(contextSequence, null).getStringValue());
+            final ValueSequence transStr = FunStringToCodepoints.getCodePoints(this, getArgument(2).eval(contextSequence, null).getStringValue());
     		int p;
     		IntegerValue ch;
     		final StringBuilder buf = new StringBuilder(arg.getItemCount());

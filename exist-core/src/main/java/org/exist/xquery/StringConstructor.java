@@ -157,7 +157,7 @@ public class StringConstructor extends AbstractExpression {
 
         @Override
         public String eval(final Sequence contextSequence) throws XPathException {
-            final Sequence result = expression.eval(contextSequence);
+            final Sequence result = expression.eval(contextSequence, null);
 
             final StringBuilder out = new StringBuilder();
             boolean gotOne = false;

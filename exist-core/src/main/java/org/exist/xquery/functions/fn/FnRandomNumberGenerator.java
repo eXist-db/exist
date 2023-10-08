@@ -72,7 +72,7 @@ public class FnRandomNumberGenerator extends BasicFunction {
         if (args.length < 1) {
             seed = Optional.empty();
         } else {
-            final Sequence seedArg = getArgument(0).eval(contextSequence);
+            final Sequence seedArg = getArgument(0).eval(contextSequence, null);
             if (seedArg.isEmpty()) {
                 seed = Optional.empty();
             } else {

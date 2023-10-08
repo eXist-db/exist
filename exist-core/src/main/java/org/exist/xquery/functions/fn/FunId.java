@@ -94,7 +94,7 @@ public class FunId extends Function {
         Sequence result;
         boolean processInMem = false;
         final Expression arg = getArgument(0);
-		final Sequence idval = arg.eval(contextSequence);
+		final Sequence idval = arg.eval(contextSequence, null);
 		
 		if(idval.isEmpty() || (getArgumentCount() == 1 && contextSequence != null && contextSequence.isEmpty()))
             {result = Sequence.EMPTY_SEQUENCE;}
@@ -104,7 +104,7 @@ public class FunId extends Function {
             if (getArgumentCount() == 2) {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
-                final Sequence nodes = getArgument(1).eval(contextSequence);
+                final Sequence nodes = getArgument(1).eval(contextSequence, null);
                 if (nodes.isEmpty()) {
                     logger.error("{} No node or context item for fn:id", ErrorCodes.XPDY0002);
                     throw new XPathException(this, ErrorCodes.XPDY0002, "XPDY0002: no node or context item for fn:id", nodes);

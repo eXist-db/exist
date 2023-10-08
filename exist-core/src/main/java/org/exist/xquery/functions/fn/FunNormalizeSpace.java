@@ -116,7 +116,7 @@ public class FunNormalizeSpace extends Function {
             }
             value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
         } else {
-            final Sequence seq = getArgument(0).eval(contextSequence);
+            final Sequence seq = getArgument(0).eval(contextSequence, null);
             if (seq == null) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
             }

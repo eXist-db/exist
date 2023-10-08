@@ -85,12 +85,12 @@ public class Insert extends Modification {
             contextSequence = contextItem.toSequence();
         }
 
-        Sequence contentSeq = value.eval(contextSequence);
+        Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
         
-        final Sequence inSeq = select.eval(contextSequence);      
+        final Sequence inSeq = select.eval(contextSequence, null);
         
         //START trap Insert failure
         /* If we try and Insert a node at an invalid location,

@@ -28,6 +28,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
+import javax.annotation.Nullable;
+
 /**
  * Base interface implemented by all classes which are part
  * of an XQuery/XPath expression. The main method is 
@@ -101,12 +103,12 @@ public interface Expression {
 
     /**
      * Statically analyze the expression and its subexpressions.
-     * 
+     *
      * During the static analysis phase, the query engine can detect
      * unknown variables and some type errors.
      *
      * @param contextInfo the context infomation.
-     * 
+     *
      * @throws XPathException if an error occurs during the analysis.
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
@@ -134,29 +136,15 @@ public interface Expression {
      * The context sequence might be a node set, a sequence of atomic values or a single
      * node or atomic value.
      *
-     * @param contextSequence the current context sequence.
-     * @param contextItem a single item, taken from context. This defines the item,
-     * the expression should work on.
+     * @param contextSequence the current context sequence, or null if there is no context sequence.
+     * @param contextItem a single item, taken from context, or null if there is no context item.
+     *                    This defines the item, the expression should work on.
      *
      * @return the result sequence.
      *
      * @throws XPathException if an error occurs during evaluation.
      */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
-
-    /**
-     * Evaluate the expression represented by this object.
-     *
-     * An overloaded method which just passes the context sequence depending on the
-     * expression context.
-     *
-     * @param contextSequence the current context sequence.
-     *
-     * @return the result sequence.
-     *
-     * @throws XPathException if an error occurs during evaluation.
-     */
-    public Sequence eval(Sequence contextSequence) throws XPathException;
+    public Sequence eval(@Nullable Sequence contextSequence, @Nullable Item contextItem) throws XPathException;
 
     public void setPrimaryAxis(int axis);
 

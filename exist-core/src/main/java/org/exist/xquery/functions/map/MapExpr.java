@@ -74,12 +74,12 @@ public class MapExpr extends AbstractExpression {
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
         for (final Mapping mapping : this.mappings) {
-            final Sequence key = mapping.key.eval(contextSequence);
+            final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
                 throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
             }
             final AtomicValue atomic = key.itemAt(0).atomize();
-            final Sequence value = mapping.value.eval(contextSequence);
+            final Sequence value = mapping.value.eval(contextSequence, null);
             if (map.contains(atomic)) {
                 throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
             }

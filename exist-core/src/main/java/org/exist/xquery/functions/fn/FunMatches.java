@@ -212,7 +212,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         final int flags;
         if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence).getStringValue();
+            final String flagsArg = getArgument(2).eval(contextSequence, null).getStringValue();
             flags = parseFlags(this, flagsArg);
         } else {
             flags = 0;
@@ -224,11 +224,11 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         final boolean literal = hasLiteral(flags);
         if (literal) {
             // no need to change anything
-            pattern = getArgument(1).eval(contextSequence).getStringValue();
+            pattern = getArgument(1).eval(contextSequence, null).getStringValue();
         } else {
             final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
             final boolean caseBlind = !caseSensitive;
-            pattern = translateRegexp(this, getArgument(1).eval(contextSequence).getStringValue(), ignoreWhitespace, caseBlind);
+            pattern = translateRegexp(this, getArgument(1).eval(contextSequence, null).getStringValue(), ignoreWhitespace, caseBlind);
         }
 
         try {
@@ -351,7 +351,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             }
         } else {
             contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence).toNodeSet();
+            result = getArgument(0).eval(contextSequence, null).toNodeSet();
         }
 
         if (context.getProfiler().isEnabled()) {

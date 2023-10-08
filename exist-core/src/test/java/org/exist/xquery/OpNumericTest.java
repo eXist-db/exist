@@ -82,7 +82,7 @@ public class OpNumericTest {
 	}
 	
 	private void assertOp(String result, ArithmeticOperator op, AtomicValue a, AtomicValue b) throws XPathException {
-        Sequence r = buildOp(op, a, b).eval(Sequence.EMPTY_SEQUENCE);
+        Sequence r = buildOp(op, a, b).eval(Sequence.EMPTY_SEQUENCE, null);
         assertEquals(result, r.itemAt(0).getStringValue());
 	}
 

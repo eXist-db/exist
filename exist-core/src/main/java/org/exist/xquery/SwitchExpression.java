@@ -88,10 +88,10 @@ public class SwitchExpression extends AbstractExpression {
 
         if (contextItem != null)
             {contextSequence = contextItem.toSequence();}
-        final Sequence opSeq = operand.eval(contextSequence);
+        final Sequence opSeq = operand.eval(contextSequence, null);
         Sequence result = null;
         if (opSeq.isEmpty()) {
-        	result = defaultClause.returnClause.eval(contextSequence);
+        	result = defaultClause.returnClause.eval(contextSequence, null);
         } else {
             if (opSeq.hasMany()) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opSeq);
@@ -106,13 +106,13 @@ public class SwitchExpression extends AbstractExpression {
 	                }
                     final AtomicValue caseVal = caseSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : caseSeq.itemAt(0).atomize();
 	                if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
-	                    return next.returnClause.eval(contextSequence);
+	                    return next.returnClause.eval(contextSequence, null);
 	                }
 	            }
 	        }
         }
         if (result == null) {
-            result = defaultClause.returnClause.eval(contextSequence);
+            result = defaultClause.returnClause.eval(contextSequence, null);
         }
         
         return result;

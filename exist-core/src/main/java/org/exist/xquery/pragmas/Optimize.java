@@ -97,7 +97,7 @@ public class Optimize extends AbstractPragma {
                 useCached = !originalContext.hasChanged(cachedTimestamp);
             }
             if (contextVar != null) {
-                contextSequence = contextVar.eval(contextSequence);
+                contextSequence = contextVar.eval(contextSequence, null);
             }
             // check if all Optimizable expressions signal that they can indeed optimize
             // in the current context
@@ -164,7 +164,7 @@ public class Optimize extends AbstractPragma {
                 contextSequence = result;
             }
             if (contextStep == null) {
-                return innerExpr.eval(result);
+                return innerExpr.eval(result, null);
             } else {
                 contextStep.setPreloadedData(result.getDocumentSet(), result);
                 if (LOG.isTraceEnabled()) {
@@ -176,7 +176,7 @@ public class Optimize extends AbstractPragma {
                 } else {
                     contextSequence = null;
                 }
-                final Sequence seq = innerExpr.eval(contextSequence);
+                final Sequence seq = innerExpr.eval(contextSequence, null);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("exist:optimize: inner expr took {}; found: {}", System.currentTimeMillis() - start, seq.getItemCount());
                 }

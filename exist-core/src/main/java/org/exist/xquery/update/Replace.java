@@ -79,7 +79,7 @@ public class Replace extends Modification {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        final Sequence inSeq = select.eval(contextSequence);
+        final Sequence inSeq = select.eval(contextSequence, null);
         if (inSeq.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -116,7 +116,7 @@ public class Replace extends Modification {
         }
         //END trap Replace failure
 
-        Sequence contentSeq = value.eval(contextSequence);
+        Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }

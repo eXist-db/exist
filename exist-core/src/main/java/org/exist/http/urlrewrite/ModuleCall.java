@@ -95,12 +95,12 @@ public class ModuleCall extends URLRewrite {
             final ContextItemDeclaration cid = call.getContext().getContextItemDeclartion();
             final Sequence contextSequence;
             if (cid != null) {
-                contextSequence = cid.eval(null);
+                contextSequence = cid.eval(null, null);
             } else {
                 contextSequence = null;
             }
 
-            final Sequence result = call.eval(contextSequence);
+            final Sequence result = call.eval(contextSequence, null);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Found: {}", result.getItemCount());
             }
