@@ -91,10 +91,12 @@ public class ExtensionExpression extends AbstractExpression {
         }
     }
 
+    @Override
     public int returnsType() {
         return innerExpression.returnsType();
     }
 
+    @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
         for (final Pragma pragma : pragmas) {
@@ -103,6 +105,7 @@ public class ExtensionExpression extends AbstractExpression {
         innerExpression.analyze(newContext);
     }
 
+    @Override
     public void dump(final ExpressionDumper dumper) {
         for (final Pragma pragma : pragmas) {
             pragma.dump(dumper);
