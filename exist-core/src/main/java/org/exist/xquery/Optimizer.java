@@ -63,6 +63,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private List<QueryRewriter> rewriters;
 
+    private final FindOptimizable findOptimizable = new FindOptimizable();
+
     public Optimizer(XQueryContext context) {
         this.context = context;
         final DBBroker broker = context.getBroker();
@@ -100,11 +102,13 @@ public class Optimizer extends DefaultExpressionVisitor {
             // try to find a predicate containing an expression which is an instance
             // of Optimizable.
             for (final Predicate pred : preds) {
-                final FindOptimizable find = new FindOptimizable();
-                pred.accept(find);
-                @Nullable final Optimizable[] list = find.getOptimizables();
+                pred.accept(findOptimizable);
+                @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
                 if (canOptimize(list)) {
                     optimize = true;
+                }
+                findOptimizable.reset();
+                if (optimize) {
                     break;
                 }
             }
@@ -208,19 +212,23 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean hasOptimizable(List<Predicate> preds) {
+    private boolean hasOptimizable(final List<Predicate> preds) {
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
+        boolean optimizable = false;
         for (final Predicate pred : preds) {
-            final FindOptimizable find = new FindOptimizable();
-            pred.accept(find);
-            @Nullable final Optimizable[] list = find.getOptimizables();
+            pred.accept(findOptimizable);
+            @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
             if (canOptimize(list)) {
-                return true;
+                optimizable = true;
+            }
+            findOptimizable.reset();
+            if (optimizable) {
+                break;
             }
         }
-        return false;
+        return optimizable;
     }
 
     public void visitAndExpr(OpAnd and) {
@@ -420,6 +428,10 @@ public class Optimizer extends DefaultExpressionVisitor {
                 optimizables = Arrays.copyOf(optimizables, optimizables.length + 1);
             }
             optimizables[optimizables.length - 1] = optimizable;
+        }
+
+        public void reset() {
+            this.optimizables = null;
         }
     }
 
