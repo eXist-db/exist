@@ -101,8 +101,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             final FindOptimizable find = new FindOptimizable();
             for (final Predicate pred : preds) {
                 pred.accept(find);
-                @Nullable final List<Optimizable> list = find.getOptimizables();
-                if (list != null && canOptimize(list)) {
+                @Nullable final Optimizable[] list = find.getOptimizables();
+                if (canOptimize(list)) {
                     optimize = true;
                     break;
                 }
@@ -217,8 +217,8 @@ public class Optimizer extends DefaultExpressionVisitor {
         final FindOptimizable find = new FindOptimizable();
         for (final Predicate pred : preds) {
             pred.accept(find);
-            @Nullable final List<Optimizable> list = find.getOptimizables();
-            if (list != null && canOptimize(list)) {
+            @Nullable final Optimizable[] list = find.getOptimizables();
+            if (canOptimize(list)) {
                 return true;
             }
             find.reset();
@@ -345,7 +345,11 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean canOptimize(final List<Optimizable> list) {
+    private boolean canOptimize(@Nullable final Optimizable[] list) {
+        if (list == null || list.length == 0) {
+            return false;
+        }
+
         for (final Optimizable optimizable : list) {
             final int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
@@ -383,9 +387,9 @@ public class Optimizer extends DefaultExpressionVisitor {
      * Try to find an expression object implementing interface Optimizable.
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
-        private List<Optimizable> optimizables = null;
+        private @Nullable Optimizable[] optimizables = null;
 
-        public @Nullable List<Optimizable> getOptimizables() {
+        public @Nullable Optimizable[] getOptimizables() {
             return optimizables;
         }
 
@@ -399,10 +403,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         @Override
         public void visitGeneralComparison(final GeneralComparison comparison) {
-            if (optimizables == null) {
-                optimizables = new ArrayList<>(4);
-            }
-            optimizables.add(comparison);
+            addOptimizable(comparison);
         }
 
         @Override
@@ -413,11 +414,17 @@ public class Optimizer extends DefaultExpressionVisitor {
         @Override
         public void visitBuiltinFunction(final Function function) {
             if (function instanceof final Optimizable optimizable) {
-                if (optimizables == null) {
-                    optimizables = new ArrayList<>(4);
-                }
-                optimizables.add(optimizable);
+                addOptimizable(optimizable);
             }
+        }
+
+        private void addOptimizable(final Optimizable optimizable) {
+            if (optimizables == null) {
+                optimizables = new Optimizable[1];
+            } else {
+                optimizables = Arrays.copyOf(optimizables, optimizables.length + 1);
+            }
+            optimizables[optimizables.length - 1] = optimizable;
         }
 
         /**
@@ -426,9 +433,7 @@ public class Optimizer extends DefaultExpressionVisitor {
          * Clears the known {@link #optimizables}.
          */
         public void reset() {
-            if (optimizables != null) {
-                optimizables.clear();
-            }
+            optimizables = null;
         }
     }
 
