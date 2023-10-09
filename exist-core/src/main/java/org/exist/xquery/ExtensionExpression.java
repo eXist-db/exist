@@ -178,4 +178,21 @@ public class ExtensionExpression extends AbstractExpression {
     public void accept(final ExpressionVisitor visitor) {
         visitor.visit(innerExpression);
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                result.append(pragma.toString());
+            }
+        }
+
+        result.append("{ ");
+        result.append(innerExpression.toString());
+        result.append(" }");
+
+        return result.toString();
+    }
 }
