@@ -116,7 +116,8 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
                 expr instanceof DynamicCardinalityCheck ||
                 expr instanceof DynamicNameCheck ||
                 expr instanceof DynamicTypeCheck ||
-                expr instanceof UntypedValueCheck) {
+                expr instanceof UntypedValueCheck ||
+                expr instanceof PathExpr) {
             expr.accept(this);
         }
     }
