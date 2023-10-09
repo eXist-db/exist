@@ -2984,6 +2984,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         } catch (final QName.IllegalQNameException e) {
             throw new XPathException(rootExpression, ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
         }
+
         final String ns = qname.getNamespaceURI();
         if (ns.isEmpty()) {
             throw new XPathException(rootExpression, ErrorCodes.XPST0081,
@@ -2999,7 +3000,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         return switch(qname.getLocalPart()) {
             case Optimize.OPTIMIZE_PRAGMA_LOCAL_NAME -> new Optimize(rootExpression, this, qname, sanitizedContents, true);
-            case TimerPragma.TIMER_PRAGMA_LOCAL_NAME -> new TimerPragma(rootExpression, qname, sanitizedContents);
+            case TimePragma.TIME_PRAGMA_LOCAL_NAME, TimePragma.DEPRECATED_TIMER_PRAGMA_LOCAL_NAME -> new TimePragma(rootExpression, qname, sanitizedContents);
             case ProfilePragma.PROFILING_PRAGMA_LOCAL_NAME -> new ProfilePragma(rootExpression, qname, sanitizedContents);
             case ForceIndexUse.FORCE_INDEX_USE_PRAGMA_LOCAL_NAME -> new ForceIndexUse(rootExpression, qname, sanitizedContents);
             case NoIndexPragma.NO_INDEX_PRAGMA_LOCAL_NAME -> new NoIndexPragma(rootExpression, qname, sanitizedContents);

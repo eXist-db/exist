@@ -39,38 +39,33 @@ import java.util.*;
  *
  * @author wolf
  */
-public class OptimizeFieldPragma extends Pragma {
+public class OptimizeFieldPragma extends AbstractPragma {
 
-    public  final static QName OPTIMIZE_RANGE_PRAGMA = new QName("optimize-field", Namespaces.EXIST_NS, "exist");
+    public static final QName OPTIMIZE_RANGE_PRAGMA = new QName("optimize-field", Namespaces.EXIST_NS, "exist");
 
     private final XQueryContext context;
     private Expression rewritten = null;
     private AnalyzeContextInfo contextInfo;
     private int axis;
 
-    public OptimizeFieldPragma(final Expression expression, QName qname, String contents, XQueryContext context) throws XPathException {
+    public OptimizeFieldPragma(final Expression expression, final QName qname, final String contents, final XQueryContext context) {
         super(expression, qname, contents);
         this.context = context;
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         this.contextInfo = contextInfo;
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (rewritten != null) {
             rewritten.analyze(contextInfo);
             return rewritten.eval(contextSequence, contextItem);
         }
         return null;
-    }
-
-    @Override
-    public void before(final XQueryContext context, final Sequence contextSequence) throws XPathException {
-        before(context, null, contextSequence);
     }
 
     @Override
@@ -91,20 +86,11 @@ public class OptimizeFieldPragma extends Pragma {
         }
     }
 
-    public void after(XQueryContext context) throws XPathException {
-        after(context, null);
-    }
-
-    @Override
-    public void after(XQueryContext context, Expression expression) throws XPathException {
-
-    }
-
-    private Expression tryRewriteToFields(LocationStep locationStep, final Predicate[] preds, NodePath contextPath, Sequence contextSequence) throws XPathException {
+    private @Nullable Expression tryRewriteToFields(final LocationStep locationStep, final Predicate[] preds, final NodePath contextPath, final Sequence contextSequence) throws XPathException {
         // without context path, we cannot rewrite the entire query
         if (contextPath != null) {
             final List<Predicate> notOptimizable = new ArrayList<>(preds.length);
-            List<RangeIndexConfig> configs = getConfigurations(contextSequence);
+            final List<RangeIndexConfig> configs = getConfigurations(contextSequence);
             // walk through the predicates attached to the current location step
             // check if expression can be optimized
 
@@ -120,19 +106,19 @@ public class OptimizeFieldPragma extends Pragma {
                     notOptimizable.add(pred);
                     continue;
                 }
-                Expression innerExpr = pred.getExpression(0);
-                List<LocationStep> steps = RangeQueryRewriter.getStepsToOptimize(innerExpr);
+                final Expression innerExpr = pred.getExpression(0);
+                final List<LocationStep> steps = RangeQueryRewriter.getStepsToOptimize(innerExpr);
                 if (steps == null) {
                     notOptimizable.add(pred);
                     continue;
                 }
                 // compute left hand path
-                NodePath innerPath = RangeQueryRewriter.toNodePath(steps);
+                final NodePath innerPath = RangeQueryRewriter.toNodePath(steps);
                 if (innerPath == null) {
                     notOptimizable.add(pred);
                     continue;
                 }
-                NodePath path = new NodePath(contextPath);
+                final NodePath path = new NodePath(contextPath);
                 path.append(innerPath);
 
                 if (path.length() > 0) {
@@ -160,14 +146,14 @@ public class OptimizeFieldPragma extends Pragma {
                     final ArrayList<Predicate> matchedPreds = new ArrayList<>();
 
                     ComplexRangeIndexConfigElement rice = null;
-                    for (ComplexRangeIndexConfigElement testRice : rices) {
+                    for (final ComplexRangeIndexConfigElement testRice : rices) {
 
                         if (testRice.getNumberOfConditions() > 0) {
                             // find a config element where the conditions match preceding predicates
 
                             matchedPreds.clear();
 
-                            for (Predicate precedingPred : precedingPreds ) {
+                            for (final Predicate precedingPred : precedingPreds) {
 
                                 if (testRice.findCondition(precedingPred)) {
                                     matchedPreds.add(precedingPred);
@@ -195,7 +181,7 @@ public class OptimizeFieldPragma extends Pragma {
 
                     if (rice != null && rice.getNodePath().match(contextPath)) {
                         // check for a matching sub-path and retrieve field information
-                        RangeIndexConfigField field = rice.getField(path);
+                        final RangeIndexConfigField field = rice.getField(path);
                         if (field != null) {
                             if (args == null) {
                                 // initialize args
@@ -235,7 +221,7 @@ public class OptimizeFieldPragma extends Pragma {
 
                 // the entire filter expression can be replaced
                 // create range:field-equals function
-                FieldLookup func = new FieldLookup(context, FieldLookup.signatures[0]);
+                final FieldLookup func = new FieldLookup(context, FieldLookup.signatures[0]);
                 func.setFallback(locationStep);
                 func.setLocation(locationStep.getLine(), locationStep.getColumn());
 
@@ -271,12 +257,12 @@ public class OptimizeFieldPragma extends Pragma {
         return null;
     }
 
-    private Expression getKeyArg(Expression expression) {
+    private @Nullable Expression getKeyArg(final Expression expression) {
         if (expression instanceof GeneralComparison) {
-            return ((GeneralComparison)expression).getRight();
+            return ((GeneralComparison) expression).getRight();
         } else if (expression instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expression;
-            Function function = fcall.getFunction();
+            final InternalFunctionCall fcall = (InternalFunctionCall) expression;
+            final Function function = fcall.getFunction();
             if (function instanceof Lookup) {
                 return function.getArgument(1);
             }
@@ -284,31 +270,28 @@ public class OptimizeFieldPragma extends Pragma {
         return null;
     }
 
-
     /**
      * Find all complex configurations matching the path
      */
-    private List<ComplexRangeIndexConfigElement> findConfigurations(NodePath path, List<RangeIndexConfig> configs) {
-        ArrayList<ComplexRangeIndexConfigElement> rices = new ArrayList<>();
-
-        for (RangeIndexConfig config : configs) {
-            List<ComplexRangeIndexConfigElement> foundRices = config.findAll(path);
+    private List<ComplexRangeIndexConfigElement> findConfigurations(final NodePath path, final List<RangeIndexConfig> configs) {
+        final List<ComplexRangeIndexConfigElement> rices = new ArrayList<>();
+        for (final RangeIndexConfig config : configs) {
+            final List<ComplexRangeIndexConfigElement> foundRices = config.findAll(path);
             if (rices.addAll(foundRices)) {
                 break;
             }
         }
-
         return rices;
     }
 
-    private List<RangeIndexConfig> getConfigurations(Sequence contextSequence) {
-        List<RangeIndexConfig> configs = new ArrayList<>();
+    private List<RangeIndexConfig> getConfigurations(final Sequence contextSequence) {
+        final List<RangeIndexConfig> configs = new ArrayList<>();
         for (final Iterator<Collection> i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             final Collection collection = i.next();
             if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI)) {
                 continue;
             }
-            IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
+            final IndexSpec idxConf = collection.getIndexConfiguration(context.getBroker());
             if (idxConf != null) {
                 final RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
                 if (config != null) {

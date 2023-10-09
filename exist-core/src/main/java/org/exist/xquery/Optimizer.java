@@ -21,15 +21,12 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import java.util.*;
