@@ -57,6 +57,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private final XQueryContext context;
     private final List<QueryRewriter> rewriters;
+    private final FindOptimizable findOptimizable = new FindOptimizable();
 
     private int predicates = 0;
 
@@ -98,15 +99,16 @@ public class Optimizer extends DefaultExpressionVisitor {
             // walk through the predicates attached to the current location step.
             // try to find a predicate containing an expression which is an instance
             // of Optimizable.
-            final FindOptimizable find = new FindOptimizable();
             for (final Predicate pred : preds) {
-                pred.accept(find);
-                @Nullable final Optimizable[] list = find.getOptimizables();
+                pred.accept(findOptimizable);
+                @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
                 if (canOptimize(list)) {
                     optimize = true;
+                }
+                findOptimizable.reset();
+                if (optimize) {
                     break;
                 }
-                find.reset();
             }
         }
 
@@ -214,16 +216,19 @@ public class Optimizer extends DefaultExpressionVisitor {
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
-        final FindOptimizable find = new FindOptimizable();
+        boolean optimizable = false;
         for (final Predicate pred : preds) {
-            pred.accept(find);
-            @Nullable final Optimizable[] list = find.getOptimizables();
+            pred.accept(findOptimizable);
+            @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
             if (canOptimize(list)) {
-                return true;
+                optimizable = true;
             }
-            find.reset();
+            findOptimizable.reset();
+            if (optimizable) {
+                break;
+            }
         }
-        return false;
+        return optimizable;
     }
 
     @Override
@@ -433,7 +438,7 @@ public class Optimizer extends DefaultExpressionVisitor {
          * Clears the known {@link #optimizables}.
          */
         public void reset() {
-            optimizables = null;
+            this.optimizables = null;
         }
     }
 
