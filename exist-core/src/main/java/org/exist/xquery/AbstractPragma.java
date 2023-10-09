@@ -93,6 +93,13 @@ public abstract class AbstractPragma implements Pragma {
 
     @Override
     public String toString() {
-        return "(# " + name + ' ' + contents + "#)";
+        final StringBuilder builder = new StringBuilder();
+        builder.append("(# ");
+        builder.append(name);
+        if (contents != null && !contents.isEmpty()) {
+            builder.append(' ').append(contents);
+        }
+        builder.append("#)");
+        return builder.toString();
     }
 }
