@@ -163,7 +163,7 @@ public class Directory extends BasicFunction {
 
             builder.endElement();
 
-            return (NodeValue) builder.getDocument().getDocumentElement();
+            return (NodeValue) builder.getMemtree().getDocumentElement();
         } catch(final IOException ioe) {
             throw new XPathException(this, ioe);
         } finally {

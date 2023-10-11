@@ -257,7 +257,7 @@ public class Deploy extends BasicFunction {
 			builder.startElement(STATUS_ELEMENT, attrs);
 			builder.endElement();
 			
-			return builder.getDocument().getNode(1);
+			return builder.getMemtree().getNode(1);
 		} finally {
 			context.popDocumentContext();
 		}

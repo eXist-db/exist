@@ -143,9 +143,9 @@ public class XPathUtil {
                 streamer.setContentHandler(receiver);
                 streamer.serialize((Node) obj, false);
                 if(obj instanceof Document) {
-                    return builder.getDocument();
+                    return builder.getMemtree();
                 } else {
-                    return builder.getDocument().getNode(1);
+                    return builder.getMemtree().getNode(1);
                 }
             } catch (final SAXException e) {
                 throw new XPathException(expression,
@@ -181,13 +181,13 @@ public class XPathUtil {
                 streamer.setContentHandler(receiver);
                 final ValueSequence seq = new ValueSequence();
                 final NodeList nl = (NodeList) obj;
-                int last = builder.getDocument().getLastNode();
+                int last = builder.getMemtree().getLastNode();
                 for (int i = 0; i < nl.getLength(); i++) {
                     final Node n = nl.item(i);
                     streamer.serialize(n, false);
-                    final NodeImpl created = builder.getDocument().getNode(last + 1);
+                    final NodeImpl created = builder.getMemtree().getNode(last + 1);
                     seq.add(created);
-                    last = builder.getDocument().getLastNode();
+                    last = builder.getMemtree().getLastNode();
                 }
                 return seq;
             } catch (final SAXException e) {

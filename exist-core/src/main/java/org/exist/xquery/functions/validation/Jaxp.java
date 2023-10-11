@@ -330,7 +330,7 @@ public class Jaxp extends BasicFunction {
 
             if (contenthandler instanceof DocumentBuilderReceiver) {
                 //DocumentBuilderReceiver dbr = (DocumentBuilderReceiver) contenthandler;
-                return instanceBuilder.getDocument().getNode(0);
+                return instanceBuilder.getMemtree().getNode(0);
 
             } else {
 

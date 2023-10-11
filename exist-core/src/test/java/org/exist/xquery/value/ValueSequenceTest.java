@@ -77,9 +77,9 @@ public class ValueSequenceTest {
             final NodeProxy docProxy = new NodeProxy(null, doc);
             final NodeProxy nodeProxy = new NodeProxy(null, doc, ((NodeImpl)doc.getFirstChild()).getNodeId());
 
-            seq.add(memtree.getDocument());
+            seq.add(memtree.getMemtree());
             seq.add(docProxy);
-            seq.add((org.exist.dom.memtree.NodeImpl)memtree.getDocument().getFirstChild());
+            seq.add((org.exist.dom.memtree.NodeImpl)memtree.getMemtree().getFirstChild());
             seq.add(nodeProxy);
 
             //call sort

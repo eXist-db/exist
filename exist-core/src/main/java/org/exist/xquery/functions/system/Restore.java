@@ -125,7 +125,7 @@ public class Restore extends BasicFunction {
 
             builder.endElement();
             builder.endDocument();
-            return (NodeValue) builder.getDocument().getDocumentElement();
+            return (NodeValue) builder.getMemtree().getDocumentElement();
         } finally {
             context.popDocumentContext();
         }

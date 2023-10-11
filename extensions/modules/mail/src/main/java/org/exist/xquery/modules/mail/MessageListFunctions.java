@@ -427,7 +427,7 @@ public class MessageListFunctions extends BasicFunction
 
 				builder.endElement();
 
-				ret = (NodeValue) builder.getDocument().getDocumentElement();
+				ret = (NodeValue) builder.getMemtree().getDocumentElement();
 			} finally {
 				context.popDocumentContext();
 

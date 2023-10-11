@@ -192,7 +192,7 @@ public class Compile extends BasicFunction {
 
 			builder.endElement();
 
-			return builder.getDocument().getNode(1);
+			return builder.getMemtree().getNode(1);
 		} finally {
 			context.popDocumentContext();
 		}

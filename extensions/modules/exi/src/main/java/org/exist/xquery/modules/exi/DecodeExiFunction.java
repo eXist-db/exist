@@ -120,7 +120,7 @@ public class DecodeExiFunction extends BasicFunction {
 					decoder.parse(new InputSource(inputStream));
 				}
 
-				return (NodeValue) builder.getDocument().getDocumentElement();
+				return (NodeValue) builder.getMemtree().getDocumentElement();
 			} finally {
 				context.popDocumentContext();
 			}

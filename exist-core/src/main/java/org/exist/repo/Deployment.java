@@ -610,7 +610,7 @@ public class Deployment {
             throw new PackageException("Error while updating repo.xml in-memory: " + e.getMessage(), e);
         }
         builder.endDocument();
-        final DocumentImpl updatedXML = builder.getDocument();
+        final DocumentImpl updatedXML = builder.getMemtree();
 
         try {
             final Collection collection = broker.getOrCreateCollection(transaction, targetCollection);

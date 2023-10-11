@@ -194,7 +194,7 @@ public class JSON extends BasicFunction {
             builder.startDocument();
             factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, false);
             jsonToXml(builder, parser);
-            return builder.getDocument() == null ? Sequence.EMPTY_SEQUENCE : builder.getDocument();
+            return builder.getMemtree() == null ? Sequence.EMPTY_SEQUENCE : builder.getMemtree();
         }  catch (IOException e) {
             throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
         } catch (XPathException e) {

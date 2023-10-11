@@ -121,7 +121,7 @@ public class NamespaceConstructor extends NodeConstructor {
 
         //context.declareInScopeNamespace(prefix, value);
         final int nodeNr = builder.namespaceNode(prefix, value);
-        final Sequence result = builder.getDocument().getNamespaceNode(nodeNr);
+        final Sequence result = builder.getMemtree().getNamespaceNode(nodeNr);
 
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);

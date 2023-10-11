@@ -120,7 +120,7 @@ public class ListBackups extends BasicFunction
                 }
             }
             builder.endElement();
-            return( builder.getDocument().getNode( nodeNr ) );
+            return( builder.getMemtree().getNode( nodeNr ) );
         } catch (final IOException ioe) {
             throw new XPathException(this, ioe);
         }

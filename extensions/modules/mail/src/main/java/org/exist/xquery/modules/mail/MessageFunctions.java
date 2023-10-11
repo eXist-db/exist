@@ -252,7 +252,7 @@ public class MessageFunctions extends BasicFunction {
 
             builder.endElement();
             builder.endDocument();
-            ret = (NodeValue) builder.getDocument().getDocumentElement();
+            ret = (NodeValue) builder.getMemtree().getDocumentElement();
             return (ret);
         } finally {
             context.popDocumentContext();

@@ -66,8 +66,8 @@ public class SAXAdapter implements ContentHandler, LexicalHandler {
         this.builder = builder;
     }
 
-    public DocumentImpl getDocument() {
-        return builder.getDocument();
+    public Memtree getMemtree() {
+        return builder.getMemtree();
     }
 
     @Override

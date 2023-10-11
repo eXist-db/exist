@@ -159,7 +159,7 @@ public class ContentFunctions extends BasicFunction {
                         builder.endElement();
                         builder.endElement();
                         builder.endDocument();
-                        return builder.getDocument();
+                        return builder.getMemtree();
                     } finally {
                         context.popDocumentContext();
                     }

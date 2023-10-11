@@ -235,7 +235,7 @@ public class Transform extends BasicFunction {
                 }
 
                 errorListener.checkForErrors();
-                Node next = builder.getDocument().getFirstChild();
+                Node next = builder.getMemtree().getFirstChild();
                 while (next != null) {
                     seq.add((NodeValue) next);
                     next = next.getNextSibling();

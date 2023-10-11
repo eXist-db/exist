@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
  * @author Adam Retter <adam@evolvedbinary.com>
  */
 @RunWith(ParallelRunner.class)
-public class MemtreeTest {
+public class MemtreeImplTest {
 
     private final static String XML =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -586,6 +586,7 @@ public class MemtreeTest {
 
         reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, adapter);
         reader.parse(src);
+        adapter.
         return adapter.getDocument();
     }
 }

@@ -253,7 +253,7 @@ public class Sync extends BasicFunction {
         } finally {
             context.popDocumentContext();
         }
-        return output.getDocument();
+        return output.getMemtree();
     }
 
     private void syncCollection(

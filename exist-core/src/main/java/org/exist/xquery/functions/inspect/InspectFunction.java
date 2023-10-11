@@ -51,7 +51,7 @@ public class InspectFunction extends BasicFunction {
             context.pushDocumentContext();
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final int nodeNr = InspectFunctionHelper.generateDocs(sig, null, builder);
-            return builder.getDocument().getNode(nodeNr);
+            return builder.getMemtree().getNode(nodeNr);
         } finally {
             context.popDocumentContext();
         }

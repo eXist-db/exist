@@ -138,7 +138,7 @@ public class InspectModule extends BasicFunction {
                     }
                 }
                 builder.endElement();
-                return builder.getDocument().getNode(nodeNr);
+                return builder.getMemtree().getNode(nodeNr);
             } finally {
                 context.popDocumentContext();
             }

@@ -78,7 +78,7 @@ public class DocumentBuilderReceiverTest {
         
         verify(mockContext);
         
-        Document doc = builder.getDocument();
+        Document doc = builder.getMemtree();
         Node entryNode = doc.getFirstChild();
         
         assertEquals(entry_name, entryNode.getNodeName());
@@ -116,7 +116,7 @@ public class DocumentBuilderReceiverTest {
 
         verify(mockContext);
 
-        Document doc = builder.getDocument();
+        Document doc = builder.getMemtree();
         Node entryNode = doc.getFirstChild();
 
         assertEquals("Explicit namespace prefix should be preserved", titleQName, entryNode.getNodeName());
@@ -151,7 +151,7 @@ public class DocumentBuilderReceiverTest {
 
         verify(mockContext);
 
-        Document doc = builder.getDocument();
+        Document doc = builder.getMemtree();
         Node entryNode = doc.getFirstChild();
 
         assertEquals("Explicit namespace prefix should be preserved", "a:title", entryNode.getNodeName());

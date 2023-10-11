@@ -226,7 +226,7 @@ public class XQueryDeclareContextItemTest {
             builder.endElement();
             builder.endDocument();
 
-            final ElementImpl elem = (ElementImpl)builder.getDocument().getDocumentElement();
+            final ElementImpl elem = (ElementImpl)builder.getMemtree().getDocumentElement();
 
             final Sequence result = xquery.execute(broker, query, elem);
             assertEquals(1, result.getItemCount());

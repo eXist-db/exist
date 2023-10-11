@@ -110,7 +110,7 @@ public class FunctionTrace extends BasicFunction {
                 brokerPool.getPerformanceStats().toXML(builder);
                 builder.endDocument();
                 logger.info("Exiting " + SystemModule.PREFIX + ":{}", getName().getLocalPart());
-                return (NodeValue) builder.getDocument().getDocumentElement();
+                return (NodeValue) builder.getMemtree().getDocumentElement();
             } finally {
                 context.popDocumentContext();
             }

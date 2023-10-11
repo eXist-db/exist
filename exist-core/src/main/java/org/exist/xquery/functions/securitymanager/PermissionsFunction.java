@@ -458,7 +458,7 @@ public class PermissionsFunction extends BasicFunction {
 
         builder.endDocument();
 
-        final org.exist.dom.memtree.DocumentImpl doc = builder.getDocument();
+        final org.exist.dom.memtree.DocumentImpl doc = builder.getMemtree();
 
         context.popDocumentContext();
 

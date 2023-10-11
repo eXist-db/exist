@@ -123,7 +123,7 @@ public class RegistryFunctions extends BasicFunction {
         builder.endElement();
         builder.endDocument();
 
-        return builder.getDocument();
+        return builder.getMemtree();
     }
 
     /**

@@ -330,7 +330,7 @@ public class ElementConstructor extends NodeConstructor {
                 content.eval(contextSequence, contextItem);
             }
             builder.endElement();
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final NodeImpl node = builder.getMemtree().getNode(nodeNr);
             return node;
         } finally {
             context.popInScopeNamespaces();

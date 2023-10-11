@@ -197,7 +197,7 @@ public class ExecuteFunctionTest {
 
         paramBuilder.endDocument();
 
-        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
+        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getMemtree().getFirstChild();
 
         execute.eval(new Sequence[]{
                 new IntegerValue(connId),
@@ -262,7 +262,7 @@ public class ExecuteFunctionTest {
 
         paramBuilder.endDocument();
 
-        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
+        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getMemtree().getFirstChild();
 
         Sequence res = execute.eval(new Sequence[]{
                 new IntegerValue(connId),
@@ -362,7 +362,7 @@ public class ExecuteFunctionTest {
 
         paramBuilder.endDocument();
 
-        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getDocument().getFirstChild();
+        final ElementImpl sqlParams = (ElementImpl) paramBuilder.getMemtree().getFirstChild();
 
         try {
             execute.eval(new Sequence[]{

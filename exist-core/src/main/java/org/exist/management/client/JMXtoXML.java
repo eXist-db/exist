@@ -285,7 +285,7 @@ public class JMXtoXML {
             e.printStackTrace();
             LOG.warn("Could not generate XML report from JMX: {}", e.getMessage());
         }
-        return (Element) builder.getDocument().getNode(1);
+        return (Element) builder.getMemtree().getNode(1);
     }
 
     public String getDataDir() {
@@ -344,7 +344,7 @@ public class JMXtoXML {
                     e.printStackTrace();
                     LOG.warn("Could not generate XML report from JMX: {}", e.getMessage());
                 }
-                return (Element) builder.getDocument().getNode(1);
+                return (Element) builder.getMemtree().getNode(1);
             }
         }
         return null;

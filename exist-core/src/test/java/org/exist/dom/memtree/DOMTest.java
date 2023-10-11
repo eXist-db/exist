@@ -85,7 +85,7 @@ public class DOMTest {
         builder.characters("text");
         builder.endElement();
         builder.endDocument();
-        DocumentImpl doc = builder.getDocument();
+        DocumentImpl doc = builder.getMemtree();
         Node top = doc.getFirstChild();
         assertEquals(Node.ELEMENT_NODE, top.getNodeType());
         assertEquals("top", top.getNodeName());
@@ -103,7 +103,7 @@ public class DOMTest {
         builder.endElement();
         builder.endElement();
         builder.endDocument();
-        DocumentImpl doc = builder.getDocument();
+        DocumentImpl doc = builder.getMemtree();
         Node top = doc.getFirstChild();
         assertEquals(Node.ELEMENT_NODE, top.getNodeType());
         assertEquals("top", top.getNodeName());
@@ -152,7 +152,7 @@ public class DOMTest {
         builder.endElement();
         builder.endDocument();
 
-        DocumentImpl doc = builder.getDocument();
+        DocumentImpl doc = builder.getMemtree();
 
         Node nXQuery = doc.getFirstChild();
         assertTrue(nXQuery.getNodeType() == Node.ELEMENT_NODE);

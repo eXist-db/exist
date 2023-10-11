@@ -262,7 +262,7 @@ public class Field extends BasicFunction {
                     builder.characters(content.substring(currentPos));
                 }
                 builder.endElement();
-                result.add(builder.getDocument().getNode(nodeNr));
+                result.add(builder.getMemtree().getNode(nodeNr));
             }
             return result;
         } finally {

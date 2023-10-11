@@ -746,7 +746,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 //System.out.println(builder.getDocument().toString());
 
                 // TODO check
-                return builder.getDocument().getNode(nodeNr);
+                return builder.getMemtree().getNode(nodeNr);
             } finally {
                 context.popDocumentContext();
             }

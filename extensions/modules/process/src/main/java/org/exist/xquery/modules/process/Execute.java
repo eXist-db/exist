@@ -185,7 +185,7 @@ public class Execute extends BasicFunction {
 
             builder.endElement();
 
-            return (ElementImpl) builder.getDocument().getNode(nodeNr);
+            return (ElementImpl) builder.getMemtree().getNode(nodeNr);
         } finally {
             context.popDocumentContext();
         }

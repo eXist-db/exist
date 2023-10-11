@@ -380,7 +380,7 @@ public class Shared {
         builder.endElement();
 
         // return result
-        return builder.getDocument().getNode(nodeNr);
+        return builder.getMemtree().getNode(nodeNr);
 
     }
 

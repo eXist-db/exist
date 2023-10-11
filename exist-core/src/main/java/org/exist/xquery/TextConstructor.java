@@ -61,7 +61,7 @@ public class TextConstructor extends NodeConstructor {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             context.proceed(this, builder);
             final int nodeNr = builder.characters(text);
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
+            final NodeImpl node = builder.getMemtree().getNode(nodeNr);
             return node;
         } finally {
             if (newDocumentContext)

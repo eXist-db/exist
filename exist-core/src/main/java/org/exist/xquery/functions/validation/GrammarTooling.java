@@ -268,7 +268,7 @@ public class GrammarTooling extends BasicFunction  {
 
         builder.endElement();
         
-        return builder.getDocument().getNode(nodeNr);
+        return builder.getMemtree().getNode(nodeNr);
     }
     
     private void writeGrammar(Grammar grammar,  MemTreeBuilder builder){
