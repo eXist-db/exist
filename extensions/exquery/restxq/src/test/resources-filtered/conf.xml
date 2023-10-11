@@ -738,6 +738,9 @@
             </module>
             <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
 
+            <!-- Needed for integration test -->
+            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
+
         </builtin-modules>
     </xquery>
 

@@ -1,0 +1,45 @@
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<configuration xmlns="http://exist.sourceforge.net/NS/exist">
+
+    <!-- REST interface -->
+    <forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
+
+    <forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
+    <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
+
+    <!-- RESTXQ -->
+    <forward pattern="/restxq/" servlet="RestXqServlet"/>
+
+    <root pattern="/db.*" path="xmldb:exist:///db"/>
+    <!-- <root pattern=".*" path="xmldb:exist:///db/apps"/> -->
+
+    <!--
+    ++ Order is important. The following forward rule for XQuery resources has
+    ++ to be last in this document. Otherwise, all XQuery files would be immediately
+    ++ forwarded to the XQueryServlet without ever going through controllers.
+-->
+    <forward pattern=".*\.(xq|xql|xqy|xquery)$" servlet="XQueryServlet"/>
+
+</configuration>

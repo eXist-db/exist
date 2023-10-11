@@ -21,6 +21,12 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -39,19 +45,15 @@ import org.exist.util.MimeTable;
 import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -435,6 +437,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             if (query==null) {
                context = new XQueryContext(getPool());
                context.setModuleLoadPath(moduleLoadPath);
+               context.setBaseURI(new AnyURIValue(new URI("file:///").resolve(path).toString()));
                try {
             	   query = xquery.compile(context, source);
                    
@@ -446,9 +449,11 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                }
                
             } else {
-               context = query.getContext();
-               context.setModuleLoadPath(moduleLoadPath);
-               context.prepareForReuse();
+                context = query.getContext();
+
+                context.setModuleLoadPath(moduleLoadPath);
+                context.setBaseURI(new AnyURIValue(new URI("file:///").resolve(path).toString()));
+                context.prepareForReuse();
             }
 
             final Properties outputProperties = new Properties();

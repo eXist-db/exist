@@ -21,6 +21,8 @@
  */
 package org.exist.http;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -84,8 +86,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -96,6 +96,8 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -1374,7 +1376,7 @@ public class RESTServer {
             }
 
             context.setStaticallyKnownDocuments(new XmldbURI[]{pathUri});
-            context.setBaseURI(new AnyURIValue(pathUri.toString()));
+            context.setBaseURI(BaseURI.dbBaseURIFromLocation(pathUri.getURI()));
 
             declareNamespaces(context, namespaces);
             declareVariables(context, variables, request, response);
@@ -1557,6 +1559,12 @@ public class RESTServer {
                 response.setHeader("X-XQuery-Cached", "true");
                 context = compiled.getContext();
                 context.prepareForReuse();
+            }
+
+            try {
+                context.setBaseURI(BaseURI.dbBaseURIFromLocation(new URI(servletPath)));
+            } catch (URISyntaxException e) {
+                LOG.warn("Path {} is not valid for forming a base URI, base URI not set.", servletPath);
             }
 
             // TODO: don't hardcode this?

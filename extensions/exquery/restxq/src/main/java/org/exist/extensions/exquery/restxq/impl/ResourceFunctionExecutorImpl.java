@@ -82,6 +82,8 @@ import org.exquery.xquery.TypedArgumentValue;
 import org.exquery.xquery.TypedValue;
 import org.exquery.xquery3.FunctionSignature;
 
+import static org.exist.util.BaseURI.dbBaseURIFromLocation;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -133,6 +135,10 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             
             //set the request object - can later be used by the EXQuery Request Module
             xqueryContext.setAttribute(EXQ_REQUEST_ATTR, request);
+
+            //the base URI is the location of the function in the DB
+            var baseURI = dbBaseURIFromLocation(resourceFunction.getXQueryLocation());
+            xqueryContext.setBaseURI(baseURI);
             
             //TODO this is a workaround?
             declareVariables(xqueryContext);

@@ -21,25 +21,9 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the fn:resolve-uri() function.
@@ -131,20 +115,12 @@ public class FunResolveURI extends Function {
 				relative = (AnyURIValue)item;
 			} catch (final XPathException e) {				
 	        	throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), seq, e);
-			}			
-			URI relativeURI;
-			URI baseURI;
+			}
 			try {
-				relativeURI = new URI(relative.getStringValue());
-				baseURI = new URI(base.getStringValue() );
-			} catch (final URISyntaxException e) {
+				return base.resolve(relative);
+			} catch (XPathException e) {
 				throw new XPathException(this, ErrorCodes.FORG0009, "unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), null, e);
 			}
-			if (relativeURI.isAbsolute()) {
-				result = relative;
-            } else {
-				result = new AnyURIValue(this, baseURI.resolve(relativeURI));
-            }
         }
         
         if (context.getProfiler().isEnabled()) 
