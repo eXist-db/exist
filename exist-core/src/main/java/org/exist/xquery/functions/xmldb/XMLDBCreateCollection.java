@@ -131,20 +131,28 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			return super.eval(args, contextSequence);
 		}
 
-		final boolean collectionNeedsClose = false;
-		Collection collection = null;
 		final Item item = args[paramNumber].itemAt(0);
 		if (Type.subTypeOf(item.getType(), Type.NODE)) {
 			final NodeValue node = (NodeValue) item;
 			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
-				try {
-					//TODO: use xmldbURI
-					collection = getLocalCollection(this, context, internalCol.getURI().toString());
+				//TODO: use xmldbURI
+				try (Collection collection = getLocalCollection(this, context, internalCol.getURI().toString())) {
 					return new StringValue(this, collection.getName());
 				} catch (final XMLDBException e) {
 					if (logger.isTraceEnabled()) {
 						logger.debug("Couldn't find parent collection, creating a new one.");
+					}
+
+					final String collectionURI = args[paramNumber].getStringValue();
+					if (collectionURI != null) {
+						try (Collection collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty())) {
+							return new StringValue(this, collection.getName());
+						} catch (final XMLDBException xe) {
+							if (logger.isTraceEnabled()) {
+								logger.debug("Couldn't find parent collection, creating a new one.");
+							}
+						}
 					}
 				}
 			} else {
@@ -152,41 +160,16 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			}
 		}
 
-		final String collectionURI = args[paramNumber].getStringValue();
-		if (collection == null && collectionURI != null) {
-			try {
-				collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty());
-				return new StringValue(this, collection.getName());
-			} catch (final XMLDBException xe) {
-				if (logger.isTraceEnabled()) {
-					logger.debug("Couldn't find parent collection, creating a new one.");
-				}
-			}
-		} else {
-			try {
-				return new StringValue(this, collection.getName());
-			} catch (final XMLDBException e) {
-				throw new XPathException(this, "Unable to get collection name.", e);
-            }
-        }
-
 		Sequence s = Sequence.EMPTY_SEQUENCE;
-		try {
-			collection = getRootCollection(context);
-			s = evalWithCollection(collection, args, contextSequence);
-		} finally {
-			if (collectionNeedsClose && collection != null) {
-				try {
-					collection.close();
-				} catch (final XMLDBException e) {
-					throw new XPathException(this, "Unable to close collection", e);
-				}
-			}
+		try (Collection rootCollection = getRootCollection(context)) {
+			s = evalWithCollection(rootCollection, args, contextSequence);
+		} catch (final XMLDBException e) {
+			throw new XPathException(this, "Unable to close collection", e);
 		}
 		return s;
 	}
 
-	public  Collection getRootCollection(final XQueryContext context) throws XPathException {
+	public Collection getRootCollection(final XQueryContext context) throws XPathException {
 		Collection rootCollection = null;
 		try {
 			rootCollection = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(),  XmldbURI.xmldbUriFor(XmldbURI.ROOT_COLLECTION, false));
