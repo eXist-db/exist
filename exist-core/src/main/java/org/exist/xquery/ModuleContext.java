@@ -29,7 +29,6 @@ import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;
-import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.AnyURIValue;
@@ -49,29 +48,27 @@ import org.exist.xquery.value.ValueSequence;
 
 
 /**
- * Subclass of {@link org.exist.xquery.XQueryContext} for
- * imported modules.
+ * Subclass of {@link org.exist.xquery.XQueryContext} for imported modules.
  *
  * @author wolf
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ModuleContext extends XQueryContext {
 
     private static final Logger LOG = LogManager.getLogger(ModuleContext.class);
 
     private XQueryContext parentContext;
-    private String modulePrefix;
     private String moduleNamespace;
+    private String modulePrefix;
     private final String location;
 
-    public ModuleContext(final XQueryContext parentContext, final String modulePrefix, final String moduleNamespace,
-            final String location) {
+    public ModuleContext(final XQueryContext parentContext, final String moduleNamespace, final String modulePrefix, final String location) {
         super(parentContext != null ? parentContext.db : null,
                 parentContext != null ? parentContext.getConfiguration() : null,
                 null,
                 false);
-
-        this.modulePrefix = modulePrefix;
         this.moduleNamespace = moduleNamespace;
+        this.modulePrefix = modulePrefix;
         this.location = location;
 
         setParentContext(parentContext);
@@ -96,6 +93,73 @@ public class ModuleContext extends XQueryContext {
     public void setModuleNamespace(final String prefix, final String namespaceURI) {
         this.modulePrefix = prefix;
         this.moduleNamespace = namespaceURI;
+    }
+
+    @Override
+    protected void addModuleVertex(final ModuleVertex moduleVertex) {
+        getRootContext().addModuleVertex(moduleVertex);
+    }
+
+    protected boolean hasModuleVertex(final ModuleVertex moduleVertex) {
+        return getRootContext().hasModuleVertex(moduleVertex);
+    }
+
+    @Override
+    protected void addModuleEdge(final ModuleVertex source, final ModuleVertex sink) {
+        getRootContext().addModuleEdge(source, sink);
+    }
+
+    @Override
+    protected boolean hasModulePath(final ModuleVertex source, final ModuleVertex sink) {
+        return getRootContext().hasModulePath(source, sink);
+    }
+
+    @Override
+    public @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException {
+        final ModuleVertex thisModuleVertex = new ModuleVertex(moduleNamespace, location);
+
+        for (final AnyURIValue locationHint : locationHints) {
+            final ModuleVertex imporedModuleVertex = new ModuleVertex(namespaceURI, locationHint.toString());
+
+            if (!hasModuleVertex(imporedModuleVertex)) {
+                addModuleVertex(imporedModuleVertex);
+            } else {
+                // Check if there is already a path from the imported module to this module
+                if (getXQueryVersion() == 10 && namespaceURI != null && locationHints != null && hasModulePath(imporedModuleVertex, thisModuleVertex)) {
+                    throw new XPathException(ErrorCodes.XQST0093, "Detected cyclic import between modules: " + getModuleNamespace() + " at: " + getLocation() + ", and: " + namespaceURI + " at: " + locationHint.toString());
+                }
+            }
+
+            if (!hasModuleVertex(thisModuleVertex)) {
+                // NOTE(AR) may occur when the actual module has a different namespace from that of the `import module namespace`... will later raise an XQST0047 error
+                addModuleVertex(thisModuleVertex);
+            }
+
+            addModuleEdge(thisModuleVertex, imporedModuleVertex);
+        }
+
+        return super.importModule(namespaceURI, prefix, locationHints);
+    }
+
+    @Override
+    protected @Nullable Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {
+        // guard against self-recursive import - see: https://github.com/eXist-db/exist/issues/3448
+        if (moduleNamespace.equals(namespaceURI) && location.equals(locationHint.toString())) {
+            final StringBuilder builder = new StringBuilder("The XQuery Library Module '");
+            builder.append(namespaceURI);
+            builder.append("'");
+            if (locationHint != null) {
+                builder.append(" at '");
+                builder.append(location);
+                builder.append("'");
+            }
+            builder.append(" has invalidly attempted to import itself; this will be skipped!");
+            LOG.warn(builder.toString());
+
+            return null;
+        }
+
+        return super.importModuleFromLocation(namespaceURI, prefix, locationHint);
     }
 
     @Override
@@ -176,7 +240,7 @@ public class ModuleContext extends XQueryContext {
 
     @Override
     public XQueryContext copyContext() {
-        final ModuleContext ctx = new ModuleContext(parentContext, modulePrefix, moduleNamespace, location);
+        final ModuleContext ctx = new ModuleContext(parentContext, moduleNamespace, modulePrefix, location);
         copyFields(ctx);
         try {
             ctx.declareNamespace(modulePrefix, moduleNamespace);

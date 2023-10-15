@@ -721,7 +721,7 @@
         <builtin-modules>
 
             <!-- Module under test -->
-            <!-- module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule"/ -->
+            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
 
             <!-- dependencies for restxq tests -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>

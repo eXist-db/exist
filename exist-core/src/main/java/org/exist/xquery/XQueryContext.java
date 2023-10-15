@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -94,6 +95,14 @@ import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.alg.shortestpath.TransitNodeRoutingShortestPath;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultGraphType;
+import org.jgrapht.opt.graph.fastutil.FastutilMapGraph;
+import org.jgrapht.util.ConcurrencyUtil;
+import org.jgrapht.util.SupplierUtil;
 import org.w3c.dom.Node;
 
 import static com.evolvedbinary.j8fu.OptionalUtil.or;
@@ -164,8 +173,6 @@ public class XQueryContext implements BinaryValueManager, Context {
     // Inherited prefix/namespace mappings in the current context
     private Map<String, String> inheritedInScopePrefixes = new HashMap<>();
 
-    private Map<String, XmldbURI> mappedModules = new HashMap<>();
-
     private boolean preserveNamespaces = true;
 
     private boolean inheritNamespaces = true;
@@ -225,6 +232,12 @@ public class XQueryContext implements BinaryValueManager, Context {
      * The format of the map is: <code>Map&lt;NamespaceURI, Modules&gt;</code>
      */
     private Object2ObjectMap<String, Module[]> allModules = new Object2ObjectOpenHashMap<>();
+
+    /**
+     * Describes a graph of all the modules and how they import each other.
+     */
+    private @Nullable Graph<ModuleVertex, DefaultEdge> modulesDependencyGraph;
+    private @Nullable ThreadPoolExecutor modulesDependencyGraphSPExecutor;
 
     /**
      * Used to save current state when modules are imported dynamically
@@ -593,7 +606,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 }
 
                 // build a module object from the source
-                final ExternalModule module = compileOrBorrowModule(prefix, namespace, location, src);
+                final ExternalModule module = compileOrBorrowModule(namespace, prefix, location, src);
                 return module;
 
             } catch (final PermissionDeniedException e) {
@@ -654,7 +667,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.updateListener = from.updateListener;
         this.modules = from.modules;
         this.allModules = from.allModules;
-        this.mappedModules = from.mappedModules;
         this.dynamicOptions = from.dynamicOptions;
         this.staticOptions = from.staticOptions;
         this.db = from.db;
@@ -716,7 +728,6 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
-        ctx.mappedModules = new HashMap<>(this.mappedModules);
         ctx.staticNamespaces = new HashMap<>(this.staticNamespaces);
         ctx.staticPrefixes = new HashMap<>(this.staticPrefixes);
 
@@ -1432,10 +1443,6 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
         }
 
-        if (!keepGlobals) {
-            mappedModules.clear();
-        }
-
         savedState.restore();
 
         attributes.clear();
@@ -1446,6 +1453,15 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (!keepGlobals) {
             httpContext = null;
+        }
+
+        if (modulesDependencyGraphSPExecutor != null) {
+            try {
+                ConcurrencyUtil.shutdownExecutionService(modulesDependencyGraphSPExecutor);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            modulesDependencyGraphSPExecutor = null;
         }
 
         analyzed = false;
@@ -1535,6 +1551,66 @@ public class XQueryContext implements BinaryValueManager, Context {
             this.modules.compute(namespaceURI, addToMapValueArray(module));
         }
         addRootModule(namespaceURI, module);
+    }
+
+    private Graph<ModuleVertex, DefaultEdge> getModulesDependencyGraph() {
+        // NOTE(AR) intentionally lazily initialised!
+        if (modulesDependencyGraph == null) {
+            this.modulesDependencyGraph = new FastutilMapGraph<>(null, SupplierUtil.createDefaultEdgeSupplier(), DefaultGraphType.directedPseudograph().asUnweighted());
+        }
+        return modulesDependencyGraph;
+    }
+
+    /**
+     * Add a vertex to the Modules Dependency Graph.
+     *
+     * @param moduleVertex the module vertex
+     */
+    protected void addModuleVertex(final ModuleVertex moduleVertex) {
+        getModulesDependencyGraph().addVertex(moduleVertex);
+    }
+
+    /**
+     * Check if a vertex exists in the Modules Dependency Graph.
+     *
+     * @param moduleVertex the module vertex to look for
+     *
+     * @return true if the module vertex exists, false otherwise
+     */
+    protected boolean hasModuleVertex(final ModuleVertex moduleVertex) {
+        return getModulesDependencyGraph().containsVertex(moduleVertex);
+    }
+
+    /**
+     * Add an edge between two Modules in the Dependency Graph.
+     *
+     * @param source the importing module
+     * @param sink the imported module
+     */
+    protected void addModuleEdge(final ModuleVertex source, final ModuleVertex sink) {
+        getModulesDependencyGraph().addEdge(source, sink);
+    }
+
+    /**
+     * Look for a path between two Modules in the Dependency Graph.
+     *
+     * @param source the module to start searching from
+     * @param sink the destination module to attempt to reach
+     *
+     * @return true, if there is a path between the mdoules, false otherwise
+     */
+    protected boolean hasModulePath(final ModuleVertex source, final ModuleVertex sink) {
+        if (modulesDependencyGraph == null) {
+            return false;
+        }
+
+        // NOTE(AR) intentionally lazily initialised!
+        if (modulesDependencyGraphSPExecutor == null) {
+            modulesDependencyGraphSPExecutor = ConcurrencyUtil.createThreadPoolExecutor(2);
+        }
+
+        final ShortestPathAlgorithm<ModuleVertex, DefaultEdge> spa = new TransitNodeRoutingShortestPath<>(getModulesDependencyGraph(), modulesDependencyGraphSPExecutor);
+        return spa.getPath(source, sink) != null;
     }
 
     protected void setRootModules(final String namespaceURI, @Nullable final Module[] modules) {
@@ -2418,13 +2494,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     @Override
-    public void mapModule(final String namespace, final XmldbURI uri) {
-        mappedModules.put(namespace, uri);
-    }
-
-    @Override
-    public Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints)
-            throws XPathException {
+    public @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException {
 
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
@@ -2500,15 +2570,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         return modules;
     }
 
-    private Module importModuleFromLocation(
-            final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint
-    ) throws XPathException {
+    protected @Nullable Module importModuleFromLocation(final String namespaceURI, @Nullable final String prefix, final AnyURIValue locationHint) throws XPathException {
         String location = locationHint.toString();
-
-        //Is the module's namespace mapped to a URL ?
-        if (mappedModules.containsKey(location)) {
-            location = mappedModules.get(location).toString();
-        }
 
         // is it a Java module?
         if (location.startsWith(JAVA_URI_START)) {
@@ -2543,7 +2606,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                     }
 
                     final Source moduleSource = new DBSource(getBroker().getBrokerPool(), (BinaryDocument) sourceDoc, true);
-                    return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+                    return compileOrBorrowModule(namespaceURI, prefix, location, moduleSource);
 
                 } catch (final PermissionDeniedException e) {
                     throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
@@ -2580,7 +2643,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw moduleLoadException("Permission denied to read module source from location hint URI '" + location + ".", location, e);
         }
 
-        return compileOrBorrowModule(prefix, namespaceURI, location, moduleSource);
+        return compileOrBorrowModule(namespaceURI, prefix, location, moduleSource);
     }
 
     protected XPathException moduleLoadException(final String message, final String moduleLocation)
@@ -2612,8 +2675,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Compile of borrow an already compile module from the cache.
      *
-     * @param prefix the module namespace prefix
      * @param namespaceURI the module namespace URI
+     * @param prefix the module namespace prefix
      * @param location the location hint
      * @param source the source for the module
      *
@@ -2621,9 +2684,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      *
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private ExternalModule compileOrBorrowModule(final String prefix, final String namespaceURI, final String location,
+    private ExternalModule compileOrBorrowModule(final String namespaceURI, final String prefix, final String location,
                                                  final Source source) throws XPathException {
-        final ExternalModule module = compileModule(prefix, namespaceURI, location, source);
+        final ExternalModule module = compileModule(namespaceURI, prefix, location, source);
         if (module != null) {
             addModule(module.getNamespaceURI(), module);
             declareModuleVars(module);
@@ -2634,14 +2697,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Compile an XQuery Module
      *
-     * @param prefix       the namespace prefix of the module.
      * @param namespaceURI the namespace URI of the module.
+     * @param prefix       the namespace prefix of the module.
      * @param location     the location of the module
      * @param source       the source of the module.
      * @return The compiled module, or null if the source is not a module
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
-    private @Nullable ExternalModule compileModule(final String prefix, String namespaceURI, final String location,
+    private @Nullable ExternalModule compileModule(String namespaceURI, final String prefix, final String location,
                                                    final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Loading module from {}", location);
@@ -2662,8 +2725,12 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ExternalModuleImpl modExternal = new ExternalModuleImpl(namespaceURI, prefix);
+
+            // NOTE(AR) this is needed to support cyclic imports in XQuery 3.1, see: https://github.com/eXist-db/exist/pull/4996
             addModule(namespaceURI, modExternal);
-            final XQueryContext modContext = new ModuleContext(this, prefix, namespaceURI, location);
+            addModuleVertex(new ModuleVertex(namespaceURI, location));
+
+            final XQueryContext modContext = new ModuleContext(this, namespaceURI, prefix, location);
             modExternal.setContext(modContext);
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
             final XQueryParser parser = new XQueryParser(lexer);
@@ -3568,5 +3635,53 @@ public class XQueryContext implements BinaryValueManager, Context {
         sb.append('}');
 
         return sb.toString();
+    }
+
+    @Immutable
+    public static class ModuleVertex {
+        private final String namespaceURI;
+        private final String location;
+
+        public ModuleVertex(final String namespaceURI) {
+            this.namespaceURI = namespaceURI;
+            this.location = null;
+        }
+
+        public ModuleVertex(final String namespaceURI, final String location) {
+            this.namespaceURI = namespaceURI;
+            this.location = location;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            final ModuleVertex that = (ModuleVertex) o;
+            if (!namespaceURI.equals(that.namespaceURI)) {
+                return false;
+            }
+            return location.equals(that.location);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = namespaceURI.hashCode();
+            result = 31 * result + location.hashCode();
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Module{" +
+                    "namespaceURI='" + namespaceURI + '\'' +
+                    "location='" + location + '\'' +
+                    '}';
+        }
     }
 }
