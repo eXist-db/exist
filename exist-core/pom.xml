@@ -812,6 +812,7 @@
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
                                 <exclude>src/test/xquery/binary-value.xqm</exclude>
                                 <exclude>src/test/xquery/instance-of.xqm</exclude>
+                                <exclude>src/test/xquery/operator-mapping.xqm</exclude>
                                 <exclude>src/test/xquery/order.xqm</exclude>
                                 <exclude>src/test/xquery/type-promotion.xqm</exclude>
                                 <exclude>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</exclude>
@@ -977,6 +978,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>
                                 <include>src/test/xquery/binary-value.xqm</include>
                                 <include>src/test/xquery/instance-of.xqm</include>
+                                <include>src/test/xquery/operator-mapping.xqm</include>
                                 <include>src/test/xquery/order.xqm</include>
                                 <include>src/test/xquery/type-promotion.xqm</include>
                                 <include>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</include>
