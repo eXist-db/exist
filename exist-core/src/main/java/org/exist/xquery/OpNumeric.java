@@ -45,12 +45,12 @@ public class OpNumeric extends BinaryOp {
     protected NodeSet temp = null;
     protected DBBroker broker;
 
-    public OpNumeric(XQueryContext context, ArithmeticOperator operator) {
+    public OpNumeric(final XQueryContext context, final ArithmeticOperator operator) {
         super(context);
         this.operator = operator;
     }
 
-    public OpNumeric(XQueryContext context, Expression left, Expression right, ArithmeticOperator operator) {
+    public OpNumeric(final XQueryContext context, Expression left, Expression right, final ArithmeticOperator operator) {
         super(context);
         this.operator = operator;
         int ltype = left.returnsType();
