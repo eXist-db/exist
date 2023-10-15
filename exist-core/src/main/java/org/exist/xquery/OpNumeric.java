@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants.ArithmeticOperator;
@@ -33,6 +34,8 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
  * numeric operation on two operands by +, -, *, div, mod etc..
@@ -53,27 +56,46 @@ public class OpNumeric extends BinaryOp {
     public OpNumeric(final XQueryContext context, Expression left, Expression right, final ArithmeticOperator operator) {
         super(context);
         this.operator = operator;
-        int ltype = left.returnsType();
-        int rtype = right.returnsType();
-        if (Type.subTypeOfUnion(ltype, Type.NUMERIC) && Type.subTypeOfUnion(rtype, Type.NUMERIC)) {
-            if (ltype != rtype) {
-                if (Type.subTypeOf(ltype, rtype)) {
-                    right = new UntypedValueCheck(context, ltype, right);
-                } else {
-                    left = new UntypedValueCheck(context, rtype, left);
-                }
+        if (Type.subTypeOfUnion(left.returnsType(), Type.NUMERIC) && Type.subTypeOfUnion(right.returnsType(), Type.NUMERIC)) {
+
+            // 1) Type Promotion, see: https://www.w3.org/TR/xpath-31#promotion
+            final Tuple2<Expression, Expression> promotedExpressions = promoteNumericTypes(context, left, right);
+            left = promotedExpressions._1;
+            right = promotedExpressions._2;
+
+            int ltype = left.returnsType();
+            int rtype = right.returnsType();
+
+            final boolean ltypeDerivesFromRtype = derivesFrom(ltype, rtype);
+            final boolean rtypeDerivesFromLtype = derivesFrom(rtype, ltype);
+
+            // 2) Type Substitution, see: https://www.w3.org/TR/xpath-31/#dt-subtype-substitution
+            if (ltypeDerivesFromRtype && rtypeDerivesFromLtype) {
+                returnType = ltype;
+            } else if (ltypeDerivesFromRtype) {
+                right = new UntypedValueCheck(context, ltype, right);
+                rtype = right.returnsType();
+                returnType = ltype;
+            } else if (rtypeDerivesFromLtype) {
+                left = new UntypedValueCheck(context, rtype, left);
+                ltype = left.returnsType();
+                returnType = rtype;
             }
 
             if (operator == ArithmeticOperator.DIVISION && ltype == Type.INTEGER && rtype == Type.INTEGER) {
                 returnType = Type.DECIMAL;
             } else if (operator == ArithmeticOperator.DIVISION_INTEGER) {
                 returnType = Type.INTEGER;
-            } else {
-                returnType = Type.getCommonSuperType(ltype, rtype);
             }
         } else {
-            if (Type.subTypeOfUnion(ltype, Type.NUMERIC)) {ltype = Type.NUMERIC;}
-            if (Type.subTypeOfUnion(rtype, Type.NUMERIC)) {rtype = Type.NUMERIC;}
+            int ltype = left.returnsType();
+            int rtype = right.returnsType();
+            if (Type.subTypeOfUnion(ltype, Type.NUMERIC)) {
+                ltype = Type.NUMERIC;
+            }
+            if (Type.subTypeOfUnion(rtype, Type.NUMERIC)) {
+                rtype = Type.NUMERIC;
+            }
             final OpEntry entry = OP_TYPES.get(new OpEntry(operator, ltype, rtype));
             if (entry != null) {
                 returnType = entry.typeResult;
@@ -89,6 +111,89 @@ public class OpNumeric extends BinaryOp {
         }
         add(left);
         add(right);
+    }
+
+    /**
+     * Implementation of <a href="https://www.w3.org/TR/xpath-31/#dt-subtype-substitution">XPath 3.1 - 2.5.5 SequenceType Matching</a>.
+     *
+     * @param actualType The actual type, a.k.a. AT.
+     * @param expectedType The expected type, a.k.a. ET.
+     *
+     * @return true if AT derives from ET, false otherwise.
+     */
+    static boolean derivesFrom(final int actualType, final int expectedType) {
+
+        // AT is ET
+        if (actualType == expectedType) {
+            return true;
+        }
+
+        // ET is the base type of AT
+        if (Type.subTypeOf(actualType, expectedType)) {
+            return true;
+        }
+
+        // ET is a pure union type of which AT is a member type
+        if (Type.hasMember(expectedType, actualType)) {
+            return true;
+        }
+
+        // There is a type MT such that derives-from(AT, MT) and derives-from(MT, ET)
+
+        // iterate through AT's super-types
+        int t;
+        for (t = actualType; t != Type.ITEM && t != Type.ANY_TYPE; t = Type.getSuperType(t)) {
+            // is the super-type of AT a subtype of ET
+            if (Type.subTypeOf(t, expectedType)) {
+                return true;
+            }
+        }
+
+        // Otherwise, derives-from(AT,ET) return false
+        return false;
+    }
+
+    /**
+     * Implementation of <a href="https://www.w3.org/TR/xpath-31/#promotion">XPath 3.1 - B.1 Type Promotion</a>.
+     *
+     * @param context The XQuery Context.
+     * @param left The left operand to a numeric operation.
+     * @param right The right operand to a numeric operation.
+     *
+     * @return the promoted expression(s), or the original expression(s) if no type promotion(s) was applicable.
+     */
+    static Tuple2<Expression, Expression> promoteNumericTypes(final XQueryContext context, Expression left, Expression right) {
+        left = promoteFloatTypeToDouble(context, right, left);
+        right = promoteFloatTypeToDouble(context, left, right);
+
+        left = promoteDecimalTypesToFloat(context, right, left);
+        right = promoteDecimalTypesToFloat(context, left, right);
+
+        left = promoteDecimalTypesToDouble(context, right, left);
+        right = promoteDecimalTypesToDouble(context, left, right);
+
+        return Tuple(left, right);
+    }
+
+    private static Expression promoteFloatTypeToDouble(final XQueryContext context, final Expression test, Expression expr) {
+        if (test.returnsType() == Type.DOUBLE && expr.returnsType() == Type.FLOAT) {
+            expr = new CastExpression(context, expr, Type.DOUBLE, expr.getCardinality());
+        }
+        return expr;
+    }
+
+    private static Expression promoteDecimalTypesToFloat(final XQueryContext context, final Expression test, Expression expr) {
+        if (test.returnsType() == Type.FLOAT && Type.subTypeOf(expr.returnsType(), Type.DECIMAL)) {
+            expr = new CastExpression(context, expr, Type.FLOAT, expr.getCardinality());
+        }
+        return expr;
+    }
+
+    private static Expression promoteDecimalTypesToDouble(final XQueryContext context, final Expression test, Expression expr) {
+        if (test.returnsType() == Type.DOUBLE && Type.subTypeOf(expr.returnsType(), Type.DECIMAL)) {
+            expr = new CastExpression(context, expr, Type.DOUBLE, expr.getCardinality());
+        }
+        return expr;
     }
 
     @Override
