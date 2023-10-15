@@ -815,6 +815,7 @@
                                 <exclude>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</exclude>
                                 <exclude>src/test/xquery/xqsuite/xqsuite-assertions-inline.xqm</exclude>
                                 <exclude>src/test/xquery/xqsuite/xqsuite-assertions.resources.xqm.ignore</exclude>
+                                <exclude>src/test/xquery/xquery3/function-reference.xqm</exclude>
                                 <exclude>src/test/xquery/xquery3/postfix-expr.xqm</exclude>
 
                                 <!--
@@ -978,6 +979,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</include>
                                 <include>src/test/xquery/xqsuite/xqsuite-assertions-inline.xqm</include>
                                 <include>src/test/xquery/xqsuite/xqsuite-assertions.resources.xqm.ignore</include>
+                                <include>src/test/xquery/xquery3/function-reference.xqm</include>
                                 <include>src/test/xquery/xquery3/postfix-expr.xqm</include>
                             </includes>
 
