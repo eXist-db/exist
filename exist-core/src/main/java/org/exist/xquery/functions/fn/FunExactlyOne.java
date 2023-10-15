@@ -79,7 +79,7 @@ public class FunExactlyOne extends Function {
 			if (LOG.isTraceEnabled()) {
                 logger.trace("fn:exactly-one called with a sequence containing {} items", result.getItemCount());
 			}
-			throw new XPathException(this, ErrorCodes.FOCA0005, "fn:exactly-one called with a sequence containing " + result.getItemCount() + " items", result);
+			throw new XPathException(this, ErrorCodes.FORG0005, "fn:exactly-one called with a sequence containing " + result.getItemCount() + " items", result);
         }
 
         if (context.getProfiler().isEnabled()) 
