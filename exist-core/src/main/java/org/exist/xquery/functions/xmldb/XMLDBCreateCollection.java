@@ -137,7 +137,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				final org.exist.collections.Collection internalCol = ((NodeProxy) node).getOwnerDocument().getCollection();
 				//TODO: use xmldbURI
-				try (Collection collection = getLocalCollection(this, context, internalCol.getURI().toString())) {
+				try (final Collection collection = getLocalCollection(this, context, internalCol.getURI().toString())) {
 					return new StringValue(this, collection.getName());
 				} catch (final XMLDBException e) {
 					if (logger.isTraceEnabled()) {
@@ -146,7 +146,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 					final String collectionURI = args[paramNumber].getStringValue();
 					if (collectionURI != null) {
-						try (Collection collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty())) {
+						try (final Collection collection = getCollection(this, context, collectionURI, Optional.empty(), Optional.empty())) {
 							return new StringValue(this, collection.getName());
 						} catch (final XMLDBException xe) {
 							if (logger.isTraceEnabled()) {
@@ -161,7 +161,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 		}
 
 		Sequence s = Sequence.EMPTY_SEQUENCE;
-		try (Collection rootCollection = getRootCollection(context)) {
+		try (final Collection rootCollection = getRootCollection(context)) {
 			s = evalWithCollection(rootCollection, args, contextSequence);
 		} catch (final XMLDBException e) {
 			throw new XPathException(this, "Unable to close collection", e);
