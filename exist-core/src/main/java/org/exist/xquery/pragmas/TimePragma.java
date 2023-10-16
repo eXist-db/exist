@@ -100,10 +100,12 @@ public class TimePragma extends AbstractPragma {
 
     @Override
     public void resetState(final boolean postOptimization) {
-        if (timing != null && options.measurementMode == MeasurementMode.MULTIPLE) {
-            logMultipleMeasurement();
+        if (timing != null) {
+            if (options.measurementMode == MeasurementMode.MULTIPLE) {
+                logMultipleMeasurement();
+            }
+            this.timing.reset();
         }
-        this.timing.reset();
     }
 
     /**
