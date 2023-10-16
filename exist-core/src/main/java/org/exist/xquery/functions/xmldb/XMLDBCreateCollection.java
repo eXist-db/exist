@@ -196,10 +196,10 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			throw new XPathException(this, "The collection name provided is incorrect.");
 		}
 
-		if (newCollectionUri.startsWith("/db/")) {
-			return newCollectionUri.replaceFirst("/db", "");
+		if (!newCollectionUri.startsWith("/db/")) {
+			throw new XPathException(this, "Wrong collection path provided.");
 		}
 
-		return newCollectionUri;
+		return newCollectionUri.replaceFirst("/db", "");
 	}
 }
