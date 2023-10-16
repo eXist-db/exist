@@ -66,6 +66,16 @@ public class DirectoryList extends BasicFunction {
     final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
     final static String PREFIX = FileModule.PREFIX;
 
+    final static QName FILE_ELEMENT = new QName("file", NAMESPACE_URI, PREFIX);
+    final static QName LIST_ELEMENT = new QName("list", NAMESPACE_URI, PREFIX);
+
+    final static QName DIRECTORY_ATTRIBUTE = new QName("directory", null, null);
+    final static QName NAME_ATTRIBUTE = new QName("name", null, null);
+    final static QName SIZE_ATTRIBUTE = new QName("size", null, null);
+    final static QName HUMAN_SIZE_ATTRIBUTE = new QName("human-size", null, null);
+    final static QName MODIFIED_ATTRIBUTE = new QName("modified", null, null);
+    final static QName SUBDIR_ATTRIBUTE = new QName("subdir", null, null);
+
     public final static FunctionSignature[] signatures
             = {
                 new FunctionSignature(
@@ -114,8 +124,8 @@ public class DirectoryList extends BasicFunction {
         final MemTreeBuilder builder = context.getDocumentBuilder();
 
         builder.startDocument();
-        builder.startElement(new QName("list", NAMESPACE_URI, PREFIX), null);
-        builder.addAttribute(new QName("directory", null, null), baseDir.toString());
+        builder.startElement(LIST_ELEMENT, null);
+        builder.addAttribute(DIRECTORY_ATTRIBUTE, baseDir.toString());
         try {
             final int patternsLen = patterns.getItemCount();
             final String[] includes = new String[patternsLen];
@@ -136,34 +146,29 @@ public class DirectoryList extends BasicFunction {
                     logger.debug("Found: {}", file.toAbsolutePath());
                 }
 
-                String relPath = file.toString().substring(baseDir.toString().length() + 1);
+                final String relPath = file.toString().substring(baseDir.toString().length() + 1);
 
-                int lastSeparatorPosition = relPath.lastIndexOf(java.io.File.separatorChar);
+                builder.startElement(FILE_ELEMENT, null);
+                builder.addAttribute(NAME_ATTRIBUTE, FileUtils.fileName(file));
 
-                String relDir = null;
+                final long sizeLong = FileUtils.sizeQuietly(file);
+                builder.addAttribute(SIZE_ATTRIBUTE, Long.toString(sizeLong));
+                builder.addAttribute(HUMAN_SIZE_ATTRIBUTE, getHumanSize(sizeLong));
+
+                builder.addAttribute(MODIFIED_ATTRIBUTE,
+                        new DateTimeValue(this,
+                                new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
+
+                final int lastSeparatorPosition = relPath.lastIndexOf(java.io.File.separatorChar);
                 if (lastSeparatorPosition >= 0) {
-                    relDir = relPath.substring(0, lastSeparatorPosition);
-                    relDir = relDir.replace(java.io.File.separatorChar, '/');
-                }
-
-                builder.startElement(new QName("file", NAMESPACE_URI, PREFIX), null);
-
-                builder.addAttribute(new QName("name", null, null), FileUtils.fileName(file));
-
-                Long sizeLong = FileUtils.sizeQuietly(file);
-                String sizeString = Long.toString(sizeLong);
-                String humanSize = getHumanSize(sizeLong, sizeString);
-
-                builder.addAttribute(new QName("size", null, null), sizeString);
-                builder.addAttribute(new QName("human-size", null, null), humanSize);
-                builder.addAttribute(new QName("modified", null, null), new DateTimeValue(this, new Date(Files.getLastModifiedTime(file).toMillis())).getStringValue());
-
-                if (relDir != null && !relDir.isEmpty()) {
-                    builder.addAttribute(new QName("subdir", null, null), relDir);
+                    final String relDir = relPath.substring(0, lastSeparatorPosition);
+                    if (!relDir.isEmpty()) {
+                        builder.addAttribute(SUBDIR_ATTRIBUTE,
+                                relDir.replace(java.io.File.separatorChar, '/'));
+                    }
                 }
 
                 builder.endElement();
-
             }
 
             builder.endElement();
@@ -176,36 +181,17 @@ public class DirectoryList extends BasicFunction {
         }
     }
 
-    private String getHumanSize(final Long sizeLong, final String sizeString) {
-        String humanSize = "n/a";
-        int sizeDigits = sizeString.length();
-
-        if (sizeDigits < 4) {
-            humanSize = Long.toString(Math.abs(sizeLong));
-
-        } else if (sizeDigits >= 4 && sizeDigits <= 6) {
-            if (sizeLong < 1024) {
-                // We don't want 0KB för e.g. 1006 Bytes.
-                humanSize = Long.toString(Math.abs(sizeLong));
-            } else {
-                humanSize = Math.abs(sizeLong / 1024) + "KB";
-            }
-
-        } else if (sizeDigits >= 7 && sizeDigits <= 9) {
-            if (sizeLong < 1048576) {
-                humanSize = Math.abs(sizeLong / 1024) + "KB";
-            } else {
-                humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
-            }
-
-        } else if (sizeDigits > 9) {
-            if (sizeLong < 1073741824) {
-                humanSize = Math.abs((sizeLong / (1024 * 1024))) + "MB";
-            } else {
-                humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) + "GB";
-            }
+    private String getHumanSize(final Long sizeLong) {
+        if (sizeLong < 1024) {
+            return Math.abs(sizeLong) + "B";
         }
-        return humanSize;
+        if (sizeLong < 1048576) {
+            return Math.abs(sizeLong / 1024) + "KB";
+        }
+        if (sizeLong < 1073741824) {
+            return Math.abs((sizeLong / (1024 * 1024))) + "MB";
+        }
+        return Math.abs((sizeLong / (1024 * 1024 * 1024))) + "GB";
     }
 
 }
