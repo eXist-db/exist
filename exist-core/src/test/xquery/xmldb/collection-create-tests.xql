@@ -27,8 +27,9 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 
 declare variable $t:parent-collection-name := "/parent-collection";
 declare variable $t:parent-collection := "/db" || $t:parent-collection-name;
-declare variable $t:path-collection := $t:parent-collection-name || "/path/to/new-collection";
+declare variable $t:path-collection := $t:parent-collection || "/path/to/new-collection";
 declare variable $t:path-collection-from-root := "/db/path/to/new-collection-from-root";
+declare variable $t:wrong-path-collection := "/wrong/path-to-collection";
 
 declare
     %test:setUp
@@ -45,14 +46,21 @@ function t:cleanup() {
 
 declare
     %test:assertEquals("/db/parent-collection/path/to/new-collection")
-function t:fnCreateNewRecursiveCollection() {
+function t:fn-create-new-recursive-collection() {
     let $collection := xmldb:create-collection($t:path-collection)
     return $collection
 };
 
 declare
     %test:assertEquals("/db/path/to/new-collection-from-root")
-function t:fnCreateNewRecursiveCollectionFromRoot() {
+function t:fn-create-new-recursive-collection-from-root() {
     let $collection := xmldb:create-collection($t:path-collection-from-root)
     return $collection
 };
+
+declare
+    %test:assertError
+function t:fn-create-new-recursive-collection-with-wrong-path() {
+    xmldb:create-collection($t:wrong-path-collection)
+};
+
