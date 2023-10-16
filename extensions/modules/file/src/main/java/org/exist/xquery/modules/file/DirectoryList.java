@@ -24,7 +24,6 @@ package org.exist.xquery.modules.file;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,11 +33,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FileUtils;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -47,9 +42,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import static org.exist.xquery.modules.file.FileErrorCode.DIRECTORY_NOT_FOUND;
+
 /**
  * eXist File Module Extension DirectoryList
- *
+ * <p>
  * Enumerate a list of files, including their size and modification time, found
  * in a specified directory, using a pattern
  *
@@ -121,7 +118,7 @@ public class DirectoryList extends BasicFunction {
         builder.addAttribute(new QName("directory", null, null), baseDir.toString());
         try {
             final int patternsLen = patterns.getItemCount();
-            final String includes[] = new String[patternsLen];
+            final String[] includes = new String[patternsLen];
             for (int i = 0; i < patternsLen; i++) {
                 includes[i] = patterns.itemAt(0).getStringValue();
             }
@@ -172,8 +169,8 @@ public class DirectoryList extends BasicFunction {
             builder.endElement();
 
             return (NodeValue) builder.getDocument().getDocumentElement();
-        } catch (final IOException e) {
-            throw new XPathException(this, e.getMessage());
+        } catch (final IOException | IllegalStateException e) {
+            throw new XPathException(this, DIRECTORY_NOT_FOUND, e.getMessage());
         } finally {
             context.popDocumentContext();
         }
