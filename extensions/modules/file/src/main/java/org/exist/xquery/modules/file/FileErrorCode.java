@@ -25,9 +25,10 @@ import org.exist.dom.QName;
 import org.exist.xquery.ErrorCodes;
 
 class FileErrorCode extends ErrorCodes.ErrorCode {
-    public static final ErrorCodes.ErrorCode DIRECTORY_NOT_FOUND = new FileErrorCode("DIRECTORY_NOT_FOUND", "The directory could not be found.");
+    public static final ErrorCodes.ErrorCode DIRECTORY_NOT_FOUND = new FileErrorCode("DIRECTORY_NOT_FOUND",
+            "The directory could not be found.");
 
-    FileErrorCode(String code, String description) {
+    FileErrorCode(final String code, final String description) {
         super(new QName(code, FileModule.NAMESPACE_URI, FileModule.PREFIX), description);
     }
 }
