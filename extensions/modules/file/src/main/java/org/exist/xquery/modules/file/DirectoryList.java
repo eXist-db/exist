@@ -52,52 +52,46 @@ import static org.exist.xquery.modules.file.FileErrorCode.DIRECTORY_NOT_FOUND;
  *
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  * @author ljo
- * @serial 2009-08-09
  * @version 1.2
- *
- * @see
- * org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
+ * @serial 2009-08-09
+ * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
  * org.exist.xquery.FunctionSignature)
  */
 public class DirectoryList extends BasicFunction {
 
-    private final static Logger logger = LogManager.getLogger(DirectoryList.class);
-
-    final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
-    final static String PREFIX = FileModule.PREFIX;
-
-    final static QName FILE_ELEMENT = new QName("file", NAMESPACE_URI, PREFIX);
-    final static QName LIST_ELEMENT = new QName("list", NAMESPACE_URI, PREFIX);
-
-    final static QName DIRECTORY_ATTRIBUTE = new QName("directory", null, null);
-    final static QName NAME_ATTRIBUTE = new QName("name", null, null);
-    final static QName SIZE_ATTRIBUTE = new QName("size", null, null);
-    final static QName HUMAN_SIZE_ATTRIBUTE = new QName("human-size", null, null);
-    final static QName MODIFIED_ATTRIBUTE = new QName("modified", null, null);
-    final static QName SUBDIR_ATTRIBUTE = new QName("subdir", null, null);
-
-    public final static FunctionSignature[] signatures
-            = {
-                new FunctionSignature(
-                        new QName("directory-list", NAMESPACE_URI, PREFIX),
-                        "List all files, including their file size and modification time, "
-                        + "found in or below a directory, $directory. Files are located in the server's "
-                        + "file system, using filename patterns, $pattern.  File pattern matching is based "
-                        + "on code from Apache's Ant, thus following the same conventions. For example:\n\n"
-                        + "'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files "
-                        + "in any directory below the specified directory.  This method is only available to the DBA role.",
-                        new SequenceType[]{
+    static final String NAMESPACE_URI = FileModule.NAMESPACE_URI;
+    static final String PREFIX = FileModule.PREFIX;
+    public static final FunctionSignature[] signatures = {
+            new FunctionSignature(
+                    new QName("directory-list", NAMESPACE_URI, PREFIX),
+                    "List all files, including their file size and modification time, "
+                            + "found in or below a directory, $directory. Files are located in the server's "
+                            + "file system, using filename patterns, $pattern.  File pattern matching is based "
+                            + "on code from Apache's Ant, thus following the same conventions. For example:\n\n"
+                            + "'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files "
+                            + "in any directory below the specified directory.  This method is only available to the DBA role.",
+                    new SequenceType[]{
                             new FunctionParameterSequenceType("path", Type.ITEM,
                                     Cardinality.EXACTLY_ONE, "The base directory path or URI in the file system where the files are located."),
                             new FunctionParameterSequenceType("pattern", Type.STRING,
                                     Cardinality.ZERO_OR_MORE, "The file name pattern")
-                        },
-                        new FunctionReturnSequenceType(Type.NODE,
-                                Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching "
-                                + "filenames, including their file size and modification time, and "
-                                + "the subdirectory they were found in")
-                )
-            };
+                    },
+                    new FunctionReturnSequenceType(Type.NODE,
+                            Cardinality.ZERO_OR_ONE, "a node fragment that shows all matching "
+                            + "filenames, including their file size and modification time, and "
+                            + "the subdirectory they were found in")
+            )
+    };
+    static final QName FILE_ELEMENT = new QName("file", NAMESPACE_URI, PREFIX);
+    static final QName LIST_ELEMENT = new QName("list", NAMESPACE_URI, PREFIX);
+
+    static final QName DIRECTORY_ATTRIBUTE = new QName("directory", null, null);
+    static final QName NAME_ATTRIBUTE = new QName("name", null, null);
+    static final QName SIZE_ATTRIBUTE = new QName("size", null, null);
+    static final QName HUMAN_SIZE_ATTRIBUTE = new QName("human-size", null, null);
+    static final QName MODIFIED_ATTRIBUTE = new QName("modified", null, null);
+    static final QName SUBDIR_ATTRIBUTE = new QName("subdir", null, null);
+    private static final Logger logger = LogManager.getLogger(DirectoryList.class);
 
     public DirectoryList(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
