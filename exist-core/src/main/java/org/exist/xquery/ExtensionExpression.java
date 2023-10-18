@@ -26,20 +26,20 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /**
  * Implements an XQuery extension expression. An extension expression starts with
- * a list of pragmas, followed by an expression enclosed in curly braces. For evaluation
- * details check {{@link #eval(Sequence, Item)}.
+ * a one or more pragmas, followed by an expression enclosed in curly braces. For evaluation
+ * details check {@link #eval(Sequence, Item)}.
  *
  * @author wolf
  */
 public class ExtensionExpression extends AbstractExpression {
 
+    @Nullable private Pragma[] pragmas = null;
     private Expression innerExpression;
-    private final List<Pragma> pragmas = new ArrayList<>(3);
 
     public ExtensionExpression(final XQueryContext context) {
         super(context);
@@ -50,7 +50,12 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     public void addPragma(final Pragma pragma) {
-        pragmas.add(pragma);
+        if (pragmas == null) {
+            pragmas = new Pragma[1];
+        } else {
+            pragmas = Arrays.copyOf(pragmas, pragmas.length + 1);
+        }
+        pragmas[pragmas.length - 1] = pragma;
     }
 
     /**
@@ -64,12 +69,14 @@ public class ExtensionExpression extends AbstractExpression {
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         callBefore(contextSequence);
-        Sequence result = null;
-        for (final Pragma pragma : pragmas) {
-            final Sequence temp = pragma.eval(contextSequence, contextItem);
-            if (temp != null) {
-                result = temp;
-                break;
+        @Nullable Sequence result = null;
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                final Sequence temp = pragma.eval(contextSequence, contextItem);
+                if (temp != null) {
+                    result = temp;
+                    break;
+                }
             }
         }
         if (result == null) {
@@ -80,33 +87,48 @@ public class ExtensionExpression extends AbstractExpression {
     }
 
     private void callAfter() throws XPathException {
+        if (pragmas == null) {
+            return;
+        }
+
         for (final Pragma pragma : pragmas) {
             pragma.after(context, innerExpression);
         }
     }
 
     private void callBefore(final Sequence contextSequence) throws XPathException {
+        if (pragmas == null) {
+            return;
+        }
+
         for (final Pragma pragma : pragmas) {
             pragma.before(context, innerExpression, contextSequence);
         }
     }
 
+    @Override
     public int returnsType() {
         return innerExpression.returnsType();
     }
 
+    @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
-        for (final Pragma pragma : pragmas) {
-            pragma.analyze(newContext);
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                pragma.analyze(newContext);
+            }
         }
         innerExpression.analyze(newContext);
     }
 
+    @Override
     public void dump(final ExpressionDumper dumper) {
-        for (final Pragma pragma : pragmas) {
-            pragma.dump(dumper);
-            dumper.nl();
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                pragma.dump(dumper);
+                dumper.nl();
+            }
         }
         dumper.display('{');
         dumper.startIndent();
@@ -145,13 +167,32 @@ public class ExtensionExpression extends AbstractExpression {
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
         innerExpression.resetState(postOptimization);
-        for (final Pragma pragma : pragmas) {
-            pragma.resetState(postOptimization);
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                pragma.resetState(postOptimization);
+            }
         }
     }
 
     @Override
     public void accept(final ExpressionVisitor visitor) {
         visitor.visit(innerExpression);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+
+        if (pragmas != null) {
+            for (final Pragma pragma : pragmas) {
+                result.append(pragma.toString());
+            }
+        }
+
+        result.append("{ ");
+        result.append(innerExpression.toString());
+        result.append(" }");
+
+        return result.toString();
     }
 }

@@ -28,19 +28,18 @@ import java.util.List;
  * Basic implementation of the {@link ExpressionVisitor} interface.
  * This implementation will traverse a PathExpr object if it wraps
  * around a single other expression. All other methods are empty.
- * 
- * @author wolf
  *
+ * @author wolf
  */
 public class BasicExpressionVisitor implements ExpressionVisitor {
 
     @Override
-    public void visit(Expression expression) {
+    public void visit(final Expression expression) {
         processWrappers(expression);
     }
 
     @Override
-    public void visitCastExpr(CastExpression expression) {
+    public void visitCastExpr(final CastExpression expression) {
         //Nothing to do
     }
 
@@ -50,7 +49,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
      * expression object.
      */
     @Override
-    public void visitPathExpr(PathExpr expression) {
+    public void visitPathExpr(final PathExpr expression) {
         if (expression.getLength() == 1) {
             final Expression next = expression.getExpression(0);
             next.accept(this);
@@ -58,182 +57,185 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     @Override
-    public void visitFunctionCall(FunctionCall call) {
+    public void visitFunctionCall(final FunctionCall call) {
         // Nothing to do
     }
 
     @Override
-    public void visitGeneralComparison(GeneralComparison comparison) {
+    public void visitGeneralComparison(final GeneralComparison comparison) {
         //Nothing to do
     }
 
     @Override
-    public void visitUnionExpr(Union union) {
+    public void visitUnionExpr(final Union union) {
         //Nothing to do
     }
 
     @Override
-    public void visitIntersectionExpr(Intersect intersect) {
+    public void visitIntersectionExpr(final Intersect intersect) {
         //Nothing to do
     }
 
     @Override
-    public void visitAndExpr(OpAnd and) {
+    public void visitAndExpr(final OpAnd and) {
         //Nothing to do
     }
 
     @Override
-    public void visitOrExpr(OpOr or) {
+    public void visitOrExpr(final OpOr or) {
         //Nothing to do
     }
 
     @Override
-    public void visitLocationStep(LocationStep locationStep) {
+    public void visitLocationStep(final LocationStep locationStep) {
         //Nothing to do
     }
 
     @Override
-    public void visitFilteredExpr(FilteredExpression filtered) {
+    public void visitFilteredExpr(final FilteredExpression filtered) {
         //Nothing to do
     }
 
     @Override
-    public void visitPredicate(Predicate predicate) {
+    public void visitPredicate(final Predicate predicate) {
         //Nothing to do
     }
 
     @Override
-    public void visitVariableReference(VariableReference ref) {
+    public void visitVariableReference(final VariableReference ref) {
         //Nothing to do
     }
 
     @Override
-    public void visitVariableDeclaration(VariableDeclaration decl) {
-    	// Nothing to do
+    public void visitVariableDeclaration(final VariableDeclaration decl) {
+        // Nothing to do
     }
-    
-    protected void processWrappers(Expression expr) {
+
+    protected void processWrappers(final Expression expr) {
         if (expr instanceof Atomize ||
                 expr instanceof DynamicCardinalityCheck ||
                 expr instanceof DynamicNameCheck ||
                 expr instanceof DynamicTypeCheck ||
-                expr instanceof UntypedValueCheck) {
+                expr instanceof UntypedValueCheck ||
+                expr instanceof PathExpr) {
             expr.accept(this);
         }
     }
 
-    public static LocationStep findFirstStep(Expression expr) {
-        if (expr instanceof LocationStep)
-            {return (LocationStep) expr;}
+    public static LocationStep findFirstStep(final Expression expr) {
+        if (expr instanceof LocationStep) {
+            return (LocationStep) expr;
+        }
         final FirstStepVisitor visitor = new FirstStepVisitor();
         expr.accept(visitor);
         return visitor.firstStep;
     }
 
-    public static List<LocationStep> findLocationSteps(Expression expr) {
+    public static List<LocationStep> findLocationSteps(final Expression expr) {
         final List<LocationStep> steps = new ArrayList<>(5);
         if (expr instanceof LocationStep) {
-            steps.add((LocationStep)expr);
+            steps.add((LocationStep) expr);
             return steps;
         }
         expr.accept(
-            new BasicExpressionVisitor() {
-                @Override
-                public void visitPathExpr(PathExpr expression) {
-                    for (int i = 0; i < expression.getLength(); i++) {
-                        final Expression next = expression.getExpression(i);
-                        next.accept(this);
-                        if (steps.size() - 1 != i) {
-                        	steps.add(null);
+                new BasicExpressionVisitor() {
+                    @Override
+                    public void visitPathExpr(final PathExpr expression) {
+                        for (int i = 0; i < expression.getLength(); i++) {
+                            final Expression next = expression.getExpression(i);
+                            next.accept(this);
+                            if (steps.size() - 1 != i) {
+                                steps.add(null);
+                            }
                         }
                     }
+
+                    @Override
+                    public void visitLocationStep(final LocationStep locationStep) {
+                        steps.add(locationStep);
+                    }
                 }
-                @Override
-                public void visitLocationStep(LocationStep locationStep) {
-                    steps.add(locationStep);
-                }
-            }
         );
         return steps;
     }
 
-    public static VariableReference findVariableRef(Expression expr) {
+    public static VariableReference findVariableRef(final Expression expr) {
         final VariableRefVisitor visitor = new VariableRefVisitor();
         expr.accept(visitor);
         return visitor.ref;
     }
 
     @Override
-    public void visitForExpression(ForExpr forExpr) {
+    public void visitForExpression(final ForExpr forExpr) {
         //Nothing to do
     }
 
     @Override
-    public void visitLetExpression(LetExpr letExpr) {
+    public void visitLetExpression(final LetExpr letExpr) {
         //Nothing to do
     }
 
     @Override
-    public void visitOrderByClause(OrderByClause orderBy) {
+    public void visitOrderByClause(final OrderByClause orderBy) {
         // Nothing to do
     }
 
     @Override
-    public void visitGroupByClause(GroupByClause groupBy) {
+    public void visitGroupByClause(final GroupByClause groupBy) {
         // Nothing to do
     }
 
     @Override
-    public void visitWhereClause(WhereClause where) {
+    public void visitWhereClause(final WhereClause where) {
         // Nothing to do
     }
 
     @Override
-    public void visitBuiltinFunction(Function function) {
+    public void visitBuiltinFunction(final Function function) {
         //Nothing to do
     }
 
     @Override
-    public void visitUserFunction(UserDefinedFunction function) {
+    public void visitUserFunction(final UserDefinedFunction function) {
         //Nothing to do
     }
 
     @Override
-    public void visitConditional(ConditionalExpression conditional) {
+    public void visitConditional(final ConditionalExpression conditional) {
         //Nothing to do
     }
 
     @Override
-    public void visitTryCatch(TryCatchExpression conditional) {
+    public void visitTryCatch(final TryCatchExpression conditional) {
         //Nothing to do
     }
 
     @Override
-    public void visitDocumentConstructor(DocumentConstructor constructor) {
-    	// Nothing to do
+    public void visitDocumentConstructor(final DocumentConstructor constructor) {
+        // Nothing to do
     }
-    
-    public void visitElementConstructor(ElementConstructor constructor) {
+
+    public void visitElementConstructor(final ElementConstructor constructor) {
         //Nothing to do
     }
 
     @Override
-    public void visitTextConstructor(DynamicTextConstructor constructor) {
+    public void visitTextConstructor(final DynamicTextConstructor constructor) {
         //Nothing to do
     }
 
     @Override
-    public void visitAttribConstructor(AttributeConstructor constructor) {
+    public void visitAttribConstructor(final AttributeConstructor constructor) {
         //Nothing to do
     }
 
     @Override
-    public void visitAttribConstructor(DynamicAttributeConstructor constructor) {
+    public void visitAttribConstructor(final DynamicAttributeConstructor constructor) {
         //Nothing to do
     }
 
     @Override
-    public void visitSimpleMapOperator(OpSimpleMap simpleMap) {
+    public void visitSimpleMapOperator(final OpSimpleMap simpleMap) {
         // Nothing to do
     }
 
@@ -246,7 +248,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         }
 
         @Override
-        public void visitLocationStep(LocationStep locationStep) {
+        public void visitLocationStep(final LocationStep locationStep) {
             firstStep = locationStep;
         }
     }
@@ -256,12 +258,12 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         private VariableReference ref = null;
 
         @Override
-        public void visitVariableReference(VariableReference ref) {
+        public void visitVariableReference(final VariableReference ref) {
             this.ref = ref;
         }
 
         @Override
-        public void visitPathExpr(PathExpr expression) {
+        public void visitPathExpr(final PathExpr expression) {
             for (int i = 0; i < expression.getLength(); i++) {
                 final Expression next = expression.getExpression(i);
                 next.accept(this);
