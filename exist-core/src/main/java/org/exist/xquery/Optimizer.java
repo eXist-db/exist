@@ -63,6 +63,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private List<QueryRewriter> rewriters;
 
+    private final FindOptimizable findOptimizable = new FindOptimizable();
+
     public Optimizer(XQueryContext context) {
         this.context = context;
         final DBBroker broker = context.getBroker();
@@ -100,11 +102,13 @@ public class Optimizer extends DefaultExpressionVisitor {
             // try to find a predicate containing an expression which is an instance
             // of Optimizable.
             for (final Predicate pred : preds) {
-                final FindOptimizable find = new FindOptimizable();
-                pred.accept(find);
-                final List<Optimizable> list = find.getOptimizables();
-                if (list.size() > 0 && canOptimize(list)) {
+                pred.accept(findOptimizable);
+                @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
+                if (canOptimize(list)) {
                     optimize = true;
+                }
+                findOptimizable.reset();
+                if (optimize) {
                     break;
                 }
             }
@@ -208,19 +212,23 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean hasOptimizable(List<Predicate> preds) {
+    private boolean hasOptimizable(final List<Predicate> preds) {
         // walk through the predicates attached to the current location step.
         // try to find a predicate containing an expression which is an instance
         // of Optimizable.
+        boolean optimizable = false;
         for (final Predicate pred : preds) {
-            final FindOptimizable find = new FindOptimizable();
-            pred.accept(find);
-            final List<Optimizable> list = find.getOptimizables();
-            if (list.size() > 0 && canOptimize(list)) {
-                return true;
+            pred.accept(findOptimizable);
+            @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
+            if (canOptimize(list)) {
+                optimizable = true;
+            }
+            findOptimizable.reset();
+            if (optimizable) {
+                break;
             }
         }
-        return false;
+        return optimizable;
     }
 
     public void visitAndExpr(OpAnd and) {
@@ -337,7 +345,11 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
-    private boolean canOptimize(List<Optimizable> list) {
+    private boolean canOptimize(@Nullable final Optimizable[] list) {
+        if (list == null || list.length == 0) {
+            return false;
+        }
+
         for (final Optimizable optimizable : list) {
             final int axis = optimizable.getOptimizeAxis();
             if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
@@ -378,31 +390,48 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
 
-        List<Optimizable> optimizables = new ArrayList<>();
+        private @Nullable Optimizable[] optimizables = null;
 
-        public List<Optimizable> getOptimizables() {
+        public @Nullable Optimizable[] getOptimizables() {
             return optimizables;
         }
 
-        public void visitPathExpr(PathExpr expression) {
+        @Override
+        public void visitPathExpr(final PathExpr expression) {
             for (int i = 0; i < expression.getLength(); i++) {
                 final Expression next = expression.getExpression(i);
                 next.accept(this);
             }
         }
 
-        public void visitGeneralComparison(GeneralComparison comparison) {
-            optimizables.add(comparison);
+        @Override
+        public void visitGeneralComparison(final GeneralComparison comparison) {
+            addOptimizable(comparison);
         }
 
-        public void visitPredicate(Predicate predicate) {
+        @Override
+        public void visitPredicate(final Predicate predicate) {
             predicate.getExpression(0).accept(this);
         }
 
-        public void visitBuiltinFunction(Function function) {
+        @Override
+        public void visitBuiltinFunction(final Function function) {
             if (function instanceof Optimizable) {
-                optimizables.add((Optimizable) function);
+                addOptimizable((Optimizable) function);
             }
+        }
+
+        private void addOptimizable(final Optimizable optimizable) {
+            if (optimizables == null) {
+                optimizables = new Optimizable[1];
+            } else {
+                optimizables = Arrays.copyOf(optimizables, optimizables.length + 1);
+            }
+            optimizables[optimizables.length - 1] = optimizable;
+        }
+
+        public void reset() {
+            this.optimizables = null;
         }
     }
 
