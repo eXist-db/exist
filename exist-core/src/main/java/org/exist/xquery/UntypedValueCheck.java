@@ -110,6 +110,7 @@ public class UntypedValueCheck extends AbstractExpression {
 
     private Item convert(Item item) throws XPathException {
         if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.hasMember(Type.NUMERIC, requiredType) && Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
+//        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || /*Type.hasMember(Type.NUMERIC, requiredType) &&*/ Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
             try {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;
@@ -130,6 +131,7 @@ public class UntypedValueCheck extends AbstractExpression {
                 throw new XPathException(expression, e.getErrorCode(), error.toString());
             }
         }
+        // TODO(AR) need to consider the cases where the convert is doing nothing... what is its purpose from OpNumeric then?
         return item;
     }
 
