@@ -66,12 +66,17 @@ public class OpNumeric extends BinaryOp {
             int ltype = left.returnsType();
             int rtype = right.returnsType();
 
+            final boolean ltypeDerivesFromRtype = derivesFrom(ltype, rtype);
+            final boolean rtypeDerivesFromLtype = derivesFrom(rtype, ltype);
+
             // 2) Type Substitution, see: https://www.w3.org/TR/xpath-31/#dt-subtype-substitution
-            if (derivesFrom(ltype, rtype)) {
+            if (ltypeDerivesFromRtype && rtypeDerivesFromLtype) {
+                returnType = ltype;
+            } else if (ltypeDerivesFromRtype) {
                 right = new UntypedValueCheck(context, ltype, right);
                 rtype = right.returnsType();
                 returnType = ltype;
-            } else if (derivesFrom(rtype, ltype)) {
+            } else if (rtypeDerivesFromLtype) {
                 left = new UntypedValueCheck(context, rtype, left);
                 ltype = left.returnsType();
                 returnType = rtype;
@@ -114,7 +119,7 @@ public class OpNumeric extends BinaryOp {
      * @param actualType The actual type, a.k.a. AT.
      * @param expectedType The expected type, a.k.a. ET.
      *
-     * @return true if ET derives from AT, false otherwise.
+     * @return true if AT derives from ET, false otherwise.
      */
     static boolean derivesFrom(final int actualType, final int expectedType) {
 
