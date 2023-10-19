@@ -562,6 +562,11 @@ public class Type {
             return subtype;
         }
 
+        if (subtype >= superTypes.length) {
+            // Note that EMPTY_SEQUENCE is *not* a sub-type of anything else than itself
+            throw new IllegalArgumentException("Type: " + subtype + " has no super types defined");
+        }
+
         final int supertype = superTypes[subtype];
         if (supertype == 0) {
             LOG.warn("eXist-db does not define a super-type for the sub-type {}", getTypeName(subtype), new Throwable());
