@@ -53,6 +53,7 @@ header {
     import org.exist.xquery.value.*;
     import org.exist.xquery.functions.fn.*;
     import org.exist.xquery.update.*;
+    import org.exist.xquery.update.legacy.*;
     import org.exist.storage.ElementValue;
     import org.exist.xquery.functions.map.MapExpr;
     import org.exist.xquery.functions.array.ArrayConstructor;
@@ -146,7 +147,7 @@ options {
         String ns = qname.getNamespaceURI();
         if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
             String ln = qname.getLocalPart();
-            return ("private".equals(ln) || "public".equals(ln));
+            return ("private".equals(ln) || "public".equals(ln) || "updating".equals(ln) || "simple".equals(ln));
         } else {
             return !(ns.equals(Namespaces.XML_NS)
                      || ns.equals(Namespaces.SCHEMA_NS)
@@ -156,7 +157,7 @@ options {
         }
     }
 
-    private static void processAnnotations(List annots, FunctionSignature signature) {
+    private static Annotation[] processAnnotations(List annots, FunctionSignature signature) {
         Annotation[] anns = new Annotation[annots.size()];
 
         //iterate the declare Annotations
@@ -182,7 +183,11 @@ options {
         }
 
         //set the Annotations on the Function Signature
-        signature.setAnnotations(anns);
+        if (signature != null) {
+            signature.setAnnotations(anns);
+        }
+
+        return anns;
     }
 
     private static void processParams(List varList, UserDefinedFunction func, FunctionSignature signature)
@@ -499,6 +504,24 @@ throws PermissionDeniedException, EXistException, XPathException
                         { List annots = new ArrayList(); }
                         (annotations [annots]
                         )?
+                        {
+                            for(int i = 0; i < annots.size(); i++)
+                            {
+                            	List la = (List) annots.get(i);
+                                if(la.size() > 0)
+                                {
+                                    for(int a = 0; a < la.size(); a++)
+                                    {
+                                         if(la.get(a).toString().equals("simple") || la.get(a).toString().equals("updating"))
+                                         {
+                                             throw new XPathException(qname, ErrorCodes.XUST0032,
+                                             "It is a static error if an %updating or %simple annotation is used on a VarDecl.");
+                                         }
+                                    }
+                                }
+                            }
+
+                        }
             (
                 #(
                     "as"
@@ -621,6 +644,26 @@ throws PermissionDeniedException, EXistException, XPathException
         functionDecl [path]
         |
         importDecl [path]
+        |
+        #(
+            "revalidation"
+            (
+                "strict"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.STRICT);
+                }
+                |
+                "lax"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.LAX);
+                }
+                |
+                "skip"
+                {
+                    staticContext.setRevalidationMode(XQueryContext.RevalidationMode.SKIP);
+                }
+            )
+        )
     )*
     ;
 
@@ -1062,6 +1105,12 @@ throws XPathException
             }
         )
         |
+        { List annots = new ArrayList(); }
+        (annotations [annots])?
+        {
+            Annotation[] anns = processAnnotations(annots, null);
+            type.setAnnotations(anns);
+        }
         #(
             FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION_REFERENCE); }
             (
@@ -2146,6 +2195,20 @@ throws PermissionDeniedException, EXistException, XPathException
     step=numericExpr [path]
     |
     step=updateExpr [path]
+    |
+    step=xqufInsertExpr [path]
+    |
+    step=xqufDeleteExpr [path]
+    |
+    step=xqufReplaceExpr [path]
+    |
+    step=xqufRenameExpr [path]
+    |
+    step=transformWithExpr [path]
+    |
+    step=copyModifyExpr [path]
+    |
+    step=dynamicUpdFunCall [path]
     ;
 
 /**
@@ -2966,6 +3029,37 @@ throws PermissionDeniedException, EXistException, XPathException
     )
     ;
 
+dynamicUpdFunCall [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step = null;
+	PathExpr primary = new PathExpr(context);
+}
+:
+    #(
+		"updating"
+		{
+			List<Expression> params = new ArrayList<Expression>(5);
+			boolean isPartial = false;
+		}
+        step=primaryExpr [primary]
+		(
+			(
+				{ PathExpr pathExpr = new PathExpr(context); }
+				expr [pathExpr] { params.add(pathExpr); }
+			)
+		)*
+		{
+			DynamicFunctionCall dynCall = new DynamicFunctionCall(context, step, params, isPartial);
+			dynCall.setCategory(Expression.Category.UPDATING);
+			step = dynCall;
+			path.add(step);
+		}
+	)
+;
+
+
 functionCall [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -3553,6 +3647,92 @@ throws PermissionDeniedException, EXistException, XPathException
     )
     ;
 
+
+transformWithExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	CopyModifyExpression cpme = new CopyModifyExpression(context);
+	QName virtualVariable = null;
+}:
+	#(
+		tr:"transform"
+		{
+			PathExpr transformExpr = new PathExpr(context);
+		}
+		t:expr [transformExpr]
+		{
+		    try {
+               virtualVariable = QName.parse(staticContext, "virtualCopyModifyName", null);
+            }
+            catch (final IllegalQNameException e) {
+                // this should never happen, since it is a virtual QName
+            }
+
+		    final VariableDeclaration decl = new VariableDeclaration(context, virtualVariable, transformExpr);
+            decl.setASTNode(t);
+
+            cpme.addCopySource("virtualCopyModifyName", decl);
+		}
+		{
+		    PathExpr withExpr = new PathExpr(context);
+		}
+		(
+            expr [withExpr]
+        )?
+        {
+            // see https://www.w3.org/TR/xquery-update-30/#id-transform-with for explanation
+            // in short TransformWith is a shorthand notation for a common Copy Modify Expression
+
+            PathExpr refExpr = new PathExpr(context);
+            refExpr.add(new VariableReference(context, virtualVariable));
+            cpme.setModifyExpr(new OpSimpleMap(context, refExpr, withExpr));
+            cpme.setReturnExpr(refExpr);
+
+            cpme.setASTNode(tr);
+            path.add(cpme);
+            step = cpme;
+        }
+	)
+	;
+
+copyModifyExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+	step= null;
+	CopyModifyExpression cpme = new CopyModifyExpression(context);
+	PathExpr modify = new PathExpr(context);
+	PathExpr retExpr = new PathExpr(context);
+}:
+	#(
+    	cp:"copy"
+    	(
+    		#(
+    			copyVarName:VARIABLE_BINDING
+    			{
+    				PathExpr inputSequence= new PathExpr(context);
+    			}
+    			step=expr [inputSequence]
+    			{
+    				cpme.addCopySource(copyVarName.getText(), inputSequence);
+    			}
+    		)
+    	)+
+    	step=expr [modify]
+    	step=expr [retExpr]
+    	{
+    	    cpme.setModifyExpr(modify);
+    	    cpme.setReturnExpr(retExpr);
+
+    	    cpme.setASTNode(cp);
+            path.add(cpme);
+            step = cpme;
+    	}
+    )
+	;
+
 typeCastExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -3710,6 +3890,122 @@ throws XPathException, PermissionDeniedException, EXistException
         }
     )
     ;
+
+xqufInsertExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    insertAST:"insert"
+		{
+			PathExpr source = new PathExpr(context);
+			PathExpr target = new PathExpr(context);
+			InsertExpr.Choice choice = null;
+		}
+		step=expr [source]
+		#(
+			it:INSERT_TARGET
+			{
+			    switch (it.getText()) {
+			        case "first":
+			            choice = InsertExpr.Choice.FIRST;
+			            break;
+                    case "last":
+                        choice = InsertExpr.Choice.LAST;
+                        break;
+                    case "into":
+                        choice = InsertExpr.Choice.INTO;
+                        break;
+                    case "before":
+                        choice = InsertExpr.Choice.BEFORE;
+                        break;
+                    case "after":
+                        choice = InsertExpr.Choice.AFTER;
+                        break;
+			    }
+			}
+		)
+		step=expr [target]
+		{
+			InsertExpr insertExpr = new InsertExpr(context, source, target, choice);
+			insertExpr.setASTNode(insertAST);
+			path.add(insertExpr);
+			step = insertExpr;
+		}
+	)
+	;
+
+xqufDeleteExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    deleteAST:"delete"
+		{
+			PathExpr target = new PathExpr(context);
+		}
+		step=expr [target]
+		{
+			DeleteExpr deleteExpr = new DeleteExpr(context, target);
+			deleteExpr.setASTNode(deleteAST);
+			path.add(deleteExpr);
+			step = deleteExpr;
+		}
+	)
+	;
+
+xqufReplaceExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    replaceAST:"replace"
+		{
+			PathExpr target = new PathExpr(context);
+			PathExpr with = new PathExpr(context);
+			ReplaceExpr.ReplacementType replacementType = ReplaceExpr.ReplacementType.NODE;
+		}
+		(
+		    "value"
+		    {
+		        replacementType = ReplaceExpr.ReplacementType.VALUE;
+		    }
+		)?
+		step=expr [target]
+		step=expr [with]
+		{
+			ReplaceExpr replaceExpr = new ReplaceExpr(context, target, with, replacementType);
+			replaceExpr.setASTNode(replaceAST);
+			path.add(replaceExpr);
+			step = replaceExpr;
+		}
+	)
+	;
+
+xqufRenameExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+	#(
+	    renameAST:"rename"
+		{
+			PathExpr target = new PathExpr(context);
+			PathExpr newName = new PathExpr(context);
+		}
+		step=expr [target]
+		step=expr [newName]
+		{
+			RenameExpr renameExpr = new RenameExpr(context, target, newName);
+			renameExpr.setASTNode(renameAST);
+			path.add(renameExpr);
+			step = renameExpr;
+		}
+	)
+	;
 
 mapConstr [PathExpr path]
 returns [Expression step]

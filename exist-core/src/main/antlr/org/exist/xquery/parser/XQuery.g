@@ -180,6 +180,7 @@ imaginaryTokenDefinitions
 	PRAGMA
 	GTEQ
 	SEQUENCE
+	INSERT_TARGET
 	;
 
 // === XPointer ===
@@ -238,7 +239,7 @@ moduleDecl throws XPathException
 // === Prolog ===
 
 prolog throws XPathException
-{ boolean inSetters = true; }
+{ boolean inSetters = true; boolean redeclaration = false; }
 :
     (
 		(
@@ -263,8 +264,17 @@ prolog throws XPathException
             ( "declare" "context" "item" )
             => contextItemDeclUp { inSetters = false; }
 			|
-			( "declare" MOD )
+			// bare keyword updating is valid because of rule CompatibilityAnnotation in the XQUF standard
+			( "declare" (MOD | "updating") )
 			=> annotateDecl { inSetters = false; }
+			|
+			( "declare" "revalidation" )
+			=> revalidationDecl {
+			    inSetters = false;
+			    if(redeclaration)
+                 	throw new XPathException((XQueryAST) returnAST, ErrorCodes.XUST0003, "It is a static error if a Prolog contains more than one revalidation declaration.");
+			    redeclaration = true;
+		    }
         )
 		SEMICOLON!
     )*
@@ -454,6 +464,17 @@ annotation
 :
 	MOD! name=eqName! (LPAREN! literal (COMMA! literal)* RPAREN!)?
         { #annotation= #(#[ANNOT_DECL, name], #annotation); }
+
+    | "updating"!
+    {
+        name = "updating";
+        #annotation= #(#[ANNOT_DECL, name], #annotation);
+    }
+    ;
+
+revalidationDecl throws XPathException
+:
+	"declare"! "revalidation"^ ("strict" | "lax" | "skip")
     ;
 
 eqName returns [String name]
@@ -574,7 +595,7 @@ itemType throws XPathException
 :
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN!
 	|
-	( "function" LPAREN ) => functionTest
+	( ("function" LPAREN) | ( MOD ) ) => functionTest
 	|
 	( "map" LPAREN ) => mapType
 	|
@@ -609,20 +630,23 @@ atomicType throws XPathException
 
 functionTest throws XPathException
 :
-	( "function" LPAREN STAR RPAREN) => anyFunctionTest
-	|
-	typedFunctionTest
+    annotations
+    (
+	    ( "function" LPAREN STAR RPAREN ) => anyFunctionTest
+	    |
+	    typedFunctionTest
+	)
 	;
 
 anyFunctionTest throws XPathException
 :
-	"function"! LPAREN! s:STAR RPAREN!
+	annotations "function"! LPAREN! s:STAR RPAREN!
 	{ #anyFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #s); }
 	;
 
 typedFunctionTest throws XPathException
 :
-	"function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
+	annotations "function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
 	{ #typedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #typedFunctionTest); }
 	;
 
@@ -697,6 +721,12 @@ exprSingle throws XPathException
 	| ( "switch" LPAREN ) => switchExpr
 	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
+	| ( "insert" ( "node" | "nodes" ) ) => xqufInsertExpr
+	| ( "delete" ( "node" | "nodes" ) ) => xqufDeleteExpr
+	| ( "replace" ( "value" | "node" ) ) => xqufReplaceExpr
+	| ( "rename" "node" ) => xqufRenameExpr
+	| ( "copy" DOLLAR ) => copyModifyExpr
+	| ( "invoke" "updating" ) => dynamicUpdFunCall
 	| orExpr
 	;
 
@@ -739,6 +769,50 @@ renameExpr throws XPathException
 :
 	"rename" exprSingle "as"! exprSingle
 	;
+
+xqufInsertExpr throws XPathException
+:
+	"insert"^ ( "node"! | "nodes"! ) exprSingle
+	insertExprTargetChoice exprSingle
+	;
+
+insertExprTargetChoice throws XPathException
+{ String target = null; }
+:
+    (
+        ( ( "as"! ( "first"! { target = "first"; } | "last"! { target = "last"; } )  )? "into"! {
+            if (target == null)
+                target = "into";
+        } )
+        | "after"! { target = "after"; }
+        | "before"! { target = "before"; }
+    )
+    { #insertExprTargetChoice= #(#[INSERT_TARGET, target]); }
+
+;
+
+xqufDeleteExpr throws XPathException
+:
+	"delete"^ ( "node"! | "nodes"! ) exprSingle
+	;
+
+xqufReplaceExpr throws XPathException
+:
+	"replace"^ ("value" "of"!)? "node"! exprSingle "with"! exprSingle
+	;
+
+xqufRenameExpr throws XPathException
+:
+	"rename"^ "node"! exprSingle "as"! exprSingle
+	;
+
+copyModifyExpr throws XPathException
+:
+	"copy"^ letVarBinding ( COMMA! letVarBinding )*
+	"modify"! exprSingle
+	"return"! exprSingle
+	;
+
 
 // === try/catch ===
 tryCatchExpr throws XPathException
@@ -1005,7 +1079,7 @@ castableExpr throws XPathException
 
 castExpr throws XPathException
 :
-	arrowExpr ( "cast"^ "as"! singleType )?
+	transformWithExpr ( "cast"^ "as"! singleType )?
 	;
 
 comparisonExpr throws XPathException
@@ -1274,9 +1348,25 @@ postfixExpr throws XPathException
 	)*
 	;
 
+dynamicUpdFunCall throws XPathException
+:
+	"invoke"! "updating"^ primaryExpr ( argumentList )*
+    ;
+
 arrowExpr throws XPathException
 :
     unaryExpr ( ARROW_OP^ arrowFunctionSpecifier argumentList )*
+    ;
+
+
+// This is not perfectly adherent to the standard grammar
+// at https://www.w3.org/TR/xquery-31/#prod-xquery31-ArrowExpr
+// but the standard XQuery 3.1 grammar conflicts with the XQuery Update Facility 3.0 grammar
+// https://www.w3.org/TR/xquery-update-30/#prod-xquery30-TransformWithExpr
+// However, the end behavior should be identical
+transformWithExpr throws XPathException
+:
+    arrowExpr ( "transform"^ "with"! LCURLY! ( expr )? RCURLY! )?
     ;
 
 arrowFunctionSpecifier throws XPathException
@@ -2228,6 +2318,32 @@ reservedKeywords returns [String name]
 	"empty-sequence" { name = "empty-sequence"; }
 	|
 	"schema-element" { name = "schema-element"; }
+	|
+	"updating" { name = "updating"; }
+	|
+	"revalidation" { name = "revalidation"; }
+	|
+    "strict" { name = "strict"; }
+    |
+    "lax" { name = "lax"; }
+    |
+    "skip" { name = "skip"; }
+    |
+    "transform" { name = "transform"; }
+    |
+    "invoke" { name = "invoke"; }
+    |
+    "nodes" { name = "nodes"; }
+    |
+    "first" { name = "first"; }
+    |
+    "last" { name = "last"; }
+    |
+    "after" { name = "after"; }
+    |
+    "before" { name = "before"; }
+    |
+    "copy" { name = "copy"; }
 	;
 
 /**

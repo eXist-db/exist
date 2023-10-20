@@ -92,7 +92,7 @@ import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
-import org.exist.xquery.update.Modification;
+import org.exist.xquery.update.legacy.Modification;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.jgrapht.Graph;
@@ -120,6 +120,7 @@ import static org.exist.util.MapUtil.hashMap;
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
+
 public class XQueryContext implements BinaryValueManager, Context {
 
     private static final Logger LOG = LogManager.getLogger(XQueryContext.class);
@@ -424,6 +425,8 @@ public class XQueryContext implements BinaryValueManager, Context {
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
     private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
+
+    private RevalidationMode revalidationMode = RevalidationMode.LAX;
 
     // Only used for testing, e.g. {@link org.exist.test.runner.XQueryTestRunner}.
     private Optional<ExistRepository> testRepository = Optional.empty();
@@ -3349,6 +3352,22 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         binaryValueInstances.push(binaryValue);
     }
+
+    public enum RevalidationMode {
+        STRICT,
+        LAX,
+        SKIP
+    }
+
+    /**
+     * Revalidation mode controls the process by which type information
+     * is recovered for an updated document
+     */
+    public void setRevalidationMode(final RevalidationMode rev) {
+        this.revalidationMode = rev;
+    }
+
+    public RevalidationMode getRevalidationMode() { return this.revalidationMode; }
 
     /**
      * Cleanup Task which is responsible for relasing the streams

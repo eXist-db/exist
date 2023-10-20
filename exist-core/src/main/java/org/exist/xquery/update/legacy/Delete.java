@@ -19,7 +19,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.xquery.update;
+package org.exist.xquery.update.legacy;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
@@ -46,7 +46,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 /**
