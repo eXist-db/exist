@@ -88,7 +88,7 @@ public class QuantifiedExpression extends BindingExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }        
         
-		final LocalVariable var = new LocalVariable(varName);
+		final LocalVariable localVariable = new LocalVariable(varName);
         
 		final Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {
@@ -108,16 +108,17 @@ public class QuantifiedExpression extends BindingExpression {
 			
 			final Item item = i.nextItem();			
 			// set variable value to current item
-            var.setValue(item.toSequence());
-            if (sequenceType == null) 
-                {var.checkType();} //... because is makes some conversions
+            localVariable.setValue(item.toSequence());
+            if (sequenceType == null) {
+				localVariable.checkType();  //... because is makes some conversions
+			}
 			
             Sequence satisfiesSeq = null;
             
             //Binds the variable : now in scope
     		final LocalVariable mark = context.markLocalVariables(false);
     		try {
-    			context.declareVariableBinding(var);
+    			context.declareVariableBinding(localVariable);
     			//Evaluate the return clause for the current value of the variable
     			satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
     		} finally {
@@ -139,7 +140,7 @@ public class QuantifiedExpression extends BindingExpression {
     						Type.getTypeName(Type.NODE) +
     						" (or more specific), got " + Type.getTypeName(item.getType()), inSeq);}
     	    	//trigger the old behaviour
-        		else {var.checkType();}
+        		else {localVariable.checkType();}
             }	
             
 			found = satisfiesSeq.effectiveBooleanValue();
