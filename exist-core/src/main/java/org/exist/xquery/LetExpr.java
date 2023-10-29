@@ -27,6 +27,9 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Implements an XQuery let-expression.
  * 
@@ -53,7 +56,7 @@ public class LetExpr extends BindingExpression {
             final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
             inputSequence.analyze(varContextInfo);
             //Declare the iteration variable
-            final LocalVariable inVar = new LocalVariable(QName.parse(context, varName, null));
+            final LocalVariable inVar = new LocalVariable(varName);
             inVar.setSequenceType(sequenceType);
             inVar.setStaticType(varContextInfo.getStaticReturnType());
             context.declareVariableBinding(inVar);
@@ -61,8 +64,6 @@ public class LetExpr extends BindingExpression {
             context.setContextSequencePosition(0, null);
 
             returnExpr.analyze(contextInfo);
-        } catch (final QName.IllegalQNameException e) {
-            throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
@@ -230,5 +231,20 @@ public class LetExpr extends BindingExpression {
     @Override
     public boolean allowMixedNodesInReturn() {
         return true;
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> variables = new HashSet<>();
+
+        final QName variable = getVariable();
+        variables.add(variable);
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            variables.add(startVar.getQName());
+        }
+
+        return variables;
     }
 }

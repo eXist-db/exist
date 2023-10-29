@@ -21,7 +21,10 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
+
+import java.util.Set;
 
 /**
  * Interface for FLWOR clauses like for/let/group by ...
@@ -31,7 +34,7 @@ import org.exist.xquery.value.Sequence;
 public interface FLWORClause extends Expression {
 
     enum ClauseType {
-        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY
+        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY, WINDOW
     }
 
     /**
@@ -102,7 +105,7 @@ public interface FLWORClause extends Expression {
      * @return a new local variable, registered in the context
      * @throws XPathException if an error occurs whilst creating the variable
      */
-    LocalVariable createVariable(String name) throws XPathException;
+    LocalVariable createVariable(QName name) throws XPathException;
 
     /**
      * Returns the first variable created by this FLWOR clause for reference
@@ -111,4 +114,11 @@ public interface FLWORClause extends Expression {
      * @return first variable created
      */
     LocalVariable getStartVariable();
+
+    /**
+     * Get the list of variables constructed in the tuple stream.
+     *
+     * @return the list of variables constructed in the tuple stream.
+     */
+    Set<QName> getTupleStreamVariables();
 }

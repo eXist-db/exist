@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import com.ibm.icu.text.Collator;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -53,7 +54,7 @@ public abstract class CollatingFunction extends Function {
         if (getSignature().getArgumentCount() == arg) {
             final String collationURI = getArgument(arg - 1).eval(contextSequence,
                 contextItem).getStringValue();
-            return context.getCollator(collationURI);
+            return context.getCollator(collationURI, ErrorCodes.FOCH0002);
         } else {
             return context.getDefaultCollator();
         }

@@ -124,6 +124,9 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0091 = new W3CErrorCode("XQDY0091", "An implementation MAY raise a dynamic error if an xml:id error, as defined in [XML ID], is encountered during construction of an attribute named xml:id.");
     public static final ErrorCode XQDY0092 = new W3CErrorCode("XQDY0092", "An implementation MAY raise a dynamic error  if a constructed attribute named xml:space has a value other than preserve or default.");
     public static final ErrorCode XQST0093 = new W3CErrorCode("XQST0093", "It is a static error to import a module M1 if there exists a sequence of modules M1 ... Mi ... M1 such that each module directly depends on the next module in the sequence (informally, if M1 depends on itself through some chain of module dependencies.)");
+
+    public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
+
     public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
             "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +
             "Bind a prefix other than xml to the namespace URI http://www.w3.org/XML/1998/namespace.\n" +
@@ -131,6 +134,7 @@ public class ErrorCodes {
             "Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.\n" +
             "Bind any prefix (including the empty prefix) to a zero-length namespace URI.");
     public static final ErrorCode XQDY0102 = new W3CErrorCode("XQDY0102", "If the name of an element in an element constructor is in no namespace, creating a default namespace for that element using a computed namespace constructor is an error.");
+    public static final ErrorCode XQST0103 =  new W3CErrorCode("XQST0103", "All variables in a window clause must have distinct names.");
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 

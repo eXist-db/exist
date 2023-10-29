@@ -76,6 +76,7 @@ public class OrderSpec {
 		buf.append(ExpressionDumper.dump(expression));
 		buf.append(' ');
 		buf.append((modifiers & DESCENDING_ORDER) == 0 ? "ascending" : "descending");
+		buf.append(' ');
         buf.append((modifiers & EMPTY_LEAST) == 0 ? "empty greatest" : "empty least");
 		return buf.toString();
 	}

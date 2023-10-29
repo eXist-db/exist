@@ -21,11 +21,15 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.dom.persistent.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implements a where clause inside a FLWOR expressions.
@@ -160,5 +164,17 @@ public class WhereClause extends AbstractFLWORClause {
         super.resetState(postOptimization);
         whereExpr.resetState(postOptimization);
         returnExpr.resetState(postOptimization);
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }
