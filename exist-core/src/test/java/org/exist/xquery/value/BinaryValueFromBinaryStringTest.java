@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BinaryValueFromBinaryStringTest {
 
     @Test
-    public void getInputStream() throws XPathException, IOException {
+    void getInputStream() throws XPathException, IOException {
 
         final String testData = "test data";
         final String base64TestData = Base64.encodeBase64String(testData.getBytes()).trim();
@@ -57,7 +57,7 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void castBase64ToHexBinary() throws XPathException, IOException {
+    void castBase64ToHexBinary() throws XPathException, IOException {
 
         final String testData = "testdata";
         final String expectedResult = Hex.encodeHexString(testData.getBytes()).trim();
@@ -71,7 +71,7 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void castHexBinaryToBase64() throws XPathException, IOException {
+    void castHexBinaryToBase64() throws XPathException, IOException {
         final String testData = "testdata";
         final String expectedResult = Base64.encodeBase64String(testData.getBytes()).trim();
 
@@ -84,7 +84,7 @@ public class BinaryValueFromBinaryStringTest {
     }
 
     @Test
-    public void base64StreamBinaryTo() throws XPathException, IOException {
+    void base64StreamBinaryTo() throws XPathException, IOException {
         try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new Base64BinaryValueType(), "yv4=");
             final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 
@@ -99,7 +99,7 @@ public class BinaryValueFromBinaryStringTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"CAFE", "cafe"})
-    public void hexStreamBinaryTo(final String hexString) throws XPathException, IOException {
+    void hexStreamBinaryTo(final String hexString) throws XPathException, IOException {
         try (final BinaryValue binaryValue = new BinaryValueFromBinaryString(new HexBinaryValueType(), hexString);
              final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 

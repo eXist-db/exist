@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class WindowClauseTest {
 
     @Test
-    public void simpleWindowConditions() throws RecognitionException, XPathException, TokenStreamException {
+    void simpleWindowConditions() throws RecognitionException, XPathException, TokenStreamException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when fn:true()\n" +
@@ -75,7 +75,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void complexWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
+    void complexWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "   start $first next $second when $first/price < $second/price\n" +
@@ -104,7 +104,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void noEndWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
+    void noEndWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "   start $first next $second when $first/price < $second/price\n" +
@@ -132,7 +132,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void slidingWindowClause() throws RecognitionException, XPathException, TokenStreamException {
+    void slidingWindowClause() throws RecognitionException, XPathException, TokenStreamException {
         final String query = "xquery version \"3.1\";\n" +
                 "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when fn:true()\n" +
@@ -163,7 +163,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void allWindowsVars() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void allWindowsVars() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "start $first at $s previous $start-previous next $start-next when fn:true()\n" +
@@ -203,7 +203,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void tumblingWindowAllWindowVarsNoOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void tumblingWindowAllWindowVarsNoOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10)\n" +
                 "    start $s at $spos previous $sprev next $snext when fn:true() \n" +
@@ -244,7 +244,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void tumblingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void tumblingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when fn:true()\n" +
@@ -283,7 +283,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void tumblingWindowNoEndWindowConditionPositional() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void tumblingWindowNoEndWindowConditionPositional() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when $s mod 3 = 1\n" +
@@ -316,7 +316,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void tumblingWindowNoEndWindowConditionCurrentItem() throws RecognitionException, XPathException, TokenStreamException {
+    void tumblingWindowNoEndWindowConditionCurrentItem() throws RecognitionException, XPathException, TokenStreamException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start $first when $first mod 3 = 0\n" +
@@ -349,7 +349,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void slidingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void slidingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when fn:true()\n" +
@@ -388,7 +388,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void slidingWindowEndWithoutOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void slidingWindowEndWithoutOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
                 "    start at $s when fn:true()\n" +
@@ -427,7 +427,7 @@ public class WindowClauseTest {
     }
 
     @Test
-    public void tumblingWindowRunUp() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
+    void tumblingWindowRunUp() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
         final String query = "xquery version \"3.1\";\n" +
                 "for tumbling window $w in $closings\n" +
                 "   start $first next $second when $first/price < $second/price\n" +

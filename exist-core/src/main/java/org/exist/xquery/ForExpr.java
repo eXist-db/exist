@@ -326,11 +326,6 @@ public class ForExpr extends BindingExpression {
     }
 
     @Override
-    public void resetState(final boolean postOptimization) {
-        super.resetState(postOptimization);
-    }
-
-    @Override
     public void accept(final ExpressionVisitor visitor) {
         visitor.visitForExpression(this);
     }
