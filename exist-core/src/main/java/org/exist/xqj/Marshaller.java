@@ -132,8 +132,10 @@ public class Marshaller {
             throws SAXException, XPathException {
         final AttributesImpl attrs = new AttributesImpl();
         int type = item.getType();
-        if (type == Type.NODE)
-            {type = ((NodeValue)item).getNode().getNodeType();}
+        if (type == Type.NODE) {
+            final short nodeType = ((NodeValue)item).getNode().getNodeType();
+            type = Type.fromDomNodeType(nodeType);
+        }
         attrs.addAttribute("", ATTR_TYPE, ATTR_TYPE, "CDATA", Type.getTypeName(type));
         if (Type.subTypeOf(item.getType(), Type.NODE)) {
             handler.startElement(NAMESPACE, VALUE_ELEMENT, VALUE_ELEMENT_QNAME, attrs);

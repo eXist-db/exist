@@ -233,9 +233,9 @@ public class DecimalValue extends NumericValue {
     @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
-            case Type.NUMBER:
+            case Type.NUMERIC:
             case Type.DECIMAL:
                 return this;
             case Type.DOUBLE:

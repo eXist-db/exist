@@ -70,14 +70,14 @@ public class UnaryExpr extends PathExpr {
         	{return item;}
         
 		final NumericValue value;
-        if (Type.subTypeOfUnion(item.getItemType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(item.getItemType(), Type.NUMERIC)) {
         	if (item instanceof NumericValue) {
 				value = (NumericValue) item;
 			} else {
         		value = (NumericValue) item.convertTo(item.getItemType());
 			}
 		} else {
-        	value = (NumericValue)item.convertTo(Type.NUMBER);
+        	value = (NumericValue)item.convertTo(Type.NUMERIC);
 		}
 
 		if(mode == ArithmeticOperator.SUBTRACTION)

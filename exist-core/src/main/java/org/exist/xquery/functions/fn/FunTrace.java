@@ -87,7 +87,7 @@ public Sequence eval(final Sequence[] args, final Sequence contextSequence) thro
 
     if (args[0].isEmpty()) {
         // Write to log
-        LOG.debug("{} [{}] [{}]: {}", label, "-", Type.getTypeName(Type.EMPTY), "-");
+        LOG.debug("{} [{}] [{}]: {}", label, "-", Type.getTypeName(Type.EMPTY_SEQUENCE), "-");
         result = Sequence.EMPTY_SEQUENCE;
 
         } else {

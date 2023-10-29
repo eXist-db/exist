@@ -77,13 +77,13 @@ public class FunRoundHalfToEven extends FunRoundBase {
 		"If $arg is of type xs:float or xs:double, rounding occurs on the " +
 		"value of the mantissa computed with exponent = 0.";
 	
-	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the rounded value");
+	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE, "the rounded value");
 
 	public static final FunctionSignature[] FN_ROUND_HALF_TO_EVEN_SIGNATURES = {
 			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_1_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, FunRoundHalfToEven.RETURN_TYPE,
-					optParam("arg", Type.NUMBER, "The input number")),
+					optParam("arg", Type.NUMERIC, "The input number")),
 			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_2_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, RETURN_TYPE,
-					optParam("arg", Type.NUMBER, "The input number"),
+					optParam("arg", Type.NUMERIC, "The input number"),
 					optParam("precision", Type.INTEGER, "Precision to round to"))
 	};
 

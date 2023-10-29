@@ -55,7 +55,7 @@ public class FunStringJoin extends BasicFunction {
             "The effect of calling the single-argument version of this function is the same as calling the " +
             "two-argument version with $separator set to a zero-length string.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                         "The sequence to be joined to form the string. If it is empty, " +
                                 "a zero-length string is returned.")
             },
@@ -66,7 +66,7 @@ public class FunStringJoin extends BasicFunction {
             "$arg sequence using $separator as a separator. If the value of the separator is the zero-length " +
             "string, then the members of the sequence are concatenated without a separator.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                     "The sequence to be joined to form the string. If it is empty, " +
                     "a zero-length string is returned."),
                 new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "The separator to be placed in the string between the items of $arg")

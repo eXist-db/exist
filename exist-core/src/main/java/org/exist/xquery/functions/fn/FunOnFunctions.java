@@ -44,12 +44,12 @@ public class FunOnFunctions extends BasicFunction {
                 new FunctionParameterSequenceType("name", Type.QNAME, Cardinality.EXACTLY_ONE, "Qualified name of the function"),
                 new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "The arity (number of arguments) of the function")
             },
-            new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_ONE, "The function if found, empty sequence otherwise")),
+            new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.ZERO_OR_ONE, "The function if found, empty sequence otherwise")),
         new FunctionSignature(
             new QName("function-name", Function.BUILTIN_FUNCTION_NS),
             "Returns the name of the function identified by a function item.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function item")
+                new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function item")
             },
             new FunctionReturnSequenceType(Type.QNAME, Cardinality.ZERO_OR_ONE,
             		"The name of the function or the empty sequence if $function is an anonymous function.")),
@@ -57,7 +57,7 @@ public class FunOnFunctions extends BasicFunction {
             new QName("function-arity", Function.BUILTIN_FUNCTION_NS),
             "Returns the arity of the function identified by a function item.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function item")
+                new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function item")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, 
             		"The arity of the function."))

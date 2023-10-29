@@ -76,8 +76,8 @@ public class GYearValue extends AbstractDateTimeValue {
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GYEAR:
-            case Type.ATOMIC:
+            case Type.G_YEAR:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
             case Type.STRING:
@@ -97,7 +97,7 @@ public class GYearValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GYEAR;
+        return Type.G_YEAR;
     }
 
     protected QName getXMLSchemaType() {

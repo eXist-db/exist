@@ -59,7 +59,7 @@ public class UntypedAtomicValue extends AtomicValue {
 
     public static AtomicValue convertTo(UntypedAtomicValue strVal, String value, int requiredType, final Expression expression) throws XPathException {
         switch (requiredType) {
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
             case Type.UNTYPED_ATOMIC:
                 return strVal == null ? new UntypedAtomicValue(expression, value) : strVal;
@@ -85,14 +85,14 @@ public class UntypedAtomicValue extends AtomicValue {
                     return BooleanValue.TRUE;
                 } else {
                     throw new XPathException(expression, ErrorCodes.FORG0001, "cannot cast '" +
-                            Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
+                            Type.getTypeName(Type.ANY_ATOMIC_TYPE) + "(\"" + value + "\")' to " +
                             Type.getTypeName(requiredType));
                 }
             case Type.FLOAT:
                 return new FloatValue(expression, value);
             case Type.DOUBLE:
                 return new DoubleValue(expression, value);
-            case Type.NUMBER:
+            case Type.NUMERIC:
                 //TODO : more complicated
                 return new DoubleValue(expression, value);
             case Type.DECIMAL:
@@ -136,15 +136,15 @@ public class UntypedAtomicValue extends AtomicValue {
                 return new TimeValue(expression, value);
             case Type.DATE:
                 return new DateValue(expression, value);
-            case Type.GYEAR:
+            case Type.G_YEAR:
                 return new GYearValue(expression, value);
-            case Type.GMONTH:
+            case Type.G_MONTH:
                 return new GMonthValue(expression, value);
-            case Type.GDAY:
+            case Type.G_DAY:
                 return new GDayValue(expression, value);
-            case Type.GYEARMONTH:
+            case Type.G_YEAR_MONTH:
                 return new GYearMonthValue(expression, value);
-            case Type.GMONTHDAY:
+            case Type.G_MONTH_DAY:
                 return new GMonthDayValue(expression, value);
             case Type.DURATION:
                 return new DurationValue(expression, value);
@@ -155,7 +155,7 @@ public class UntypedAtomicValue extends AtomicValue {
                 return new DayTimeDurationValue(expression, dtdv.getCanonicalDuration());
             default:
                 throw new XPathException(expression, ErrorCodes.FORG0001, "cannot cast '" +
-                        Type.getTypeName(Type.ATOMIC) + "(\"" + value + "\")' to " +
+                        Type.getTypeName(Type.ANY_ATOMIC_TYPE) + "(\"" + value + "\")' to " +
                         Type.getTypeName(requiredType));
         }
     }

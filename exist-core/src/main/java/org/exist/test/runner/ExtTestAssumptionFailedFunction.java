@@ -43,7 +43,7 @@ public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
         super("ext-test-assumption-failed-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
-                        optParam("error", Type.MAP, "error detail of the test")
+                        optParam("error", Type.MAP_ITEM, "error detail of the test")
                 ), context, parentName, notifier);
     }
 

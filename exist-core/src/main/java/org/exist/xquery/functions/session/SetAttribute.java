@@ -46,7 +46,7 @@ public class SetAttribute extends SessionFunction {
                             new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The attribute name"),
                             new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to be stored in the session by the attribute name")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
 
     public SetAttribute(final XQueryContext context) {

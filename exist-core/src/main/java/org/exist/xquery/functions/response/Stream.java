@@ -59,7 +59,7 @@ public class Stream extends StrictResponseFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("content", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
                             new FunctionParameterSequenceType("serialization-options", Type.STRING, Cardinality.EXACTLY_ONE, "The serialization options")},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             );
 
     public Stream(final XQueryContext context, final FunctionSignature signature) {

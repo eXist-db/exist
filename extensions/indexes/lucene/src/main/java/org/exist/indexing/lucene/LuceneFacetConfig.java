@@ -80,7 +80,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         if (isHierarchical) {
             // hierarchical facets may be multi-valued, so if we receive an array,
             // create one hierarchical facet for each member
-            if (result.hasOne() && result.getItemType() == Type.ARRAY) {
+            if (result.hasOne() && result.getItemType() == Type.ARRAY_ITEM) {
                 final ArrayType array = (ArrayType) result.itemAt(0);
                 for (Sequence seq : array.toArray()) {
                     createHierarchicalFacet(luceneDoc, seq);

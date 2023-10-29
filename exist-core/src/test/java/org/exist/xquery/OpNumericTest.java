@@ -32,6 +32,9 @@ import org.junit.*;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 
 public class OpNumericTest {
 
@@ -280,4 +283,63 @@ public class OpNumericTest {
 	public void minusReturnType10() {
 		assertEquals(Type.TIME, buildOp(ArithmeticOperator.SUBTRACTION, time, dtDuration).returnsType());
 	}
+
+	@Test
+	public void derivesFrom() {
+		// AT is ET
+		assertTrue(OpNumeric.derivesFrom(Type.DECIMAL, Type.DECIMAL));
+		assertTrue(OpNumeric.derivesFrom(Type.INTEGER, Type.INTEGER));
+		assertTrue(OpNumeric.derivesFrom(Type.DOUBLE, Type.DOUBLE));
+		assertTrue(OpNumeric.derivesFrom(Type.FLOAT, Type.FLOAT));
+		assertTrue(OpNumeric.derivesFrom(Type.NUMERIC, Type.NUMERIC));
+
+		// ET is the base type of AT
+		assertTrue(OpNumeric.derivesFrom(Type.INTEGER, Type.DECIMAL));
+		assertTrue(OpNumeric.derivesFrom(Type.INTEGER, Type.ANY_ATOMIC_TYPE));
+		assertTrue(OpNumeric.derivesFrom(Type.INTEGER, Type.ITEM));
+		assertFalse(OpNumeric.derivesFrom(Type.DECIMAL, Type.INTEGER));
+		assertFalse(OpNumeric.derivesFrom(Type.ANY_ATOMIC_TYPE, Type.INTEGER));
+		assertFalse(OpNumeric.derivesFrom(Type.ITEM, Type.INTEGER));
+
+		// ET is a pure union type of which AT is a member type
+		assertTrue(OpNumeric.derivesFrom(Type.DECIMAL, Type.NUMERIC));
+		assertTrue(OpNumeric.derivesFrom(Type.INTEGER, Type.NUMERIC));
+		assertTrue(OpNumeric.derivesFrom(Type.DOUBLE, Type.NUMERIC));
+		assertTrue(OpNumeric.derivesFrom(Type.FLOAT, Type.NUMERIC));
+		assertFalse(OpNumeric.derivesFrom(Type.NUMERIC, Type.DECIMAL));
+		assertFalse(OpNumeric.derivesFrom(Type.NUMERIC, Type.INTEGER));
+		assertFalse(OpNumeric.derivesFrom(Type.NUMERIC, Type.DOUBLE));
+		assertFalse(OpNumeric.derivesFrom(Type.NUMERIC, Type.FLOAT));
+
+		// There is a type MT such that derives-from(AT, MT) and derives-from(MT, ET)
+//		assertTrue(OpNumeric.derivesFrom(Type.UNSIGNED_BYTE, Type.UNSIGNED_INT));
+
+//		findAtMtMtEt();
+	}
+
+//	private void findAtMtMtEt() {
+//		for (final int actual : Type.typeNames.keySet()) {
+//			for (final int expected : Type.typeNames.keySet()) {
+//				if (actual != expected && test(actual, expected)) {
+//
+//					if (!Type.subTypeOf(actual, expected)) {
+//
+//						System.out.println("ACTUAL=" + Type.getTypeName(actual) + ", EXPECTED=" + Type.getTypeName(expected));
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	private boolean test(final int actualType, final int expectedType) {
+//		// iterate through AT's super-types
+//		for (int t = actualType; t != Type.ITEM && t != Type.ANY_TYPE && t != Type.EMPTY_SEQUENCE; t = Type.getSuperType(t)) {
+//			// is the super-type of AT a subtype of ET
+//			if (t != expectedType && Type.subTypeOf(t, expectedType)) {
+//				return true;
+//			}
+//		}
+//
+//		return false;
+//	}
 }

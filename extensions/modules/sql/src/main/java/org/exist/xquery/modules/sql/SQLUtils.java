@@ -23,11 +23,6 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Types;
 
-import org.exist.dom.QName;
-import org.exist.xquery.FunctionDSL;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -145,7 +140,7 @@ public final class SQLUtils {
             }
 
             case Types.NUMERIC: {
-                return (Type.NUMBER);
+                return (Type.NUMERIC);
             }
 
             case Types.SMALLINT: {

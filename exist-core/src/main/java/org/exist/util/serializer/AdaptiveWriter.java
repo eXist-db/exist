@@ -143,13 +143,13 @@ public class AdaptiveWriter extends IndentingXMLWriter {
                         final QName qn = ((QNameValue)item).getQName();
                         writeText("Q{" + qn.getNamespaceURI() + '}' + qn.getLocalPart());
                         break;
-                    case Type.ARRAY:
+                    case Type.ARRAY_ITEM:
                         writeArray((ArrayType)item);
                         break;
-                    case Type.MAP:
+                    case Type.MAP_ITEM:
                         writeMap((AbstractMapType)item);
                         break;
-                    case Type.FUNCTION_REFERENCE:
+                    case Type.FUNCTION:
                         writeFunctionItem((FunctionReference) item);
                         break;
                     default:

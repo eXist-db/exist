@@ -49,7 +49,7 @@ public class ModuleFunctions extends BasicFunction {
             "Returns a sequence of function items pointing to each public" +
                     "function in the module. If no $location is provided, then the" +
                     "current (calling) module is inspected.",
-            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function" +
+            returnsOptMany(Type.FUNCTION, "Sequence of function" +
                     "items containing all public functions in the module, or" +
                     "the empty sequence if the module is not known in the" +
                     "current context."),
@@ -65,7 +65,7 @@ public class ModuleFunctions extends BasicFunction {
     public static final FunctionSignature FS_MODULE_FUNCTIONS_BY_URI = functionSignature(
             "module-functions-by-uri",
             "Returns a sequence of function items pointing to each public function in the specified module.",
-            returnsOptMany(Type.FUNCTION_REFERENCE, "Sequence of function items containing all public functions in the module, "
+            returnsOptMany(Type.FUNCTION, "Sequence of function items containing all public functions in the module, "
                     + "or the empty sequence if the module is not known in the current context."),
             param("uri", Type.ANY_URI, "The URI of the module to be loaded.")
     );     

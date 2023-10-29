@@ -44,7 +44,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         super("ext-test-error-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
-                        optParam("error", Type.MAP, "error detail of the test. e.g. map { \"code\": $err:code, \"description\": $err:description, \"value\": $err:value, \"module\": $err:module, \"line-number\": $err:line-number, \"column-number\": $err:column-number, \"additional\": $err:additional, \"xquery-stack-trace\": $exerr:xquery-stack-trace, \"java-stack-trace\": $exerr:java-stack-trace}")
+                        optParam("error", Type.MAP_ITEM, "error detail of the test. e.g. map { \"code\": $err:code, \"description\": $err:description, \"value\": $err:value, \"module\": $err:module, \"line-number\": $err:line-number, \"column-number\": $err:column-number, \"additional\": $err:additional, \"xquery-stack-trace\": $exerr:xquery-stack-trace, \"java-stack-trace\": $exerr:java-stack-trace}")
                 ), context, parentName, notifier);
     }
 

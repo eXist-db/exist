@@ -95,7 +95,7 @@ public abstract class Modification extends AbstractExpression
      * @see org.exist.xquery.AbstractExpression#returnsType()
      */
     public int returnsType() {
-        return Type.EMPTY;
+        return Type.EMPTY_SEQUENCE;
     }
 
     /* (non-Javadoc)

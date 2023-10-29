@@ -229,14 +229,14 @@ public class VariableImpl implements Variable {
             {return;}
         
         final int requiredType = type.getPrimaryType();
-        if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
-        	if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
+        if(Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
+        	if(!Type.subTypeOf(value.getItemType(), Type.ANY_ATOMIC_TYPE))
                 {value = Atomize.atomize(value);}
         	
         	//TODO : we should recheck the dependencies of this method
         	//and remove that conversion !        	
         	
-            if(requiredType != Type.ATOMIC)
+            if(requiredType != Type.ANY_ATOMIC_TYPE)
                 {value = convert(value);}
         }
         if(!type.checkType(value)) {

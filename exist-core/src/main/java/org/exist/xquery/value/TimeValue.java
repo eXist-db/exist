@@ -29,7 +29,6 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.GregorianCalendar;
 
@@ -98,7 +97,7 @@ public class TimeValue extends AbstractDateTimeValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.TIME:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
 //		case Type.DATE_TIME :

@@ -50,7 +50,7 @@ public class CreateOrderIndex extends BasicFunction {
                                             "on the same nodes."),
                             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                                     "The node set to be indexed."),
-                            new FunctionParameterSequenceType("values", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                            new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                                     "The values to be indexed. There should be one value for each node in $nodes. " +
                                             "$values thus needs to contain as many items as $nodes. If not, a dynamic error " +
                                             "is triggered."),
@@ -67,7 +67,7 @@ public class CreateOrderIndex extends BasicFunction {
                                             "on the same nodes."),
                             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                                     "The node set to be indexed."),
-                            new FunctionParameterSequenceType("callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE,
+                            new FunctionParameterSequenceType("callback", Type.FUNCTION, Cardinality.EXACTLY_ONE,
                                     "A callback function which will be called for every node in the $nodes input set. " +
                                             "The function receives the current node as single argument and should return " +
                                             "an atomic value by which the node will be sorted."),
@@ -196,8 +196,8 @@ public class CreateOrderIndex extends BasicFunction {
             int cmp = 0;
             final AtomicValue a = this.value;
             final AtomicValue b = other.getValue();
-            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
+            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
             if (aIsEmpty) {
                 if (bIsEmpty)
                     // both values are empty

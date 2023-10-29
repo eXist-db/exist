@@ -73,7 +73,7 @@ public abstract class AbstractSequence implements Sequence {
         }
 
         final Item first = itemAt(0);
-        if (Type.subTypeOf(first.getType(), Type.ATOMIC)) {
+        if (Type.subTypeOf(first.getType(), Type.ANY_ATOMIC_TYPE)) {
             return first.convertTo(requiredType);
         } else {
             //TODO : clean atomization

@@ -438,10 +438,10 @@ public class FunctionDSL {
     /**
      * Creates a Function Return Type which describes no result.
      *
-     * @return a Function Return Type which has a cardinality of {@link Cardinality#EMPTY_SEQUENCE} and {@link Type#EMPTY}
+     * @return a Function Return Type which has a cardinality of {@link Cardinality#EMPTY_SEQUENCE} and {@link Type#EMPTY_SEQUENCE}
      */
     public static FunctionReturnSequenceType returnsNothing() {
-        return new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, null);
+        return new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, null);
     }
 
     /**

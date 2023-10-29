@@ -53,7 +53,7 @@ public class FunError extends BasicFunction {
             "the default qname, 'http://www.w3.org/2004/07/xqt-errors#err:FOER0000', " +
             "and the default error message, 'An error has been raised by the query'.",
             null,
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
         ),
         new FunctionSignature(
             new QName("error", Function.BUILTIN_FUNCTION_NS),
@@ -64,7 +64,7 @@ public class FunError extends BasicFunction {
                 new FunctionParameterSequenceType("qname", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname")
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
         ),
         new FunctionSignature(
             new QName("error", Function.BUILTIN_FUNCTION_NS),
@@ -77,7 +77,7 @@ public class FunError extends BasicFunction {
                 new FunctionParameterSequenceType("message", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The message")
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
         new FunctionSignature(
             new QName("error", Function.BUILTIN_FUNCTION_NS),
             "Indicates that an irrecoverable error has occurred. " +
@@ -91,7 +91,7 @@ public class FunError extends BasicFunction {
                 new FunctionParameterSequenceType("error-object", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The error object")
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
     };
 
     public FunError(XQueryContext context, FunctionSignature signature) {
@@ -103,7 +103,7 @@ public class FunError extends BasicFunction {
 
     @Override
     public int returnsType() {
-        return Type.EMPTY;
+        return Type.EMPTY_SEQUENCE;
     }
 
     @Override

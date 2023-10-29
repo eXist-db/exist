@@ -99,18 +99,18 @@ public class FunMin extends CollatingFunction {
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_COMMON_1 +
             FUNCTION_DESCRIPTION_COMMON_2,
-			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence")},
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the minimum value")
+			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence")},
+			new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the minimum value")
 		),
 		new FunctionSignature(
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_COMMON_1  + FUNCTION_DESCRIPTION_2_PARAM +
             FUNCTION_DESCRIPTION_COMMON_2,
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The input sequence"),
+				new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence"),
 				new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 			},
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the minimum value")
+			new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the minimum value")
 		)
 	};
 
@@ -170,17 +170,17 @@ public class FunMin extends CollatingFunction {
         		if (min == null)
                     {min = value;}
                 else {                	
-                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ATOMIC) {
+                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
                 				" and " + Type.getTypeName(value.getType()), value);
                 	}
                     //Any value of type xdt:untypedAtomic is cast to xs:double
-                    if (value.getType() == Type.ATOMIC) 
+                    if (value.getType() == Type.ANY_ATOMIC_TYPE)
                     	{value = value.convertTo(Type.DOUBLE);}
                 	//Numeric tests
-	                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
+	                if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
 	                	//Don't mix comparisons
-	                	if (!Type.subTypeOfUnion(min.getType(), Type.NUMBER))
+	                	if (!Type.subTypeOfUnion(min.getType(), Type.NUMERIC))
 	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
 	                				" and " + Type.getTypeName(value.getType()), min);}
 	                	if (((NumericValue) value).isNaN()) {

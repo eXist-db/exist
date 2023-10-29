@@ -36,7 +36,7 @@ public class InspectFunction extends BasicFunction {
             FN_INSPECT_FUNCTION_NAME,
             "Returns an XML fragment describing the function referenced by the passed function item.",
             returns(Type.NODE,"the signature of the function"),
-            param("function", Type.FUNCTION_REFERENCE, "The function item to inspect")
+            param("function", Type.FUNCTION, "The function item to inspect")
     );
 
     public InspectFunction(final XQueryContext context,  final FunctionSignature signature) {

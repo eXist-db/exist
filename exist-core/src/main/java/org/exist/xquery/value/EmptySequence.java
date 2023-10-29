@@ -29,7 +29,7 @@ public class EmptySequence extends AbstractSequence {
 
     @Override
     public int getItemType() {
-        return Type.EMPTY;
+        return Type.EMPTY_SEQUENCE;
     }
 
     @Override

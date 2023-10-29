@@ -111,7 +111,7 @@ class SerializationParameters {
         STANDALONE(Type.BOOLEAN, "omit"),
         SUPPRESS_INDENTATION(Type.QNAME, "()", true),
         UNDECLARE_PREFIXES(Type.BOOLEAN, NO),
-        USE_CHARACTER_MAPS(Type.MAP, "map{}"),
+        USE_CHARACTER_MAPS(Type.MAP_ITEM, "map{}"),
         VERSION(Type.STRING, "1.0");
 
         private final ParameterInfo info;

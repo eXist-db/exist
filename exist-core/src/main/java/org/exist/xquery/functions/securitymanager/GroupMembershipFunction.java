@@ -59,7 +59,7 @@ public class GroupMembershipFunction extends BasicFunction {
             new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group whoose membership you wish to modify."),
             new FunctionParameterSequenceType("member", Type.STRING, Cardinality.ONE_OR_MORE, "The user(s) to add to the group membership.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_REMOVE_GROUP_MEMBER = new FunctionSignature(
@@ -69,7 +69,7 @@ public class GroupMembershipFunction extends BasicFunction {
             new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group whoose membership you wish to modify."),
             new FunctionParameterSequenceType("member", Type.STRING, Cardinality.ONE_OR_MORE, "The user(s) to remove from the group membership.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_GET_GROUP_MEMBERS = new FunctionSignature(
@@ -88,7 +88,7 @@ public class GroupMembershipFunction extends BasicFunction {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to which you wish to add a manager(s)."),
                 new FunctionParameterSequenceType("manager", Type.STRING, Cardinality.ONE_OR_MORE, "The user(s) to add to the group managers.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_REMOVE_GROUP_MANAGER = new FunctionSignature(
@@ -98,7 +98,7 @@ public class GroupMembershipFunction extends BasicFunction {
                 new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group from which you wish to remove a manager(s)"),
                 new FunctionParameterSequenceType("manager", Type.STRING, Cardinality.ONE_OR_MORE, "The user(s) to remove from the group managers.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_GET_GROUP_MANAGERS = new FunctionSignature(
@@ -126,7 +126,7 @@ public class GroupMembershipFunction extends BasicFunction {
             new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the user account to set the primary group for."),
             new FunctionParameterSequenceType("group", Type.STRING, Cardinality.EXACTLY_ONE, "The group to set as the primary group for the user.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public GroupMembershipFunction(final XQueryContext context, final FunctionSignature signature) {

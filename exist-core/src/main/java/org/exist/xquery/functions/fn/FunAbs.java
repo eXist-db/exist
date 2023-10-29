@@ -48,10 +48,10 @@ public class FunAbs extends Function {
             "Returns the absolute value of the argument $number." +
             "If the argument is negative returns -$number otherwise returns $number.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMBER, 
+                new FunctionParameterSequenceType("number", Type.NUMERIC,
                     Cardinality.ZERO_OR_ONE, "The number")
             },
-            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE,
                 "The absolute value of the argument")
         );
 
@@ -84,7 +84,7 @@ public class FunAbs extends Function {
         	if (item instanceof NumericValue) {
 				value = (NumericValue) item;
 			} else {
-				value = (NumericValue) item.convertTo(Type.NUMBER);
+				value = (NumericValue) item.convertTo(Type.NUMERIC);
 			}
             result = value.abs();
         }

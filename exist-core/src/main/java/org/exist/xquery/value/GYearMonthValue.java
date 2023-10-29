@@ -77,8 +77,8 @@ public class GYearMonthValue extends AbstractDateTimeValue {
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GYEARMONTH:
-            case Type.ATOMIC:
+            case Type.G_YEAR_MONTH:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return new GYearMonthValue(getExpression(), this.calendar);
             case Type.STRING:
@@ -98,7 +98,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GYEARMONTH;
+        return Type.G_YEAR_MONTH;
     }
 
     protected QName getXMLSchemaType() {

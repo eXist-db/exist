@@ -160,7 +160,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * @see org.exist.xquery.value.AtomicValue#getType()
      */
     public int getType() {
-        return Type.FUNCTION_REFERENCE;
+        return Type.FUNCTION;
     }
 
     /* (non-Javadoc)
@@ -174,7 +174,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        if (requiredType == Type.FUNCTION_REFERENCE) {
+        if (requiredType == Type.FUNCTION) {
             return this;
         }
         throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));

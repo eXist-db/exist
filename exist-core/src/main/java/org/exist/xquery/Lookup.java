@@ -91,7 +91,7 @@ public class Lookup extends AbstractExpression {
         }
 
 
-        if (!(Type.subTypeOf(contextType, Type.MAP) || Type.subTypeOf(contextType, Type.ARRAY))) {
+        if (!(Type.subTypeOf(contextType, Type.MAP_ITEM) || Type.subTypeOf(contextType, Type.ARRAY_ITEM))) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "expression to the left of a lookup operator needs to be a sequence of maps or arrays");
         }

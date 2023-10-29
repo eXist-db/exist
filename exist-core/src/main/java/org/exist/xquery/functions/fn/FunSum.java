@@ -55,18 +55,18 @@ public class FunSum extends Function {
 			"Returns a value obtained by adding together the values in $arg. " +
             "If $arg is the the empty sequence the xs:double value 0.0e0 is returned.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up")},
-			new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
+				 new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up")},
+			new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "the sum of all numbers in $arg")
 		),
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
 			"Returns a value obtained by adding together the values in $arg. " +
             "If $arg is the the empty sequence then $default is returned.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up"),
-				 new FunctionParameterSequenceType("default", Type.ATOMIC, Cardinality.ZERO_OR_ONE, "The default value if $arg computes to the empty sequence")
+				 new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The sequence of numbers to be summed up"),
+				 new FunctionParameterSequenceType("default", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The default value if $arg computes to the empty sequence")
 				 },
-					new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE, "the sum of all numbers in $arg")
+					new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the sum of all numbers in $arg")
 		)
 	};
 				
@@ -112,7 +112,7 @@ public class FunSum extends Function {
 
             	value = check(value, sum);
     			
-        		if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
+        		if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
     				if (((NumericValue)value).isInfinite())
     					{gotInfinity = true;}    					
     				if (((NumericValue)value).isNaN()) {
@@ -128,7 +128,7 @@ public class FunSum extends Function {
         }
         
 		if (!gotInfinity) {
-			if (Type.subTypeOfUnion(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
+			if (Type.subTypeOfUnion(result.getItemType(), Type.NUMERIC) && ((NumericValue)result).isInfinite()) {
 				//Throw an overflow eception here since we get an infinity 
 				//whereas is hasn't been provided by the sequence
 			}

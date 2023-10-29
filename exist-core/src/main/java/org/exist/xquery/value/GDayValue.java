@@ -78,8 +78,8 @@ public class GDayValue extends AbstractDateTimeValue {
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.GDAY:
-            case Type.ATOMIC:
+            case Type.G_DAY:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
                 return this;
             case Type.STRING:
@@ -99,7 +99,7 @@ public class GDayValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GDAY;
+        return Type.G_DAY;
     }
 
     protected QName getXMLSchemaType() {

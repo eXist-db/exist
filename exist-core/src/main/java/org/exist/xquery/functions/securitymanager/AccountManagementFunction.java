@@ -52,7 +52,7 @@ public class AccountManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("primary-group", Type.STRING, Cardinality.EXACTLY_ONE, "The primary group of the user."),
             new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "Any supplementary groups of which the user should be a member.")
             }, 
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_METADATA = new FunctionSignature(
@@ -66,7 +66,7 @@ public class AccountManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("full-name", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the user."),
             new FunctionParameterSequenceType("description", Type.STRING, Cardinality.EXACTLY_ONE, "A description of the user.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP = new FunctionSignature(
@@ -77,7 +77,7 @@ public class AccountManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The User's password."),
             new FunctionParameterSequenceType("groups", Type.STRING, Cardinality.ZERO_OR_MORE, "Any supplementary groups of which the user should be a member.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA = new FunctionSignature(
@@ -90,7 +90,7 @@ public class AccountManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("full-name", Type.STRING, Cardinality.EXACTLY_ONE, "The full name of the user."),
             new FunctionParameterSequenceType("description", Type.STRING, Cardinality.EXACTLY_ONE, "A description of the user.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_REMOVE_ACCOUNT = new FunctionSignature(
@@ -99,7 +99,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The User's username.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_PASSWD = new FunctionSignature(
@@ -109,7 +109,7 @@ public class AccountManagementFunction extends BasicFunction {
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The User's username."),
                 new FunctionParameterSequenceType("password", Type.STRING, Cardinality.EXACTLY_ONE, "The User's new password."),
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_PASSWD_HASH = new FunctionSignature(
@@ -119,7 +119,7 @@ public class AccountManagementFunction extends BasicFunction {
                 new FunctionParameterSequenceType("username", Type.STRING, Cardinality.EXACTLY_ONE, "The User's username."),
                 new FunctionParameterSequenceType("password-digest", Type.STRING, Cardinality.EXACTLY_ONE, "The encoded digest of the User's new password (assumes eXist's default digest algorithm)."),
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     

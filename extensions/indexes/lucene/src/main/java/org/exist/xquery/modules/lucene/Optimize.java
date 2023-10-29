@@ -38,7 +38,7 @@ public class Optimize extends BasicFunction {
             "The optimize will block the index for other write operations and may take " +
             "some time. You need to be a user in group dba to call this function.",
             new SequenceType[0],
-            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "")
+            new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, "")
         );
 
     public Optimize(XQueryContext context) {

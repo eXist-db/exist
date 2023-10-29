@@ -50,12 +50,12 @@ public class Profile extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("verbosity", Type.INT, Cardinality.EXACTLY_ONE, "The verbosity of the profiling"),
             },
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
         new FunctionSignature(
             new QName("disable-profiling", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Disable profiling output within the query.",
             null,
-            new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE))
+            new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE))
     };
     
     public Profile(XQueryContext context, FunctionSignature signature) {

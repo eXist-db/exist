@@ -63,7 +63,7 @@ public class Index extends BasicFunction {
 	                + "<doc> <field name=\"field1\">data1</field> "
 	                + "<field name=\"field2\" boost=\"value\">data2</field> </doc> ")
 	            },
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "")
+	            new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, "")
 	        ),
             new FunctionSignature(
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
@@ -80,7 +80,7 @@ public class Index extends BasicFunction {
 	                "new Lucene document. If false, the document remains open and is not flushed to disk. " +
 	                "Call the ft:close function to explicitely close and flush the current document.")
 	            },
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "")
+	            new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, "")
 	        ),
     
             new FunctionSignature(
@@ -88,7 +88,7 @@ public class Index extends BasicFunction {
 	            "Close the current Lucene document and flush it to disk. Subsequent calls to " +
 	            "ft:index will write to a new Lucene document.",
 	            null,
-	            new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, ""))
+	            new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, ""))
     };
 
     /*

@@ -112,7 +112,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             case Type.ITEM:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.YEAR_MONTH_DURATION:
                 return this;
             case Type.STRING:

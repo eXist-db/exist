@@ -146,7 +146,7 @@ public class FunDeepEqual extends CollatingFunction {
 
     public static boolean deepEquals(Item a, Item b, Collator collator) {
         try {
-            if (a.getType() == Type.ARRAY || b.getType() == Type.ARRAY) {
+            if (a.getType() == Type.ARRAY_ITEM || b.getType() == Type.ARRAY_ITEM) {
                 if (a.getType() != b.getType()) {
                     return false;
                 }
@@ -162,7 +162,7 @@ public class FunDeepEqual extends CollatingFunction {
                 }
                 return true;
             }
-            if (a.getType() == Type.MAP || b.getType() == Type.MAP) {
+            if (a.getType() == Type.MAP_ITEM || b.getType() == Type.MAP_ITEM) {
                 if (a.getType() != b.getType()) {
                     return false;
                 }
@@ -181,16 +181,16 @@ public class FunDeepEqual extends CollatingFunction {
                 }
                 return true;
             }
-            final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
-            final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
+            final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ANY_ATOMIC_TYPE);
+            final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ANY_ATOMIC_TYPE);
             if (aAtomic || bAtomic) {
                 if (!aAtomic || !bAtomic)
                     {return false;}
                 try {
                     final AtomicValue av = (AtomicValue) a;
                     final AtomicValue bv = (AtomicValue) b;
-                    if (Type.subTypeOfUnion(av.getType(), Type.NUMBER) &&
-                        Type.subTypeOfUnion(bv.getType(), Type.NUMBER)) {
+                    if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC) &&
+                        Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)) {
                         //or if both values are NaN
                         if (((NumericValue) a).isNaN() && ((NumericValue) b).isNaN())
                             {return true;}

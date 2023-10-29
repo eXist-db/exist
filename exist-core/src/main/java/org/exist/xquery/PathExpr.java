@@ -256,7 +256,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                                 Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                                 //A positional predicate will be evaluated one time
                                 //TODO : reconsider since that may be expensive (type evaluation)
-                                !(this instanceof Predicate && Type.subTypeOfUnion(this.returnsType(), Type.NUMBER)) &&
+                                !(this instanceof Predicate && Type.subTypeOfUnion(this.returnsType(), Type.NUMERIC)) &&
                                 currentContext != null && !currentContext.isEmpty())) {
                     Sequence exprResult = new ValueSequence(Type.subTypeOf(expr.returnsType(), Type.NODE));
                     ((ValueSequence) exprResult).keepUnOrdered(unordered);
@@ -332,7 +332,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
 
             if (gotAtomicResult && result != null && !allowMixedNodesInReturn &&
-                    !Type.subTypeOf(result.getItemType(), Type.ATOMIC)) {
+                    !Type.subTypeOf(result.getItemType(), Type.ANY_ATOMIC_TYPE)) {
                 throw new XPathException(this, ErrorCodes.XPTY0018,
                         "Cannot mix nodes and atomic values in the result of a path expression.");
             }

@@ -98,7 +98,7 @@ public class SendEmailFunction extends BasicFunction {
                                     new FunctionParameterSequenceType("mail-handle", Type.LONG, Cardinality.EXACTLY_ONE, "The JavaMail session handle retrieved from mail:get-mail-session()"),
                                     new FunctionParameterSequenceType("email", Type.ELEMENT, Cardinality.ONE_OR_MORE, "The email message in the following format: <mail> <from/> <reply-to/> <to/> <cc/> <bcc/> <subject/> <message> <text/> <xhtml/> </message> <attachment filename=\"\" mimetype=\"\">xs:base64Binary</attachment> </mail>.")
                             },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             )
     };
 
