@@ -65,7 +65,7 @@ public class UnaryExpr extends PathExpr {
         
         Sequence result;
         
-        final Sequence item = getExpression(0).eval(contextSequence);
+        final Sequence item = getExpression(0).eval(contextSequence, null);
         if (item.isEmpty())
         	{return item;}
         

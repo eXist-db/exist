@@ -142,7 +142,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             for(int i = 0; i < rootExpr.getSubExpressionCount(); i++) {
                 final Expression subExpr = rootExpr.getSubExpression(i);
                 if(subExpr instanceof VariableDeclaration) {
-                    subExpr.eval(null);
+                    subExpr.eval(null, null);
                 }
             }
             //END workaround

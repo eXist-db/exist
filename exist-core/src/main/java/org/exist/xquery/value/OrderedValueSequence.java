@@ -328,7 +328,7 @@ public class OrderedValueSequence extends AbstractSequence {
             this.pos = position;
             values = new AtomicValue[orderSpecs.length];
             for (int i = 0; i < orderSpecs.length; i++) {
-                final Sequence seq = orderSpecs[i].getSortExpression().eval(null);
+                final Sequence seq = orderSpecs[i].getSortExpression().eval(null, null);
                 values[i] = AtomicValue.EMPTY_VALUE;
                 if (seq.hasOne()) {
                     values[i] = seq.itemAt(0).atomize();

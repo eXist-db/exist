@@ -326,7 +326,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             LOG.trace("Using QName index on type {}", Type.getTypeName(indexType));
         }
 
-        final Sequence rightSeq = getRight().eval( contextSequence );
+        final Sequence rightSeq = getRight().eval(contextSequence, null);
         
         // if the right hand sequence has more than one item, we need to merge them
         // into preselectResult
@@ -469,7 +469,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         if( ( !Dependency.dependsOn( rightOpDeps, Dependency.CONTEXT_ITEM ) ) ) {
                             result = quickNodeSetCompare( contextSequence );
                         } else {
-                            final NodeSet nodes = ( NodeSet )getLeft().eval( contextSequence );
+                            final NodeSet nodes = ( NodeSet )getLeft().eval(contextSequence, null);
                             result = nodeSetCompare( nodes, contextSequence );
                         }
                     } else {
@@ -477,7 +477,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     }
                 } else {
                     contextStep.setPreloadedData( preselectResult.getDocumentSet(), preselectResult );
-                    result = getLeft().eval( contextSequence ).toNodeSet();
+                    result = getLeft().eval(contextSequence, null).toNodeSet();
                     // the expression can be called multiple times, so we need to clear the previous preselectResult
                     preselectResult = null;
                 }
@@ -627,7 +627,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final AtomicValue lv = item.atomize();
 
                 do {
-                    final Sequence rs = getRight().eval( context.getNode().toSequence() );
+                    final Sequence rs = getRight().eval(context.getNode().toSequence(), null);
 
                     for( final SequenceIterator i2 = Atomize.atomize(rs).iterate(); i2.hasNext(); ) {
                         final AtomicValue rv = i2.nextItem().atomize();
@@ -642,7 +642,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             for( final NodeProxy item : nodes ) {
                 final AtomicValue lv = item.atomize();
-                final Sequence    rs = getRight().eval( contextSequence );
+                final Sequence    rs = getRight().eval(contextSequence, null);
 
                 for( final SequenceIterator i2 = Atomize.atomize(rs).iterate(); i2.hasNext(); ) {
                     final AtomicValue rv = i2.nextItem().atomize();
@@ -687,7 +687,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         final long     start   = System.currentTimeMillis();
 
         //get the NodeSet on the left
-        final Sequence leftSeq = getLeft().eval( contextSequence );
+        final Sequence leftSeq = getLeft().eval(contextSequence, null);
 
         if( !leftSeq.isPersistentSet() ) {
             return( genericCompare( leftSeq, contextSequence, null ) );
@@ -704,7 +704,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         //get the Sequence on the right
-        final Sequence rightSeq = getRight().eval( contextSequence );
+        final Sequence rightSeq = getRight().eval(contextSequence, null);
 
         //nothing on the right, so nothing to do
         if( rightSeq.isEmpty() ) {
@@ -1260,7 +1260,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         String collationURI;
 
         if( collationArg instanceof Expression ) {
-            collationURI = ( ( Expression )collationArg ).eval( contextSequence ).getStringValue();
+            collationURI = ( ( Expression )collationArg ).eval(contextSequence, null).getStringValue();
         } else if( collationArg instanceof StringValue ) {
             collationURI = ( ( StringValue )collationArg ).getStringValue();
         } else {

@@ -125,13 +125,13 @@ public class SMEvents implements Configurable {
 					final Sequence contextSequence;
 					final ContextItemDeclaration cid = context.getContextItemDeclartion();
 					if(cid != null) {
-						contextSequence = cid.eval(null);
+						contextSequence = cid.eval(null, null);
 					} else {
 						contextSequence = NodeSet.EMPTY_SET;
 					}
 
     	            call.analyze(new AnalyzeContextInfo());
-    	    		call.eval(contextSequence);
+    	    		call.eval(contextSequence, null);
         		}
             } catch(final XPathException e) {
             	//XXX: log

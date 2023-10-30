@@ -105,8 +105,8 @@ public class FunSubstringBefore extends CollatingFunction {
 		if (contextItem != null)
 			{contextSequence = contextItem.toSequence();}
 
-		final Sequence seq1 = arg0.eval(contextSequence);
-		final Sequence seq2 = arg1.eval(contextSequence);
+		final Sequence seq1 = arg0.eval(contextSequence, null);
+		final Sequence seq2 = arg1.eval(contextSequence, null);
 
         String value;
         String cmp;

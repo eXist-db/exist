@@ -66,8 +66,8 @@ public class FunctionFunction extends BasicFunction {
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	super.analyze(contextInfo);
-    	final String funcName = getArgument(0).eval(null).getStringValue();
-    	final int arity = ((NumericValue)getArgument(1).eval(null).itemAt(0)).getInt();
+    	final String funcName = getArgument(0).eval(null, null).getStringValue();
+    	final int arity = ((NumericValue)getArgument(1).eval(null, null).itemAt(0)).getInt();
     	final FunctionCall funcCall = lookupFunction(funcName, arity);
     	contextInfo.addFlag(SINGLE_STEP_EXECUTION);
     	funcCall.analyze(contextInfo);

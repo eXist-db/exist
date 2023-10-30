@@ -198,11 +198,11 @@ public class FieldLookup extends Function implements Optimizable {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
 
-        Sequence fieldSeq = getArgument(0).eval(contextSequence);
+        Sequence fieldSeq = getArgument(0).eval(contextSequence, null);
         RangeIndex.Operator[] operators = null;
         int j = 1;
         if (isCalledAs("field")) {
-            Sequence operatorSeq = getArgument(1).eval(contextSequence);
+            Sequence operatorSeq = getArgument(1).eval(contextSequence, null);
             operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
             int i = 0;
             for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
@@ -217,7 +217,7 @@ public class FieldLookup extends Function implements Optimizable {
 
         Sequence[] keys = new Sequence[getArgumentCount() - j];
         for (int i = j; i < getArgumentCount(); i++) {
-            keys[i - j] = Atomize.atomize(getArgument(i).eval(contextSequence));
+            keys[i - j] = Atomize.atomize(getArgument(i).eval(contextSequence, null));
         }
         DocumentSet docs = contextSequence.getDocumentSet();
 
@@ -261,11 +261,11 @@ public class FieldLookup extends Function implements Optimizable {
             if (contextSequence != null)
                 contextSet = contextSequence.toNodeSet();
 
-            Sequence fields = getArgument(0).eval(contextSequence);
+            Sequence fields = getArgument(0).eval(contextSequence, null);
             RangeIndex.Operator[] operators = null;
             int j = 1;
             if (isCalledAs("field")) {
-                Sequence operatorSeq = getArgument(1).eval(contextSequence);
+                Sequence operatorSeq = getArgument(1).eval(contextSequence, null);
                 operators = new RangeIndex.Operator[operatorSeq.getItemCount()];
                 int i = 0;
                 for (SequenceIterator si = operatorSeq.iterate(); si.hasNext(); i++) {
@@ -283,7 +283,7 @@ public class FieldLookup extends Function implements Optimizable {
             Sequence[] keys = new Sequence[getArgumentCount() - j];
             SequenceIterator fieldIter = fields.unorderedIterator();
             for (int i = j; i < getArgumentCount(); i++) {
-                keys[i - j] = getArgument(i).eval(contextSequence);
+                keys[i - j] = getArgument(i).eval(contextSequence, null);
                 int targetType = Type.ITEM;
                 if (fieldIter.hasNext()) {
                     String field = fieldIter.nextItem().getStringValue();

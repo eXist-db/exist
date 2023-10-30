@@ -87,12 +87,12 @@ public class Update extends Modification {
             contextSequence = contextItem.toSequence();
         }
 
-        final Sequence contentSeq = value.eval(contextSequence);
+        final Sequence contentSeq = value.eval(contextSequence, null);
         if (contentSeq.isEmpty()) {
             throw new XPathException(this, Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         }
 
-        final Sequence inSeq = select.eval(contextSequence);
+        final Sequence inSeq = select.eval(contextSequence, null);
 
         //START trap Update failure
         /* If we try and Update a node at an invalid location,

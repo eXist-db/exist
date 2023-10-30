@@ -223,7 +223,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     @Override
     public Sequence eval(Sequence contextSequence) throws XPathException {
-        return accessorFunc.eval(contextSequence);
+        return accessorFunc.eval(contextSequence, null);
     }
 
     @Override

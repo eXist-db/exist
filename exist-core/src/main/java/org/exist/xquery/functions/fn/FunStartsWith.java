@@ -96,8 +96,8 @@ public class FunStartsWith extends CollatingFunction {
 	    {contextSequence = contextItem.toSequence();}
 
         Sequence result;
-	final String s1 = getArgument(0).eval(contextSequence).getStringValue();
-	final String s2 = getArgument(1).eval(contextSequence).getStringValue();        
+	final String s1 = getArgument(0).eval(contextSequence, null).getStringValue();
+	final String s2 = getArgument(1).eval(contextSequence, null).getStringValue();
 	if(s1.isEmpty() || s2.isEmpty())
             {result = Sequence.EMPTY_SEQUENCE;}
         else {
