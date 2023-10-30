@@ -236,7 +236,7 @@ public class ExternalModuleImpl implements ExternalModule {
             }
             decl.analyze(declContextInfo);
 
-            decl.eval(getContext().getContextItem());
+            decl.eval(getContext().getContextItem(), null);
             var = mStaticVariables.get(qname);
         }
         if (var == null) {

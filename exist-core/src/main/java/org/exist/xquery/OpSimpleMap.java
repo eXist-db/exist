@@ -51,7 +51,7 @@ public class OpSimpleMap extends AbstractExpression {
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null)
             {contextSequence = contextItem.toSequence();}
-        final Sequence leftSeq = left.eval(contextSequence);
+        final Sequence leftSeq = left.eval(contextSequence, null);
         if (leftSeq.isEmpty())
             {return Sequence.EMPTY_SEQUENCE;}
 
@@ -59,7 +59,7 @@ public class OpSimpleMap extends AbstractExpression {
         int pos = 0;
         for (final SequenceIterator i = leftSeq.iterate(); i.hasNext(); pos++) {
             context.setContextSequencePosition(pos, leftSeq);
-            final Sequence rightSeq = right.eval(i.nextItem().toSequence());
+            final Sequence rightSeq = right.eval(i.nextItem().toSequence(), null);
             result.addAll(rightSeq);
         }
         return result;

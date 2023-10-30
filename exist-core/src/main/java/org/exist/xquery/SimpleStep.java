@@ -74,7 +74,7 @@ public class SimpleStep extends Step {
 			{contextSequence = contextItem.toSequence();}
         
         Sequence result = Sequence.EMPTY_SEQUENCE;
-	    final Sequence set = expression.eval(contextSequence);
+	    final Sequence set = expression.eval(contextSequence, null);
 
         if (!set.isEmpty()) {
             if (set.isPersistentSet()) {

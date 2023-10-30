@@ -98,7 +98,7 @@ public class OrderedValueSequenceTest {
 
     private static OrderedValueSequence mockOrderedValueSequence(final int size) throws XPathException {
         final Expression mockSortExpr = createMock(Expression.class);
-        expect(mockSortExpr.eval(null)).andReturn(Sequence.EMPTY_SEQUENCE).anyTimes();
+        expect(mockSortExpr.eval(null, null)).andReturn(Sequence.EMPTY_SEQUENCE).anyTimes();
         replay(mockSortExpr);
 
         final OrderedValueSequence orderedValueSequence = new OrderedValueSequence(new OrderSpec[] { new OrderSpec(null, mockSortExpr) }, size);

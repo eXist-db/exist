@@ -122,13 +122,13 @@ public class FunNormalizeUnicode extends Function {
 		
         Sequence result;
 
-        final Sequence s1 = getArgument(0).eval(contextSequence);
+        final Sequence s1 = getArgument(0).eval(contextSequence, null);
         if (s1.isEmpty())
             {result = StringValue.EMPTY_STRING;}
         else {
             String newNormalizationForm = "NFC";
 			if (getArgumentCount() > 1)
-				{newNormalizationForm = getArgument(1).eval(contextSequence).getStringValue().toUpperCase().trim();}
+				{newNormalizationForm = getArgument(1).eval(contextSequence, null).getStringValue().toUpperCase().trim();}
 			//TODO : handle the "FULLY-NORMALIZED" string...
 			if (newNormalizationForm.isEmpty())
 				{result =  new StringValue(this, s1.getStringValue());}

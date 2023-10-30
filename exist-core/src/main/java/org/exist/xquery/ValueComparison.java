@@ -93,7 +93,7 @@ public class ValueComparison extends GeneralComparison {
                 }
                 do {
                     final AtomicValue lv = current.atomize();
-                    final Sequence rs = getRight().eval(context.getNode().toSequence());
+                    final Sequence rs = getRight().eval(context.getNode().toSequence(), null);
                     if (!rs.hasOne()) {
                         throw new XPathException(this, ErrorCodes.XPTY0004,
 								"Type error: sequence with less or more than one item is not allowed here");
@@ -104,7 +104,7 @@ public class ValueComparison extends GeneralComparison {
                 } while ((context = context.getNextDirect()) != null);
             }
         } else {
-            final Sequence rs = getRight().eval(null);
+            final Sequence rs = getRight().eval(null, null);
             if (!rs.hasOne())
                 {throw new XPathException(this, ErrorCodes.XPTY0004,
 						"Type error: sequence with less or more than one item is not allowed here");}

@@ -25,16 +25,12 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.source.Source;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
 
 /**
  * Base interface implemented by all classes which are part
- * of an XQuery/XPath expression. The main method is 
- * {@link #eval(Sequence, Item)}. Please
- * read the description there.
+ * of an XQuery/XPath expression.
  */
-public interface Expression {
+public interface Expression extends Materializable {
 
     // Flags to be passed to analyze:
     /**
@@ -101,62 +97,15 @@ public interface Expression {
 
     /**
      * Statically analyze the expression and its subexpressions.
-     * 
+     *
      * During the static analysis phase, the query engine can detect
      * unknown variables and some type errors.
      *
      * @param contextInfo the context infomation.
-     * 
+     *
      * @throws XPathException if an error occurs during the analysis.
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
-
-    /**
-     * Evaluate the expression represented by this object.
-     *
-     * Depending on the context in which this expression is executed,
-     * either the context sequence, the context item or both of them may
-     * be set. An implementing class should know how to handle this.
-     *
-     * The general contract is as follows: if the {@link Dependency#CONTEXT_ITEM}
-     * bit is set in the bit field returned by {@link #getDependencies()}, the eval method will
-     * be called once for every item in the context sequence. The <b>contextItem</b>
-     * parameter will be set to the current item. Otherwise, the eval method will only be called
-     * once for the whole context sequence and <b>contextItem</b> will be null.
-     *
-     * eXist tries to process the entire context set in one, single step whenever
-     * possible. Thus, most classes only expect context to contain a list of
-     * nodes which represents the current context of the expression.
-     *
-     * The position() function in XPath is an example for an expression,
-     * which requires both, context sequence and context item to be set.
-     *
-     * The context sequence might be a node set, a sequence of atomic values or a single
-     * node or atomic value.
-     *
-     * @param contextSequence the current context sequence.
-     * @param contextItem a single item, taken from context. This defines the item,
-     * the expression should work on.
-     *
-     * @return the result sequence.
-     *
-     * @throws XPathException if an error occurs during evaluation.
-     */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException;
-
-    /**
-     * Evaluate the expression represented by this object.
-     *
-     * An overloaded method which just passes the context sequence depending on the
-     * expression context.
-     *
-     * @param contextSequence the current context sequence.
-     *
-     * @return the result sequence.
-     *
-     * @throws XPathException if an error occurs during evaluation.
-     */
-    public Sequence eval(Sequence contextSequence) throws XPathException;
 
     public void setPrimaryAxis(int axis);
 

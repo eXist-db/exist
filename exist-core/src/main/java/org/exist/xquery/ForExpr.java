@@ -245,7 +245,7 @@ public class ForExpr extends BindingExpression {
         //Reset the context position
         context.setContextSequencePosition(0, null);
 
-        resultSequence.addAll(returnExpr.eval(null));
+        resultSequence.addAll(returnExpr.eval(null, null));
 
         // free resources
         var.destroy(context, resultSequence);

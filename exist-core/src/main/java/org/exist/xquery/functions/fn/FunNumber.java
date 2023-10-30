@@ -111,7 +111,7 @@ public class FunNumber extends Function {
         
         if(getSignature().getArgumentCount() == 1) {
             //value is from $arg
-            arg = getArgument(0).eval(contextSequence);
+            arg = getArgument(0).eval(contextSequence, null);
             
             if(arg.isEmpty()) {
                 result = DoubleValue.NaN;

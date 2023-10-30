@@ -78,7 +78,7 @@ public class Delete extends Modification {
             contextSequence = contextItem.toSequence();
         }
 
-        final Sequence inSeq = select.eval(contextSequence);
+        final Sequence inSeq = select.eval(contextSequence, null);
 
         //START trap Delete failure
         /* If we try and Delete a node at an invalid location,

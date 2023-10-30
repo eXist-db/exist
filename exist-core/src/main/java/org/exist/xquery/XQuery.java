@@ -439,10 +439,10 @@ public class XQuery {
                     call.setArguments(functionArgs);
                     call.analyze(new AnalyzeContextInfo());
 
-                    result = call.eval(contextSequence);
+                    result = call.eval(contextSequence, null);
 
                 } else {
-                    result = expression.eval(contextSequence);
+                    result = expression.eval(contextSequence, null);
                 }
 
                 if(LOG.isDebugEnabled()) {

@@ -128,7 +128,7 @@ public class FunNot extends Function {
     			}
 
     			// evaluate argument expression
-    			final Sequence argSeq = arg.eval(result);
+    			final Sequence argSeq = arg.eval(result, null);
     			NodeSet argSet;
     			if (contextId != Expression.NO_CONTEXT_ID) {
 	    			argSet = argSeq.toNodeSet().getContextNodes(contextId);

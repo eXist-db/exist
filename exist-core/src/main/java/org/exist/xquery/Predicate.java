@@ -140,7 +140,7 @@ public class Predicate extends PathExpr {
 
     public Sequence preprocess() throws XPathException {
         final Expression inner = steps.size() == 1 ? getSubExpression(0) : this;
-        return inner.eval(null);
+        return inner.eval(null, null);
     }
 
     public Sequence evalPredicate(final Sequence outerSequence,
@@ -193,7 +193,7 @@ public class Predicate extends PathExpr {
                         // if not, do not pass the context sequence to avoid cardinality errors
                         context.setContextSequencePosition(0, contextSequence);
                         innerSeq = inner.eval(Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM)
-                                ? contextSequence : null);
+                                ? contextSequence : null, null);
                     }
 
                     // We must check for empty sequences here to avoid an NPE
@@ -239,7 +239,7 @@ public class Predicate extends PathExpr {
                     // computation should now be better
                     !((inner instanceof GeneralComparison) &&
                             ((GeneralComparison) inner).invalidNodeEvaluation)) {
-                innerSeq = inner.eval(contextSequence);
+                innerSeq = inner.eval(contextSequence, null);
                 // Only if we have an actual *singleton* of numeric items
                 if (innerSeq.hasOne()
                         && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMBER)) {
@@ -255,7 +255,7 @@ public class Predicate extends PathExpr {
                  * WARNING : this sequence will be evaluated with
                  * preloadable nodesets !
                  */
-                innerSeq = inner.eval(contextSequence);
+                innerSeq = inner.eval(contextSequence, null);
                 // Try to promote a boolean evaluation to a nodeset one
                 // We are now sure of the inner sequence return type
                 if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)

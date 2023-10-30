@@ -300,7 +300,7 @@ public class Lookup extends Function implements Optimizable {
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
         RangeIndexConfigElement config = findConfiguration(contextSequence);
         int targetType = config != null ? config.getType() : Type.ITEM;
-        Sequence keySeq = Atomize.atomize(getArgument(1).eval(contextSequence));
+        Sequence keySeq = Atomize.atomize(getArgument(1).eval(contextSequence, null));
         AtomicValue[] keys = new AtomicValue[keySeq.getItemCount()];
         for (int i = 0; i < keys.length; i++) {
             if (targetType == Type.ITEM) {
@@ -331,7 +331,7 @@ public class Lookup extends Function implements Optimizable {
         NodeSet result;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
-            Sequence input = getArgument(0).eval(contextSequence);
+            Sequence input = getArgument(0).eval(contextSequence, null);
             if (!(input instanceof VirtualNodeSet) && input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
@@ -368,7 +368,7 @@ public class Lookup extends Function implements Optimizable {
         } else {
 //            long start = System.currentTimeMillis();
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence).toNodeSet();
+            result = getArgument(0).eval(contextSequence, null).toNodeSet();
             //LOG.info("eval took " + (System.currentTimeMillis() - start));
         }
         return result;

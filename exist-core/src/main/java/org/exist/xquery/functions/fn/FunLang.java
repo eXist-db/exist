@@ -119,7 +119,7 @@ public class FunLang extends Function {
 			{contextSequence = contextItem.toSequence();}
 		
 		if (getArgumentCount() == 2) 
-            {contextSequence = getArgument(1).eval(contextSequence);}
+            {contextSequence = getArgument(1).eval(contextSequence, null);}
 		
 		if (contextSequence == null)
 			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
@@ -128,9 +128,9 @@ public class FunLang extends Function {
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
 			{throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");}
         else {
-			final String lang = getArgument(0).eval(contextSequence).getStringValue();
+			final String lang = getArgument(0).eval(contextSequence, null).getStringValue();
 			
-			Sequence seq = query.eval(contextSequence);
+			Sequence seq = query.eval(contextSequence, null);
 			if (seq.isEmpty()) {
 				result = BooleanValue.FALSE ;
 			} else if (seq.hasOne()) {

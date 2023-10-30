@@ -90,7 +90,7 @@ public class GroupByClause extends AbstractFLWORClause {
         final List<Sequence> groupingValues = new ArrayList<>();
         final List<AtomicValue> groupingKeys = new ArrayList<>();
         for (GroupSpec spec: groupSpecs) {
-            final Sequence groupingSeq = spec.getGroupExpression().eval(null);
+            final Sequence groupingSeq = spec.getGroupExpression().eval(null, null);
             if (groupingSeq.getItemCount() > 1) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable " + spec.getKeyVarName() + " " +
                         "evaluates to more than one item");
@@ -164,7 +164,7 @@ public class GroupByClause extends AbstractFLWORClause {
                         final LocalVariable var = data.variables.get(entry.getKey());
                         var.setValue(entry.getValue());
                     }
-                    final Sequence r = returnExpr.eval(null);
+                    final Sequence r = returnExpr.eval(null, null);
                     result.addAll(r);
                 }
             } finally {

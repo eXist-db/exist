@@ -105,7 +105,7 @@ public class FunLocalName extends Function {
         // check if the node is passed as an argument or should be taken from
         // the context sequence
         if (getArgumentCount() > 0) {
-            final Sequence seq = getArgument(0).eval(contextSequence);
+            final Sequence seq = getArgument(0).eval(contextSequence, null);
             if (!seq.isEmpty()) {
                 item = seq.itemAt(0);
             } else {

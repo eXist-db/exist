@@ -93,7 +93,7 @@ public class ArrowOperator extends AbstractExpression {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        contextSequence = leftExpr.eval(contextSequence);
+        contextSequence = leftExpr.eval(contextSequence, null);
 
         final FunctionReference fref;
         if (fcall != null) {
