@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:pkg="http://expath.org/ns/pkg"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    elementFormDefault="qualified"
+    targetNamespace="http://expath.org/ns/pkg">
+    
+    <xs:annotation>
+        <xs:documentation>A schema for EXPath Packaging (i.e. <code>expath-pkg.xml</code>) file as per the <a href="http://expath.org/spec/pkg">EXPath Packaging System - Candidate Module 9 May 2012'</a> specification.</xs:documentation>
+        <xs:appinfo>
+            <dcterms:title>Schema for EXPath Packaging</dcterms:title>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2013-11-03T11:36:19.343+01:00</dcterms:created>
+            <dcterms:creator>Adam Retter</dcterms:creator>
+        </xs:appinfo>
+    </xs:annotation>
+    
+    <xs:element name="package">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="title" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>A simple description of the package for humans.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="home" minOccurs="0" type="xs:anyURI">
+                    <xs:annotation>
+                        <xs:documentation>A URI to find more information about the package.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="pkg:dependencyType">
+                    <xs:annotation>
+                        <xs:documentation>A dependency of this package.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:group ref="pkg:component" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:anyURI" use="required">
+                <xs:annotation>
+                    <xs:documentation>The name of the package. A package is named using an IRI, as defined by <a href="file:///Users/aretter/Desktop/expath-pkg-spec.html#rfc3987">[RFC 3987]</a>, excepted any IRI using the file: scheme (most frequent choices are http: and urn: scheme URIs). Note that the definition of IRI excludes relative references.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="abrev" type="xs:NCName" use="required"/>
+            <xs:attribute name="version" type="pkg:semVer2Type" use="required"/>
+            <xs:attribute name="spec" type="xs:string" use="required" fixed="1.0">
+                <xs:annotation>
+                    <xs:documentation>The version of the packaging specification the package conforms to.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:group name="component">
+        <xs:annotation>
+            <xs:documentation>The standard component kinds supported by this specification, and how they contribute to the package descriptor document type. Every component has the same basic information: it associates a public URI to a specific file within the content directory. The file element contains a path, relative to the package content directory. Both elements in a component are of type anyURI.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="xslt" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>An XSLT file is associated a public import URI. This is the URI to use in an XSLT import instruction (aka xsl:import) to import the XSLT file provided in the package.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="xquery" type="pkg:xqueryType">
+                    <xs:annotation>
+                        <xs:documentation>An XQuery library module is referenced by its namespace URI. Thus the xquery element associates a namespace URI to an XQuery file. An importing module just need to use an import statement of the form <code>import module namespace xx = "&lt;namespace-uri&gt;'"</code>;. An XQuery main module is associated a public URI. Usually an XQuery package will provide functions through library modules, but in some cases one can want to provide main modules as well.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="xproc" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>An XProc pipeline, like an XSLT stylesheet, is associated a public import URI, aimed to be used in an XProc p:import statement.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="xsd" type="pkg:xsdType">
+                    <xs:annotation>
+                        <xs:documentation>An XML schema can be imported using its target namespace. It is not possible to set several files as several sources for the schema. If the schema is spread over multiple files, there must be one top-level file that includes the other files.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="rng" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>A RelaxNG schema, like an XSLT stylesheet, is associated a public import URI, aimed to be used in the include element for an RNG schema.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="rnc" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>A RelaxNG schema, like an XSLT stylesheet, is associated a public import URI, aimed to be used in an import directive for an RNC schema.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="schematron" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>A Schematron schema is associated a public URI.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="nvdl" type="pkg:importUriFromFileType">
+                    <xs:annotation>
+                        <xs:documentation>An NVDL script is associated a public URI.</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="dtd" type="pkg:dtdType">
+                    <xs:annotation>
+                        <xs:documentation>A DTD file is associated a public URI.</xs:documentation>
+                    </xs:annotation>                    
+                </xs:element>
+                <xs:element name="resource" type="pkg:resourceType">
+                    <xs:annotation>
+                        <xs:documentation>A resource file is associated a public URI. This can be any kind of file. It has to be used in accordance to its content. For instance accessing a text file through fn:unparsed-text() is correct, while using fn:doc() is not (it will raise an error because it parses the content as XML).</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+    
+
+    <xs:complexType name="xqueryType">
+        <xs:attribute name="namespace" type="xs:anyURI" use="optional">
+            <xs:annotation>
+                <xs:documentation>The URI of the Namespace of the XQuery Library Module.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="pkg:import-uri" use="optional">
+            <xs:annotation>
+                <xs:documentation>The URI of where the XQuery Main Module should be accessible from.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="pkg:file" use="required"/>
+        <xs:assert test="(@namespace and not(@import-uri)) or (not(@namespace) and @import-uri)">
+            <xs:annotation>
+                <xs:documentation>The @namespace and @import-uri attributes are mutually exclusive.</xs:documentation>
+            </xs:annotation>
+        </xs:assert>
+    </xs:complexType>
+    
+    <xs:complexType name="xsdType">
+        <xs:attribute name="namespace" type="xs:anyURI" use="optional">
+            <xs:annotation>
+                <xs:documentation>The URI of the Target Namespace of the XML Schema.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="pkg:import-uri" use="optional">
+            <xs:annotation>
+                <xs:documentation>The import-uri can be used to define a schema location for this schema component. This can be useful for schema without target namespace, or for some specific usages, like when using xs:redefine.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute ref="pkg:file" use="required"/>
+        <xs:assert test="(@namespace and not(@import-uri)) or (not(@namespace) and @import-uri)">
+            <xs:annotation>
+                <xs:documentation>The @namespace and @import-uri attributes are mutually exclusive.</xs:documentation>
+            </xs:annotation>
+        </xs:assert>
+    </xs:complexType>
+    
+    <xs:complexType name="dtdType">
+        <xs:attribute name="public-id" type="pkg:dtdFormalPublicIdentifierType" use="optional"/>
+        <xs:attribute name="system-id" type="xs:anyURI"/>
+        <xs:attribute ref="pkg:file"/>
+    </xs:complexType>
+    
+    <xs:simpleType name="dtdFormalPublicIdentifierType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value=".+\/\/.+\/\/.+\/\/.+"/>
+        </xs:restriction>
+    </xs:simpleType>
+    
+    <xs:complexType name="resourceType">
+        <xs:attribute name="public-uri" type="xs:anyURI"/>
+        <xs:attribute ref="pkg:file"/>
+    </xs:complexType>
+
+    <xs:complexType name="importUriFromFileType">
+        <xs:attribute ref="pkg:import-uri" use="required"/>
+        <xs:attribute ref="pkg:file" use="required"/>
+    </xs:complexType>
+    
+    <xs:attribute name="import-uri" type="xs:anyURI"/>
+    
+    <xs:attribute name="file" type="xs:anyURI">
+        <xs:annotation>
+            <xs:documentation>Contains a path, relative to the package content directory.</xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+    
+    <xs:complexType name="dependencyType">
+        <xs:annotation>
+            <xs:documentation>Must specify a 'package' or 'processor', and one of 'versions', 'semver', or ('semver-min' and/or 'semver-max').</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="package" type="xs:anyURI" use="optional"/>
+        <xs:attribute name="processor" type="xs:string" use="optional"/>
+
+        <xs:attribute name="versions" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>The exact set of acceptable versions for the secondary package, separated by spaces.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="semver" type="pkg:semVer2OrSemVer2TemplateType"/>
+        <xs:attribute name="semver-min" type="pkg:semVer2OrSemVer2TemplateType"/>
+        <xs:attribute name="semver-max" type="pkg:semVer2OrSemVer2TemplateType"/>
+        
+        <xs:assert test="(@package and not(@processor)) or (not(@package) and @processor)">
+            <xs:annotation>
+                <xs:documentation>The @package and @processor attributes are mutually exclusive.</xs:documentation>
+            </xs:annotation>
+        </xs:assert>
+        
+        <xs:assert test="(@versions and not(@semver) and not(@semver-min) and not(@semver-max)) or (not(@versions) and @semver and not(@semver-min) and not(@semver-max)) or (not(@versions) and not(@semver) and (@semver-min or @semver-max))">
+            <xs:annotation>
+                <xs:documentation>The @versions, @semver, and (@semver-min and/or @semver-max) attributes are mutually exclusive.</xs:documentation>
+            </xs:annotation>
+        </xs:assert>
+    </xs:complexType>
+    
+    <xs:simpleType name="semVer2OrSemVer2TemplateType">
+        <xs:union memberTypes="pkg:semVer2Type pkg:semVer2TemplateType"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="semVer2Type">
+        <xs:annotation>
+            <xs:documentation>A <a href="https://semver.org/">SemVer 2.0.0</a> version number.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+    
+    <xs:simpleType name="semVer2TemplateType">
+        <xs:annotation>
+            <xs:documentation>A subpart (i.e. only the major version, or the major and the minor versions, or the major, the minor and the patch version) of a <a href="https://semver.org/">SemVer 2.0.0</a> version number. For instance 1.9 is a valid SemVer template (because it does not have any patch number).</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+</xs:schema>

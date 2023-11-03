@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cxan="http://cxan.org/ns/package"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    elementFormDefault="qualified"
+    targetNamespace="http://cxan.org/ns/package">
+    
+    <xs:annotation>
+        <xs:documentation>A schema for the EXPath Packaging CXAN concept.</xs:documentation>
+        <xs:appinfo>
+            <dcterms:title>Schema for the EXPath Packaging CXAN concept.</dcterms:title>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2013-11-03T11:36:19.343+01:00</dcterms:created>
+            <dcterms:creator>Adam Retter</dcterms:creator>
+        </xs:appinfo>
+    </xs:annotation>
+    
+    <xs:element name="package">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="cxan:author"/>
+                <xs:element ref="cxan:category" maxOccurs="unbounded"/>
+                <xs:element ref="cxan:tag" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:NCName"/>
+            <xs:attribute name="name" type="xs:anyURI"/>
+            <xs:attribute name="version" type="xs:NCName"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="author">
+        <xs:annotation>
+            <xs:documentation>A textual description of the author.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="id" use="optional" type="xs:NCName">
+                        <xs:annotation>
+                            <xs:documentation>A simple identifier for the author.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="category" type="xs:NCName"/>
+    
+    <xs:element name="tag" type="xs:NCName"/>
+
+</xs:schema>
