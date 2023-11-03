@@ -2228,6 +2228,7 @@ throws PermissionDeniedException, EXistException, XPathException
     { path.add(step); }
     |
     step=functionReference [path]
+    step=postfixExpr [step]
     { path.add(step); }
     |
     step=inlineFunctionDecl [path]
