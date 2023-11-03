@@ -6,7 +6,9 @@
     TODO: Remove optional attributes in favour of well defined/named parent elements
 -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
+           version="1.0.0">
     
     <!-- Shared types -->
     <xs:simpleType name="yes_no">
