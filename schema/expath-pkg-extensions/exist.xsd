@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:eepkg="http://exist-db.org/ns/expath-pkg"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    elementFormDefault="qualified"
+    targetNamespace="http://exist-db.org/ns/expath-pkg">
+    
+    <xs:annotation>
+        <xs:documentation>A schema for eXist-db extensions to EXPath Packaging.</xs:documentation>
+        <xs:appinfo>
+            <dcterms:title>eXist-db extensions to EXPath Packaging</dcterms:title>
+            <dcterms:created xsi:type="dcterms:W3CDTF">2013-11-03T11:36:19.343+01:00</dcterms:created>
+            <dcterms:creator>Adam Retter</dcterms:creator>
+        </xs:appinfo>
+    </xs:annotation>
+    
+    <xs:element name="package">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="eepkg:java" maxOccurs="unbounded"/>
+                <xs:element ref="eepkg:jar" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="java">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="eepkg:namespace"/>
+                <xs:element ref="eepkg:class"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="namespace" type="xs:anyURI"/>
+    <xs:element name="class" type="xs:string"/>
+    
+    <xs:element name="jar" type="xs:string"/>
+    
+</xs:schema>
