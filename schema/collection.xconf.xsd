@@ -68,6 +68,7 @@
     <xs:complexType name="rangeIndexCreateType">
         <xs:group ref="cc:fieldDefinitions"/>
         <xs:attributeGroup ref="cc:qnameOpt"/>
+        <xs:attributeGroup ref="cc:matchOpt"/>
         <xs:attributeGroup ref="cc:typeOpt"/>
         <xs:attributeGroup ref="cc:nestedOpt"/>
         <xs:attributeGroup ref="cc:whitespaceOpt"/>
