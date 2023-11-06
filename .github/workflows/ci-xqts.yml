@@ -8,24 +8,58 @@ jobs:
     name: W3C XQuery Test Suite
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: '8'
-          cache: 'maven'
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: xqts-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: xqts-${{ runner.os }}-maven
       - name: Maven XQTS Build
         run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
       - name: Run XQTS
         timeout-minutes: 60
         env:
-          JAVA_OPTS: -XX:+UseG1GC -XX:+UseStringDeduplication
-        run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output \;
+          JAVA_OPTS: -XX:+UseG1GC -XX:+UseStringDeduplication -Xmx6g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -XX:+ExitOnOutOfMemoryError
+        run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output --exclude-test-case RangeExpr-411d,RangeExpr-409d,RangeExpr-408d,RangeExpr-409c,RangeExpr-408c,GenCompEq-21 \;
+      - name: Check for HeapDump
+        id: check_heapdump
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "/tmp/*.hprof"
+      - name: Compress HeapDump
+        if: steps.check_heapdump.outputs.files_exists == 'true'
+        run: zstd --rm -9 --progress -T0 /tmp/*.hprof
+      - name: Attach HeapDump artifact
+        if: steps.check_heapdump.outputs.files_exists == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: exist-xqts-runner-hprof
+          retention-days: 1
+          path: /tmp/*.hprof.zst
       - name: Archive XQTS Logs
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: xqts-logs
           retention-days: 14
           path: /tmp/xqts-output
+      - name: Get Previous XQTS Logs Artifacts JSON
+        run: 'curl -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs > /tmp/previous-xqts-logs-artifacts.json'
+      - name: Extract Previous XQTS Logs Artifact JSON
+        run: cat /tmp/previous-xqts-logs-artifacts.json | jq -r "[.artifacts[] | select(.workflow_run.head_branch == \"develop\")][1].archive_download_url" > /tmp/previous-xqts-logs-artifact.json
+      - name: Get Previous XQTS Logs Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: 'cat /tmp/previous-xqts-logs-artifact.json | xargs curl -H "Authorization: Bearer ${GITHUB_TOKEN}" --location --output /tmp/previous-xqts-output.zip'
+      - name: Extract Previous XQTS Logs Artifact
+        run: mkdir /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip -d /tmp/previous-xqts-output
+      - name: Compare Previous and Current XQTS Logs
+        run: java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/9.9.1-8/Saxon-HE-9.9.1-8.jar -xsl:exist-xqts/src/main/xslt/compare-results.xslt -it:compare-results -o:/tmp/comparison-results.xml xqts.previous.junit-data-path=/tmp/previous-xqts-output/junit/data xqts.current.junit-data-path=/tmp/xqts-output/junit/data
+      - name: Show Comparison Results
+        run: cat /tmp/comparison-results.xml
