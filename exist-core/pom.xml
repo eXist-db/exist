@@ -724,6 +724,7 @@
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
                                 <exclude>src/test/xquery/binary-value.xqm</exclude>
+                                <exclude>src/test/xquery/xquery3/postfix-expr.xqm</exclude>
 
                                 <!--
                                     Derivative work licensed under dbXML 1.0 and LGPL 2.1
@@ -876,6 +877,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>
                                 <include>src/test/xquery/binary-value.xqm</include>
+                                <include>src/test/xquery/xquery3/postfix-expr.xqm</include>
                             </includes>
 
                         </licenseSet>
