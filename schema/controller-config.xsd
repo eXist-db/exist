@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://exist.sourceforge.net/NS/exist" xmlns:exist="http://exist.sourceforge.net/NS/exist">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
+           xmlns:exist="http://exist.sourceforge.net/NS/exist"
+           elementFormDefault="qualified"
+           targetNamespace="http://exist.sourceforge.net/NS/exist"
+           version="1.0.0">
   <xs:element name="configuration">
     <xs:complexType>
       <xs:choice maxOccurs="unbounded">
