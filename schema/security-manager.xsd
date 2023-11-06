@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    elementFormDefault="qualified"
-    targetNamespace="http://exist-db.org/Configuration"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1"
     xmlns:cnf="http://exist-db.org/Configuration"
     xmlns:db="http://docbook.org/ns/docbook"
-    version="2.0">
+    elementFormDefault="qualified"
+    targetNamespace="http://exist-db.org/Configuration"
+    version="2.0.0">
     
     <xs:annotation>
         <xs:documentation>
