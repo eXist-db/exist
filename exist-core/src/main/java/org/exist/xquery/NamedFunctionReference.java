@@ -103,6 +103,11 @@ public class NamedFunctionReference extends AbstractExpression {
 	}
 
 	@Override
+	public String toString() {
+		return qname.toString() + '#' + arity;
+	}
+
+	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
 		return new FunctionReference(this, resolvedFunction);
