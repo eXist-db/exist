@@ -5,6 +5,9 @@ target/
 .classpath
 .project
 
+# quartz artefacts
+dependency-reduced-pom.xml
+
 # IDE specific files
 .idea/*
 !/.idea/runConfigurations
@@ -13,3 +16,4 @@ target/
 
 # OS specific files
 .DS_Store
+

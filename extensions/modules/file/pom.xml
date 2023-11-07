@@ -60,6 +60,7 @@
         <dependency>
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.evolvedbinary.multilock</groupId>
@@ -69,6 +70,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -84,6 +86,7 @@
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -177,6 +180,10 @@
                                 <!-- needed for running tests that use JAXB -->
                                 <ignoredUnusedDeclaredDependency>com.sun.xml.bind:jaxb-impl:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
