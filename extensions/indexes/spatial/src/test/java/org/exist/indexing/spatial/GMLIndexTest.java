@@ -67,7 +67,7 @@ import org.junit.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import static org.junit.Assert.*;
 
