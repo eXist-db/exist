@@ -28,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
-      - run: mvn -V -B dependency-check:check
+      - run: mvn -V -B install dependency-check:check -DskipTests
         timeout-minutes: 60
   test:
     name: ${{ matrix.os }} Test
