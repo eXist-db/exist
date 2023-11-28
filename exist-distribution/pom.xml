@@ -747,7 +747,6 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory />  <!-- NOTE: this must be empty -->
                             <resources>
                                 <resource>
                                     <workOnFullPath>true</workOnFullPath>

@@ -72,7 +72,7 @@ public class CollectionLocksTest {
      *
      * Note: this should likely be greater than the period required to acquire a lock under contention of CONCURRENCY_LEVEL threads
      */
-    private static final int STRESS_DEADLOCK_THREAD_SLEEP = 100;   // 100ms
+    private static final int STRESS_DEADLOCK_THREAD_SLEEP = 200;   // 200ms
 
     /**
      * The maximum amount of time we should allow deadlock stress
@@ -100,7 +100,7 @@ public class CollectionLocksTest {
      *
      * Note: this should likely be greater than the period required to acquire a lock under contention of CONCURRENCY_LEVEL threads
      */
-    private static final int SINGLE_WRITER_THREAD_SLEEP = 10;   // 10ms
+    private static final int SINGLE_WRITER_THREAD_SLEEP = 15;   // 15ms
 
     /**
      * The maximum amount of time we should allow singleWriter
