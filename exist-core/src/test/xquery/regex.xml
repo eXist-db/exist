@@ -122,9 +122,39 @@
     </test>
 
     <test output="text">
+        <task>fn:replace-regex-match-empty-1</task>
+        <code>fn:replace("12.34" , "^\D*", "")</code>
+        <error>FORX0003</error>
+    </test>
+
+    <test output="text">
         <task>fn:tokenize-qflag-1</task>
         <code>fn:tokenize("12.3.5.6", ".", "q")</code>
         <expected>12 3 5 6</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:tokenize-single-input-1</task>
+        <code>fn:tokenize("x,y", ",")</code>
+        <expected>x y</expected>
+    </test>
+
+    <test output="text">
+        <task>fn:tokenize-single-input-2</task>
+        <code>fn:tokenize(("a", "b", "x,y"), ",")</code>
+        <error>XPTY0004</error>
+    </test>
+
+    <test output="text">
+        <task>fn:tokenize-regex-match-empty-1</task>
+        <code>fn:tokenize("12.34" , "^\D*")</code>
+        <error>FORX0003</error>
+    </test>
+
+    <test output="text">
+        <task>fn:analyze-string-regex-match-empty-1</task>
+        <code>fn:analyze-string("12.34" , "^\D*")</code>
+        <error>FORX0003</error>
     </test>
 
 </TestSet>

@@ -57,7 +57,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
-public class FunMatches extends Function implements Optimizable, IndexUseReporter {
+public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
     private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
