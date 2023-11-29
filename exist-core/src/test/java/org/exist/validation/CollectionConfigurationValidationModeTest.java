@@ -139,7 +139,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (!msg.contains("Cannot find the declaration of element 'asd:schema'.")) {
+            if (!msg.contains("schema_reference.4: Failed to read schema document")) {
                 fail(msg);
             }
         }
@@ -179,10 +179,12 @@ public class CollectionConfigurationValidationModeTest {
         // non resolvable namespace provided, should fail
         try {
             storeDocument("/db/auto", "different.xml", different);
-//            fail("I expected a failure here. to be checked by DIZZZZ");
+            fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            fail(msg);
+            if (!msg.contains("schema_reference.4: Failed to read schema document")) {
+                fail(msg);
+            }
         }
     }
 }
