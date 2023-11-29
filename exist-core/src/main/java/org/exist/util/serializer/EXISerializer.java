@@ -34,12 +34,12 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.siemens.ct.exi.EXIFactory;
-import com.siemens.ct.exi.GrammarFactory;
-import com.siemens.ct.exi.api.sax.SAXEncoder;
-import com.siemens.ct.exi.exceptions.EXIException;
-import com.siemens.ct.exi.grammars.Grammars;
-import com.siemens.ct.exi.helpers.DefaultEXIFactory;
+import com.siemens.ct.exi.core.EXIFactory;
+import com.siemens.ct.exi.core.exceptions.EXIException;
+import com.siemens.ct.exi.core.grammars.Grammars;
+import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
+import com.siemens.ct.exi.grammars.GrammarFactory;
+import com.siemens.ct.exi.main.api.sax.SAXEncoder;
 
 import javax.annotation.Nullable;
 
