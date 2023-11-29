@@ -45,7 +45,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
-import com.siemens.ct.exi.exceptions.EXIException;
+import com.siemens.ct.exi.core.exceptions.EXIException
 
 /**
  * eXist EXI Module Extension EncodeExiFunction.
