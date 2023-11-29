@@ -45,12 +45,12 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.siemens.ct.exi.EXIFactory;
-import com.siemens.ct.exi.GrammarFactory;
-import com.siemens.ct.exi.api.sax.SAXDecoder;
-import com.siemens.ct.exi.exceptions.EXIException;
-import com.siemens.ct.exi.grammars.Grammars;
-import com.siemens.ct.exi.helpers.DefaultEXIFactory;
+import com.siemens.ct.exi.core.EXIFactory;
+import com.siemens.ct.exi.grammars.GrammarFactory;
+import com.siemens.ct.exi.main.api.sax.SAXDecoder;
+import com.siemens.ct.exi.core.exceptions.EXIException;
+import com.siemens.ct.exi.core.grammars.Grammars;
+import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
 
 /**
  * eXist EXI Module Extension DecodeExiFunction.

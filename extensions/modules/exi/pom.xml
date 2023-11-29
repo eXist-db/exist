@@ -59,6 +59,28 @@
         </dependency>
 
         <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-grammars</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-core</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>com.evolvedbinary.j8fu</groupId>
             <artifactId>j8fu</artifactId>
         </dependency>

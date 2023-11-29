@@ -40,7 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 
-import com.siemens.ct.exi.api.sax.SAXEncoder;
+import com.siemens.ct.exi.main.api.sax.SAXEncoder;
 
 public class EXISerializerTest {
 

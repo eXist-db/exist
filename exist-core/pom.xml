@@ -102,6 +102,30 @@
         </dependency>
 
         <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-grammars</artifactId>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-core</artifactId>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
         </dependency>
