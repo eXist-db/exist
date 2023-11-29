@@ -1015,7 +1015,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>xalan:serializer:jar:${xalan.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:2.4.1</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
