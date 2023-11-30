@@ -128,30 +128,22 @@ public class QNameValue extends AtomicValue {
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.ATOMIC:
-            case Type.ITEM:
-            case Type.QNAME:
-                return this;
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "A QName cannot be converted to " + Type.getTypeName(requiredType));
-        }
+        return switch (requiredType) {
+            case Type.ATOMIC, Type.ITEM, Type.QNAME -> this;
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "A QName cannot be converted to " + Type.getTypeName(requiredType));
+        };
     }
 
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.QNAME) {
             final int cmp = qname.compareTo(((QNameValue) other).qname);
-            switch (operator) {
-                case EQ:
-                    return cmp == 0;
-                case NEQ:
-                    return cmp != 0;
+            return switch (operator) {
+                case EQ -> cmp == 0;
+                case NEQ -> cmp != 0;
                 /*
 				 * QNames are unordered
 				case GT :
@@ -163,9 +155,9 @@ public class QNameValue extends AtomicValue {
 				case LTEQ :
 					return cmp >= 0;
 				*/
-                default:
-                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot apply operator to QName");
-            }
+                default ->
+                        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot apply operator to QName");
+            };
         } else {
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot compare QName to "
                     + Type.getTypeName(other.getType()));

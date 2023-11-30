@@ -154,29 +154,15 @@ public class ScheduledJobInfo {
      */
     public TriggerState getTriggerState() {
         try {
-            switch(scheduler.getTriggerState(trigger.getKey())) {
-
-                case ERROR:
-                    return TriggerState.ERROR;
-
-                case NONE:
-                    return TriggerState.NONE;
-
-                case NORMAL:
-                    return TriggerState.NORMAL;
-
-                case PAUSED:
-                    return TriggerState.PAUSED;
-
-                case BLOCKED:
-                    return TriggerState.BLOCKED;
-
-                case COMPLETE:
-                    return TriggerState.COMPLETE;
-
-                default:
-                    return TriggerState.ERROR;
-            }
+            return switch (scheduler.getTriggerState(trigger.getKey())) {
+                case ERROR -> TriggerState.ERROR;
+                case NONE -> TriggerState.NONE;
+                case NORMAL -> TriggerState.NORMAL;
+                case PAUSED -> TriggerState.PAUSED;
+                case BLOCKED -> TriggerState.BLOCKED;
+                case COMPLETE -> TriggerState.COMPLETE;
+                default -> TriggerState.ERROR;
+            };
         } catch(final SchedulerException se) {
             return TriggerState.ERROR;
         }

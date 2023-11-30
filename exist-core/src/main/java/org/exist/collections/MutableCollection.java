@@ -556,21 +556,11 @@ public class MutableCollection implements Collection {
         while(documentIterator.hasNext()) {
             final DocumentImpl doc = documentIterator.next();
             if(doc.getPermissions().validate(broker.getCurrentSubject(), requiredPermission)) {
-                final ManagedDocumentLock documentLock;
-                switch(lockType) {
-                    case WRITE_LOCK:
-                        documentLock = lockManager.acquireDocumentWriteLock(doc.getURI());
-                        break;
-
-                    case READ_LOCK:
-                        documentLock = lockManager.acquireDocumentReadLock(doc.getURI());
-                        break;
-
-                    case NO_LOCK:
-                    default:
-                        documentLock = ManagedSingleLockDocumentLock.notLocked(doc.getURI());
-                        break;
-                }
+                final ManagedDocumentLock documentLock = switch (lockType) {
+                    case WRITE_LOCK -> lockManager.acquireDocumentWriteLock(doc.getURI());
+                    case READ_LOCK -> lockManager.acquireDocumentReadLock(doc.getURI());
+                    default -> ManagedSingleLockDocumentLock.notLocked(doc.getURI());
+                };
 
                 docs.add(doc);
                 lockMap.add(new LockedDocument(documentLock, doc));
@@ -696,23 +686,21 @@ public class MutableCollection implements Collection {
 
             // lock the document
             final ManagedDocumentLock documentLock;
-            final Runnable unlockFn;    // we unlock on error, or if there is no Collection
-            switch (lockMode) {
-                case WRITE_LOCK:
+            final Runnable unlockFn = switch (lockMode) {
+                case WRITE_LOCK -> {
                     documentLock = lockManager.acquireDocumentWriteLock(getURI().append(name.lastSegment()));
-                    unlockFn = documentLock::close;
-                    break;
-
-                case READ_LOCK:
+                    yield documentLock::close;
+                }
+                case READ_LOCK -> {
                     documentLock = lockManager.acquireDocumentReadLock(getURI().append(name.lastSegment()));
-                    unlockFn = documentLock::close;
-                    break;
-
-                case NO_LOCK:
-                default:
+                    yield documentLock::close;
+                }
+                default -> {
                     documentLock = ManagedSingleLockDocumentLock.notLocked(getURI().append(name.lastSegment()));
-                    unlockFn = () -> {};
-            }
+                    yield () -> {
+                    };
+                }
+            };    // we unlock on error, or if there is no Collection
 
 
             final DocumentImpl doc = documents.get(name.lastSegmentString());

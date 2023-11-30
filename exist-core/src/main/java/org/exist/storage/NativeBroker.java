@@ -555,16 +555,12 @@ public class NativeBroker implements DBBroker {
 
     public BTree getStorage(final byte id) {
         //Notice that there is no entry for the symbols table
-        switch(id) {
-            case DOM_DBX_ID:
-                return domDb;
-            case COLLECTIONS_DBX_ID:
-                return collectionsDb;
-            case VALUES_DBX_ID:
-                return valueIndex.dbValues;
-            default:
-                return null;
-        }
+        return switch (id) {
+            case DOM_DBX_ID -> domDb;
+            case COLLECTIONS_DBX_ID -> collectionsDb;
+            case VALUES_DBX_ID -> valueIndex.dbValues;
+            default -> null;
+        };
     }
 
     public byte[] getStorageFileIds() {
@@ -991,22 +987,21 @@ public class NativeBroker implements DBBroker {
         final ManagedCollectionLock collectionLock;
         final Runnable unlockFn;    // we unlock on error, or if there is no Collection
         try {
-            switch (lockMode) {
-                case WRITE_LOCK:
+            unlockFn = switch (lockMode) {
+                case WRITE_LOCK -> {
                     collectionLock = writeLockCollection(collectionUri);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case READ_LOCK:
+                    yield collectionLock::close;
+                }
+                case READ_LOCK -> {
                     collectionLock = readLockCollection(collectionUri);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case NO_LOCK:
-                default:
+                    yield collectionLock::close;
+                }
+                default -> {
                     collectionLock = ManagedCollectionLock.notLocked(collectionUri);
-                    unlockFn = () -> {};
-            }
+                    yield () -> {
+                    };
+                }
+            };
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on Collection: {}", collectionUri);
             return null;

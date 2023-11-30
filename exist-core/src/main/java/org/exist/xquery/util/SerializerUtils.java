@@ -495,34 +495,16 @@ public class SerializerUtils {
         }
 
         final String method = methodValue.itemAt(0).getStringValue().toLowerCase();
-        switch(method) {
-            case "xml":
-            case "microxml":
-                return new StringValue("application/xml");
-
-            case "xhtml":
-                return new StringValue("application/xhtml+xml");
-
-            case "json":
-                return new StringValue("application/json");
-
-            case "jsonp":
-                return new StringValue("application/javascript");
-
-            case "html":
-                return new StringValue("text/html");
-
-            case "adaptive":
-            case "text":
-                return new StringValue("text/plain");
-
-            case "binary":
-                return new StringValue("application/octet-stream");
-
-            default:
-                throw new UnsupportedOperationException("Unrecognised serialization method: " + method);
-
-        }
+        return switch (method) {
+            case "xml", "microxml" -> new StringValue("application/xml");
+            case "xhtml" -> new StringValue("application/xhtml+xml");
+            case "json" -> new StringValue("application/json");
+            case "jsonp" -> new StringValue("application/javascript");
+            case "html" -> new StringValue("text/html");
+            case "adaptive", "text" -> new StringValue("text/plain");
+            case "binary" -> new StringValue("application/octet-stream");
+            default -> throw new UnsupportedOperationException("Unrecognised serialization method: " + method);
+        };
     }
 
     /**

@@ -146,52 +146,34 @@ public class DateTimeValue extends AbstractDateTimeValue {
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.DATE_TIME:
-            case Type.ATOMIC:
-            case Type.ITEM:
-                return this;
-            case Type.DATE_TIME_STAMP:
-                return new DateTimeStampValue(getExpression(), calendar);
-            case Type.DATE:
-                return new DateValue(getExpression(), calendar);
-            case Type.TIME:
-                return new TimeValue(getExpression(), calendar);
-            case Type.GYEAR:
-                return new GYearValue(getExpression(), calendar);
-            case Type.GYEARMONTH:
-                return new GYearMonthValue(getExpression(), calendar);
-            case Type.GMONTHDAY:
-                return new GMonthDayValue(getExpression(), calendar);
-            case Type.GDAY:
-                return new GDayValue(getExpression(), calendar);
-            case Type.GMONTH:
-                return new GMonthValue(getExpression(), calendar);
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast xs:dateTime to "
-                                + Type.getTypeName(requiredType));
-        }
+        return switch (requiredType) {
+            case Type.DATE_TIME, Type.ATOMIC, Type.ITEM -> this;
+            case Type.DATE_TIME_STAMP -> new DateTimeStampValue(getExpression(), calendar);
+            case Type.DATE -> new DateValue(getExpression(), calendar);
+            case Type.TIME -> new TimeValue(getExpression(), calendar);
+            case Type.GYEAR -> new GYearValue(getExpression(), calendar);
+            case Type.GYEARMONTH -> new GYearMonthValue(getExpression(), calendar);
+            case Type.GMONTHDAY -> new GMonthDayValue(getExpression(), calendar);
+            case Type.GDAY -> new GDayValue(getExpression(), calendar);
+            case Type.GMONTH -> new GMonthValue(getExpression(), calendar);
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "Type error: cannot cast xs:dateTime to "
+                            + Type.getTypeName(requiredType));
+        };
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DATE_TIME_STAMP:
-            case Type.DATE_TIME:
-                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
-            case Type.YEAR_MONTH_DURATION:
-                return ((YearMonthDurationValue) other).negate().plus(this);
-            case Type.DAY_TIME_DURATION:
-                return ((DayTimeDurationValue) other).negate().plus(this);
-            default:
-                throw new XPathException(getExpression(),
-                        "Operand to minus should be of type xs:dateTime, xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
-                                + Type.getTypeName(other.getType()));
-        }
+        return switch (other.getType()) {
+            case Type.DATE_TIME_STAMP, Type.DATE_TIME ->
+                    new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
+            case Type.YEAR_MONTH_DURATION -> ((YearMonthDurationValue) other).negate().plus(this);
+            case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
+            default -> throw new XPathException(getExpression(),
+                    "Operand to minus should be of type xs:dateTime, xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
+                            + Type.getTypeName(other.getType()));
+        };
     }
 
     public Date getDate() {

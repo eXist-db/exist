@@ -206,43 +206,27 @@ public class IndexQuery {
      * @return Whether or not the value matches
      */
     public boolean testValue(final Value value) {
-        switch (op) {
+        return switch (op) {
             // No Comparison (Any)
-            case ANY:
-                return true;
+            case ANY -> true;
             // Singleton Comparisons
-            case EQ:
-                return value.equals(vals[0]);
-            case NEQ:
-                return !value.equals(vals[0]);
-            case GT:
-                return value.compareTo(vals[0]) > 0;
-            case GEQ:
-                return value.compareTo(vals[0]) >= 0;
-            case LT:
-                return value.compareTo(vals[0]) < 0;
-            case LEQ:
-                return value.compareTo(vals[0]) <= 0;
+            case EQ -> value.equals(vals[0]);
+            case NEQ -> !value.equals(vals[0]);
+            case GT -> value.compareTo(vals[0]) > 0;
+            case GEQ -> value.compareTo(vals[0]) >= 0;
+            case LT -> value.compareTo(vals[0]) < 0;
+            case LEQ -> value.compareTo(vals[0]) <= 0;
             // Range Comparisons
-            case BW:
-                return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) <= 0;
-            case NBW:
-                return value.compareTo(vals[0]) <= 0 || value.compareTo(vals[1]) >= 0;
-            case BWX:
-                return value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
-            case NBWX:
-                return value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
-            case RANGE:
-                return value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
+            case BW -> value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) <= 0;
+            case NBW -> value.compareTo(vals[0]) <= 0 || value.compareTo(vals[1]) >= 0;
+            case BWX -> value.compareTo(vals[0]) > 0 && value.compareTo(vals[1]) < 0;
+            case NBWX -> value.compareTo(vals[0]) < 0 || value.compareTo(vals[1]) > 0;
+            case RANGE -> value.compareTo(vals[0]) >= 0 && value.compareTo(vals[1]) < 0;
             // Set Comparisons
-            case IN:
-            case NIN:
-                return Arrays.binarySearch(vals, value) >= 0 ? op == IN : op == NIN;
-            case TRUNC_RIGHT:
-                return value.startsWith(vals[0]);
-            case TRUNC_LEFT:
-                return value.endsWith(vals[0]);
-        }
-        return false;
+            case IN, NIN -> Arrays.binarySearch(vals, value) >= 0 ? op == IN : op == NIN;
+            case TRUNC_RIGHT -> value.startsWith(vals[0]);
+            case TRUNC_LEFT -> value.endsWith(vals[0]);
+            default -> false;
+        };
     }
 }

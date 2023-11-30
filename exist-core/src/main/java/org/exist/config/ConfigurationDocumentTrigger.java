@@ -506,13 +506,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * matching the provided name
          */
         public Principal getPrincipal(final SecurityManager sm, final String name) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.getAccount(name);
-                case GROUP:
-                    return sm.getGroup(name);
-            }
-            return null;
+            return switch (this) {
+                case ACCOUNT -> sm.getAccount(name);
+                case GROUP -> sm.getGroup(name);
+            };
         }
 
         /**
@@ -523,13 +520,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final String name) {
-            switch (this) {
-                case ACCOUNT:
-                    return sm.hasAccount(name);
-                case GROUP:
-                    return sm.hasGroup(name);
-            }
-            return false;
+            return switch (this) {
+                case ACCOUNT -> sm.hasAccount(name);
+                case GROUP -> sm.hasGroup(name);
+            };
         }
 
         /**
@@ -542,13 +536,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * matching the provided id
          */
         public Principal getPrincipal(final SecurityManager sm, final int id) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.getAccount(id);
-                case GROUP:
-                    return sm.getGroup(id);
-            }
-            return null;
+            return switch (this) {
+                case ACCOUNT -> sm.getAccount(id);
+                case GROUP -> sm.getGroup(id);
+            };
         }
 
         /**
@@ -559,13 +550,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final int id) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.hasUser(id);
-                case GROUP:
-                    return sm.hasGroup(id);
-            }
-            return false;
+            return switch (this) {
+                case ACCOUNT -> sm.hasUser(id);
+                case GROUP -> sm.hasGroup(id);
+            };
         }
 
         public void preAllocateId(final SecurityManager sm, final PreAllocatedIdReceiver receiver) throws PermissionDeniedException, EXistException {

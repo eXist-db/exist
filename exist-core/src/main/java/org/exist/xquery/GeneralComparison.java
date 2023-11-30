@@ -967,20 +967,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     private CharSequence getRegexp( String expr )
     {
-        switch( truncation ) {
-
-            case LEFT: {
-                return( new StringBuilder().append( expr ).append( '$' ) );
-            }
-
-            case RIGHT: {
-                return( new StringBuilder().append( '^' ).append( expr ) );
-            }
-
-            default: {
-                return( expr );
-            }
-        }
+        return switch (truncation) {
+            case LEFT -> (new StringBuilder().append(expr).append('$'));
+            case RIGHT -> (new StringBuilder().append('^').append(expr));
+            default -> (expr);
+        };
     }
 
     private AtomicValue convertForGeneralComparison(final AtomicValue value, final int thisType, final int otherType)

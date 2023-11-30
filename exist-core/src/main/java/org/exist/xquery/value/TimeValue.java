@@ -95,35 +95,27 @@ public class TimeValue extends AbstractDateTimeValue {
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.TIME:
-            case Type.ATOMIC:
-            case Type.ITEM:
-                return this;
+        return switch (requiredType) {
+            case Type.TIME, Type.ATOMIC, Type.ITEM -> this;
 //		case Type.DATE_TIME :
 //			xs:time -> xs:dateTime conversion not defined in Funcs&Ops 17.1.5
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast xs:time to "
-                                + Type.getTypeName(requiredType));
-        }
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "Type error: cannot cast xs:time to "
+                            + Type.getTypeName(requiredType));
+        };
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.TIME:
-                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
-            case Type.DAY_TIME_DURATION:
-                return ((DayTimeDurationValue) other).negate().plus(this);
-            default:
-                throw new XPathException(getExpression(),
-                        "Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
-                                + Type.getTypeName(other.getType()));
-        }
+        return switch (other.getType()) {
+            case Type.TIME ->
+                    new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
+            case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
+            default -> throw new XPathException(getExpression(),
+                    "Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
+                            + Type.getTypeName(other.getType()));
+        };
     }
 
     public ComputableValue plus(ComputableValue other) throws XPathException {

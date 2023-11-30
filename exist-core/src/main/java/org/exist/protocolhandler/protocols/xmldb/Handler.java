@@ -109,12 +109,9 @@ public class Handler extends URLStreamHandler {
     
     @Override
     protected URLConnection openConnection(final URL u) throws IOException {
-        switch (mode) {
-            case DISK:
-                return new EmbeddedURLConnection(threadGroup, u);
-            case MEMORY:
-                return new InMemoryURLConnection(threadGroup, u);
-        }
-        throw new IOException("unsupported mode "+mode);
+        return switch (mode) {
+            case DISK -> new EmbeddedURLConnection(threadGroup, u);
+            case MEMORY -> new InMemoryURLConnection(threadGroup, u);
+        };
     }
 }

@@ -96,18 +96,12 @@ public class Password implements Credential {
     }
     
     final byte[] hash(String p) {
-        
-        switch(algorithm) {
-            
-            case RIPEMD160:
-                return ripemd160Hash(p);
-            
-            case MD5:
-                return md5Hash(p);
-            
-            default:
-                return null;
-        }
+
+        return switch (algorithm) {
+            case RIPEMD160 -> ripemd160Hash(p);
+            case MD5 -> md5Hash(p);
+            default -> null;
+        };
     }
     
     final byte[] ripemd160Hash(final String p) {

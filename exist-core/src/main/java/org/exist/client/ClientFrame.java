@@ -1635,20 +1635,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         public Object getValueAt(final int rowIndex, final int columnIndex) {
             if (getRowCount() > 0) {
                 final ResourceDescriptor row = getRow(rowIndex);
-                switch (columnIndex) {
-                    case 0:
-                        return row.getName().toString();
-                    case 1:
-                        return DATE_TIME_FORMATTER.format(row.getInstant());
-                    case 2:
-                        return row.getOwner();
-                    case 3:
-                        return row.getGroup();
-                    case 4:
-                        return row.getPermissionsDescription();
-                    default:
-                        throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
-                }
+                //$NON-NLS-1$
+                return switch (columnIndex) {
+                    case 0 -> row.getName().toString();
+                    case 1 -> DATE_TIME_FORMATTER.format(row.getInstant());
+                    case 2 -> row.getOwner();
+                    case 3 -> row.getGroup();
+                    case 4 -> row.getPermissionsDescription();
+                    default -> throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
+                };
             }
             return "";
         }

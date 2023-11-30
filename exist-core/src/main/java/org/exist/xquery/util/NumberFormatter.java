@@ -143,26 +143,13 @@ public abstract class NumberFormatter {
     public static NumberFormatter getInstance(final String language) {
         final Locale locale = new Locale(language);
 
-        switch (language) {
-            case "de":
-                return new NumberFormatter_de(locale);
-
-            case "fr":
-                return new NumberFormatter_fr(locale);
-
-            case "nl":
-                return new NumberFormatter_nl(locale);
-
-            case "ru":
-                return new NumberFormatter_ru(locale);
-
-            case "sv":
-                return new NumberFormatter_sv(locale);
-
-            case "en":
-            default:
-                return new NumberFormatter_en(locale);
-
-        }
+        return switch (language) {
+            case "de" -> new NumberFormatter_de(locale);
+            case "fr" -> new NumberFormatter_fr(locale);
+            case "nl" -> new NumberFormatter_nl(locale);
+            case "ru" -> new NumberFormatter_ru(locale);
+            case "sv" -> new NumberFormatter_sv(locale);
+            default -> new NumberFormatter_en(locale);
+        };
     }
 }

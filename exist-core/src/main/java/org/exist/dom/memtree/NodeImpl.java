@@ -97,32 +97,16 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public final QName getQName() {
-        switch(getNodeType()) {
-            case Node.ATTRIBUTE_NODE:
-                return document.attrName[nodeNumber];
-
-            case Node.ELEMENT_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                return document.nodeName[nodeNumber];
-
-            case NodeImpl.NAMESPACE_NODE:
-                return document.namespaceCode[nodeNumber];
-
-            case Node.DOCUMENT_NODE:
-                return QName.EMPTY_QNAME;
-
-            case Node.COMMENT_NODE:
-                return QName.EMPTY_QNAME;
-
-            case Node.TEXT_NODE:
-                return QName.EMPTY_QNAME;
-
-            case Node.CDATA_SECTION_NODE:
-                return QName.EMPTY_QNAME;
-
-            default:
-                return null;
-        }
+        return switch (getNodeType()) {
+            case Node.ATTRIBUTE_NODE -> document.attrName[nodeNumber];
+            case Node.ELEMENT_NODE, Node.PROCESSING_INSTRUCTION_NODE -> document.nodeName[nodeNumber];
+            case NodeImpl.NAMESPACE_NODE -> document.namespaceCode[nodeNumber];
+            case Node.DOCUMENT_NODE -> QName.EMPTY_QNAME;
+            case Node.COMMENT_NODE -> QName.EMPTY_QNAME;
+            case Node.TEXT_NODE -> QName.EMPTY_QNAME;
+            case Node.CDATA_SECTION_NODE -> QName.EMPTY_QNAME;
+            default -> null;
+        };
     }
 
     @Override
@@ -145,46 +129,24 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public final String getNodeName() {
-        switch(getNodeType()) {
-            case Node.DOCUMENT_NODE:
-                return "#document";
-
-            case Node.DOCUMENT_FRAGMENT_NODE:
-                return "#document-fragment";
-
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
-            case NAMESPACE_NODE:
-                return getQName().getStringValue();
-
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                return ((ProcessingInstructionImpl)this).getTarget();
-
-            case Node.TEXT_NODE:
-                return "#text";
-
-            case Node.COMMENT_NODE:
-                return "#comment";
-
-            case Node.CDATA_SECTION_NODE:
-                return "#cdata-section";
-
-            default:
-                return "#unknown";
-        }
+        return switch (getNodeType()) {
+            case Node.DOCUMENT_NODE -> "#document";
+            case Node.DOCUMENT_FRAGMENT_NODE -> "#document-fragment";
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE, NAMESPACE_NODE -> getQName().getStringValue();
+            case Node.PROCESSING_INSTRUCTION_NODE -> ((ProcessingInstructionImpl) this).getTarget();
+            case Node.TEXT_NODE -> "#text";
+            case Node.COMMENT_NODE -> "#comment";
+            case Node.CDATA_SECTION_NODE -> "#cdata-section";
+            default -> "#unknown";
+        };
     }
 
     @Override
     public String getLocalName() {
-        switch(getNodeType()) {
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
-            case NAMESPACE_NODE:
-                return getQName().getLocalPart();
-
-            default:
-                return null;
-        }
+        return switch (getNodeType()) {
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE, NAMESPACE_NODE -> getQName().getLocalPart();
+            default -> null;
+        };
     }
 
     @Override
@@ -209,15 +171,10 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public final String getPrefix() {
-        switch(getNodeType()) {
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
-            case NodeImpl.NAMESPACE_NODE:
-                return getQName().getPrefix();
-
-            default:
-                return null;
-        }
+        return switch (getNodeType()) {
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE, NodeImpl.NAMESPACE_NODE -> getQName().getPrefix();
+            default -> null;
+        };
     }
 
     @Override
@@ -485,31 +442,16 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         if(this.document == null) {
             return Type.DOCUMENT;
         }
-        switch(getNodeType()) {
-            case Node.DOCUMENT_NODE:
-                return Type.DOCUMENT;
-
-            case Node.COMMENT_NODE:
-                return Type.COMMENT;
-
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                return Type.PROCESSING_INSTRUCTION;
-
-            case Node.ELEMENT_NODE:
-                return Type.ELEMENT;
-
-            case Node.ATTRIBUTE_NODE:
-                return Type.ATTRIBUTE;
-
-            case Node.TEXT_NODE:
-                return Type.TEXT;
-
-            case Node.CDATA_SECTION_NODE:
-                return Type.CDATA_SECTION;
-
-            default:
-                return Type.NODE;
-        }
+        return switch (getNodeType()) {
+            case Node.DOCUMENT_NODE -> Type.DOCUMENT;
+            case Node.COMMENT_NODE -> Type.COMMENT;
+            case Node.PROCESSING_INSTRUCTION_NODE -> Type.PROCESSING_INSTRUCTION;
+            case Node.ELEMENT_NODE -> Type.ELEMENT;
+            case Node.ATTRIBUTE_NODE -> Type.ATTRIBUTE;
+            case Node.TEXT_NODE -> Type.TEXT;
+            case Node.CDATA_SECTION_NODE -> Type.CDATA_SECTION;
+            default -> Type.NODE;
+        };
     }
 
     @Override

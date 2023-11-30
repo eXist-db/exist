@@ -186,34 +186,22 @@ public class StartupLockingTest {
             final int localCount = entry.getCount();
 
             synchronized (lockReadWriteCount) {
-                final long change;
-                switch(lockEventType) {
-                    case Acquired:
-                        change = 1;
-                        break;
-
-                    case Released:
-                        change = -1;
-                        break;
-
-                    default:
-                        change = 0;
-                }
+                final long change = switch (lockEventType) {
+                    case Acquired -> 1;
+                    case Released -> -1;
+                    default -> 0;
+                };
 
                 Tuple2<Long, Long> value = lockReadWriteCount.get(entry.getId());
                 if(value == null) {
                     value = new Tuple2<>(0l, 0l);
                 }
 
-                switch(entry.getLockMode()) {
-                    case READ_LOCK:
-                        value = new Tuple2<>(value._1 + change, value._2);
-                        break;
-
-                    case WRITE_LOCK:
-                        value = new Tuple2<>(value._1, value._2 + change);
-                        break;
-                }
+                value = switch (entry.getLockMode()) {
+                    case READ_LOCK -> new Tuple2<>(value._1 + change, value._2);
+                    case WRITE_LOCK -> new Tuple2<>(value._1, value._2 + change);
+                    default -> value;
+                };
 
                 if(value._1 < 0 || value._2 < 0) {
                     throw new IllegalStateException("Cannot have less than zero locks!");

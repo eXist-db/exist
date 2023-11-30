@@ -445,12 +445,10 @@ public class BFile extends BTree {
             if (p == KEY_NOT_FOUND) {return null;}           
             final long pnum = StorageAddress.pageFromPointer(p);
             final DataPage page = getDataPage(pnum);
-            switch (page.getPageHeader().getStatus()) {
-                case MULTI_PAGE:
-                    return ((OverflowPage) page).getDataStream(p);
-                default:
-                    return getAsStream(page, p);
-            }
+            return switch (page.getPageHeader().getStatus()) {
+                case MULTI_PAGE -> ((OverflowPage) page).getDataStream(p);
+                default -> getAsStream(page, p);
+            };
         } catch (final BTreeException e) {
             LOG.error("An exception occurred while trying to retrieve key {}: {}", key, e.getMessage(), e);
         }
@@ -467,12 +465,10 @@ public class BFile extends BTree {
      */
     public VariableByteInput getAsStream(final long pointer) throws IOException {
         final DataPage page = getDataPage(StorageAddress.pageFromPointer(pointer));
-        switch (page.getPageHeader().getStatus()) {
-            case MULTI_PAGE:
-                return ((OverflowPage) page).getDataStream(pointer);
-            default:
-                return getAsStream(page, pointer);
-        }
+        return switch (page.getPageHeader().getStatus()) {
+            case MULTI_PAGE -> ((OverflowPage) page).getDataStream(pointer);
+            default -> getAsStream(page, pointer);
+        };
     }
 
     private VariableByteInput getAsStream(final DataPage page, final long pointer) throws IOException {

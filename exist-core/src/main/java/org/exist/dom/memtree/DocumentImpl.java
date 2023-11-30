@@ -519,29 +519,15 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nodeNum >= size) {
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "node not found");
         }
-        final NodeImpl node;
-        switch(nodeKind[nodeNum]) {
-            case Node.ELEMENT_NODE:
-                node = new ElementImpl(getExpression(), this, nodeNum);
-                break;
-            case Node.TEXT_NODE:
-                node = new TextImpl(getExpression(), this, nodeNum);
-                break;
-            case Node.COMMENT_NODE:
-                node = new CommentImpl(getExpression(), this, nodeNum);
-                break;
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                node = new ProcessingInstructionImpl(getExpression(), this, nodeNum);
-                break;
-            case Node.CDATA_SECTION_NODE:
-                node = new CDATASectionImpl(getExpression(), this, nodeNum);
-                break;
-            case NodeImpl.REFERENCE_NODE:
-                node = new ReferenceNode(getExpression(), this, nodeNum);
-                break;
-            default:
-                throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
-        }
+        final NodeImpl node = switch (nodeKind[nodeNum]) {
+            case Node.ELEMENT_NODE -> new ElementImpl(getExpression(), this, nodeNum);
+            case Node.TEXT_NODE -> new TextImpl(getExpression(), this, nodeNum);
+            case Node.COMMENT_NODE -> new CommentImpl(getExpression(), this, nodeNum);
+            case Node.PROCESSING_INSTRUCTION_NODE -> new ProcessingInstructionImpl(getExpression(), this, nodeNum);
+            case Node.CDATA_SECTION_NODE -> new CDATASectionImpl(getExpression(), this, nodeNum);
+            case NodeImpl.REFERENCE_NODE -> new ReferenceNode(getExpression(), this, nodeNum);
+            default -> throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
+        };
         return node;
     }
 

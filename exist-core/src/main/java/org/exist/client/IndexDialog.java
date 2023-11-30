@@ -467,17 +467,14 @@ class IndexDialog extends JFrame {
 		 */
 		public Object getValueAt(int rowIndex, int columnIndex)
 		{
-			switch (columnIndex)
-			{
-                case 0 :
-                    return cx.getRangeIndex(rowIndex).getType();
-                case 1 :	/* XPath */
-					return cx.getRangeIndex(rowIndex).getXPath();
-				case 2 :	/* xsType */
-					return cx.getRangeIndex(rowIndex).getxsType();
-				default :
-					return null;
-			}
+            return switch (columnIndex) {
+                case 0 -> cx.getRangeIndex(rowIndex).getType();
+                case 1 ->    /* XPath */
+                        cx.getRangeIndex(rowIndex).getXPath();
+                case 2 ->    /* xsType */
+                        cx.getRangeIndex(rowIndex).getxsType();
+                default -> null;
+            };
 		}
 	}
 }

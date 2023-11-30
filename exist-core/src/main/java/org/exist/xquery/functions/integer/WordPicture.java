@@ -199,18 +199,11 @@ public class WordPicture extends IntegerPicture {
             final MessageFormat ruleBasedMessageFormatFormat = new MessageFormat("{0,spellout," + spelloutRule + "}", locale);
             final String formatted = ruleBasedMessageFormatFormat.format(new Object[]{value});
 
-            String result = null;
-            switch (this) {
-                case UPPER:
-                    result = formatted.toUpperCase(locale);
-                    break;
-                case LOWER:
-                    result = formatted;
-                    break;
-                case CAPITALIZED:
-                    result = StringUtils.capitalize(formatted);
-                    break;
-            }
+            String result = switch (this) {
+                case UPPER -> formatted.toUpperCase(locale);
+                case LOWER -> formatted;
+                case CAPITALIZED -> StringUtils.capitalize(formatted);
+            };
             return result;
         }
     }

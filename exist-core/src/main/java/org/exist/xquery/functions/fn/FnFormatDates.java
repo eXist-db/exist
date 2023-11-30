@@ -466,44 +466,26 @@ public class FnFormatDates extends BasicFunction {
     }
 
     private String getDefaultFormat(char specifier) {
-        switch (specifier) {
-            case 'F':
-                return "Nn";
-            case 'P':
-                return "n";
-            case 'C':
-            case 'E':
-                return "N";
-            case 'm':
-            case 's':
-                return "01";
-            case 'z':
-            case 'Z':
-                return "00:00";
-            default:
-                return "1";
-        }
+        return switch (specifier) {
+            case 'F' -> "Nn";
+            case 'P' -> "n";
+            case 'C', 'E' -> "N";
+            case 'm', 's' -> "01";
+            case 'z', 'Z' -> "00:00";
+            default -> "1";
+        };
     }
 
     private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
         final NumberFormatter formatter = NumberFormatter.getInstance(language);
         if ("N".equals(picture) || "n".equals(picture) || "Nn".equals(picture)) {
-            String name;
-            switch (specifier) {
-                case 'M':
-                    name = formatter.getMonth(num);
-                    break;
-                case 'F':
-                    name = formatter.getDay(num);
-                    break;
-                case 'P':
-                    name = formatter.getAmPm(num);
-                    break;
-                default:
-                    name = "";
-                    break;
-            }
+            String name = switch (specifier) {
+                case 'M' -> formatter.getMonth(num);
+                case 'F' -> formatter.getDay(num);
+                case 'P' -> formatter.getAmPm(num);
+                default -> "";
+            };
 
             if ("N".equals(picture)) {
                 name = name.toUpperCase();

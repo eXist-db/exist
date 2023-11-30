@@ -604,15 +604,10 @@ public class LockManager {
             return desiredCollectionLockMode;
 
         } else {
-            switch (documentLockMode) {
-                case NO_LOCK:
-                case INTENTION_READ:
-                case READ_LOCK:
-                    return Lock.LockMode.READ_LOCK;
-
-                default:
-                    return Lock.LockMode.WRITE_LOCK;
-            }
+            return switch (documentLockMode) {
+                case NO_LOCK, INTENTION_READ, READ_LOCK -> Lock.LockMode.READ_LOCK;
+                default -> Lock.LockMode.WRITE_LOCK;
+            };
         }
     }
 

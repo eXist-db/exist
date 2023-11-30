@@ -79,28 +79,22 @@ public class SimpleStep extends Step {
         if (!set.isEmpty()) {
             if (set.isPersistentSet()) {
                 final NodeSet nodeSet = set.toNodeSet();
-                switch(axis) {
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
-                            true, contextId, true);
-                        break;
-                    case Constants.CHILD_AXIS:
-                        result = nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
-                        break;
-                    default:
-                        throw new XPathException(this, "Wrong axis specified");
-                }
+                result = switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS ->
+                            nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
+                                    true, contextId, true);
+                    case Constants.CHILD_AXIS ->
+                            nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
+                    default -> throw new XPathException(this, "Wrong axis specified");
+                };
             } else {
                 final MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
                 final MemoryNodeSet nodes = set.toMemNodeSet();
-                switch(axis) {
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = ctxNodes.selectDescendants(nodes);
-                        break;
-                    case Constants.CHILD_AXIS:
-                        result = ctxNodes.selectChildren(nodes);
-                        break;
-                }
+                result = switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS -> ctxNodes.selectDescendants(nodes);
+                    case Constants.CHILD_AXIS -> ctxNodes.selectChildren(nodes);
+                    default -> result;
+                };
 
             }
         }

@@ -204,28 +204,14 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         } else {
             final Map<String, String> item = (Map<String, String>)resources.get((int)pos);
 
-            switch(item.get("type")) {
-                case "node()":
-                case "document-node()":
-                case "element()":
-                case "attribute()":
-                case "text()":
-                case "processing-instruction()":
-                case "comment()":
-                case "namespace()":
-                case "cdata-section()":
-                    return getResourceNode((int)pos, item);
-
-                case "xs:base64Binary":
-                    return getResourceBinaryValue((int)pos, item, Base64::decodeBase64);
-
-                case "xs:hexBinary":
-                    return getResourceBinaryValue((int)pos, item, Hex::decodeHex);
-
-                default:    // atomic value
-                    return getResourceValue((int)pos, item);
-
-            }
+            return switch (item.get("type")) {
+                case "node()", "document-node()", "element()", "attribute()", "text()", "processing-instruction()", "comment()", "namespace()", "cdata-section()" ->
+                        getResourceNode((int) pos, item);
+                case "xs:base64Binary" -> getResourceBinaryValue((int) pos, item, Base64::decodeBase64);
+                case "xs:hexBinary" -> getResourceBinaryValue((int) pos, item, Hex::decodeHex);
+                default ->    // atomic value
+                        getResourceValue((int) pos, item);
+            };
         }
     }
 

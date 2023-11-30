@@ -76,19 +76,11 @@ public class Rename extends Modification {
                 final NodeImpl parent = (NodeImpl) getParent(node);
 
                 //update the document
-                final NamedNode newNode;
-                switch (node.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
-                        break;
-
-                    case Node.ATTRIBUTE_NODE:
-                        newNode = new AttrImpl(node.getExpression(), (AttrImpl) node);
-                        break;
-
-                    default:
-                        throw new EXistException("unsupported node-type");
-                }
+                final NamedNode newNode = switch (node.getNodeType()) {
+                    case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
+                    case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
+                    default -> throw new EXistException("unsupported node-type");
+                };
                 newNode.setNodeName(new QName(newName, "", null));
                 parent.updateChild(transaction, node, newNode);
                 modificationCount++;

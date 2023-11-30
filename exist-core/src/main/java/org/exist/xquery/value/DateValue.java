@@ -96,51 +96,38 @@ public class DateValue extends AbstractDateTimeValue {
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.DATE:
-            case Type.ATOMIC:
-            case Type.ITEM:
-                return this;
-            case Type.DATE_TIME:
-                return new DateTimeValue(getExpression(), calendar);
-            case Type.GYEAR:
-                return new GYearValue(getExpression(), this.calendar);
-            case Type.GYEARMONTH:
-                return new GYearMonthValue(getExpression(), calendar);
-            case Type.GMONTHDAY:
-                return new GMonthDayValue(getExpression(), calendar);
-            case Type.GDAY:
-                return new GDayValue(getExpression(), calendar);
-            case Type.GMONTH:
-                return new GMonthValue(getExpression(), calendar);
-            case Type.UNTYPED_ATOMIC: {
+        return switch (requiredType) {
+            case Type.DATE, Type.ATOMIC, Type.ITEM -> this;
+            case Type.DATE_TIME -> new DateTimeValue(getExpression(), calendar);
+            case Type.GYEAR -> new GYearValue(getExpression(), this.calendar);
+            case Type.GYEARMONTH -> new GYearMonthValue(getExpression(), calendar);
+            case Type.GMONTHDAY -> new GMonthDayValue(getExpression(), calendar);
+            case Type.GDAY -> new GDayValue(getExpression(), calendar);
+            case Type.GMONTH -> new GMonthValue(getExpression(), calendar);
+            case Type.UNTYPED_ATOMIC -> {
                 final DateValue dv = new DateValue(getExpression(), getStringValue());
-                return new UntypedAtomicValue(getExpression(), dv.getStringValue());
+                yield new UntypedAtomicValue(getExpression(), dv.getStringValue());
             }
-            case Type.STRING: {
+            case Type.STRING -> {
                 final DateValue dv = new DateValue(getExpression(), calendar);
-                return new StringValue(getExpression(), dv.getStringValue());
+                yield new StringValue(getExpression(), dv.getStringValue());
             }
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
-                        Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-                        Type.getTypeName(requiredType));
-        }
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
+                    Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+                    Type.getTypeName(requiredType));
+        };
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DATE:
-                return new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateValue) other).getTimeInMillis());
-            case Type.YEAR_MONTH_DURATION:
-                return ((YearMonthDurationValue) other).negate().plus(this);
-            case Type.DAY_TIME_DURATION:
-                return ((DayTimeDurationValue) other).negate().plus(this);
-            default:
-                throw new XPathException(getExpression(), 
-                        "Operand to minus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
-                                + Type.getTypeName(other.getType()));
-        }
+        return switch (other.getType()) {
+            case Type.DATE ->
+                    new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateValue) other).getTimeInMillis());
+            case Type.YEAR_MONTH_DURATION -> ((YearMonthDurationValue) other).negate().plus(this);
+            case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
+            default -> throw new XPathException(getExpression(),
+                    "Operand to minus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
+                            + Type.getTypeName(other.getType()));
+        };
     }
 
     @Override

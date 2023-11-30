@@ -61,14 +61,11 @@ public class DateTimeStampValue extends DateTimeValue {
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.DATE_TIME_STAMP:
-                return this;
-            case Type.DATE_TIME:
-                return new DateTimeValue(getExpression(), calendar);
-            default: return
-                    super.convertTo(requiredType);
-        }
+        return switch (requiredType) {
+            case Type.DATE_TIME_STAMP -> this;
+            case Type.DATE_TIME -> new DateTimeValue(getExpression(), calendar);
+            default -> super.convertTo(requiredType);
+        };
     }
 
     @Override

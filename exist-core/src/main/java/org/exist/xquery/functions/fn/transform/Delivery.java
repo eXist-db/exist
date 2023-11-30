@@ -112,14 +112,10 @@ class Delivery {
 
     Sequence convert() throws XPathException {
 
-        switch (format) {
-            case SERIALIZED:
-                return new StringValue(getSerializedString());
-            case RAW:
-                return Convert.ToExist.of(Objects.requireNonNull(getXdmValue()));
-            case DOCUMENT:
-            default:
-                return getDocument();
-        }
+        return switch (format) {
+            case SERIALIZED -> new StringValue(getSerializedString());
+            case RAW -> Convert.ToExist.of(Objects.requireNonNull(getXdmValue()));
+            default -> getDocument();
+        };
     }
 }

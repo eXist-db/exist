@@ -363,14 +363,11 @@ class TriggersDialog extends JFrame {
          */
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
-            switch(columnIndex) {
+            return switch (columnIndex) {
                 /* class */
-                case 0:
-                    return cx.getTrigger(rowIndex).getTriggerClass();
-                
-                default :
-                    return null;
-            }
+                case 0 -> cx.getTrigger(rowIndex).getTriggerClass();
+                default -> null;
+            };
         }
     }
 }

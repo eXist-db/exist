@@ -284,18 +284,11 @@ public class ConfigurationImpl implements Configuration {
         if(value == null) {
             return null;
         }
-        switch(value.toLowerCase()) {
-            case "yes":
-            case "true":
-                return true;
-
-            case "no":
-            case "false":
-                return false;
-
-            default:
-                return null;
-        }
+        return switch (value.toLowerCase()) {
+            case "yes", "true" -> true;
+            case "no", "false" -> false;
+            default -> null;
+        };
     }
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {

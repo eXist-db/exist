@@ -1918,23 +1918,13 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
         char ch;
         for(int i = 0; i < str.length(); i++) {
             ch = str.charAt(i);
-            switch(ch) {
-                case '"':
-                    entity = "&quot;";
-                    break;
-                case '<':
-                    entity = "&lt;";
-                    break;
-                case '>':
-                    entity = "&gt;";
-                    break;
-                case '\'':
-                    entity = "&apos;";
-                    break;
-                default:
-                    entity = null;
-                    break;
-            }
+            entity = switch (ch) {
+                case '"' -> "&quot;";
+                case '<' -> "&lt;";
+                case '>' -> "&gt;";
+                case '\'' -> "&apos;";
+                default -> null;
+            };
 
             if(buffer == null) {
                 if(entity != null) {

@@ -124,15 +124,10 @@ public class NewResourceDialog extends JFrame {
         cmbResourceTypes.addActionListener(e -> {
             final Object src = e.getSource();
             if(src.equals(cmbResourceTypes)) {
-                final boolean visible1;
-                switch((ResourceType)cmbResourceTypes.getSelectedItem()) {
-                    case XQUERY_LIBRARY:
-                        visible1 = true;
-                        break;
-
-                    default:
-                        visible1 = false;
-                }
+                final boolean visible1 = switch ((ResourceType) cmbResourceTypes.getSelectedItem()) {
+                    case XQUERY_LIBRARY -> true;
+                    default -> false;
+                };
 
                 lblLibModule.setVisible(visible1);
                 panLibModule.setVisible(visible1);

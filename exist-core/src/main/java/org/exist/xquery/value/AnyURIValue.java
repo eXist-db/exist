@@ -275,20 +275,14 @@ public class    AnyURIValue extends AtomicValue {
      * @see org.exist.xquery.value.Sequence#convertTo(int)
      */
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.ITEM:
-            case Type.ATOMIC:
-            case Type.ANY_URI:
-                return this;
-            case Type.STRING:
-                return new StringValue(getExpression(), uri);
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast xs:anyURI to "
-                                + Type.getTypeName(requiredType));
-        }
+        return switch (requiredType) {
+            case Type.ITEM, Type.ATOMIC, Type.ANY_URI -> this;
+            case Type.STRING -> new StringValue(getExpression(), uri);
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "Type error: cannot cast xs:anyURI to "
+                            + Type.getTypeName(requiredType));
+        };
     }
 
     @Override
@@ -296,23 +290,16 @@ public class    AnyURIValue extends AtomicValue {
         if (other.getType() == Type.ANY_URI) {
             final String otherURI = other.getStringValue();
             final int cmp = uri.compareTo(otherURI);
-            switch (operator) {
-                case EQ:
-                    return cmp == 0;
-                case NEQ:
-                    return cmp != 0;
-                case GT:
-                    return cmp > 0;
-                case GTEQ:
-                    return cmp >= 0;
-                case LT:
-                    return cmp < 0;
-                case LTEQ:
-                    return cmp <= 0;
-                default:
-                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                            "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
-            }
+            return switch (operator) {
+                case EQ -> cmp == 0;
+                case NEQ -> cmp != 0;
+                case GT -> cmp > 0;
+                case GTEQ -> cmp >= 0;
+                case LT -> cmp < 0;
+                case LTEQ -> cmp <= 0;
+                default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "cannot apply operator " + operator.generalComparisonSymbol + " to xs:anyURI");
+            };
         } else {
             AtomicValue atomicValue = null;
 
