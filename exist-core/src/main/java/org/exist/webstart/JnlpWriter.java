@@ -35,7 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.util.FileUtils;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
@@ -101,7 +101,7 @@ public class JnlpWriter {
             writer.writeAttribute("codebase", codeBase);
             writer.writeAttribute("href", "exist.jnlp");
 
-            String version = SystemProperties.getInstance().getSystemProperty("product-version", null);
+            String version = ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, null);
             if(version!=null){
                 writer.writeAttribute("version", version);
             }

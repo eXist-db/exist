@@ -25,7 +25,7 @@ import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
@@ -286,7 +286,7 @@ public class Deployment {
     }
 
     private void checkProcessorVersion(final PackageLoader.Version version) throws PackageException {
-        final String procVersion = SystemProperties.getInstance().getSystemProperty("product-version", "1.0");
+        final String procVersion = ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "1.0");
 
         final DependencyVersion depVersion = version.getDependencyVersion();
         if (!depVersion.isCompatible(procVersion)) {

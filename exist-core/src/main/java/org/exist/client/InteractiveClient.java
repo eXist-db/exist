@@ -44,9 +44,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.dom.persistent.XMLUtil;
-import org.exist.security.ACLPermission;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
@@ -2517,12 +2516,12 @@ public class InteractiveClient {
 
     public String getNotice() {
         final StringBuilder builder = new StringBuilder();
-        builder.append(SystemProperties.getInstance().getSystemProperty("product-name", "eXist-db"));
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist-db"));
         builder.append(" version ");
-        builder.append(SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-        if (!"".equals(SystemProperties.getInstance().getSystemProperty("git-commit", ""))) {
+        builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+        if (!"".equals(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, ""))) {
             builder.append(" (");
-            builder.append(SystemProperties.getInstance().getSystemProperty("git-commit", "(unknown Git commit ID)"));
+            builder.append(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "(unknown Git commit ID)"));
             builder.append(")");
         }
         builder.append(", Copyright (C) 2001-");
