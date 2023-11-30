@@ -58,42 +58,24 @@ public class ParseDtdTestNOK {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/hamlet");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/hamlet")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
         // Store dtd test files
         final String[] dtdTestFiles = { "catalog.xml", "hamlet_invalid.xml", "hamlet_nodoctype.xml", "hamlet_valid.xml", "hamlet_wrongdoctype.xml" };
-        Collection collection = null;
-        try {
-            collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet");
+        try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet")) {
 
             for (final String dtdTestFile : dtdTestFiles) {
                 try (final InputStream is = SAMPLES.getSample("validation/dtd/" + dtdTestFile)) {
                     ExistXmldbEmbeddedServer.storeResource(collection, dtdTestFile, InputStreamUtil.readAll(is));
                 }
             }
-        } finally {
-            if(collection != null) {
-                collection.close();
-            }
         }
 
-        Collection collection1 = null;
-        try {
-            collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd");
+        try (Collection collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd")) {
             try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
                 ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", InputStreamUtil.readAll(is));
-            }
-        } finally {
-            if(collection1 != null) {
-                collection1.close();
             }
         }
 

@@ -58,47 +58,27 @@ public class JaxpDtdCatalogTest {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
-        Collection dtdsCollection = null;
-        try {
-            dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds");
+        try (Collection dtdsCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/dtds")) {
 
             try (final InputStream is = SAMPLES.getSample("validation/parse/dtds/MyNameSpace.dtd")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(dtdsCollection, "MyNameSpace.dtd", InputStreamUtil.readAll(is));
             }
-        } finally {
-            if(dtdsCollection != null) {
-                dtdsCollection.close();
-            }
         }
 
-        Collection parseCollection = null;
-        try {
-            parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
+        try (Collection parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse")) {
 
             try (final InputStream is = SAMPLES.getSample("validation/parse/catalog.xml")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", InputStreamUtil.readAll(is));
             }
-        } finally {
-            if(parseCollection != null) {
-                parseCollection.close();
-            }
         }
 
-        Collection instanceCollection = null;
-        try {
-            instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
+        try (Collection instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance")) {
 
             try (final InputStream is = SAMPLES.getSample("validation/parse/instance/valid-dtd.xml")) {
                 assertNotNull(is);
@@ -108,10 +88,6 @@ public class JaxpDtdCatalogTest {
             try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid-dtd.xml")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid-dtd.xml", InputStreamUtil.readAll(is));
-            }
-        } finally {
-            if(instanceCollection != null) {
-                instanceCollection.close();
             }
         }
     }

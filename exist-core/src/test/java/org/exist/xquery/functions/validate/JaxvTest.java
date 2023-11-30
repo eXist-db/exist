@@ -60,29 +60,17 @@ public class JaxvTest {
                 "<validation mode=\"no\"/>" +
                 "</collection>";
 
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/personal");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/personal")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
-        Collection collection = null;
-        try {
-            collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal");
+        try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "personal")) {
 
             for (final String testResource : TEST_RESOURCES) {
                 try (final InputStream is = SAMPLES.getSample("validation/personal/" + testResource)) {
                     assertNotNull(is);
                     ExistXmldbEmbeddedServer.storeResource(collection, testResource, InputStreamUtil.readAll(is));
                 }
-            }
-        } finally {
-            if(collection != null) {
-                collection.close();
             }
         }
     }

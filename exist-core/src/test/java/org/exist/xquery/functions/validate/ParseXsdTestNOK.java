@@ -58,31 +58,19 @@ public class ParseXsdTestNOK {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/addressbook");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/addressbook")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
         // Store schematron 1.5 test files
-        Collection collection = null;
-        try {
-            collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook");
+        try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook")) {
 
-            final String[] xsdTestFiles = { "addressbook.xsd", "addressbook_invalid.xml", "addressbook_valid.xml"};
+            final String[] xsdTestFiles = {"addressbook.xsd", "addressbook_invalid.xml", "addressbook_valid.xml"};
 
             for (final String xsdTestFile : xsdTestFiles) {
                 try (final InputStream is = SAMPLES.getSample("validation/addressbook/" + xsdTestFile)) {
                     ExistXmldbEmbeddedServer.storeResource(collection, xsdTestFile, InputStreamUtil.readAll(is));
                 }
-            }
-        } finally {
-            if(collection != null) {
-                collection.close();
             }
         }
     }

@@ -434,19 +434,13 @@ public class BlobStoreImplTest {
     }
 
     private void getAndVerify(final BlobStore blobStore, final BlobId blobId, final Tuple2<byte[], MessageDigest> expectedBlob) throws IOException {
-        InputStream is = null;
-        try {
-            is = blobStore.get(null, blobId);
+        try (InputStream is = blobStore.get(null, blobId)) {
             assertNotNull(is);
 
             final Tuple2<byte[], MessageDigest> actualBlob = readAll(is);
             assertArrayEquals(expectedBlob._1, actualBlob._1);
             assertArrayEquals(expectedBlob._2.getValue(), actualBlob._2.getValue());
 
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
     }
 
