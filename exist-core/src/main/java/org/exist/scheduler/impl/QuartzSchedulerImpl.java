@@ -55,7 +55,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import static org.exist.scheduler.JobDescription.*;
 import static org.quartz.impl.StdSchedulerFactory.*;
 
-import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 

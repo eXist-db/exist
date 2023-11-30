@@ -21,10 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.Namespaces;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.w3c.dom.Node;
 
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;

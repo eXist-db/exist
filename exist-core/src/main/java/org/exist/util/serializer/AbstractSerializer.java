@@ -31,8 +31,6 @@ import javax.xml.transform.OutputKeys;
 import java.io.Writer;
 import java.util.Properties;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Common base for {@link org.exist.util.serializer.SAXSerializer} and {@link org.exist.util.serializer.DOMSerializer}.
  */

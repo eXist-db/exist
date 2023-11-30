@@ -22,11 +22,6 @@
 
 package org.exist.util.sorters;
 
-import java.lang.reflect.Method;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 /**
  * Test case to check methods that use comparators.
  *

@@ -23,7 +23,6 @@ package org.exist.xquery.functions.securitymanager;
 
 import org.exist.EXistException;
 import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.BrokerPool;

@@ -22,7 +22,6 @@
 package org.exist.xmlrpc;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
-import com.evolvedbinary.j8fu.lazy.LazyVal;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

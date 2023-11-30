@@ -32,7 +32,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertNotNull;

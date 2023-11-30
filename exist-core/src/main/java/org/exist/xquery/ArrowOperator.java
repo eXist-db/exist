@@ -31,7 +31,6 @@ import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Implements the XQuery 3.1 arrow operator.

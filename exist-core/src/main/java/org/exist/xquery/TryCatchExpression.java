@@ -31,14 +31,12 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.xerces.impl.xpath.XPath;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.*;
 
 /**

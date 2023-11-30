@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.easymock.EasyMock.*;
-import static org.easymock.EasyMock.anyBoolean;
 
 
 public class IndexIntegrationTest extends AbstractTestUpdate {

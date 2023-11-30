@@ -34,8 +34,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-import javax.annotation.Nullable;
-
 public class FunHigherOrderFun extends BasicFunction {
 
     public final static FunctionSignature FN_FOR_EACH = new FunctionSignature(

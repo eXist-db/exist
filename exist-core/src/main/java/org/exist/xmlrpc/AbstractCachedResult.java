@@ -21,8 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import org.xmldb.api.base.XMLDBException;
-
 import java.io.Closeable;
 
 /**

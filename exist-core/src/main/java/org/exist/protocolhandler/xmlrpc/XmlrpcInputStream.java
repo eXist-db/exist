@@ -24,7 +24,6 @@ package org.exist.protocolhandler.xmlrpc;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.exist.protocolhandler.xmldb.XmldbURL;

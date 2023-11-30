@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import org.apache.commons.lang3.ArrayUtils;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.security.internal.RealmImpl;

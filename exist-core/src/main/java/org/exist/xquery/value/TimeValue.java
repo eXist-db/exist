@@ -29,7 +29,6 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.GregorianCalendar;
 

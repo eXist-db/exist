@@ -47,7 +47,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.source.URLSource;
-import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;

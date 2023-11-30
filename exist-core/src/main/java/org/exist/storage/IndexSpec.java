@@ -33,7 +33,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Top class for index definitions as specified in a collection configuration

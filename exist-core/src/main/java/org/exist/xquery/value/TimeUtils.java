@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import net.jcip.annotations.NotThreadSafe;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;

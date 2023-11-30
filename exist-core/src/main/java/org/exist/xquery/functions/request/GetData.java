@@ -40,7 +40,6 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
-import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;

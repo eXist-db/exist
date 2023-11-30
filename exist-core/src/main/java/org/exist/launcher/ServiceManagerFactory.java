@@ -22,7 +22,6 @@
 package org.exist.launcher;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
-import com.evolvedbinary.j8fu.lazy.AtomicLazyValE;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.annotation.Nullable;

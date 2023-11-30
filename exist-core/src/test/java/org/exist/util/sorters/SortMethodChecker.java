@@ -22,11 +22,7 @@
 
 package org.exist.util.sorters;
 
-import java.lang.reflect.Method;
 import java.util.Random;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * Check one of the sort() methods, given an algorithm to use.

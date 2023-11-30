@@ -33,7 +33,6 @@ import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.internal.SecurityManagerImpl;
 import java.util.Random;
 import org.easymock.EasyMock;
-import org.exist.util.ByteArray;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import com.ibm.icu.text.Collator;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;

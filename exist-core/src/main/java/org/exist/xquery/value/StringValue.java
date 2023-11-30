@@ -34,7 +34,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
-import javax.xml.XMLConstants;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

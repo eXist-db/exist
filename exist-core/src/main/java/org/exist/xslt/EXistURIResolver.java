@@ -29,7 +29,6 @@ import java.net.URL;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

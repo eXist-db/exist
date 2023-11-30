@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire

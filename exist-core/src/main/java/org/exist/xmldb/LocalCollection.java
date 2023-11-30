@@ -63,7 +63,6 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import static com.evolvedbinary.j8fu.Try.Try;
 import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A local implementation of the Collection interface. This

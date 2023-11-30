@@ -23,7 +23,6 @@ package org.exist.client.security;
 
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.internal.aider.UnixStylePermissionAider;
 
 /**
  * Used for Tri-State display of a permission mode

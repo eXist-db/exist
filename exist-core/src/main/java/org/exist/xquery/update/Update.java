@@ -32,7 +32,6 @@ import org.exist.dom.NodeListImpl;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
 import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;

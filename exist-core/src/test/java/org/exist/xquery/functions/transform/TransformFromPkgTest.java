@@ -21,15 +21,12 @@
  */
 package org.exist.xquery.functions.transform;
 
-import org.exist.config.TwoDatabasesTest;
-import org.exist.repo.AutoDeploymentTrigger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

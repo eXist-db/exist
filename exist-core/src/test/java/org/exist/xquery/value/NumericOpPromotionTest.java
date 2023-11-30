@@ -27,7 +27,6 @@ import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 

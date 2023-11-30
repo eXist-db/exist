@@ -29,7 +29,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.exist.EXistException;
-import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.XPathException;
