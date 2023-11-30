@@ -84,11 +84,10 @@ public class EXistDbXMLReader implements XMLReader, Locator {
     
     @Override
     public void parse(final InputSource input) {
-        if (!(input instanceof EXistDbInputSource)) {
+        if (!(input instanceof EXistDbInputSource source)) {
             throw new UnsupportedOperationException("EXistDbXMLReader only accepts EXistDbInputSource");
         }
 
-        EXistDbInputSource source = (EXistDbInputSource) input;
         final Serializer serializer = source.getBroker().borrowSerializer();
         try {
             this.source = input;  

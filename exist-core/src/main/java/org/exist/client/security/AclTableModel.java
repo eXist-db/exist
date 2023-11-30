@@ -37,8 +37,7 @@ public class AclTableModel extends DefaultTableModel {
         super();
         
         final Object[][] aces;    
-        if(permission instanceof ACLPermission) {
-            final ACLPermission aclPermission = (ACLPermission)permission;
+        if(permission instanceof ACLPermission aclPermission) {
             aces = new Object[aclPermission.getACECount()][6];
             for(int i = 0; i < aclPermission.getACECount(); i++) {
                 aces[i] = new Object[]{

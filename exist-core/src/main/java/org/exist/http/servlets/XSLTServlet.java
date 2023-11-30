@@ -128,8 +128,7 @@ public class XSLTServlet extends HttpServlet {
 
             Object sourceObj = request.getAttribute(sourceAttrib);
             if (sourceObj != null) {
-                if (sourceObj instanceof ValueSequence) {
-                    final ValueSequence seq = (ValueSequence) sourceObj;
+                if (sourceObj instanceof ValueSequence seq) {
 
                     if (seq.size() == 1) {
                         sourceObj = seq.itemAt(0);
@@ -372,8 +371,7 @@ public class XSLTServlet extends HttpServlet {
                     !(name.startsWith(REQ_ATTRIBUTE_OUTPUT) || REQ_ATTRIBUTE_INPUT.equals(name)
                             || REQ_ATTRIBUTE_STYLESHEET.equals(name))) {
                 Object value = request.getAttribute(name);
-                if (value instanceof NodeValue) {
-                    final NodeValue nv = (NodeValue) value;
+                if (value instanceof NodeValue nv) {
                     if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                         value = nv.toMemNodeSet();
                     }

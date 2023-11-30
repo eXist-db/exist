@@ -81,9 +81,8 @@ public class CollectionName extends BasicFunction {
 		final Item item = args[0].itemAt(0);
 		if(item.getType() == Type.JAVA_OBJECT) {
 			final Object o = ((JavaObjectValue) item).getObject();
-            if (!(o instanceof Collection))
+            if (!(o instanceof Collection collection))
                 {throw new XPathException(this, "Passed Java object should be of type org.xmldb.api.base.Collection");}
-            final Collection collection = (Collection)o;
             try {
 				return new StringValue(this, collection.getName());
 			} catch (final XMLDBException e) {

@@ -180,9 +180,8 @@ public class DefaultDocumentSet implements MutableDocumentSet {
             return false;
         }
 
-        if(other instanceof DefaultDocumentSet) {
+        if(other instanceof DefaultDocumentSet otherDDS) {
             // optimization for fast comparison when other is also a DefaultDocumentSet
-            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
             final BitSet compare = new BitSet();
             compare.or(docIds);
             compare.and(otherDDS.docIds);
@@ -243,9 +242,8 @@ public class DefaultDocumentSet implements MutableDocumentSet {
             return false;
         }
 
-        if(other instanceof DefaultDocumentSet) {
+        if(other instanceof DefaultDocumentSet otherDDS) {
             // optimization for fast comparison when other is also a DefaultDocumentSet
-            final DefaultDocumentSet otherDDS = (DefaultDocumentSet)other;
             return docIds.equals(otherDDS.docIds);
         } else {
             // otherwise, fallback to general comparison

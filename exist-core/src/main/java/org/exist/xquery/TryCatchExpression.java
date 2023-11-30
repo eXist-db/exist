@@ -151,9 +151,8 @@ public class TryCatchExpression extends AbstractExpression {
             final ErrorCode errorCode;
 
             // fn:error throws an XPathException
-            if(throwable instanceof XPathException){
+            if(throwable instanceof XPathException xpe){
                 // Get errorcode from nicely thrown xpathexception
-                final XPathException xpe = (XPathException)throwable;
 
                 if(xpe.getErrorCode() != null) {
                     if(xpe.getErrorCode() == ErrorCodes.ERROR) {

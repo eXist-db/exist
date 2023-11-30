@@ -226,8 +226,7 @@ public class Insert extends Modification {
      * @throws XPathException if a node has a namespace conflict
      */
     private <T extends NodeImpl<T>> void validateNonDefaultNamespaces(final NodeList nodeList, final NodeImpl<T> parent) throws XPathException {
-        if (parent instanceof ElementImpl) {
-            final ElementImpl parentAsElement = (ElementImpl) parent;
+        if (parent instanceof ElementImpl parentAsElement) {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 final Node node = nodeList.item(i);
 

@@ -74,13 +74,12 @@ public class TriggerSystemTask extends BasicFunction {
             final Class<?> clazz = Class.forName(className);
             final Object taskObject = clazz.newInstance();
 
-            if (!(taskObject instanceof SystemTask)) {
+            if (!(taskObject instanceof SystemTask task)) {
                 final XPathException xPathException = new XPathException(this, className + " is not an instance of org.exist.storage.SystemTask");
                 logger.error("Java classname is not a SystemTask", xPathException);
 				throw xPathException;
             }
 
-            final SystemTask task = (SystemTask) taskObject;
             task.configure(context.getBroker().getConfiguration(), properties);
             LOG.info("Triggering SystemTask: {}", className);
             context.getBroker().getBrokerPool().triggerSystemTask(task);

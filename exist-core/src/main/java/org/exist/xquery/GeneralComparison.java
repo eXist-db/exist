@@ -196,8 +196,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             if( firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 final Expression outerExpr = contextInfo.getContextStep();
 
-                if( ( outerExpr != null ) && ( outerExpr instanceof LocationStep ) ) {
-                    final LocationStep outerStep = ( LocationStep )outerExpr;
+                if( ( outerExpr != null ) && (outerExpr instanceof LocationStep outerStep) ) {
                     final NodeTest     test      = outerStep.getTest();
 
                     if( !test.isWildcardTest() && ( test.getName() != null ) ) {

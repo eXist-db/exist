@@ -61,8 +61,7 @@ public abstract class AbstractRemote {
     
     protected Permission getPermission(final String owner, final String group, final int mode, final Stream<ACEAider> aces) throws PermissionDeniedException {
         final Permission perm = PermissionAiderFactory.getPermission(owner, group, mode);
-        if(perm instanceof ACLPermission) {
-            final ACLPermission aclPermission = (ACLPermission)perm;
+        if(perm instanceof ACLPermission aclPermission) {
             for(final ACEAider ace : aces.collect(Collectors.toList())) {
                 aclPermission.addACE(ace.getAccessType(), ace.getTarget(), ace.getWho(), ace.getMode());
             }

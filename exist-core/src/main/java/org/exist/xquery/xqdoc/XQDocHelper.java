@@ -119,8 +119,7 @@ public class XQDocHelper {
         }
         final SequenceType[] args = signature.getArgumentTypes();
         for (final SequenceType type : args) {
-            if (type instanceof FunctionParameterSequenceType) {
-                final FunctionParameterSequenceType argType = (FunctionParameterSequenceType)type;
+            if (type instanceof FunctionParameterSequenceType argType) {
                 final String desc = parameters.get(argType.getAttributeName());
                 if (desc != null)
                     {argType.setDescription(desc);}

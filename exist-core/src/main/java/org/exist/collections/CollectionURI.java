@@ -108,8 +108,7 @@ public class CollectionURI {
     }
 
     public boolean equals(Object object) {
-        if (object instanceof CollectionURI) {
-            final CollectionURI otherCollectionURI = (CollectionURI)object;
+        if (object instanceof CollectionURI otherCollectionURI) {
             if (this.length == otherCollectionURI.length) {
                 int pos = length - 1;
                 while (pos > -1) {

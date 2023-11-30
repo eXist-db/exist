@@ -263,8 +263,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             } catch (final PackageException ex) {
                 throw new XPathException((Expression) null, ErrorCodes.XQST0059, "Error resolving the query library: " + namespace, ex);
             } finally {
-                if (src != null && src instanceof StreamSource) {
-                    final StreamSource streamSource = ((StreamSource)src);
+                if (src != null && src instanceof StreamSource streamSource) {
                     try {
                         if (streamSource.getInputStream() != null) {
                             streamSource.getInputStream().close();

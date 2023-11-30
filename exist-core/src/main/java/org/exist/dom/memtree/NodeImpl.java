@@ -282,10 +282,9 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public boolean equals(final Object other) {
-        if(!(other instanceof NodeImpl)) {
+        if(!(other instanceof NodeImpl o)) {
             return false;
         }
-        final NodeImpl o = (NodeImpl) other;
         return document == o.document && nodeNumber == o.nodeNumber &&
             getNodeType() == o.getNodeType();
     }

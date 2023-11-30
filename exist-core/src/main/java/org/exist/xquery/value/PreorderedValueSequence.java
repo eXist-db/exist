@@ -67,8 +67,7 @@ public class PreorderedValueSequence extends AbstractSequence {
                 ContextItem context = p.getContext();
                 //TODO : review to consider transverse context
                 while (context != null) {
-                    if (context.getNode() instanceof OrderedNodeProxy) {
-                        final OrderedNodeProxy cp = (OrderedNodeProxy) context.getNode();
+                    if (context.getNode() instanceof OrderedNodeProxy cp) {
                         cp.values[i] = p.atomize();
                     }
                     context = context.getNextDirect();

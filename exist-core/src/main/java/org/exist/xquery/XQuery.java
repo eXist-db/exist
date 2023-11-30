@@ -380,8 +380,7 @@ public class XQuery {
         //if setUid or setGid, become Effective User
         EffectiveSubject effectiveSubject = null;
         final Source src = expression.getContext().getSource();
-        if(src instanceof DBSource) {
-            final DBSource dbSrc = (DBSource)src;
+        if(src instanceof DBSource dbSrc) {
             final Permission perm = dbSrc.getPermissions();
 
             if(perm.isSetUid()) {

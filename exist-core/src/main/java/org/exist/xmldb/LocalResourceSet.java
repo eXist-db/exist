@@ -175,8 +175,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
         final Object r = resources.get((int) pos);
 
         EXistResource res = null;
-        if (r instanceof NodeProxy) {
-            final NodeProxy p = (NodeProxy) r;
+        if (r instanceof NodeProxy p) {
             // the resource might belong to a different collection
             // than the one by which this resource set has been
             // generated: adjust if necessary.

@@ -546,9 +546,8 @@ class Options {
 
         String version = "";
 
-        if (node instanceof Element) {
+        if (node instanceof Element elem) {
 
-            final Element elem = (Element) node;
             if (XSL_NS.equals(node.getNamespaceURI())
                     && "stylesheet".equals(node.getLocalName())) {
                 version = elem.getAttribute("version");
@@ -557,8 +556,7 @@ class Options {
             // No luck ? Search the attributes of a "simplified stylesheet"
             final NamedNodeMap attributes = elem.getAttributes();
             for (int i = 0; version.isEmpty() && i < attributes.getLength(); i++) {
-                if (attributes.item(i) instanceof NamespaceNode) {
-                    final NamespaceNode nsNode = (NamespaceNode) attributes.item(i);
+                if (attributes.item(i) instanceof NamespaceNode nsNode) {
                     final String uri = nsNode.getNodeValue();
                     final String localName = nsNode.getLocalName(); // "xsl"
                     if (XSL_NS.equals(uri)) {

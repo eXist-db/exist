@@ -517,8 +517,7 @@ public class XIncludeFilter implements Receiver {
     private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws ParserConfigurationException, SAXException {
         try {
             final URLConnection con = externalUri.toURL().openConnection();
-            if (con instanceof HttpURLConnection) {
-                final HttpURLConnection httpConnection = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpConnection) {
                 if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri.toString() + ", server returned response code: " + httpConnection.getResponseCode()));
                 }

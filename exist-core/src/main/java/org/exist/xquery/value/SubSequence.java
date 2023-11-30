@@ -388,10 +388,9 @@ public class SubSequence extends AbstractSequence {
 
         while (iterator.hasNext()) {
             final Item item = iterator.nextItem();
-            if (!(item instanceof NodeValue)) {
+            if (!(item instanceof NodeValue nv)) {
                 return false;
             }
-            final NodeValue nv = (NodeValue) item;
             if (nv.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                 return false;
             }

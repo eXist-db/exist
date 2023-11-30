@@ -1121,12 +1121,10 @@ public class BlobStoreImpl implements BlobStore {
     @Override
     public void redo(final BlobLoggable blobLoggable) throws LogException {
         try {
-            if (blobLoggable instanceof StoreBlobFileLoggable) {
-                final StoreBlobFileLoggable storeBlobFileLoggable = (StoreBlobFileLoggable) blobLoggable;
+            if (blobLoggable instanceof StoreBlobFileLoggable storeBlobFileLoggable) {
                 redoStoreBlobFile(storeBlobFileLoggable.getBlobId(), storeBlobFileLoggable.getStagedUuid());
 
-            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable) {
-                final UpdateBlobRefCountLoggable updateBlobRefCountLoggable = (UpdateBlobRefCountLoggable) blobLoggable;
+            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable updateBlobRefCountLoggable) {
                 updateBlogRefCount(updateBlobRefCountLoggable.getBlobId(), updateBlobRefCountLoggable.getNewCount());
             }
         } catch (final IOException e) {
@@ -1137,12 +1135,10 @@ public class BlobStoreImpl implements BlobStore {
     @Override
     public void undo(final BlobLoggable blobLoggable) throws LogException {
         try {
-            if (blobLoggable instanceof StoreBlobFileLoggable) {
-                final StoreBlobFileLoggable storeBlobFileLoggable = (StoreBlobFileLoggable) blobLoggable;
+            if (blobLoggable instanceof StoreBlobFileLoggable storeBlobFileLoggable) {
                 undoStoreBlobFile(storeBlobFileLoggable.getBlobId(), storeBlobFileLoggable.getStagedUuid());
 
-            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable) {
-                final UpdateBlobRefCountLoggable updateBlobRefCountLoggable = (UpdateBlobRefCountLoggable) blobLoggable;
+            } else if (blobLoggable instanceof UpdateBlobRefCountLoggable updateBlobRefCountLoggable) {
                 updateBlogRefCount(updateBlobRefCountLoggable.getBlobId(), updateBlobRefCountLoggable.getCurrentCount());
             }
         } catch (final IOException e) {

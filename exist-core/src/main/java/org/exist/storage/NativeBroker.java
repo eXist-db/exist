@@ -1443,8 +1443,7 @@ public class NativeBroker implements DBBroker {
      */
     private void copyModeAndAcl(final Permission srcPermission, final Permission destPermission) throws PermissionDeniedException {
         final List<ACEAider> aces = new ArrayList<>();
-        if(srcPermission instanceof SimpleACLPermission && destPermission instanceof SimpleACLPermission) {
-            final SimpleACLPermission srcAclPermission = (SimpleACLPermission) srcPermission;
+        if(srcPermission instanceof SimpleACLPermission srcAclPermission && destPermission instanceof SimpleACLPermission) {
             for (int i = 0; i < srcAclPermission.getACECount(); i++) {
                 aces.add(new ACEAider(srcAclPermission.getACEAccessType(i), srcAclPermission.getACETarget(i), srcAclPermission.getACEWho(i), srcAclPermission.getACEMode(i)));
             }
@@ -1685,8 +1684,7 @@ public class NativeBroker implements DBBroker {
                 final Iterator<DocumentImpl> itDoc = dst.iterator(this);
                 while (itDoc.hasNext()) {
                     final DocumentImpl dstDoc = itDoc.next();
-                    if (dstDoc instanceof BinaryDocument) {
-                        final BinaryDocument binDstDoc = (BinaryDocument)dstDoc;
+                    if (dstDoc instanceof BinaryDocument binDstDoc) {
                         try (final ManagedDocumentLock dstDocLock = lockManager.acquireDocumentWriteLock(dstDoc.getURI())) {
                             removeBinaryResource(transaction, binDstDoc);
                             binDstDoc.setBlobId(null);

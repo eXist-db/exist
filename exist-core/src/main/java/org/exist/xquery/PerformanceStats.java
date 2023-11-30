@@ -77,8 +77,7 @@ public class PerformanceStats implements BrokerPoolService {
         }
 
         public boolean equals(Object obj) {
-        	if (obj != null && obj instanceof IndexStats) {
-                final IndexStats other = (IndexStats) obj;
+        	if (obj != null && obj instanceof IndexStats other) {
                 return other.indexType.equals(indexType) && other.source.equals(source) &&
                     other.line == line && other.column == column && other.mode == mode;
 			}
@@ -129,8 +128,7 @@ public class PerformanceStats implements BrokerPoolService {
         }
 
         public boolean equals(Object obj) {
-        	if (obj != null && obj instanceof FunctionStats) {
-                final FunctionStats ostats = (FunctionStats) obj;
+        	if (obj != null && obj instanceof FunctionStats ostats) {
                 return qname.equals(ostats.qname) &&
                         source.equals(ostats.source);
 			}
@@ -163,8 +161,7 @@ public class PerformanceStats implements BrokerPoolService {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof OptimizationStats) {
-                final OptimizationStats stats = (OptimizationStats) obj;
+            if (obj instanceof OptimizationStats stats) {
                 return source.equals(stats.source) && type == stats.type &&
                         line == stats.line && column == stats.column;
             }

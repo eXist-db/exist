@@ -306,9 +306,8 @@ public abstract class TestCase {
 		
 		LocalXMLResource res = null;
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-		if (r instanceof NodeProxy) {
-			NodeProxy p = (NodeProxy) r;
-			res = new LocalXMLResource(user, pool, collection, p);
+		if (r instanceof NodeProxy p) {
+            res = new LocalXMLResource(user, pool, collection, p);
 		} else if (r instanceof Node) {
 			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContentAsDOM((Node)r);

@@ -436,8 +436,7 @@ public class PermissionsFunction extends BasicFunction {
         builder.addAttribute(new QName("group", XMLConstants.NULL_NS_URI), permission.getGroup().getName());
         builder.addAttribute(new QName("mode", XMLConstants.NULL_NS_URI), permission.toString());
 
-        if(permission instanceof SimpleACLPermission) {
-            final SimpleACLPermission aclPermission = (SimpleACLPermission)permission;
+        if(permission instanceof SimpleACLPermission aclPermission) {
             builder.startElement(new QName("acl", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
             builder.addAttribute(new QName("entries", XMLConstants.NULL_NS_URI), String.valueOf(aclPermission.getACECount()));
 

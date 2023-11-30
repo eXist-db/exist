@@ -251,8 +251,7 @@ public class FnCollectionSecurityTest {
         try (final Collection collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri))) {
             final Permission permissions = collection.getPermissions();
             permissions.setMode(modeStr);
-            if (permissions instanceof SimpleACLPermission) {
-                final SimpleACLPermission aclPermissions = (SimpleACLPermission)permissions;
+            if (permissions instanceof SimpleACLPermission aclPermissions) {
                 for (final ACEAider ace : aces) {
                     aclPermissions.addACE(
                             ace.getAccessType(),

@@ -178,8 +178,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
             return;
         }
 
-        if (otherSequence instanceof ArrayListValueSequence) {
-            final ArrayListValueSequence other = (ArrayListValueSequence) otherSequence;
+        if (otherSequence instanceof ArrayListValueSequence other) {
             addAll(other.values, other.itemType);
 
         } else {

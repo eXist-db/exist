@@ -129,8 +129,7 @@ public class MemoryContentsInputStreamTest {
         reportMatcher(new IArgumentMatcher() {
             @Override
             public boolean matches(Object o) {
-                if (o instanceof byte[]) {
-                    byte[] data = (byte[]) o;
+                if (o instanceof byte[] data) {
                     if (data.length == 1) {
                         data[0] = (byte) ch;
                         return true;

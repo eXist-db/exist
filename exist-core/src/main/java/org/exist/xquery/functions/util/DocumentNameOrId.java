@@ -175,8 +175,7 @@ public class DocumentNameOrId extends BasicFunction {
         final DocumentImpl doc = context.getBroker().getResourceById(decoded._1, decoded._3, decoded._2);
         if (doc != null) {
             try (final ManagedDocumentLock docLock = context.getBroker().getBrokerPool().getLockManager().acquireDocumentReadLock(doc.getURI())) {
-                if (doc instanceof BinaryDocument) {
-                    final BinaryDocument bin = (BinaryDocument) doc;
+                if (doc instanceof BinaryDocument bin) {
                     final InputStream is = context.getBroker().getBinaryResource(bin);
                     return Base64BinaryDocument.getInstance(context, is, this);
                 } else {

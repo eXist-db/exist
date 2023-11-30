@@ -64,8 +64,7 @@ abstract class FunRoundBase extends BasicFunction {
 
         if (args.length > 1) {
             final Item precisionItem = args[1].itemAt(0);
-            if (precisionItem instanceof IntegerValue) {
-                final IntegerValue precision = (IntegerValue) precisionItem;
+            if (precisionItem instanceof IntegerValue precision) {
                 return convertValue(precision, value, roundingMode, this);
             }
         }

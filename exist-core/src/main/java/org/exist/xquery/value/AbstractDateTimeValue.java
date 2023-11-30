@@ -437,8 +437,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {
-        if (o instanceof AbstractDateTimeValue) {
-            final AbstractDateTimeValue dt = (AbstractDateTimeValue) o;
+        if (o instanceof AbstractDateTimeValue dt) {
             return calendar.compare(dt.calendar);
         }
 
@@ -458,8 +457,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public boolean equals(Object obj) {
-        if (obj instanceof AbstractDateTimeValue) {
-            final AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
+        if (obj instanceof AbstractDateTimeValue dt) {
             return calendar.equals(dt.calendar);
         }
 

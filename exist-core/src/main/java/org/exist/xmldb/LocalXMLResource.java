@@ -423,8 +423,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                     domResult = Optional.of(((StoredNode) node).getNodeId());
                 } else if (proxy instanceof MemtreeNodeIdentity
                         && (args == null || args.length == 0)
-                        && node instanceof org.exist.dom.memtree.NodeImpl) {
-                    final org.exist.dom.memtree.NodeImpl memtreeNode = (org.exist.dom.memtree.NodeImpl) node;
+                        && node instanceof NodeImpl memtreeNode) {
                     domResult = Optional.of(Tuple(memtreeNode.getOwnerDocument(), memtreeNode.getNodeNumber(), memtreeNode.getNodeType()));
                 } else {
                     domResult = Optional.empty();

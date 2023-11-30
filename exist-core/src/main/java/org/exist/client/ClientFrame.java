@@ -1310,8 +1310,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 mode = getUpdatedMode(mode, thisPerm);
 
                 if (firstPerm) {
-                    if (thisPerm instanceof ACLPermission) {
-                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                    if (thisPerm instanceof ACLPermission thisAcl) {
                         acl = new SimpleACLPermissionAider();
                         for (int i = 0; i < thisAcl.getACECount(); i++) {
                             acl.addACE(thisAcl.getACEAccessType(i), thisAcl.getACETarget(i), thisAcl.getACEWho(i), thisAcl.getACEMode(i));
@@ -1321,8 +1320,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     }
                     firstPerm = false;
                 } else {
-                    if (acl != null && thisPerm instanceof ACLPermission) {
-                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                    if (acl != null && thisPerm instanceof ACLPermission thisAcl) {
                         if (!acl.aclEquals(thisAcl)) {
                             acl = null;
                         }

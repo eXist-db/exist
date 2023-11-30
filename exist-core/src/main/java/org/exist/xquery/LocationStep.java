@@ -268,8 +268,7 @@ public class LocationStep extends Step {
             case Constants.SELF_AXIS:
                 if (getTest().getType() != Type.NODE) {
                     final Expression contextStep = contextInfo.getContextStep();
-                    if (contextStep instanceof LocationStep) {
-                        final LocationStep cStep = (LocationStep) contextStep;
+                    if (contextStep instanceof LocationStep cStep) {
 
                         // WM: the following checks will only work on simple filters like //a[self::b], so we
                         // have to make sure they are not applied to more complex expression types

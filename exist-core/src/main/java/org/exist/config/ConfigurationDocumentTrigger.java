@@ -284,11 +284,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     private void setAccountPrimaryGroupToNoGroup() throws SAXException {
         final SAXEvent firstEvent = deferred.peek();
-        if(!(firstEvent instanceof StartElement)) {
+        if(!(firstEvent instanceof StartElement start)) {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        StartElement start = ((StartElement)firstEvent);
         if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(PrincipalType.ACCOUNT.getElementName())) {
             throw new SAXException("First element does not match ending '" + PrincipalType.ACCOUNT.getElementName() + "' element");
         }
@@ -318,11 +317,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      */
     private void processPrincipal(final PrincipalType principalType) throws SAXException {
         final SAXEvent firstEvent = deferred.peek();
-        if(!(firstEvent instanceof StartElement)) {
+        if(!(firstEvent instanceof StartElement start)) {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        final StartElement start = ((StartElement)firstEvent);
         if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(principalType.getElementName())) {
             throw new SAXException("First element does not match ending '" + principalType.getElementName() + "' element");
         }
@@ -423,8 +421,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         boolean inName = false;
         final StringBuilder name = new StringBuilder();
         for (final SAXEvent event : deferred) {
-            if (event instanceof Element) {
-                final Element element = (Element) event;
+            if (event instanceof Element element) {
                 if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
                     inName = !inName;
                 }

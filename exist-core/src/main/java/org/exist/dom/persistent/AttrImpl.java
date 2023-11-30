@@ -455,8 +455,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
             return false;
         }
 
-        if(obj instanceof AttrImpl) {
-            final AttrImpl other = ((AttrImpl)obj);
+        if(obj instanceof AttrImpl other) {
             return other.getQName().equals(getQName())
                     && other.value.equals(value);
         }

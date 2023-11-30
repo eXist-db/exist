@@ -101,8 +101,7 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
         if (item instanceof NodeValue) {
             actualItem = (NodeValue) item;
 
-        } else if (item instanceof Sequence) {
-            final Sequence actual = ((Sequence) item);
+        } else if (item instanceof Sequence actual) {
 
             if (actual.getItemCount() != 1) {
                 mismatch.appendText("Sequence does not contain 1 item");

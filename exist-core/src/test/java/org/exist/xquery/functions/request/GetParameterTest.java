@@ -374,14 +374,12 @@ public class GetParameterTest extends RESTTest {
         StringBuilder buf = new StringBuilder();
 
         for (final Param multipartParam : multipartParams) {
-            if(multipartParam instanceof NameValues) {
-                final NameValues nameValues = (NameValues) multipartParam;
+            if(multipartParam instanceof NameValues nameValues) {
                 for(final String value : nameValues.getData()) {
                     multipart = multipart.addTextBody(nameValues.getName(), value);
                     buf.append(nameValues.getName()).append('=').append(value);
                 }
-            } else if(multipartParam instanceof TextFileUpload) {
-                final TextFileUpload textFileUpload = (TextFileUpload) multipartParam;
+            } else if(multipartParam instanceof TextFileUpload textFileUpload) {
                 multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
                 buf.append("fileUpload=" + textFileUpload.getData());
             }
@@ -410,14 +408,12 @@ public class GetParameterTest extends RESTTest {
         final StringBuilder bodyBuf = new StringBuilder();
 
         for (final Param multipartParam : multipartParams) {
-            if(multipartParam instanceof NameValues) {
-                final NameValues nameValues = (NameValues) multipartParam;
+            if(multipartParam instanceof NameValues nameValues) {
                 for(final String value : nameValues.getData()) {
                     multipart = multipart.addTextBody(nameValues.getName(), value);
                     bodyBuf.append(nameValues.getName()).append('=').append(value);
                 }
-            } else if(multipartParam instanceof TextFileUpload) {
-                final TextFileUpload textFileUpload = (TextFileUpload) multipartParam;
+            } else if(multipartParam instanceof TextFileUpload textFileUpload) {
                 multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
                 bodyBuf.append("fileUpload=" + textFileUpload.getData());
             }

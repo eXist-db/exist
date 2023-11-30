@@ -337,9 +337,8 @@ public class HttpRequestWrapper implements RequestWrapper {
     private List<Part> getFileItem(final Object obj) {
 
     	final List<Part> partList = new LinkedList<>();
-        if (obj instanceof List) {
+        if (obj instanceof List list) {
             // Cast
-            final List list = (List) obj;
             // Return first Part object if present
             for(final Object listObject : list) {
                 if (listObject instanceof Part && !isFormField(((Part) listObject))) {
@@ -494,14 +493,12 @@ public class HttpRequestWrapper implements RequestWrapper {
         }
 
         // If Parameter is a List, get first entry. The data is used later on
-        if (o instanceof List) {
-            final List lst = ((List) o);
+        if (o instanceof List lst) {
             o = lst.get(0);
         }
 
         // If parameter is file item, convert to string
-        if (o instanceof Part) {
-            final Part fi = (Part) o;
+        if (o instanceof Part fi) {
 
             try {
                 return getPartContentAsString(fi, formEncoding);
@@ -623,10 +620,9 @@ public class HttpRequestWrapper implements RequestWrapper {
         String[] values;
 
         // If object is a List, retrieve data from list
-        if (obj instanceof List) {
+        if (obj instanceof List list) {
 
             // Cast to List
-            final List list = (List) obj;
 
             // Reserve the right aboumt of elements
             values = new String[list.size()];
@@ -638,10 +634,9 @@ public class HttpRequestWrapper implements RequestWrapper {
             for (final Object object : list) {
 
                 // Item is a FileItem
-                if (object instanceof Part) {
+                if (object instanceof Part part) {
 
                     // Cast
-                    final Part part = (Part) object;
 
                     // Get string representation of FileItem
                     try {
@@ -665,8 +660,7 @@ public class HttpRequestWrapper implements RequestWrapper {
             values = new String[1];
 
             // Item is a FileItem
-            if (obj instanceof Part) {
-                final Part part = (Part) obj;
+            if (obj instanceof Part part) {
                 try {
                     values[0] = getPartContentAsString(part, formEncoding);
                 } catch (final IOException e) {

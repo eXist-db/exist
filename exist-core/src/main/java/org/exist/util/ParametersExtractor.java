@@ -134,8 +134,7 @@ public class ParametersExtractor {
         final NodeList childParameters = parameter.getChildNodes();
         for(int i = 0; i < childParameters.getLength(); i++) {
             final Node nChildParameter = childParameters.item(i);
-            if(nChildParameter instanceof Element) {
-                final Element childParameter = (Element)nChildParameter;
+            if(nChildParameter instanceof Element childParameter) {
                 final String name = childParameter.getLocalName();
 
                 if(childParameter.getAttributes().getLength() > 0){

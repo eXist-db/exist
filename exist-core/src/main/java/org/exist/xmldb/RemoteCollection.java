@@ -555,8 +555,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 descString = ((RemoteBinaryResource) res).getStreamSymbolicPath();
             } else {
                 final Object content = res.getContent();
-                if (content instanceof File) {
-                    final File file = (File) content;
+                if (content instanceof File file) {
                     try {
                         is = new BufferedInputStream(new FileInputStream(file));
                     } catch (final FileNotFoundException e) {
@@ -649,8 +648,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 }
                 params.add(Boolean.TRUE);
                 paramsEx.add(Boolean.TRUE);
-                if (res instanceof EXistResource) {
-                    final EXistResource rxres = (EXistResource) res;
+                if (res instanceof EXistResource rxres) {
                     params.add(rxres.getMimeType());
                     paramsEx.add(rxres.getMimeType());
                     // This one is only for the new style!!!!

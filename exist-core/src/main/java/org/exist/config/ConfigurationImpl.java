@@ -463,8 +463,7 @@ public class ConfigurationImpl implements Configuration {
 
     @Override
     public boolean equals(final Object obj, final Optional<String> property) {
-        if (obj instanceof ConfigurationImpl) {
-            final ConfigurationImpl conf = (ConfigurationImpl)obj;
+        if (obj instanceof ConfigurationImpl conf) {
             if (!(getName().equals(conf.getName()))) {
                 return false;
             }

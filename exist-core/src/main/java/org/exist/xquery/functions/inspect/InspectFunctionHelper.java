@@ -73,8 +73,7 @@ public class InspectFunctionHelper {
             attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(returnType.getPrimaryType()));
             attribs.addAttribute("", "cardinality", "cardinality", "CDATA", returnType.getCardinality().getHumanDescription());
             builder.startElement(RETURN_QNAME, attribs);
-            if (returnType instanceof FunctionReturnSequenceType) {
-                final FunctionReturnSequenceType type = (FunctionReturnSequenceType) returnType;
+            if (returnType instanceof FunctionReturnSequenceType type) {
                 builder.characters(type.getDescription());
             }
             builder.endElement();
