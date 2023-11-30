@@ -715,7 +715,7 @@
                 perhaps the best way to do this is to place it into $EXIST_HOME/lib/user
 
                 Examples include:
-                    - org.cyberneko.html.parsers.SAXParser
+                    - org.codelibs.nekohtml.parsers.SAXParser
                         The Cyber NekoHTML parser from https://sourceforge.net/projects/nekohtml/
 
                     - org.ccil.cowan.tagsoup.Parser
@@ -760,7 +760,7 @@
 
         <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
 
-        <html-to-xml class="org.cyberneko.html.parsers.SAXParser">
+        <html-to-xml class="org.codelibs.nekohtml.parsers.SAXParser">
             <properties>
                 <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
                 <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>

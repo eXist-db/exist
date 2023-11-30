@@ -311,12 +311,12 @@
         </dependency>
 
         <dependency>
-            <groupId>net.sourceforge.nekohtml</groupId>
+            <groupId>org.codelibs</groupId>
             <artifactId>nekohtml</artifactId>
-            <version>1.9.22</version>
-            <scope>runtime</scope>  <!-- default for util:parse-html -->
+            <version>2.1.0</version>
+            <scope>runtime</scope>
             <exclusions>
-                <exclusion>  <!-- conflicts with eXist-db's xercesImpl 2.12.2 dependency -->
+                <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
                 </exclusion>
@@ -1040,7 +1040,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>net.sourceforge.nekohtml:nekohtml:jar:1.9.22</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:2.1.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
