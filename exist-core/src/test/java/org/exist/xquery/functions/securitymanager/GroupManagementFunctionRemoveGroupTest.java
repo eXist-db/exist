@@ -55,23 +55,17 @@ public class GroupManagementFunctionRemoveGroupTest {
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteDbaGroup() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveGroup(SecurityManager.DBA_GROUP);
-        });
+        extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.DBA_GROUP));
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteGuestGroup() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveGroup(SecurityManager.GUEST_GROUP);
-        });
+        extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.GUEST_GROUP));
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteUnknownGroup() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveGroup(SecurityManager.UNKNOWN_GROUP);
-        });
+        extractPermissionDenied(() -> xqueryRemoveGroup(SecurityManager.UNKNOWN_GROUP));
     }
 
     @Test

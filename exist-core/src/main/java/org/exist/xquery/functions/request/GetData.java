@@ -82,7 +82,7 @@ public class GetData extends StrictRequestFunction {
         if (request.getContentLength() <= 0) {
             final boolean isChunkedTransferEncoding = Optional.ofNullable(request.getHeader("Transfer-Encoding"))
                     .filter(str -> !str.trim().isEmpty())
-                    .map(str -> "chunked".equals(str)).orElse(false);
+                    .map("chunked"::equals).orElse(false);
 
             if (!isChunkedTransferEncoding) {
                 return Sequence.EMPTY_SEQUENCE;

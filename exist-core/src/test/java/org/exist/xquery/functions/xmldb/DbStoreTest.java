@@ -52,15 +52,13 @@ public class DbStoreTest {
         }
 
         final XPathQueryService xpqs = testCol.getService(XPathQueryService.class);
-        assertThrows(XMLDBException.class, () -> {
-                    xpqs.query(
-                            "xmldb:store(\n" +
-                                    "        '/db',\n" +
-                                    "        'image.jpg',\n" +
-                                    "        xs:anyURI('https://www.example.com/image.jpg'),\n" +
-                                    "        'image/png'\n" +
-                                    "    )");
-        });
+        assertThrows(XMLDBException.class, () -> xpqs.query(
+                "xmldb:store(\n" +
+                        "        '/db',\n" +
+                        "        'image.jpg',\n" +
+                        "        xs:anyURI('https://www.example.com/image.jpg'),\n" +
+                        "        'image/png'\n" +
+                        "    )"));
 
 
     }
