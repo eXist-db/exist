@@ -313,7 +313,7 @@
         <dependency>
             <groupId>org.codelibs</groupId>
             <artifactId>nekohtml</artifactId>
-            <version>2.1.2</version>
+            <version>${nekohtml.version}</version>
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
@@ -1040,7 +1040,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:2.1.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:${nekohtml.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
