@@ -139,22 +139,18 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public String getNamespaceURI() {
-        switch (getNodeType()) {
+        return switch (getNodeType()) {
             case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE -> {
                 final String nsUri = getQName().getNamespaceURI();
                 if (nsUri.equals(XMLConstants.NULL_NS_URI)) {
-                    return null;
+                    yield null;
                 } else {
-                    return nsUri;
+                    yield nsUri;
                 }
             }
-            case NodeImpl.NAMESPACE_NODE -> {
-                return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
-            }
-            default -> {
-                return null;
-            }
-        }
+            case NodeImpl.NAMESPACE_NODE -> XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
+            default -> null;
+        };
     }
 
     @Override
