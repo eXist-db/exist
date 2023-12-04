@@ -101,29 +101,17 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
             case Node.ATTRIBUTE_NODE -> document.attrName[nodeNumber];
             case Node.ELEMENT_NODE, Node.PROCESSING_INSTRUCTION_NODE -> document.nodeName[nodeNumber];
             case NodeImpl.NAMESPACE_NODE -> document.namespaceCode[nodeNumber];
-            case Node.DOCUMENT_NODE -> QName.EMPTY_QNAME;
-            case Node.COMMENT_NODE -> QName.EMPTY_QNAME;
-            case Node.TEXT_NODE -> QName.EMPTY_QNAME;
-            case Node.CDATA_SECTION_NODE -> QName.EMPTY_QNAME;
-            default -> null;
+            case Node.DOCUMENT_NODE, Node.COMMENT_NODE, Node.TEXT_NODE, Node.CDATA_SECTION_NODE -> QName.EMPTY_QNAME;
+            default -> QName.EMPTY_QNAME;
         };
     }
 
     @Override
     public final void setQName(final QName qname) {
-        switch(getNodeType()) {
-            case Node.ATTRIBUTE_NODE:
-                document.attrName[nodeNumber] = qname;
-                break;
-
-            case Node.ELEMENT_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                document.nodeName[nodeNumber] = qname;
-                break;
-
-            case NodeImpl.NAMESPACE_NODE:
-                document.namespaceCode[nodeNumber] = qname;
-                break;
+        switch (getNodeType()) {
+            case Node.ATTRIBUTE_NODE -> document.attrName[nodeNumber] = qname;
+            case Node.ELEMENT_NODE, Node.PROCESSING_INSTRUCTION_NODE -> document.nodeName[nodeNumber] = qname;
+            case NodeImpl.NAMESPACE_NODE -> document.namespaceCode[nodeNumber] = qname;
         }
     }
 
@@ -151,21 +139,21 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public String getNamespaceURI() {
-        switch(getNodeType()) {
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
+        switch (getNodeType()) {
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE -> {
                 final String nsUri = getQName().getNamespaceURI();
-                if(nsUri.equals(XMLConstants.NULL_NS_URI)) {
+                if (nsUri.equals(XMLConstants.NULL_NS_URI)) {
                     return null;
                 } else {
                     return nsUri;
                 }
-
-            case NodeImpl.NAMESPACE_NODE:
+            }
+            case NodeImpl.NAMESPACE_NODE -> {
                 return XMLConstants.XMLNS_ATTRIBUTE_NS_URI;
-
-            default:
+            }
+            default -> {
                 return null;
+            }
         }
     }
 

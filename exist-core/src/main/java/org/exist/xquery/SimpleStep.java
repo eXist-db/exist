@@ -87,7 +87,7 @@ public class SimpleStep extends Step {
                             nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
                     default -> throw new XPathException(this, "Wrong axis specified");
                 };
-            } else {
+            } else if (contextSequence != null) {
                 final MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
                 final MemoryNodeSet nodes = set.toMemNodeSet();
                 result = switch (axis) {
@@ -95,7 +95,6 @@ public class SimpleStep extends Step {
                     case Constants.CHILD_AXIS -> ctxNodes.selectChildren(nodes);
                     default -> result;
                 };
-
             }
         }
 

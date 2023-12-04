@@ -445,10 +445,12 @@ public class BFile extends BTree {
             if (p == KEY_NOT_FOUND) {return null;}           
             final long pnum = StorageAddress.pageFromPointer(p);
             final DataPage page = getDataPage(pnum);
-            return switch (page.getPageHeader().getStatus()) {
-                case MULTI_PAGE -> ((OverflowPage) page).getDataStream(p);
-                default -> getAsStream(page, p);
-            };
+            if (page != null) {
+                return switch (page.getPageHeader().getStatus()) {
+                    case MULTI_PAGE -> ((OverflowPage) page).getDataStream(p);
+                    default -> getAsStream(page, p);
+                };
+            }
         } catch (final BTreeException e) {
             LOG.error("An exception occurred while trying to retrieve key {}: {}", key, e.getMessage(), e);
         }
