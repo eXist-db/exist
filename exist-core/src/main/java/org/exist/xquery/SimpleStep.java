@@ -62,16 +62,19 @@ public class SimpleStep extends Step {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
         
         Sequence result = Sequence.EMPTY_SEQUENCE;
 	    final Sequence set = expression.eval(contextSequence, null);
@@ -98,8 +101,9 @@ public class SimpleStep extends Step {
             }
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         
         //actualReturnType = result.getItemType();
         
