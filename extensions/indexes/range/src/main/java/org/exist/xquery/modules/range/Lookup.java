@@ -40,7 +40,6 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -284,7 +283,7 @@ public class Lookup extends Function implements Optimizable {
         //LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
         //        " and took " + (System.currentTimeMillis() - start));
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
         if (preselectResult == null) {
             preselectResult = NodeSet.EMPTY_SET;
@@ -362,7 +361,7 @@ public class Lookup extends Function implements Optimizable {
                 }
             }
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
