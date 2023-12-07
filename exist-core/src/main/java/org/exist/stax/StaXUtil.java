@@ -29,21 +29,19 @@ import javax.xml.stream.XMLStreamConstants;
 public class StaXUtil {
 
     public static int streamType2Type(final int type) {
-        int xpathType = switch (type) {
+        return switch (type) {
             case XMLStreamConstants.START_ELEMENT -> Type.ELEMENT;
             case XMLStreamConstants.PROCESSING_INSTRUCTION -> Type.PROCESSING_INSTRUCTION;
-            case XMLStreamConstants.CHARACTERS -> Type.TEXT;
+            case XMLStreamConstants.CHARACTERS, XMLStreamConstants.CDATA -> Type.TEXT;
             case XMLStreamConstants.COMMENT -> Type.COMMENT;
             case XMLStreamConstants.START_DOCUMENT -> Type.DOCUMENT;
             case XMLStreamConstants.ATTRIBUTE -> Type.ATTRIBUTE;
-            case XMLStreamConstants.CDATA -> Type.TEXT;
             default -> Type.UNTYPED;
         };
-        return xpathType;
     }
 
     public static short streamType2DOM(final int type) {
-        short domType = switch (type) {
+        return switch (type) {
             case XMLStreamConstants.START_ELEMENT -> Node.ELEMENT_NODE;
             case XMLStreamConstants.PROCESSING_INSTRUCTION -> Node.PROCESSING_INSTRUCTION_NODE;
             case XMLStreamConstants.CHARACTERS -> Node.TEXT_NODE;
@@ -56,6 +54,5 @@ public class StaXUtil {
             case XMLStreamConstants.ENTITY_DECLARATION -> Node.ENTITY_NODE;
             default -> -1;
         };
-        return domType;
     }
 }
