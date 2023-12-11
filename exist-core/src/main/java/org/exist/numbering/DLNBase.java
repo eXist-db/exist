@@ -484,11 +484,10 @@ public class DLNBase {
         if (this == o) {
             return true;
         }
-        if (o == null || !(o instanceof DLNBase)) {
+        if (o == null || !(o instanceof DLNBase other)) {
             return false;
         }
 
-        final DLNBase other = (DLNBase) o;
         if (bitIndex != other.bitIndex) {
             return false;
         }

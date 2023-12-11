@@ -60,30 +60,18 @@ public class JingSchematronTest {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/tournament");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/tournament")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
         // Store schematron 1.5 test files
-        Collection col15 = null;
-        try {
-            col15 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/1.5");
+        try (Collection col15 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "tournament/1.5")) {
 
             for (final String testResource : TEST_RESOURCES) {
                 try (final InputStream is = SAMPLES.getSample("validation/tournament/1.5/" + testResource)) {
                     assertNotNull(is);
                     ExistXmldbEmbeddedServer.storeResource(col15, testResource, InputStreamUtil.readAll(is));
                 }
-            }
-        } finally {
-            if(col15 != null) {
-                col15.close();
             }
         }
     }

@@ -207,8 +207,7 @@ public class XQueryStartupTrigger implements StartupTrigger {
                 List<? extends Object> list = entry.getValue();
                 for (Object o : list) {
 
-                    if (o instanceof String) {
-                        String value = (String) o;
+                    if (o instanceof String value) {
 
                         if (value.startsWith("/")) {
 

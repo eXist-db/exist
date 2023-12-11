@@ -24,7 +24,6 @@ package org.exist.storage;
 import org.exist.EXistException;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.dom.DOMFile;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;

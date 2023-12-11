@@ -284,22 +284,13 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
     }
 
     public static String getAttributeType(final int type) {
-        switch(type) {
-            case AttrImpl.ID:
-                return "ID";
-
-            case AttrImpl.IDREF:
-                return "IDREF";
-
-            case AttrImpl.IDREFS:
-                return "IDREFS";
-
-            case AttrImpl.CDATA:
-                return "CDATA";
-
-            default:
-                return null;
-        }
+        return switch (type) {
+            case AttrImpl.ID -> "ID";
+            case AttrImpl.IDREF -> "IDREF";
+            case AttrImpl.IDREFS -> "IDREFS";
+            case AttrImpl.CDATA -> "CDATA";
+            default -> null;
+        };
     }
 
     public void setIndexType(final int idxType) {
@@ -464,8 +455,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
             return false;
         }
 
-        if(obj instanceof AttrImpl) {
-            final AttrImpl other = ((AttrImpl)obj);
+        if(obj instanceof AttrImpl other) {
             return other.getQName().equals(getQName())
                     && other.value.equals(value);
         }

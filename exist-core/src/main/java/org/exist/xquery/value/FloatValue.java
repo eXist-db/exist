@@ -319,18 +319,14 @@ public class FloatValue extends NumericValue {
 
     @Override
     public ComputableValue mult(final ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.FLOAT:
-                return new FloatValue(getExpression(), value * ((FloatValue) other).value);
-            case Type.DOUBLE:
+        return switch (other.getType()) {
+            case Type.FLOAT -> new FloatValue(getExpression(), value * ((FloatValue) other).value);
+            case Type.DOUBLE ->
                 // type promotion - see https://www.w3.org/TR/xpath-31/#promotion
-                return ((DoubleValue) convertTo(Type.DOUBLE)).mult(other);
-            case Type.DAY_TIME_DURATION:
-            case Type.YEAR_MONTH_DURATION:
-                return other.mult(this);
-            default:
-                return mult((ComputableValue) other.convertTo(getType()));
-        }
+                    ((DoubleValue) convertTo(Type.DOUBLE)).mult(other);
+            case Type.DAY_TIME_DURATION, Type.YEAR_MONTH_DURATION -> other.mult(this);
+            default -> mult((ComputableValue) other.convertTo(getType()));
+        };
     }
 
     /* (non-Javadoc)

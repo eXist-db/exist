@@ -477,14 +477,11 @@ public class Type {
      */
     public static int getType(final QName qname) throws XPathException {
         final String uri = qname.getNamespaceURI();
-        switch (uri) {
-            case Namespaces.SCHEMA_NS:
-                return getType("xs:" + qname.getLocalPart());
-            case Namespaces.XPATH_DATATYPES_NS:
-                return getType("xdt:" + qname.getLocalPart());
-            default:
-                return getType(qname.getLocalPart());
-        }
+        return switch (uri) {
+            case Namespaces.SCHEMA_NS -> getType("xs:" + qname.getLocalPart());
+            case Namespaces.XPATH_DATATYPES_NS -> getType("xdt:" + qname.getLocalPart());
+            default -> getType(qname.getLocalPart());
+        };
     }
 
     /**

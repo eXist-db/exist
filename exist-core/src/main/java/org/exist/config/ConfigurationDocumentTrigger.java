@@ -284,11 +284,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     private void setAccountPrimaryGroupToNoGroup() throws SAXException {
         final SAXEvent firstEvent = deferred.peek();
-        if(!(firstEvent instanceof StartElement)) {
+        if(!(firstEvent instanceof StartElement start)) {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        StartElement start = ((StartElement)firstEvent);
         if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(PrincipalType.ACCOUNT.getElementName())) {
             throw new SAXException("First element does not match ending '" + PrincipalType.ACCOUNT.getElementName() + "' element");
         }
@@ -318,11 +317,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
      */
     private void processPrincipal(final PrincipalType principalType) throws SAXException {
         final SAXEvent firstEvent = deferred.peek();
-        if(!(firstEvent instanceof StartElement)) {
+        if(!(firstEvent instanceof StartElement start)) {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        final StartElement start = ((StartElement)firstEvent);
         if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(principalType.getElementName())) {
             throw new SAXException("First element does not match ending '" + principalType.getElementName() + "' element");
         }
@@ -423,8 +421,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         boolean inName = false;
         final StringBuilder name = new StringBuilder();
         for (final SAXEvent event : deferred) {
-            if (event instanceof Element) {
-                final Element element = (Element) event;
+            if (event instanceof Element element) {
                 if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
                     inName = !inName;
                 }
@@ -506,13 +503,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * matching the provided name
          */
         public Principal getPrincipal(final SecurityManager sm, final String name) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.getAccount(name);
-                case GROUP:
-                    return sm.getGroup(name);
-            }
-            return null;
+            return switch (this) {
+                case ACCOUNT -> sm.getAccount(name);
+                case GROUP -> sm.getGroup(name);
+            };
         }
 
         /**
@@ -523,13 +517,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final String name) {
-            switch (this) {
-                case ACCOUNT:
-                    return sm.hasAccount(name);
-                case GROUP:
-                    return sm.hasGroup(name);
-            }
-            return false;
+            return switch (this) {
+                case ACCOUNT -> sm.hasAccount(name);
+                case GROUP -> sm.hasGroup(name);
+            };
         }
 
         /**
@@ -542,13 +533,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * matching the provided id
          */
         public Principal getPrincipal(final SecurityManager sm, final int id) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.getAccount(id);
-                case GROUP:
-                    return sm.getGroup(id);
-            }
-            return null;
+            return switch (this) {
+                case ACCOUNT -> sm.getAccount(id);
+                case GROUP -> sm.getGroup(id);
+            };
         }
 
         /**
@@ -559,13 +547,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
          * @return true when exist
          */
         public boolean hasPrincipal(final SecurityManager sm, final int id) {
-            switch(this) {
-                case ACCOUNT:
-                    return sm.hasUser(id);
-                case GROUP:
-                    return sm.hasGroup(id);
-            }
-            return false;
+            return switch (this) {
+                case ACCOUNT -> sm.hasUser(id);
+                case GROUP -> sm.hasGroup(id);
+            };
         }
 
         public void preAllocateId(final SecurityManager sm, final PreAllocatedIdReceiver receiver) throws PermissionDeniedException, EXistException {

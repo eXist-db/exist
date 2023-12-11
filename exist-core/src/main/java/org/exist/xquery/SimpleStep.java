@@ -62,16 +62,19 @@ public class SimpleStep extends Step {
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
+            if (contextSequence != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
+            if (contextItem != null) {
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+            }
         }
-        
-		if (contextItem != null)
-			{contextSequence = contextItem.toSequence();}
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
         
         Sequence result = Sequence.EMPTY_SEQUENCE;
 	    final Sequence set = expression.eval(contextSequence, null);
@@ -79,34 +82,28 @@ public class SimpleStep extends Step {
         if (!set.isEmpty()) {
             if (set.isPersistentSet()) {
                 final NodeSet nodeSet = set.toNodeSet();
-                switch(axis) {
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
-                            true, contextId, true);
-                        break;
-                    case Constants.CHILD_AXIS:
-                        result = nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
-                        break;
-                    default:
-                        throw new XPathException(this, "Wrong axis specified");
-                }
-            } else {
+                result = switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS ->
+                            nodeSet.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT,
+                                    true, contextId, true);
+                    case Constants.CHILD_AXIS ->
+                            nodeSet.selectParentChild(contextSequence.toNodeSet(), NodeSet.DESCENDANT, contextId);
+                    default -> throw new XPathException(this, "Wrong axis specified");
+                };
+            } else if (contextSequence != null) {
                 final MemoryNodeSet ctxNodes = contextSequence.toMemNodeSet();
                 final MemoryNodeSet nodes = set.toMemNodeSet();
-                switch(axis) {
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = ctxNodes.selectDescendants(nodes);
-                        break;
-                    case Constants.CHILD_AXIS:
-                        result = ctxNodes.selectChildren(nodes);
-                        break;
-                }
-
+                result = switch (axis) {
+                    case Constants.DESCENDANT_SELF_AXIS -> ctxNodes.selectDescendants(nodes);
+                    case Constants.CHILD_AXIS -> ctxNodes.selectChildren(nodes);
+                    default -> result;
+                };
             }
         }
 
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);}
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", result);
+        }
         
         //actualReturnType = result.getItemType();
         

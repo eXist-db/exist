@@ -37,7 +37,6 @@ import org.xmldb.api.modules.XUpdateQueryService;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalCollectionTest {

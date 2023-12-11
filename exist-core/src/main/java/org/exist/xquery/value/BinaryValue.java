@@ -74,22 +74,16 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         if (other.getType() == Type.HEX_BINARY || other.getType() == Type.BASE64_BINARY) {
             final int value = compareTo((BinaryValue) other);
-            switch (operator) {
-                case EQ:
-                    return value == 0;
-                case NEQ:
-                    return value != 0;
-                case GT:
-                    return value > 0;
-                case GTEQ:
-                    return value >= 0;
-                case LT:
-                    return value < 0;
-                case LTEQ:
-                    return value <= 0;
-                default:
-                    throw new XPathException(getExpression(), "Type error: cannot apply operator to numeric value");
-            }
+            return switch (operator) {
+                case EQ -> value == 0;
+                case NEQ -> value != 0;
+                case GT -> value > 0;
+                case GTEQ -> value >= 0;
+                case LT -> value < 0;
+                case LTEQ -> value <= 0;
+                default ->
+                        throw new XPathException(getExpression(), "Type error: cannot apply operator to numeric value");
+            };
         } else {
             throw new XPathException(getExpression(), "Cannot compare value of type xs:hexBinary with " + Type.getTypeName(other.getType()));
         }
@@ -191,24 +185,18 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         if (requiredType == getType() || requiredType == Type.ITEM || requiredType == Type.ATOMIC) {
             result = this;
         } else {
-            switch (requiredType) {
-                case Type.BASE64_BINARY:
-                    result = convertTo(new Base64BinaryValueType());
-                    break;
-                case Type.HEX_BINARY:
-                    result = convertTo(new HexBinaryValueType());
-                    break;
-                case Type.UNTYPED_ATOMIC:
+            result = switch (requiredType) {
+                case Type.BASE64_BINARY -> convertTo(new Base64BinaryValueType());
+                case Type.HEX_BINARY -> convertTo(new HexBinaryValueType());
+                case Type.UNTYPED_ATOMIC ->
                     //TODO still needed? Added trim() since it looks like a new line character is added
-                    result = new UntypedAtomicValue(getExpression(), getStringValue());
-                    break;
-                case Type.STRING:
+                        new UntypedAtomicValue(getExpression(), getStringValue());
+                case Type.STRING ->
                     //TODO still needed? Added trim() since it looks like a new line character is added
-                    result = new StringValue(getExpression(), getStringValue());
-                    break;
-                default:
-                    throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
-            }
+                        new StringValue(getExpression(), getStringValue());
+                default ->
+                        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+            };
         }
         return result;
     }

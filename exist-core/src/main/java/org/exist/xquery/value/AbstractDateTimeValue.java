@@ -345,22 +345,15 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     @Override
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         final int cmp = compareTo(collator, other);
-        switch (operator) {
-            case EQ:
-                return cmp == 0;
-            case NEQ:
-                return cmp != 0;
-            case LT:
-                return cmp < 0;
-            case LTEQ:
-                return cmp <= 0;
-            case GT:
-                return cmp > 0;
-            case GTEQ:
-                return cmp >= 0;
-            default:
-                throw new XPathException(getExpression(), "Unknown operator type in comparison");
-        }
+        return switch (operator) {
+            case EQ -> cmp == 0;
+            case NEQ -> cmp != 0;
+            case LT -> cmp < 0;
+            case LTEQ -> cmp <= 0;
+            case GT -> cmp > 0;
+            case GTEQ -> cmp >= 0;
+            default -> throw new XPathException(getExpression(), "Unknown operator type in comparison");
+        };
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
@@ -388,15 +381,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     // override for xs:time
     public ComputableValue plus(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.YEAR_MONTH_DURATION:
-            case Type.DAY_TIME_DURATION:
-                return other.plus(this);
-            default:
-                throw new XPathException(getExpression(), 
-                        "Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
-                                + Type.getTypeName(other.getType()));
-        }
+        return switch (other.getType()) {
+            case Type.YEAR_MONTH_DURATION, Type.DAY_TIME_DURATION -> other.plus(this);
+            default -> throw new XPathException(getExpression(),
+                    "Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
+                            + Type.getTypeName(other.getType()));
+        };
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
@@ -447,8 +437,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {
-        if (o instanceof AbstractDateTimeValue) {
-            final AbstractDateTimeValue dt = (AbstractDateTimeValue) o;
+        if (o instanceof AbstractDateTimeValue dt) {
             return calendar.compare(dt.calendar);
         }
 
@@ -468,8 +457,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public boolean equals(Object obj) {
-        if (obj instanceof AbstractDateTimeValue) {
-            final AbstractDateTimeValue dt = (AbstractDateTimeValue) obj;
+        if (obj instanceof AbstractDateTimeValue dt) {
             return calendar.equals(dt.calendar);
         }
 

@@ -40,7 +40,6 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
-import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheConfiguration;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
@@ -83,7 +82,7 @@ public class GetData extends StrictRequestFunction {
         if (request.getContentLength() <= 0) {
             final boolean isChunkedTransferEncoding = Optional.ofNullable(request.getHeader("Transfer-Encoding"))
                     .filter(str -> !str.trim().isEmpty())
-                    .map(str -> "chunked".equals(str)).orElse(false);
+                    .map("chunked"::equals).orElse(false);
 
             if (!isChunkedTransferEncoding) {
                 return Sequence.EMPTY_SEQUENCE;

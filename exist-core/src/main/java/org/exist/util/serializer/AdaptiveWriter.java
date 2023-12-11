@@ -247,26 +247,14 @@ public class AdaptiveWriter extends IndentingXMLWriter {
         if (fn == InlineFunction.INLINE_FUNCTION_QNAME) {
             name = "(anonymous-function)";
         } else {
-            switch (fn.getNamespaceURI()) {
-                case Namespaces.XPATH_FUNCTIONS_NS:
-                    name = "fn:" + fn.getLocalPart();
-                    break;
-                case Namespaces.XPATH_FUNCTIONS_MATH_NS:
-                    name = MathModule.PREFIX + ':' + fn.getLocalPart();
-                    break;
-                case MapModule.NAMESPACE_URI:
-                    name = MapModule.PREFIX + ':' + fn.getLocalPart();
-                    break;
-                case ArrayModule.NAMESPACE_URI:
-                    name = ArrayModule.PREFIX + ':' + fn.getLocalPart();
-                    break;
-                case Namespaces.SCHEMA_NS:
-                    name = "xs:" + fn.getLocalPart();
-                    break;
-                default:
-                    name = "Q{" + fn.getNamespaceURI() + '}' + fn.getLocalPart();
-                    break;
-            }
+            name = switch (fn.getNamespaceURI()) {
+                case Namespaces.XPATH_FUNCTIONS_NS -> "fn:" + fn.getLocalPart();
+                case Namespaces.XPATH_FUNCTIONS_MATH_NS -> MathModule.PREFIX + ':' + fn.getLocalPart();
+                case MapModule.NAMESPACE_URI -> MapModule.PREFIX + ':' + fn.getLocalPart();
+                case ArrayModule.NAMESPACE_URI -> ArrayModule.PREFIX + ':' + fn.getLocalPart();
+                case Namespaces.SCHEMA_NS -> "xs:" + fn.getLocalPart();
+                default -> "Q{" + fn.getNamespaceURI() + '}' + fn.getLocalPart();
+            };
         }
         writeText(name + '#' + signature.getArgumentCount());
     }

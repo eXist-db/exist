@@ -48,30 +48,22 @@ public class AccountManagementFunctionRemoveAccountTest {
     public void cannotDeleteSystemAccount() throws XPathException, PermissionDeniedException, EXistException, AuthenticationException {
         final BrokerPool pool = existWebServer.getBrokerPool();
         final Subject admin = pool.getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        extractPermissionDenied(() -> {
-            xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin));
-        });
+        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.SYSTEM, Optional.of(admin)));
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteDbaAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveAccount(SecurityManager.DBA_USER);
-        });
+        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.DBA_USER));
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteGuestAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveAccount(SecurityManager.GUEST_USER);
-        });
+        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.GUEST_USER));
     }
 
     @Test(expected = PermissionDeniedException.class)
     public void cannotDeleteUnknownAccount() throws XPathException, PermissionDeniedException, EXistException {
-        extractPermissionDenied(() -> {
-            xqueryRemoveAccount(SecurityManager.UNKNOWN_USER);
-        });
+        extractPermissionDenied(() -> xqueryRemoveAccount(SecurityManager.UNKNOWN_USER));
     }
 
     private Sequence xqueryRemoveAccount(final String username) throws XPathException, PermissionDeniedException, EXistException {

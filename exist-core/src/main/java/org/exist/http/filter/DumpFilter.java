@@ -121,9 +121,8 @@ public class DumpFilter implements Filter {
         LOG.info("          isSecure={}", request.isSecure());
 
         // Render the HTTP servlet request properties
-        if (request instanceof HttpServletRequest) {
+        if (request instanceof HttpServletRequest hrequest) {
             LOG.info("---------------------------------------------");
-            final HttpServletRequest hrequest = (HttpServletRequest) request;
             LOG.info("       contextPath={}", hrequest.getContextPath());
             Cookie cookies[] = hrequest.getCookies();
             if (cookies == null)

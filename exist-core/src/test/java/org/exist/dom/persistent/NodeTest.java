@@ -218,13 +218,10 @@ public class NodeTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final LockedDocument lockedDoc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"),LockMode.READ_LOCK)) {
             StoredNode rootNode = (StoredNode) lockedDoc.getDocument().getDocumentElement();
-            NodeVisitor visitor = new NodeVisitor() {
-                @Override
-                public boolean visit(IStoredNode node) {
-                    node.getNodeId();
-                    node.getNodeName();
-                    return true;
-                };
+            NodeVisitor visitor = node -> {
+                node.getNodeId();
+                node.getNodeName();
+                return true;
             };
             rootNode.accept(visitor);
         }

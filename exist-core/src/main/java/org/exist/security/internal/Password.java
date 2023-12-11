@@ -96,18 +96,12 @@ public class Password implements Credential {
     }
     
     final byte[] hash(String p) {
-        
-        switch(algorithm) {
-            
-            case RIPEMD160:
-                return ripemd160Hash(p);
-            
-            case MD5:
-                return md5Hash(p);
-            
-            default:
-                return null;
-        }
+
+        return switch (algorithm) {
+            case RIPEMD160 -> ripemd160Hash(p);
+            case MD5 -> md5Hash(p);
+            default -> null;
+        };
     }
     
     final byte[] ripemd160Hash(final String p) {
@@ -163,9 +157,8 @@ public class Password implements Credential {
             return false;
         }
     	
-    	if(obj instanceof Password) {
-            final Password p = (Password) obj;
-            
+    	if(obj instanceof Password p) {
+
             if(algorithm != p.algorithm) {
                 throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);
             }

@@ -688,9 +688,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     private void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, destPermissions, Optional.of(srcPermissions.getMode()), Optional.empty());
 
-        if (srcPermissions instanceof SimpleACLPermission && destPermissions instanceof SimpleACLPermission) {
-            final SimpleACLPermission srcAclPermissions = (SimpleACLPermission)srcPermissions;
-            final SimpleACLPermission destAclPermissions = (SimpleACLPermission)destPermissions;
+        if (srcPermissions instanceof SimpleACLPermission srcAclPermissions && destPermissions instanceof SimpleACLPermission destAclPermissions) {
             if (!destAclPermissions.equalsAcl(srcAclPermissions)) {
                 PermissionFactory.chacl(destAclPermissions, newAcl ->
                     ((SimpleACLPermission)newAcl).copyAclOf(srcAclPermissions)

@@ -23,7 +23,6 @@
 package org.exist.management.impl;
 
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockTable;
 import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 

@@ -46,7 +46,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
 /**

@@ -21,8 +21,6 @@
  */
 package org.exist.launcher;
 
-import javax.annotation.Nullable;
-
 /**
  * Interface for managing platform native Services.
  *

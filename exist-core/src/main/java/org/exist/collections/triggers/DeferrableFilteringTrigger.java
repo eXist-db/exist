@@ -241,54 +241,41 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
     protected void applyDeferredEvents() throws SAXException {
         SAXEvent event = null;
         while((event = deferred.poll()) != null) {
-            if(event instanceof SetDocumentLocator) {
-                final SetDocumentLocator setDocumentLocator = (SetDocumentLocator)event;
+            if(event instanceof SetDocumentLocator setDocumentLocator) {
                 setDocumentLocator_deferred(setDocumentLocator.locator);
             } else if(event instanceof StartDocument) {
                 startDocument_deferred();
             } else if(event instanceof EndDocument) {
                 endDocument_deferred();
-            } else if(event instanceof StartPrefixMapping) {
-                final StartPrefixMapping startPrefixMapping = (StartPrefixMapping) event;
+            } else if(event instanceof StartPrefixMapping startPrefixMapping) {
                 startPrefixMapping_deferred(startPrefixMapping.prefix, startPrefixMapping.uri);
-            } else if(event instanceof EndPrefixMapping) {
-                final EndPrefixMapping endPrefixMapping = (EndPrefixMapping) event;
+            } else if(event instanceof EndPrefixMapping endPrefixMapping) {
                 endPrefixMapping_deferred(endPrefixMapping.prefix);
-            } else if(event instanceof StartElement) {
-                final StartElement startElement = (StartElement) event;
+            } else if(event instanceof StartElement startElement) {
                 startElement_deferred(startElement.namespaceURI, startElement.localName, startElement.qname, startElement.attributes);
-            } else if(event instanceof EndElement) {
-                final EndElement endElement = (EndElement) event;
+            } else if(event instanceof EndElement endElement) {
                 endElement_deferred(endElement.namespaceURI, endElement.localName, endElement.qname);
-            } else if(event instanceof Characters) {
-                final Characters characters = (Characters) event;
+            } else if(event instanceof Characters characters) {
                 characters_deferred(characters.ch, 0, characters.ch.length);
-            } else if(event instanceof IgnorableWhitespace) {
-                final IgnorableWhitespace ignorableWhitespace = (IgnorableWhitespace) event;
+            } else if(event instanceof IgnorableWhitespace ignorableWhitespace) {
                 ignorableWhitespace_deferred(ignorableWhitespace.ch, 0, ignorableWhitespace.ch.length);
-            } else if(event instanceof ProcessingInstruction) {
-                final ProcessingInstruction processingInstruction = (ProcessingInstruction) event;
+            } else if(event instanceof ProcessingInstruction processingInstruction) {
                 processingInstruction_deferred(processingInstruction.target, processingInstruction.data);
-            } else if(event instanceof SkippedEntity) {
-                final SkippedEntity skippedEntity = (SkippedEntity) event;
+            } else if(event instanceof SkippedEntity skippedEntity) {
                 skippedEntity_deferred(skippedEntity.name);
-            } else if(event instanceof StartDTD) {
-                final StartDTD startDTD = (StartDTD) event;
+            } else if(event instanceof StartDTD startDTD) {
                 startDTD_deferred(startDTD.name, startDTD.publicId, startDTD.systemId);
             } else if(event instanceof EndDTD) {
                 endDTD_deferred();
-            } else if(event instanceof StartEntity) {
-                final StartEntity startEntity = (StartEntity) event;
+            } else if(event instanceof StartEntity startEntity) {
                 startEntity_deferred(startEntity.name);
-            } else if(event instanceof EndEntity) {
-                final EndEntity endEntity = (EndEntity) event;
+            } else if(event instanceof EndEntity endEntity) {
                 endEntity_deferred(endEntity.name);
             } else if(event instanceof StartCDATA) {
                 startCDATA_deferred();
             } else if(event instanceof EndCDATA) {
                 endCDATA_deferred();
-            } else if(event instanceof Comment) {
-                final Comment comment = (Comment) event;
+            } else if(event instanceof Comment comment) {
                 comment_deferred(comment.ch, 0, comment.ch.length);
             }
         }

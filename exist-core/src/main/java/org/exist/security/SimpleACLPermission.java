@@ -242,14 +242,11 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
      */
     @Override
     public String getACEWho(final int index) {
-        switch (getACETarget(index)) {
-            case USER:
-                return sm.getAccount(getACEId(index)).getName();
-            case GROUP:
-                return sm.getGroup(getACEId(index)).getName();
-            default:
-                return null;
-        }
+        return switch (getACETarget(index)) {
+            case USER -> sm.getAccount(getACEId(index)).getName();
+            case GROUP -> sm.getGroup(getACEId(index)).getName();
+            default -> null;
+        };
     }
 
     @Override

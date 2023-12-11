@@ -22,7 +22,7 @@
 package org.exist.numbering;
 
 import java.io.IOException;
-import org.exist.security.MessageDigester;
+
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 

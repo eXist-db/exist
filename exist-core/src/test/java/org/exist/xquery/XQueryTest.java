@@ -1314,8 +1314,7 @@ public class XQueryTest {
         try {
             URL url = new URL("http://www.w3.org/");
             URLConnection con = url.openConnection();
-            if (con instanceof HttpURLConnection) {
-                HttpURLConnection httpConnection = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpConnection) {
                 hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
             }
         } catch(MalformedURLException e) {
@@ -2936,8 +2935,7 @@ public class XQueryTest {
         try {
             existEmbeddedServer.executeQuery(query);
         } catch(final XMLDBException e) {
-            if(e.getCause() instanceof XPathException) {
-                final XPathException xpe = (XPathException)e.getCause();
+            if(e.getCause() instanceof XPathException xpe) {
                 assertEquals(ErrorCodes.XPTY0018, xpe.getErrorCode());
                 throw xpe;
             } else {

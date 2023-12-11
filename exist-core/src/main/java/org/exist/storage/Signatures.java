@@ -62,16 +62,14 @@ public final class Signatures {
      * @param type given type
      */
     public final static int getLength(int type) {
-        switch (type) {
-        case intContent:
-            return 4;
-        case shortContent:
-            return 2;
-        case byteContent:
-            return 1;
-        }
-        //TODO : throw an exception there ? -pb
-        return 0;
+        return switch (type) {
+            case intContent -> 4;
+            case shortContent -> 2;
+            case byteContent -> 1;
+            default ->
+                //TODO : throw an exception there ? -pb
+                    0;
+        };
     }
 
 
@@ -124,15 +122,12 @@ public final class Signatures {
     }
     
     public final static int read(int type, byte[] data, int pos) {
-        switch ( type ) {
-        case intContent:
-            return (int) ByteConversion.byteToInt(data, pos);
-        case shortContent:
-            return (int) ByteConversion.byteToShort(data, pos);
-        case byteContent:
-            return (int) data[pos];
-        }
-        return 0;
+        return switch (type) {
+            case intContent -> (int) ByteConversion.byteToInt(data, pos);
+            case shortContent -> (int) ByteConversion.byteToShort(data, pos);
+            case byteContent -> (int) data[pos];
+            default -> 0;
+        };
     }
 
     public final static void write( int type, int size, byte[] data, int pos ) {

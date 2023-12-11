@@ -715,38 +715,21 @@ public class Collations {
     }
 
     private static int toICUCollatorReorderCode(final String reorderCode) {
-        switch(reorderCode.toLowerCase()) {
-            case "default":
-                return Collator.ReorderCodes.DEFAULT;
-
-            case "none":
-                return Collator.ReorderCodes.NONE;
-
-            case "others":
-                return Collator.ReorderCodes.OTHERS;
-
-            case "space":
-                return Collator.ReorderCodes.SPACE;
-
-            case "first":
-                return Collator.ReorderCodes.FIRST;
-
-            case "punctuation":
-                return Collator.ReorderCodes.PUNCTUATION;
-
-            case "symbol":
-                return Collator.ReorderCodes.SYMBOL;
-
-            case "currency":
-                return Collator.ReorderCodes.CURRENCY;
-
-            case "digit":
-                return Collator.ReorderCodes.DIGIT;
-
-            default:
+        return switch (reorderCode.toLowerCase()) {
+            case "default" -> Collator.ReorderCodes.DEFAULT;
+            case "none" -> Collator.ReorderCodes.NONE;
+            case "others" -> Collator.ReorderCodes.OTHERS;
+            case "space" -> Collator.ReorderCodes.SPACE;
+            case "first" -> Collator.ReorderCodes.FIRST;
+            case "punctuation" -> Collator.ReorderCodes.PUNCTUATION;
+            case "symbol" -> Collator.ReorderCodes.SYMBOL;
+            case "currency" -> Collator.ReorderCodes.CURRENCY;
+            case "digit" -> Collator.ReorderCodes.DIGIT;
+            default -> {
                 logger.warn("eXist-db does not support the collation reorderCode: {}", reorderCode);
-                return -1;
-        }
+                yield -1;
+            }
+        };
     }
 
     /**
@@ -761,19 +744,12 @@ public class Collations {
             return ULocale.getDefault();
         } else {
             final String[] components = lang.split("-");
-            switch (components.length) {
-                case 3:
-                    return new ULocale(components[0], components[1], components[2]);
-
-                case 2:
-                    return new ULocale(components[0], components[1]);
-
-                case 1:
-                    return new ULocale(components[0]);
-
-                default:
-                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
-            }
+            return switch (components.length) {
+                case 3 -> new ULocale(components[0], components[1], components[2]);
+                case 2 -> new ULocale(components[0], components[1]);
+                case 1 -> new ULocale(components[0]);
+                default -> throw new XPathException(expression, ErrorCodes.FOCH0002, "Unrecognized lang=" + lang);
+            };
         }
     }
 

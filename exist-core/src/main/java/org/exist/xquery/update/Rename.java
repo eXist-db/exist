@@ -132,19 +132,11 @@ public class Rename extends Modification {
                     final NodeImpl parent = (NodeImpl) getParent(node);
 
                     //update the document
-                    final NamedNode newNode;
-                    switch (node.getNodeType()) {
-                        case Node.ELEMENT_NODE:
-                            newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
-                            break;
-
-                        case Node.ATTRIBUTE_NODE:
-                            newNode = new AttrImpl(node.getExpression(), (AttrImpl) node);
-                            break;
-
-                        default:
-                            throw new XPathException(this, "unsupported node-type");
-                    }
+                    final NamedNode newNode = switch (node.getNodeType()) {
+                        case Node.ELEMENT_NODE -> new ElementImpl(node.getExpression(), (ElementImpl) node);
+                        case Node.ATTRIBUTE_NODE -> new AttrImpl(node.getExpression(), (AttrImpl) node);
+                        default -> throw new XPathException(this, "unsupported node-type");
+                    };
                     newNode.setNodeName(newQName, context.getBroker().getBrokerPool().getSymbols());
                     parent.updateChild(transaction, node, newNode);
 

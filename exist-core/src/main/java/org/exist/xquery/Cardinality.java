@@ -140,27 +140,15 @@ public enum Cardinality {
      * @return the XQuery notation
      */
     public String toXQueryCardinalityString() {
-        switch (this) {
-            case EMPTY_SEQUENCE:
-                return "empty-sequence()";
-
-            case EXACTLY_ONE:
-                return "";
-
-            case ZERO_OR_ONE:
-                return "?";
-
-            case _MANY:
-            case ONE_OR_MORE:
-                return "+";
-
-            case ZERO_OR_MORE:
-                return "*";
-
-            default:
-                // impossible
-                throw new IllegalArgumentException("Unknown cardinality: " + name());
-        }
+        // impossible
+        return switch (this) {
+            case EMPTY_SEQUENCE -> "empty-sequence()";
+            case EXACTLY_ONE -> "";
+            case ZERO_OR_ONE -> "?";
+            case _MANY, ONE_OR_MORE -> "+";
+            case ZERO_OR_MORE -> "*";
+            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
+        };
     }
 
     /**
@@ -169,24 +157,15 @@ public enum Cardinality {
      * @return a pronounceable description
      */
     public String getHumanDescription() {
-        switch (this) {
-            case EMPTY_SEQUENCE:
-                return "empty";
-            case EXACTLY_ONE:
-                return "exactly one";
-            case ZERO_OR_ONE:
-                return "zero or one";
-
-            case _MANY:
-            case ONE_OR_MORE:
-                return "one or more";
-
-            case ZERO_OR_MORE:
-                return "zero or more";
-            default:
-                // impossible
-                throw new IllegalArgumentException("Unknown cardinality: " + name());
-        }
+        // impossible
+        return switch (this) {
+            case EMPTY_SEQUENCE -> "empty";
+            case EXACTLY_ONE -> "exactly one";
+            case ZERO_OR_ONE -> "zero or one";
+            case _MANY, ONE_OR_MORE -> "one or more";
+            case ZERO_OR_MORE -> "zero or more";
+            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
+        };
     }
 
     /**

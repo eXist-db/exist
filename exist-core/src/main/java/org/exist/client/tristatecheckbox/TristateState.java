@@ -58,15 +58,10 @@ public enum TristateState {
     }
 
     public static @Nullable Boolean toBoolean(final TristateState state) {
-        switch (state) {
-            case DESELECTED:
-                return false;
-            case SELECTED:
-                return true;
-
-            case INDETERMINATE:
-            default:
-                return null;
-        }
+        return switch (state) {
+            case DESELECTED -> false;
+            case SELECTED -> true;
+            default -> null;
+        };
     }
 }

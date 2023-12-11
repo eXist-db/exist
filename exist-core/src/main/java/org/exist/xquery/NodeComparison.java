@@ -104,19 +104,12 @@ public class NodeComparison extends BinaryOp {
                 // different implementations : can't be the same nodes
                 result =  BooleanValue.FALSE;
             } else {
-                switch(relation) {
-                case IS:
-                    result = lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                    break;
-                case BEFORE:
-                    result = lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                    break;
-                case AFTER:
-                    result = lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                    break;
-                default:
-                    throw new XPathException(this, "Illegal argument: unknown relation");
-                }
+                result = switch (relation) {
+                    case IS -> lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    case BEFORE -> lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    case AFTER -> lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    default -> throw new XPathException(this, "Illegal argument: unknown relation");
+                };
             }
         } else {
             if (ls.isEmpty() && !rs.isEmpty()) {

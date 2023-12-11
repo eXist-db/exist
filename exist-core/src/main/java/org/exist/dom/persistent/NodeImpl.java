@@ -243,15 +243,13 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public String getPrefix() {
-        switch(getNodeType()) {
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
+        return switch (getNodeType()) {
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE -> {
                 final String prefix = getQName().getPrefix();
-                return prefix;
-
-            default:
-                return null;
-        }
+                yield prefix;
+            }
+            default -> null;
+        };
     }
 
     @Override
@@ -294,35 +292,17 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
 
     @Override
     public final String getNodeName() {
-        switch(getNodeType()) {
-            case Node.DOCUMENT_TYPE_NODE:
-                return ((DocumentTypeImpl)this).getName();
-
-            case Node.DOCUMENT_NODE:
-                return "#document";
-
-            case Node.DOCUMENT_FRAGMENT_NODE:
-                return "#document-fragment";
-
-            case Node.ELEMENT_NODE:
-            case Node.ATTRIBUTE_NODE:
-                return getQName().getStringValue();
-
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                return ((ProcessingInstructionImpl)this).getTarget();
-
-            case Node.TEXT_NODE:
-                return "#text";
-
-            case Node.COMMENT_NODE:
-                return "#comment";
-
-            case Node.CDATA_SECTION_NODE:
-                return "#cdata-section";
-
-            default:
-                return "#unknown";
-        }
+        return switch (getNodeType()) {
+            case Node.DOCUMENT_TYPE_NODE -> ((DocumentTypeImpl) this).getName();
+            case Node.DOCUMENT_NODE -> "#document";
+            case Node.DOCUMENT_FRAGMENT_NODE -> "#document-fragment";
+            case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE -> getQName().getStringValue();
+            case Node.PROCESSING_INSTRUCTION_NODE -> ((ProcessingInstructionImpl) this).getTarget();
+            case Node.TEXT_NODE -> "#text";
+            case Node.COMMENT_NODE -> "#comment";
+            case Node.CDATA_SECTION_NODE -> "#cdata-section";
+            default -> "#unknown";
+        };
     }
 
     protected DOMException unsupported() {

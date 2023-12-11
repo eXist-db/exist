@@ -30,11 +30,8 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.http.servlets.ResponseWrapper;
-import org.exist.xquery.Variable;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.response.ResponseModule;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 
 /** A place holder for static utility functions related to HTTP. 

@@ -27,13 +27,10 @@ public enum TriggerPhase {
 
     @Deprecated
     public String legacyPhaseName() {
-        switch(this) {
-            case BEFORE:
-                return "prepare";
-            case AFTER:
-                return "finish";
-            default:
-                throw new IllegalStateException();
-        }
+        return switch (this) {
+            case BEFORE -> "prepare";
+            case AFTER -> "finish";
+            default -> throw new IllegalStateException();
+        };
     }
 }

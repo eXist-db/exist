@@ -96,13 +96,12 @@ public class FunAvg extends Function {
             //Any values of type xdt:untypedAtomic are cast to xs:double
             if (value.getType() == Type.UNTYPED_ATOMIC) 
                 {value = value.convertTo(Type.DOUBLE);}
-            if (!(value instanceof ComputableValue)) {
+            if (!(value instanceof ComputableValue sum)) {
                 throw new XPathException(this, ErrorCodes.FORG0006,
                     Type.getTypeName(value.getType()) + "(" + value + ") " +
                     "can not be an operand in a sum", value);
             }
             //Set the first value
-            ComputableValue sum = (ComputableValue) value;
             while (iter.hasNext()) {
                 item = iter.nextItem();
                 value = item.atomize();

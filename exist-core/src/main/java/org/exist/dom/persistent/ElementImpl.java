@@ -1153,10 +1153,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
         try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
             final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
             try {
-                if (!(oldAttr instanceof IStoredNode)) {
+                if (!(oldAttr instanceof IStoredNode<?> old)) {
                     throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
                 }
-                final IStoredNode<?> old = (IStoredNode<?>) oldAttr;
                 if (!old.getNodeId().isChildOf(nodeId)) {
                     throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
                             old.getNodeId().getParentId() +
@@ -1235,10 +1234,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
 
-                if (!(existingAttr instanceof IStoredNode)) {
+                if (!(existingAttr instanceof IStoredNode<?> existing)) {
                     throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
                 }
-                final IStoredNode<?> existing = (IStoredNode<?>) existingAttr;
                 if (!existing.getNodeId().isChildOf(nodeId)) {
                     throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
                             existing.getNodeId().getParentId() +
@@ -1295,10 +1293,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
 
-                if (!(existingAttr instanceof IStoredNode)) {
+                if (!(existingAttr instanceof IStoredNode<?> existing)) {
                     throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
                 }
-                final IStoredNode<?> existing = (IStoredNode<?>) existingAttr;
                 if (!existing.getNodeId().isChildOf(nodeId)) {
                     throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
                             existing.getNodeId().getParentId() +
@@ -1659,12 +1656,10 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
      */
     @Override
     public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
-        if((!(oldChild instanceof IStoredNode)) || (!(newChild instanceof IStoredNode))) {
+        if((!(oldChild instanceof IStoredNode<?> oldNode)) || (!(newChild instanceof IStoredNode<?> newNode))) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
         }
 
-        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
-        final IStoredNode<?> newNode = (IStoredNode<?>) newChild;
         if(!oldNode.getNodeId().getParentId().equals(nodeId)) {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "Node is not a child of this element");
@@ -1728,11 +1723,10 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
 
     @Override
     public Node removeChild(final Txn transaction, final Node oldChild) throws DOMException {
-        if(!(oldChild instanceof IStoredNode)) {
+        if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         }
 
-        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
         if(!oldNode.getNodeId().getParentId().equals(nodeId)) {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "node is not a child of this element");
@@ -1777,10 +1771,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                 try {
                     for(int i = 0; i < removeList.getLength(); i++) {
                         final Node oldChild = removeList.item(i);
-                        if(!(oldChild instanceof IStoredNode)) {
+                        if(!(oldChild instanceof IStoredNode<?> old)) {
                             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
                         }
-                        final IStoredNode<?> old = (IStoredNode<?>) oldChild;
                         if(!old.getNodeId().isChildOf(nodeId)) {
                             throw new DOMException(DOMException.NOT_FOUND_ERR, "node " +
                                 old.getNodeId().getParentId() +
@@ -1860,10 +1853,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
      */
     @Override
     public Node replaceChild(final Txn transaction, final Node newChild, final Node oldChild) throws DOMException {
-        if(!(oldChild instanceof IStoredNode)) {
+        if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Wrong node type");
         }
-        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
         if(!oldNode.getNodeId().getParentId().equals(nodeId)) {
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                 "Node is not a child of this element");
@@ -1918,23 +1910,13 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
         char ch;
         for(int i = 0; i < str.length(); i++) {
             ch = str.charAt(i);
-            switch(ch) {
-                case '"':
-                    entity = "&quot;";
-                    break;
-                case '<':
-                    entity = "&lt;";
-                    break;
-                case '>':
-                    entity = "&gt;";
-                    break;
-                case '\'':
-                    entity = "&apos;";
-                    break;
-                default:
-                    entity = null;
-                    break;
-            }
+            entity = switch (ch) {
+                case '"' -> "&quot;";
+                case '<' -> "&lt;";
+                case '>' -> "&gt;";
+                case '\'' -> "&apos;";
+                default -> null;
+            };
 
             if(buffer == null) {
                 if(entity != null) {

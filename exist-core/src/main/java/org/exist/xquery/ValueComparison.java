@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import com.ibm.icu.text.Collator;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.ExtArrayNodeSet;
@@ -182,16 +180,12 @@ public class ValueComparison extends GeneralComparison {
         	//TODO : log this ?
             lv = lv.convertTo(Type.STRING);
         }
-		switch(truncation) {
-			case RIGHT:
-				return lv.startsWith(collator, rv);
-			case LEFT:
-				return lv.endsWith(collator, rv);
-			case BOTH:
-				return lv.contains(collator, rv);
-			default:
-				return lv.compareTo(collator, relation, rv);
-		}
+        return switch (truncation) {
+            case RIGHT -> lv.startsWith(collator, rv);
+            case LEFT -> lv.endsWith(collator, rv);
+            case BOTH -> lv.contains(collator, rv);
+            default -> lv.compareTo(collator, relation, rv);
+        };
 	}	
     
     public void dump(ExpressionDumper dumper) {

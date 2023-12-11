@@ -113,10 +113,8 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     }
 
     private void register(DocumentTrigger trigger) {
-        if (trigger instanceof SAXTrigger) {
-            
-            SAXTrigger filteringTrigger = (SAXTrigger) trigger;
-            
+        if (trigger instanceof SAXTrigger filteringTrigger) {
+
             if (last == null) {
                 contentHandler = filteringTrigger;
                 lexicalHandler = filteringTrigger;

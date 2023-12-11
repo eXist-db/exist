@@ -22,20 +22,11 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 

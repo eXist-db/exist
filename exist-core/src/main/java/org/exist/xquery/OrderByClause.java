@@ -29,7 +29,6 @@ import org.exist.xquery.value.Sequence;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Represents an "order by" clause within a FLWOR expression.

@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.exist.Database;
 import org.exist.config.ConfigurationException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.junit.Test;
 

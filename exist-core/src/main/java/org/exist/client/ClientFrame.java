@@ -1310,8 +1310,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 mode = getUpdatedMode(mode, thisPerm);
 
                 if (firstPerm) {
-                    if (thisPerm instanceof ACLPermission) {
-                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                    if (thisPerm instanceof ACLPermission thisAcl) {
                         acl = new SimpleACLPermissionAider();
                         for (int i = 0; i < thisAcl.getACECount(); i++) {
                             acl.addACE(thisAcl.getACEAccessType(i), thisAcl.getACETarget(i), thisAcl.getACEWho(i), thisAcl.getACEMode(i));
@@ -1321,8 +1320,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     }
                     firstPerm = false;
                 } else {
-                    if (acl != null && thisPerm instanceof ACLPermission) {
-                        final ACLPermission thisAcl = (ACLPermission) thisPerm;
+                    if (acl != null && thisPerm instanceof ACLPermission thisAcl) {
                         if (!acl.aclEquals(thisAcl)) {
                             acl = null;
                         }
@@ -1635,20 +1633,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         public Object getValueAt(final int rowIndex, final int columnIndex) {
             if (getRowCount() > 0) {
                 final ResourceDescriptor row = getRow(rowIndex);
-                switch (columnIndex) {
-                    case 0:
-                        return row.getName().toString();
-                    case 1:
-                        return DATE_TIME_FORMATTER.format(row.getInstant());
-                    case 2:
-                        return row.getOwner();
-                    case 3:
-                        return row.getGroup();
-                    case 4:
-                        return row.getPermissionsDescription();
-                    default:
-                        throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
-                }
+                //$NON-NLS-1$
+                return switch (columnIndex) {
+                    case 0 -> row.getName().toString();
+                    case 1 -> DATE_TIME_FORMATTER.format(row.getInstant());
+                    case 2 -> row.getOwner();
+                    case 3 -> row.getGroup();
+                    case 4 -> row.getPermissionsDescription();
+                    default -> throw new RuntimeException(Messages.getString("ClientFrame.212")); //$NON-NLS-1$
+                };
             }
             return "";
         }

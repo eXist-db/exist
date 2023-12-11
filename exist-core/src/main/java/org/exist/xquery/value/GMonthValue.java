@@ -111,20 +111,14 @@ public class GMonthValue extends AbstractDateTimeValue {
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.GMONTH:
-            case Type.ATOMIC:
-            case Type.ITEM:
-                return this;
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast xs:gMonth to "
-                                + Type.getTypeName(requiredType));
-        }
+        return switch (requiredType) {
+            case Type.GMONTH, Type.ATOMIC, Type.ITEM -> this;
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "Type error: cannot cast xs:gMonth to "
+                            + Type.getTypeName(requiredType));
+        };
     }
 
     protected AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal)

@@ -21,9 +21,6 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import org.xmldb.api.base.XMLDBException;
-
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>

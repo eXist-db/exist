@@ -36,8 +36,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of

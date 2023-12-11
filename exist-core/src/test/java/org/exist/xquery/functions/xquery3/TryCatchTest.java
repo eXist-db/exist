@@ -96,8 +96,7 @@ public class TryCatchTest {
         } catch (final Throwable t) {
 
             final Throwable cause = t.getCause();
-            if (cause instanceof XPathException) {
-                final XPathException ex = (XPathException) cause;
+            if (cause instanceof XPathException ex) {
                 assertEquals("exerr:EXXQDY0003", ex.getErrorCode().getErrorQName().getStringValue());
             } else {
                 throw t;

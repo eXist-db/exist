@@ -32,13 +32,11 @@ import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;

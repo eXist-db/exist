@@ -43,7 +43,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.SystemTaskManager;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.JournalManager;
-import org.exist.storage.journal.LogException;
 import org.exist.storage.lock.FileLockHeartBeat;
 import org.exist.storage.recovery.RecoveryManager;
 import org.exist.storage.txn.TransactionException;

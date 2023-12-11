@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.easymock.EasyMock.*;
-import static org.easymock.EasyMock.anyBoolean;
 
 
 public class IndexIntegrationTest extends AbstractTestUpdate {
@@ -225,8 +224,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         @Override
         public boolean matches(final Object argument) {
-            if (argument instanceof DocumentImpl) {
-                final DocumentImpl doc = (DocumentImpl)argument;
+            if (argument instanceof DocumentImpl doc) {
                 return url.equals(doc.getURI());
             }
             return false;
@@ -254,8 +252,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         @Override
         public boolean matches(final Object argument) {
-            if (argument instanceof AttrImpl) {
-                final AttrImpl attr = (AttrImpl)argument;
+            if (argument instanceof AttrImpl attr) {
                 return attr.getName().equals(name) && attr.getValue().equals(value);
             }
             return false;

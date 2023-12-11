@@ -186,9 +186,8 @@ public class MapType extends AbstractMapType {
 
         int prevType = keyType;
         for (final AbstractMapType other: others) {
-            if (other instanceof MapType) {
+            if (other instanceof MapType otherMap) {
                 // MapType - optimise merge
-                final MapType otherMap = (MapType) other;
                 newMap = newMap.union(otherMap.map);
 
                 if (prevType != otherMap.keyType) {
@@ -218,9 +217,8 @@ public class MapType extends AbstractMapType {
 
         int prevType = keyType;
         for (final AbstractMapType other: others) {
-            if (other instanceof MapType) {
+            if (other instanceof MapType otherMap) {
                 // MapType - optimise merge
-                final MapType otherMap = (MapType) other;
                 newMap = newMap.merge(otherMap.map, mergeFn);
 
                 if (prevType != otherMap.keyType) {

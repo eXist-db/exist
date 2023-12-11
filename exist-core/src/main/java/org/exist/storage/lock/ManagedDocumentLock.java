@@ -33,7 +33,6 @@
 package org.exist.storage.lock;
 
 import org.exist.xmldb.XmldbURI;
-import uk.ac.ic.doc.slurp.multilock.MultiLock;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

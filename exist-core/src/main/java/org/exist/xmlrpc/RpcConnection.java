@@ -1982,8 +1982,7 @@ public class RpcConnection implements RpcAPI {
             result.put("docUri", p.getOwnerDocument().getURI().toString());
             result.put("nodeId", p.getNodeId().toString());
 
-        } else if(item instanceof org.exist.dom.memtree.NodeImpl) {
-            final NodeImpl ni = (NodeImpl)item;
+        } else if(item instanceof NodeImpl ni) {
 
             result = new HashMap<>();
             result.put("type", Type.getTypeName(ni.getType()));

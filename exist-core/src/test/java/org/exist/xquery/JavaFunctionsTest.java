@@ -25,18 +25,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.Configuration;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.XmldbURI;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XPathQueryService;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

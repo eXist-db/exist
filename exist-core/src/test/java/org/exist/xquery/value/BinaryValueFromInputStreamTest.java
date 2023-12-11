@@ -459,8 +459,7 @@ public class BinaryValueFromInputStreamTest {
     private static class BinaryValueFilteringInputStream extends FilterInputStream {
         public BinaryValueFilteringInputStream(final InputStream inputStream, final boolean incrementReferenceCount) {
             super(inputStream);
-            if(incrementReferenceCount && inputStream instanceof CachingFilterInputStream) {
-                final CachingFilterInputStream cfis = ((CachingFilterInputStream)inputStream);
+            if(incrementReferenceCount && inputStream instanceof CachingFilterInputStream cfis) {
 
                 // increment shared references by one, as this filter is sharing the underlying input stream of the cache
                 cfis.incrementSharedReferences();
@@ -476,8 +475,7 @@ public class BinaryValueFromInputStreamTest {
             this.inputStreams = inputStreams;
             if(incrementReferenceCount) {
                 for(final InputStream inputStream : inputStreams) {
-                    if (inputStream instanceof  CachingFilterInputStream) {
-                        final CachingFilterInputStream cfis = ((CachingFilterInputStream)inputStream);
+                    if (inputStream instanceof CachingFilterInputStream cfis) {
 
                         // increment shared references by one, as this filter is sharing the underlying input stream of the cache
                         cfis.incrementSharedReferences();

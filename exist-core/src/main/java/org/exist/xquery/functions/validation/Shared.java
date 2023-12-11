@@ -118,11 +118,10 @@ public class Shared {
             LOG.debug("Streaming Java object");
 
             final Object obj = ((JavaObjectValue) item).getObject();
-            if (!(obj instanceof File)) {
+            if (!(obj instanceof File inputFile)) {
                 throw new XPathException(item, "Passed java object should be a File");
             }
 
-            final File inputFile = (File) obj;
             final InputStream is = new FileInputStream(inputFile);
             streamSource.setInputStream(is);
             streamSource.setSystemId(inputFile.toURI().toURL().toString());
@@ -145,8 +144,7 @@ public class Shared {
         } else if (item.getType() == Type.ELEMENT || item.getType() == Type.DOCUMENT) {
             LOG.debug("Streaming element or document node");
 
-            if (item instanceof NodeProxy) {
-                final NodeProxy np = (NodeProxy) item;
+            if (item instanceof NodeProxy np) {
                 final String url = "xmldb:exist://" + np.getOwnerDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL {}", url);
                 streamSource.setSystemId(url);
@@ -179,8 +177,7 @@ public class Shared {
 
             //TODO consider using BinaryValue.getInputStream()
 
-            if (item instanceof Base64BinaryDocument) {
-                final Base64BinaryDocument b64doc = (Base64BinaryDocument) item;
+            if (item instanceof Base64BinaryDocument b64doc) {
                 final String url = "xmldb:exist://" + b64doc.getUrl();
                 LOG.debug("Base64BinaryDocument detected, adding URL {}", url);
                 streamSource.setSystemId(url);
@@ -243,8 +240,7 @@ public class Shared {
 
             LOG.debug("Retreiving URL from (document) node");
 
-            if (item instanceof NodeProxy) {
-                final NodeProxy np = (NodeProxy) item;
+            if (item instanceof NodeProxy np) {
                 url = np.getOwnerDocument().getBaseURI();
                 LOG.debug("Document detected, adding URL {}", url);
             }

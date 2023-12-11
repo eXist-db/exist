@@ -232,45 +232,23 @@ public class DecimalValue extends NumericValue {
      */
     @Override
     public AtomicValue convertTo(int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.ATOMIC:
-            case Type.ITEM:
-            case Type.NUMBER:
-            case Type.DECIMAL:
-                return this;
-            case Type.DOUBLE:
-                return new DoubleValue(getExpression(), value.doubleValue());
-            case Type.FLOAT:
-                return new FloatValue(getExpression(), value.floatValue());
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            case Type.INTEGER:
-            case Type.NON_POSITIVE_INTEGER:
-            case Type.NEGATIVE_INTEGER:
-            case Type.LONG:
-            case Type.INT:
-            case Type.SHORT:
-            case Type.BYTE:
-            case Type.NON_NEGATIVE_INTEGER:
-            case Type.UNSIGNED_LONG:
-            case Type.UNSIGNED_INT:
-            case Type.UNSIGNED_SHORT:
-            case Type.UNSIGNED_BYTE:
-            case Type.POSITIVE_INTEGER:
-                return new IntegerValue(getExpression(), value.longValue(), requiredType);
-            case Type.BOOLEAN:
-                return value.signum() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
-            default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "cannot convert  '"
-                                + Type.getTypeName(this.getType())
-                                + " ("
-                                + value
-                                + ")' into "
-                                + Type.getTypeName(requiredType));
-        }
+        return switch (requiredType) {
+            case Type.ATOMIC, Type.ITEM, Type.NUMBER, Type.DECIMAL -> this;
+            case Type.DOUBLE -> new DoubleValue(getExpression(), value.doubleValue());
+            case Type.FLOAT -> new FloatValue(getExpression(), value.floatValue());
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            case Type.INTEGER, Type.NON_POSITIVE_INTEGER, Type.NEGATIVE_INTEGER, Type.LONG, Type.INT, Type.SHORT, Type.BYTE, Type.NON_NEGATIVE_INTEGER, Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT, Type.UNSIGNED_BYTE, Type.POSITIVE_INTEGER ->
+                    new IntegerValue(getExpression(), value.longValue(), requiredType);
+            case Type.BOOLEAN -> value.signum() == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
+            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                    "cannot convert  '"
+                            + Type.getTypeName(this.getType())
+                            + " ("
+                            + value
+                            + ")' into "
+                            + Type.getTypeName(requiredType));
+        };
     }
 
     public boolean isNaN() {
@@ -337,16 +315,12 @@ public class DecimalValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#round()
      */
     public NumericValue round() throws XPathException {
-        switch (value.signum()) {
-            case -1:
-                return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_DOWN));
-            case 0:
-                return this;
-            case 1:
-                return new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_UP));
-            default:
-                return this;
-        }
+        return switch (value.signum()) {
+            case -1 -> new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_DOWN));
+            case 0 -> this;
+            case 1 -> new DecimalValue(getExpression(), value.setScale(0, RoundingMode.HALF_UP));
+            default -> this;
+        };
     }
 
     /* (non-Javadoc)
@@ -385,43 +359,32 @@ public class DecimalValue extends NumericValue {
 
     @Override
     public ComputableValue minus(final ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DECIMAL:
-                return new DecimalValue(getExpression(), value.subtract(((DecimalValue) other).value));
-            case Type.INTEGER:
-                return minus((ComputableValue) other.convertTo(getType()));
-            default:
-                return ((ComputableValue) convertTo(other.getType())).minus(other);
-        }
+        return switch (other.getType()) {
+            case Type.DECIMAL -> new DecimalValue(getExpression(), value.subtract(((DecimalValue) other).value));
+            case Type.INTEGER -> minus((ComputableValue) other.convertTo(getType()));
+            default -> ((ComputableValue) convertTo(other.getType())).minus(other);
+        };
     }
 
     @Override
     public ComputableValue plus(final ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DECIMAL:
-                return new DecimalValue(getExpression(), value.add(((DecimalValue) other).value));
-            case Type.INTEGER:
-                return plus((ComputableValue) other.convertTo(getType()));
-            default:
-                return ((ComputableValue) convertTo(other.getType())).plus(other);
-        }
+        return switch (other.getType()) {
+            case Type.DECIMAL -> new DecimalValue(getExpression(), value.add(((DecimalValue) other).value));
+            case Type.INTEGER -> plus((ComputableValue) other.convertTo(getType()));
+            default -> ((ComputableValue) convertTo(other.getType())).plus(other);
+        };
     }
 
     /* (non-Javadoc)
      * @see org.exist.xquery.value.NumericValue#mult(org.exist.xquery.value.NumericValue)
      */
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            case Type.DECIMAL:
-                return new DecimalValue(getExpression(), value.multiply(((DecimalValue) other).value));
-            case Type.INTEGER:
-                return mult((ComputableValue) other.convertTo(getType()));
-            case Type.DAY_TIME_DURATION:
-            case Type.YEAR_MONTH_DURATION:
-                return other.mult(this);
-            default:
-                return ((ComputableValue) convertTo(other.getType())).mult(other);
-        }
+        return switch (other.getType()) {
+            case Type.DECIMAL -> new DecimalValue(getExpression(), value.multiply(((DecimalValue) other).value));
+            case Type.INTEGER -> mult((ComputableValue) other.convertTo(getType()));
+            case Type.DAY_TIME_DURATION, Type.YEAR_MONTH_DURATION -> other.mult(this);
+            default -> ((ComputableValue) convertTo(other.getType())).mult(other);
+        };
     }
 
     /* (non-Javadoc)

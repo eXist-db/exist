@@ -89,11 +89,10 @@ public class NamePool {
 
         @Override
         public boolean equals(final Object obj) {
-            if (obj == null || !(obj instanceof WrappedQName)) {
+            if (obj == null || !(obj instanceof WrappedQName other)) {
                 return false;
             }
 
-            final WrappedQName other = (WrappedQName) obj;
             final int cmp = compareTo(other);
             if (cmp != 0) {
                 return false;

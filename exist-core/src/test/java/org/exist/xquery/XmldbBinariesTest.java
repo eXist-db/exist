@@ -71,9 +71,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
 
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, byte[] content) throws Exception {
-        Collection colRoot = null;
-        try {
-            colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
+        try (Collection colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD)) {
 
             final XmldbURI collectionNames[] = filePath.removeLastSegment().getPathSegments();
 
@@ -92,17 +90,13 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
                 current.storeResource(resource);
 
             } finally {
-                while(!cols.isEmpty()) {
+                while (!cols.isEmpty()) {
                     try {
                         cols.pop().close();
-                    } catch(XMLDBException e) {
+                    } catch (XMLDBException e) {
 
                     }
                 }
-            }
-        } finally {
-            if(colRoot != null) {
-                colRoot.close();
             }
         }
     }
@@ -118,24 +112,13 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
 
     @Override
     protected void removeCollection(final XmldbURI collectionUri) throws Exception {
-        Collection colRoot = null;
-        try {
-            colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
+        try (Collection colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD)) {
 
-            final Collection colTest = colRoot.getChildCollection("test");
-            try {
+            try (Collection colTest = colRoot.getChildCollection("test")) {
                 final CollectionManagementService cms = colTest.getService(CollectionManagementService.class);
 
                 final String testCollectionName = collectionUri.lastSegment().toString();
                 cms.removeCollection(testCollectionName);
-            } finally {
-                if(colTest != null) {
-                    colTest.close();
-                }
-            }
-        } finally {
-            if(colRoot != null) {
-                colRoot.close();
             }
         }
     }
@@ -143,9 +126,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
     @Override
     protected QueryResultAccessor<ResourceSet, XMLDBException> executeXQuery(final String query) {
         return consumer -> {
-            Collection colRoot = null;
-            try {
-                colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
+            try (Collection colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD)) {
                 final XQueryService xqueryService = colRoot.getService(XQueryService.class);
 
                 final CompiledExpression compiledExpression = xqueryService.compile(query);
@@ -161,8 +142,6 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
                     results.clear();
                     compiledExpression.reset();
                 }
-            } finally {
-                colRoot.close();
             }
         };
     }

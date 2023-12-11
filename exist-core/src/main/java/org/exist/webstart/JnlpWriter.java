@@ -295,21 +295,12 @@ public class JnlpWriter {
     }
 
     private String getImageMimeType(String filename) {
-        String type;
-        switch (FilenameUtils.getExtension(filename)) {
-            case ".gif":
-                type = "image/gif";
-                break;
-            case ".png":
-                type = "image/png";
-                break;
-            case ".jpg":
-            case ".jpeg":
-                type = "image/jpeg";
-                break;
-            default:
-                type = "application/octet-stream";
-        }
+        String type = switch (FilenameUtils.getExtension(filename)) {
+            case ".gif" -> "image/gif";
+            case ".png" -> "image/png";
+            case ".jpg", ".jpeg" -> "image/jpeg";
+            default -> "application/octet-stream";
+        };
         return type;
     }
 }

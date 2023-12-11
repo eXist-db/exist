@@ -292,8 +292,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             boolean establishedPrimaryPort = false;
             for(final Connector connector : connectors) {
-                if(connector instanceof NetworkConnector) {
-                    final NetworkConnector networkConnector = (NetworkConnector)connector;
+                if(connector instanceof NetworkConnector networkConnector) {
 
                     if(!establishedPrimaryPort) {
                         this.primaryPort = networkConnector.getLocalPort();
@@ -390,8 +389,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {
-        if(handler instanceof HandlerWrapper) {
-            final HandlerWrapper handlerWrapper = (HandlerWrapper) handler;
+        if(handler instanceof HandlerWrapper handlerWrapper) {
             final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
             handlers.add(handlerWrapper);
             if(handlerWrapper.getHandler() != null) {
@@ -399,8 +397,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
             return handlers;
 
-        } else if(handler instanceof HandlerContainer) {
-            final HandlerContainer handlerContainer = (HandlerContainer) handler;
+        } else if(handler instanceof HandlerContainer handlerContainer) {
             final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
             handlers.add(handler);
             for(final Handler childHandler : handlerContainer.getChildHandlers()) {
@@ -468,8 +465,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         // For all objects created by XmlConfigurations, start them if they are lifecycles.
         Optional<Server> server = Optional.empty();
         for (final Object configuredObject : configuredObjects) {
-            if(configuredObject instanceof Server) {
-                final Server _server = (Server)configuredObject;
+            if(configuredObject instanceof Server _server) {
 
                 //skip this server if we have already started it
                 if(server.map(configuredServer -> configuredServer == _server).orElse(false)) {
@@ -498,8 +494,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 server = Optional.of(_server);
             }
 
-            if (configuredObject instanceof LifeCycle) {
-                final LifeCycle lc = (LifeCycle)configuredObject;
+            if (configuredObject instanceof LifeCycle lc) {
                 if (!lc.isRunning()) {
                     logger.info("[Starting jetty component : {}]", lc.getClass().getName());
                     lc.start();

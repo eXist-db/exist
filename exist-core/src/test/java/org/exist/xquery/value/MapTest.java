@@ -44,8 +44,7 @@ public class MapTest {
             queryService.query("fn:boolean(map{})");
         } catch(final XMLDBException e) {
            final Throwable cause = e.getCause();
-           if(cause instanceof XPathException) {
-               final XPathException xpe = (XPathException)cause;
+           if(cause instanceof XPathException xpe) {
                assertEquals(ErrorCodes.FORG0006, xpe.getErrorCode());
                return;
            }

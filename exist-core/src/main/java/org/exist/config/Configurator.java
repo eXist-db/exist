@@ -254,8 +254,7 @@ public class Configurator {
             return configureByCurrent(instance, config);
         } catch (final Throwable e) {
             LOG.error(e.getMessage(), e);
-            if (config instanceof ConfigurationImpl) {
-                final ConfigurationImpl impl = (ConfigurationImpl) config;
+            if (config instanceof ConfigurationImpl impl) {
                 impl.configuredObjectReference = null;
             }
         } finally {

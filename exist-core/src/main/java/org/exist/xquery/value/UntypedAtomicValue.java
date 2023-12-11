@@ -192,22 +192,16 @@ public class UntypedAtomicValue extends AtomicValue {
         if (Type.subTypeOf(other.getType(), Type.STRING) ||
                 Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC)) {
             final int cmp = Collations.compare(collator, value, other.getStringValue());
-            switch (operator) {
-                case EQ:
-                    return cmp == 0;
-                case NEQ:
-                    return cmp != 0;
-                case LT:
-                    return cmp < 0;
-                case LTEQ:
-                    return cmp <= 0;
-                case GT:
-                    return cmp > 0;
-                case GTEQ:
-                    return cmp >= 0;
-                default:
-                    throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
-            }
+            return switch (operator) {
+                case EQ -> cmp == 0;
+                case NEQ -> cmp != 0;
+                case LT -> cmp < 0;
+                case LTEQ -> cmp <= 0;
+                case GT -> cmp > 0;
+                case GTEQ -> cmp >= 0;
+                default ->
+                        throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
+            };
         }
         throw new XPathException(getExpression(), 
                 "Type error: operands are not comparable; expected xdt:untypedAtomic; got "

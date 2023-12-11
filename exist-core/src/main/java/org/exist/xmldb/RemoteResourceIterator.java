@@ -27,9 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.exist.util.Leasable;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;

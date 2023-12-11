@@ -204,17 +204,16 @@ public class DatabaseImpl implements Database {
         } catch (final EXistException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Can not access to local database instance", e);
         } catch (final XMLDBException e) {
-            switch (e.errorCode) {
-                case ErrorCodes.NO_SUCH_RESOURCE:
-                case ErrorCodes.NO_SUCH_COLLECTION:
-                case ErrorCodes.INVALID_COLLECTION:
-                case ErrorCodes.INVALID_RESOURCE:
+            return switch (e.errorCode) {
+                case ErrorCodes.NO_SUCH_RESOURCE, ErrorCodes.NO_SUCH_COLLECTION, ErrorCodes.INVALID_COLLECTION, ErrorCodes.INVALID_RESOURCE -> {
                     LOG.debug(e.getMessage());
-                    return null;
-                default:
+                    yield null;
+                }
+                default -> {
                     LOG.error(e.getMessage(), e);
                     throw e;
-            }
+                }
+            };
         }
     }
 
@@ -245,17 +244,16 @@ public class DatabaseImpl implements Database {
             //Should never happen
             throw new XMLDBException(ErrorCodes.INVALID_DATABASE, e.getMessage());
         } catch (final XMLDBException e) {
-            switch (e.errorCode) {
-                case ErrorCodes.NO_SUCH_RESOURCE:
-                case ErrorCodes.NO_SUCH_COLLECTION:
-                case ErrorCodes.INVALID_COLLECTION:
-                case ErrorCodes.INVALID_RESOURCE:
+            return switch (e.errorCode) {
+                case ErrorCodes.NO_SUCH_RESOURCE, ErrorCodes.NO_SUCH_COLLECTION, ErrorCodes.INVALID_COLLECTION, ErrorCodes.INVALID_RESOURCE -> {
                     LOG.debug(e.getMessage());
-                    return null;
-                default:
+                    yield null;
+                }
+                default -> {
                     LOG.error(e.getMessage(), e);
                     throw e;
-            }
+                }
+            };
         }
     }
 
@@ -380,43 +378,17 @@ public class DatabaseImpl implements Database {
 
     @Override
     public String getProperty(final String property, final String defaultValue) throws XMLDBException {
-        final String value;
-        switch(property) {
-            case CREATE_DATABASE:
-                value = Boolean.valueOf(autoCreate).toString();
-                break;
-
-            case DATABASE_ID:
-                value = currentInstanceName;
-                break;
-
-            case CONFIGURATION:
-                value = configuration;
-                break;
-
-            case DATA_DIR:
-                value = dataDir;
-                break;
-
-            case JOURNAL_DIR:
-                value = journalDir;
-                break;
-
-            case SSL_ENABLE:
-                value = ssl_enable.toString();
-                break;
-
-            case SSL_ALLOW_SELF_SIGNED:
-                value = ssl_allow_self_signed.toString();
-                break;
-
-            case SSL_VERIFY_HOSTNAME:
-                value = ssl_verify_hostname.toString();
-                break;
-
-            default:
-                value = defaultValue;
-        }
+        final String value = switch (property) {
+            case CREATE_DATABASE -> Boolean.valueOf(autoCreate).toString();
+            case DATABASE_ID -> currentInstanceName;
+            case CONFIGURATION -> configuration;
+            case DATA_DIR -> dataDir;
+            case JOURNAL_DIR -> journalDir;
+            case SSL_ENABLE -> ssl_enable.toString();
+            case SSL_ALLOW_SELF_SIGNED -> ssl_allow_self_signed.toString();
+            case SSL_VERIFY_HOSTNAME -> ssl_verify_hostname.toString();
+            default -> defaultValue;
+        };
         return value;
     }
 

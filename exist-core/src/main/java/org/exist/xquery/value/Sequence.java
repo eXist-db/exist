@@ -29,7 +29,6 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 

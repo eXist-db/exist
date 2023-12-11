@@ -33,14 +33,11 @@ import se.softhouse.jargo.CommandLineParser;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.launcher.ConfigurationUtility.*;
 import static se.softhouse.jargo.Arguments.helpArgument;
 

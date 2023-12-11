@@ -22,8 +22,6 @@
 
 package org.exist.xquery;
 
-import org.exist.dom.QName;
-
 /**
  * Represents a closure variable available to an inline function.
  *

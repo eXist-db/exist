@@ -828,26 +828,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
         // Select appropriate matcher/comparator
         final TermMatcher matcher;
         if (collator == null) {
-            switch (type) {
-                case DBBroker.MATCH_EXACT:
-                    matcher = new ExactMatcher(expr);
-                    break;
-
-                case DBBroker.MATCH_CONTAINS:
-                    matcher = new ContainsMatcher(expr);
-                    break;
-
-                case DBBroker.MATCH_STARTSWITH:
-                    matcher = new StartsWithMatcher(expr);
-                    break;
-
-                case DBBroker.MATCH_ENDSWITH:
-                    matcher = new EndsWithMatcher(expr);
-                    break;
-
-                default:
-                    matcher = new RegexMatcher(expr, flags);
-            }
+            matcher = switch (type) {
+                case DBBroker.MATCH_EXACT -> new ExactMatcher(expr);
+                case DBBroker.MATCH_CONTAINS -> new ContainsMatcher(expr);
+                case DBBroker.MATCH_STARTSWITH -> new StartsWithMatcher(expr);
+                case DBBroker.MATCH_ENDSWITH -> new EndsWithMatcher(expr);
+                default -> new RegexMatcher(expr, flags);
+            };
         } else {
             matcher = new CollatorMatcher(expr, truncation, collator);
         }
@@ -996,34 +983,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private int toIndexQueryOp(final Comparison comparison) {
-        final int indexOp;
-
-        switch (comparison) {
-            case LT:
-                indexOp = IndexQuery.LT;
-                break;
-
-            case LTEQ:
-                indexOp = IndexQuery.LEQ;
-                break;
-
-            case GT:
-                indexOp = IndexQuery.GT;
-                break;
-
-            case GTEQ:
-                indexOp = IndexQuery.GEQ;
-                break;
-
-            case NEQ:
-                indexOp = IndexQuery.NEQ;
-                break;
-
-            case EQ:
-            default:
-                indexOp = IndexQuery.EQ;
-                break;
-        }
+        final int indexOp = switch (comparison) {
+            case LT -> IndexQuery.LT;
+            case LTEQ -> IndexQuery.LEQ;
+            case GT -> IndexQuery.GT;
+            case GTEQ -> IndexQuery.GEQ;
+            case NEQ -> IndexQuery.NEQ;
+            default -> IndexQuery.EQ;
+        };
 
         return indexOp;
     }
@@ -1168,26 +1135,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            final boolean matches;
-
-            switch (truncation) {
-                case LEFT:
-                    matches = Collations.endsWith(collator, term.toString(), expr);
-                    break;
-
-                case RIGHT:
-                    matches = Collations.startsWith(collator, term.toString(), expr);
-                    break;
-
-                case BOTH:
-                    matches = Collations.contains(collator, term.toString(), expr);
-                    break;
-
-                case NONE:
-                case EQUALS:
-                default:
-                    matches = Collations.equals(collator, term.toString(), expr);
-            }
+            final boolean matches = switch (truncation) {
+                case LEFT -> Collations.endsWith(collator, term.toString(), expr);
+                case RIGHT -> Collations.startsWith(collator, term.toString(), expr);
+                case BOTH -> Collations.contains(collator, term.toString(), expr);
+                default -> Collations.equals(collator, term.toString(), expr);
+            };
 
             return matches;
         }

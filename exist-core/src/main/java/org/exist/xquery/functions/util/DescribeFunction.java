@@ -148,10 +148,8 @@ public class DescribeFunction extends Function {
                 int noArgs=0;
                 
                 for (final SequenceType argumentType : argumentTypes) {
-                    if (argumentType instanceof FunctionParameterSequenceType) {
+                    if (argumentType instanceof FunctionParameterSequenceType fp) {
                         noArgs++;
-                        final FunctionParameterSequenceType fp
-                                = (FunctionParameterSequenceType) argumentType;
                         args.append("$");
                         args.append(fp.getAttributeName());
                         args.append(" : ");
@@ -169,12 +167,10 @@ public class DescribeFunction extends Function {
 
             final SequenceType returnType = signature.getReturnType();
             if(returnType != null){             
-                if (returnType instanceof FunctionReturnSequenceType) {
+                if (returnType instanceof FunctionReturnSequenceType fp) {
                     description.append("\n");
                     description.append("Returns ");
-                    final FunctionReturnSequenceType fp
-                                = (FunctionReturnSequenceType) returnType;
-                        description.append(fp.getDescription());
+                    description.append(fp.getDescription());
                         description.append("\n");
                 }
 

@@ -41,7 +41,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Leasable;
@@ -205,28 +204,14 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         } else {
             final Map<String, String> item = (Map<String, String>)resources.get((int)pos);
 
-            switch(item.get("type")) {
-                case "node()":
-                case "document-node()":
-                case "element()":
-                case "attribute()":
-                case "text()":
-                case "processing-instruction()":
-                case "comment()":
-                case "namespace()":
-                case "cdata-section()":
-                    return getResourceNode((int)pos, item);
-
-                case "xs:base64Binary":
-                    return getResourceBinaryValue((int)pos, item, Base64::decodeBase64);
-
-                case "xs:hexBinary":
-                    return getResourceBinaryValue((int)pos, item, Hex::decodeHex);
-
-                default:    // atomic value
-                    return getResourceValue((int)pos, item);
-
-            }
+            return switch (item.get("type")) {
+                case "node()", "document-node()", "element()", "attribute()", "text()", "processing-instruction()", "comment()", "namespace()", "cdata-section()" ->
+                        getResourceNode((int) pos, item);
+                case "xs:base64Binary" -> getResourceBinaryValue((int) pos, item, Base64::decodeBase64);
+                case "xs:hexBinary" -> getResourceBinaryValue((int) pos, item, Hex::decodeHex);
+                default ->    // atomic value
+                        getResourceValue((int) pos, item);
+            };
         }
     }
 

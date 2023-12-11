@@ -45,8 +45,7 @@ public class HttpAccount {
             try {
                 final Method method = principal.getClass().getMethod("getSubject");
                 final Object obj = method.invoke(principal);
-                if(obj instanceof javax.security.auth.Subject) {
-                    final javax.security.auth.Subject subject = (javax.security.auth.Subject) obj;
+                if(obj instanceof javax.security.auth.Subject subject) {
                     for(final Principal _principal_ : subject.getPrincipals()) {
                         if(_principal_ instanceof Subject) {
                             return (Subject) _principal_;

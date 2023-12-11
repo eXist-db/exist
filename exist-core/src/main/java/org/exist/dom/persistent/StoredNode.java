@@ -205,21 +205,17 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
 
     @Override
     public QName getQName() {
-        switch(getNodeType()) {
-            case Node.DOCUMENT_NODE:
-                return QName.DOCUMENT_QNAME;
-            case Node.TEXT_NODE:
-                return QName.TEXT_QNAME;
-            case Node.COMMENT_NODE:
-                return QName.COMMENT_QNAME;
-            case Node.DOCUMENT_TYPE_NODE:
-                return QName.DOCTYPE_QNAME;
-            case Node.CDATA_SECTION_NODE:
-                return QName.CDATA_SECTION_QNAME;
-            default:
+        return switch (getNodeType()) {
+            case Node.DOCUMENT_NODE -> QName.DOCUMENT_QNAME;
+            case Node.TEXT_NODE -> QName.TEXT_QNAME;
+            case Node.COMMENT_NODE -> QName.COMMENT_QNAME;
+            case Node.DOCUMENT_TYPE_NODE -> QName.DOCTYPE_QNAME;
+            case Node.CDATA_SECTION_NODE -> QName.CDATA_SECTION_QNAME;
+            default -> {
                 LOG.error("Unknown node type: {}", getNodeType());
-                return null;
-        }
+                yield null;
+            }
+        };
     }
 
     @Override

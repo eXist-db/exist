@@ -28,7 +28,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 import static org.easymock.EasyMock.aryEq;
 import static org.easymock.EasyMock.createMock;
@@ -130,8 +129,7 @@ public class MemoryContentsInputStreamTest {
         reportMatcher(new IArgumentMatcher() {
             @Override
             public boolean matches(Object o) {
-                if (o instanceof byte[]) {
-                    byte[] data = (byte[]) o;
+                if (o instanceof byte[] data) {
                     if (data.length == 1) {
                         data[0] = (byte) ch;
                         return true;

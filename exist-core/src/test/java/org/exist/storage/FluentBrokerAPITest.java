@@ -78,9 +78,9 @@ public class FluentBrokerAPITest {
 
         ctrl.replay();
 
-        final Function<Collection, Long> collectionOp = collection -> collection.getCreated();
+        final Function<Collection, Long> collectionOp = Collection::getCreated;
         final BiFunction<Collection, DocumentImpl, String> collectionDocOp = (collection, doc) -> collection.getURI().append(doc.getFileURI()).toString();
-        final Function<DocumentImpl, Long> documentOp = document -> document.getLastModified();
+        final Function<DocumentImpl, Long> documentOp = DocumentImpl::getLastModified;
 
         final Tuple3<Long, String, Long> result = FluentBrokerAPI.builder(mockBrokerPool)
                 .withCollection(TEST_COLLECTION_URI, READ_LOCK)
@@ -118,7 +118,7 @@ public class FluentBrokerAPITest {
 
         ctrl.replay();
 
-        final Function<Collection, Long> collectionOp = collection -> collection.getCreated();
+        final Function<Collection, Long> collectionOp = Collection::getCreated;
 
         final long result = FluentBrokerAPI.builder(mockBrokerPool)
                 .withCollection(TEST_COLLECTION_URI, READ_LOCK)
@@ -196,7 +196,7 @@ public class FluentBrokerAPITest {
 
         ctrl.replay();
 
-        final Function<DocumentImpl, Long> documentOp = document -> document.getLastModified();
+        final Function<DocumentImpl, Long> documentOp = DocumentImpl::getLastModified;
 
         final long result = FluentBrokerAPI.builder(mockBrokerPool)
                 .withCollection(TEST_COLLECTION_URI, READ_LOCK)
@@ -238,7 +238,7 @@ public class FluentBrokerAPITest {
 
         ctrl.replay();
 
-        final Function<Collection, Long> collectionOp = collection -> collection.getCreated();
+        final Function<Collection, Long> collectionOp = Collection::getCreated;
         final BiFunction<Collection, DocumentImpl, String> collectionDocOp = (collection, doc) -> collection.getURI().append(doc.getFileURI()).toString();
 
         final Tuple2<Long, String> result = FluentBrokerAPI.builder(mockBrokerPool)
@@ -282,8 +282,8 @@ public class FluentBrokerAPITest {
 
         ctrl.replay();
 
-        final Function<Collection, Long> collectionOp = collection -> collection.getCreated();
-        final Function<DocumentImpl, Long> documentOp = document -> document.getLastModified();
+        final Function<Collection, Long> collectionOp = Collection::getCreated;
+        final Function<DocumentImpl, Long> documentOp = DocumentImpl::getLastModified;
 
         final Tuple2<Long, Long> result = FluentBrokerAPI.builder(mockBrokerPool)
                 .withCollection(TEST_COLLECTION_URI, READ_LOCK)
@@ -328,7 +328,7 @@ public class FluentBrokerAPITest {
         ctrl.replay();
 
         final BiFunction<Collection, DocumentImpl, String> collectionDocOp = (collection, doc) -> collection.getURI().append(doc.getFileURI()).toString();
-        final Function<DocumentImpl, Long> documentOp = document -> document.getLastModified();
+        final Function<DocumentImpl, Long> documentOp = DocumentImpl::getLastModified;
 
         final Tuple2<String, Long> result = FluentBrokerAPI.builder(mockBrokerPool)
                 .withCollection(TEST_COLLECTION_URI, READ_LOCK)

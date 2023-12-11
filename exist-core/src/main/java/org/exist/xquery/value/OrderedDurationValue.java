@@ -69,22 +69,15 @@ abstract class OrderedDurationValue extends DurationValue {
                                 + Type.getTypeName(other.getType()));
             }
         }
-        switch (operator) {
-            case EQ:
-                return r == DatatypeConstants.EQUAL;
-            case NEQ:
-                return r != DatatypeConstants.EQUAL;
-            case LT:
-                return r == DatatypeConstants.LESSER;
-            case LTEQ:
-                return r == DatatypeConstants.LESSER || r == DatatypeConstants.EQUAL;
-            case GT:
-                return r == DatatypeConstants.GREATER;
-            case GTEQ:
-                return r == DatatypeConstants.GREATER || r == DatatypeConstants.EQUAL;
-            default:
-                throw new XPathException(getExpression(), "Unknown operator type in comparison");
-        }
+        return switch (operator) {
+            case EQ -> r == DatatypeConstants.EQUAL;
+            case NEQ -> r != DatatypeConstants.EQUAL;
+            case LT -> r == DatatypeConstants.LESSER;
+            case LTEQ -> r == DatatypeConstants.LESSER || r == DatatypeConstants.EQUAL;
+            case GT -> r == DatatypeConstants.GREATER;
+            case GTEQ -> r == DatatypeConstants.GREATER || r == DatatypeConstants.EQUAL;
+            default -> throw new XPathException(getExpression(), "Unknown operator type in comparison");
+        };
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {

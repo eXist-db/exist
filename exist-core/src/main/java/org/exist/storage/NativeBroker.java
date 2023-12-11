@@ -23,11 +23,6 @@ package org.exist.storage;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import org.apache.commons.pool2.BasePooledObjectFactory;
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -62,7 +57,6 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.journal.*;
 import org.exist.storage.lock.*;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
@@ -561,16 +555,12 @@ public class NativeBroker implements DBBroker {
 
     public BTree getStorage(final byte id) {
         //Notice that there is no entry for the symbols table
-        switch(id) {
-            case DOM_DBX_ID:
-                return domDb;
-            case COLLECTIONS_DBX_ID:
-                return collectionsDb;
-            case VALUES_DBX_ID:
-                return valueIndex.dbValues;
-            default:
-                return null;
-        }
+        return switch (id) {
+            case DOM_DBX_ID -> domDb;
+            case COLLECTIONS_DBX_ID -> collectionsDb;
+            case VALUES_DBX_ID -> valueIndex.dbValues;
+            default -> null;
+        };
     }
 
     public byte[] getStorageFileIds() {
@@ -997,22 +987,21 @@ public class NativeBroker implements DBBroker {
         final ManagedCollectionLock collectionLock;
         final Runnable unlockFn;    // we unlock on error, or if there is no Collection
         try {
-            switch (lockMode) {
-                case WRITE_LOCK:
+            unlockFn = switch (lockMode) {
+                case WRITE_LOCK -> {
                     collectionLock = writeLockCollection(collectionUri);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case READ_LOCK:
+                    yield collectionLock::close;
+                }
+                case READ_LOCK -> {
                     collectionLock = readLockCollection(collectionUri);
-                    unlockFn = collectionLock::close;
-                    break;
-
-                case NO_LOCK:
-                default:
+                    yield collectionLock::close;
+                }
+                default -> {
                     collectionLock = ManagedCollectionLock.notLocked(collectionUri);
-                    unlockFn = () -> {};
-            }
+                    yield () -> {
+                    };
+                }
+            };
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on Collection: {}", collectionUri);
             return null;
@@ -1454,8 +1443,7 @@ public class NativeBroker implements DBBroker {
      */
     private void copyModeAndAcl(final Permission srcPermission, final Permission destPermission) throws PermissionDeniedException {
         final List<ACEAider> aces = new ArrayList<>();
-        if(srcPermission instanceof SimpleACLPermission && destPermission instanceof SimpleACLPermission) {
-            final SimpleACLPermission srcAclPermission = (SimpleACLPermission) srcPermission;
+        if(srcPermission instanceof SimpleACLPermission srcAclPermission && destPermission instanceof SimpleACLPermission) {
             for (int i = 0; i < srcAclPermission.getACECount(); i++) {
                 aces.add(new ACEAider(srcAclPermission.getACEAccessType(i), srcAclPermission.getACETarget(i), srcAclPermission.getACEWho(i), srcAclPermission.getACEMode(i)));
             }
@@ -1696,8 +1684,7 @@ public class NativeBroker implements DBBroker {
                 final Iterator<DocumentImpl> itDoc = dst.iterator(this);
                 while (itDoc.hasNext()) {
                     final DocumentImpl dstDoc = itDoc.next();
-                    if (dstDoc instanceof BinaryDocument) {
-                        final BinaryDocument binDstDoc = (BinaryDocument)dstDoc;
+                    if (dstDoc instanceof BinaryDocument binDstDoc) {
                         try (final ManagedDocumentLock dstDocLock = lockManager.acquireDocumentWriteLock(dstDoc.getURI())) {
                             removeBinaryResource(transaction, binDstDoc);
                             binDstDoc.setBlobId(null);

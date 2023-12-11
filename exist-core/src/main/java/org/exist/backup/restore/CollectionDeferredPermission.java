@@ -31,11 +31,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.LockManager;
-import org.exist.storage.lock.ManagedCollectionLock;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
 import java.io.IOException;

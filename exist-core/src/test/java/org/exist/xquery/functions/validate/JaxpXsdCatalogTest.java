@@ -59,19 +59,11 @@ public class JaxpXsdCatalogTest {
     public static void prepareResources() throws XMLDBException, IOException, URISyntaxException {
 
         // Switch off validation
-        Collection conf = null;
-        try {
-            conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse");
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/parse")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
-        } finally {
-            if(conf != null) {
-                conf.close();
-            }
         }
 
-        Collection schemasCollection = null;
-        try {
-            schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/schemas");
+        try (Collection schemasCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/schemas")) {
 
             try (final InputStream is = SAMPLES.getSample("validation/parse/schemas/MyNameSpace.xsd")) {
                 assertNotNull(is);
@@ -83,28 +75,16 @@ public class JaxpXsdCatalogTest {
                 ExistXmldbEmbeddedServer.storeResource(schemasCollection, "AnotherNamespace.xsd", InputStreamUtil.readAll(is));
             }
 
-        } finally {
-            if(schemasCollection != null) {
-                schemasCollection.close();
-            }
         }
 
-        Collection parseCollection = null;
-        try {
-            parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse");
+        try (Collection parseCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse")) {
             try (final InputStream is = SAMPLES.getSample("validation/parse/catalog.xml")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(parseCollection, "catalog.xml", InputStreamUtil.readAll(is));
             }
-        } finally {
-            if(parseCollection != null) {
-                parseCollection.close();
-            }
         }
 
-        Collection instanceCollection = null;
-        try {
-            instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance");
+        try (Collection instanceCollection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "parse/instance")) {
 
             try (final InputStream is = SAMPLES.getSample("validation/parse/instance/valid.xml")) {
                 assertNotNull(is);
@@ -114,10 +94,6 @@ public class JaxpXsdCatalogTest {
             try (final InputStream is = SAMPLES.getSample("validation/parse/instance/invalid.xml")) {
                 assertNotNull(is);
                 ExistXmldbEmbeddedServer.storeResource(instanceCollection, "invalid.xml", InputStreamUtil.readAll(is));
-            }
-        } finally {
-            if(instanceCollection != null) {
-                instanceCollection.close();
             }
         }
     }

@@ -34,7 +34,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
-import javax.xml.XMLConstants;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -653,22 +652,16 @@ public class StringValue extends AtomicValue {
         if (Type.subTypeOf(other.getType(), Type.STRING)) {
             try {
                 final int cmp = Collations.compare(collator, value, other.getStringValue());
-                switch (operator) {
-                    case EQ:
-                        return cmp == 0;
-                    case NEQ:
-                        return cmp != 0;
-                    case LT:
-                        return cmp < 0;
-                    case LTEQ:
-                        return cmp <= 0;
-                    case GT:
-                        return cmp > 0;
-                    case GTEQ:
-                        return cmp >= 0;
-                    default:
-                        throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
-                }
+                return switch (operator) {
+                    case EQ -> cmp == 0;
+                    case NEQ -> cmp != 0;
+                    case LT -> cmp < 0;
+                    case LTEQ -> cmp <= 0;
+                    case GT -> cmp > 0;
+                    case GTEQ -> cmp >= 0;
+                    default ->
+                            throw new XPathException(getExpression(), "Type error: cannot apply operand to string value");
+                };
             } catch (final UnsupportedOperationException e) {
                 throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
             }

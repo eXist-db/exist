@@ -55,7 +55,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import static org.exist.scheduler.JobDescription.*;
 import static org.quartz.impl.StdSchedulerFactory.*;
 
-import org.quartz.Job;
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 
@@ -523,8 +522,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                     final Class<?> jobClass = Class.forName(jobConfig.getResourceName());
                     final Object jobObject = jobClass.newInstance();
                     if(jobConfig.getType().equals(JobType.SYSTEM)) {
-                        if(jobObject instanceof SystemTask) {
-                            final SystemTask task = (SystemTask)jobObject;
+                        if(jobObject instanceof SystemTask task) {
                             task.configure(config, jobConfig.getParameters());
                             job = new SystemTaskJobImpl(jobConfig.getJobName(), task);
                         } else {

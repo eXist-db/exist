@@ -112,19 +112,11 @@ public class ManagedLock<T> implements AutoCloseable {
      * @return A managed lock which will be released with {@link #close()}
      */
     public static ManagedLock<java.util.concurrent.locks.ReadWriteLock> acquire(final java.util.concurrent.locks.ReadWriteLock lock, final Lock.LockMode mode) {
-        final java.util.concurrent.locks.Lock modeLock;
-        switch(mode) {
-            case READ_LOCK:
-                modeLock = lock.readLock();
-                break;
-
-            case WRITE_LOCK:
-                modeLock = lock.writeLock();
-                break;
-
-            default:
-                throw new IllegalArgumentException();
-        }
+        final java.util.concurrent.locks.Lock modeLock = switch (mode) {
+            case READ_LOCK -> lock.readLock();
+            case WRITE_LOCK -> lock.writeLock();
+            default -> throw new IllegalArgumentException();
+        };
 
         modeLock.lock();
         return new ManagedLock<>(lock, modeLock::unlock);
@@ -140,19 +132,11 @@ public class ManagedLock<T> implements AutoCloseable {
      * @throws LockException if a lock error occurs
      */
     public static ManagedLock<java.util.concurrent.locks.ReadWriteLock> attempt(final java.util.concurrent.locks.ReadWriteLock lock, final Lock.LockMode mode) throws LockException {
-        final java.util.concurrent.locks.Lock modeLock;
-        switch(mode) {
-            case READ_LOCK:
-                modeLock = lock.readLock();
-                break;
-
-            case WRITE_LOCK:
-                modeLock = lock.writeLock();
-                break;
-
-            default:
-                throw new IllegalArgumentException();
-        }
+        final java.util.concurrent.locks.Lock modeLock = switch (mode) {
+            case READ_LOCK -> lock.readLock();
+            case WRITE_LOCK -> lock.writeLock();
+            default -> throw new IllegalArgumentException();
+        };
 
         if(!modeLock.tryLock()) {
             throw new LockException("Unable to attempt to acquire lock");

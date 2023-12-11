@@ -312,24 +312,12 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         final int attr = doc.alpha[currentNode];
         final int type = doc.attrType[attr + index];
 
-        switch(type) {
-
-            case AttrImpl.ATTR_ID_TYPE: {
-                return "ID";
-            }
-
-            case AttrImpl.ATTR_IDREF_TYPE: {
-                return "IDREF";
-            }
-
-            case AttrImpl.ATTR_IDREFS_TYPE: {
-                return "IDREFS";
-            }
-
-            default: {
-                return "CDATA";
-            }
-        }
+        return switch (type) {
+            case AttrImpl.ATTR_ID_TYPE -> "ID";
+            case AttrImpl.ATTR_IDREF_TYPE -> "IDREF";
+            case AttrImpl.ATTR_IDREFS_TYPE -> "IDREFS";
+            default -> "CDATA";
+        };
     }
 
     @Override

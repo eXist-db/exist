@@ -259,11 +259,10 @@ public class FunctionSignature {
 
     @Override
     public boolean equals(final Object obj) {
-        if(obj == null || !(obj instanceof FunctionSignature)) {
+        if(obj == null || !(obj instanceof FunctionSignature other)) {
             return false;
         }
-        
-        final FunctionSignature other = (FunctionSignature)obj;
+
         if(name == null) {
             if(other.name != null) {
                 return false;

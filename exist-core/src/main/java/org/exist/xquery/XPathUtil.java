@@ -199,9 +199,8 @@ public class XPathUtil {
                 SerializerPool.getInstance().returnObject(streamer);
             }
 
-        } else if (obj instanceof Object[]) {
+        } else if (obj instanceof Object[] array) {
             boolean createNodeSequence = true;
-            final Object[] array = (Object[]) obj;
             for (Object arrayItem : array) {
                 if (!(arrayItem instanceof NodeProxy)) {
                     createNodeSequence = false;
@@ -263,8 +262,7 @@ public class XPathUtil {
      * @throws XPathException if an XMLDBException is encountered
      */
     public static final NodeProxy getNode(DBBroker broker, XMLResource xres, final Expression expression) throws XPathException {
-        if (xres instanceof LocalXMLResource) {
-            final LocalXMLResource lres = (LocalXMLResource) xres;
+        if (xres instanceof LocalXMLResource lres) {
             try {
                 return lres.getNode();
             } catch (final XMLDBException xe) {

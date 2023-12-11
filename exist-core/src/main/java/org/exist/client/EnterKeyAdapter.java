@@ -23,7 +23,6 @@ package org.exist.client;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.AbstractButton;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;

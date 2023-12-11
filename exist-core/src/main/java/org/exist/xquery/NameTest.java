@@ -174,8 +174,7 @@ public class NameTest extends TypeTest {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj instanceof NameTest) {
-            final NameTest other = (NameTest) obj;
+        if (obj instanceof NameTest other) {
             return other.nodeType == nodeType && other.nodeName.equals(nodeName);
         }
         return false;

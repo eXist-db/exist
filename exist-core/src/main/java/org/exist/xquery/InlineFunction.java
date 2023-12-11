@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Stack;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;

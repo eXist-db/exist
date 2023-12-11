@@ -458,8 +458,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
                 final List<ACEAider> dlgAces = new ArrayList<>();
                 if (acl == null) {
-                    if (existingPermission instanceof ACLPermission) {
-                        final ACLPermission existingAclPermission = (ACLPermission)existingPermission;
+                    if (existingPermission instanceof ACLPermission existingAclPermission) {
                         for (int i = 0; i < existingAclPermission.getACECount(); i++) {
                             dlgAces.add(new ACEAider(existingAclPermission.getACEAccessType(i), existingAclPermission.getACETarget(i), existingAclPermission.getACEWho(i), existingAclPermission.getACEMode(i)));
                         }

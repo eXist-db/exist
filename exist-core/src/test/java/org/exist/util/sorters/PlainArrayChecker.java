@@ -122,36 +122,17 @@ class PlainArrayChecker extends ComparatorChecker {
 	 * @return
 	 */
 	Comparator<Integer> getComparator(SortOrder sortOrder) {
-		switch (sortOrder) {
-			case ASCENDING:
-				return new Comparator<Integer>() {
-					public int compare(Integer o1, Integer o2) {
-						return o1.intValue() - o2.intValue();
-					}
-				};
-			case DESCENDING:
-				return new Comparator<Integer>() {
-					public int compare(Integer o1, Integer o2) {
-						return o2.intValue() - o1.intValue();
-					}
-				};
-			case RANDOM:
-				return new Comparator<Integer>() {
-					public int compare(Integer o1, Integer o2) {
-						return rnd.nextBoolean() ? -1 : 1;
-					}
-				};
-			case UNSTABLE:
-				return new Comparator<Integer>() {
-					public int compare(Integer o1, Integer o2) {
-						if (o1.intValue() <= o2.intValue())
-							return (o2.intValue() - o1.intValue()) % 3 - 1;
-						else
-							return 1 - (o1.intValue() - o2.intValue()) % 3;
-					}
-				};
-		}
-		return null; // should never happen
-	}
+        return switch (sortOrder) {
+            case ASCENDING -> (o1, o2) -> o1.intValue() - o2.intValue();
+            case DESCENDING -> (o1, o2) -> o2.intValue() - o1.intValue();
+            case RANDOM -> (o1, o2) -> rnd.nextBoolean() ? -1 : 1;
+            case UNSTABLE -> (o1, o2) -> {
+                if (o1.intValue() <= o2.intValue())
+                    return (o2.intValue() - o1.intValue()) % 3 - 1;
+                else
+                    return 1 - (o1.intValue() - o2.intValue()) % 3;
+            };
+        };
+    }
 
 }

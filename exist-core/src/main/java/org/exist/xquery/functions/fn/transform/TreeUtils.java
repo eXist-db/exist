@@ -37,8 +37,7 @@ public class TreeUtils {
     }
 
     static StringBuilder pathTo(final Node node) {
-        if (node instanceof Document) {
-            final Document document = (Document) node;
+        if (node instanceof Document document) {
             return new StringBuilder().append(document.getDocumentURI());
         }
         final List<Node> priors = new ArrayList<>();

@@ -23,16 +23,12 @@ package org.exist.security;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
@@ -51,7 +47,6 @@ import java.util.Optional;
 
 import static org.exist.xmldb.XmldbURI.ROOT_COLLECTION;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class FnCollectionSecurityTest {
 
@@ -256,8 +251,7 @@ public class FnCollectionSecurityTest {
         try (final Collection collection = broker.getOrCreateCollection(transaction, XmldbURI.create(collectionUri))) {
             final Permission permissions = collection.getPermissions();
             permissions.setMode(modeStr);
-            if (permissions instanceof SimpleACLPermission) {
-                final SimpleACLPermission aclPermissions = (SimpleACLPermission)permissions;
+            if (permissions instanceof SimpleACLPermission aclPermissions) {
                 for (final ACEAider ace : aces) {
                     aclPermissions.addACE(
                             ace.getAccessType(),

@@ -567,11 +567,10 @@ public class PermissionFactory {
      * @return true if the {@code permission}'s ACL has the same ACEs as {@code otherAces}, false otherwise.
      */
     private static boolean aclEquals(final Permission permission, final List<ACEAider> otherAces) {
-        if (!(permission instanceof ACLPermission)) {
+        if (!(permission instanceof ACLPermission aclPermission)) {
             return false;
         }
 
-        final ACLPermission aclPermission = (ACLPermission)permission;
         if (aclPermission.getACECount() != otherAces.size()) {
             return false;
         }

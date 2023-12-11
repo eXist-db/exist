@@ -32,15 +32,12 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmValue;
 import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.memtree.NamespaceNode;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.fn.FnTransform;
 import org.exist.xquery.functions.map.MapType;
-import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -549,9 +546,8 @@ class Options {
 
         String version = "";
 
-        if (node instanceof Element) {
+        if (node instanceof Element elem) {
 
-            final Element elem = (Element) node;
             if (XSL_NS.equals(node.getNamespaceURI())
                     && "stylesheet".equals(node.getLocalName())) {
                 version = elem.getAttribute("version");
@@ -560,8 +556,7 @@ class Options {
             // No luck ? Search the attributes of a "simplified stylesheet"
             final NamedNodeMap attributes = elem.getAttributes();
             for (int i = 0; version.isEmpty() && i < attributes.getLength(); i++) {
-                if (attributes.item(i) instanceof NamespaceNode) {
-                    final NamespaceNode nsNode = (NamespaceNode) attributes.item(i);
+                if (attributes.item(i) instanceof NamespaceNode nsNode) {
                     final String uri = nsNode.getNodeValue();
                     final String localName = nsNode.getLocalName(); // "xsl"
                     if (XSL_NS.equals(uri)) {

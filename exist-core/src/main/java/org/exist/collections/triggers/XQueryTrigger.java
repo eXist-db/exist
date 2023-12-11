@@ -445,9 +445,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			service.execute(broker, compiledQuery, Tuple(functionName, args, Optional.empty()), null, null, true);
         } catch (final XPathException | PermissionDeniedException e) {
 			// if the exception just indicates that there is no function in the trigger to call, then we can just log and return
-			if (e instanceof XPathException) {
-				final XPathException xpe = (XPathException) e;
-				if (xpe.getErrorCode() == ErrorCodes.EXXQDY0005 || xpe.getErrorCode() == ErrorCodes.EXXQDY0006) {
+			if (e instanceof XPathException xpe) {
+                if (xpe.getErrorCode() == ErrorCodes.EXXQDY0005 || xpe.getErrorCode() == ErrorCodes.EXXQDY0006) {
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("No such function '" + functionName + "' in XQueryTrigger: " + compiledQuery.getSource());
 					}

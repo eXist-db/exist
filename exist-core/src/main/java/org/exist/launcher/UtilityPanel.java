@@ -26,10 +26,7 @@ import org.exist.repo.ExistRepository;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -180,8 +177,7 @@ public class UtilityPanel extends JFrame implements Observer {
 
     @Override
     public void update(Observable observable, final Object o) {
-        if (o instanceof ExistRepository.Notification) {
-            final ExistRepository.Notification notification = (ExistRepository.Notification) o;
+        if (o instanceof ExistRepository.Notification notification) {
             if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD) && dashboardButton != null) {
                 dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE) && eXideButton != null) {

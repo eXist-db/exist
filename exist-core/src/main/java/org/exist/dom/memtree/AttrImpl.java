@@ -201,8 +201,7 @@ public class AttrImpl extends NodeImpl implements Attr {
             return false;
         }
 
-        if(obj instanceof AttrImpl) {
-            final AttrImpl other = ((AttrImpl)obj);
+        if(obj instanceof AttrImpl other) {
             return other.getQName().equals(getQName())
                     && other.document.attrValue[nodeNumber].equals(document.attrValue[nodeNumber]);
         }

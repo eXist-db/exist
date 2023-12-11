@@ -99,22 +99,16 @@ public abstract class NumericValue extends ComputableValue {
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
             }
 
-            switch (operator) {
-                case EQ:
-                    return comparison.getAsInt() == 0;
-                case NEQ:
-                    return comparison.getAsInt() != 0;
-                case GT:
-                    return comparison.getAsInt() > 0;
-                case GTEQ:
-                    return comparison.getAsInt() >= 0;
-                case LT:
-                    return comparison.getAsInt() < 0;
-                case LTEQ:
-                    return comparison.getAsInt() <= 0;
-                default:
-                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
-            }
+            return switch (operator) {
+                case EQ -> comparison.getAsInt() == 0;
+                case NEQ -> comparison.getAsInt() != 0;
+                case GT -> comparison.getAsInt() > 0;
+                case GTEQ -> comparison.getAsInt() >= 0;
+                case LT -> comparison.getAsInt() < 0;
+                case LTEQ -> comparison.getAsInt() <= 0;
+                default ->
+                        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot apply operator to numeric value");
+            };
         }
 
         throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Type error: cannot compare operands: " +

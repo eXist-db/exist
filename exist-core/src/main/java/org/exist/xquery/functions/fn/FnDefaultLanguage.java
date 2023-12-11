@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;

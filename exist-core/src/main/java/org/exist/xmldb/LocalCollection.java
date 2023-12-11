@@ -63,7 +63,6 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import static com.evolvedbinary.j8fu.Try.Try;
 import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A local implementation of the Collection interface. This
@@ -350,19 +349,11 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     return null;
                 }
 
-                final Resource r;
-                switch (document.getResourceType()) {
-                    case DocumentImpl.XML_FILE:
-                        r = new LocalXMLResource(user, brokerPool, this, idURI);
-                        break;
-
-                    case DocumentImpl.BINARY_FILE:
-                        r = new LocalBinaryResource(user, brokerPool, this, idURI);
-                        break;
-
-                    default:
-                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type");
-                }
+                final Resource r = switch (document.getResourceType()) {
+                    case DocumentImpl.XML_FILE -> new LocalXMLResource(user, brokerPool, this, idURI);
+                    case DocumentImpl.BINARY_FILE -> new LocalBinaryResource(user, brokerPool, this, idURI);
+                    default -> throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Unknown resource type");
+                };
                 ((AbstractEXistResource) r).setMimeType(document.getMimeType());
                 return r;
             }

@@ -25,7 +25,6 @@ package org.exist.xquery.functions.fn.transform;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;

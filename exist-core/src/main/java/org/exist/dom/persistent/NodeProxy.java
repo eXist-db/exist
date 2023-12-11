@@ -341,11 +341,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      */
     @Override
     public boolean equals(final Object other) {
-        if(!(other instanceof NodeProxy)) {
+        if(!(other instanceof NodeProxy otherNode)) {
             return false;
         }
 
-        final NodeProxy otherNode = (NodeProxy) other;
         if(otherNode.doc.getDocId() != doc.getDocId()) {
             return false;
         }
@@ -676,28 +675,21 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     }
 
     public static int nodeType2XQuery(final short nodeType) {
-        switch(nodeType) {
-            case Node.ELEMENT_NODE:
+        return switch (nodeType) {
+            case Node.ELEMENT_NODE ->
                 //TODO : return Type.DOCUMENT for some in-memory nodes :
                 //http://sourceforge.net/tracker/index.php?func=detail&aid=1730690&group_id=17691&atid=117691
                 //Ideally compute this when proxy is constructed
-                return Type.ELEMENT;
-            case Node.ATTRIBUTE_NODE:
-                return Type.ATTRIBUTE;
-            case Node.TEXT_NODE:
-                return Type.TEXT;
-            case Node.CDATA_SECTION_NODE:
-                return Type.CDATA_SECTION;
-            case Node.PROCESSING_INSTRUCTION_NODE:
-                return Type.PROCESSING_INSTRUCTION;
-            case Node.COMMENT_NODE:
-                return Type.COMMENT;
-            case Node.DOCUMENT_NODE:
-                return Type.DOCUMENT;
+                    Type.ELEMENT;
+            case Node.ATTRIBUTE_NODE -> Type.ATTRIBUTE;
+            case Node.TEXT_NODE -> Type.TEXT;
+            case Node.CDATA_SECTION_NODE -> Type.CDATA_SECTION;
+            case Node.PROCESSING_INSTRUCTION_NODE -> Type.PROCESSING_INSTRUCTION;
+            case Node.COMMENT_NODE -> Type.COMMENT;
+            case Node.DOCUMENT_NODE -> Type.DOCUMENT;
             //(yet) unknown type : return generic
-            default:
-                return Type.NODE;
-        }
+            default -> Type.NODE;
+        };
     }
 
     @Override

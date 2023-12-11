@@ -57,7 +57,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.storage.DBBroker.PreserveType.NO_PRESERVE;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 public class StoreResourceTest {
