@@ -74,6 +74,8 @@ public interface ExpressionVisitor {
 
     void visitLetExpression(LetExpr letExpr);
 
+    void visitCountClause(CountClause count);
+
     void visitOrderByClause(OrderByClause orderBy);
 
     void visitGroupByClause(GroupByClause groupBy);

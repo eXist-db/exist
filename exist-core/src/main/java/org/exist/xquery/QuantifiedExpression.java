@@ -21,7 +21,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
@@ -63,13 +62,11 @@ public class QuantifiedExpression extends BindingExpression {
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		final LocalVariable mark = context.markLocalVariables(false);
 		try {
-			context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
+			context.declareVariableBinding(new LocalVariable(varName));
 
 			contextInfo.setParent(this);
 			inputSequence.analyze(contextInfo);
 			returnExpr.analyze(contextInfo);
-		} catch (final QName.IllegalQNameException e) {
-			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
 		} finally {
 			context.popLocalVariables(mark);
 		}
@@ -87,12 +84,7 @@ public class QuantifiedExpression extends BindingExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }        
         
-		final LocalVariable var;
-        try {
-			var = new LocalVariable(QName.parse(context, varName, null));
-		} catch (final QName.IllegalQNameException e) {
-			throw new XPathException(this, ErrorCodes.XPST0081, "No namespace defined for prefix " + varName);
-		}
+		final LocalVariable var = new LocalVariable(varName);
         
 		final Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {

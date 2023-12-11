@@ -94,8 +94,8 @@ public class OrderByClause extends AbstractFLWORClause {
         orderedResult.sort();
         Sequence result = orderedResult;
 
-        if (getReturnExpression() instanceof FLWORClause) {
-            result = ((FLWORClause) getReturnExpression()).postEval(result);
+        if (getReturnExpression() instanceof FLWORClause flworClause) {
+            result = flworClause.postEval(result);
         }
         return super.postEval(result);
     }
@@ -109,6 +109,19 @@ public class OrderByClause extends AbstractFLWORClause {
             dumper.display(orderSpecs[i]);
         }
         dumper.nl();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append("order by ");
+        for (int i = 0; i < orderSpecs.length; i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(orderSpecs[i]);
+        }
+        return builder.toString();
     }
 
     @Override

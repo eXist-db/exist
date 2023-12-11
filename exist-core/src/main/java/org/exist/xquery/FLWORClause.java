@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 /**
@@ -31,7 +32,7 @@ import org.exist.xquery.value.Sequence;
 public interface FLWORClause extends Expression {
 
     enum ClauseType {
-        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY
+        FOR, LET, GROUPBY, ORDERBY, WHERE, SOME, EVERY, COUNT
     }
 
     /**
@@ -102,7 +103,7 @@ public interface FLWORClause extends Expression {
      * @return a new local variable, registered in the context
      * @throws XPathException if an error occurs whilst creating the variable
      */
-    LocalVariable createVariable(String name) throws XPathException;
+    LocalVariable createVariable(QName name) throws XPathException;
 
     /**
      * Returns the first variable created by this FLWOR clause for reference

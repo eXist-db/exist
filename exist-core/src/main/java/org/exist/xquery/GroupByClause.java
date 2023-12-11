@@ -172,8 +172,8 @@ public class GroupByClause extends AbstractFLWORClause {
                 context.popLocalVariables(mark, result);
             }
 
-            if (returnExpr instanceof FLWORClause) {
-                result = ((FLWORClause) returnExpr).postEval(result);
+            if (returnExpr instanceof FLWORClause flworClause) {
+                result = flworClause.postEval(result);
             }
             result = super.postEval(result);
             return result;
