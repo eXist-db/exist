@@ -623,7 +623,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>9.0.3</version>
+                    <version>9.0.4</version>
                     <configuration>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
                         <ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
