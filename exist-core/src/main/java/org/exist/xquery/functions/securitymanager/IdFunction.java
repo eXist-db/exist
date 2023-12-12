@@ -33,6 +33,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 /**
@@ -85,8 +86,7 @@ public class IdFunction extends BasicFunction {
             }
 
             final Subject effectiveUser = context.getEffectiveUser();
-            if (effectiveUser != null && (
-                    realUser == null || !sameUserWithSameGroups(realUser, effectiveUser))) {
+            if (effectiveUser != null && !sameUserWithSameGroups(realUser, effectiveUser)) {
                 builder.startElement(new QName("effective", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX), null);
                 subjectToXml(builder, effectiveUser);
                 builder.endElement();
@@ -102,7 +102,10 @@ public class IdFunction extends BasicFunction {
         }
     }
 
-    private static boolean sameUserWithSameGroups(final Subject user1, final Subject user2) {
+    private static boolean sameUserWithSameGroups(@Nullable final Subject user1, @Nullable final Subject user2) {
+        if (user1 == null || user2 == null) {
+            return false;
+        }
         if (user1.getId() != user2.getId()) {
             return false;
         }
