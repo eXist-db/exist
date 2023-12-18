@@ -1169,7 +1169,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     <dependency>
                         <groupId>org.junit.vintage</groupId>
                         <artifactId>junit-vintage-engine</artifactId>
-                        <version>${junit.vintage.version}</version>
+                        <version>${junit.jupiter.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.objenesis</groupId>
