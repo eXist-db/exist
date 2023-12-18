@@ -125,11 +125,11 @@
         <xmlunit.version>2.9.1</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
-        <junit.vintage.version>5.10.1</junit.vintage.version>
+        <junit.toolbox.version>2.4</junit.toolbox.version>
+        <junit-platform-engine.version>1.10.1</junit-platform-engine.version>
         <easymock.version>5.2.0</easymock.version>
         <objenesis.version>3.3</objenesis.version>
         <assertj.version>3.24.2</assertj.version>
-        <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
 
         <!-- needed just for the license-maven-plugin in this module! -->
@@ -803,9 +803,9 @@
                             <version>${junit.jupiter.version}</version>
                         </dependency>
                         <dependency>
-                            <groupId>org.junit.vintage</groupId>
-                            <artifactId>junit-vintage-engine</artifactId>
-                            <version>${junit.vintage.version}</version>
+                            <groupId>org.junit.platform</groupId>
+                            <artifactId>junit-platform-engine</artifactId>
+                            <version>${junit-platform-engine.version}</version>
                         </dependency>
                         <dependency>
                             <groupId>org.glassfish.jaxb</groupId>
