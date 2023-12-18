@@ -37,14 +37,14 @@ jobs:
         run: zstd --rm -9 --progress -T0 /tmp/*.hprof
       - name: Attach HeapDump artifact
         if: steps.check_heapdump.outputs.files_exists == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exist-xqts-runner-hprof
           retention-days: 1
           path: /tmp/*.hprof.zst
       - name: Archive XQTS Logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: xqts-logs
           retention-days: 14
