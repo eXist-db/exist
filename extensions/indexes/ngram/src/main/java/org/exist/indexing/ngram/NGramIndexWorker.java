@@ -1038,17 +1038,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         private short nameTypeToNodeType(final byte nameType) {
-            switch (nameType) {
-                case ElementValue.ELEMENT:
-                    return Node.ELEMENT_NODE;
-
-                case ElementValue.ATTRIBUTE:
-                    return Node.ATTRIBUTE_NODE;
-
-                case ElementValue.UNKNOWN:
-                default:
-                    return NodeProxy.UNKNOWN_NODE_TYPE;
-            }
+            return switch (nameType) {
+                case ElementValue.ELEMENT -> Node.ELEMENT_NODE;
+                case ElementValue.ATTRIBUTE -> Node.ATTRIBUTE_NODE;
+                default -> NodeProxy.UNKNOWN_NODE_TYPE;
+            };
         }
 
         private void readMatches(final String current, final VariableByteInput is, final NodeId nodeId, final int freq,

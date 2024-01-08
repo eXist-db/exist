@@ -84,19 +84,17 @@ public class NodePathPattern {
         public boolean evaluate(final NodePath2 nodePath, final int elementIdx) {
             final Map<String, String> attrs = nodePath.attribs(elementIdx);
             final String val = attrs == null ? null : attrs.get(attrName);
-            switch (pcode) {
-                case EQUALS: // =
-                case EQ: // eq
-                    return Objects.equals(val, attrVal);
-                case NOT_EQUALS: // !=
+            return switch (pcode) { // =
+                case EQUALS, EQ -> // eq
+                        Objects.equals(val, attrVal);
+                case NOT_EQUALS -> // !=
                     // actual attr val should be present but different:
-                    return val != null && !Objects.equals(val, attrVal);
-                case NE: // ne
+                        val != null && !Objects.equals(val, attrVal);
+                case NE -> // ne
                     // actual attr val may be null (i.e. not present) or present but different:
-                    return !Objects.equals(val, attrVal);
-                default:
-                    throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
-            }
+                        !Objects.equals(val, attrVal);
+                default -> throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
+            };
         }
     }
 
