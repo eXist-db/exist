@@ -129,7 +129,7 @@ public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompil
     private static <T, U> Iterable<U> mapIterable(final Iterable<T> input, final Function<T, U> mapper) {
         return () -> {
             final Iterator<T> it = input.iterator();
-            return new Iterator<U>() {
+            return new Iterator<>() {
                 @Override
                 public boolean hasNext() {
                     return it.hasNext();

@@ -357,7 +357,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             throw new RestXqServiceException("TODO need to implement error code for problem with parameter conversion!: " +  xpe.getMessage(), xpe);
         }
             
-        return new TypedValue<X>() {
+        return new TypedValue<>() {
 
             @Override
             public org.exquery.xquery.Type getType() {
@@ -367,7 +367,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
 
             @Override
             public X getValue() {
-                return (X)convertedValue;
+                return (X) convertedValue;
             }
         };
     }
