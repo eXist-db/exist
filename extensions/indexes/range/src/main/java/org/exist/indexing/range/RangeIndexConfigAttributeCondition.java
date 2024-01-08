@@ -222,7 +222,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             return Double.parseDouble(value);
         } catch (NumberFormatException e)  {
             RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", this.attributeName, value);
-            return new Double(0);
+            return (double) 0;
         }
     }
 
