@@ -56,7 +56,7 @@ public class EXistElement implements Element {
     @Override
     public Iterable<Attribute> attributes() {
         
-        return () -> new Iterator<Attribute>() {
+        return () -> new Iterator<>() {
 
             private final NamedNodeMap attrs = element.getNode().getAttributes();
             private final int length = attrs.getLength();
@@ -64,16 +64,16 @@ public class EXistElement implements Element {
 
             @Override
             public boolean hasNext() {
-                return(position < length);
+                return (position < length);
             }
 
             @Override
             public Attribute next() {
-                if(position >= length){
+                if (position >= length) {
                     throw new NoSuchElementException();
                 }
 
-                return new EXistAttribute((Attr)attrs.item(position++));
+                return new EXistAttribute((Attr) attrs.item(position++));
             }
 
             @Override
