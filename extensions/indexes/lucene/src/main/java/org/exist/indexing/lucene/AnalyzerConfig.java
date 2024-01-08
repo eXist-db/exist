@@ -474,7 +474,7 @@ public class AnalyzerConfig {
                     }
                     try {
                         final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue<>(name, n.intValue(), int.class);
+                        parameter = new KeyTypedValue<>(name, n, int.class);
                     } catch (final NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an int. %s", value, ex.getMessage()));
                     }
@@ -493,7 +493,7 @@ public class AnalyzerConfig {
                         throw new ParameterException("The 'value' attribute must exist and must contain a boolean value.");
                     }
                     final Boolean b2 = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue<>(name, b2.booleanValue(), boolean.class);
+                    parameter = new KeyTypedValue<>(name, b2, boolean.class);
                     break;
 
                 default:
