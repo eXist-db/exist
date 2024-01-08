@@ -962,35 +962,16 @@ public class SendEmailFunction extends BasicFunction {
         final Calendar rightNow = Calendar.getInstance();
 
         //Day of the week
-        switch (rightNow.get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY:
-                dateString = "Mon";
-                break;
-
-            case Calendar.TUESDAY:
-                dateString = "Tue";
-                break;
-
-            case Calendar.WEDNESDAY:
-                dateString = "Wed";
-                break;
-
-            case Calendar.THURSDAY:
-                dateString = "Thu";
-                break;
-
-            case Calendar.FRIDAY:
-                dateString = "Fri";
-                break;
-
-            case Calendar.SATURDAY:
-                dateString = "Sat";
-                break;
-
-            case Calendar.SUNDAY:
-                dateString = "Sun";
-                break;
-        }
+        dateString = switch (rightNow.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY -> "Mon";
+            case Calendar.TUESDAY -> "Tue";
+            case Calendar.WEDNESDAY -> "Wed";
+            case Calendar.THURSDAY -> "Thu";
+            case Calendar.FRIDAY -> "Fri";
+            case Calendar.SATURDAY -> "Sat";
+            case Calendar.SUNDAY -> "Sun";
+            default -> dateString;
+        };
 
         dateString += ", ";
 

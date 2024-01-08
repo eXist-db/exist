@@ -62,40 +62,20 @@ public class XMLToQuery {
         Query query = null;
         String localName = root.getLocalName();
         if (null != localName) {
-            switch (localName) {
-                case "query":
-                    query = parseChildren(field, root, analyzer, options);
-                    break;
-                case "term":
-                    query = termQuery(getField(root, field), root, analyzer);
-                    break;
-                case "wildcard":
-                    query = wildcardQuery(getField(root, field), root, options);
-                    break;
-                case "prefix":
-                    query = prefixQuery(getField(root, field), root, options);
-                    break;
-                case "fuzzy":
-                    query = fuzzyQuery(getField(root, field), root);
-                    break;
-                case "bool":
-                    query = booleanQuery(getField(root, field), root, analyzer, options);
-                    break;
-                case "phrase":
-                    query = phraseQuery(getField(root, field), root, analyzer);
-                    break;
-                case "near":
-                    query = nearQuery(getField(root, field), root, analyzer);
-                    break;
-                case "first":
-                    query = getSpanFirst(getField(root, field), root, analyzer);
-                    break;
-                case "regex":
-                    query = regexQuery(getField(root, field), root, options);
-                    break;
-                default:
-                    throw new XPathException((Expression) null, "Unknown element in lucene query expression: " + localName);
-            }
+            query = switch (localName) {
+                case "query" -> parseChildren(field, root, analyzer, options);
+                case "term" -> termQuery(getField(root, field), root, analyzer);
+                case "wildcard" -> wildcardQuery(getField(root, field), root, options);
+                case "prefix" -> prefixQuery(getField(root, field), root, options);
+                case "fuzzy" -> fuzzyQuery(getField(root, field), root);
+                case "bool" -> booleanQuery(getField(root, field), root, analyzer, options);
+                case "phrase" -> phraseQuery(getField(root, field), root, analyzer);
+                case "near" -> nearQuery(getField(root, field), root, analyzer);
+                case "first" -> getSpanFirst(getField(root, field), root, analyzer);
+                case "regex" -> regexQuery(getField(root, field), root, options);
+                default ->
+                        throw new XPathException((Expression) null, "Unknown element in lucene query expression: " + localName);
+            };
         }
 
         if (query != null) {
@@ -385,17 +365,12 @@ public class XMLToQuery {
         BooleanClause.Occur occur = BooleanClause.Occur.SHOULD;
         String occurOpt = elem.getAttribute("occur");
         if (occurOpt != null) {
-            switch (occurOpt) {
-                case "must":
-                    occur = BooleanClause.Occur.MUST;
-                    break;
-                case "not":
-                    occur = BooleanClause.Occur.MUST_NOT;
-                    break;
-                case "should":
-                    occur = BooleanClause.Occur.SHOULD;
-                    break;
-            }
+            occur = switch (occurOpt) {
+                case "must" -> BooleanClause.Occur.MUST;
+                case "not" -> BooleanClause.Occur.MUST_NOT;
+                case "should" -> BooleanClause.Occur.SHOULD;
+                default -> occur;
+            };
         }
         return occur;
     }

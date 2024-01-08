@@ -334,32 +334,17 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         if (!geometryMatches) {	
                             try {
                                 Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
-                                switch (spatialOp) {
-                                case SpatialOperator.EQUALS:
-                                    geometryMatches = geometry.equals(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.DISJOINT:
-                                    geometryMatches = geometry.disjoint(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.INTERSECTS:
-                                    geometryMatches = geometry.intersects(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.TOUCHES:
-                                    geometryMatches = geometry.touches(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.CROSSES:
-                                    geometryMatches = geometry.crosses(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.WITHIN:
-                                    geometryMatches = geometry.within(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.CONTAINS:
-                                    geometryMatches = geometry.contains(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.OVERLAPS:
-                                    geometryMatches = geometry.overlaps(EPSG4326_geometry);
-                                    break;
-                                }
+                                geometryMatches = switch (spatialOp) {
+                                    case SpatialOperator.EQUALS -> geometry.equals(EPSG4326_geometry);
+                                    case SpatialOperator.DISJOINT -> geometry.disjoint(EPSG4326_geometry);
+                                    case SpatialOperator.INTERSECTS -> geometry.intersects(EPSG4326_geometry);
+                                    case SpatialOperator.TOUCHES -> geometry.touches(EPSG4326_geometry);
+                                    case SpatialOperator.CROSSES -> geometry.crosses(EPSG4326_geometry);
+                                    case SpatialOperator.WITHIN -> geometry.within(EPSG4326_geometry);
+                                    case SpatialOperator.CONTAINS -> geometry.contains(EPSG4326_geometry);
+                                    case SpatialOperator.OVERLAPS -> geometry.overlaps(EPSG4326_geometry);
+                                    default -> geometryMatches;
+                                };
                             } catch (ParseException e) {
                                 //Transforms the exception into an SQLException.
                                 //Very unlikely to happen though...

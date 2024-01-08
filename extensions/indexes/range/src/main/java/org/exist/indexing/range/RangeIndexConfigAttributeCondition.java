@@ -202,18 +202,14 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     private boolean matchOrdinal(Operator operator, int result) {
 
-        switch(operator) {
-            case GT:
-                return result > 0;
-            case LT:
-                return result < 0;
-            case GE:
-                return result >= 0;
-            case LE:
-                return result <= 0;
-        }
+        return switch (operator) {
+            case GT -> result > 0;
+            case LT -> result < 0;
+            case GE -> result >= 0;
+            case LE -> result <= 0;
+            default -> false;
+        };
 
-        return false;
     }
 
     private Double toDouble(String value) {
@@ -404,13 +400,13 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     }
 
     private Operator invertOrdinalOperator(Operator operator) {
-        switch(operator) {
-            case LE: return Operator.GE;
-            case GE: return Operator.LE;
-            case LT: return Operator.GT;
-            case GT: return Operator.LT;
-        }
+        return switch (operator) {
+            case LE -> Operator.GE;
+            case GE -> Operator.LE;
+            case LT -> Operator.GT;
+            case GT -> Operator.LT;
+            default -> null;
+        };
 
-        return null;
     }
 }

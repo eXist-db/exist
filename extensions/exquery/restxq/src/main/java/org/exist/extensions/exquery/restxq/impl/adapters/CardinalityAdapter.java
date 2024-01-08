@@ -35,20 +35,13 @@ import org.exquery.xquery.Cardinality;
 class CardinalityAdapter {
     
     public static Cardinality getCardinality(final org.exist.xquery.Cardinality cardinality) {
-        switch (cardinality) {
-           case EMPTY_SEQUENCE:
-               return Cardinality.ZERO;
-           case EXACTLY_ONE:
-               return Cardinality.ONE;
-           case _MANY:
-               return Cardinality.MANY;
-           case ZERO_OR_ONE:
-               return Cardinality.ZERO_OR_ONE;
-           case ONE_OR_MORE:
-               return Cardinality.ONE_OR_MORE;
-           case ZERO_OR_MORE:
-               return Cardinality.ZERO_OR_MORE;
-        }
-        return  null;
+        return switch (cardinality) {
+            case EMPTY_SEQUENCE -> Cardinality.ZERO;
+            case EXACTLY_ONE -> Cardinality.ONE;
+            case _MANY -> Cardinality.MANY;
+            case ZERO_OR_ONE -> Cardinality.ZERO_OR_ONE;
+            case ONE_OR_MORE -> Cardinality.ONE_OR_MORE;
+            case ZERO_OR_MORE -> Cardinality.ZERO_OR_MORE;
+        };
     }
 }

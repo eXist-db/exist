@@ -379,67 +379,23 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             
             final org.exquery.xquery.Type destinationType = TypeAdapter.toExQueryType(fnParameterType);
             
-            final Class destinationClass;
-            
-            switch(fnParameterType) {
-                
-                case Type.ITEM:
-                    destinationClass = Item.class;
-                    break;
-                    
-                case Type.DOCUMENT:
-                    destinationClass = DocumentImpl.class;  //TODO test this
-                    break;
-                
-                case Type.STRING:
-                    destinationClass = StringValue.class;
-                    break;
-                    
-                case Type.INT:
-                case Type.INTEGER:
-                    destinationClass = IntegerValue.class;
-                    break;
-                    
-                case Type.FLOAT:
-                    destinationClass = FloatValue.class;
-                    break;
-                    
-                case Type.DOUBLE:
-                    destinationClass = DoubleValue.class;
-                    break;    
-                
-                case Type.DECIMAL:
-                    destinationClass = DecimalValue.class;
-                    break; 
-                
-                case Type.DATE:
-                    destinationClass = DateValue.class;
-                    break;
-                    
-                case Type.DATE_TIME:
-                    destinationClass = DateTimeValue.class;
-                    break;
-                    
-                case Type.TIME:
-                    destinationClass = TimeValue.class;
-                    break;
-                    
-                case Type.QNAME:
-                    destinationClass = QNameValue.class;
-                    break;
-                
-                case Type.ANY_URI:
-                    destinationClass = AnyURIValue.class;
-                    break;
-                
-                case Type.BOOLEAN:
-                    destinationClass = BooleanValue.class;
-                    break;
-                
-                default:
-                    destinationClass = Item.class;
-            }
-            
+            final Class destinationClass = switch (fnParameterType) {
+                case Type.ITEM -> Item.class;
+                case Type.DOCUMENT -> DocumentImpl.class;  //TODO test this
+                case Type.STRING -> StringValue.class;
+                case Type.INT, Type.INTEGER -> IntegerValue.class;
+                case Type.FLOAT -> FloatValue.class;
+                case Type.DOUBLE -> DoubleValue.class;
+                case Type.DECIMAL -> DecimalValue.class;
+                case Type.DATE -> DateValue.class;
+                case Type.DATE_TIME -> DateTimeValue.class;
+                case Type.TIME -> TimeValue.class;
+                case Type.QNAME -> QNameValue.class;
+                case Type.ANY_URI -> AnyURIValue.class;
+                case Type.BOOLEAN -> BooleanValue.class;
+                default -> Item.class;
+            };
+
             final TypedValue<? extends Item> val = convertToType(xqueryContext, argument.getArgumentName(), value, destinationType, destinationClass);
             
             sequence.add(val.getValue());

@@ -139,30 +139,29 @@ public class ExistResourceFactory implements ResourceFactory {
         }
 
         // Return appropriate resource
-        switch (getResourceType(brokerPool, xmldbUri)) {
-            case DOCUMENT:
+        return switch (getResourceType(brokerPool, xmldbUri)) {
+            case DOCUMENT -> {
                 MiltonDocument doc = new MiltonDocument(webDavOptions, host, xmldbUri, brokerPool);
-                return doc;
-
-            case COLLECTION:
-                return new MiltonCollection(webDavOptions, host, xmldbUri, brokerPool);
-
-            case IGNORABLE:
+                yield doc;
+            }
+            case COLLECTION -> new MiltonCollection(webDavOptions, host, xmldbUri, brokerPool);
+            case IGNORABLE -> {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("ignoring file");
                 }
-                return null;
-
-            case NOT_EXISTING:
+                yield null;
+            }
+            case NOT_EXISTING -> {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Resource does not exist: '{}'", xmldbUri);
                 }
-                return null;
-
-            default:
+                yield null;
+            }
+            default -> {
                 LOG.error("Unkown resource type for {}", xmldbUri);
-                return null;
-        }
+                yield null;
+            }
+        };
     }
 
     /*
