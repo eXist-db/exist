@@ -99,9 +99,8 @@ public class StoreAndRetrieveTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = srcDocContent.getBytes(UTF_8);
         final java.io.File tmpStoreFile = tempFolder.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
+        Files.writeString(tmpStoreFile.toPath(), srcDocContent);
         assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
 
         // retrieve document
@@ -111,6 +110,6 @@ public class StoreAndRetrieveTest {
         assertEquals(expectedMediaType, ((File) srcResource).contentType);
         final java.io.File tempRetrievedSrcFile = tempFolder.newFile();
         srcResource.downloadTo(tempRetrievedSrcFile, null);
-        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
+        assertEquals(srcDocContent, Files.readString(tempRetrievedSrcFile.toPath()));
     }
 }
