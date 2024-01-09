@@ -538,16 +538,11 @@ public class SendEmailIT {
     }
 
     private MimeMessage sendEmail(final String message, @Nullable final String[] attachmentPaths) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
-        switch (smtpImplementation) {
-            case SMTP_DIRECT_CONNECTION:
-                return sendEmailBySmtpDirectConnection(message, attachmentPaths);
-
-            case JAKARTA_MAIL:
-                return sendEmailByJakartaMail(message, attachmentPaths);
-
-            default:
-                throw new IllegalArgumentException("Unknown SMTP implementation: " + smtpImplementation);
-        }
+        return switch (smtpImplementation) {
+            case SMTP_DIRECT_CONNECTION -> sendEmailBySmtpDirectConnection(message, attachmentPaths);
+            case JAKARTA_MAIL -> sendEmailByJakartaMail(message, attachmentPaths);
+            default -> throw new IllegalArgumentException("Unknown SMTP implementation: " + smtpImplementation);
+        };
     }
 
     private MimeMessage sendEmailBySmtpDirectConnection(final String message, @Nullable final String[] attachmentPaths) throws EXistException, XPathException, PermissionDeniedException, IOException, MessagingException {
