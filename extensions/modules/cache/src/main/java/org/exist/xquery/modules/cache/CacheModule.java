@@ -154,7 +154,7 @@ public class CacheModule extends AbstractInternalModule {
                     try {
                         return Long.parseLong(s);
                     } catch (final NumberFormatException e) {
-                        LOG.warn("Unable to set {} to: {}. Using default: ", PARAM_NAME_LAZY_MAXIMUM_SIZE, s, DEFAULT_LAZY_MAXIMUM_SIZE);
+                        LOG.warn("Unable to set {} to: {}. Using default: {}", PARAM_NAME_LAZY_MAXIMUM_SIZE, s, DEFAULT_LAZY_MAXIMUM_SIZE);
                         return DEFAULT_LAZY_MAXIMUM_SIZE;
                     }
                 });
@@ -164,7 +164,7 @@ public class CacheModule extends AbstractInternalModule {
                     try {
                         return Long.parseLong(s);
                     } catch (final NumberFormatException e) {
-                        LOG.warn("Unable to set {} to: {}. Using default: ", PARAM_NAME_LAZY_EXPIRE_AFTER_ACCESS, s, DEFAULT_LAZY_EXPIRE_AFTER_ACCESS);
+                        LOG.warn("Unable to set {} to: {}. Using default: {}", PARAM_NAME_LAZY_EXPIRE_AFTER_ACCESS, s, DEFAULT_LAZY_EXPIRE_AFTER_ACCESS);
                         return DEFAULT_LAZY_EXPIRE_AFTER_ACCESS;
                     }
                 });
@@ -174,7 +174,7 @@ public class CacheModule extends AbstractInternalModule {
                     try {
                         return Long.parseLong(s);
                     } catch (final NumberFormatException e) {
-                        LOG.warn("Unable to set {} to: {}. Using default: ", PARAM_NAME_LAZY_EXPIRE_AFTER_WRITE, s, DEFAULT_LAZY_EXPIRE_AFTER_WRITE);
+                        LOG.warn("Unable to set {} to: {}. Using default: {}", PARAM_NAME_LAZY_EXPIRE_AFTER_WRITE, s, DEFAULT_LAZY_EXPIRE_AFTER_WRITE);
                         return DEFAULT_LAZY_EXPIRE_AFTER_ACCESS;
                     }
                 });
