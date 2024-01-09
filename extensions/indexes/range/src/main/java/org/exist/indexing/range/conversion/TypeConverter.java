@@ -22,8 +22,6 @@
 package org.exist.indexing.range.conversion;
 
 import org.apache.lucene.document.Field;
-import org.apache.lucene.util.BytesRef;
-import org.exist.xquery.value.AtomicValue;
 
 /**
  * Interface for on-the-fly type conversion when populating an index.

@@ -35,7 +35,6 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

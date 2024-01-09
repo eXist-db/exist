@@ -31,7 +31,6 @@ import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.security.*;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
