@@ -24,6 +24,7 @@ package org.exist.xquery.modules.expathrepo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -279,7 +280,7 @@ public class Deploy extends BasicFunction {
 
         @Override
         public XarSource load(final String name, final Version version) throws IOException {
-            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, "UTF-8") +
+            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
                 "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
             if (version != null) {
                 if (version.getMin() != null) {
@@ -292,7 +293,7 @@ public class Deploy extends BasicFunction {
                     pkgURL += "&semver=" + version.getSemVer();
                 }
                 if (version.getVersion() != null) {
-                    pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), "UTF-8");
+                    pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8);
                 }
             }
             LOG.info("Retrieving package from {}", pkgURL);

@@ -255,8 +255,8 @@ public class HttpServletRequestAdapter implements HttpRequest {
             }
 
             try {
-                key = java.net.URLDecoder.decode(pair.substring(0, pos), UTF_8.name());
-                val = java.net.URLDecoder.decode(pair.substring(pos + 1, pair.length()), UTF_8.name());
+                key = java.net.URLDecoder.decode(pair.substring(0, pos), UTF_8);
+                val = java.net.URLDecoder.decode(pair.substring(pos + 1, pair.length()), UTF_8);
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e);
             }
