@@ -159,8 +159,7 @@ public class NGramSearch extends Function implements Optimizable {
             LocationStep lastStep = steps.get(steps.size() - 1);
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
-                if (outerExpr != null && outerExpr instanceof LocationStep) {
-                    LocationStep outerStep = (LocationStep) outerExpr;
+                if (outerExpr != null && outerExpr instanceof LocationStep outerStep) {
                     NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
                         if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS

@@ -58,8 +58,7 @@ public class FixedString implements EvaluatableExpression, MergeableExpression {
 
     @Override
     public EvaluatableExpression mergeWith(final WildcardedExpression otherExpression) {
-        if (otherExpression instanceof FixedString) {
-            FixedString otherString = (FixedString) otherExpression;
+        if (otherExpression instanceof FixedString otherString) {
             return new FixedString(this.nGramSearch, fixedString + otherString.fixedString);
         } else {
             AlternativeStrings otherAlternatives = (AlternativeStrings) otherExpression;
