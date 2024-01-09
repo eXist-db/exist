@@ -232,9 +232,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         Expression rhe ;
 
         // get the type of the expression inside the predicate and determine right and left hand arguments
-        if (inner instanceof GeneralComparison) {
-
-            final GeneralComparison comparison = (GeneralComparison) inner;
+        if (inner instanceof GeneralComparison comparison) {
 
             operator = RangeQueryRewriter.getOperator(inner);
             lhe = comparison.getLeft();

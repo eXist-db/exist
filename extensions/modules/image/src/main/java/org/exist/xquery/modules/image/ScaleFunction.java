@@ -129,8 +129,7 @@ public class ScaleFunction extends BasicFunction {
                 if (destinationMap.contains(KEY_RENDERING_HINTS)) {
                     final MapType renderingHintsMap = (MapType) destinationMap.get(KEY_RENDERING_HINTS);
                     for (final ImageModule.RenderingHintVariable renderingHintVariable : ImageModule.RENDERING_HINT_VARIABLES) {
-                        if (renderingHintVariable.value instanceof RenderingHints.Key) {
-                            final RenderingHints.Key renderingHintKey = (RenderingHints.Key) renderingHintVariable.value;
+                        if (renderingHintVariable.value instanceof RenderingHints.Key renderingHintKey) {
                             final JavaObjectValue mapKey = new JavaObjectValue(renderingHintKey);
                             if (renderingHintsMap.contains(mapKey)) {
                                 final JavaObjectValue renderingHintValue = (JavaObjectValue) renderingHintsMap.get(mapKey);

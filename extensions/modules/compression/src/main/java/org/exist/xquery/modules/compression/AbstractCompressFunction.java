@@ -127,8 +127,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                     Item item = i.nextItem();
 
-                    if (item instanceof Element) {
-                        Element element = (Element) item;
+                    if (item instanceof Element element) {
                         compressElement(os, element, useHierarchy, stripOffset);
                     } else {
                         compressFromUri(os, ((AnyURIValue) item).toURI(), useHierarchy, stripOffset, "", null);

@@ -216,8 +216,7 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
         final Optional<EffectiveSubject> effectiveSubject;
 
         final Source src = xquery.getContext().getSource();
-        if(src instanceof DBSource) {
-            final DBSource dbSrc = (DBSource)src;
+        if(src instanceof DBSource dbSrc) {
             final Permission perm = dbSrc.getPermissions();
 
             if(perm.isSetUid()) {

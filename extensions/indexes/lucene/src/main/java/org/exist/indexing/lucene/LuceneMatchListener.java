@@ -246,8 +246,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     // Phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not
                     // single words which may also occur elsewhere in the document
-                    if (query instanceof PhraseQuery) {
-                        final PhraseQuery phraseQuery = (PhraseQuery) query;
+                    if (query instanceof PhraseQuery phraseQuery) {
                         final Term[] terms = phraseQuery.getTerms();
                         if (text.equals(terms[0].text())) {
                             // Scan the following text and collect tokens to see

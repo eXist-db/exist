@@ -260,8 +260,7 @@ public class OptimizeFieldPragma extends AbstractPragma {
     private @Nullable Expression getKeyArg(final Expression expression) {
         if (expression instanceof GeneralComparison) {
             return ((GeneralComparison) expression).getRight();
-        } else if (expression instanceof InternalFunctionCall) {
-            final InternalFunctionCall fcall = (InternalFunctionCall) expression;
+        } else if (expression instanceof InternalFunctionCall fcall) {
             final Function function = fcall.getFunction();
             if (function instanceof Lookup) {
                 return function.getArgument(1);

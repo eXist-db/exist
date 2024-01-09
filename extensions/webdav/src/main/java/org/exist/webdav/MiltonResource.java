@@ -341,8 +341,7 @@ public class MiltonResource implements Resource {
                 LOG.debug("No tag, user {} not authenticated", userName);
             return false;
 
-        } else if (tag instanceof String) {
-            String value = (String) tag;
+        } else if (tag instanceof String value) {
             if (AUTHENTICATED.equals(value)) {
                 // The correct TAG is returned!
 
