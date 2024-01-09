@@ -419,7 +419,7 @@ public class NGramSearch extends Function implements Optimizable {
             } else {
                 if (currentChar == '.') {
                     int wildcardEnd = i;
-                    if (token.length() > 0) {
+                    if (!token.isEmpty()) {
                         result.add(token.toString());
                         token = new StringBuilder();
                     }
@@ -450,7 +450,7 @@ public class NGramSearch extends Function implements Optimizable {
                             throw new XPathException(expression,
                                 "err:FTDY0020: query string violates wildcard syntax: Unmatched [ in query string; marked by <-- HERE in \""
                                     + query.substring(0, i + 1) + " <-- HERE " + query.substring(i + 1) + "\"");
-                        if (token.length() > 0) {
+                        if (!token.isEmpty()) {
                             result.add(token.toString());
                             token = new StringBuilder();
                         }
@@ -458,14 +458,14 @@ public class NGramSearch extends Function implements Optimizable {
                         i = characterClassEnd;
                     } else {
                         if (currentChar == '^') {
-                            if (token.length() > 0) {
+                            if (!token.isEmpty()) {
                                 result.add(token.toString());
                                 token = new StringBuilder();
 
                             }
                             result.add("^");
                         } else if (currentChar == '$') {
-                            if (token.length() > 0) {
+                            if (!token.isEmpty()) {
                                 result.add(token.toString());
                                 token = new StringBuilder();
                             }
@@ -478,7 +478,7 @@ public class NGramSearch extends Function implements Optimizable {
                 }
             }
 
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             result.add(token.toString());
         }
 

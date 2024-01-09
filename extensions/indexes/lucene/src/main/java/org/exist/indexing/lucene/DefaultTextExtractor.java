@@ -36,7 +36,7 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
         }
         if (isIgnoredNode(name)) {
             stack++;
-        } else if (!isInlineNode(name) && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
+        } else if (!isInlineNode(name) && !buffer.isEmpty() && buffer.charAt(buffer.length() - 1) != ' ') {
         	// separate the current element's text from preceding text
             buffer.append(' ');
             return 1;
@@ -63,7 +63,7 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     }
 
     public int beforeCharacters() {
-    	if (addSpaceBeforeNext && buffer.length() > 0 && buffer.charAt(buffer.length() - 1) != ' ') {
+    	if (addSpaceBeforeNext && !buffer.isEmpty() && buffer.charAt(buffer.length() - 1) != ' ') {
     		// separate the previous element's text from following text
     		buffer.append(' ');
     		addSpaceBeforeNext = false;
