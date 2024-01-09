@@ -99,9 +99,8 @@ public class DeleteTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = srcDocContent.getBytes(UTF_8);
         final java.io.File tmpStoreFile = tempFolder.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
+        Files.writeString(tmpStoreFile.toPath(), srcDocContent);
         assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
 
         // retrieve document

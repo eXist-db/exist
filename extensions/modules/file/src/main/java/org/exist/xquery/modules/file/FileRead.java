@@ -102,7 +102,7 @@ public class FileRead extends BasicFunction {
 		}
 
 		try {
-            return new StringValue(this, new String(Files.readAllBytes(file), encoding));
+            return new StringValue(this, Files.readString(file, encoding));
 		} catch(final IOException e ) {
 			throw new XPathException(this, e);	
 		}
