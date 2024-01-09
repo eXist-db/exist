@@ -144,7 +144,7 @@ public class NodePathPattern {
                     break;
             }
         }
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             addSegment(namespaces, token.toString());
         }
     }
