@@ -56,7 +56,6 @@ import org.geotools.gml.GMLHandlerJTS;
 import org.geotools.gml.producer.GeometryTransformer;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.TransformException;

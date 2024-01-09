@@ -24,7 +24,6 @@ package org.exist.xquery.modules.lucene;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.lucene.LuceneIndex;

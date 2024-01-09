@@ -32,7 +32,6 @@ import org.exist.storage.BrokerPool;
 import org.exquery.restxq.RestXqServiceRegistry;
 import org.exquery.restxq.impl.RestXqServiceRegistryImpl;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
