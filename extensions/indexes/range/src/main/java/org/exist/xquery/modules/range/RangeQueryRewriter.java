@@ -177,32 +177,20 @@ public class RangeQueryRewriter extends QueryRewriter {
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
         if (expr instanceof GeneralComparison comparison) {
             final Comparison relation = comparison.getRelation();
-            switch(relation) {
-                case LT:
-                    operator = RangeIndex.Operator.LT;
-                    break;
-                case GT:
-                    operator = RangeIndex.Operator.GT;
-                    break;
-                case LTEQ:
-                    operator = RangeIndex.Operator.LE;
-                    break;
-                case GTEQ:
-                    operator = RangeIndex.Operator.GE;
-                    break;
-                case EQ:
-                    operator = switch (comparison.getTruncation()) {
-                        case BOTH -> RangeIndex.Operator.CONTAINS;
-                        case LEFT -> RangeIndex.Operator.ENDS_WITH;
-                        case RIGHT -> RangeIndex.Operator.STARTS_WITH;
-                        default -> RangeIndex.Operator.EQ;
-                    };
-                    break;
-                case NEQ:
-                    operator = RangeIndex.Operator.NE;
-                    break;
-
-            }
+            operator = switch (relation) {
+                case LT -> RangeIndex.Operator.LT;
+                case GT -> RangeIndex.Operator.GT;
+                case LTEQ -> RangeIndex.Operator.LE;
+                case GTEQ -> RangeIndex.Operator.GE;
+                case EQ -> switch (comparison.getTruncation()) {
+                    case BOTH -> RangeIndex.Operator.CONTAINS;
+                    case LEFT -> RangeIndex.Operator.ENDS_WITH;
+                    case RIGHT -> RangeIndex.Operator.STARTS_WITH;
+                    default -> RangeIndex.Operator.EQ;
+                };
+                case NEQ -> RangeIndex.Operator.NE;
+                default -> operator;
+            };
         } else if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function instanceof Lookup && function.isCalledAs("matches")) {
