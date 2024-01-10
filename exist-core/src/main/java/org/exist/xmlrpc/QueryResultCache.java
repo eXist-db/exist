@@ -81,6 +81,11 @@ public class QueryResultCache {
         return (acr != null && acr instanceof SerializedResult) ? (SerializedResult) acr : null;
     }
 
+    public CachedContentFile getCachedContentFile(final int cacheId) {
+        final AbstractCachedResult acr = get(cacheId);
+        return (acr != null && acr instanceof CachedContentFile) ? (CachedContentFile) acr : null;
+    }
+
     public void remove(final int cacheId) {
         if (cacheId < 0 || cacheId >= cacheIdCounter.get()) {
             return; // out of scope

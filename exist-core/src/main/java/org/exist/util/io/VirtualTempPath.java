@@ -52,6 +52,10 @@ public final class VirtualTempPath implements ContentFile {
     @GuardedBy("lock")
     private Path contentFile;
 
+    public VirtualTempPath(TemporaryFileManager tempFileManager) {
+        this(DEFAULT_IN_MEMORY_SIZE, tempFileManager);
+    }
+
     public VirtualTempPath(int inMemorySize, TemporaryFileManager tempFileManager) {
         this.inMemorySize = inMemorySize;
         this.lock = new StampedLock();
@@ -97,6 +101,7 @@ public final class VirtualTempPath implements ContentFile {
         }
     }
 
+    @Override
     public InputStream newInputStream() throws IOException {
         long stamp = lock.readLock();
         try {
@@ -129,6 +134,7 @@ public final class VirtualTempPath implements ContentFile {
         }
     }
 
+    @Override
     public long size() {
         long stamp = lock.readLock();
         try {
@@ -141,6 +147,7 @@ public final class VirtualTempPath implements ContentFile {
         }
     }
 
+    @Override
     public byte[] getBytes() {
         long stamp = lock.readLock();
         try {
