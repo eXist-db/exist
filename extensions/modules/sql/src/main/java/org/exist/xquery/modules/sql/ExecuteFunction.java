@@ -21,24 +21,17 @@
  */
 package org.exist.xquery.modules.sql;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.memtree.*;
-import org.exist.util.XMLReaderPool;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.exist.Namespaces;
-import org.exist.dom.QName;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.xquery.FunctionDSL.arities;
+import static org.exist.xquery.FunctionDSL.arity;
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returnsOpt;
+import static org.exist.xquery.modules.sql.SQLModule.NAMESPACE_URI;
+import static org.exist.xquery.modules.sql.SQLModule.PREFIX;
 
 import java.io.IOException;
 import java.io.PrintStream;
-
 import java.io.Reader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -51,15 +44,38 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-
 import javax.annotation.Nullable;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.sql.SQLModule.NAMESPACE_URI;
-import static org.exist.xquery.modules.sql.SQLModule.PREFIX;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.Namespaces;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.AppendingSAXAdapter;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.ReferenceNode;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.util.XMLReaderPool;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Expression;
+import org.exist.xquery.FunctionDSL;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -80,11 +96,31 @@ public class ExecuteFunction extends BasicFunction {
             "connection-handle",
             Type.LONG,
             "The connection handle");
+    private static final FunctionParameterSequenceType FS_PARAM_SQL_STATEMENT = param(
+            "sql-statement",
+            Type.STRING,
+            "The SQL statement");
     private static final FunctionParameterSequenceType FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME = param(
             "make-node-from-column-name",
             Type.BOOLEAN,
             "The flag that indicates whether the xml nodes should be formed from the column names" +
                     " (in this mode a space in a Column Name will be replaced by an underscore!)");
+    private static final FunctionParameterSequenceType FS_PARAM_STATEMENT_HANDLE = param(
+            "statement-handle",
+            Type.LONG,
+            "The prepared statement handle");
+    private static final FunctionParameterSequenceType FS_PARAM_PARAMETERS = optParam(
+            "parameters",
+            Type.ELEMENT,
+            "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>");
+    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_URI = param(
+            "ns-uri",
+            Type.STRING,
+            "The uri of the result namespace.");
+    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_PREFIX = param(
+            "ns-prefix",
+            Type.STRING,
+            "The prefix of the result namespace.");
 
     static final FunctionSignature[] FS_EXECUTE = functionSignatures(
             FS_EXECUTE_NAME,
@@ -93,14 +129,29 @@ public class ExecuteFunction extends BasicFunction {
             arities(
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("sql-statement", Type.STRING, "The SQL statement"),
+                            FS_PARAM_SQL_STATEMENT,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     ),
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("statement-handle", Type.LONG, "The prepared statement handle"),
-                            optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
+                            FS_PARAM_STATEMENT_HANDLE,
+                            FS_PARAM_PARAMETERS,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
+                    ),
+                    arity(
+                            FS_PARAM_CONNECTION_HANDLE,
+                            FS_PARAM_SQL_STATEMENT,
+                            FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME,
+                            FS_PARAM_NAMESPACE_URI,
+                            FS_PARAM_NAMESPACE_PREFIX
+                    ),
+                    arity(
+                            FS_PARAM_CONNECTION_HANDLE,
+                            FS_PARAM_STATEMENT_HANDLE,
+                            FS_PARAM_PARAMETERS,
+                            FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME,
+                            FS_PARAM_NAMESPACE_URI,
+                            FS_PARAM_NAMESPACE_PREFIX
                     )
             )
     );
@@ -147,20 +198,30 @@ public class ExecuteFunction extends BasicFunction {
 
         try {
             final boolean makeNodeFromColumnName;
+            final String namespacePrefix;
+            final String namespaceUri;
             final boolean executeResult;
 
             // Static SQL or PreparedStatement?
-            if (args.length == 3) {
+            if (args.length == 3 || args.length == 5) {
 
                 // get the static SQL statement
                 sql = args[1].getStringValue();
                 stmt = con.createStatement();
                 makeNodeFromColumnName = ((BooleanValue) args[2].itemAt(0)).effectiveBooleanValue();
+                if (args.length == 5) {
+                    namespaceUri = args[3].itemAt(0).getStringValue();
+                    namespacePrefix = args[4].itemAt(0).getStringValue();
+                } else {
+                    // The default namespace for result elements.
+                    namespaceUri = NAMESPACE_URI;
+                    namespacePrefix = PREFIX;
+                }
 
                 //execute the static SQL statement
                 executeResult = stmt.execute(sql);
 
-            } else if (args.length == 4) {
+            } else if (args.length == 4 || args.length == 6) {
                 //get the prepared statement
                 final long statementUID = ((IntegerValue) args[1].itemAt(0)).getLong();
                 final PreparedStatementWithSQL stmtWithSQL = SQLModule.retrievePreparedStatement(context, statementUID);
@@ -172,6 +233,14 @@ public class ExecuteFunction extends BasicFunction {
                 }
 
                 makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
+                if (args.length == 6) {
+                    namespaceUri = args[4].itemAt(0).getStringValue();
+                    namespacePrefix = args[5].itemAt(0).getStringValue();
+                } else {
+                    // The default namespace for result elements.
+                    namespaceUri = NAMESPACE_URI;
+                    namespacePrefix = PREFIX;
+                }
 
                 if (!args[2].isEmpty()) {
                     parametersElement = (Element) args[2].itemAt(0);
@@ -186,7 +255,7 @@ public class ExecuteFunction extends BasicFunction {
             }
 
             // return the XML result set
-            return resultAsElement(makeNodeFromColumnName, executeResult, stmt, this);
+            return resultAsElement(makeNodeFromColumnName, namespacePrefix, namespaceUri, executeResult, stmt, this);
 
         } catch (final SQLException sqle) {
             LOG.error("sql:execute() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
@@ -264,7 +333,7 @@ public class ExecuteFunction extends BasicFunction {
         }
     }
 
-    private ElementImpl resultAsElement(final boolean makeNodeFromColumnName,
+    private ElementImpl resultAsElement(final boolean makeNodeFromColumnName, final String namespacePrefix, final String namespaceUri,
             final boolean executeResult, final Statement stmt, final Expression expression) throws SQLException, XPathException {
         context.pushDocumentContext();
         try {
@@ -272,7 +341,7 @@ public class ExecuteFunction extends BasicFunction {
 
             builder.startDocument();
 
-            builder.startElement(new QName("result", NAMESPACE_URI, PREFIX), null);
+            builder.startElement(new QName("result", namespaceUri, namespacePrefix), null);
             builder.addAttribute(new QName("count", null, null), "-1");
             builder.addAttribute(new QName("updateCount", null, null), String.valueOf(stmt.getUpdateCount()));
 
@@ -301,7 +370,7 @@ public class ExecuteFunction extends BasicFunction {
                     final int iColumns = rsmd.getColumnCount();
 
                     while (rs.next()) {
-                        builder.startElement(new QName("row", NAMESPACE_URI, PREFIX), null);
+                        builder.startElement(new QName("row", namespaceUri, namespacePrefix), null);
                         builder.addAttribute(new QName("index", null, null), String.valueOf(rs.getRow()));
 
                         // get each tuple in the row
@@ -322,7 +391,7 @@ public class ExecuteFunction extends BasicFunction {
                                     colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
                                 }
 
-                                builder.startElement(new QName(colElement, NAMESPACE_URI, PREFIX), null);
+                                builder.startElement(new QName(colElement, namespaceUri, namespacePrefix), null);
 
                                 if (!makeNodeFromColumnName || columnName.length() <= 0) {
                                     final String name;
@@ -335,7 +404,7 @@ public class ExecuteFunction extends BasicFunction {
                                     builder.addAttribute(new QName("name", null, null), name);
                                 }
 
-                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, NAMESPACE_URI, PREFIX), rsmd.getColumnTypeName(i + 1));
+                                builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, namespaceUri, namespacePrefix), rsmd.getColumnTypeName(i + 1));
                                 builder.addAttribute(new QName(TYPE_ATTRIBUTE_NAME, Namespaces.SCHEMA_NS, "xs"), Type.getTypeName(SQLUtils.sqlTypeToXMLType(rsmd.getColumnType(i + 1))));
 
                                 //get the content
@@ -346,7 +415,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                         if (rs.wasNull()) {
                                             // Add a null indicator attribute if the value was SQL Null
-                                            builder.addAttribute(new QName("null", NAMESPACE_URI, PREFIX), "true");
+                                            builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
                                         } else {
                                             try (final Reader charStream = sqlXml.getCharacterStream()) {
                                                 final InputSource src = new InputSource(charStream);
@@ -375,7 +444,7 @@ public class ExecuteFunction extends BasicFunction {
 
                                     if (rs.wasNull()) {
                                         // Add a null indicator attribute if the value was SQL Null
-                                        builder.addAttribute(new QName("null", NAMESPACE_URI, PREFIX), "true");
+                                        builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
                                     } else {
                                         if (colValue != null) {
                                             builder.characters(colValue);
