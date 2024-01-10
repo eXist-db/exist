@@ -31,7 +31,6 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.util.LockException;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
@@ -112,7 +111,7 @@ public interface RpcAPI {
     /**
      * Retrieve document by name. XML content is indented if prettyPrint is set
      * to &gt;=0. Use supplied encoding for output.
-     *
+     * <p>
      * This method is provided to retrieve a document with encodings other than
      * UTF-8. Since the data is handled as binary data, character encodings are
      * preserved. byte[]-values are automatically BASE64-encoded by the XMLRPC
@@ -132,7 +131,7 @@ public interface RpcAPI {
      * Retrieve document by name. XML content is indented if prettyPrint is set
      * to &gt;=0. Use supplied encoding for output and apply the specified
      * stylesheet.
-     *
+     * <p>
      * This method is provided to retrieve a document with encodings other than
      * UTF-8. Since the data is handled as binary data, character encodings are
      * preserved. byte[]-values are automatically BASE64-encoded by the XMLRPC
@@ -152,7 +151,7 @@ public interface RpcAPI {
     /**
      * Retrieve document by name. All optional output parameters are passed as
      * key/value pairs int the <code>parameters</code>.
-     *
+     * <p>
      * Valid keys may either be taken from
      * {@link javax.xml.transform.OutputKeys} or
      * {@link org.exist.storage.serializers.EXistOutputKeys}. For example, the
@@ -247,10 +246,10 @@ public interface RpcAPI {
     List<String> getDocumentListing(String collection)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    Map<String, List> listDocumentPermissions(String name)
+    Map<String, List<Object>> listDocumentPermissions(String name)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
-    Map<XmldbURI, List> listCollectionPermissions(String name)
+    Map<String, List<Object>> listCollectionPermissions(String name)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     /**
@@ -497,6 +496,7 @@ public interface RpcAPI {
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      * @deprecated use List query() or int executeQuery() instead
      */
+    @Deprecated
     Map<String, Object> querySummary(String xquery)
             throws EXistException, PermissionDeniedException;
 
@@ -612,7 +612,7 @@ public interface RpcAPI {
 
     /**
      * Parse a file previously uploaded with upload.
-     *
+     * <p>
      * The temporary file will be removed.
      *
      * @param localFile temporary file name
@@ -749,6 +749,7 @@ public interface RpcAPI {
      *
      * @deprecated Use {@link #executeT(String, Map)} instead.
      */
+    @Deprecated
     Map<String, Object> executeT(String path, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
@@ -926,7 +927,7 @@ public interface RpcAPI {
 
     List<String> getGroups() throws EXistException, PermissionDeniedException;
 
-    List<List> getIndexedElements(String collectionName, boolean inclusive)
+    List<List<Object>> getIndexedElements(String collectionName, boolean inclusive)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
     boolean releaseQueryResult(int handle);

@@ -26,7 +26,6 @@ import org.easymock.IArgumentMatcher;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static org.easymock.EasyMock.aryEq;
@@ -94,6 +93,7 @@ public class MemoryContentsInputStreamTest {
         assertEquals(9, inputStream.read(buf, 1, 10));
         assertEquals(0, inputStream.read(buf, 2, 9));
         assertEquals(-1, inputStream.read(buf, 3, 8));
+        assertEquals(0, inputStream.read(buf, 3, 0));
 
         verify(memoryContents);
     }
@@ -111,29 +111,13 @@ public class MemoryContentsInputStreamTest {
         verify(memoryContents);
     }
 
-    @Test
-    public void transferTo​() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-        expect(memoryContents.size()).andReturn(123L);
-        expect(memoryContents.transferTo(out, 0L)).andReturn(123L);
-
-        replay(memoryContents);
-
-        assertEquals(123L, inputStream.transferTo(out));
-
-        verify(memoryContents);
-    }
-
     static byte[] write(int ch) {
         reportMatcher(new IArgumentMatcher() {
             @Override
             public boolean matches(Object o) {
-                if (o instanceof byte[] data) {
-                    if (data.length == 1) {
-                        data[0] = (byte) ch;
-                        return true;
-                    }
+                if (o instanceof byte[] data && data.length == 1) {
+                    data[0] = (byte) ch;
+                    return true;
                 }
                 return false;
             }

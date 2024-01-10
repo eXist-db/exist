@@ -72,7 +72,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
+import org.exist.util.io.ContentFile;
 import org.exist.util.io.TemporaryFileManager;
+import org.exist.util.io.VirtualTempPath;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -163,6 +165,14 @@ public class RpcConnection implements RpcAPI {
         }
     }
 
+    private TemporaryFileManager temporaryFileManager() {
+        return TemporaryFileManager.getInstance();
+    }
+
+    private VirtualTempPath createVirtualTempPath() {
+        return new VirtualTempPath(temporaryFileManager());
+    }
+
     private boolean createCollection(final XmldbURI collUri, final Date created) throws PermissionDeniedException, EXistException {
         withDb((broker, transaction) -> {
             Collection current = broker.getCollection(collUri);
@@ -216,22 +226,11 @@ public class RpcConnection implements RpcAPI {
 
     private String createId(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
         return this.<String>readCollection(collUri).apply((collection, broker, transaction) -> {
-            XmldbURI id;
             final Random rand = new Random();
-            boolean ok;
+            XmldbURI id;
             do {
-                ok = true;
                 id = XmldbURI.create(Integer.toHexString(rand.nextInt()) + ".xml");
-                // check if this id does already exist
-                if (collection.hasDocument(broker, id)) {
-                    ok = false;
-                }
-
-                if (collection.hasChildCollection(broker, id)) {
-                    ok = false;
-                }
-
-            } while (!ok);
+            } while (collection.hasDocument(broker, id) || collection.hasChildCollection(broker, id));
             return id.toString();
         });
     }
@@ -320,7 +319,7 @@ public class RpcConnection implements RpcAPI {
             context.setModuleLoadPath(moduleLoadPath);
         }
         final Map<String, String> namespaces = (Map<String, String>) parameters.get(RpcAPI.NAMESPACES);
-        if (namespaces != null && namespaces.size() > 0) {
+        if (namespaces != null && !namespaces.isEmpty()) {
             context.declareNamespaces(namespaces);
         }
         //  declare static variables
@@ -406,7 +405,7 @@ public class RpcConnection implements RpcAPI {
     public int executeQuery(final byte[] xpath, final String encoding, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         final Charset charset = Optional.ofNullable(encoding).map(Charset::forName).orElse(DEFAULT_ENCODING);
         final String xpathString = new String(xpath, charset);
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("query: {}", xpathString);
         }
         return executeQuery(xpathString, parameters);
@@ -428,15 +427,6 @@ public class RpcConnection implements RpcAPI {
                 throw new EXistException(e);
             }
         });
-    }
-
-    protected String formatErrorMsg(final String message) {
-        return formatErrorMsg("error", message);
-    }
-
-    protected String formatErrorMsg(final String type, final String message) {
-        return ("<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" ") + "hitCount=\"0\">" +
-                '<' + type + '>' + message + "</" + type + "></exist:result>";
     }
 
     @Override
@@ -565,10 +555,10 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * The method <code>describeCollection</code>
-     *
+     * <p>
      * Returns details of a collection - collections (list of sub-collections) -
      * name - created - owner - group - permissions - acl
-     *
+     * <p>
      * If you do not have read access on the collection, the list of
      * sub-collections will be empty, an exception will not be thrown!
      *
@@ -715,15 +705,15 @@ public class RpcConnection implements RpcAPI {
 
             // A tweak for very large resources, VirtualTempFile
             final Map<String, Object> result = new HashMap<>();
-            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-            final Path tempFile = temporaryFileManager.getTemporaryFile();
+            final VirtualTempPath tempFile = createVirtualTempPath();
 
             if (document.getResourceType() == DocumentImpl.XML_FILE) {
-                try (final Writer writer = Files.newBufferedWriter(tempFile, encoding)) {
+                try (final OutputStream out = tempFile.newOutputStream();
+                     final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, encoding))) {
                     serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(document), writer);
                 }
             } else {
-                try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
+                try (final OutputStream os = new BufferedOutputStream(tempFile.newOutputStream())) {
                     broker.readBinaryResource(transaction, (BinaryDocument) document, os);
                 }
             }
@@ -732,14 +722,14 @@ public class RpcConnection implements RpcAPI {
 
             result.put("data", firstChunk);
             int offset = 0;
-            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                temporaryFileManager.returnTemporaryFile(tempFile);
+                tempFile.close();
             }
             result.put("offset", offset);
 
@@ -747,16 +737,19 @@ public class RpcConnection implements RpcAPI {
         });
     }
 
-    private byte[] getChunk(final Path file, final int offset) throws IOException {
-        final long available = Files.size(file);
+    private byte[] getChunk(final ContentFile file, final int offset) throws IOException {
+        final long available = file.size();
         final int len = (int)Math.min(Math.min(available - offset, MAX_DOWNLOAD_CHUNK_SIZE), Integer.MAX_VALUE);
 
         final byte[] chunk = new byte[len];
-        try (final InputStream is = Files.newInputStream(file)) {
-            is.skip(offset);
+        try (final InputStream is = file.newInputStream()) {
+            long remainingSkipped = offset;
+            do {
+                remainingSkipped -=  is.skip(remainingSkipped);
+            } while (remainingSkipped > 0);
             final int read = is.read(chunk);
             if(read != len) {
-                throw new IOException("Unable to read full chunk at offset: " + offset + ", from file: " + file.toAbsolutePath().toString());
+                throw new IOException("Unable to read full chunk at offset: " + offset + ", from file: " + file);
             }
         }
         return chunk;
@@ -767,16 +760,16 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, PermissionDeniedException {
         try {
             final int resultId = Integer.parseInt(handle);
-            final SerializedResult sr = factory.resultSets.getSerializedResult(resultId);
+            final CachedContentFile sr = factory.resultSets.getCachedContentFile(resultId);
 
             if (sr == null) {
                 throw new EXistException("Invalid handle specified");
             }
             // This will keep the serialized result in the cache
             sr.touch();
-            final Path tempFile = sr.result;
+            final ContentFile tempFile = sr.getResult();
 
-            if (offset <= 0 || offset > Files.size(tempFile)) {
+            if (offset <= 0 || offset > tempFile.size()) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");
             }
@@ -786,7 +779,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk > (long) Integer.MAX_VALUE || nextChunk >= Files.size(tempFile)) {
+            if (nextChunk > Integer.MAX_VALUE || nextChunk >= tempFile.size()) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", 0);
             } else {
@@ -803,17 +796,17 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, PermissionDeniedException {
         try {
             final int resultId = Integer.parseInt(handle);
-            final SerializedResult sr = factory.resultSets.getSerializedResult(resultId);
+            final CachedContentFile sr = factory.resultSets.getCachedContentFile(resultId);
 
             if (sr == null) {
                 throw new EXistException("Invalid handle specified");
             }
             // This will keep the serialized result in the cache
             sr.touch();
-            final Path tempFile = sr.result;
+            final ContentFile tempFile = sr.getResult();
 
             final long longOffset = Long.parseLong(offset);
-            if (longOffset < 0 || longOffset > Files.size(tempFile)) {
+            if (longOffset < 0 || longOffset > tempFile.size()) {
                 factory.resultSets.remove(resultId);
                 throw new EXistException("No more data available");
             }
@@ -823,7 +816,7 @@ public class RpcConnection implements RpcAPI {
             final Map<String, Object> result = new HashMap<>();
             result.put("data", chunk);
             result.put("handle", handle);
-            if (nextChunk >= Files.size(tempFile)) {
+            if (nextChunk >= tempFile.size()) {
                 factory.resultSets.remove(resultId);
                 result.put("offset", Long.toString(0));
             } else {
@@ -879,10 +872,10 @@ public class RpcConnection implements RpcAPI {
 
     private int xupdate(final XmldbURI collUri, final String xupdate) throws PermissionDeniedException, EXistException {
         return withDb((broker, transaction) -> {
-            final Collection collectionRef = this.<Collection>readCollection(collUri).apply((collection, broker1, transaction1) -> collection);
-            //TODO : register a lock (which one ?) in the transaction ?
-            final DocumentSet docs = collectionRef.allDocs(broker, new DefaultDocumentSet(), true);
-            try(final Reader reader = new StringReader(xupdate)) {
+            try (final Collection collectionRef = this.<Collection>readCollection(collUri).apply((collection, broker1, transaction1) -> collection);
+                 final Reader reader = new StringReader(xupdate)) {
+                //TODO : register a lock (which one ?) in the transaction ?
+                final DocumentSet  docs = collectionRef.allDocs(broker, new DefaultDocumentSet(), true);
                 final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                 final Modification modifications[] = processor.parse(new InputSource(reader));
                 long mods = 0;
@@ -1025,7 +1018,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Creates a unique name for a database resource Uniqueness is only
      * guaranteed within the eXist instance
-     *
+     * <p>
      * The name is based on a hex encoded string of a random integer and will
      * have the format xxxxxxxx.xml where x is in the range 0 to 9 and a to f
      *
@@ -1134,14 +1127,14 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public Map<String, List> listDocumentPermissions(final String name)
+    public Map<String, List<Object>> listDocumentPermissions(final String name)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return listDocumentPermissions(XmldbURI.xmldbUriFor(name));
     }
 
-    private Map<String, List> listDocumentPermissions(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
-        return this.<Map<String, List>>readCollection(collUri).apply((collection, broker, transaction) -> {
-            final Map<String, List> result = new HashMap<>(collection.getDocumentCount(broker));
+    private Map<String, List<Object>> listDocumentPermissions(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
+        return this.<Map<String, List<Object>>>readCollection(collUri).apply((collection, broker, transaction) -> {
+            final Map<String, List<Object>> result = new HashMap<>(collection.getDocumentCount(broker));
             for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 final DocumentImpl doc = i.next();
 
@@ -1155,21 +1148,21 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public Map<XmldbURI, List> listCollectionPermissions(final String name)
+    public Map<String, List<Object>> listCollectionPermissions(final String name)
             throws EXistException, PermissionDeniedException, URISyntaxException {
         return listCollectionPermissions(XmldbURI.xmldbUriFor(name));
     }
 
-    private Map<XmldbURI, List> listCollectionPermissions(final XmldbURI collUri)
+    private Map<String, List<Object>> listCollectionPermissions(final XmldbURI collUri)
             throws EXistException, PermissionDeniedException {
-        return this.<Map<XmldbURI, List>>readCollection(collUri).apply((collection, broker, transaction) -> {
-            final Map<XmldbURI, List> result = new HashMap<>(collection.getChildCollectionCount(broker));
+        return this.<Map<String, List<Object>>>readCollection(collUri).apply((collection, broker, transaction) -> {
+            final Map<String, List<Object>> result = new HashMap<>(collection.getChildCollectionCount(broker));
             for (final Iterator<XmldbURI> i = collection.collectionIterator(broker); i.hasNext(); ) {
                 final XmldbURI child = i.next();
                 final XmldbURI path = collUri.append(child);
                 final Collection childColl = broker.getCollection(path);
                 final Permission perm = childColl.getPermissionsNoLock();  // NOTE: we already have a READ lock on childColl implicitly
-                result.put(child, toList(perm));
+                result.put(child.toString(), toList(perm));
             }
             return result;
         });
@@ -1395,7 +1388,7 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Parse a file previously uploaded with upload.
-     *
+     * <p>
      * The temporary file will be removed.
      *
      * @param localFile the name of the temporary, uploaded file
@@ -1415,7 +1408,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Parse a file previously uploaded with upload, forcing it to XML or
      * Binary.
-     *
+     * <p>
      * The temporary file will be removed.
      *
      * @param localFile the name of the temporary, uploaded file
@@ -1524,12 +1517,6 @@ public class RpcConnection implements RpcAPI {
         return storeBinary(data, documentPath, mimeType, overwrite, null, null);
     }
 
-    @SuppressWarnings("unused")
-    private boolean storeBinary(final byte[] data, final XmldbURI docUri, final String mimeType,
-                                final int overwrite) throws EXistException, PermissionDeniedException {
-        return storeBinary(data, docUri, mimeType, overwrite, null, null);
-    }
-
     public boolean storeBinary(final byte[] data, final String documentPath, final String mimeType,
                                final int overwrite, final Date created, final Date modified) throws URISyntaxException, EXistException, PermissionDeniedException {
         return storeBinary(data, XmldbURI.xmldbUriFor(documentPath), mimeType, overwrite, created, modified);
@@ -1572,12 +1559,12 @@ public class RpcConnection implements RpcAPI {
             throws EXistException, IOException {
         final OpenOption[] openOptions;
         final Path tempFile;
-        if (fileName == null || fileName.length() == 0) {
+        if (fileName == null || fileName.isEmpty()) {
             // no fileName, so new file
             openOptions = new OpenOption[] { CREATE, TRUNCATE_EXISTING, WRITE };
 
             // create temporary file
-            tempFile = TemporaryFileManager.getInstance().getTemporaryFile();
+            tempFile = temporaryFileManager().getTemporaryFile();
             final int handle = factory.resultSets.add(new SerializedResult(tempFile));
             fileName = Integer.toString(handle);
         } else {
@@ -1703,11 +1690,12 @@ public class RpcConnection implements RpcAPI {
                             + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
                             + "hitCount=\"0\"/>";
                 }
-                if (qr.hasErrors()) {
-                    throw qr.getException();
+                try (qr) {
+                    if (qr.hasErrors()) {
+                        throw qr.getException();
+                    }
+                    return printAll(broker, qr.result, howmany, start, parameters, (System.currentTimeMillis() - startTime));
                 }
-
-                return printAll(broker, qr.result, howmany, start, parameters, (System.currentTimeMillis() - startTime));
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -1725,6 +1713,7 @@ public class RpcConnection implements RpcAPI {
      * @throws EXistException if an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
+    @Deprecated
     public Map<String, Object> queryP(final String xpath, final String documentPath,
                                       final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return queryP(xpath,
@@ -1760,7 +1749,7 @@ public class RpcConnection implements RpcAPI {
                     docs[0] = docUri.toString();
                     parameters.put(RpcAPI.STATIC_DOCUMENTS, docs);
 
-                    if (s_id.length() > 0) {
+                    if (!s_id.isEmpty()) {
                         final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
                         final NodeProxy node = new NodeProxy(null, document, nodeId);
                         final NodeSet nodeSet = new ExtArrayNodeSet(1);
@@ -1833,15 +1822,11 @@ public class RpcConnection implements RpcAPI {
                         result.add(next.getStringValue());
                     }
                 }
-            } else {
-                if(LOG.isDebugEnabled()) {
-                    LOG.debug("sequence iterator is null. Should not");
-                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("sequence iterator is null. Should not");
             }
-        } else {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug("result sequence is null. Skipping it...");
-            }
+        } else if (LOG.isDebugEnabled()) {
+            LOG.debug("result sequence is null. Skipping it...");
         }
 
         queryResult.result = resultSeq;
@@ -1881,7 +1866,7 @@ public class RpcConnection implements RpcAPI {
                     docs[0] = docUri.toString();
                     parameters.put(RpcAPI.STATIC_DOCUMENTS, docs);
 
-                    if (s_id.length() > 0) {
+                    if (!s_id.isEmpty()) {
                         final NodeId nodeId = factory.getBrokerPool().getNodeFactory().createFromString(s_id);
                         final NodeProxy node = new NodeProxy(null, document, nodeId);
                         final NodeSet nodeSet = new ExtArrayNodeSet(1);
@@ -1950,15 +1935,11 @@ public class RpcConnection implements RpcAPI {
                         result.add(entry);
                     }
                 }
-            } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("sequence iterator is null. Should not");
-                }
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("sequence iterator is null. Should not");
             }
-        } else {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("result sequence is null. Skipping it...");
-            }
+        } else if (LOG.isDebugEnabled()) {
+            LOG.debug("result sequence is null. Skipping it...");
         }
 
         queryResult.result = resultSeq;
@@ -1973,7 +1954,7 @@ public class RpcConnection implements RpcAPI {
     private @Nullable Map<String, String> nodeMap(final Item item) {
         final Map<String, String> result;
 
-        if(item instanceof NodeValue &&
+        if (item instanceof NodeValue &&
                 ((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
             final NodeProxy p = (NodeProxy) item;
 
@@ -1982,7 +1963,7 @@ public class RpcConnection implements RpcAPI {
             result.put("docUri", p.getOwnerDocument().getURI().toString());
             result.put("nodeId", p.getNodeId().toString());
 
-        } else if(item instanceof NodeImpl ni) {
+        } else if (item instanceof NodeImpl ni) {
 
             result = new HashMap<>();
             result.put("type", Type.getTypeName(ni.getType()));
@@ -2066,7 +2047,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean releaseQueryResult(final int handle) {
         factory.resultSets.remove(handle);
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("removed query result with handle {}", handle);
         }
         return true;
@@ -2075,7 +2056,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean releaseQueryResult(final int handle, final int hash) {
         factory.resultSets.remove(handle, hash);
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("removed query result with handle {}", handle);
         }
         return true;
@@ -2197,16 +2178,15 @@ public class RpcConnection implements RpcAPI {
             final NodeProxy node = new NodeProxy(null, document, nodeId);
 
             final Map<String, Object> result = new HashMap<>();
-            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-            final Path tempFile = temporaryFileManager.getTemporaryFile();
+            final VirtualTempPath tempFile = createVirtualTempPath();
 
             if (compression && LOG.isDebugEnabled()) {
                 LOG.debug("retrieveFirstChunk with compression");
             }
 
             try (final OutputStream os = compression
-                    ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
-                    : new BufferedOutputStream(Files.newOutputStream(tempFile));
+                    ? new DeflaterOutputStream(new BufferedOutputStream(tempFile.newOutputStream()))
+                    : new BufferedOutputStream(tempFile.newOutputStream());
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 serialize(broker, toProperties(parameters), saxSerializer -> saxSerializer.toSAX(node), writer);
             }
@@ -2214,14 +2194,14 @@ public class RpcConnection implements RpcAPI {
             final byte[] firstChunk = getChunk(tempFile, 0);
             result.put("data", firstChunk);
             int offset = 0;
-            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                temporaryFileManager.returnTemporaryFile(tempFile);
+                tempFile.close();
             }
             result.put("offset", offset);
             return result;
@@ -2301,16 +2281,15 @@ public class RpcConnection implements RpcAPI {
             }
 
             final Map<String, Object> result = new HashMap<>();
-            final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-            final Path tempFile = temporaryFileManager.getTemporaryFile();
+            final VirtualTempPath tempFile = createVirtualTempPath();
 
             if (compression && LOG.isDebugEnabled()) {
                 LOG.debug("retrieveFirstChunk with compression");
             }
 
             try (final OutputStream os = compression
-                    ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
-                    : new BufferedOutputStream(Files.newOutputStream(tempFile));
+                    ? new DeflaterOutputStream(new BufferedOutputStream(tempFile.newOutputStream()))
+                    : new BufferedOutputStream(tempFile.newOutputStream());
                     final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                     final NodeValue nodeValue = (NodeValue) item;
@@ -2328,14 +2307,14 @@ public class RpcConnection implements RpcAPI {
             final byte[] firstChunk = getChunk(tempFile, 0);
             result.put("data", firstChunk);
             int offset = 0;
-            if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
+            if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new SerializedResult(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                temporaryFileManager.returnTemporaryFile(tempFile);
+                tempFile.close();
             }
             result.put("offset", offset);
             return result;
@@ -2419,16 +2398,15 @@ public class RpcConnection implements RpcAPI {
             try {
 
                 final Map<String, Object> result = new HashMap<>();
-                final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-                final Path tempFile = temporaryFileManager.getTemporaryFile();
+                final VirtualTempPath tempFile = createVirtualTempPath();
 
                 if (compression && LOG.isDebugEnabled()) {
                     LOG.debug("retrieveAllFirstChunk with compression");
                 }
 
                 try (final OutputStream os = compression
-                        ? new DeflaterOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile)))
-                        : new BufferedOutputStream(Files.newOutputStream(tempFile));
+                        ? new DeflaterOutputStream(new BufferedOutputStream(tempFile.newOutputStream()))
+                        : new BufferedOutputStream(tempFile.newOutputStream());
                      final Writer writer = new OutputStreamWriter(os, getEncoding(parameters))) {
                     handler.setOutput(writer, toProperties(parameters));
 
@@ -2471,14 +2449,14 @@ public class RpcConnection implements RpcAPI {
                 final byte[] firstChunk = getChunk(tempFile, 0);
                 result.put("data", firstChunk);
                 int offset = 0;
-                if (Files.size(tempFile) > MAX_DOWNLOAD_CHUNK_SIZE) {
+                if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     offset = firstChunk.length;
 
-                    final int handle = factory.resultSets.add(new SerializedResult(tempFile));
+                    final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
                     result.put("handle", Integer.toString(handle));
                     result.put("supports-long-offset", Boolean.TRUE);
                 } else {
-                    temporaryFileManager.returnTemporaryFile(tempFile);
+                    tempFile.close();
                 }
                 result.put("offset", offset);
                 return result;
@@ -2566,7 +2544,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public boolean addAccount(final String name, String passwd, final String passwdDigest, final List<String> groups, final Boolean enabled, final Integer umask, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
 
-        if (passwd.length() == 0) {
+        if (passwd.isEmpty()) {
             passwd = null;
         }
 
@@ -2620,7 +2598,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean updateAccount(final String name, String passwd, final String passwdDigest, final List<String> groups, final Boolean enabled, final Integer umask, final Map<String, String> metadata) throws EXistException, PermissionDeniedException {
-        if (passwd.length() == 0) {
+        if (passwd.isEmpty()) {
             passwd = null;
         }
 
@@ -2796,11 +2774,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     *
+     * <p>
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     *
+     * <p>
      * This is called via RemoteUserManagementService.addUserGroup(Account)
      *
      * @param name user name to update
@@ -2840,11 +2818,11 @@ public class RpcConnection implements RpcAPI {
 
     /**
      * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
-     *
+     * <p>
      * modified by Chris Tomlinson based on above updateAccount - it appears
      * that this code can rely on the SecurityManager to enforce policy about
      * whether user is or is not permitted to update the Account with name.
-     *
+     * <p>
      * This is called via RemoteUserManagementService.removeGroup(Account,
      * String)
      *
@@ -2954,16 +2932,16 @@ public class RpcConnection implements RpcAPI {
                 if (qr == null) {
                     return new HashMap<>();
                 }
-                if (qr.hasErrors()) {
-                    throw qr.getException();
+                try (qr) {
+                    if (qr.hasErrors()) {
+                        throw qr.getException();
+                    }
+                    if (qr.result == null) {
+                        return summaryToMap(qr.queryTime, null, null, null);
+                    }
+                    final Tuple2<java.util.Collection<NodeCount>, java.util.Collection<DoctypeCount>> summary = summarise(qr.result);
+                    return summaryToMap(System.currentTimeMillis() - startTime, qr.result, summary._1, summary._2);
                 }
-                if (qr.result == null) {
-                    return summaryToMap(qr.queryTime, null, null, null);
-                }
-
-                final Tuple2<java.util.Collection<NodeCount>, java.util.Collection<DoctypeCount>> summary = summarise(qr.result);
-                return summaryToMap(System.currentTimeMillis() - startTime, qr.result, summary._1, summary._2);
-
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -3057,31 +3035,32 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    public List<List> getIndexedElements(final String collectionName,
+    public List<List<Object>> getIndexedElements(final String collectionName,
                                          final boolean inclusive) throws EXistException, PermissionDeniedException, URISyntaxException {
         return getIndexedElements(XmldbURI.xmldbUriFor(collectionName), inclusive);
     }
 
-    private List<List> getIndexedElements(final XmldbURI collUri,
+    private List<List<Object>> getIndexedElements(final XmldbURI collUri,
                                           final boolean inclusive) throws EXistException, PermissionDeniedException {
-        return this.<List<List>>readCollection(collUri).apply((collection, broker, transaction) -> {
-            final Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
-                    inclusive);
-            final List<List> result = new ArrayList<>(occurrences.length);
-            for (final Occurrences occurrence : occurrences) {
-                final QName qname = (QName) occurrence.getTerm();
-                final List temp = new ArrayList(4);
-                temp.add(qname.getLocalPart());
-                temp.add(qname.getNamespaceURI());
-                temp.add(qname.getPrefix() == null ? "" : qname.getPrefix());
-                temp.add(occurrence.getOccurrences());
-                result.add(temp);
+        return this.<List<List<Object>>>readCollection(collUri).apply((collection, broker, transaction) -> {
+            final ElementIndex elementIndex = broker.getElementIndex();
+            if (elementIndex != null) {
+                final Occurrences occurrences[] = elementIndex.scanIndexedElements(collection, inclusive);
+                final List<List<Object>> result = new ArrayList<>(occurrences.length);
+                for (final Occurrences occurrence : occurrences) {
+                    final QName qname = (QName) occurrence.getTerm();
+                    final List<Object> temp = new ArrayList<>(4);
+                    temp.add(qname.getLocalPart());
+                    temp.add(qname.getNamespaceURI());
+                    temp.add(qname.getPrefix() == null ? "" : qname.getPrefix());
+                    temp.add(occurrence.getOccurrences());
+                    result.add(temp);
+                }
+                return result;
+            } else {
+                return List.of();
             }
-            return result;
         });
-    }
-
-    public void synchronize() {
     }
 
     private Properties toProperties(final Map<String, Object> parameters) {
@@ -3392,8 +3371,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public List<String> getDocumentChunk(final String name, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException, IOException {
         final List<String> result = new ArrayList<>(2);
-        final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-        final Path file = temporaryFileManager.getTemporaryFile();
+        final Path file = temporaryFileManager().getTemporaryFile();
         try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
             os.write(getDocument(name, parameters));
         }
@@ -3655,7 +3633,7 @@ public class RpcConnection implements RpcAPI {
                 return null;
 
             } finally {
-                TemporaryFileManager.getInstance().returnTemporaryFile(backupFile);
+                temporaryFileManager().returnTemporaryFile(backupFile);
             }
         });
 
@@ -3746,7 +3724,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         private void add(final RestoreTaskEvent restoreTaskEvent, @Nullable final String value) {
-            final String event = "" + restoreTaskEvent.getCode() + (value == null ? "" : value);
+            final String event = restoreTaskEvent.getCode() + (value == null ? "" : value);
             queueLock.lock();
             try {
                 queue.add(event);
@@ -4019,7 +3997,7 @@ public class RpcConnection implements RpcAPI {
     /**
      * Higher-order-function for performing an XMLDB operation on
      * the database.
-     *
+     * <p>
      * Performs the operation as the current user of the RpcConnection
      *
      * @param dbOperation The operation to perform on the database

@@ -73,12 +73,17 @@ public class QueryResultCache {
 
     public QueryResult getResult(final int cacheId) {
         final AbstractCachedResult acr = get(cacheId);
-        return (acr != null && acr instanceof QueryResult) ? (QueryResult) acr : null;
+        return (acr != null && acr instanceof QueryResult result) ? result : null;
     }
 
     public SerializedResult getSerializedResult(final int cacheId) {
         final AbstractCachedResult acr = get(cacheId);
-        return (acr != null && acr instanceof SerializedResult) ? (SerializedResult) acr : null;
+        return (acr != null && acr instanceof SerializedResult result) ? result : null;
+    }
+
+    public CachedContentFile getCachedContentFile(final int cacheId) {
+        final AbstractCachedResult acr = get(cacheId);
+        return (acr != null && acr instanceof CachedContentFile result) ? result : null;
     }
 
     public void remove(final int cacheId) {

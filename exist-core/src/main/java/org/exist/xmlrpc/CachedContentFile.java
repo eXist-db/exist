@@ -21,37 +21,28 @@
  */
 package org.exist.xmlrpc;
 
-import org.exist.util.io.TemporaryFileManager;
-
-import java.nio.file.Path;
+import org.exist.util.io.ContentFile;
 
 /**
- * Simple container for the results of a query. Used to cache
- * query results that may be retrieved later by the client.
- *
- * @author jmfernandez
+ * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public class SerializedResult extends AbstractCachedResult {
-    protected Path result;
+public final class CachedContentFile extends AbstractCachedResult {
+    private final ContentFile result;
 
-    public SerializedResult(final Path result) {
+    public CachedContentFile(final ContentFile result) {
         super(0);
         this.result = result;
     }
 
-    /**
-     * @return Returns the result.
-     */
     @Override
-    public Path getResult() {
+    public ContentFile getResult() {
         return result;
     }
 
     @Override
     protected void doClose() {
         if (result != null) {
-            TemporaryFileManager.getInstance().returnTemporaryFile(result);
-            result = null;
+            result.close();
         }
     }
 }
