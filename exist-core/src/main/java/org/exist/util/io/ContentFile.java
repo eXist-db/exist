@@ -25,6 +25,7 @@ package org.exist.util.io;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -32,14 +33,42 @@ import java.io.InputStream;
 public interface ContentFile extends AutoCloseable {
 
     @Override
+    /**
+     * Closes all resource held by the implementation as open files or off HEAP memory as example.
+     */
     void close();
 
+    /**
+     * Returns the complete content as an byte array.
+     *
+     * @return the content as byte array
+     */
     byte[] getBytes();
 
+    /**
+     * Returns the size of the conent in bytes
+     *
+     * @return the content size
+     */
     long size();
 
+    /**
+     * Returns a new {@link InputStream} instance based on the content data.
+     *
+     * @return a new input stream based on the content.
+     * @throws IOException if an error occurs accessing the content
+     */
     default InputStream newInputStream() throws IOException {
-       return new ByteArrayInputStream(getBytes());
+        return new ByteArrayInputStream(getBytes());
     }
 
+    /**
+     * Returns a new {@link OutputStream} instance to write content data.
+     * @return a new output stream for writing content
+     * @throws IOException if an error occurs accessing the content
+     * @throws UnsupportedOperationException if the operation is not available
+     */
+    default OutputStream newOutputStream() throws IOException {
+        throw new UnsupportedOperationException("not supported");
+    }
 }

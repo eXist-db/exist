@@ -401,6 +401,56 @@
                         <xs:attribute name="growth-factor" type="xs:integer" default="20"/>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="rpc-server">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Defines the RPC server backend specific options used to process the requests.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="content-file">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Defines per document specific cache settings.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:attribute name="in-memory-size" type="xs:integer" default="4196">
+                                     <xs:annotation>
+                                         <xs:documentation>
+                                             Defines the maximum amount of bytes stored in memory for each content file instance.
+                                         </xs:documentation>
+                                     </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="content-file-pool">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Defines content file pool handling.
+                                    </xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:attribute name="size" type="xs:integer" default="-1">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Defines the maximum content file pool size. If this size is exhausted an error is thrown. Using -1 sets no limit.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="max-idle" type="xs:integer" default="5">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Defines the maximum amount of idle pool entries that will not be removed for later reuse.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
