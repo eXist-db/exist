@@ -395,37 +395,15 @@ public class DatabaseImpl implements Database {
     @Override
     public void setProperty(final String property, final String value) throws XMLDBException {
         switch(property) {
-            case CREATE_DATABASE:
-                this.autoCreate = "true".equals(value);
-                break;
-
-            case DATABASE_ID:
-                this.currentInstanceName = value;
-                break;
-
-            case CONFIGURATION:
-                this.configuration = value;
-                break;
-
-            case DATA_DIR:
-                this.dataDir = value;
-                break;
-
-            case JOURNAL_DIR:
-                this.journalDir = value;
-                break;
-
-            case SSL_ENABLE:
-                this.ssl_enable = Boolean.valueOf(value);
-                break;
-
-            case SSL_ALLOW_SELF_SIGNED:
-                this.ssl_allow_self_signed = Boolean.valueOf(value);
-                break;
-
-            case SSL_VERIFY_HOSTNAME:
-                this.ssl_verify_hostname = Boolean.valueOf(value);
-                break;
+            case CREATE_DATABASE -> this.autoCreate = Boolean.parseBoolean(value);
+            case DATABASE_ID ->  this.currentInstanceName = value;
+            case CONFIGURATION -> this.configuration = value;
+            case DATA_DIR -> this.dataDir = value;
+            case JOURNAL_DIR -> this.journalDir = value;
+            case SSL_ENABLE -> this.ssl_enable = Boolean.valueOf(value);
+            case SSL_ALLOW_SELF_SIGNED -> this.ssl_allow_self_signed = Boolean.valueOf(value);
+            case SSL_VERIFY_HOSTNAME -> this.ssl_verify_hostname = Boolean.valueOf(value);
+            default -> LOG.warn("Ignoring unknown property: {}, value: {} ", property, value);
         }
     }
 }
