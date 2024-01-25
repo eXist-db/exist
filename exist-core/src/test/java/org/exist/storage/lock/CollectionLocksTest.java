@@ -100,7 +100,7 @@ public class CollectionLocksTest {
      *
      * Note: this should likely be greater than the period required to acquire a lock under contention of CONCURRENCY_LEVEL threads
      */
-    private static final int SINGLE_WRITER_THREAD_SLEEP = 15;   // 15ms
+    private static final int SINGLE_WRITER_THREAD_SLEEP = 30;   // 30ms
 
     /**
      * The maximum amount of time we should allow singleWriter
