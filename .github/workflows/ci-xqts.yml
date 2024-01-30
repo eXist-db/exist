@@ -29,7 +29,7 @@ jobs:
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output --exclude-test-case RangeExpr-411d,RangeExpr-409d,RangeExpr-408d,RangeExpr-409c,RangeExpr-408c,GenCompEq-21 \;
       - name: Check for HeapDump
         id: check_heapdump
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/tmp/*.hprof"
       - name: Compress HeapDump
