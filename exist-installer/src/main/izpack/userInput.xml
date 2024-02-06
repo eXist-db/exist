@@ -22,7 +22,10 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<izpack:userinput xmlns:izpack="http://izpack.org/schema/userinput" version="5.0">
+<izpack:userinput version="5.0"
+                  xmlns:izpack="http://izpack.org/schema/userinput"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://izpack.org/schema/userinput http://izpack.org/schema/5.0/izpack-userinput-5.0.xsd">
     <panel id="DataDirPanel">
         <field size="1.33" bold="false" txt="Set Data Directory" align="left"
             type="title"/>
