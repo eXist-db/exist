@@ -25,7 +25,7 @@
 <izpack:processing version="5.0"
                   xmlns:izpack="http://izpack.org/schema/processing"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="http://izpack.org/schema/processing http://izpack.org/schema/5.0/izpack-processing-5.0.xsd"
+                  xsi:schemaLocation="http://izpack.org/schema/processing http://izpack.org/schema/5.0/izpack-processing-5.0.xsd">
 
     <logfiledir>$INSTALL_PATH${FILE_SEPARATOR}logs</logfiledir>
 
