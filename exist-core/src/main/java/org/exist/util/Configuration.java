@@ -151,7 +151,8 @@ public class Configuration implements ErrorHandler {
         this(configFilename, Optional.empty());
     }
 
-    public Configuration(@Nullable String configFilename, Optional<Path> existHomeDirname) throws DatabaseConfigurationException {
+    public Configuration(@Nullable String configFilename, Optional<Path> existHomeDirname)
+            throws DatabaseConfigurationException {
         InputStream is = null;
         try {
             if (configFilename == null) {
@@ -218,7 +219,7 @@ public class Configuration implements ErrorHandler {
 
             // set dbHome to parent of the conf file found, to resolve relative
             // path from conf file
-            existHomeDirname = configFilePath.map(Path::getParent);
+            final Optional<Path> existHome = configFilePath.map(Path::getParent);
 
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
@@ -242,88 +243,33 @@ public class Configuration implements ErrorHandler {
             final Document doc = adapter.getDocument();
 
             //indexer settings
-            final NodeList indexers = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
-            if (indexers.getLength() > 0) {
-                configureIndexer(doc, (Element) indexers.item(0));
-            }
-
+            configureElement(doc, Indexer.CONFIGURATION_ELEMENT_NAME, element -> configureIndexer(doc, element));
             //scheduler settings
-            final NodeList schedulers = doc.getElementsByTagName(JobConfig.CONFIGURATION_ELEMENT_NAME);
-            if (schedulers.getLength() > 0) {
-                configureScheduler((Element) schedulers.item(0));
-            }
-
+            configureElement(doc, JobConfig.CONFIGURATION_ELEMENT_NAME, this::configureScheduler);
             //db connection settings
-            final NodeList dbConnection = doc.getElementsByTagName(CONFIGURATION_CONNECTION_ELEMENT_NAME);
-            if (dbConnection.getLength() > 0) {
-                configureBackend(existHomeDirname, (Element) dbConnection.item(0));
-            }
-
+            configureElement(doc, CONFIGURATION_CONNECTION_ELEMENT_NAME, element -> configureBackend(existHome, element));
             // lock-table settings
-            final NodeList lockManager = doc.getElementsByTagName("lock-manager");
-            if (lockManager.getLength() > 0) {
-                configureLockManager((Element) lockManager.item(0));
-            }
-
+            configureElement(doc, "lock-manager", this::configureLockManager);
             // repository settings
-            final NodeList repository = doc.getElementsByTagName("repository");
-            if (repository.getLength() > 0) {
-                configureRepository((Element) repository.item(0));
-            }
-
+            configureElement(doc, "repository", this::configureRepository);
             // binary manager settings
-            final NodeList binaryManager = doc.getElementsByTagName("binary-manager");
-            if (binaryManager.getLength() > 0) {
-                configureBinaryManager((Element) binaryManager.item(0));
-            }
-
-            //transformer settings
-            final NodeList transformers = doc.getElementsByTagName(TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME);
-            if (transformers.getLength() > 0) {
-                configureTransformer((Element) transformers.item(0));
-            }
-
-            //saxon settings (most importantly license file for PE or EE features)
-            final NodeList saxon = doc.getElementsByTagName(SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME);
-            if (saxon.getLength() > 0) {
-                configureSaxon((Element)saxon.item(0));
-            }
-
-            //parser settings
-            final NodeList parsers = doc.getElementsByTagName(HtmlToXmlParser.PARSER_ELEMENT_NAME);
-            if (parsers.getLength() > 0) {
-                configureParser((Element) parsers.item(0));
-            }
-
-            //serializer settings
-            final NodeList serializers = doc.getElementsByTagName(Serializer.CONFIGURATION_ELEMENT_NAME);
-            if (serializers.getLength() > 0) {
-                configureSerializer((Element) serializers.item(0));
-            }
-
-            //XUpdate settings
-            final NodeList xupdates = doc.getElementsByTagName(DBBroker.CONFIGURATION_ELEMENT_NAME);
-            if (xupdates.getLength() > 0) {
-                configureXUpdate((Element) xupdates.item(0));
-            }
-
-            //XQuery settings
-            final NodeList xquery = doc.getElementsByTagName(XQUERY_CONFIGURATION_ELEMENT_NAME);
-            if (xquery.getLength() > 0) {
-                configureXQuery((Element) xquery.item(0));
-            }
-
-            //Validation
-            final NodeList validations = doc.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME);
-            if (validations.getLength() > 0) {
-                configureValidation(existHomeDirname, (Element) validations.item(0));
-            }
-
-            //RPC server
-            final NodeList rpcServer = doc.getElementsByTagName("rpc-server");
-            if (rpcServer.getLength() > 0) {
-                configureRpcServer((Element) rpcServer.item(0));
-            }
+            configureElement(doc, "binary-manager", this::configureBinaryManager);
+            // transformer settings
+            configureElement(doc, TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME, this::configureTransformer);
+            // saxon settings (most importantly license file for PE or EE features)
+            configureElement(doc, SaxonConfiguration.SAXON_CONFIGURATION_ELEMENT_NAME, this::configureSaxon);
+            // parser settings
+            configureElement(doc, HtmlToXmlParser.PARSER_ELEMENT_NAME, this::configureParser);
+            // serializer settings
+            configureElement(doc, Serializer.CONFIGURATION_ELEMENT_NAME, this::configureSerializer);
+            // XUpdate settings
+            configureElement(doc, DBBroker.CONFIGURATION_ELEMENT_NAME, this::configureXUpdate);
+            // XQuery settings
+            configureElement(doc, XQUERY_CONFIGURATION_ELEMENT_NAME, this::configureXQuery);
+            // Validation
+            configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHome, element));
+            // RPC server
+            configureElement(doc, "rpc-server", this::configureRpcServer);
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
@@ -335,6 +281,27 @@ public class Configuration implements ErrorHandler {
                     LOG.error(ioe);
                 }
             }
+        }
+    }
+
+    @FunctionalInterface
+    interface ElementConfigurationAction {
+        void apply(Element element) throws DatabaseConfigurationException;
+    }
+    void configureElement(Document doc, String elementName, ElementConfigurationAction action)
+            throws DatabaseConfigurationException {
+        configureFirstElement(doc.getElementsByTagName(elementName), action);
+    }
+
+    void configureElement(Element parent, String elementName, ElementConfigurationAction action)
+            throws DatabaseConfigurationException {
+        configureFirstElement(parent.getElementsByTagName(elementName), action);
+    }
+
+    void configureFirstElement(NodeList nodeList, ElementConfigurationAction action)
+            throws DatabaseConfigurationException {
+        if (nodeList.getLength() > 0) {
+            action.apply((Element)nodeList.item(0));
         }
     }
 
@@ -373,7 +340,7 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureLockManager(final Element lockManager) {
+    private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
         final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
         final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
         final boolean pathsMultiWriter = parseBoolean(getConfigAttributeValue(lockManager, "paths-multi-writer"), false);
@@ -382,23 +349,19 @@ public class Configuration implements ErrorHandler {
         setProperty(LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, warnWaitOnReadForWrite);
         setProperty(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, pathsMultiWriter);
 
-        final NodeList nlLockTable = lockManager.getElementsByTagName("lock-table");
-        if (nlLockTable.getLength() > 0) {
-            final Element lockTable = (Element) nlLockTable.item(0);
+        configureElement(lockManager, "lock-table", lockTable -> {
             final boolean lockTableDisabled = parseBoolean(getConfigAttributeValue(lockTable, "disabled"), false);
             final int lockTableTraceStackDepth = parseInt(getConfigAttributeValue(lockTable, "trace-stack-depth"), 0);
 
             setProperty(LockTable.CONFIGURATION_DISABLED, lockTableDisabled);
             setProperty(LockTable.CONFIGURATION_TRACE_STACK_DEPTH, lockTableTraceStackDepth);
-        }
+        });
 
-        final NodeList nlDocument = lockManager.getElementsByTagName("document");
-        if (nlDocument.getLength() > 0) {
-            final Element document = (Element) nlDocument.item(0);
+        configureElement(lockManager, "document", document -> {
             final boolean documentUsePathLocks = parseBoolean(getConfigAttributeValue(document, "use-path-locks"), false);
 
             setProperty(LockManager.CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS, documentUsePathLocks);
-        }
+        });
     }
 
     private void configureRepository(final Element element) {
@@ -414,15 +377,11 @@ public class Configuration implements ErrorHandler {
         setProperty(Deployment.PROPERTY_APP_ROOT, root);
     }
 
-    private void configureBinaryManager(final Element binaryManager) {
-        final NodeList nlCache = binaryManager.getElementsByTagName("cache");
-        if (nlCache.getLength() == 0) {
-            return;
-        }
-
-        final Element cache = (Element) nlCache.item(0);
-        final String binaryCacheClass = getConfigAttributeValue(cache, "class");
-        setProperty(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
+    private void configureBinaryManager(final Element binaryManager) throws DatabaseConfigurationException {
+        configureElement(binaryManager, "cache", cache -> {
+            final String binaryCacheClass = getConfigAttributeValue(cache, "class");
+            setProperty(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
+        });
     }
 
     private void configureXQuery(final Element xquery) throws DatabaseConfigurationException {
@@ -490,60 +449,55 @@ public class Configuration implements ErrorHandler {
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
 
         // add other modules specified in configuration
-        final NodeList builtIns = xquery.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME);
+        configureElement(xquery, XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME, builtIn -> {
 
-        // search under <builtin-modules>
-        if (builtIns.getLength() == 0) {
-            return;
-        }
+            final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
 
-        final Element builtIn = (Element) builtIns.item(0);
-        final NodeList modules = builtIn.getElementsByTagName(XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME);
+            // iterate over all <module src= uri= class=> entries
+            for (int i = 0; i < modules.getLength(); i++) {
+                // Get element.
+                final Element elem = (Element) modules.item(i);
 
-        // iterate over all <module src= uri= class=> entries
-        for (int i = 0; i < modules.getLength(); i++) {
-            // Get element.
-            final Element elem = (Element) modules.item(i);
+                // Get attributes uri class and src
+                final String uri = elem.getAttribute(BUILT_IN_MODULE_URI_ATTRIBUTE);
+                final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+                final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
 
-            // Get attributes uri class and src
-            final String uri = elem.getAttribute(BUILT_IN_MODULE_URI_ATTRIBUTE);
-            final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
-            final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
-
-            // uri attribute is the identifier and is always required
-            if (uri == null) {
-                throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
-            }
-
-            // either class or source attribute must be present
-            if (clazz == null && source == null) {
-                throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
-            }
-
-            if (source != null) {
-                // Store src attribute info
-
-                modulesSourceMap.put(uri, source);
-
-                LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
-            } else {
-                // source class attribute info
-
-                // Get class of module
-                final Class<?> moduleClass = lookupModuleClass(uri, clazz);
-
-                // Store class if thw module class actually exists
-                if (moduleClass != null) {
-                    modulesClassMap.put(uri, moduleClass);
+                // uri attribute is the identifier and is always required
+                if (uri == null) {
+                    throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
-                LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
-            }
+                // either class or source attribute must be present
+                if (clazz == null && source == null) {
+                    throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
+                }
 
-            //parse any module parameters
-            moduleParameters.put(uri, ParametersExtractor.extract(
-                    elem.getElementsByTagName(PARAMETER_ELEMENT_NAME)));
-        }
+                if (source != null) {
+                    // Store src attribute info
+
+                    modulesSourceMap.put(uri, source);
+
+                    LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
+                } else {
+                    // source class attribute info
+
+                    // Get class of module
+                    final Class<?> moduleClass = lookupModuleClass(uri, clazz);
+
+                    // Store class if thw module class actually exists
+                    if (moduleClass != null) {
+                        modulesClassMap.put(uri, moduleClass);
+                    }
+
+                    LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                }
+
+                //parse any module parameters
+                moduleParameters.put(uri, ParametersExtractor.extract(
+                        elem.getElementsByTagName(PARAMETER_ELEMENT_NAME)));
+            }
+        });
     }
 
     /**
@@ -651,63 +605,46 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureParser(final Element parser) {
+    private void configureParser(final Element parser) throws DatabaseConfigurationException {
         configureXmlParser(parser);
         configureHtmlToXmlParser(parser);
     }
 
-    private void configureXmlParser(final Element parser) {
-        final NodeList nlXml = parser.getElementsByTagName(XML_PARSER_ELEMENT);
-        if (nlXml.getLength() == 0) {
-            return;
-        }
+    private void configureXmlParser(final Element parser) throws DatabaseConfigurationException {
+        configureElement(parser, XML_PARSER_ELEMENT, xml -> {
+            configureElement(xml, XML_PARSER_FEATURES_ELEMENT, nlFeature -> {
+                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeature);
 
-        final Element xml = (Element) nlXml.item(0);
-        final NodeList nlFeatures = xml.getElementsByTagName(XML_PARSER_FEATURES_ELEMENT);
-        if (nlFeatures.getLength() == 0) {
-            return;
-        }
+                if (pFeatures.isEmpty()) {
+                    return;
+                }
 
-        final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-
-        if (pFeatures.isEmpty()) {
-            return;
-        }
-
-        final Map<String, Boolean> features = new HashMap<>();
-        pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-        setProperty(XML_PARSER_FEATURES_PROPERTY, features);
+                final Map<String, Boolean> features = new HashMap<>();
+                pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+                setProperty(XML_PARSER_FEATURES_PROPERTY, features);
+            });
+        });
     }
 
-    private void configureHtmlToXmlParser(final Element parser) {
-        final NodeList nlHtmlToXml = parser.getElementsByTagName(HTML_TO_XML_PARSER_ELEMENT);
-        if (nlHtmlToXml.getLength() == 0) {
-            return;
-        }
+    private void configureHtmlToXmlParser(final Element parser) throws DatabaseConfigurationException {
+        configureElement(parser, HTML_TO_XML_PARSER_ELEMENT, htmlToXml -> {
+            final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
+            setProperty(HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
 
-        final Element htmlToXml = (Element) nlHtmlToXml.item(0);
-        if (htmlToXml == null) {
-            return;
-        }
+            configureElement(htmlToXml, HTML_TO_XML_PARSER_PROPERTIES_ELEMENT, nlProperties -> {
+                final Properties pProperties = ParametersExtractor.parseProperties(nlProperties);
+                final Map<String, Object> properties = new HashMap<>();
+                pProperties.forEach((k, v) -> properties.put(k.toString(), v));
+                setProperty(HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
+            });
 
-        final String htmlToXmlParserClass = getConfigAttributeValue(htmlToXml, HTML_TO_XML_PARSER_CLASS_ATTRIBUTE);
-        setProperty(HTML_TO_XML_PARSER_PROPERTY, htmlToXmlParserClass);
-
-        final NodeList nlProperties = htmlToXml.getElementsByTagName(HTML_TO_XML_PARSER_PROPERTIES_ELEMENT);
-        if (nlProperties.getLength() > 0) {
-            final Properties pProperties = ParametersExtractor.parseProperties(nlProperties.item(0));
-            final Map<String, Object> properties = new HashMap<>();
-            pProperties.forEach((k, v) -> properties.put(k.toString(), v));
-            setProperty(HTML_TO_XML_PARSER_PROPERTIES_PROPERTY, properties);
-        }
-
-        final NodeList nlFeatures = htmlToXml.getElementsByTagName(HTML_TO_XML_PARSER_FEATURES_ELEMENT);
-        if (nlFeatures.getLength() > 0) {
-            final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures.item(0));
-            final Map<String, Boolean> features = new HashMap<>();
-            pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
-            setProperty(HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
-        }
+            configureElement(htmlToXml, HTML_TO_XML_PARSER_FEATURES_ELEMENT, nlFeatures -> {
+                final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeatures);
+                final Map<String, Boolean> features = new HashMap<>();
+                pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
+                setProperty(HTML_TO_XML_PARSER_FEATURES_PROPERTY, features);
+            });
+        });
     }
 
     /**
@@ -878,8 +815,8 @@ public class Configuration implements ErrorHandler {
             final NodeList nlParam = job.getElementsByTagName(PARAMETER_ELEMENT_NAME);
             final Map<String, List<? extends Object>> params = ParametersExtractor.extract(nlParam);
 
-            for (final Entry<String, List<? extends Object>> param : params.entrySet()) {
-                final List<? extends Object> values = param.getValue();
+            for (final Entry<String, List<?>> param : params.entrySet()) {
+                final List<?> values = param.getValue();
                 if (values != null && !values.isEmpty()) {
                     jobConfig.addParameter(param.getKey(), values.get(0).toString());
 
@@ -1054,25 +991,10 @@ public class Configuration implements ErrorHandler {
             setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
 
-        final NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME);
-        if (poolConf.getLength() > 0) {
-            configurePool((Element) poolConf.item(0));
-        }
-
-        final NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
-        if (queryPoolConf.getLength() > 0) {
-            configureXQueryPool((Element) queryPoolConf.item(0));
-        }
-
-        final NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
-        if (watchConf.getLength() > 0) {
-            configureWatchdog((Element) watchConf.item(0));
-        }
-
-        final NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
-        if (recoveries.getLength() > 0) {
-            configureRecovery(dbHome, (Element) recoveries.item(0));
-        }
+        configureElement(con, BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME, this::configurePool);
+        configureElement(con, XQueryPool.CONFIGURATION_ELEMENT_NAME, this::configureXQueryPool);
+        configureElement(con, XQueryWatchDog.CONFIGURATION_ELEMENT_NAME, this::configureWatchdog);
+        configureElement(con, BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME, element -> configureRecovery(dbHome, element));
     }
 
     private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
@@ -1173,77 +1095,65 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureStartup(final Element startup) {
+    private void configureStartup(final Element startup) throws DatabaseConfigurationException {
         // Retrieve <triggers>
-        final NodeList nlTriggers = startup.getElementsByTagName("triggers");
+        configureElement(startup, "triggers", triggers -> {
+            // Get <trigger>
+            final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
 
-        // If <triggers> exists
-        if (nlTriggers.getLength() == 0) {
-            return;
-        }
-        // Get <triggers>
-        final Element triggers = (Element) nlTriggers.item(0);
-
-        // Get <trigger>
-        final NodeList nlTrigger = triggers.getElementsByTagName("trigger");
-
-        // If <trigger> exists and there are more than 0
-        if (nlTrigger.getLength() == 0) {
-            return;
-        }
-
-        // Initialize trigger configuration
-        List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(PROPERTY_STARTUP_TRIGGERS);
-        if (startupTriggers == null) {
-            startupTriggers = new ArrayList<>();
-            setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-        }
-
-        // Iterate over <trigger> elements
-        for (int i = 0; i < nlTrigger.getLength(); i++) {
-
-            // Get <trigger> element
-            final Element trigger = (Element) nlTrigger.item(i);
-
-            // Get @class
-            final String startupTriggerClass = trigger.getAttribute("class");
-
-            boolean isStartupTrigger = false;
-            try {
-                // Verify if class is StartupTrigger
-                for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
-                    if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
-                        isStartupTrigger = true;
-                        break;
-                    }
-                }
-
-                // if it actually is a StartupTrigger
-                if (isStartupTrigger) {
-                    // Parse additional parameters
-                    final Map<String, List<? extends Object>> params = ParametersExtractor.extract(trigger.getElementsByTagName(PARAMETER_ELEMENT_NAME));
-
-                    // Register trigger
-                    startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
-
-                    // Done
-                    LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
-
-                } else {
-                    LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
-                }
-
-            } catch (final ClassNotFoundException cnfe) {
-                LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
+            // If <trigger> exists and there are more than 0
+            if (nlTrigger.getLength() == 0) {
+                return;
             }
-        }
+
+            // Initialize trigger configuration
+            List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(PROPERTY_STARTUP_TRIGGERS);
+            if (startupTriggers == null) {
+                startupTriggers = new ArrayList<>();
+                setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+            }
+
+            // Iterate over <trigger> elements
+            for (int i = 0; i < nlTrigger.getLength(); i++) {
+
+                // Get <trigger> element
+                final Element trigger = (Element) nlTrigger.item(i);
+
+                // Get @class
+                final String startupTriggerClass = trigger.getAttribute("class");
+
+                boolean isStartupTrigger = false;
+                try {
+                    // Verify if class is StartupTrigger
+                    for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                        if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
+                            isStartupTrigger = true;
+                            break;
+                        }
+                    }
+
+                    // if it actually is a StartupTrigger
+                    if (isStartupTrigger) {
+                        // Parse additional parameters
+                        final Map<String, List<?>> params = ParametersExtractor.extract(trigger.getElementsByTagName(PARAMETER_ELEMENT_NAME));
+
+                        // Register trigger
+                        startupTriggers.add(new StartupTriggerConfig(startupTriggerClass, params));
+
+                        // Done
+                        LOG.info("Registered StartupTrigger: {}", startupTriggerClass);
+
+                    } else {
+                        LOG.warn("StartupTrigger: {} does not implement org.exist.storage.StartupTrigger. IGNORING!", startupTriggerClass);
+                    }
+
+                } catch (final ClassNotFoundException cnfe) {
+                    LOG.error("Could not find StartupTrigger class: {}. {}", startupTriggerClass, cnfe.getMessage(), cnfe);
+                }
+            }
+        });
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param pool
-     */
     private void configurePool(final Element pool) {
         final String min = getConfigAttributeValue(pool, MIN_CONNECTIONS_ATTRIBUTE);
         if (min != null) {
@@ -1581,7 +1491,7 @@ public class Configuration implements ErrorHandler {
                 exception.getLineNumber(), exception.getMessage(), exception);
     }
 
-    public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
+    public record StartupTriggerConfig(String clazz, Map<String, List<?>> params) {
     }
 
     public record IndexModuleConfig(String id, String className, Element config) {
