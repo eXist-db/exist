@@ -202,8 +202,8 @@ public class AnalyzerConfig {
             final Object cParamValues[] = new Object[cParams.size()];
             for (int i = 0; i < cParams.size(); i++) {
                 KeyTypedValue<?> ktv = cParams.get(i);
-                cParamClasses[i] = ktv.getValueClass();
-                cParamValues[i] = ktv.getValue();
+                cParamClasses[i] = ktv.valueClass();
+                cParamValues[i] = ktv.value();
             }
 
             // Create new analyzer
@@ -588,32 +588,11 @@ public class AnalyzerConfig {
     }
 
     /**
-     * CLass for containing the Triple : key (name), corresponding value and
-     * class type of value.
-     */
-    static class KeyTypedValue<T> {
+         * CLass for containing the Triple : key (name), corresponding value and
+         * class type of value.
+         */
+        record KeyTypedValue<T>(String key, T value, Class<T> valueClass) {
 
-        private final String key;
-        private final T value;
-        private final Class<T> valueClass;
-
-        public KeyTypedValue(final String key, final T value, final Class<T> valueClass) {
-            this.key = key;
-            this.value = value;
-            this.valueClass = valueClass;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        public Class<T> getValueClass() {
-            return valueClass;
-        }
     }
 
     /**
