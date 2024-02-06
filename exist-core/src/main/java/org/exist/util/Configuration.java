@@ -33,6 +33,7 @@ import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
+import org.exist.util.io.ContentFilePool;
 import org.exist.xquery.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -111,7 +112,6 @@ import static org.exist.storage.NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE;
 import static org.exist.storage.XQueryPool.MAX_STACK_SIZE_ATTRIBUTE;
 import static org.exist.storage.XQueryPool.POOL_SIZE_ATTTRIBUTE;
 import static org.exist.storage.XQueryPool.PROPERTY_MAX_STACK_SIZE;
-import static org.exist.storage.XQueryPool.PROPERTY_POOL_SIZE;
 import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_JOURNAL_DIR;
 import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SIZE_LIMIT;
 import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT;
@@ -123,6 +123,8 @@ import static org.exist.util.HtmlToXmlParser.*;
 import static org.exist.util.ParametersExtractor.PARAMETER_ELEMENT_NAME;
 import static org.exist.util.XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE;
 import static org.exist.util.XMLReaderPool.XmlParser.*;
+import static org.exist.util.io.ContentFilePool.PROPERTY_IN_MEMORY_SIZE;
+import static org.exist.util.io.VirtualTempPath.DEFAULT_IN_MEMORY_SIZE;
 import static org.exist.xquery.FunctionFactory.*;
 import static org.exist.xquery.XQueryContext.*;
 import static org.exist.xquery.XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT;
@@ -132,6 +134,7 @@ import static org.exist.xslt.TransformerFactoryAllocator.*;
 
 public class Configuration implements ErrorHandler {
     public static final String BINARY_CACHE_CLASS_PROPERTY = "binary.cache.class";
+    private static final String PRP_DETAILS = "{}: {}";
     private static final Logger LOG = LogManager.getLogger(Configuration.class); //Logger
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
@@ -316,6 +319,11 @@ public class Configuration implements ErrorHandler {
                 configureValidation(existHomeDirname, (Element) validations.item(0));
             }
 
+            //RPC server
+            final NodeList rpcServer = doc.getElementsByTagName("rpc-server");
+            if (rpcServer.getLength() > 0) {
+                configureRpcServer((Element) rpcServer.item(0));
+            }
         } catch (final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage(), e);
@@ -415,7 +423,7 @@ public class Configuration implements ErrorHandler {
         final Element cache = (Element) nlCache.item(0);
         final String binaryCacheClass = getConfigAttributeValue(cache, "class");
         config.put(BINARY_CACHE_CLASS_PROPERTY, binaryCacheClass);
-        LOG.debug(BINARY_CACHE_CLASS_PROPERTY + ": {}", config.get(BINARY_CACHE_CLASS_PROPERTY));
+        LOG.debug(PRP_DETAILS, BINARY_CACHE_CLASS_PROPERTY, config.get(BINARY_CACHE_CLASS_PROPERTY));
     }
 
     private void configureXQuery(final Element xquery) throws DatabaseConfigurationException {
@@ -431,14 +439,14 @@ public class Configuration implements ErrorHandler {
         final String disableDeprecated = getConfigAttributeValue(xquery, DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE);
         config.put(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS,
                 Configuration.parseBoolean(disableDeprecated, DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT));
-        LOG.debug(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS + ": {}",
+        LOG.debug(PRP_DETAILS, PROPERTY_DISABLE_DEPRECATED_FUNCTIONS,
                 config.get(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS));
 
         final String optimize = getConfigAttributeValue(xquery, ENABLE_QUERY_REWRITING_ATTRIBUTE);
 
         if (optimize != null && !optimize.isEmpty()) {
             config.put(PROPERTY_ENABLE_QUERY_REWRITING, optimize);
-            LOG.debug(PROPERTY_ENABLE_QUERY_REWRITING + ": {}", config.get(PROPERTY_ENABLE_QUERY_REWRITING));
+            LOG.debug(PRP_DETAILS, PROPERTY_ENABLE_QUERY_REWRITING, config.get(PROPERTY_ENABLE_QUERY_REWRITING));
         }
 
         final String enforceIndexUse = getConfigAttributeValue(xquery, ENFORCE_INDEX_USE_ATTRIBUTE);
@@ -450,7 +458,7 @@ public class Configuration implements ErrorHandler {
 
         if ((backwardCompatible != null) && (!backwardCompatible.isEmpty())) {
             config.put(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
-            LOG.debug(PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": {}",
+            LOG.debug(PRP_DETAILS, PROPERTY_XQUERY_BACKWARD_COMPATIBLE,
                     config.get(PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
         }
 
@@ -458,7 +466,7 @@ public class Configuration implements ErrorHandler {
                 XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE);
         config.put(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL,
                 Configuration.parseBoolean(raiseErrorOnFailedRetrieval, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT));
-        LOG.debug(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL + ": {}",
+        LOG.debug(PRP_DETAILS, PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL,
                 config.get(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL));
 
         final String trace = getConfigAttributeValue(xquery, PerformanceStats.CONFIG_ATTR_TRACE);
@@ -596,16 +604,14 @@ public class Configuration implements ErrorHandler {
 
         if (fragmentation != null) {
             config.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, Integer.valueOf(fragmentation));
-            LOG.debug(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": {}",
-                    config.get(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
+            LOG.debug(PRP_DETAILS, PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, config.get(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
 
         final String consistencyCheck = getConfigAttributeValue(xupdate, XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE);
 
         if (consistencyCheck != null) {
             config.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean(consistencyCheck, false));
-            LOG.debug(PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": {}",
-                    config.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
+            LOG.debug(PRP_DETAILS, PROPERTY_XUPDATE_CONSISTENCY_CHECKS, config.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
     }
 
@@ -622,7 +628,7 @@ public class Configuration implements ErrorHandler {
 
         if (className != null) {
             config.put(PROPERTY_TRANSFORMER_CLASS, className);
-            LOG.debug(PROPERTY_TRANSFORMER_CLASS + ": {}", config.get(PROPERTY_TRANSFORMER_CLASS));
+            LOG.debug(PRP_DETAILS, PROPERTY_TRANSFORMER_CLASS, config.get(PROPERTY_TRANSFORMER_CLASS));
 
             // Process any specified attributes that should be passed to the transformer factory
 
@@ -660,8 +666,7 @@ public class Configuration implements ErrorHandler {
 
         if (cachingValue != null) {
             config.put(PROPERTY_CACHING_ATTRIBUTE, parseBoolean(cachingValue, false));
-            LOG.debug(PROPERTY_CACHING_ATTRIBUTE + ": {}",
-                    config.get(PROPERTY_CACHING_ATTRIBUTE));
+            LOG.debug(PRP_DETAILS, PROPERTY_CACHING_ATTRIBUTE, config.get(PROPERTY_CACHING_ATTRIBUTE));
         }
     }
 
@@ -733,61 +738,61 @@ public class Configuration implements ErrorHandler {
         final String omitXmlDeclaration = getConfigAttributeValue(serializer, OMIT_XML_DECLARATION_ATTRIBUTE);
         if (omitXmlDeclaration != null) {
             config.put(PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
-            LOG.debug(PROPERTY_OMIT_XML_DECLARATION + ": {}", config.get(PROPERTY_OMIT_XML_DECLARATION));
+            LOG.debug(PRP_DETAILS, PROPERTY_OMIT_XML_DECLARATION, config.get(PROPERTY_OMIT_XML_DECLARATION));
         }
 
         final String omitOriginalXmlDeclaration = getConfigAttributeValue(serializer, OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE);
         if (omitOriginalXmlDeclaration != null) {
             config.put(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-            LOG.debug(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION + ": {}", config.get(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION));
+            LOG.debug(PRP_DETAILS, PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, config.get(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION));
         }
 
         final String outputDocType = getConfigAttributeValue(serializer, OUTPUT_DOCTYPE_ATTRIBUTE);
         if (outputDocType != null) {
             config.put(PROPERTY_OUTPUT_DOCTYPE, outputDocType);
-            LOG.debug(PROPERTY_OUTPUT_DOCTYPE + ": {}", config.get(PROPERTY_OUTPUT_DOCTYPE));
+            LOG.debug(PRP_DETAILS, PROPERTY_OUTPUT_DOCTYPE, config.get(PROPERTY_OUTPUT_DOCTYPE));
         }
 
         final String xinclude = getConfigAttributeValue(serializer, ENABLE_XINCLUDE_ATTRIBUTE);
         if (xinclude != null) {
             config.put(PROPERTY_ENABLE_XINCLUDE, xinclude);
-            LOG.debug(PROPERTY_ENABLE_XINCLUDE + ": {}", config.get(PROPERTY_ENABLE_XINCLUDE));
+            LOG.debug(PRP_DETAILS, PROPERTY_ENABLE_XINCLUDE, config.get(PROPERTY_ENABLE_XINCLUDE));
         }
 
         final String xsl = getConfigAttributeValue(serializer, ENABLE_XSL_ATTRIBUTE);
         if (xsl != null) {
             config.put(PROPERTY_ENABLE_XSL, xsl);
-            LOG.debug(PROPERTY_ENABLE_XSL + ": {}", config.get(PROPERTY_ENABLE_XSL));
+            LOG.debug(PRP_DETAILS, PROPERTY_ENABLE_XSL, config.get(PROPERTY_ENABLE_XSL));
         }
 
         final String indent = getConfigAttributeValue(serializer, INDENT_ATTRIBUTE);
         if (indent != null) {
             config.put(PROPERTY_INDENT, indent);
-            LOG.debug(PROPERTY_INDENT + ": {}", config.get(PROPERTY_INDENT));
+            LOG.debug(PRP_DETAILS, PROPERTY_INDENT, config.get(PROPERTY_INDENT));
         }
 
         final String compress = getConfigAttributeValue(serializer, COMPRESS_OUTPUT_ATTRIBUTE);
         if (compress != null) {
             config.put(PROPERTY_COMPRESS_OUTPUT, compress);
-            LOG.debug(PROPERTY_COMPRESS_OUTPUT + ": {}", config.get(PROPERTY_COMPRESS_OUTPUT));
+            LOG.debug(PRP_DETAILS, PROPERTY_COMPRESS_OUTPUT, config.get(PROPERTY_COMPRESS_OUTPUT));
         }
 
         final String internalId = getConfigAttributeValue(serializer, ADD_EXIST_ID_ATTRIBUTE);
         if (internalId != null) {
             config.put(PROPERTY_ADD_EXIST_ID, internalId);
-            LOG.debug(PROPERTY_ADD_EXIST_ID + ": {}", config.get(PROPERTY_ADD_EXIST_ID));
+            LOG.debug(PRP_DETAILS, PROPERTY_ADD_EXIST_ID, config.get(PROPERTY_ADD_EXIST_ID));
         }
 
         final String tagElementMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ELEMENTS_ATTRIBUTE);
         if (tagElementMatches != null) {
             config.put(PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
-            LOG.debug(PROPERTY_TAG_MATCHING_ELEMENTS + ": {}", config.get(PROPERTY_TAG_MATCHING_ELEMENTS));
+            LOG.debug(PRP_DETAILS, PROPERTY_TAG_MATCHING_ELEMENTS, config.get(PROPERTY_TAG_MATCHING_ELEMENTS));
         }
 
         final String tagAttributeMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ATTRIBUTES_ATTRIBUTE);
         if (tagAttributeMatches != null) {
             config.put(PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
-            LOG.debug(PROPERTY_TAG_MATCHING_ATTRIBUTES + ": {}", config.get(PROPERTY_TAG_MATCHING_ATTRIBUTES));
+            LOG.debug(PRP_DETAILS, PROPERTY_TAG_MATCHING_ATTRIBUTES, config.get(PROPERTY_TAG_MATCHING_ATTRIBUTES));
         }
 
         final NodeList nlFilters = serializer.getElementsByTagName(CustomMatchListenerFactory.CONFIGURATION_ELEMENT);
@@ -800,7 +805,7 @@ public class Configuration implements ErrorHandler {
 
                 if (filterClass != null) {
                     filters.add(filterClass);
-                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
+                    LOG.debug(PRP_DETAILS, CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filterClass);
                 } else {
                     LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
                 }
@@ -818,7 +823,7 @@ public class Configuration implements ErrorHandler {
 
                 if (filterClass != null) {
                     filters.add(filterClass);
-                    LOG.debug(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS + ": {}", filterClass);
+                    LOG.debug(PRP_DETAILS, CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filterClass);
                 } else {
                     LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
                 }
@@ -935,7 +940,7 @@ public class Configuration implements ErrorHandler {
         final String database = getConfigAttributeValue(con, PROPERTY_DATABASE);
         if (database != null) {
             config.put(PROPERTY_DATABASE, database);
-            LOG.debug(PROPERTY_DATABASE + ": {}", config.get(PROPERTY_DATABASE));
+            LOG.debug(PRP_DETAILS, PROPERTY_DATABASE, config.get(PROPERTY_DATABASE));
         }
 
         // directory for database files
@@ -951,7 +956,7 @@ public class Configuration implements ErrorHandler {
                 }
             }
             config.put(PROPERTY_DATA_DIR, df);
-            LOG.debug(PROPERTY_DATA_DIR + ": {}", config.get(PROPERTY_DATA_DIR));
+            LOG.debug(PRP_DETAILS, PROPERTY_DATA_DIR, config.get(PROPERTY_DATA_DIR));
         }
 
         String cacheMem = getConfigAttributeValue(con, CACHE_SIZE_ATTRIBUTE);
@@ -979,7 +984,7 @@ public class Configuration implements ErrorHandler {
         }
 
         config.put(PROPERTY_CACHE_CHECK_MAX_SIZE, parseBoolean(checkMaxCache, true));
-        LOG.debug(PROPERTY_CACHE_CHECK_MAX_SIZE + ": {}", config.get(PROPERTY_CACHE_CHECK_MAX_SIZE));
+        LOG.debug(PRP_DETAILS, PROPERTY_CACHE_CHECK_MAX_SIZE, config.get(PROPERTY_CACHE_CHECK_MAX_SIZE));
 
         String cacheShrinkThreshold = getConfigAttributeValue(con, SHRINK_THRESHOLD_ATTRIBUTE);
 
@@ -989,7 +994,7 @@ public class Configuration implements ErrorHandler {
 
         try {
             config.put(SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold));
-            LOG.debug(SHRINK_THRESHOLD_PROPERTY + ": {}", config.get(SHRINK_THRESHOLD_PROPERTY));
+            LOG.debug(PRP_DETAILS, SHRINK_THRESHOLD_PROPERTY, config.get(SHRINK_THRESHOLD_PROPERTY));
         } catch (final NumberFormatException nfe) {
             LOG.warn("Cannot convert " + SHRINK_THRESHOLD_PROPERTY + " value to integer: {}", cacheShrinkThreshold, nfe);
         }
@@ -1017,10 +1022,7 @@ public class Configuration implements ErrorHandler {
                 }
 
                 config.put(PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Set config {} = {}", PROPERTY_CACHE_SIZE_BYTES, config.get(PROPERTY_CACHE_SIZE_BYTES));
-                }
+                LOG.debug(PRP_DETAILS, PROPERTY_CACHE_SIZE_BYTES, config.get(PROPERTY_CACHE_SIZE_BYTES));
             } catch (final NumberFormatException nfe) {
                 LOG.warn("Cannot convert " + PROPERTY_CACHE_SIZE_BYTES + " value to integer: {}", collectionCache, nfe);
             }
@@ -1030,7 +1032,7 @@ public class Configuration implements ErrorHandler {
         if (pageSize != null) {
             try {
                 config.put(PROPERTY_PAGE_SIZE, Integer.valueOf(pageSize));
-                LOG.debug(PROPERTY_PAGE_SIZE + ": {}", config.get(PROPERTY_PAGE_SIZE));
+                LOG.debug(PRP_DETAILS, PROPERTY_PAGE_SIZE, config.get(PROPERTY_PAGE_SIZE));
             } catch (final NumberFormatException nfe) {
                 LOG.warn("Cannot convert " + PROPERTY_PAGE_SIZE + " value to integer: {}", pageSize, nfe);
             }
@@ -1041,7 +1043,7 @@ public class Configuration implements ErrorHandler {
         if (collCacheSize != null) {
             try {
                 config.put(PROPERTY_COLLECTION_CACHE_SIZE, Integer.valueOf(collCacheSize));
-                LOG.debug(PROPERTY_COLLECTION_CACHE_SIZE + ": {}", config.get(PROPERTY_COLLECTION_CACHE_SIZE));
+                LOG.debug(PRP_DETAILS, PROPERTY_COLLECTION_CACHE_SIZE, config.get(PROPERTY_COLLECTION_CACHE_SIZE));
             } catch (final NumberFormatException nfe) {
                 LOG.warn("Cannot convert " + PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: {}", collCacheSize, nfe);
             }
@@ -1051,8 +1053,7 @@ public class Configuration implements ErrorHandler {
         if (nodesBuffer != null) {
             try {
                 config.put(PROPERTY_NODES_BUFFER, Integer.valueOf(nodesBuffer));
-                LOG.debug(PROPERTY_NODES_BUFFER + ": {}", config.get(PROPERTY_NODES_BUFFER));
-
+                LOG.debug(PRP_DETAILS, PROPERTY_NODES_BUFFER, config.get(PROPERTY_NODES_BUFFER));
             } catch (final NumberFormatException nfe) {
                 LOG.warn("Cannot convert " + PROPERTY_NODES_BUFFER + " value to integer: {}", nodesBuffer, nfe);
             }
@@ -1115,15 +1116,15 @@ public class Configuration implements ErrorHandler {
     private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
         final String enabled = getConfigAttributeValue(recovery, RECOVERY_ENABLED_ATTRIBUTE);
         setProperty(PROPERTY_RECOVERY_ENABLED, parseBoolean(enabled, true));
-        LOG.debug(PROPERTY_RECOVERY_ENABLED + ": {}", config.get(PROPERTY_RECOVERY_ENABLED));
+        LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_ENABLED, config.get(PROPERTY_RECOVERY_ENABLED));
 
         final String syncOnCommit = getConfigAttributeValue(recovery, RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
         setProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(syncOnCommit, true));
-        LOG.debug(PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": {}", config.get(PROPERTY_RECOVERY_SYNC_ON_COMMIT));
+        LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_SYNC_ON_COMMIT, config.get(PROPERTY_RECOVERY_SYNC_ON_COMMIT));
 
         final String groupCommit = getConfigAttributeValue(recovery, RECOVERY_GROUP_COMMIT_ATTRIBUTE);
         setProperty(PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(groupCommit, false));
-        LOG.debug(PROPERTY_RECOVERY_GROUP_COMMIT + ": {}", config.get(PROPERTY_RECOVERY_GROUP_COMMIT));
+        LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_GROUP_COMMIT, config.get(PROPERTY_RECOVERY_GROUP_COMMIT));
 
         final String journalDir = getConfigAttributeValue(recovery, RECOVERY_JOURNAL_DIR_ATTRIBUTE);
         if (journalDir != null) {
@@ -1133,7 +1134,7 @@ public class Configuration implements ErrorHandler {
                 throw new DatabaseConfigurationException("cannot read data directory: " + rf);
             }
             setProperty(PROPERTY_RECOVERY_JOURNAL_DIR, rf);
-            LOG.debug(PROPERTY_RECOVERY_JOURNAL_DIR + ": {}", config.get(PROPERTY_RECOVERY_JOURNAL_DIR));
+            LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_JOURNAL_DIR, config.get(PROPERTY_RECOVERY_JOURNAL_DIR));
         }
 
         final String sizeLimit = getConfigAttributeValue(recovery, RECOVERY_SIZE_LIMIT_ATTRIBUTE);
@@ -1155,12 +1156,12 @@ public class Configuration implements ErrorHandler {
         final String forceRestart = getConfigAttributeValue(recovery, RECOVERY_FORCE_RESTART_ATTRIBUTE);
         final boolean forceRestartValue = "yes".equals(forceRestart);
         setProperty(PROPERTY_RECOVERY_FORCE_RESTART, forceRestartValue);
-        LOG.debug(PROPERTY_RECOVERY_FORCE_RESTART + ": {}", config.get(PROPERTY_RECOVERY_FORCE_RESTART));
+        LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_FORCE_RESTART, config.get(PROPERTY_RECOVERY_FORCE_RESTART));
 
         final String postRecoveryCheck = getConfigAttributeValue(recovery, RECOVERY_POST_RECOVERY_CHECK);
         final boolean postRecoveryCheckValue = "yes".equals(postRecoveryCheck);
         setProperty(PROPERTY_RECOVERY_CHECK, postRecoveryCheckValue);
-        LOG.debug(PROPERTY_RECOVERY_CHECK + ": {}", config.get(PROPERTY_RECOVERY_CHECK));
+        LOG.debug(PRP_DETAILS, PROPERTY_RECOVERY_CHECK, config.get(PROPERTY_RECOVERY_CHECK));
     }
 
     /**
@@ -1172,10 +1173,9 @@ public class Configuration implements ErrorHandler {
         final String timeout = getConfigAttributeValue(watchDog, "query-timeout");
 
         if (timeout != null) {
-
             try {
                 config.put(PROPERTY_QUERY_TIMEOUT, Long.valueOf(timeout));
-                LOG.debug(PROPERTY_QUERY_TIMEOUT + ": {}", config.get(PROPERTY_QUERY_TIMEOUT));
+                LOG.debug(PRP_DETAILS, PROPERTY_QUERY_TIMEOUT, config.get(PROPERTY_QUERY_TIMEOUT));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1184,10 +1184,9 @@ public class Configuration implements ErrorHandler {
         final String maxOutput = getConfigAttributeValue(watchDog, "output-size-limit");
 
         if (maxOutput != null) {
-
             try {
                 config.put(PROPERTY_OUTPUT_SIZE_LIMIT, Integer.valueOf(maxOutput));
-                LOG.debug(PROPERTY_OUTPUT_SIZE_LIMIT + ": {}", config.get(PROPERTY_OUTPUT_SIZE_LIMIT));
+                LOG.debug(PRP_DETAILS, PROPERTY_OUTPUT_SIZE_LIMIT, config.get(PROPERTY_OUTPUT_SIZE_LIMIT));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1203,10 +1202,9 @@ public class Configuration implements ErrorHandler {
         final String maxStackSize = getConfigAttributeValue(queryPool, MAX_STACK_SIZE_ATTRIBUTE);
 
         if (maxStackSize != null) {
-
             try {
                 config.put(PROPERTY_MAX_STACK_SIZE, Integer.valueOf(maxStackSize));
-                LOG.debug(PROPERTY_MAX_STACK_SIZE + ": {}", config.get(PROPERTY_MAX_STACK_SIZE));
+                LOG.debug(PRP_DETAILS, PROPERTY_MAX_STACK_SIZE, config.get(PROPERTY_MAX_STACK_SIZE));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1215,10 +1213,9 @@ public class Configuration implements ErrorHandler {
         final String maxPoolSize = getConfigAttributeValue(queryPool, POOL_SIZE_ATTTRIBUTE);
 
         if (maxPoolSize != null) {
-
             try {
-                config.put(PROPERTY_POOL_SIZE, Integer.valueOf(maxPoolSize));
-                LOG.debug(PROPERTY_POOL_SIZE + ": {}", config.get(PROPERTY_POOL_SIZE));
+                config.put(XQueryPool.PROPERTY_POOL_SIZE, Integer.valueOf(maxPoolSize));
+                LOG.debug(PRP_DETAILS, XQueryPool.PROPERTY_POOL_SIZE, config.get(XQueryPool.PROPERTY_POOL_SIZE));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1299,10 +1296,9 @@ public class Configuration implements ErrorHandler {
     private void configurePool(final Element pool) {
         final String min = getConfigAttributeValue(pool, MIN_CONNECTIONS_ATTRIBUTE);
         if (min != null) {
-
             try {
                 config.put(PROPERTY_MIN_CONNECTIONS, Integer.valueOf(min));
-                LOG.debug(PROPERTY_MIN_CONNECTIONS + ": {}", config.get(PROPERTY_MIN_CONNECTIONS));
+                LOG.debug(PRP_DETAILS, PROPERTY_MIN_CONNECTIONS, config.get(PROPERTY_MIN_CONNECTIONS));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1310,10 +1306,9 @@ public class Configuration implements ErrorHandler {
 
         final String max = getConfigAttributeValue(pool, MAX_CONNECTIONS_ATTRIBUTE);
         if (max != null) {
-
             try {
                 config.put(PROPERTY_MAX_CONNECTIONS, Integer.valueOf(max));
-                LOG.debug(PROPERTY_MAX_CONNECTIONS + ": {}", config.get(PROPERTY_MAX_CONNECTIONS));
+                LOG.debug(PRP_DETAILS, PROPERTY_MAX_CONNECTIONS, config.get(PROPERTY_MAX_CONNECTIONS));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1321,10 +1316,9 @@ public class Configuration implements ErrorHandler {
 
         final String sync = getConfigAttributeValue(pool, SYNC_PERIOD_ATTRIBUTE);
         if (sync != null) {
-
             try {
                 config.put(PROPERTY_SYNC_PERIOD, Long.valueOf(sync));
-                LOG.debug(PROPERTY_SYNC_PERIOD + ": {}", config.get(PROPERTY_SYNC_PERIOD));
+                LOG.debug(PRP_DETAILS, PROPERTY_SYNC_PERIOD, config.get(PROPERTY_SYNC_PERIOD));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1332,10 +1326,9 @@ public class Configuration implements ErrorHandler {
 
         final String maxShutdownWait = getConfigAttributeValue(pool, SHUTDOWN_DELAY_ATTRIBUTE);
         if (maxShutdownWait != null) {
-
             try {
                 config.put(PROPERTY_SHUTDOWN_DELAY, Long.valueOf(maxShutdownWait));
-                LOG.debug(PROPERTY_SHUTDOWN_DELAY + ": {}", config.get(PROPERTY_SHUTDOWN_DELAY));
+                LOG.debug(PRP_DETAILS, PROPERTY_SHUTDOWN_DELAY, config.get(PROPERTY_SHUTDOWN_DELAY));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1347,14 +1340,13 @@ public class Configuration implements ErrorHandler {
 
         if (caseSensitive != null) {
             config.put(PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean(caseSensitive, false));
-            LOG.debug(PROPERTY_INDEX_CASE_SENSITIVE + ": {}", config.get(PROPERTY_INDEX_CASE_SENSITIVE));
+            LOG.debug(PRP_DETAILS, PROPERTY_INDEX_CASE_SENSITIVE, config.get(PROPERTY_INDEX_CASE_SENSITIVE));
         }
 
         int depth = 3;
         final String indexDepth = getConfigAttributeValue(indexer, INDEX_DEPTH_ATTRIBUTE);
 
         if (indexDepth != null) {
-
             try {
                 depth = Integer.parseInt(indexDepth);
 
@@ -1364,7 +1356,7 @@ public class Configuration implements ErrorHandler {
                     depth = 3;
                 }
                 config.put(PROPERTY_INDEX_DEPTH, depth);
-                LOG.debug(PROPERTY_INDEX_DEPTH + ": {}", config.get(PROPERTY_INDEX_DEPTH));
+                LOG.debug(PRP_DETAILS, PROPERTY_INDEX_DEPTH, config.get(PROPERTY_INDEX_DEPTH));
             } catch (final NumberFormatException e) {
                 LOG.warn(e);
             }
@@ -1374,14 +1366,14 @@ public class Configuration implements ErrorHandler {
 
         if (suppressWS != null) {
             config.put(PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
-            LOG.debug(PROPERTY_SUPPRESS_WHITESPACE + ": {}", config.get(PROPERTY_SUPPRESS_WHITESPACE));
+            LOG.debug(PRP_DETAILS, PROPERTY_SUPPRESS_WHITESPACE, config.get(PROPERTY_SUPPRESS_WHITESPACE));
         }
 
         final String suppressWSmixed = getConfigAttributeValue(indexer, PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE);
 
         if (suppressWSmixed != null) {
             config.put(PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean(suppressWSmixed, false));
-            LOG.debug(PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": {}", config.get(PROPERTY_PRESERVE_WS_MIXED_CONTENT));
+            LOG.debug(PRP_DETAILS, PROPERTY_PRESERVE_WS_MIXED_CONTENT, config.get(PROPERTY_PRESERVE_WS_MIXED_CONTENT));
         }
 
         // index settings
@@ -1426,7 +1418,7 @@ public class Configuration implements ErrorHandler {
         if (mode != null) {
             config.put(PROPERTY_VALIDATION_MODE, mode);
             if (LOG.isDebugEnabled()) {
-                LOG.debug(PROPERTY_VALIDATION_MODE + ": {}", config.get(PROPERTY_VALIDATION_MODE));
+                LOG.debug(PRP_DETAILS, PROPERTY_VALIDATION_MODE, config.get(PROPERTY_VALIDATION_MODE));
             }
         }
 
@@ -1455,9 +1447,9 @@ public class Configuration implements ErrorHandler {
         }).orElse(Paths.get("webapp").toAbsolutePath());
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Found " + nlCatalogs.getLength() + " catalog uri entries.");
-            LOG.debug("Using dbHome=" + dbHome);
-            LOG.debug("using webappHome=" + webappHome);
+            LOG.debug("Found {} catalog uri entries.", nlCatalogs.getLength());
+            LOG.debug("Using dbHome={}", dbHome);
+            LOG.debug("using webappHome={}", webappHome);
         }
 
         // Get the Catalog URIs
@@ -1477,7 +1469,7 @@ public class Configuration implements ErrorHandler {
                 }
 
                 // Add uri to configuration
-                LOG.info("Adding Catalog URI: " + uri);
+                LOG.info("Adding Catalog URI: {}", uri);
                 catalogUris.add(uri);
             }
         }
@@ -1493,7 +1485,27 @@ public class Configuration implements ErrorHandler {
             final Resolver resolver = ResolverFactory.newResolver(catalogs);
             config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
         } catch (final URISyntaxException e) {
-            LOG.error("Unable to parse catalog uri: " + e.getMessage(), e);
+            LOG.error("Unable to parse catalog uri: {}", e.getMessage(), e);
+        }
+    }
+
+    private void configureRpcServer(final Element validation) {
+        final NodeList contentFile = validation.getElementsByTagName("content-file");
+        if (contentFile.getLength() > 0) {
+            final String inMemorySize = ((Element) contentFile.item(0)).getAttribute("in-memory-size");
+            if (inMemorySize != null) {
+                config.put(PROPERTY_IN_MEMORY_SIZE, parseInt(inMemorySize, DEFAULT_IN_MEMORY_SIZE));
+                LOG.debug(PRP_DETAILS, PROPERTY_IN_MEMORY_SIZE, config.get(PROPERTY_IN_MEMORY_SIZE));
+            }
+        }
+        final NodeList contentFilePool = validation.getElementsByTagName("content-file-pool");
+        if (contentFilePool.getLength() > 0) {
+            final String size = ((Element) contentFilePool.item(0)).getAttribute("size");
+            config.put(ContentFilePool.PROPERTY_POOL_SIZE, parseInt(size, -1));
+            LOG.debug(PRP_DETAILS, ContentFilePool.PROPERTY_POOL_SIZE, config.get(ContentFilePool.PROPERTY_POOL_SIZE));
+            final String maxIdle = ((Element) contentFilePool.item(0)).getAttribute("max-idle");
+            config.put(ContentFilePool.PROPERTY_POOL_MAX_IDLE, parseInt(maxIdle, 5));
+            LOG.debug(PRP_DETAILS, ContentFilePool.PROPERTY_POOL_MAX_IDLE, config.get(ContentFilePool.PROPERTY_POOL_MAX_IDLE));
         }
     }
 
@@ -1582,10 +1594,14 @@ public class Configuration implements ErrorHandler {
     }
 
     public int getInteger(final String name) {
+        return getInteger(name, -1);
+    }
+
+    public int getInteger(final String name, final int defaultValue) {
         return Optional.ofNullable(getProperty(name))
                 .filter(v -> v instanceof Integer)
                 .map(v -> (int) v)
-                .orElse(-1);
+                .orElse(defaultValue);
     }
 
     /**
