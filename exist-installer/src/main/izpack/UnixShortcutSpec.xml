@@ -38,8 +38,7 @@
             terminal="false"
             programGroup="yes"
             iconFile="$INSTALL_PATH/lib/icon.png"
-            desktop="yes"
-            startupNotify="true"/>
+            desktop="yes"/>
 
     <shortcut name="Uninstall eXist-db"
               description="Uninstall eXist-db"
