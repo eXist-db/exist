@@ -325,7 +325,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> putGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getPutGroup);
+            final Optional<String> putGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::putGroup);
             if (putGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(putGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to put data into this cache");
@@ -341,7 +341,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> getGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getGetGroup);
+            final Optional<String> getGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::getGroup);
             if (getGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(getGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to list data in this cache");
@@ -357,7 +357,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> getGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getGetGroup);
+            final Optional<String> getGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::getGroup);
             if (getGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(getGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to list data in this cache");
@@ -373,7 +373,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> getGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getGetGroup);
+            final Optional<String> getGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::getGroup);
             if (getGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(getGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to get data from this cache");
@@ -389,7 +389,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> removeGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getRemoveGroup);
+            final Optional<String> removeGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::removeGroup);
             if (removeGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(removeGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to remove data from this cache");
@@ -406,7 +406,7 @@ public class CacheFunctions extends BasicFunction {
         // check all permissions first
         if(!context.getEffectiveUser().hasDbaRole()) {
             for (final Cache cache : caches) {
-                final Optional<String> clearGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getClearGroup);
+                final Optional<String> clearGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::clearGroup);
                 if (clearGroup.isPresent()) {
                     if (!context.getEffectiveUser().hasGroup(clearGroup.get())) {
                         throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to clear data from all caches");
@@ -426,7 +426,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> clearGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getClearGroup);
+            final Optional<String> clearGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::clearGroup);
             if (clearGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(clearGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to clear data from this cache");
@@ -442,7 +442,7 @@ public class CacheFunctions extends BasicFunction {
 
         // check permissions
         if(!context.getEffectiveUser().hasDbaRole()) {
-            final Optional<String> clearGroup = cache.getConfig().getPermissions().flatMap(CacheConfig.Permissions::getClearGroup);
+            final Optional<String> clearGroup = cache.getConfig().permissions().flatMap(CacheConfig.Permissions::clearGroup);
             if (clearGroup.isPresent()) {
                 if (!context.getEffectiveUser().hasGroup(clearGroup.get())) {
                     throw new XPathException(this, INSUFFICIENT_PERMISSIONS, "User does not have the appropriate permissions to clear data from this cache");

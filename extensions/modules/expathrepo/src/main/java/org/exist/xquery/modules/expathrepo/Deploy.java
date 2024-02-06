@@ -270,50 +270,44 @@ public class Deploy extends BasicFunction {
 		super.resetState(postOptimization);
 	}
 
-    private static class RepoPackageLoader implements PackageLoader {
-
-        private final String repoURL;
-
-        public RepoPackageLoader(final String repoURL) {
-            this.repoURL = repoURL;
-        }
+    private record RepoPackageLoader(String repoURL) implements PackageLoader {
 
         @Override
-        public XarSource load(final String name, final Version version) throws IOException {
-            String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
-                "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
-            if (version != null) {
-                if (version.getMin() != null) {
-                    pkgURL += "&semver-min=" + version.getMin();
+            public XarSource load(final String name, final Version version) throws IOException {
+                String pkgURL = repoURL + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8) +
+                        "&processor=" + SystemProperties.getInstance().getSystemProperty("product-version", "2.2.0");
+                if (version != null) {
+                    if (version.getMin() != null) {
+                        pkgURL += "&semver-min=" + version.getMin();
+                    }
+                    if (version.getMax() != null) {
+                        pkgURL += "&semver-max=" + version.getMax();
+                    }
+                    if (version.getSemVer() != null) {
+                        pkgURL += "&semver=" + version.getSemVer();
+                    }
+                    if (version.getVersion() != null) {
+                        pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8);
+                    }
                 }
-                if (version.getMax() != null) {
-                    pkgURL += "&semver-max=" + version.getMax();
-                }
-                if (version.getSemVer() != null) {
-                    pkgURL += "&semver=" + version.getSemVer();
-                }
-                if (version.getVersion() != null) {
-                    pkgURL += "&version=" + URLEncoder.encode(version.getVersion(), StandardCharsets.UTF_8);
-                }
-            }
-            LOG.info("Retrieving package from {}", pkgURL);
-            final HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
-            connection.setConnectTimeout(15 * 1000);
-            connection.setReadTimeout(15 * 1000);
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) " +
-                    "Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
-            connection.connect();
+                LOG.info("Retrieving package from {}", pkgURL);
+                final HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
+                connection.setConnectTimeout(15 * 1000);
+                connection.setReadTimeout(15 * 1000);
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.2) " +
+                        "Gecko/20090729 Firefox/3.5.2 (.NET CLR 3.5.30729)");
+                connection.connect();
 
-            // TODO(AR) we likely don't need temporary caching here! could just use UriXarSource
-            try(final InputStream is = connection.getInputStream()) {
-                final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
-                final Path outFile = temporaryFileManager.getTemporaryFile();
-                Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
-                return new XarFileSource(outFile);
-            } catch (IOException e) {
-                throw new IOException("Failed to install dependency from " + pkgURL + ": " + e.getMessage());
+                // TODO(AR) we likely don't need temporary caching here! could just use UriXarSource
+                try (final InputStream is = connection.getInputStream()) {
+                    final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
+                    final Path outFile = temporaryFileManager.getTemporaryFile();
+                    Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
+                    return new XarFileSource(outFile);
+                } catch (IOException e) {
+                    throw new IOException("Failed to install dependency from " + pkgURL + ": " + e.getMessage());
+                }
             }
         }
-    }
 }

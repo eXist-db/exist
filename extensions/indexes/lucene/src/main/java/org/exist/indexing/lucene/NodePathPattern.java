@@ -69,47 +69,33 @@ public class NodePathPattern {
         NE,          // ne
     }
 
-    private static class SimpleAttrValuePredicate implements Predicate {
-        private final PredicateCode pcode;
-        private final String attrName;
-        private final String attrVal;
-
-        SimpleAttrValuePredicate(PredicateCode pcode, String attrName, String attrVal) {
-            this.pcode = pcode;
-            this.attrName = attrName;
-            this.attrVal = attrVal;
-        }
+    private record SimpleAttrValuePredicate(PredicateCode pcode, String attrName, String attrVal) implements Predicate {
 
         @Override
-        public boolean evaluate(final NodePath2 nodePath, final int elementIdx) {
-            final Map<String, String> attrs = nodePath.attribs(elementIdx);
-            final String val = attrs == null ? null : attrs.get(attrName);
-            return switch (pcode) { // =
-                case EQUALS, EQ -> // eq
-                        Objects.equals(val, attrVal);
-                case NOT_EQUALS -> // !=
-                    // actual attr val should be present but different:
-                        val != null && !Objects.equals(val, attrVal);
-                case NE -> // ne
-                    // actual attr val may be null (i.e. not present) or present but different:
-                        !Objects.equals(val, attrVal);
-                default -> throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
-            };
+            public boolean evaluate(final NodePath2 nodePath, final int elementIdx) {
+                final Map<String, String> attrs = nodePath.attribs(elementIdx);
+                final String val = attrs == null ? null : attrs.get(attrName);
+                return switch (pcode) { // =
+                    case EQUALS, EQ -> // eq
+                            Objects.equals(val, attrVal);
+                    case NOT_EQUALS -> // !=
+                        // actual attr val should be present but different:
+                            val != null && !Objects.equals(val, attrVal);
+                    case NE -> // ne
+                        // actual attr val may be null (i.e. not present) or present but different:
+                            !Objects.equals(val, attrVal);
+                    default -> throw new IllegalArgumentException("PredicateCode " + pcode + " not handled!");
+                };
+            }
         }
-    }
 
-    private final static class NegatePredicate implements Predicate {
-        final Predicate negatedPredicate;
-
-        NegatePredicate(Predicate negatedPredicate) {
-            this.negatedPredicate = negatedPredicate;
-        }
+    private record NegatePredicate(Predicate negatedPredicate) implements Predicate {
 
         @Override
-        public boolean evaluate(NodePath2 nodePath, int elementIdx) {
-            return !negatedPredicate.evaluate(nodePath, elementIdx);
+            public boolean evaluate(NodePath2 nodePath, int elementIdx) {
+                return !negatedPredicate.evaluate(nodePath, elementIdx);
+            }
         }
-    }
 
     public NodePathPattern(Map<String, String> namespaces, String matchPattern) {
         qnPath = new NodePath();
