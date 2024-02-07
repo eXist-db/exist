@@ -79,6 +79,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -91,6 +92,8 @@ import org.exist.scheduler.JobType;
 import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 import static org.exist.Namespaces.XPATH_FUNCTIONS_NS;
 import static org.exist.scheduler.JobConfig.*;
@@ -288,17 +291,17 @@ public class Configuration implements ErrorHandler {
     interface ElementConfigurationAction {
         void apply(Element element) throws DatabaseConfigurationException;
     }
-    void configureElement(Document doc, String elementName, ElementConfigurationAction action)
+    private void configureElement(final Document doc, final String elementName, final ElementConfigurationAction action)
             throws DatabaseConfigurationException {
         configureFirstElement(doc.getElementsByTagName(elementName), action);
     }
 
-    void configureElement(Element parent, String elementName, ElementConfigurationAction action)
+    private void configureElement(final Element parent, final String elementName, final ElementConfigurationAction action)
             throws DatabaseConfigurationException {
         configureFirstElement(parent.getElementsByTagName(elementName), action);
     }
 
-    void configureFirstElement(NodeList nodeList, ElementConfigurationAction action)
+    private void configureFirstElement(final NodeList nodeList, final ElementConfigurationAction action)
             throws DatabaseConfigurationException {
         if (nodeList.getLength() > 0) {
             action.apply((Element)nodeList.item(0));
@@ -314,9 +317,40 @@ public class Configuration implements ErrorHandler {
      * @return The parsed <code>Boolean</code>
      */
     public static boolean parseBoolean(@Nullable final String value, final boolean defaultValue) {
-        return Optional.ofNullable(value)
-                .map(v -> v.equalsIgnoreCase("yes") || v.equalsIgnoreCase("true"))
-                .orElse(defaultValue);
+        Boolean booleanValue = asBoolean(value);
+        if (booleanValue == null)  {
+            return defaultValue;
+        }
+        return booleanValue.booleanValue();
+    }
+
+    private static Boolean asBoolean(@Nullable final String value) {
+        if (value != null) {
+            return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
+        }
+        return null;
+    }
+
+    private static Integer asInteger(@Nullable final String value) {
+        if (value != null) {
+            try {
+                return Integer.valueOf(value);
+            } catch (NumberFormatException nfe) {
+                LOG.warn("Cannot convert {} value to Integer", value, nfe);
+            }
+        }
+        return null;
+    }
+
+    private static Long asLong(@Nullable final String value) {
+        if (value != null) {
+            try {
+                return Long.valueOf(value);
+            } catch (NumberFormatException nfe) {
+                LOG.warn("Cannot convert {} value to Long", value, nfe);
+            }
+        }
+        return null;
     }
 
     /**
@@ -331,7 +365,6 @@ public class Configuration implements ErrorHandler {
         if (value == null || value.isEmpty()) {
             return defaultValue;
         }
-
         try {
             return Integer.parseInt(value);
         } catch (final NumberFormatException e) {
@@ -341,13 +374,9 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureLockManager(final Element lockManager) throws DatabaseConfigurationException {
-        final boolean upgradeCheck = parseBoolean(getConfigAttributeValue(lockManager, "upgrade-check"), false);
-        final boolean warnWaitOnReadForWrite = parseBoolean(getConfigAttributeValue(lockManager, "warn-wait-on-read-for-write"), false);
-        final boolean pathsMultiWriter = parseBoolean(getConfigAttributeValue(lockManager, "paths-multi-writer"), false);
-
-        setProperty(LockManager.CONFIGURATION_UPGRADE_CHECK, upgradeCheck);
-        setProperty(LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, warnWaitOnReadForWrite);
-        setProperty(LockManager.CONFIGURATION_PATHS_MULTI_WRITER, pathsMultiWriter);
+        configureProperty(lockManager, "upgrade-check", LockManager.CONFIGURATION_UPGRADE_CHECK, Configuration::asBoolean, FALSE);
+        configureProperty(lockManager, "warn-wait-on-read-for-write", LockManager.CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE, Configuration::asBoolean, FALSE);
+        configureProperty(lockManager, "paths-multi-writer", LockManager.CONFIGURATION_PATHS_MULTI_WRITER, Configuration::asBoolean, FALSE);
 
         configureElement(lockManager, "lock-table", lockTable -> {
             final boolean lockTableDisabled = parseBoolean(getConfigAttributeValue(lockTable, "disabled"), false);
@@ -365,16 +394,15 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureRepository(final Element element) {
-        String root = getConfigAttributeValue(element, "root");
-        if (root == null || root.isEmpty()) {
-            return;
-        }
-
-        if (!root.endsWith("/")) {
-            root += "/";
-        }
-
-        setProperty(Deployment.PROPERTY_APP_ROOT, root);
+        configureProperty(element, "root", Deployment.PROPERTY_APP_ROOT, root -> {
+            if (root.isEmpty()) {
+                return null;
+            }
+            if (root.endsWith("/")) {
+                return root;
+            }
+            return root + "/";
+        }, null);
     }
 
     private void configureBinaryManager(final Element binaryManager) throws DatabaseConfigurationException {
@@ -386,40 +414,13 @@ public class Configuration implements ErrorHandler {
 
     private void configureXQuery(final Element xquery) throws DatabaseConfigurationException {
         //java binding
-        final String javabinding = getConfigAttributeValue(xquery, ENABLE_JAVA_BINDING_ATTRIBUTE);
-
-        if (javabinding != null) {
-            setProperty(PROPERTY_ENABLE_JAVA_BINDING, javabinding);
-        }
-
-        final String disableDeprecated = getConfigAttributeValue(xquery, DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE);
-        setProperty(PROPERTY_DISABLE_DEPRECATED_FUNCTIONS,
-                Configuration.parseBoolean(disableDeprecated, DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT));
-
-        final String optimize = getConfigAttributeValue(xquery, ENABLE_QUERY_REWRITING_ATTRIBUTE);
-
-        if (optimize != null && !optimize.isEmpty()) {
-            setProperty(PROPERTY_ENABLE_QUERY_REWRITING, optimize);
-        }
-
-        final String enforceIndexUse = getConfigAttributeValue(xquery, ENFORCE_INDEX_USE_ATTRIBUTE);
-        if (enforceIndexUse != null) {
-            setProperty(PROPERTY_ENFORCE_INDEX_USE, enforceIndexUse);
-        }
-
-        final String backwardCompatible = getConfigAttributeValue(xquery, XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE);
-
-        if ((backwardCompatible != null) && (!backwardCompatible.isEmpty())) {
-            setProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
-        }
-
-        final String raiseErrorOnFailedRetrieval = getConfigAttributeValue(xquery,
-                XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE);
-        setProperty(PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL,
-                Configuration.parseBoolean(raiseErrorOnFailedRetrieval, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT));
-
-        final String trace = getConfigAttributeValue(xquery, PerformanceStats.CONFIG_ATTR_TRACE);
-        setProperty(PerformanceStats.CONFIG_PROPERTY_TRACE, trace);
+        configureProperty(xquery, ENABLE_JAVA_BINDING_ATTRIBUTE, PROPERTY_ENABLE_JAVA_BINDING);
+        configureProperty(xquery, DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE, PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Configuration::asBoolean, DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT);
+        configureProperty(xquery, ENABLE_QUERY_REWRITING_ATTRIBUTE, PROPERTY_ENABLE_QUERY_REWRITING);
+        configureProperty(xquery, ENFORCE_INDEX_USE_ATTRIBUTE, PROPERTY_ENFORCE_INDEX_USE);
+        configureProperty(xquery, XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE, PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
+        configureProperty(xquery, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE, PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL, Configuration::asBoolean, XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT);
+        configureProperty(xquery, PerformanceStats.CONFIG_ATTR_TRACE, PerformanceStats.CONFIG_PROPERTY_TRACE);
 
         // built-in-modules
         final Map<String, Class<?>> classMap = new HashMap<>();
@@ -443,7 +444,7 @@ public class Configuration implements ErrorHandler {
     private void loadModuleClasses(final Element xquery,
                                    final Map<String, Class<?>> modulesClassMap,
                                    final Map<String, String> modulesSourceMap,
-                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters
+                                   final Map<String, Map<String, List<?>>> moduleParameters
     ) throws DatabaseConfigurationException {
         // add the standard function module
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
@@ -539,25 +540,12 @@ public class Configuration implements ErrorHandler {
      * @throws NumberFormatException if one of the settings is not parseable
      */
     private void configureXUpdate(final Element xupdate) throws NumberFormatException {
-        final String fragmentation = getConfigAttributeValue(xupdate, XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE);
-
-        if (fragmentation != null) {
-            setProperty(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, Integer.valueOf(fragmentation));
-        }
-
-        final String consistencyCheck = getConfigAttributeValue(xupdate, XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE);
-
-        if (consistencyCheck != null) {
-            setProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, parseBoolean(consistencyCheck, false));
-        }
+        configureProperty(xupdate, XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE, PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, Configuration::asInteger, null);
+        configureProperty(xupdate, XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE, PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Configuration::asBoolean, FALSE);
     }
 
     private void configureSaxon(final Element saxon) {
-        final String configurationFile = getConfigAttributeValue( saxon,
-            SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE);
-        if (configurationFile != null) {
-            setProperty(SaxonConfiguration.SAXON_CONFIGURATION_FILE_PROPERTY, configurationFile);
-        }
+        configureProperty(saxon, SaxonConfiguration.SAXON_CONFIGURATION_FILE_ATTRIBUTE, SaxonConfiguration.SAXON_CONFIGURATION_FILE_PROPERTY);
     }
 
     private void configureTransformer(final Element transformer) {
@@ -598,11 +586,7 @@ public class Configuration implements ErrorHandler {
             setProperty(PROPERTY_TRANSFORMER_ATTRIBUTES, attributes);
         }
 
-        final String cachingValue = getConfigAttributeValue(transformer, TRANSFORMER_CACHING_ATTRIBUTE);
-
-        if (cachingValue != null) {
-            setProperty(PROPERTY_CACHING_ATTRIBUTE, parseBoolean(cachingValue, false));
-        }
+        configureProperty(transformer, TRANSFORMER_CACHING_ATTRIBUTE, PROPERTY_CACHING_ATTRIBUTE, Configuration::asBoolean, FALSE);
     }
 
     private void configureParser(final Element parser) throws DatabaseConfigurationException {
@@ -653,55 +637,16 @@ public class Configuration implements ErrorHandler {
      * @param serializer element with serializer settings
      */
     private void configureSerializer(final Element serializer) {
-        final String omitXmlDeclaration = getConfigAttributeValue(serializer, OMIT_XML_DECLARATION_ATTRIBUTE);
-        if (omitXmlDeclaration != null) {
-            setProperty(PROPERTY_OMIT_XML_DECLARATION, omitXmlDeclaration);
-        }
-
-        final String omitOriginalXmlDeclaration = getConfigAttributeValue(serializer, OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE);
-        if (omitOriginalXmlDeclaration != null) {
-            setProperty(PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-        }
-
-        final String outputDocType = getConfigAttributeValue(serializer, OUTPUT_DOCTYPE_ATTRIBUTE);
-        if (outputDocType != null) {
-            setProperty(PROPERTY_OUTPUT_DOCTYPE, outputDocType);
-        }
-
-        final String xinclude = getConfigAttributeValue(serializer, ENABLE_XINCLUDE_ATTRIBUTE);
-        if (xinclude != null) {
-            setProperty(PROPERTY_ENABLE_XINCLUDE, xinclude);
-        }
-
-        final String xsl = getConfigAttributeValue(serializer, ENABLE_XSL_ATTRIBUTE);
-        if (xsl != null) {
-            setProperty(PROPERTY_ENABLE_XSL, xsl);
-        }
-
-        final String indent = getConfigAttributeValue(serializer, INDENT_ATTRIBUTE);
-        if (indent != null) {
-            setProperty(PROPERTY_INDENT, indent);
-        }
-
-        final String compress = getConfigAttributeValue(serializer, COMPRESS_OUTPUT_ATTRIBUTE);
-        if (compress != null) {
-            setProperty(PROPERTY_COMPRESS_OUTPUT, compress);
-        }
-
-        final String internalId = getConfigAttributeValue(serializer, ADD_EXIST_ID_ATTRIBUTE);
-        if (internalId != null) {
-            setProperty(PROPERTY_ADD_EXIST_ID, internalId);
-        }
-
-        final String tagElementMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ELEMENTS_ATTRIBUTE);
-        if (tagElementMatches != null) {
-            setProperty(PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
-        }
-
-        final String tagAttributeMatches = getConfigAttributeValue(serializer, TAG_MATCHING_ATTRIBUTES_ATTRIBUTE);
-        if (tagAttributeMatches != null) {
-            setProperty(PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
-        }
+        configureProperty(serializer, OMIT_XML_DECLARATION_ATTRIBUTE, PROPERTY_OMIT_XML_DECLARATION);
+        configureProperty(serializer, OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE, PROPERTY_OMIT_ORIGINAL_XML_DECLARATION);
+        configureProperty(serializer, OUTPUT_DOCTYPE_ATTRIBUTE, PROPERTY_OUTPUT_DOCTYPE);
+        configureProperty(serializer, ENABLE_XINCLUDE_ATTRIBUTE, PROPERTY_ENABLE_XINCLUDE);
+        configureProperty(serializer, ENABLE_XSL_ATTRIBUTE, PROPERTY_ENABLE_XSL);
+        configureProperty(serializer, INDENT_ATTRIBUTE, PROPERTY_INDENT);
+        configureProperty(serializer, COMPRESS_OUTPUT_ATTRIBUTE, PROPERTY_COMPRESS_OUTPUT);
+        configureProperty(serializer, ADD_EXIST_ID_ATTRIBUTE, PROPERTY_ADD_EXIST_ID);
+        configureProperty(serializer, TAG_MATCHING_ELEMENTS_ATTRIBUTE, PROPERTY_TAG_MATCHING_ELEMENTS);
+        configureProperty(serializer, TAG_MATCHING_ATTRIBUTES_ATTRIBUTE, PROPERTY_TAG_MATCHING_ATTRIBUTES);
 
         final NodeList nlFilters = serializer.getElementsByTagName(CustomMatchListenerFactory.CONFIGURATION_ELEMENT);
         if (nlFilters.getLength() > 0) {
@@ -779,9 +724,6 @@ public class Configuration implements ErrorHandler {
         } else {
             jobType = JobType.valueOf(strJobType.toUpperCase(Locale.ENGLISH));
         }
-
-        final String jobName = getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE);
-
         //get the job resource
         String jobResource = getConfigAttributeValue(job, JOB_CLASS_ATTRIBUTE);
         if (jobResource == null) {
@@ -794,10 +736,10 @@ public class Configuration implements ErrorHandler {
             jobSchedule = getConfigAttributeValue(job, JOB_PERIOD_ATTRIBUTE);
         }
 
-        final String jobUnschedule = getConfigAttributeValue(job, JOB_UNSCHEDULE_ON_EXCEPTION);
-
         //create the job config
         try {
+            final String jobName = getConfigAttributeValue(job, JOB_NAME_ATTRIBUTE);
+            final String jobUnschedule = getConfigAttributeValue(job, JOB_UNSCHEDULE_ON_EXCEPTION);
             final JobConfig jobConfig = new JobConfig(jobType, jobName, jobResource, jobSchedule, jobUnschedule);
 
             //get and set the job delay
@@ -845,10 +787,7 @@ public class Configuration implements ErrorHandler {
      * @throws DatabaseConfigurationException
      */
     private void configureBackend(final Optional<Path> dbHome, Element con) throws DatabaseConfigurationException {
-        final String database = getConfigAttributeValue(con, PROPERTY_DATABASE);
-        if (database != null) {
-            setProperty(PROPERTY_DATABASE, database);
-        }
+        configureProperty(con, PROPERTY_DATABASE, PROPERTY_DATABASE);
 
         // directory for database files
         final String dataFiles = getConfigAttributeValue(con, DATA_DIR_ATTRIBUTE);
@@ -930,33 +869,12 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        final String pageSize = getConfigAttributeValue(con, NativeBroker.PAGE_SIZE_ATTRIBUTE);
-        if (pageSize != null) {
-            try {
-                setProperty(PROPERTY_PAGE_SIZE, Integer.valueOf(pageSize));
-            } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + PROPERTY_PAGE_SIZE + " value to integer: {}", pageSize, nfe);
-            }
-        }
+        configureProperty(con, NativeBroker.PAGE_SIZE_ATTRIBUTE, PROPERTY_PAGE_SIZE, Configuration::asInteger, null);
 
         //Not clear : rather looks like a buffers count
-        final String collCacheSize = getConfigAttributeValue(con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE);
-        if (collCacheSize != null) {
-            try {
-                setProperty(PROPERTY_COLLECTION_CACHE_SIZE, Integer.valueOf(collCacheSize));
-            } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + PROPERTY_COLLECTION_CACHE_SIZE + " value to integer: {}", collCacheSize, nfe);
-            }
-        }
+        configureProperty(con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE, PROPERTY_COLLECTION_CACHE_SIZE, Configuration::asInteger, null);
 
-        final String nodesBuffer = getConfigAttributeValue(con, BrokerPool.NODES_BUFFER_ATTRIBUTE);
-        if (nodesBuffer != null) {
-            try {
-                setProperty(PROPERTY_NODES_BUFFER, Integer.valueOf(nodesBuffer));
-            } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + PROPERTY_NODES_BUFFER + " value to integer: {}", nodesBuffer, nfe);
-            }
-        }
+        configureProperty(con, BrokerPool.NODES_BUFFER_ATTRIBUTE, PROPERTY_NODES_BUFFER, Configuration::asInteger, null);
 
         String diskSpace = getConfigAttributeValue(con, BrokerPool.DISK_SPACE_MIN_ATTRIBUTE);
         if (diskSpace != null) {
@@ -971,16 +889,12 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        final String posixChownRestrictedStr = getConfigAttributeValue(con, POSIX_CHOWN_RESTRICTED_ATTRIBUTE);
-        final boolean posixChownRestricted = posixChownRestrictedStr == null || Boolean.parseBoolean(posixChownRestrictedStr);
-        setProperty(POSIX_CHOWN_RESTRICTED_PROPERTY, posixChownRestricted);
+        configureProperty(con, POSIX_CHOWN_RESTRICTED_ATTRIBUTE, POSIX_CHOWN_RESTRICTED_PROPERTY, Configuration::asBoolean, TRUE);
 
-        final String preserveOnCopyStr = getConfigAttributeValue(con, PRESERVE_ON_COPY_ATTRIBUTE);
         // default or configuration explicitly specifies that attributes should be preserved on copy
-        final PreserveType preserveOnCopy = Boolean.parseBoolean(preserveOnCopyStr)
-                ? PreserveType.PRESERVE
-                : PreserveType.NO_PRESERVE;
-        setProperty(PRESERVE_ON_COPY_PROPERTY, preserveOnCopy);
+        configureProperty(con, PRESERVE_ON_COPY_ATTRIBUTE, PRESERVE_ON_COPY_PROPERTY,
+                preserveOnCopyStr -> Boolean.parseBoolean(preserveOnCopyStr) ? PreserveType.PRESERVE : PreserveType.NO_PRESERVE,
+                PreserveType.NO_PRESERVE);
 
         final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
         if (startupConf.getLength() > 0) {
@@ -998,14 +912,9 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
-        final String enabled = getConfigAttributeValue(recovery, RECOVERY_ENABLED_ATTRIBUTE);
-        setProperty(PROPERTY_RECOVERY_ENABLED, parseBoolean(enabled, true));
-
-        final String syncOnCommit = getConfigAttributeValue(recovery, RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE);
-        setProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT, parseBoolean(syncOnCommit, true));
-
-        final String groupCommit = getConfigAttributeValue(recovery, RECOVERY_GROUP_COMMIT_ATTRIBUTE);
-        setProperty(PROPERTY_RECOVERY_GROUP_COMMIT, parseBoolean(groupCommit, false));
+        configureProperty(recovery, RECOVERY_ENABLED_ATTRIBUTE, PROPERTY_RECOVERY_ENABLED, Configuration::asBoolean, TRUE);
+        configureProperty(recovery, RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE, PROPERTY_RECOVERY_SYNC_ON_COMMIT, Configuration::asBoolean, TRUE);
+        configureProperty(recovery, RECOVERY_GROUP_COMMIT_ATTRIBUTE, PROPERTY_RECOVERY_GROUP_COMMIT, Configuration::asBoolean, FALSE);
 
         final String journalDir = getConfigAttributeValue(recovery, RECOVERY_JOURNAL_DIR_ATTRIBUTE);
         if (journalDir != null) {
@@ -1032,13 +941,8 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        final String forceRestart = getConfigAttributeValue(recovery, RECOVERY_FORCE_RESTART_ATTRIBUTE);
-        final boolean forceRestartValue = "yes".equals(forceRestart);
-        setProperty(PROPERTY_RECOVERY_FORCE_RESTART, forceRestartValue);
-
-        final String postRecoveryCheck = getConfigAttributeValue(recovery, RECOVERY_POST_RECOVERY_CHECK);
-        final boolean postRecoveryCheckValue = "yes".equals(postRecoveryCheck);
-        setProperty(PROPERTY_RECOVERY_CHECK, postRecoveryCheckValue);
+        configureProperty(recovery, RECOVERY_FORCE_RESTART_ATTRIBUTE, PROPERTY_RECOVERY_FORCE_RESTART, Configuration::asBoolean, FALSE);
+        configureProperty(recovery, RECOVERY_POST_RECOVERY_CHECK, PROPERTY_RECOVERY_CHECK, Configuration::asBoolean, FALSE);
     }
 
     /**
@@ -1047,25 +951,8 @@ public class Configuration implements ErrorHandler {
      * @param watchDog element with watchDog settings
      */
     private void configureWatchdog(final Element watchDog) {
-        final String timeout = getConfigAttributeValue(watchDog, "query-timeout");
-
-        if (timeout != null) {
-            try {
-                setProperty(PROPERTY_QUERY_TIMEOUT, Long.valueOf(timeout));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
-
-        final String maxOutput = getConfigAttributeValue(watchDog, "output-size-limit");
-
-        if (maxOutput != null) {
-            try {
-                setProperty(PROPERTY_OUTPUT_SIZE_LIMIT, Integer.valueOf(maxOutput));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
+        configureProperty(watchDog, "query-timeout", PROPERTY_QUERY_TIMEOUT, Configuration::asLong, null);
+        configureProperty(watchDog, "output-size-limit", PROPERTY_OUTPUT_SIZE_LIMIT, Configuration::asInteger, null);
     }
 
     /**
@@ -1074,25 +961,8 @@ public class Configuration implements ErrorHandler {
      * @param queryPool element with queryPool settings
      */
     private void configureXQueryPool(final Element queryPool) {
-        final String maxStackSize = getConfigAttributeValue(queryPool, MAX_STACK_SIZE_ATTRIBUTE);
-
-        if (maxStackSize != null) {
-            try {
-                setProperty(PROPERTY_MAX_STACK_SIZE, Integer.valueOf(maxStackSize));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
-
-        final String maxPoolSize = getConfigAttributeValue(queryPool, POOL_SIZE_ATTTRIBUTE);
-
-        if (maxPoolSize != null) {
-            try {
-                setProperty(XQueryPool.PROPERTY_POOL_SIZE, Integer.valueOf(maxPoolSize));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
+        configureProperty(queryPool, MAX_STACK_SIZE_ATTRIBUTE, PROPERTY_MAX_STACK_SIZE, Configuration::asInteger, null);
+        configureProperty(queryPool, POOL_SIZE_ATTTRIBUTE, XQueryPool.PROPERTY_POOL_SIZE, Configuration::asInteger, null);
     }
 
     private void configureStartup(final Element startup) throws DatabaseConfigurationException {
@@ -1155,49 +1025,14 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configurePool(final Element pool) {
-        final String min = getConfigAttributeValue(pool, MIN_CONNECTIONS_ATTRIBUTE);
-        if (min != null) {
-            try {
-                setProperty(PROPERTY_MIN_CONNECTIONS, Integer.valueOf(min));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
-
-        final String max = getConfigAttributeValue(pool, MAX_CONNECTIONS_ATTRIBUTE);
-        if (max != null) {
-            try {
-                setProperty(PROPERTY_MAX_CONNECTIONS, Integer.valueOf(max));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
-
-        final String sync = getConfigAttributeValue(pool, SYNC_PERIOD_ATTRIBUTE);
-        if (sync != null) {
-            try {
-                setProperty(PROPERTY_SYNC_PERIOD, Long.valueOf(sync));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
-
-        final String maxShutdownWait = getConfigAttributeValue(pool, SHUTDOWN_DELAY_ATTRIBUTE);
-        if (maxShutdownWait != null) {
-            try {
-                setProperty(PROPERTY_SHUTDOWN_DELAY, Long.valueOf(maxShutdownWait));
-            } catch (final NumberFormatException e) {
-                LOG.warn(e);
-            }
-        }
+        configureProperty(pool, MIN_CONNECTIONS_ATTRIBUTE, PROPERTY_MIN_CONNECTIONS, Configuration::asInteger, null);
+        configureProperty(pool, MAX_CONNECTIONS_ATTRIBUTE, PROPERTY_MAX_CONNECTIONS, Configuration::asInteger, null);
+        configureProperty(pool, SYNC_PERIOD_ATTRIBUTE, PROPERTY_SYNC_PERIOD, Configuration::asInteger, null);
+        configureProperty(pool, SHUTDOWN_DELAY_ATTRIBUTE, PROPERTY_SHUTDOWN_DELAY, Configuration::asInteger, null);
     }
 
     private void configureIndexer(final Document doc, final Element indexer) throws DatabaseConfigurationException {
-        final String caseSensitive = getConfigAttributeValue(indexer, INDEX_CASE_SENSITIVE_ATTRIBUTE);
-
-        if (caseSensitive != null) {
-            setProperty(PROPERTY_INDEX_CASE_SENSITIVE, parseBoolean(caseSensitive, false));
-        }
+        configureProperty(indexer, INDEX_CASE_SENSITIVE_ATTRIBUTE, PROPERTY_INDEX_CASE_SENSITIVE, Configuration::asBoolean, FALSE);
 
         int depth = 3;
         final String indexDepth = getConfigAttributeValue(indexer, INDEX_DEPTH_ATTRIBUTE);
@@ -1217,17 +1052,8 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        final String suppressWS = getConfigAttributeValue(indexer, SUPPRESS_WHITESPACE_ATTRIBUTE);
-
-        if (suppressWS != null) {
-            setProperty(PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
-        }
-
-        final String suppressWSmixed = getConfigAttributeValue(indexer, PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE);
-
-        if (suppressWSmixed != null) {
-            setProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT, parseBoolean(suppressWSmixed, false));
-        }
+        configureProperty(indexer, SUPPRESS_WHITESPACE_ATTRIBUTE, PROPERTY_SUPPRESS_WHITESPACE);
+        configureProperty(indexer, PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, PROPERTY_PRESERVE_WS_MIXED_CONTENT, Configuration::asBoolean, FALSE);
 
         // index settings
         final NodeList cl = doc.getElementsByTagName(CONFIGURATION_INDEX_ELEMENT_NAME);
@@ -1267,14 +1093,10 @@ public class Configuration implements ErrorHandler {
 
     private void configureValidation(final Optional<Path> dbHome, final Element validation) {
         // Determine validation mode
-        final String mode = getConfigAttributeValue(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE);
-        if (mode != null) {
-            setProperty(PROPERTY_VALIDATION_MODE, mode);
-        }
+        configureProperty(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE, PROPERTY_VALIDATION_MODE);
 
         // cache
-        final GrammarPool gp = new GrammarPool();
-        setProperty(XMLReaderObjectFactory.GRAMMAR_POOL, gp);
+        setProperty(XMLReaderObjectFactory.GRAMMAR_POOL, new GrammarPool());
 
         // Configure the Entity Resolver
         final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
@@ -1339,21 +1161,14 @@ public class Configuration implements ErrorHandler {
         }
     }
 
-    private void configureRpcServer(final Element validation) {
-        final NodeList contentFile = validation.getElementsByTagName("content-file");
-        if (contentFile.getLength() > 0) {
-            final String inMemorySize = ((Element) contentFile.item(0)).getAttribute("in-memory-size");
-            if (inMemorySize != null) {
-                setProperty(PROPERTY_IN_MEMORY_SIZE, parseInt(inMemorySize, DEFAULT_IN_MEMORY_SIZE));
-            }
-        }
-        final NodeList contentFilePool = validation.getElementsByTagName("content-file-pool");
-        if (contentFilePool.getLength() > 0) {
-            final String size = ((Element) contentFilePool.item(0)).getAttribute("size");
-            setProperty(ContentFilePool.PROPERTY_POOL_SIZE, parseInt(size, -1));
-            final String maxIdle = ((Element) contentFilePool.item(0)).getAttribute("max-idle");
-            setProperty(ContentFilePool.PROPERTY_POOL_MAX_IDLE, parseInt(maxIdle, 5));
-        }
+    private void configureRpcServer(final Element validation) throws DatabaseConfigurationException {
+        configureElement(validation, "content-file", element -> {
+            configureProperty(element, "in-memory-size", PROPERTY_IN_MEMORY_SIZE, Configuration::asInteger, DEFAULT_IN_MEMORY_SIZE);
+        });
+        configureElement(validation, "content-file-pool", element -> {
+            configureProperty(element, "size", ContentFilePool.PROPERTY_POOL_SIZE, Configuration::asInteger, -1);
+            configureProperty(element, "max-idle", ContentFilePool.PROPERTY_POOL_MAX_IDLE, Configuration::asInteger, 5);
+        });
     }
 
     /**
@@ -1379,6 +1194,25 @@ public class Configuration implements ErrorHandler {
         }
         // If the value has not been overridden in a system property, then get it from the configuration
         return element.getAttribute(attributeName);
+    }
+
+    private <T> void configureProperty(final Element element, final String attributeName, final String propertyName,
+                                       final Function<String, T> valueConverter, final T defaultValue) {
+        final String attributeValue = getConfigAttributeValue(element, attributeName);
+        if (attributeValue != null) {
+            T value = valueConverter.apply(attributeValue);
+            if (value != null) {
+                setProperty(propertyName, value);
+                return;
+            }
+        }
+        if (defaultValue != null) {
+            setProperty(propertyName, defaultValue);
+        }
+    }
+
+    private void configureProperty(final Element element, final String attributeName, final String propertyName) {
+        configureProperty(element, attributeName, propertyName, Function.identity(), null);
     }
 
     /**
