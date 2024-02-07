@@ -82,6 +82,28 @@
                 <filtering>true</filtering>
             </testResource>
         </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

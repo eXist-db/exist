@@ -188,8 +188,16 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queries:jar:${lucene.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>com.ibm.icu:icu4j:jar</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>net.sf.xmldb-org:xmldb-api:jar</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
