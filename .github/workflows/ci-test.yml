@@ -28,7 +28,10 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
-      - run: mvn -V -B dependency-check:check
+      - name: OWASP dependency check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -V -B dependency-check:check
         timeout-minutes: 60
   test:
     name: ${{ matrix.os }} Test
