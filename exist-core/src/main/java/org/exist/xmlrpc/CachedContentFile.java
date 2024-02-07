@@ -23,15 +23,19 @@ package org.exist.xmlrpc;
 
 import org.exist.util.io.ContentFile;
 
+import java.util.function.Consumer;
+
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
  */
-public final class CachedContentFile extends AbstractCachedResult {
+final class CachedContentFile extends AbstractCachedResult {
     private final ContentFile result;
+    private final Consumer<ContentFile> poolConsumer;
 
-    public CachedContentFile(final ContentFile result) {
+    CachedContentFile(final ContentFile result, final Consumer<ContentFile> poolConsumer) {
         super(0);
         this.result = result;
+        this.poolConsumer = poolConsumer;
     }
 
     @Override
@@ -42,6 +46,7 @@ public final class CachedContentFile extends AbstractCachedResult {
     @Override
     protected void doClose() {
         if (result != null) {
+            poolConsumer.accept(result);
             result.close();
         }
     }
