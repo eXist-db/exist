@@ -35,6 +35,8 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.util.NamedThreadFactory;
+import org.exist.util.io.ContentFilePool;
+import org.exist.util.io.TemporaryFileManager;
 
 import java.util.Map;
 import java.util.UUID;
@@ -55,6 +57,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
 
     private final boolean useDefaultUser;
     private final BrokerPool brokerPool;
+    private final ContentFilePool contentFilePool;
     protected final QueryResultCache resultSets = new QueryResultCache();
 
     protected final AtomicLazyVal<ExecutorService> restoreExecutorService;
@@ -71,6 +74,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
             this.databaseId = databaseId;
         }
         this.brokerPool = BrokerPool.getInstance(this.databaseId);
+        this.contentFilePool = new ContentFilePool(TemporaryFileManager.getInstance(), brokerPool.getId(),  brokerPool.getConfiguration());
         this.restoreExecutorService = new AtomicLazyVal<>(() -> Executors.newCachedThreadPool(new NamedThreadFactory(brokerPool, "rpc-db-restore")));
     }
 
@@ -78,7 +82,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
     public Object getRequestProcessor(final XmlRpcRequest pRequest) throws XmlRpcException {
         final XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) pRequest.getConfig();
         final Subject user = authenticate(config.getBasicUserName(), config.getBasicPassword());
-        return new RpcConnection(this, user);
+        return new RpcConnection(this, contentFilePool, user);
     }
 
     protected Subject authenticate(String username, String password) throws XmlRpcException {

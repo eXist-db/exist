@@ -29,6 +29,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.function.Consumer;
+
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.assertj.core.api.Assertions.*;
@@ -40,23 +42,26 @@ import static org.assertj.core.api.Assertions.*;
 class CachedContentFileTest {
     @Mock
     ContentFile contentFile;
+    @Mock
+    Consumer<ContentFile> contentFileConsumer;
+
     CachedContentFile cachedContentFile;
     CachedContentFile cachedContentFileNoContent;
 
     @BeforeEach
     void prepare() {
-        cachedContentFile = new CachedContentFile(contentFile);
-        cachedContentFileNoContent= new CachedContentFile(null);
+        cachedContentFile = new CachedContentFile(contentFile, contentFileConsumer);
+        cachedContentFileNoContent= new CachedContentFile(null, contentFileConsumer);
     }
 
     @AfterEach
     void verifyMocks() {
-        verify(contentFile);
+        verify(contentFile, contentFileConsumer);
     }
 
     @Test
     void testGetResult() {
-        replay(contentFile);
+        replay(contentFile, contentFileConsumer);
         assertThat(cachedContentFile.getResult()).isEqualTo(contentFile);
         assertThat(cachedContentFileNoContent.getResult()).isNull();
     }
@@ -64,7 +69,8 @@ class CachedContentFileTest {
     @Test
     void testDoClose() {
         contentFile.close();
-        replay(contentFile);
+        contentFileConsumer.accept(contentFile);
+        replay(contentFile, contentFileConsumer);
         assertThatNoException().isThrownBy(cachedContentFile::doClose);
         assertThatNoException().isThrownBy(cachedContentFileNoContent::doClose);
     }

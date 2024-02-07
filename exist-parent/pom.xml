@@ -129,6 +129,7 @@
         <easymock.version>5.2.0</easymock.version>
         <objenesis.version>3.3</objenesis.version>
         <assertj.version>3.25.3</assertj.version>
+        <awaitility.version>4.2.0</awaitility.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>2.2</hamcrest.version>
 
@@ -589,6 +590,12 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

@@ -73,8 +73,8 @@ import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.io.ContentFile;
+import org.exist.util.io.ContentFilePool;
 import org.exist.util.io.TemporaryFileManager;
-import org.exist.util.io.VirtualTempPath;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -137,12 +137,14 @@ public class RpcConnection implements RpcAPI {
     private final static Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
 
     private final XmldbRequestProcessorFactory factory;
+    private final ContentFilePool filePool;
     private final Subject user;
     private final Random random = new Random();
 
-    public RpcConnection(final XmldbRequestProcessorFactory factory, final Subject user) {
+    public RpcConnection(final XmldbRequestProcessorFactory factory, final ContentFilePool filePool, final Subject user) {
         super();
         this.factory = factory;
+        this.filePool = filePool;
         this.user = user;
     }
 
@@ -167,10 +169,6 @@ public class RpcConnection implements RpcAPI {
 
     private TemporaryFileManager temporaryFileManager() {
         return TemporaryFileManager.getInstance();
-    }
-
-    private VirtualTempPath createVirtualTempPath() {
-        return new VirtualTempPath(temporaryFileManager());
     }
 
     private boolean createCollection(final XmldbURI collUri, final Date created) throws PermissionDeniedException, EXistException {
@@ -705,7 +703,7 @@ public class RpcConnection implements RpcAPI {
 
             // A tweak for very large resources, VirtualTempFile
             final Map<String, Object> result = new HashMap<>();
-            final VirtualTempPath tempFile = createVirtualTempPath();
+            final ContentFile tempFile = filePool.borrowObject();
 
             if (document.getResourceType() == DocumentImpl.XML_FILE) {
                 try (final OutputStream out = tempFile.newOutputStream();
@@ -725,11 +723,11 @@ public class RpcConnection implements RpcAPI {
             if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile, filePool::returnObject));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                tempFile.close();
+                filePool.returnObject(tempFile);
             }
             result.put("offset", offset);
 
@@ -2178,7 +2176,7 @@ public class RpcConnection implements RpcAPI {
             final NodeProxy node = new NodeProxy(null, document, nodeId);
 
             final Map<String, Object> result = new HashMap<>();
-            final VirtualTempPath tempFile = createVirtualTempPath();
+            final ContentFile tempFile = filePool.borrowObject();
 
             if (compression && LOG.isDebugEnabled()) {
                 LOG.debug("retrieveFirstChunk with compression");
@@ -2197,11 +2195,11 @@ public class RpcConnection implements RpcAPI {
             if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile, filePool::returnObject));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                tempFile.close();
+                filePool.returnObject(tempFile);
             }
             result.put("offset", offset);
             return result;
@@ -2281,7 +2279,7 @@ public class RpcConnection implements RpcAPI {
             }
 
             final Map<String, Object> result = new HashMap<>();
-            final VirtualTempPath tempFile = createVirtualTempPath();
+            final ContentFile tempFile = filePool.borrowObject();
 
             if (compression && LOG.isDebugEnabled()) {
                 LOG.debug("retrieveFirstChunk with compression");
@@ -2310,11 +2308,11 @@ public class RpcConnection implements RpcAPI {
             if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                 offset = firstChunk.length;
 
-                final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
+                final int handle = factory.resultSets.add(new CachedContentFile(tempFile, filePool::returnObject));
                 result.put("handle", Integer.toString(handle));
                 result.put("supports-long-offset", Boolean.TRUE);
             } else {
-                tempFile.close();
+                filePool.returnObject(tempFile);
             }
             result.put("offset", offset);
             return result;
@@ -2398,7 +2396,7 @@ public class RpcConnection implements RpcAPI {
             try {
 
                 final Map<String, Object> result = new HashMap<>();
-                final VirtualTempPath tempFile = createVirtualTempPath();
+                final ContentFile tempFile = filePool.borrowObject();
 
                 if (compression && LOG.isDebugEnabled()) {
                     LOG.debug("retrieveAllFirstChunk with compression");
@@ -2452,11 +2450,11 @@ public class RpcConnection implements RpcAPI {
                 if (tempFile.size() > MAX_DOWNLOAD_CHUNK_SIZE) {
                     offset = firstChunk.length;
 
-                    final int handle = factory.resultSets.add(new CachedContentFile(tempFile));
+                    final int handle = factory.resultSets.add(new CachedContentFile(tempFile, filePool::returnObject));
                     result.put("handle", Integer.toString(handle));
                     result.put("supports-long-offset", Boolean.TRUE);
                 } else {
-                    tempFile.close();
+                    filePool.returnObject(tempFile);
                 }
                 result.put("offset", offset);
                 return result;
@@ -3045,7 +3043,7 @@ public class RpcConnection implements RpcAPI {
         return this.<List<List<Object>>>readCollection(collUri).apply((collection, broker, transaction) -> {
             final ElementIndex elementIndex = broker.getElementIndex();
             if (elementIndex != null) {
-                final Occurrences occurrences[] = elementIndex.scanIndexedElements(collection, inclusive);
+                final Occurrences[] occurrences = elementIndex.scanIndexedElements(collection, inclusive);
                 final List<List<Object>> result = new ArrayList<>(occurrences.length);
                 for (final Occurrences occurrence : occurrences) {
                     final QName qname = (QName) occurrence.getTerm();
