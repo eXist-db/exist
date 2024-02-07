@@ -27,6 +27,7 @@ import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -51,12 +52,12 @@ public final class MemoryContentsImpl implements MemoryContents {
     private static final int NUMBER_OF_BLOCKS = BLOCK_SIZE;
 
     private final int initialBlocks;
-    private final ReadWriteLock lock;
+    private final ReadWriteLock readWriteLock;
 
     /**
      * To store the contents efficiently we store the first {@value #BLOCK_SIZE}
      * bytes in a {@value #BLOCK_SIZE} direct {@code byte[]}. The next
-     * {@value #NUMBER_OF_BLOCKS} * {@value #BLOCK_SIZE} bytes go into a indirect
+     * {@value #NUMBER_OF_BLOCKS} * {@value #BLOCK_SIZE} bytes go into an indirect
      * {@code byte[][]} that is lazily allocated.
      */
     private byte[] directBlock;
@@ -78,7 +79,7 @@ public final class MemoryContentsImpl implements MemoryContents {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Initializing with {} initial blocks", initialBlocks);
         }
-        lock = new ReentrantReadWriteLock();
+        readWriteLock = new ReentrantReadWriteLock();
         initialize();
     }
 
@@ -86,10 +87,20 @@ public final class MemoryContentsImpl implements MemoryContents {
         directBlock = new byte[BLOCK_SIZE];
         if (initialBlocks > 1) {
             indirectBlocks = new byte[BLOCK_SIZE][];
-            for (int i = 0; i < initialBlocks - 1; ++i) {
-                indirectBlocks[i] = new byte[BLOCK_SIZE];
+            for (int index = 0; index < initialBlocks - 1; ++index) {
+                indirectBlocks[index] = new byte[BLOCK_SIZE];
             }
             indirectBlocksAllocated = initialBlocks - 1;
+        }
+        size = 0L;
+    }
+
+    private void resetValues() {
+        Arrays.fill(directBlock, (byte)0);
+        if (indirectBlocksAllocated > 0) {
+            for (int index = 0; index < indirectBlocksAllocated; index++) {
+                Arrays.fill(indirectBlocks[index], (byte)0);
+            }
         }
         size = 0L;
     }
@@ -117,19 +128,19 @@ public final class MemoryContentsImpl implements MemoryContents {
             throw new AssertionError("memory values bigger than 16MB not supported");
         }
         if (blocksRequired > indirectBlocksAllocated) {
-            for (int i = indirectBlocksAllocated; i < blocksRequired; ++i) {
-                indirectBlocks[i] = new byte[BLOCK_SIZE];
+            for (int index = indirectBlocksAllocated; index < blocksRequired; ++index) {
+                indirectBlocks[index] = new byte[BLOCK_SIZE];
                 indirectBlocksAllocated += 1;
             }
         }
     }
 
-    private ManagedLock readLock() {
-        return ManagedLock.acquire(lock, Lock.LockMode.READ_LOCK);
+    private ManagedLock<ReadWriteLock> readLock() {
+        return ManagedLock.acquire(readWriteLock, Lock.LockMode.READ_LOCK);
     }
 
-    private ManagedLock writeLock() {
-        return ManagedLock.acquire(lock, Lock.LockMode.WRITE_LOCK);
+    private ManagedLock<ReadWriteLock> writeLock() {
+        return ManagedLock.acquire(readWriteLock, Lock.LockMode.WRITE_LOCK);
     }
 
     @Override
@@ -137,21 +148,21 @@ public final class MemoryContentsImpl implements MemoryContents {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Reset content");
         }
-        try (ManagedLock lock = writeLock()) {
-            initialize();
+        try (ManagedLock<ReadWriteLock> lock = writeLock()) {
+            resetValues();
         }
     }
 
     @Override
     public long size() {
-        try (ManagedLock lock = readLock()) {
+        try (ManagedLock<ReadWriteLock> lock = readLock()) {
             return size;
         }
     }
 
     @Override
     public int read(byte[] dst, long position, int off, int len) {
-        try (ManagedLock lock = readLock()) {
+        try (ManagedLock<ReadWriteLock> lock = readLock()) {
             if (position >= size) {
                 return -1;
             }
@@ -173,7 +184,7 @@ public final class MemoryContentsImpl implements MemoryContents {
 
     @Override
     public long transferTo(OutputStream target, long position) throws IOException {
-        try (ManagedLock lock = readLock()) {
+        try (ManagedLock<ReadWriteLock> lock = readLock()) {
             long transferred = 0L;
             long toTransfer = size - position;
             int currentBlock = (int) (position / BLOCK_SIZE);
@@ -193,14 +204,13 @@ public final class MemoryContentsImpl implements MemoryContents {
 
     @Override
     public int write(byte[] src, long position, int off, int len) {
-        try (ManagedLock lock = writeLock()) {
+        try (ManagedLock<ReadWriteLock> lock = writeLock()) {
             ensureCapacity(position + len);
-            int toWrite = min(len, Integer.MAX_VALUE);
             int currentBlock = (int) (position / BLOCK_SIZE);
             int startIndexInBlock = (int) (position - (currentBlock * (long) BLOCK_SIZE));
             int written = 0;
-            while (written < toWrite) {
-                int lengthInBlock = min(BLOCK_SIZE - startIndexInBlock, toWrite - written);
+            while (written < len) {
+                int lengthInBlock = min(BLOCK_SIZE - startIndexInBlock, len - written);
                 byte[] block = getBlock(currentBlock);
                 System.arraycopy(src, off + written, block, startIndexInBlock, lengthInBlock);
                 written += lengthInBlock;
@@ -215,7 +225,7 @@ public final class MemoryContentsImpl implements MemoryContents {
 
     @Override
     public int writeAtEnd(byte[] src, int off, int len) {
-        try (ManagedLock lock = writeLock()) {
+        try (ManagedLock<ReadWriteLock> lock = writeLock()) {
             return write(src, size, off, len);
         }
     }
