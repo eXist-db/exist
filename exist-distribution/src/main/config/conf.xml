@@ -192,10 +192,10 @@
         <startup>
             <triggers>
 
-		<!--
-		    Trigger for registering the GNU Crypto JCE Provider with Java
-		-->
-		<trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
+                <!--
+                    Trigger for registering the GNU Crypto JCE Provider with Java
+                -->
+                <trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
 
                 <!--
                     Trigger for registering eXists XML:DB URL handler with Java
@@ -553,13 +553,13 @@
                 The following index can be used to speed up 'order by' expressions
                 by pre-ordering a node set.
             -->
-            <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
+            <module id="sort-index" class="org.exist.indexing.sort.SortIndex"/>
 
             <!-- 
                 New range index based on Apache Lucene. Replaces the old range index which is
                 hard-wired into eXist core.
             -->
-            <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
+            <module id="range-index" class="org.exist.indexing.range.RangeIndex"/>
 
             <!--
                  The following module is not really an index (though it sits 
