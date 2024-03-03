@@ -33,6 +33,7 @@ import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
+import org.exist.util.io.ContentFilePool;
 import org.exist.xquery.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -96,6 +97,8 @@ import org.xmlresolver.Resolver;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static org.exist.util.io.ContentFilePool.PROPERTY_IN_MEMORY_SIZE;
+import static org.exist.util.io.VirtualTempPath.DEFAULT_IN_MEMORY_SIZE;
 
 
 public class Configuration implements ErrorHandler
@@ -107,6 +110,7 @@ public class Configuration implements ErrorHandler
     protected DocumentBuilder         builder        = null;
     protected HashMap<String, Object> config         = new HashMap<>(); //Configuration
 
+    private static final String PRP_DETAILS = "{}: {}";
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
@@ -291,6 +295,11 @@ public class Configuration implements ErrorHandler
                 configureValidation(existHomeDirname, (Element)validations.item(0));
             }
 
+            //RPC server
+            final NodeList rpcServer = doc.getElementsByTagName("rpc-server");
+            if (rpcServer.getLength() > 0) {
+                configureRpcServer((Element) rpcServer.item(0));
+            }
         }
         catch(final SAXException | IOException | ParserConfigurationException e) {
             LOG.error("error while reading config file: {}", configFilename, e);
@@ -1499,8 +1508,28 @@ public class Configuration implements ErrorHandler
         final GrammarPool gp = new GrammarPool();
         config.put( XMLReaderObjectFactory.GRAMMAR_POOL, gp);
     }
-    
-     /**
+
+    private void configureRpcServer(final Element validation) {
+        final NodeList contentFile = validation.getElementsByTagName("content-file");
+        if (contentFile.getLength() > 0) {
+            final String inMemorySize = ((Element) contentFile.item(0)).getAttribute("in-memory-size");
+            if (inMemorySize != null) {
+                config.put(PROPERTY_IN_MEMORY_SIZE, parseInt(inMemorySize, DEFAULT_IN_MEMORY_SIZE));
+                LOG.debug(PRP_DETAILS, PROPERTY_IN_MEMORY_SIZE, config.get(PROPERTY_IN_MEMORY_SIZE));
+            }
+        }
+        final NodeList contentFilePool = validation.getElementsByTagName("content-file-pool");
+        if (contentFilePool.getLength() > 0) {
+            final String size = ((Element) contentFilePool.item(0)).getAttribute("size");
+            config.put(ContentFilePool.PROPERTY_POOL_SIZE, parseInt(size, -1));
+            LOG.debug(PRP_DETAILS, ContentFilePool.PROPERTY_POOL_SIZE, config.get(ContentFilePool.PROPERTY_POOL_SIZE));
+            final String maxIdle = ((Element) contentFilePool.item(0)).getAttribute("max-idle");
+            config.put(ContentFilePool.PROPERTY_POOL_MAX_IDLE, parseInt(maxIdle, 5));
+            LOG.debug(PRP_DETAILS, ContentFilePool.PROPERTY_POOL_MAX_IDLE, config.get(ContentFilePool.PROPERTY_POOL_MAX_IDLE));
+        }
+    }
+
+    /**
      * Gets the value of a configuration attribute
      *
      * The value typically is specified in the conf.xml file, but can be overridden with using a System Property
@@ -1596,6 +1625,17 @@ public class Configuration implements ErrorHandler
         config.remove(name);
     }
 
+    public int getInteger(final String name) {
+        return getInteger(name, -1);
+    }
+
+    public int getInteger(final String name, final int defaultValue) {
+        return Optional.ofNullable(getProperty(name))
+                .filter(v -> v instanceof Integer)
+                .map(v -> (int) v)
+                .orElse(defaultValue);
+    }
+
     /**
      * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
      * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
@@ -1632,14 +1672,6 @@ public class Configuration implements ErrorHandler
             return defaultValue;
         }
     }
-
-    public int getInteger(final String name) {
-        return Optional.ofNullable(getProperty(name))
-                .filter(v -> v instanceof Integer)
-                .map(v -> (int)v)
-                .orElse(-1);
-    }
-
 
     /**
      * (non-Javadoc).

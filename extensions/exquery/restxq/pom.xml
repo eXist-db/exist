@@ -246,7 +246,7 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-expath:jar:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed for XQSuite tests that depend on EXPath HTTP client -->
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

@@ -179,7 +179,7 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
 
                                 <!-- needed for running tests that depend on eXist-db Jetty server -->
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>

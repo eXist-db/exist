@@ -74,6 +74,7 @@ public final class VirtualTempPath implements ContentFile {
         }
     }
 
+    @Override
     public OutputStream newOutputStream() throws IOException {
         long stamp = lock.writeLock();
         try {

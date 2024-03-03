@@ -46,7 +46,7 @@
     </scm>
 
     <properties>
-        <tika.version>2.7.0</tika.version>
+        <tika.version>2.9.1</tika.version>
     </properties>
 
     <dependencies>
@@ -169,7 +169,7 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.apache.tika:tika-parsers-standard-package</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar:${junit.vintage.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
