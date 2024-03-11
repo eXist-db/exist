@@ -131,10 +131,11 @@ import static java.nio.file.StandardOpenOption.*;
  */
 public class RpcConnection implements RpcAPI {
 
-    private final static Logger LOG = LogManager.getLogger(RpcConnection.class);
+    private static final Logger LOG = LogManager.getLogger(RpcConnection.class);
 
-    public final static int MAX_DOWNLOAD_CHUNK_SIZE = 1024 * 1024;  // 1 MB
-    private final static Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
+    public static final int MAX_DOWNLOAD_CHUNK_SIZE = 1024 * 1024;  // 1 MB
+    private static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
+    private static final String EXIST_RESULT_XMLNS_EXIST = "<exist:result xmlns:exist=\"";
 
     private final XmldbRequestProcessorFactory factory;
     private final ContentFilePool filePool;
@@ -296,7 +297,7 @@ public class RpcConnection implements RpcAPI {
      * @throws IOException If an error occurs reading of writing to the disk
      * @throws PermissionDeniedException If the current user is not allowed to perform the action
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     private CompiledXQuery compile(final DBBroker broker, final Source source, final Map<String, Object> parameters) throws XPathException, IOException, PermissionDeniedException {
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryPool pool = broker.getBrokerPool().getXQueryPool();
@@ -1609,7 +1610,7 @@ public class RpcConnection implements RpcAPI {
             if (opt == null || opt.equalsIgnoreCase("no")) {
                 buf.append("<?xml version=\"1.0\"?>\n");
             }
-            buf.append("<exist:result xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ");
+            buf.append(EXIST_RESULT_XMLNS_EXIST).append(Namespaces.EXIST_NS).append("\" ");
             buf.append("hitCount=\"0\"/>");
             return buf.toString();
         }
@@ -1622,7 +1623,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         final StringWriter writer = new StringWriter();
-        writer.write("<exist:result xmlns:exist=\"");
+        writer.write(EXIST_RESULT_XMLNS_EXIST);
         writer.write(Namespaces.EXIST_NS);
         writer.write("\" hits=\"");
         writer.write(Integer.toString(resultSet.getItemCount()));
@@ -1685,7 +1686,7 @@ public class RpcConnection implements RpcAPI {
                 final QueryResult qr = this.<QueryResult>compileQuery(broker, transaction, source, parameters).apply(compiled -> doQuery(broker, compiled, null, parameters));
                 if (qr == null) {
                     return "<?xml version=\"1.0\"?>\n"
-                            + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
+                            + EXIST_RESULT_XMLNS_EXIST + Namespaces.EXIST_NS + "\" "
                             + "hitCount=\"0\"/>";
                 }
                 try (qr) {
@@ -1711,7 +1712,7 @@ public class RpcConnection implements RpcAPI {
      * @throws EXistException if an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     public Map<String, Object> queryP(final String xpath, final String documentPath,
                                       final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return queryP(xpath,
@@ -1729,6 +1730,7 @@ public class RpcConnection implements RpcAPI {
      * @throws EXistException if an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
+    @Deprecated(since = "7.0")
     private Map<String, Object> queryP(final String xpath, final XmldbURI docUri,
                                        final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
 
@@ -1985,7 +1987,7 @@ public class RpcConnection implements RpcAPI {
         return result;
     }
 
-    @Deprecated
+    @Deprecated(since = "7.0")
     @Override
     public Map<String, Object> execute(final String pathToQuery, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         final long startTime = System.currentTimeMillis();
@@ -3115,7 +3117,7 @@ public class RpcConnection implements RpcAPI {
         return buffer;
     }
 
-    @Deprecated
+    @Deprecated(since = "7.0")
     public boolean moveOrCopyResource(final String documentPath, final String destinationPath,
             final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -3123,7 +3125,7 @@ public class RpcConnection implements RpcAPI {
                 XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, PreserveType.DEFAULT);
     }
 
-    @Deprecated
+    @Deprecated(since = "7.0")
     public boolean moveOrCopyResource(final String documentPath, final String destinationPath,
             final String newName, final boolean move, final PreserveType preserve)
             throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -3156,7 +3158,7 @@ public class RpcConnection implements RpcAPI {
         );
     }
 
-    @Deprecated
+    @Deprecated(since = "7.0")
     public boolean moveOrCopyCollection(final String collectionName, final String destinationPath,
             final String newName, final boolean move)
             throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -3164,7 +3166,7 @@ public class RpcConnection implements RpcAPI {
                 XmldbURI.xmldbUriFor(destinationPath), XmldbURI.xmldbUriFor(newName), move, PreserveType.DEFAULT);
     }
 
-    @Deprecated
+    @Deprecated(since = "7.0")
     public boolean moveOrCopyCollection(final String collectionName, final String destinationPath,
             final String newName, final boolean move, final PreserveType preserve)
             throws EXistException, PermissionDeniedException, URISyntaxException {
@@ -3518,13 +3520,13 @@ public class RpcConnection implements RpcAPI {
     }
 
     @Override
-    @Deprecated
+    @Deprecated(since = "7.0")
     public Map<String, Object> queryP(final byte[] xpath, final String docName, final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException, URISyntaxException {
         return queryP(new String(xpath, DEFAULT_ENCODING), docName, s_id, parameters);
     }
 
     @Override
-    @Deprecated
+    @Deprecated(since = "7.0")
     public Map<String, Object> queryP(final byte[] xpath, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
         return queryP(new String(xpath, DEFAULT_ENCODING), (XmldbURI) null, null, parameters);
     }

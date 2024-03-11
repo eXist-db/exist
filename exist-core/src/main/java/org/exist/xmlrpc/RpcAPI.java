@@ -78,7 +78,7 @@ public interface RpcAPI {
      * @throws PermissionDeniedException If the current user does not have the permission to shut down the database
      * @deprecated Use {@link org.exist.xmlrpc.RpcAPI#shutdown(long)}
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     boolean shutdown(String delay) throws PermissionDeniedException;
 
     /**
@@ -388,7 +388,7 @@ public interface RpcAPI {
      * @throws EXistException If an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     Map<String, Object> queryP(byte[] xpath, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
@@ -404,7 +404,7 @@ public interface RpcAPI {
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      * @throws URISyntaxException If the URI contains syntax errors
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     Map<String, Object> queryP(byte[] xpath, String docName, String s_id, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
@@ -453,7 +453,7 @@ public interface RpcAPI {
      *
      * @deprecated use {@link #queryPT(byte[], Map)} or int {@link #executeQuery(byte[], Map)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     byte[] query(
             byte[] xquery,
             int howmany,
@@ -496,7 +496,7 @@ public interface RpcAPI {
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      * @deprecated use List query() or int executeQuery() instead
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     Map<String, Object> querySummary(String xquery)
             throws EXistException, PermissionDeniedException;
 
@@ -729,7 +729,7 @@ public interface RpcAPI {
      *
      * @deprecated Use {@link #executeT(String, Map)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     Map<String, Object> execute(String path, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
@@ -749,7 +749,7 @@ public interface RpcAPI {
      *
      * @deprecated Use {@link #executeT(String, Map)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "7.0")
     Map<String, Object> executeT(String path, Map<String, Object> parameters)
             throws EXistException, PermissionDeniedException;
 
