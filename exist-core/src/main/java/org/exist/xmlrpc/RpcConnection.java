@@ -131,10 +131,11 @@ import static java.nio.file.StandardOpenOption.*;
  */
 public class RpcConnection implements RpcAPI {
 
-    private final static Logger LOG = LogManager.getLogger(RpcConnection.class);
+    private static final Logger LOG = LogManager.getLogger(RpcConnection.class);
 
-    public final static int MAX_DOWNLOAD_CHUNK_SIZE = 1024 * 1024;  // 1 MB
-    private final static Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
+    public static final int MAX_DOWNLOAD_CHUNK_SIZE = 1024 * 1024;  // 1 MB
+    private static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
+    private static final String EXIST_RESULT_XMLNS_EXIST = "<exist:result xmlns:exist=\"";
 
     private final XmldbRequestProcessorFactory factory;
     private final ContentFilePool filePool;
@@ -1608,7 +1609,7 @@ public class RpcConnection implements RpcAPI {
             if (opt == null || opt.equalsIgnoreCase("no")) {
                 buf.append("<?xml version=\"1.0\"?>\n");
             }
-            buf.append("<exist:result xmlns:exist=\"").append(Namespaces.EXIST_NS).append("\" ");
+            buf.append(EXIST_RESULT_XMLNS_EXIST).append(Namespaces.EXIST_NS).append("\" ");
             buf.append("hitCount=\"0\"/>");
             return buf.toString();
         }
@@ -1621,7 +1622,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         final StringWriter writer = new StringWriter();
-        writer.write("<exist:result xmlns:exist=\"");
+        writer.write(EXIST_RESULT_XMLNS_EXIST);
         writer.write(Namespaces.EXIST_NS);
         writer.write("\" hits=\"");
         writer.write(Integer.toString(resultSet.getItemCount()));
@@ -1684,7 +1685,7 @@ public class RpcConnection implements RpcAPI {
                 final QueryResult qr = this.<QueryResult>compileQuery(broker, transaction, source, parameters).apply(compiled -> doQuery(broker, compiled, null, parameters));
                 if (qr == null) {
                     return "<?xml version=\"1.0\"?>\n"
-                            + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
+                            + EXIST_RESULT_XMLNS_EXIST + Namespaces.EXIST_NS + "\" "
                             + "hitCount=\"0\"/>";
                 }
                 try {
@@ -1730,6 +1731,7 @@ public class RpcConnection implements RpcAPI {
      * @throws EXistException if an internal error occurs
      * @throws PermissionDeniedException If the current user is not allowed to perform this action
      */
+    @Deprecated
     private Map<String, Object> queryP(final String xpath, final XmldbURI docUri,
                                        final String s_id, final Map<String, Object> parameters) throws EXistException, PermissionDeniedException {
 
