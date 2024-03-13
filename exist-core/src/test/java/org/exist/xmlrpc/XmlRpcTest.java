@@ -21,7 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import org.apache.xmlrpc.XmlRpcException;
@@ -34,7 +33,8 @@ import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.Compressor;
 import org.exist.util.MimeType;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 
 import static java.lang.Boolean.FALSE;
@@ -59,6 +59,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -126,15 +127,14 @@ public class XmlRpcTest {
 
     @After
     public void tearDown() throws XmlRpcException, MalformedURLException {
-        XmlRpcClient xmlrpc = getClient();
+        final XmlRpcClient xmlrpc = getClient();
         assertThat(xmlrpc.execute("removeCollection", List.of(TARGET_COLLECTION.toString()))).isInstanceOf(Boolean.class);
     }
 
     @Test
     public void testStoreAndRetrieve() throws XmlRpcException, IOException {
-        XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
+        final List<Object> params = new ArrayList<>();
         params.add(XML_DATA);
         params.add(TARGET_RESOURCE.toString());
         params.add(0);
@@ -187,7 +187,7 @@ public class XmlRpcTest {
         params.add(Map.of());
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             int offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -210,15 +210,14 @@ public class XmlRpcTest {
     }
 
     private XmlRpcClient createCollection(XmldbURI collection) throws XmlRpcException, MalformedURLException {
-        XmlRpcClient xmlrpc = getClient();
+        final XmlRpcClient xmlrpc = getClient();
         assertThat(xmlrpc.execute("createCollection", List.of(collection.toString()))).isEqualTo(TRUE);
         return xmlrpc;
     }
 
     private XmlRpcClient storeData() throws XmlRpcException, MalformedURLException {
-        XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
+        final List<Object> params = new ArrayList<>();
         params.add(XML_DATA);
         params.add(TARGET_RESOURCE.toString());
         params.add(1);
@@ -241,8 +240,7 @@ public class XmlRpcTest {
     @Test
     public void getDocumentDataChunked_nextChunk() throws IOException, XmlRpcException {
         final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         final String generatedXml = generateXml((int) (MAX_DOWNLOAD_CHUNK_SIZE * 1.5));
         params.add(generatedXml);
         params.add(TARGET_RESOURCE.toString());
@@ -257,7 +255,7 @@ public class XmlRpcTest {
         params.add(parameters);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             int offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -278,8 +276,7 @@ public class XmlRpcTest {
     @Test
     public void getDocumentDataChunked_nextExtendedChunk() throws IOException, XmlRpcException {
         final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         final String generatedXml = generateXml((int) (MAX_DOWNLOAD_CHUNK_SIZE * 1.75));
         params.add(generatedXml);
         params.add(TARGET_RESOURCE.toString());
@@ -294,7 +291,7 @@ public class XmlRpcTest {
         params.add(parameters);
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
 
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             long offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -321,7 +318,7 @@ public class XmlRpcTest {
 
         // 1) upload
         String uploadedFileName = null;
-        try (final InputStream is = new ByteArrayInputStream(binary)) {
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(binary)) {
             final byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
             int len;
             while ((len = is.read(chunk)) > -1) {
@@ -353,7 +350,7 @@ public class XmlRpcTest {
         params.add(resURI);
         params.add(Map.of());
         Map table = (Map) xmlrpc.execute("getDocumentData", params);
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             long offset = (int) table.get("offset");
             byte[] data = (byte[]) table.get("data");
             os.write(data);
@@ -375,8 +372,7 @@ public class XmlRpcTest {
     @Test
     public void testRemoveCollection() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List params = new ArrayList(1);
+        final List params = new ArrayList(1);
         params.add(TARGET_COLLECTION.toString());
         assertThat(xmlrpc.execute("hasCollection", params)).isEqualTo(TRUE);
         assertThat(xmlrpc.execute("removeCollection", params)).isEqualTo(TRUE);
@@ -386,8 +382,7 @@ public class XmlRpcTest {
     @Test
     public void testRemoveDoc() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List params = new ArrayList(1);
+        final List params = new ArrayList(1);
         params.add(TARGET_RESOURCE.toString());
         assertThat(xmlrpc.execute("hasDocument", params)).isEqualTo(TRUE);
         assertThat(xmlrpc.execute("remove", params)).isEqualTo(TRUE);
@@ -397,14 +392,13 @@ public class XmlRpcTest {
     @Test
     public void testRetrieveDoc() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        Map<String, String> options = new HashMap<>();
+        final Map<String, String> options = new HashMap<>();
         options.put("indent", "yes");
         options.put("encoding", StandardCharsets.UTF_8.name());
         options.put("expand-xincludes", "yes");
         options.put("process-xsl-pi", "no");
 
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_RESOURCE.toString());
         params.add(options);
 
@@ -418,8 +412,8 @@ public class XmlRpcTest {
     @Test
     public void testCharEncoding() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-        List<Object> params = new ArrayList<>();
-        String query = "distinct-values(//para)";
+        final List<Object> params = new ArrayList<>();
+        final String query = "distinct-values(//para)";
         params.add(query.getBytes(UTF_8));
         params.add(Map.of());
 
@@ -434,9 +428,8 @@ public class XmlRpcTest {
     @Test
     public void testQuery() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
-        String query = "(::pragma exist:serialize indent=no::) //para";
+        final List<Object> params = new ArrayList<>();
+        final String query = "(::pragma exist:serialize indent=no::) //para";
         params.add(query.getBytes(UTF_8));
         params.add(10);
         params.add(1);
@@ -448,8 +441,7 @@ public class XmlRpcTest {
     @Test
     public void testQuerySummary() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("//para");
 
         assertThat((Map<String, Object>) xmlrpc.execute("querySummary", params)).isNotEmpty();
@@ -458,13 +450,12 @@ public class XmlRpcTest {
     @Test
     public void testQueryWithStylesheet() throws XmlRpcException, MalformedURLException, SAXException, IOException {
         final XmlRpcClient xmlrpc = storeData();
-
-        Map<String, String> options = new HashMap<>();
+        final Map<String, String> options = new HashMap<>();
         options.put(EXistOutputKeys.STYLESHEET, "test.xsl");
         options.put(EXistOutputKeys.STYLESHEET_PARAM + ".testparam", "Test");
         options.put(OutputKeys.OMIT_XML_DECLARATION, "no");
         //TODO : check the number of resources before !
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         String query = "//para[1]";
         params.add(query.getBytes(UTF_8));
         params.add(options);
@@ -493,9 +484,8 @@ public class XmlRpcTest {
     @Test
     public void testCompile() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
-        String query = "<a>Invalid<a>";
+        final List<Object> params = new ArrayList<>();
+        final String query = "<a>Invalid<a>";
         params.add(query.getBytes(UTF_8));
         params.add(Map.of());
 
@@ -508,10 +498,9 @@ public class XmlRpcTest {
     public void testAccount() throws MalformedURLException, XmlRpcException {
         final String user = "rudi";
         final String passwd = "pass";
-        String simpleMd5 = MessageDigester.md5(passwd, true);
-        String digest = MessageDigester.md5(user + ":exist:" + passwd, false);
-
-        List<Object> params = new ArrayList<>(12);
+        final String simpleMd5 = MessageDigester.md5(passwd, true);
+        final String digest = MessageDigester.md5(user + ":exist:" + passwd, false);
+        final List<Object> params = new ArrayList<>(12);
         params.add(user);
         params.add(simpleMd5);
         params.add(digest);
@@ -535,9 +524,9 @@ public class XmlRpcTest {
         XmlRpcClientConfigImpl config = (XmlRpcClientConfigImpl) xmlrpc.getClientConfig();
         config.setBasicUserName("admin");
         config.setBasicPassword("");
-        assertThat(xmlrpc.execute("sync", List.of())).isEqualTo(TRUE);
+        assertThat(xmlrpc.execute("sync", Collections.emptyList())).isEqualTo(TRUE);
 
-        Object[] accounts = (Object[]) xmlrpc.execute("getAccounts", List.of());
+        Object[] accounts = (Object[]) xmlrpc.execute("getAccounts", Collections.emptyList());
         assertThat(accounts).hasSize(5);
 
         for (Object account : accounts) {
@@ -576,7 +565,7 @@ public class XmlRpcTest {
     public void testGroups() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = getClient();
 
-        assertThat((Object[]) xmlrpc.execute("getGroups", List.of()))
+        assertThat((Object[]) xmlrpc.execute("getGroups", Collections.emptyList()))
                 .containsExactlyInAnyOrder("dba", "guest", "nogroup")
                 .allSatisfy(groupName -> {
                     assertThat((Map<String, Object>) xmlrpc.execute("getGroup", List.of(groupName)))
@@ -584,7 +573,7 @@ public class XmlRpcTest {
                 });
 
         assertThat(xmlrpc.execute("addGroup", List.of("testGroup", Map.of()))).isEqualTo(TRUE);
-        assertThat((Object[]) xmlrpc.execute("getGroups", List.of()))
+        assertThat((Object[]) xmlrpc.execute("getGroups", Collections.emptyList()))
                 .containsExactlyInAnyOrder("dba", "guest", "nogroup", "testGroup");
 
         assertThat(xmlrpc.execute("updateGroup", List.of("testGroup", List.of("admin"), Map.of()))).isEqualTo(TRUE);
@@ -597,8 +586,7 @@ public class XmlRpcTest {
     @Test
     public void testExecuteQuery() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         String query = "distinct-values(//para)";
         params.add(query.getBytes(UTF_8));
         params.add(Map.of());
@@ -625,18 +613,17 @@ public class XmlRpcTest {
     @Test
     public void testQueryModuleExternalVar() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(QUERY_MODULE_DATA.getBytes(UTF_8));
 
-        Map<String, Object> qp = new HashMap<>();
+        final Map<String, Object> qp = new HashMap<>();
 
-        Map<String, Object> namespaceDecls = new HashMap<>();
+        final Map<String, Object> namespaceDecls = new HashMap<>();
         namespaceDecls.put("tm", "http://exist-db.org/test/module");
         namespaceDecls.put("tm-query", "http://exist-db.org/test/module/query");
         qp.put(RpcAPI.NAMESPACES, namespaceDecls);
 
-        Map<String, Object> variableDecls = new HashMap<>();
+        final Map<String, Object> variableDecls = new HashMap<>();
         variableDecls.put("tm:imported-external-string", "imported-string-value");
         variableDecls.put("tm-query:local-external-string", "local-string-value");
         qp.put(RpcAPI.VARIABLES, variableDecls);
@@ -651,8 +638,7 @@ public class XmlRpcTest {
     @Test
     public void testCollectionWithAccentsAndSpaces() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = createCollection(SPECIAL_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(XML_DATA);
         params.add(SPECIAL_RESOURCE.toString());
         params.add(1);
@@ -675,7 +661,7 @@ public class XmlRpcTest {
         }
         assertThat(foundMatch).withFailMessage("added collection not found").isTrue();
 
-        Map<String, String> options = new HashMap<>();
+        final Map<String, String> options = new HashMap<>();
         options.put("indent", "yes");
         options.put("encoding", StandardCharsets.UTF_8.name());
         options.put("expand-xincludes", "yes");
@@ -691,15 +677,14 @@ public class XmlRpcTest {
 
     @Test
     public void testGetVersion() throws XmlRpcException, MalformedURLException {
-        XmlRpcClient xmlrpc = getClient();
-        assertThat(xmlrpc.execute("getVersion", List.of())).isEqualTo(Version.getVersion());
+        final XmlRpcClient xmlrpc = getClient();
+        assertThat(xmlrpc.execute("getVersion", Collections.emptyList())).isEqualTo(Version.getVersion());
     }
 
     @Test
     public void testConfigureCollection() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         params.add("<configuration/>");
         assertThat(xmlrpc.execute("configureCollection", params)).isEqualTo(TRUE);
@@ -708,8 +693,7 @@ public class XmlRpcTest {
     @Test
     public void testCreateId() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((String) xmlrpc.execute("createId", params)).endsWith(".xml");
     }
@@ -717,8 +701,7 @@ public class XmlRpcTest {
     @Test
     public void testCreateResourceId() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = createCollection(TARGET_COLLECTION);
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((String) xmlrpc.execute("createResourceId", params)).endsWith(".xml");
     }
@@ -726,8 +709,7 @@ public class XmlRpcTest {
     @Test
     public void testGetCollectionDesc() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         Map<String, Object> response = (Map<String, Object>) xmlrpc.execute("getCollectionDesc", params);
         assertThat(response).isNotEmpty();
@@ -736,8 +718,7 @@ public class XmlRpcTest {
     @Test
     public void testExistsAndCanOpenCollection() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat(xmlrpc.execute("existsAndCanOpenCollection", params)).isEqualTo(TRUE);
     }
@@ -745,8 +726,7 @@ public class XmlRpcTest {
     @Test
     public void testDescribeResource() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_RESOURCE.toString());
         Map<String, Object> result = (Map<String, Object>) xmlrpc.execute("describeResource", params);
         assertThat(result).isNotEmpty();
@@ -755,8 +735,7 @@ public class XmlRpcTest {
     @Test
     public void testGetContentDigest() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(MODULE_RESOURCE.toString());
         params.add("SHA-256");
         Map<String, Object> result = (Map<String, Object>) xmlrpc.execute("getContentDigest", params);
@@ -767,9 +746,9 @@ public class XmlRpcTest {
     public void testDocumentListing() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
 
-        assertThat((Object[]) xmlrpc.execute("getDocumentListing", List.of())).isNotEmpty();
+        assertThat((Object[]) xmlrpc.execute("getDocumentListing", Collections.emptyList())).isNotEmpty();
 
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((Object[]) xmlrpc.execute("getDocumentListing", params)).isNotEmpty();
     }
@@ -777,8 +756,7 @@ public class XmlRpcTest {
     @Test
     public void testGetCollectionListing() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("/db");
         Object[] result = (Object[]) xmlrpc.execute("getCollectionListing", params);
         assertThat(result).isNotEmpty();
@@ -787,8 +765,7 @@ public class XmlRpcTest {
     @Test
     public void testGetResourceCount() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((Integer) xmlrpc.execute("getResourceCount", params)).isEqualTo(3);
     }
@@ -796,8 +773,7 @@ public class XmlRpcTest {
     @Test
     public void testPermissions() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((Map<String, Object>) xmlrpc.execute("getPermissions", params)).isNotEmpty();
 
@@ -834,15 +810,14 @@ public class XmlRpcTest {
         params.add("admin");
         params.add("dba");
         params.add(755);
-        params.add(List.of());
+        params.add(Collections.emptyList());
         assertThat(xmlrpc.execute("setPermissions", params)).isEqualTo(TRUE);
     }
 
     @Test
     public void testChgrp() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(MODULE_RESOURCE.toString());
         params.add("guest");
         assertThat(xmlrpc.execute("chgrp", params)).isEqualTo(TRUE);
@@ -851,8 +826,7 @@ public class XmlRpcTest {
     @Test
     public void testChown() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(MODULE_RESOURCE.toString());
         params.add("anoymous");
         assertThat(xmlrpc.execute("chown", params)).isEqualTo(TRUE);
@@ -864,8 +838,7 @@ public class XmlRpcTest {
     @Test
     public void testGetBinaryResource() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(MODULE_RESOURCE.toString());
         assertThat((byte[]) xmlrpc.execute("getBinaryResource", params)).isNotEmpty();
     }
@@ -873,8 +846,7 @@ public class XmlRpcTest {
     @Test
     public void testListDocumentPermissions() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((Map<String, List>) xmlrpc.execute("listDocumentPermissions", params)).isNotEmpty();
     }
@@ -882,8 +854,7 @@ public class XmlRpcTest {
     @Test
     public void testListCollectionPermissions() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("/db");
         assertThat((Map<String, List>) xmlrpc.execute("listCollectionPermissions", params)).isNotEmpty();
     }
@@ -891,8 +862,7 @@ public class XmlRpcTest {
     @Test
     public void testGetSubCollectionPermissions() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("/db");
         params.add("xmlrpc");
         assertThat((Map<String, List>) xmlrpc.execute("getSubCollectionPermissions", params)).isNotEmpty();
@@ -901,8 +871,7 @@ public class XmlRpcTest {
     @Test
     public void testGetSubCollectionCreationTime() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("/db");
         params.add("xmlrpc");
         assertThat((Long)xmlrpc.execute("getSubCollectionCreationTime", params)).isPositive();
@@ -911,8 +880,7 @@ public class XmlRpcTest {
     @Test
     public void testGetSubResourcePermissions() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         params.add(TEST_XML_URI.toString());
         assertThat((Map<String, List>) xmlrpc.execute("getSubResourcePermissions", params)).isNotEmpty();
@@ -921,8 +889,7 @@ public class XmlRpcTest {
     @Test
     public void testGetCreationDate() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_COLLECTION.toString());
         assertThat((Date) xmlrpc.execute("getCreationDate", params)).isNotNull();
     }
@@ -930,8 +897,7 @@ public class XmlRpcTest {
     @Test
     public void testGetTimestamps() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(TARGET_RESOURCE.toString());
         assertThat((Object[]) xmlrpc.execute("getTimestamps", params)).isNotEmpty();
     }
@@ -939,8 +905,7 @@ public class XmlRpcTest {
     @Test
     public void testPrintDiagnostics() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add(QUERY_MODULE_DATA);
         params.add(Map.of());
         assertThat((String) xmlrpc.execute("printDiagnostics", params))
@@ -950,8 +915,7 @@ public class XmlRpcTest {
     @Test
     public void testQueryP() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("//test");
         params.add(TARGET_RESOURCE.toString());
         params.add("1");
@@ -965,8 +929,7 @@ public class XmlRpcTest {
     @Test
     public void testQueryPT() throws XmlRpcException, MalformedURLException {
         final XmlRpcClient xmlrpc = storeData();
-
-        List<Object> params = new ArrayList<>();
+        final List<Object> params = new ArrayList<>();
         params.add("//test".getBytes());
         params.add(Map.of());
         assertThat((Map<String, Object>) xmlrpc.execute("queryPT", params)).isNotEmpty();
