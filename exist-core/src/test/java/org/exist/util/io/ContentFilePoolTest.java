@@ -55,7 +55,7 @@ class ContentFilePoolTest {
         configuration = new Configuration();
         configuration.setProperty(PROPERTY_POOL_SIZE, 1);
         configuration.setProperty(PROPERTY_IN_MEMORY_SIZE, 10);
-        pool = new ContentFilePool(temporaryFileManager, configuration);
+        pool = new ContentFilePool(temporaryFileManager, null, configuration);
         replay(contentFile, temporaryFileManager);
     }
 

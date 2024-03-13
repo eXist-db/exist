@@ -26,6 +26,8 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.exist.util.Configuration;
 
+import javax.annotation.Nullable;
+
 /**
  * Generic pool for {@link ContentFile} instances used to represent RPC server data up to a defined size in memory first
  * before storing the data in the file system using the {@link TemporaryFileManager}.
@@ -50,23 +52,25 @@ public final class ContentFilePool extends GenericObjectPool<ContentFile> {
      * Creates a new pool using the givem temporary file manager, configuration and maximum idle time.
      *
      * @param tempFileManager the temporary file manager used when need to swap out data bigger than max in memory size
+     * @param brokerId the optional broker id
      * @param config the configuration used to configure the main pool properties
      */
-    public ContentFilePool(final TemporaryFileManager tempFileManager, final Configuration config) {
-        super(new ContentFilePoolObjectFactory(tempFileManager, toInMemorySize(config)), toPoolConfig(config));
+    public ContentFilePool(final TemporaryFileManager tempFileManager, @Nullable final String brokerId, final Configuration config) {
+        super(new ContentFilePoolObjectFactory(tempFileManager, toInMemorySize(config)), toPoolConfig(brokerId, config));
     }
 
     private static int toInMemorySize(final Configuration config) {
         return config.getInteger(PROPERTY_IN_MEMORY_SIZE, VirtualTempPath.DEFAULT_IN_MEMORY_SIZE);
     }
 
-    private static GenericObjectPoolConfig<ContentFile> toPoolConfig(final Configuration config) {
+    private static GenericObjectPoolConfig<ContentFile> toPoolConfig(@Nullable final String brokerId, final Configuration config) {
         final GenericObjectPoolConfig<ContentFile> poolConfig = new GenericObjectPoolConfig<>();
         poolConfig.setBlockWhenExhausted(false);
         poolConfig.setLifo(true);
         poolConfig.setMaxIdle(config.getInteger(PROPERTY_POOL_MAX_IDLE));
         poolConfig.setMaxTotal(config.getInteger(PROPERTY_POOL_SIZE));
-        poolConfig.setJmxNameBase("org.exist.management.exist:type=ContentFilePool");
+        final String poolName = brokerId == null ? "" : "pool." + brokerId;
+        poolConfig.setJmxNameBase("org.exist.management.exist:type=ContentFilePool,name=" + poolName);
         return poolConfig;
     }
 
