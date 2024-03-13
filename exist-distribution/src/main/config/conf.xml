@@ -816,7 +816,7 @@
 
     -->
     <serializer add-exist-id="none" compress-output="no" output-doctype="yes" enable-xinclude="yes"
-                enable-xsl="no" indent="yes" match-tagging-attributes="no"
+                enable-xsl="no" indent="yes" match-tagging-attributes="no" 
                 match-tagging-elements="no">
         <!--
             You may add as many custom-filters as you want, they will be executed
@@ -1121,6 +1121,6 @@
         - max-idle:
           Defines the maximum amount of idle pool entries that will not be removed for later reuse.
         -->
-        <content-file-pool size="-1" max-idle="5"/>
+        <content-file-pool size="10" max-idle="5"/>
     </rpc-server>
 </exist>
