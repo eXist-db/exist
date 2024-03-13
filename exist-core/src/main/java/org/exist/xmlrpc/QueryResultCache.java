@@ -51,9 +51,9 @@ public class QueryResultCache {
                 .expireAfterAccess(TIMEOUT, TimeUnit.MILLISECONDS)
                 .removalListener((key, value, cause) -> {
                     final AbstractCachedResult qr = (AbstractCachedResult)value;
-                    qr.free();  // must free associated resources
+                    qr.close();  // must close associated resources
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Removing cached result set: {}", new Date(qr.getTimestamp()).toString());
+                        LOG.debug("Removing cached result set: {}", new Date(qr.getTimestamp()));
                     }
                 }).build();
     }

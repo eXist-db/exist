@@ -24,7 +24,9 @@ package org.exist.xmlrpc;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -71,8 +73,8 @@ class QueryResultCacheTest {
     void testRemove() throws InterruptedException {
         assertThatNoException().isThrownBy(() ->  cache.remove(-1));
         assertThatNoException().isThrownBy(() ->  cache.remove(0));
-        Thread.sleep(400);
-        assertThat(cachedResult.getResult()).isOne();
+
+        await().atMost(1, SECONDS).untilAsserted(() -> assertThat(cachedResult.getResult()).isOne());
         assertThatNoException().isThrownBy(() ->  cache.remove(1));
     }
 
@@ -82,8 +84,8 @@ class QueryResultCacheTest {
         assertThatNoException().isThrownBy(() ->  cache.remove(0, 0));
         assertThat(cachedResult.getResult()).isZero();
         assertThatNoException().isThrownBy(() ->  cache.remove(0, 42));
-        Thread.sleep(400);
-        assertThat(cachedResult.getResult()).isOne();
+
+        await().atMost(1, SECONDS).untilAsserted(() -> assertThat(cachedResult.getResult()).isOne());
         assertThatNoException().isThrownBy(() ->  cache.remove(1, 0));
     }
 

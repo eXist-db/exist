@@ -612,9 +612,7 @@ public class XmlRpcTest {
         params.clear();
         params.add(handle);
         Integer hits = (Integer) xmlrpc.execute("getHits", params);
-        assertThat(hits).isNotNull();
-
-        assertThat(hits).isEqualTo(2);
+        assertThat(hits).isNotNull().isEqualTo(2);
 
         params.add(0);
         params.add(new HashMap());
@@ -910,7 +908,7 @@ public class XmlRpcTest {
         List<Object> params = new ArrayList<>();
         params.add("/db");
         params.add("xmlrpc");
-        assertThat((Long)xmlrpc.execute("getSubCollectionCreationTime", params)).isGreaterThan(0);
+        assertThat((Long)xmlrpc.execute("getSubCollectionCreationTime", params)).isPositive();
     }
 
     @Test

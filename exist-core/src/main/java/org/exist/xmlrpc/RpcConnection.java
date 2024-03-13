@@ -3049,7 +3049,7 @@ public class RpcConnection implements RpcAPI {
         return this.<List<List<Object>>>readCollection(collUri).apply((collection, broker, transaction) -> {
             final ElementIndex elementIndex = broker.getElementIndex();
             if (elementIndex != null) {
-                final Occurrences occurrences[] = elementIndex.scanIndexedElements(collection, inclusive);
+                final Occurrences[] occurrences = elementIndex.scanIndexedElements(collection, inclusive);
                 final List<List<Object>> result = new ArrayList<>(occurrences.length);
                 for (final Occurrences occurrence : occurrences) {
                     final QName qname = (QName) occurrence.getTerm();
