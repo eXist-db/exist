@@ -26,7 +26,6 @@ import static java.lang.Math.min;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 /**
@@ -84,7 +83,7 @@ final class MemoryContentsInputStream extends InputStream {
     public int read(byte[] b, int off, int len) throws IOException {
         boolean success = false;
         int read = 0;
-        while (!success) {
+        while (!success && len > 0) {
             long positionBefore = POSITION_UPDATER.get(this);
             read = this.memoryContents.read(b, positionBefore, off, len);
             if (read < 1) {
@@ -115,13 +114,4 @@ final class MemoryContentsInputStream extends InputStream {
         }
         return skipped;
     }
-
-    // Java 9 method, has to compile under Java 1.7 so no @Override
-    public long transferTo(OutputStream out) throws IOException {
-        long positionBefore = POSITION_UPDATER.get(this);
-        long written = this.memoryContents.transferTo(out, positionBefore);
-        POSITION_UPDATER.set(this, this.memoryContents.size());
-        return written;
-    }
-
 }

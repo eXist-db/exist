@@ -10,12 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '8'
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: xqts-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -29,7 +29,7 @@ jobs:
         run: find exist-xqts/target -name exist-xqts-runner.sh -exec {} --xqts-version HEAD --output-dir /tmp/xqts-output --exclude-test-case RangeExpr-411d,RangeExpr-409d,RangeExpr-408d,RangeExpr-409c,RangeExpr-408c,GenCompEq-21 \;
       - name: Check for HeapDump
         id: check_heapdump
-        uses: andstor/file-existence-action@v2
+        uses: andstor/file-existence-action@v3
         with:
           files: "/tmp/*.hprof"
       - name: Compress HeapDump
@@ -37,14 +37,14 @@ jobs:
         run: zstd --rm -9 --progress -T0 /tmp/*.hprof
       - name: Attach HeapDump artifact
         if: steps.check_heapdump.outputs.files_exists == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exist-xqts-runner-hprof
           retention-days: 1
           path: /tmp/*.hprof.zst
       - name: Archive XQTS Logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: xqts-logs
           retention-days: 14

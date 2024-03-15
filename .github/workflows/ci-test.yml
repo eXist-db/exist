@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
@@ -23,12 +23,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
-      - run: mvn -V -B dependency-check:check
+      - name: OWASP dependency check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn -V -B dependency-check:check
         timeout-minutes: 60
   test:
     name: ${{ matrix.os }} Test
@@ -40,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
@@ -72,7 +75,7 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build-logs
           retention-days: 5

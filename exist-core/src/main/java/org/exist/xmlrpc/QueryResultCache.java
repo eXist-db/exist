@@ -51,9 +51,9 @@ public class QueryResultCache {
                 .expireAfterAccess(TIMEOUT, TimeUnit.MILLISECONDS)
                 .removalListener((key, value, cause) -> {
                     final AbstractCachedResult qr = (AbstractCachedResult)value;
-                    qr.free();  // must free associated resources
+                    qr.close();  // must close associated resources
                     if(LOG.isDebugEnabled()) {
-                        LOG.debug("Removing cached result set: {}", new Date(qr.getTimestamp()).toString());
+                        LOG.debug("Removing cached result set: {}", new Date(qr.getTimestamp()));
                     }
                 }).build();
     }
@@ -79,6 +79,11 @@ public class QueryResultCache {
     public SerializedResult getSerializedResult(final int cacheId) {
         final AbstractCachedResult acr = get(cacheId);
         return (acr != null && acr instanceof SerializedResult) ? (SerializedResult) acr : null;
+    }
+
+    public CachedContentFile getCachedContentFile(final int cacheId) {
+        final AbstractCachedResult acr = get(cacheId);
+        return (acr != null && acr instanceof CachedContentFile) ? (CachedContentFile) acr : null;
     }
 
     public void remove(final int cacheId) {

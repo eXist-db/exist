@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +34,7 @@ import java.io.OutputStream;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -79,7 +79,9 @@ public class VirtualTempPathTest {
     public void newInputStreamUseEmptyInputStreamIfNotAlreadyWritten() throws IOException {
         InputStream in = virtualTempPath.newInputStream();
 
-        assertEquals(ByteArrayInputStream.class, in.getClass());
+        assertNotNull(in);
+        assertEquals(0, in.available());
+        assertEquals(-1, in.read());
     }
 
     @Test
