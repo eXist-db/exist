@@ -158,9 +158,9 @@ public class NGramSearch extends Function implements Optimizable {
             LocationStep firstStep = steps.get(0);
             LocationStep lastStep = steps.get(steps.size() - 1);
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
-                Expression outerExpr = contextInfo.getContextStep();
-                if (outerExpr != null && outerExpr instanceof LocationStep outerStep) {
-                    NodeTest test = outerStep.getTest();
+                final Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr instanceof LocationStep outerStep) {
+                    final NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
                         if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS
                             || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
@@ -174,7 +174,7 @@ public class NGramSearch extends Function implements Optimizable {
                     }
                 }
             } else if (lastStep != null && firstStep != null) {
-                NodeTest test = lastStep.getTest();
+                final NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS
                         || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {

@@ -194,12 +194,12 @@ public class Lookup extends Function implements Optimizable {
 
         List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = steps.get(0);
-            LocationStep lastStep = steps.get(steps.size() - 1);
+            final LocationStep firstStep = steps.get(0);
+            final LocationStep lastStep = steps.get(steps.size() - 1);
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
-                Expression outerExpr = contextInfo.getContextStep();
-                if (outerExpr != null && outerExpr instanceof LocationStep outerStep) {
-                    NodeTest test = outerStep.getTest();
+                final Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr instanceof LocationStep outerStep) {
+                    final NodeTest test = outerStep.getTest();
                     if (test.getName() == null) {
                         contextQName = new QName(null, null, null);
                     } else if (test.isWildcardTest()) {
@@ -215,7 +215,7 @@ public class Lookup extends Function implements Optimizable {
                     optimizeSelf = true;
                 }
             } else if (lastStep != null && firstStep != null) {
-                NodeTest test = lastStep.getTest();
+                final NodeTest test = lastStep.getTest();
                 if(test.getName() == null) {
                     contextQName = new QName(null, null, null);
                 } else if(test.isWildcardTest()) {
@@ -233,7 +233,7 @@ public class Lookup extends Function implements Optimizable {
             }
         }
         if (fallback != null) {
-            AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+            final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
             newContextInfo.setStaticType(Type.NODE);
             fallback.analyze(newContextInfo);
         }
