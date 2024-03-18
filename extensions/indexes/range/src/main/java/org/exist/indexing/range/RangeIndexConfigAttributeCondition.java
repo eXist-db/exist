@@ -36,6 +36,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
+import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -144,63 +145,55 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     @Override
     public boolean matches(Node node) {
-
-        if (node.getNodeType() == Node.ELEMENT_NODE && matchValue(((Element)node).getAttribute(attributeName))) {
-            return true;
-        }
-
-        return false;
+        return node.getNodeType() == Node.ELEMENT_NODE && matchValue(((Element) node).getAttribute(attributeName));
     }
 
     private boolean matchValue(String testValue) {
 
-        switch (operator) {
-            case EQ:
-            case NE:
-                boolean matches;
-                if (this.numericComparison) {
-                    double testDouble = toDouble(testValue);
-                    matches = this.numericValue.equals(testDouble);
-                } else if (!this.caseSensitive) {
-                    matches = this.value.equalsIgnoreCase(testValue);
-                } else {
-                    matches = this.value.equals(testValue);
-                }
-                return this.operator == Operator.EQ ? matches : !matches;
-
-            case GT:
-            case LT:
-            case GE:
-            case LE:
-                int result;
-                if (this.numericComparison) {
-                    final double testDouble = toDouble(testValue);
-                    result = Double.compare(testDouble, this.numericValue);
-                } else if (!this.caseSensitive) {
-                    result = testValue.toLowerCase().compareTo(this.getLowercaseValue());
-                } else {
-                    result = testValue.compareTo(this.value);
-                }
-
-                return matchOrdinal(this.operator, result);
-
-            case ENDS_WITH:
-                return this.caseSensitive ? testValue.endsWith(this.value) : testValue.toLowerCase().endsWith(this.getLowercaseValue());
-            case STARTS_WITH:
-                return this.caseSensitive ? testValue.startsWith(this.value) : testValue.toLowerCase().startsWith(this.getLowercaseValue());
-            case CONTAINS:
-                return this.caseSensitive ? testValue.contains(this.value) : testValue.toLowerCase().contains(this.getLowercaseValue());
-
-            case MATCH:
+        return switch (operator) {
+            case EQ, NE -> {
+                final boolean matches = booleanMatch(testValue);
+                yield (this.operator == Operator.EQ) == matches;
+            }
+            case GT, LT, GE, LE -> matchOrdinal(this.operator, testValue);
+            case ENDS_WITH -> stringMatch(String::endsWith, testValue);
+            case STARTS_WITH -> stringMatch(String::startsWith, testValue);
+            case CONTAINS -> stringMatch(String::contains, testValue);
+            case MATCH -> {
                 final Matcher matcher = this.pattern.matcher(testValue);
-                return matcher.matches();
-        }
-
-        return false;
+                yield matcher.matches();
+            }
+        };
 
     }
 
-    private boolean matchOrdinal(Operator operator, int result) {
+    private boolean stringMatch (BiPredicate<String, String> predicate, String testValue) {
+        return caseSensitive
+                ? predicate.test(testValue, value)
+                : predicate.test(testValue.toLowerCase(), this.getLowercaseValue());
+    }
+
+    private boolean booleanMatch(String testValue) {
+        if (this.numericComparison) {
+            final double testDouble = toDouble(testValue);
+            return this.numericValue.equals(testDouble);
+        }
+        if (!this.caseSensitive) {
+            return this.value.equalsIgnoreCase(testValue);
+        }
+        return this.value.equals(testValue);
+    }
+
+    private boolean matchOrdinal(Operator operator, String testValue) {
+        int result;
+        if (this.numericComparison) {
+            final double testDouble = toDouble(testValue);
+            result = Double.compare(testDouble, this.numericValue);
+        } else if (!this.caseSensitive) {
+            result = testValue.toLowerCase().compareTo(this.getLowercaseValue());
+        } else {
+            result = testValue.compareTo(this.value);
+        }
 
         return switch (operator) {
             case GT -> result > 0;
