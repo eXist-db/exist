@@ -31,6 +31,7 @@ import org.exist.repo.Deployment;
 
 import org.exist.resolver.ResolverFactory;
 import org.exist.start.Main;
+import org.exist.storage.BrokerPoolConstants;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
 import org.exist.util.io.ContentFilePool;
@@ -51,7 +52,6 @@ import org.exist.indexing.IndexManager;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.scheduler.JobConfig;
 import org.exist.scheduler.JobException;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.IndexSpec;
@@ -71,7 +71,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.HashMap;
@@ -80,7 +79,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
@@ -142,6 +140,8 @@ public class Configuration implements ErrorHandler {
     private static final String XQUERY_CONFIGURATION_ELEMENT_NAME = "xquery";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
+    private static final String CANNOT_CONVERT_VALUE_TO_INTEGER = "Cannot convert {} value to integer: {}";
+    private static final String ORG_EXIST_STORAGE_STARTUP_TRIGGER = "org.exist.storage.StartupTrigger";
     private final Map<String, Object> config = new HashMap<>(); //Configuration
     protected Optional<Path> configFilePath = Optional.empty();
     protected Optional<Path> existHome = Optional.empty();
@@ -222,7 +222,7 @@ public class Configuration implements ErrorHandler {
 
             // set dbHome to parent of the conf file found, to resolve relative
             // path from conf file
-            final Optional<Path> existHome = configFilePath.map(Path::getParent);
+            final Optional<Path> existHomePath = configFilePath.map(Path::getParent);
 
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
@@ -250,7 +250,7 @@ public class Configuration implements ErrorHandler {
             //scheduler settings
             configureElement(doc, JobConfig.CONFIGURATION_ELEMENT_NAME, this::configureScheduler);
             //db connection settings
-            configureElement(doc, CONFIGURATION_CONNECTION_ELEMENT_NAME, element -> configureBackend(existHome, element));
+            configureElement(doc, CONFIGURATION_CONNECTION_ELEMENT_NAME, element -> configureBackend(existHomePath, element));
             // lock-table settings
             configureElement(doc, "lock-manager", this::configureLockManager);
             // repository settings
@@ -270,7 +270,7 @@ public class Configuration implements ErrorHandler {
             // XQuery settings
             configureElement(doc, XQUERY_CONFIGURATION_ELEMENT_NAME, this::configureXQuery);
             // Validation
-            configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHome, element));
+            configureElement(doc, XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME, element -> configureValidation(existHomePath, element));
             // RPC server
             configureElement(doc, "rpc-server", this::configureRpcServer);
         } catch (final SAXException | IOException | ParserConfigurationException e) {
@@ -444,7 +444,7 @@ public class Configuration implements ErrorHandler {
     private void loadModuleClasses(final Element xquery,
                                    final Map<String, Class<?>> modulesClassMap,
                                    final Map<String, String> modulesSourceMap,
-                                   final Map<String, Map<String, List<?>>> moduleParameters
+                                   final Map<String, Map<String, List<? extends Object>>> moduleParameters
     ) throws DatabaseConfigurationException {
         // add the standard function module
         modulesClassMap.put(XPATH_FUNCTIONS_NS, org.exist.xquery.functions.fn.FnModule.class);
@@ -461,14 +461,14 @@ public class Configuration implements ErrorHandler {
 
                 // Get attributes uri class and src
                 final String uri = elem.getAttribute(BUILT_IN_MODULE_URI_ATTRIBUTE);
-                final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
-                final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
 
                 // uri attribute is the identifier and is always required
                 if (uri == null) {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
+                final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
+                final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
                 // either class or source attribute must be present
                 if (clazz == null && source == null) {
                     throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
@@ -557,7 +557,7 @@ public class Configuration implements ErrorHandler {
             // Process any specified attributes that should be passed to the transformer factory
 
             final NodeList attrs = transformer.getElementsByTagName(CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME);
-            final Hashtable<Object, Object> attributes = new Properties();
+            final Properties attributes = new Properties();
 
             for (int a = 0; a < attrs.getLength(); a++) {
                 final Element attr = (Element) attrs.item(a);
@@ -595,7 +595,7 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureXmlParser(final Element parser) throws DatabaseConfigurationException {
-        configureElement(parser, XML_PARSER_ELEMENT, xml -> {
+        configureElement(parser, XML_PARSER_ELEMENT, xml ->
             configureElement(xml, XML_PARSER_FEATURES_ELEMENT, nlFeature -> {
                 final Properties pFeatures = ParametersExtractor.parseFeatures(nlFeature);
 
@@ -606,8 +606,8 @@ public class Configuration implements ErrorHandler {
                 final Map<String, Boolean> features = new HashMap<>();
                 pFeatures.forEach((k, v) -> features.put(k.toString(), Boolean.valueOf(v.toString())));
                 setProperty(XML_PARSER_FEATURES_PROPERTY, features);
-            });
-        });
+            })
+        );
     }
 
     private void configureHtmlToXmlParser(final Element parser) throws DatabaseConfigurationException {
@@ -815,7 +815,7 @@ public class Configuration implements ErrorHandler {
             try {
                 setProperty(PROPERTY_CACHE_SIZE, Integer.valueOf(cacheMem));
             } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + PROPERTY_CACHE_SIZE + " value to integer: {}", cacheMem, nfe);
+                LOG.warn(CANNOT_CONVERT_VALUE_TO_INTEGER, PROPERTY_CACHE_SIZE, cacheMem, nfe);
             }
         }
 
@@ -838,7 +838,7 @@ public class Configuration implements ErrorHandler {
         try {
             setProperty(SHRINK_THRESHOLD_PROPERTY, Integer.valueOf(cacheShrinkThreshold));
         } catch (final NumberFormatException nfe) {
-            LOG.warn("Cannot convert " + SHRINK_THRESHOLD_PROPERTY + " value to integer: {}", cacheShrinkThreshold, nfe);
+            LOG.warn(CANNOT_CONVERT_VALUE_TO_INTEGER, SHRINK_THRESHOLD_PROPERTY, cacheShrinkThreshold, nfe);
         }
 
         String collectionCache = getConfigAttributeValue(con, CollectionCache.CACHE_SIZE_ATTRIBUTE);
@@ -865,18 +865,18 @@ public class Configuration implements ErrorHandler {
 
                 setProperty(PROPERTY_CACHE_SIZE_BYTES, collectionCacheBytes);
             } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + PROPERTY_CACHE_SIZE_BYTES + " value to integer: {}", collectionCache, nfe);
+                LOG.warn(CANNOT_CONVERT_VALUE_TO_INTEGER, PROPERTY_CACHE_SIZE_BYTES, collectionCache, nfe);
             }
         }
 
         configureProperty(con, NativeBroker.PAGE_SIZE_ATTRIBUTE, PROPERTY_PAGE_SIZE, Configuration::asInteger, null);
 
         //Not clear : rather looks like a buffers count
-        configureProperty(con, BrokerPool.COLLECTION_CACHE_SIZE_ATTRIBUTE, PROPERTY_COLLECTION_CACHE_SIZE, Configuration::asInteger, null);
+        configureProperty(con, BrokerPoolConstants.COLLECTION_CACHE_SIZE_ATTRIBUTE, PROPERTY_COLLECTION_CACHE_SIZE, Configuration::asInteger, null);
 
-        configureProperty(con, BrokerPool.NODES_BUFFER_ATTRIBUTE, PROPERTY_NODES_BUFFER, Configuration::asInteger, null);
+        configureProperty(con, BrokerPoolConstants.NODES_BUFFER_ATTRIBUTE, PROPERTY_NODES_BUFFER, Configuration::asInteger, null);
 
-        String diskSpace = getConfigAttributeValue(con, BrokerPool.DISK_SPACE_MIN_ATTRIBUTE);
+        String diskSpace = getConfigAttributeValue(con, BrokerPoolConstants.DISK_SPACE_MIN_ATTRIBUTE);
         if (diskSpace != null) {
             if (diskSpace.endsWith("M") || diskSpace.endsWith("m")) {
                 diskSpace = diskSpace.substring(0, diskSpace.length() - 1);
@@ -885,7 +885,7 @@ public class Configuration implements ErrorHandler {
             try {
                 setProperty(DISK_SPACE_MIN_PROPERTY, Short.valueOf(diskSpace));
             } catch (final NumberFormatException nfe) {
-                LOG.warn("Cannot convert " + DISK_SPACE_MIN_PROPERTY + " value to integer: {}", diskSpace, nfe);
+                LOG.warn(CANNOT_CONVERT_VALUE_TO_INTEGER, DISK_SPACE_MIN_PROPERTY, diskSpace, nfe);
             }
         }
 
@@ -896,7 +896,7 @@ public class Configuration implements ErrorHandler {
                 preserveOnCopyStr -> Boolean.parseBoolean(preserveOnCopyStr) ? PreserveType.PRESERVE : PreserveType.NO_PRESERVE,
                 PreserveType.NO_PRESERVE);
 
-        final NodeList startupConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_STARTUP_ELEMENT_NAME);
+        final NodeList startupConf = con.getElementsByTagName(BrokerPoolConstants.CONFIGURATION_STARTUP_ELEMENT_NAME);
         if (startupConf.getLength() > 0) {
             configureStartup((Element) startupConf.item(0));
         } else {
@@ -905,10 +905,10 @@ public class Configuration implements ErrorHandler {
             setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
         }
 
-        configureElement(con, BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME, this::configurePool);
+        configureElement(con, BrokerPoolConstants.CONFIGURATION_POOL_ELEMENT_NAME, this::configurePool);
         configureElement(con, XQueryPool.CONFIGURATION_ELEMENT_NAME, this::configureXQueryPool);
         configureElement(con, XQueryWatchDog.CONFIGURATION_ELEMENT_NAME, this::configureWatchdog);
-        configureElement(con, BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME, element -> configureRecovery(dbHome, element));
+        configureElement(con, BrokerPoolConstants.CONFIGURATION_RECOVERY_ELEMENT_NAME, element -> configureRecovery(dbHome, element));
     }
 
     private void configureRecovery(final Optional<Path> dbHome, final Element recovery) throws DatabaseConfigurationException {
@@ -995,8 +995,8 @@ public class Configuration implements ErrorHandler {
                 boolean isStartupTrigger = false;
                 try {
                     // Verify if class is StartupTrigger
-                    for (final Class iface : Class.forName(startupTriggerClass).getInterfaces()) {
-                        if ("org.exist.storage.StartupTrigger".equals(iface.getName())) {
+                    for (final Class<?> iface : Class.forName(startupTriggerClass).getInterfaces()) {
+                        if (ORG_EXIST_STORAGE_STARTUP_TRIGGER.equals(iface.getName())) {
                             isStartupTrigger = true;
                             break;
                         }
@@ -1034,12 +1034,11 @@ public class Configuration implements ErrorHandler {
     private void configureIndexer(final Document doc, final Element indexer) throws DatabaseConfigurationException {
         configureProperty(indexer, INDEX_CASE_SENSITIVE_ATTRIBUTE, PROPERTY_INDEX_CASE_SENSITIVE, Configuration::asBoolean, FALSE);
 
-        int depth = 3;
         final String indexDepth = getConfigAttributeValue(indexer, INDEX_DEPTH_ATTRIBUTE);
 
         if (indexDepth != null) {
             try {
-                depth = Integer.parseInt(indexDepth);
+                int depth = Integer.parseInt(indexDepth);
 
                 if (depth < 3) {
                     LOG.warn("parameter index-depth should be >= 3 or you will experience a severe "
@@ -1133,9 +1132,9 @@ public class Configuration implements ErrorHandler {
                 final String uri;
                 // Substitute string, creating an uri from a local file
                 if (uriAttributeValue.contains("${WEBAPP_HOME}")) {
-                    uri = uriAttributeValue.replaceAll("\\$\\{WEBAPP_HOME}", webappHome.toUri().toString());
+                    uri = uriAttributeValue.replace("${WEBAPP_HOME}", webappHome.toUri().toString());
                 } else if (uriAttributeValue.contains("${EXIST_HOME}")) {
-                    uri = uriAttributeValue.replaceAll("\\$\\{EXIST_HOME}", dbHome.toString());
+                    uri = uriAttributeValue.replace("${EXIST_HOME}", dbHome.toString());
                 } else {
                     uri = uriAttributeValue;
                 }
@@ -1153,7 +1152,7 @@ public class Configuration implements ErrorHandler {
         try {
             final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
                     .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
-                    .collect(Collectors.toList());
+                    .toList();
             final Resolver resolver = ResolverFactory.newResolver(catalogs);
             setProperty(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
         } catch (final URISyntaxException e) {
@@ -1162,9 +1161,9 @@ public class Configuration implements ErrorHandler {
     }
 
     private void configureRpcServer(final Element validation) throws DatabaseConfigurationException {
-        configureElement(validation, "content-file", element -> {
-            configureProperty(element, "in-memory-size", PROPERTY_IN_MEMORY_SIZE, Configuration::asInteger, DEFAULT_IN_MEMORY_SIZE);
-        });
+        configureElement(validation, "content-file", element ->
+            configureProperty(element, "in-memory-size", PROPERTY_IN_MEMORY_SIZE, Configuration::asInteger, DEFAULT_IN_MEMORY_SIZE)
+        );
         configureElement(validation, "content-file-pool", element -> {
             configureProperty(element, "size", ContentFilePool.PROPERTY_POOL_SIZE, Configuration::asInteger, -1);
             configureProperty(element, "max-idle", ContentFilePool.PROPERTY_POOL_MAX_IDLE, Configuration::asInteger, 5);
@@ -1325,7 +1324,7 @@ public class Configuration implements ErrorHandler {
                 exception.getLineNumber(), exception.getMessage(), exception);
     }
 
-    public record StartupTriggerConfig(String clazz, Map<String, List<?>> params) {
+    public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
     }
 
     public record IndexModuleConfig(String id, String className, Element config) {
