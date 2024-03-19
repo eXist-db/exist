@@ -29,7 +29,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
 import org.exist.indexing.range.RangeIndex.Operator;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
@@ -56,76 +55,76 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private final QName attribute;
     private final String value;
     private final Operator operator;
-    private boolean caseSensitive = true;
-    private boolean numericComparison = false;
+    private final boolean caseSensitive;
+    private final boolean numericComparison;
     private Double numericValue = null;
     private String lowercaseValue = null;
     private Pattern pattern = null;
 
-    public RangeIndexConfigAttributeCondition(Element elem, NodePath parentPath) throws DatabaseConfigurationException {
+    public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
 
         if (parentPath.getLastComponent().getNameType() == ElementValue.ATTRIBUTE) {
-            throw new DatabaseConfigurationException("Range index module: Attribute condition cannot be defined for an attribute:" + parentPath.toString());
+            throw new DatabaseConfigurationException(
+                    "Range index module: Attribute condition cannot be defined for an attribute:" + parentPath);
         }
 
-        this.attributeName = elem.getAttribute("attribute");
-        if (this.attributeName == null || this.attributeName.isEmpty()) {
+        attributeName = elem.getAttribute("attribute");
+        if (attributeName == null || attributeName.isEmpty()) {
             throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
         }
 
         try {
-            this.attribute = new QName(QName.extractLocalName(this.attributeName), XMLConstants.NULL_NS_URI, QName.extractPrefix(this.attributeName), ElementValue.ATTRIBUTE);
+            attribute = new QName(QName.extractLocalName(attributeName), XMLConstants.NULL_NS_URI,
+                    QName.extractPrefix(attributeName), ElementValue.ATTRIBUTE);
         } catch (final QName.IllegalQNameException e) {
             throw new DatabaseConfigurationException("Rand index module error: " + e.getMessage(), e);
         }
-        this.value = elem.getAttribute("value");
-
+        value = elem.getAttribute("value");
 
         // parse operator (default to 'eq' if missing)
         if (elem.hasAttribute("operator")) {
             final String operatorName = elem.getAttribute("operator");
-            this.operator = Operator.getByName(operatorName.toLowerCase());
-            if (this.operator == null) {
-                throw new DatabaseConfigurationException("Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
+            operator = Operator.getByName(operatorName.toLowerCase());
+            if (operator == null) {
+                throw new DatabaseConfigurationException(
+                        "Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
             }
         } else {
-            this.operator = Operator.EQ;
+            operator = Operator.EQ;
         }
 
-
         final String caseString = elem.getAttribute("case");
-        final String numericString = elem.getAttribute("numeric");
+        caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
 
-        this.caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
-        this.numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
+        final String numericString = elem.getAttribute("numeric");
+        numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
 
         // try to create a pattern matcher for a 'matches' condition
-        if (this.operator == Operator.MATCH) {
-            final int flags = this.caseSensitive ? 0 : CASE_INSENSITIVE;
+        if (operator == Operator.MATCH) {
+            final int flags = caseSensitive ? 0 : CASE_INSENSITIVE;
             try {
-                this.pattern = Pattern.compile(this.value, flags);
+                pattern = Pattern.compile(value, flags);
             } catch (PatternSyntaxException e) {
                 RangeIndex.LOG.error(e);
-                throw new DatabaseConfigurationException("Range index module: Invalid regular expression in condition: " + this.value);
+                throw new DatabaseConfigurationException(
+                        "Range index module: Invalid regular expression in condition: " + value);
             }
         }
 
         // try to parse the number value if numeric comparison is specified
         // store a reference to numeric value to avoid having to parse each time
-        if (this.numericComparison) {
-
-            switch(this.operator) {
-                case MATCH:
-                case STARTS_WITH:
-                case ENDS_WITH:
-                case CONTAINS:
-                    throw new DatabaseConfigurationException("Range index module: Numeric comparison not applicable for operator: " + this.operator.name());
+        if (numericComparison) {
+            switch (operator) {
+                case MATCH, STARTS_WITH, ENDS_WITH, CONTAINS -> throw new DatabaseConfigurationException(
+                        "Range index module: Numeric comparison not applicable for operator: " + operator.name());
             }
 
             try {
-                this.numericValue = Double.parseDouble(this.value);
+                numericValue = Double.parseDouble(value);
             } catch (NumberFormatException e)  {
-                throw new DatabaseConfigurationException("Range index module: Numeric attribute condition specified, but required value cannot be parsed as number: " + this.value);
+                throw new DatabaseConfigurationException(
+                        "Range index module: Numeric attribute condition specified, " +
+                                "but required value cannot be parsed as number: " + value);
             }
         }
 
@@ -133,66 +132,59 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     // lazily evaluate lowercase value to convert once when needed
     private String getLowercaseValue() {
-        if (this.lowercaseValue == null) {
-            if (this.value != null) {
-                this.lowercaseValue = this.value.toLowerCase();
-            }
+        if (lowercaseValue == null && value != null) {
+            lowercaseValue = value.toLowerCase();
         }
-
-        return this.lowercaseValue;
+        return lowercaseValue;
     }
-
 
     @Override
-    public boolean matches(Node node) {
-        return node.getNodeType() == Node.ELEMENT_NODE && matchValue(((Element) node).getAttribute(attributeName));
+    public boolean matches(final Node node) {
+        return node.getNodeType() == Node.ELEMENT_NODE
+                && matchValue(((Element) node).getAttribute(attributeName));
     }
 
-    private boolean matchValue(String testValue) {
-
+    private boolean matchValue(final String testValue) {
         return switch (operator) {
-            case EQ, NE -> {
-                final boolean matches = booleanMatch(testValue);
-                yield (this.operator == Operator.EQ) == matches;
-            }
-            case GT, LT, GE, LE -> matchOrdinal(this.operator, testValue);
+            case EQ -> booleanMatch(testValue);
+            case NE -> !booleanMatch(testValue);
+            case GT, LT, GE, LE -> matchOrdinal(operator, testValue);
             case ENDS_WITH -> stringMatch(String::endsWith, testValue);
             case STARTS_WITH -> stringMatch(String::startsWith, testValue);
             case CONTAINS -> stringMatch(String::contains, testValue);
             case MATCH -> {
-                final Matcher matcher = this.pattern.matcher(testValue);
+                final Matcher matcher = pattern.matcher(testValue);
                 yield matcher.matches();
             }
         };
-
     }
 
-    private boolean stringMatch (BiPredicate<String, String> predicate, String testValue) {
+    private boolean stringMatch (final BiPredicate<String, String> predicate, final String testValue) {
         return caseSensitive
                 ? predicate.test(testValue, value)
-                : predicate.test(testValue.toLowerCase(), this.getLowercaseValue());
+                : predicate.test(testValue.toLowerCase(), getLowercaseValue());
     }
 
-    private boolean booleanMatch(String testValue) {
-        if (this.numericComparison) {
+    private boolean booleanMatch(final String testValue) {
+        if (numericComparison) {
             final double testDouble = toDouble(testValue);
             return this.numericValue.equals(testDouble);
         }
-        if (!this.caseSensitive) {
-            return this.value.equalsIgnoreCase(testValue);
+        if (caseSensitive) {
+            return value.equals(testValue);
         }
-        return this.value.equals(testValue);
+        return value.equalsIgnoreCase(testValue);
     }
 
-    private boolean matchOrdinal(Operator operator, String testValue) {
-        int result;
-        if (this.numericComparison) {
+    private boolean matchOrdinal(final Operator operator, final String testValue) {
+        final int result;
+        if (numericComparison) {
             final double testDouble = toDouble(testValue);
-            result = Double.compare(testDouble, this.numericValue);
-        } else if (!this.caseSensitive) {
-            result = testValue.toLowerCase().compareTo(this.getLowercaseValue());
+            result = Double.compare(testDouble, numericValue);
+        } else if (caseSensitive) {
+            result = testValue.compareTo(value);
         } else {
-            result = testValue.compareTo(this.value);
+            result = testValue.toLowerCase().compareTo(getLowercaseValue());
         }
 
         return switch (operator) {
@@ -202,158 +194,119 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             case LE -> result <= 0;
             default -> false;
         };
-
     }
 
-    private Double toDouble(String value) {
-
+    private Double toDouble(final String value) {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException e)  {
-            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", this.attributeName, value);
+            RangeIndex.LOG.debug(
+                    "Non-numeric value encountered for numeric condition on @'{}': {}", attributeName, value);
             return (double) 0;
         }
     }
 
-
     @Override
-    public boolean find(Predicate predicate) {
-
+    public boolean find(final Predicate predicate) {
         final Expression inner = this.getInnerExpression(predicate);
-        Operator operator;
-        Expression lhe;
-        Expression rhe ;
-
-        // get the type of the expression inside the predicate and determine right and left hand arguments
-        if (inner instanceof GeneralComparison comparison) {
-
-            operator = RangeQueryRewriter.getOperator(inner);
-            lhe = comparison.getLeft();
-            rhe = comparison.getRight();
-
-        } else if (inner instanceof InternalFunctionCall) {
-            // calls to matches() will not have been rewritten to a comparison, so check for function call
-
-            final Function func = ((InternalFunctionCall) inner).getFunction();
-            if (func.isCalledAs("matches")) {
-                operator = Operator.MATCH;
-                lhe = func.getArgument(0);
-                rhe = func.getArgument(1);
-
-                lhe = unwrapSubExpression(lhe);
-                rhe = unwrapSubExpression(rhe);
-            } else {
-
-                // predicate expression cannot be parsed as condition
-                return false;
-            }
-        } else {
-
+        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall)) {
             // predicate expression cannot be parsed as condition
             return false;
         }
 
+        Operator rewrittenOperator;
+        final Expression lhe;
+        final Expression rhe;
 
+        // get the type of the expression inside the predicate and determine right and left hand arguments
+        if (inner instanceof GeneralComparison comparison) {
+
+            rewrittenOperator = RangeQueryRewriter.getOperator(inner);
+            lhe = comparison.getLeft();
+            rhe = comparison.getRight();
+
+        } else {
+            // calls to matches() will not have been rewritten to a comparison, so check for function call
+            final InternalFunctionCall funcCall = (InternalFunctionCall) inner;
+            final Function func = funcCall.getFunction();
+
+            if (!func.isCalledAs("matches")) {
+                // predicate expression cannot be parsed as condition
+                return false;
+            }
+
+            rewrittenOperator = Operator.MATCH;
+            lhe = unwrapSubExpression(func.getArgument(0));
+            rhe = unwrapSubExpression(func.getArgument(1));
+        }
 
         // find the attribute name and value pair from the predicate to check against
-
         // first assume attribute is on the left and value is on the right
         LocationStep testStep = findLocationStep(lhe);
         AtomicValue testValue = findAtomicValue(rhe);
 
-
-        switch (this.operator) {
-            case EQ:
-            case NE:
-
+        if (testStep == null && testValue == null) {
+            switch (operator) {
                 // the equality operators are commutative so if attribute/value pair has not been found,
                 // check the other way around
-                if (testStep == null && testValue == null) {
+                case EQ, NE -> {
                     testStep = findLocationStep(rhe);
                     testValue = findAtomicValue(lhe);
                 }
-
-            case GT:
-            case LT:
-            case GE:
-            case LE:
-
                 // for ordinal comparisons, attribute and value can also be the other way around in the predicate
                 // but the operator has to be inverted
-                if (testStep == null && testValue == null) {
+                case GT, LT, GE, LE -> {
                     testStep = findLocationStep(rhe);
                     testValue = findAtomicValue(lhe);
-                    operator = invertOrdinalOperator(operator);
+                    rewrittenOperator = invertOrdinalOperator(rewrittenOperator);
                 }
-
-        }
-
-        if (testStep != null && testValue != null) {
-            final QName qname = testStep.getTest().getName();
-            Comparable foundValue;
-            Comparable requiredValue;
-            boolean valueTypeMatches;
-
-            try {
-                if (this.numericComparison) {
-                    valueTypeMatches = testValue instanceof NumericValue;
-                    requiredValue = this.numericValue;
-                    foundValue = testValue.toJavaObject(Double.class);
-                }  else {
-                    valueTypeMatches = testValue instanceof StringValue;
-
-                    if (this.caseSensitive) {
-                        requiredValue = this.getLowercaseValue();
-                        foundValue = testValue.getStringValue().toLowerCase();
-                    } else {
-                        requiredValue = this.value;
-                        foundValue = testValue.getStringValue();
-                    }
-                }
-
-                if (qname.getNameType() == ElementValue.ATTRIBUTE
-                        && operator.equals(this.operator)
-                        && qname.equals(this.attribute)
-                        && valueTypeMatches
-                        && foundValue.equals(requiredValue)) {
-
-                    return true;
-                }
-
-
-            } catch (XPathException e) {
-                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", testValue.toString());
-                RangeIndex.LOG.error(e);
             }
-
         }
 
+        if (testStep == null || testValue == null || !rewrittenOperator.equals(operator)) {
+            return false;
+        }
+
+        final QName qname = testStep.getTest().getName();
+        if (qname.getNameType() != ElementValue.ATTRIBUTE || !qname.equals(attribute)) {
+            return false;
+        }
+
+        try {
+            if (numericComparison) {
+                return testValue.toJavaObject(Double.class).equals(numericValue);
+            }
+            if (testValue instanceof StringValue) {
+                final String testString = testValue.getStringValue();
+                if (caseSensitive) {
+                    return testString.equals(value);
+                }
+                return testString.equalsIgnoreCase(value);
+            }
+        } catch (XPathException e) {
+            RangeIndex.LOG.error(
+                    "Value conversion error when testing predicate for condition, value: {}", testValue.toString());
+            RangeIndex.LOG.error(e);
+        }
         return false;
     }
 
-    private Expression unwrapSubExpression(Expression expr) {
-
-        if (expr instanceof Atomize) {
-            expr = ((Atomize) expr).getExpression();
+    private Expression unwrapSubExpression(final Expression expr) {
+        if (expr instanceof Atomize atomize) {
+            return atomize.getExpression();
         }
 
-        if (expr instanceof DynamicCardinalityCheck) {
-            if (expr.getSubExpressionCount() == 1) {
-                expr = expr.getSubExpression(0);
-            }
-        }
-
-        if (expr instanceof PathExpr) {
-            if (expr.getSubExpressionCount() == 1) {
-                expr = expr.getSubExpression(0);
-            }
+        if (
+                (expr instanceof DynamicCardinalityCheck || expr instanceof PathExpr)
+                && expr.getSubExpressionCount() == 1
+        ) {
+            return expr.getSubExpression(0);
         }
 
         return expr;
     }
 
-    private LocationStep findLocationStep(Expression expr) {
-
+    private LocationStep findLocationStep(final Expression expr) {
         if (expr instanceof LocationStep) {
             return (LocationStep) expr;
         }
@@ -361,33 +314,37 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return null;
     }
 
-    private AtomicValue findAtomicValue(Expression expr) {
-
-        if (expr instanceof AtomicValue) {
-            return (AtomicValue) expr;
+    private AtomicValue findAtomicValue(final Expression expr) {
+        if (expr instanceof AtomicValue atomic) {
+            return atomic;
         }
-        else if (expr instanceof LiteralValue) {
-            return ((LiteralValue) expr).getValue();
 
-        } else if (expr instanceof VariableReference || expr instanceof Function) {
-            try {
-                final Sequence contextSequence;
-                final ContextItemDeclaration cid = expr.getContext().getContextItemDeclartion();
-                if(cid != null) {
-                    contextSequence = cid.eval(null, null);
-                } else {
-                    contextSequence = null;
-                }
-                final Sequence result = expr.eval(contextSequence, null);
-                if (result instanceof AtomicValue) {
-                    return (AtomicValue) result;
-                }
-            } catch (XPathException e) {
-                RangeIndex.LOG.error(e);
+        if (expr instanceof LiteralValue literal) {
+            return literal.getValue();
+        }
+
+        if (!(expr instanceof VariableReference || expr instanceof Function)) {
+            return null;
+        }
+
+        try {
+            final ContextItemDeclaration cid = expr.getContext().getContextItemDeclartion();
+            final Sequence result;
+            if (cid == null) {
+                result = expr.eval(null, null);
+            } else {
+                final Sequence contextSequence = cid.eval(null, null);
+                result = expr.eval(contextSequence, null);
             }
-        }
 
-        return null;
+            if (result instanceof AtomicValue atomic) {
+                return atomic;
+            }
+            return null;
+        } catch (XPathException e) {
+            RangeIndex.LOG.error(e);
+            return null;
+        }
     }
 
     private Operator invertOrdinalOperator(Operator operator) {
@@ -398,6 +355,5 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             case GT -> Operator.LT;
             default -> null;
         };
-
     }
 }
