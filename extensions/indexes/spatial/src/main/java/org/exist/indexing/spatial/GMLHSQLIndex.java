@@ -202,50 +202,48 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix + ";sql.enforce_size=false" /* + ";shutdown=true" */, "sa", "");
         if (LOG.isDebugEnabled())
             LOG.debug("Connected to GML index: {}/{}", getDataDir(), db_file_name_prefix);
-        ResultSet rs = null;
-        try {
-            rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
+        try (ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[]{"TABLE"})) {
             rs.last();
             if (rs.getRow() == 1) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Opened GML index: {}/{}", getDataDir(), db_file_name_prefix);
-            //Create the data structure if it doesn't exist
+                //Create the data structure if it doesn't exist
             } else if (rs.getRow() == 0) {
                 Statement stmt = conn.createStatement();
                 stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
-                    /*1*/ "DOCUMENT_URI VARCHAR, " +
-                    /*2*/ "NODE_ID_UNITS INTEGER, " +
-                    /*3*/ "NODE_ID BINARY, " +
-                    /*4*/ "GEOMETRY_TYPE VARCHAR, " +
-                    /*5*/ "SRS_NAME VARCHAR, " +
-                    /*6*/ "WKT VARCHAR(500000), " +
-                    /*7*/ "WKB BINARY, " +
-                    /*8*/ "MINX DOUBLE, " +
-                    /*9*/ "MAXX DOUBLE, " +
-                    /*10*/ "MINY DOUBLE, " +
-                    /*11*/ "MAXY DOUBLE, " +
-                    /*12*/ "CENTROID_X DOUBLE, " +
-                    /*13*/ "CENTROID_Y DOUBLE, " +
-                    /*14*/ "AREA DOUBLE, " +
-                    //Boundary ?
-                    /*15*/ "EPSG4326_WKT VARCHAR(500000), " +
-                    /*16*/ "EPSG4326_WKB BINARY, " +
-                    /*17*/ "EPSG4326_MINX DOUBLE, " +
-                    /*18*/ "EPSG4326_MAXX DOUBLE, " +
-                    /*19*/ "EPSG4326_MINY DOUBLE, " +
-                    /*20*/ "EPSG4326_MAXY DOUBLE, " +
-                    /*21*/ "EPSG4326_CENTROID_X DOUBLE, " +
-                    /*22*/ "EPSG4326_CENTROID_Y DOUBLE, " +
-                    /*23*/ "EPSG4326_AREA DOUBLE, " +
-                    //Boundary ?
-                    /*24*/ "IS_CLOSED BOOLEAN, " +
-                    /*25*/ "IS_SIMPLE BOOLEAN, " +
-                    /*26*/ "IS_VALID BOOLEAN, " +
-                    //Enforce uniqueness
-                    "UNIQUE (" +
+                        /*1*/ "DOCUMENT_URI VARCHAR, " +
+                        /*2*/ "NODE_ID_UNITS INTEGER, " +
+                        /*3*/ "NODE_ID BINARY, " +
+                        /*4*/ "GEOMETRY_TYPE VARCHAR, " +
+                        /*5*/ "SRS_NAME VARCHAR, " +
+                        /*6*/ "WKT VARCHAR(500000), " +
+                        /*7*/ "WKB BINARY, " +
+                        /*8*/ "MINX DOUBLE, " +
+                        /*9*/ "MAXX DOUBLE, " +
+                        /*10*/ "MINY DOUBLE, " +
+                        /*11*/ "MAXY DOUBLE, " +
+                        /*12*/ "CENTROID_X DOUBLE, " +
+                        /*13*/ "CENTROID_Y DOUBLE, " +
+                        /*14*/ "AREA DOUBLE, " +
+                        //Boundary ?
+                        /*15*/ "EPSG4326_WKT VARCHAR(500000), " +
+                        /*16*/ "EPSG4326_WKB BINARY, " +
+                        /*17*/ "EPSG4326_MINX DOUBLE, " +
+                        /*18*/ "EPSG4326_MAXX DOUBLE, " +
+                        /*19*/ "EPSG4326_MINY DOUBLE, " +
+                        /*20*/ "EPSG4326_MAXY DOUBLE, " +
+                        /*21*/ "EPSG4326_CENTROID_X DOUBLE, " +
+                        /*22*/ "EPSG4326_CENTROID_Y DOUBLE, " +
+                        /*23*/ "EPSG4326_AREA DOUBLE, " +
+                        //Boundary ?
+                        /*24*/ "IS_CLOSED BOOLEAN, " +
+                        /*25*/ "IS_SIMPLE BOOLEAN, " +
+                        /*26*/ "IS_VALID BOOLEAN, " +
+                        //Enforce uniqueness
+                        "UNIQUE (" +
                         "DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-                    ")" +
-                ")");
+                        ")" +
+                        ")");
                 stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
                 stmt.executeUpdate("CREATE INDEX NODE_ID ON " + TABLE_NAME + " (NODE_ID);");
                 stmt.executeUpdate("CREATE INDEX GEOMETRY_TYPE ON " + TABLE_NAME + " (GEOMETRY_TYPE);");
@@ -263,11 +261,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 if (LOG.isDebugEnabled())
                     LOG.debug("Created GML index: {}/{}", getDataDir(), db_file_name_prefix);
             } else {
-                throw new SQLException("2 tables with the same name ?"); 
+                throw new SQLException("2 tables with the same name ?");
             }
-        } finally {
-            if (rs != null)
-                rs.close();
         }
     }
 

@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.StreamListener.ReindexMode;

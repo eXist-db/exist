@@ -101,9 +101,8 @@ public class CopyTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = srcDocContent.getBytes(UTF_8);
         final java.io.File tmpStoreFile = tempFolder.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
+        Files.writeString(tmpStoreFile.toPath(), srcDocContent);
         assertNotNull(folder.uploadFile(srcDocName, tmpStoreFile, null));
 
         // retrieve document
@@ -113,7 +112,7 @@ public class CopyTest {
         assertEquals(expectedMediaType, ((File) srcResource).contentType);
         final java.io.File tempRetrievedSrcFile = tempFolder.newFile();
         srcResource.downloadTo(tempRetrievedSrcFile, null);
-        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
+        assertEquals(srcDocContent, Files.readString(tempRetrievedSrcFile.toPath()));
 
         // copy document
         srcResource.copyTo(folder, destDocName);
@@ -125,6 +124,6 @@ public class CopyTest {
         assertEquals(expectedMediaType, ((File) destResource).contentType);
         final java.io.File tempRetrievedDestFile = tempFolder.newFile();
         destResource.downloadTo(tempRetrievedDestFile, null);
-        assertEquals(srcDocContent, new String(Files.readAllBytes(tempRetrievedDestFile.toPath()), UTF_8));
+        assertEquals(srcDocContent, Files.readString(tempRetrievedDestFile.toPath()));
     }
 }

@@ -233,45 +233,39 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     private Field convertToDocValue(final String content) {
         try {
-            switch (type) {
-                case Type.TIME:
+            return switch (type) {
+                case Type.TIME -> {
                     final TimeValue timeValue = new TimeValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(timeValue.toJavaObject(byte[].class)));
-
-                case Type.DATE_TIME:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(timeValue.toJavaObject(byte[].class)));
+                }
+                case Type.DATE_TIME -> {
                     final DateTimeValue dateTimeValue = new DateTimeValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(dateTimeValue.toJavaObject(byte[].class)));
-
-                case Type.DATE:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(dateTimeValue.toJavaObject(byte[].class)));
+                }
+                case Type.DATE -> {
                     final DateValue dateValue = new DateValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(dateValue.toJavaObject(byte[].class)));
-
-                case Type.INTEGER:
-                case Type.LONG:
-                case Type.UNSIGNED_LONG:
-                case Type.INT:
-                case Type.UNSIGNED_INT:
-                case Type.SHORT:
-                case Type.UNSIGNED_SHORT:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(dateValue.toJavaObject(byte[].class)));
+                }
+                case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG, Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT -> {
                     final IntegerValue iv = new IntegerValue(content, Type.INTEGER);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(iv.serialize()));
-
-                case Type.DOUBLE:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(iv.serialize()));
+                }
+                case Type.DOUBLE -> {
                     final DoubleValue dbv = new DoubleValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(dbv.toJavaObject(byte[].class)));
-
-                case Type.FLOAT:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(dbv.toJavaObject(byte[].class)));
+                }
+                case Type.FLOAT -> {
                     final FloatValue fv = new FloatValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(fv.toJavaObject(byte[].class)));
-
-                case Type.DECIMAL:
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(fv.toJavaObject(byte[].class)));
+                }
+                case Type.DECIMAL -> {
                     final DecimalValue dv = new DecimalValue(content);
-                    return new BinaryDocValuesField(fieldName, new BytesRef(dv.toJavaObject(byte[].class)));
+                    yield new BinaryDocValuesField(fieldName, new BytesRef(dv.toJavaObject(byte[].class)));
+                }
 
                 // everything else treated as string
-                default:
-                    return new BinaryDocValuesField(fieldName, new BytesRef(content));
-            }
+                default -> new BinaryDocValuesField(fieldName, new BytesRef(content));
+            };
         } catch (final NumberFormatException | XPathException e) {
             // wrong type: ignore
             LOG.error("Cannot convert field {} to type {}. Content was: {}", fieldName, Type.getTypeName(type), content);

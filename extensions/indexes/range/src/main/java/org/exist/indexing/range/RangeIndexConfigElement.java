@@ -22,7 +22,6 @@
 package org.exist.indexing.range;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.collation.CollationKeyAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
@@ -30,7 +29,6 @@ import org.apache.lucene.util.NumericUtils;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.storage.NodePath;
-import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;

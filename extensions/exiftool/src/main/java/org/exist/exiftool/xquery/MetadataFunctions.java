@@ -119,8 +119,7 @@ public class MetadataFunctions extends BasicFunction {
     private Sequence extractMetadataFromLocalResource(final XmldbURI docUri) throws XPathException {
         try(final LockedDocument lockedDoc = context.getBroker().getXMLResource(docUri, LockMode.READ_LOCK)) {
 
-            if (lockedDoc != null && lockedDoc.getDocument() instanceof BinaryDocument) {
-                final BinaryDocument binDoc = (BinaryDocument)lockedDoc.getDocument();
+            if (lockedDoc != null && lockedDoc.getDocument() instanceof BinaryDocument binDoc) {
 
                 final BrokerPool pool = context.getBroker().getBrokerPool();
                 final BlobStore blobStore = pool.getBlobStore();

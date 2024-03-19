@@ -109,48 +109,28 @@ public class MiltonResource implements Resource {
     protected LockToken convertToken(org.exist.dom.persistent.LockToken existLT) {
 
         // LockInfo : construct scope
-        final LockInfo.LockScope scope;
-        switch (existLT.getScope()) {
-            case SHARED:
-                scope = LockInfo.LockScope.SHARED;
-                break;
-
-            case EXCLUSIVE:
-                scope = LockInfo.LockScope.EXCLUSIVE;
-                break;
-
-            default:
-                scope = LockInfo.LockScope.NONE;
-                break;
-        }
+        final LockInfo.LockScope scope = switch (existLT.getScope()) {
+            case SHARED -> LockInfo.LockScope.SHARED;
+            case EXCLUSIVE -> LockInfo.LockScope.EXCLUSIVE;
+            default -> LockInfo.LockScope.NONE;
+        };
 
         // LockInfo : construct type
-        final LockInfo.LockType type;
-        switch (existLT.getType()) {
-            case WRITE:
-                type = LockInfo.LockType.WRITE;
-                break;
-
-            default: // DWES: if not WRITE then READ. typical :-)
-                type = LockInfo.LockType.READ;
-                break;
-
-        }
+        final LockInfo.LockType type = switch (existLT.getType()) {
+            case WRITE -> LockInfo.LockType.WRITE;
+            default -> // DWES: if not WRITE then READ. typical :-)
+                    LockInfo.LockType.READ;
+        };
 
         // LockInfo : get owner
         final String owner = existLT.getOwner();
 
         // LockInfo : construct depth
-        final LockInfo.LockDepth depth;
-        switch (existLT.getDepth()) {
-            case INFINITY:
-                depth = LockInfo.LockDepth.INFINITY;
-                break;
-
-            default: // TODO either zero or infinity?
-                depth = LockInfo.LockDepth.ZERO;
-                break;
-        }
+        final LockInfo.LockDepth depth = switch (existLT.getDepth()) {
+            case INFINITY -> LockInfo.LockDepth.INFINITY;
+            default -> // TODO either zero or infinity?
+                    LockInfo.LockDepth.ZERO;
+        };
 
 
         // LockInfo
@@ -187,49 +167,26 @@ public class MiltonResource implements Resource {
     protected org.exist.dom.persistent.LockToken convertToken(final LockTimeout timeout, final LockInfo lockInfo) {
 
         // Set lock depth
-        final org.exist.dom.persistent.LockToken.LockDepth lockDepth;
-        switch (lockInfo.depth) {
-            case ZERO:
-                lockDepth = org.exist.dom.persistent.LockToken.LockDepth.ZERO;
-                break;
-            case INFINITY:
-                lockDepth = org.exist.dom.persistent.LockToken.LockDepth.INFINITY;
-                break;
-            default:
-                lockDepth = org.exist.dom.persistent.LockToken.LockDepth.NOT_SET;
-                break;
-        }
+        final org.exist.dom.persistent.LockToken.LockDepth lockDepth = switch (lockInfo.depth) {
+            case ZERO -> org.exist.dom.persistent.LockToken.LockDepth.ZERO;
+            case INFINITY -> org.exist.dom.persistent.LockToken.LockDepth.INFINITY;
+            default -> org.exist.dom.persistent.LockToken.LockDepth.NOT_SET;
+        };
 
         // Set lock scope
-        final org.exist.dom.persistent.LockToken.LockScope lockScope;
-        switch (lockInfo.scope) {
-            case EXCLUSIVE:
-                lockScope = org.exist.dom.persistent.LockToken.LockScope.EXCLUSIVE;
-                break;
-            case SHARED:
-                lockScope = org.exist.dom.persistent.LockToken.LockScope.SHARED;
-                break;
-            case NONE:
-                lockScope = org.exist.dom.persistent.LockToken.LockScope.NONE;
-                break;
-            default:
-                lockScope = org.exist.dom.persistent.LockToken.LockScope.NOT_SET;
-                break;
-        }
+        final org.exist.dom.persistent.LockToken.LockScope lockScope = switch (lockInfo.scope) {
+            case EXCLUSIVE -> org.exist.dom.persistent.LockToken.LockScope.EXCLUSIVE;
+            case SHARED -> org.exist.dom.persistent.LockToken.LockScope.SHARED;
+            case NONE -> org.exist.dom.persistent.LockToken.LockScope.NONE;
+            default -> org.exist.dom.persistent.LockToken.LockScope.NOT_SET;
+        };
 
         // Set lock type (read,write)
-        final org.exist.dom.persistent.LockToken.LockType lockType;
-        switch (lockInfo.type) {
-            case READ:
-                lockType = org.exist.dom.persistent.LockToken.LockType.NONE;
-                break;
-            case WRITE:
-                lockType = org.exist.dom.persistent.LockToken.LockType.WRITE;
-                break;
-            default:
-                lockType = org.exist.dom.persistent.LockToken.LockType.NOT_SET;
-                break;
-        }
+        final org.exist.dom.persistent.LockToken.LockType lockType = switch (lockInfo.type) {
+            case READ -> org.exist.dom.persistent.LockToken.LockType.NONE;
+            case WRITE -> org.exist.dom.persistent.LockToken.LockType.WRITE;
+            default -> org.exist.dom.persistent.LockToken.LockType.NOT_SET;
+        };
 
 
         // Set timeouts
@@ -384,8 +341,7 @@ public class MiltonResource implements Resource {
                 LOG.debug("No tag, user {} not authenticated", userName);
             return false;
 
-        } else if (tag instanceof String) {
-            String value = (String) tag;
+        } else if (tag instanceof String value) {
             if (AUTHENTICATED.equals(value)) {
                 // The correct TAG is returned!
 

@@ -889,24 +889,17 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private static class QNameTerm implements Comparable<QNameTerm> {
-        private final QName qname;
-        private final String term;
-
-        private QNameTerm(final QName qname, final String term) {
-            this.qname = qname;
-            this.term = term;
-        }
+    private record QNameTerm(QName qname, String term) implements Comparable<QNameTerm> {
 
         @Override
-        public int compareTo(final QNameTerm other) {
-            final int cmp = qname.compareTo(other.qname);
-            if (cmp == 0) {
-                return term.compareTo(other.term);
+            public int compareTo(final QNameTerm other) {
+                final int cmp = qname.compareTo(other.qname);
+                if (cmp == 0) {
+                    return term.compareTo(other.term);
+                }
+                return cmp;
             }
-            return cmp;
         }
-    }
 
     private static class NGramQNameKey extends Value {
         private static final int COLLECTION_ID_OFFSET = 1;
@@ -1038,17 +1031,11 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         private short nameTypeToNodeType(final byte nameType) {
-            switch (nameType) {
-                case ElementValue.ELEMENT:
-                    return Node.ELEMENT_NODE;
-
-                case ElementValue.ATTRIBUTE:
-                    return Node.ATTRIBUTE_NODE;
-
-                case ElementValue.UNKNOWN:
-                default:
-                    return NodeProxy.UNKNOWN_NODE_TYPE;
-            }
+            return switch (nameType) {
+                case ElementValue.ELEMENT -> Node.ELEMENT_NODE;
+                case ElementValue.ATTRIBUTE -> Node.ATTRIBUTE_NODE;
+                default -> NodeProxy.UNKNOWN_NODE_TYPE;
+            };
         }
 
         private void readMatches(final String current, final VariableByteInput is, final NodeId nodeId, final int freq,

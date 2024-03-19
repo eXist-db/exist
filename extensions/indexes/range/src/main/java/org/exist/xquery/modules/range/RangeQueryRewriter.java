@@ -76,8 +76,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     // check if inner steps are on an axis we can optimize
-                    if (innerExpr instanceof InternalFunctionCall) {
-                        InternalFunctionCall fcall = (InternalFunctionCall) innerExpr;
+                    if (innerExpr instanceof InternalFunctionCall fcall) {
                         axis = ((Optimizable) fcall.getFunction()).getOptimizeAxis();
                     } else {
                         axis = ((Optimizable) innerExpr).getOptimizeAxis();
@@ -128,8 +127,7 @@ public class RangeQueryRewriter extends QueryRewriter {
 
     protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
         ArrayList<Expression> eqArgs = new ArrayList<>(2);
-        if (expression instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expression;
+        if (expression instanceof GeneralComparison comparison) {
             eqArgs.add(comparison.getLeft());
             eqArgs.add(comparison.getRight());
             Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
@@ -138,8 +136,7 @@ public class RangeQueryRewriter extends QueryRewriter {
                 return func;
             }
 
-        } else if (expression instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expression;
+        } else if (expression instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function != null && function instanceof Lookup) {
                 final RangeIndex.Operator operator = RangeIndex.Operator.getByName(function.getName().getLocalPart());
@@ -154,11 +151,9 @@ public class RangeQueryRewriter extends QueryRewriter {
     }
 
     protected static List<LocationStep> getStepsToOptimize(Expression expr) {
-        if (expr instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expr;
+        if (expr instanceof GeneralComparison comparison) {
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
-        } else if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+        } else if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function instanceof Lookup) {
                 if (function.isCalledAs("matches")) {
@@ -173,53 +168,30 @@ public class RangeQueryRewriter extends QueryRewriter {
     }
 
     public static RangeIndex.Operator getOperator(Expression expr) {
-        if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+        if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function instanceof Lookup) {
                 expr = ((Lookup)function).getFallback();
             }
         }
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
-        if (expr instanceof GeneralComparison) {
-            GeneralComparison comparison = (GeneralComparison) expr;
+        if (expr instanceof GeneralComparison comparison) {
             final Comparison relation = comparison.getRelation();
-            switch(relation) {
-                case LT:
-                    operator = RangeIndex.Operator.LT;
-                    break;
-                case GT:
-                    operator = RangeIndex.Operator.GT;
-                    break;
-                case LTEQ:
-                    operator = RangeIndex.Operator.LE;
-                    break;
-                case GTEQ:
-                    operator = RangeIndex.Operator.GE;
-                    break;
-                case EQ:
-                    switch (comparison.getTruncation()) {
-                        case BOTH:
-                            operator = RangeIndex.Operator.CONTAINS;
-                            break;
-                        case LEFT:
-                            operator = RangeIndex.Operator.ENDS_WITH;
-                            break;
-                        case RIGHT:
-                            operator = RangeIndex.Operator.STARTS_WITH;
-                            break;
-                        default:
-                            operator = RangeIndex.Operator.EQ;
-                            break;
-                    }
-                    break;
-                case NEQ:
-                    operator = RangeIndex.Operator.NE;
-                    break;
-
-            }
-        } else if (expr instanceof InternalFunctionCall) {
-            InternalFunctionCall fcall = (InternalFunctionCall) expr;
+            operator = switch (relation) {
+                case LT -> RangeIndex.Operator.LT;
+                case GT -> RangeIndex.Operator.GT;
+                case LTEQ -> RangeIndex.Operator.LE;
+                case GTEQ -> RangeIndex.Operator.GE;
+                case EQ -> switch (comparison.getTruncation()) {
+                    case BOTH -> RangeIndex.Operator.CONTAINS;
+                    case LEFT -> RangeIndex.Operator.ENDS_WITH;
+                    case RIGHT -> RangeIndex.Operator.STARTS_WITH;
+                    default -> RangeIndex.Operator.EQ;
+                };
+                case NEQ -> RangeIndex.Operator.NE;
+                default -> operator;
+            };
+        } else if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function instanceof Lookup && function.isCalledAs("matches")) {
                 operator = RangeIndex.Operator.MATCH;
@@ -256,16 +228,14 @@ public class RangeQueryRewriter extends QueryRewriter {
 
     protected static List<LocationStep> getPrecedingSteps(LocationStep current) {
         Expression parentExpr = current.getParentExpression();
-        if (!(parentExpr instanceof RewritableExpression)) {
+        if (!(parentExpr instanceof RewritableExpression parent)) {
             return null;
         }
         final List<LocationStep> prevSteps = new ArrayList<>();
         prevSteps.add(current);
-        RewritableExpression parent = (RewritableExpression) parentExpr;
         Expression previous = parent.getPrevious(current);
         if (previous != null) {
-            while (previous != null && previous != parent.getFirst() && previous instanceof LocationStep) {
-                final LocationStep prevStep = (LocationStep) previous;
+            while (previous != null && previous != parent.getFirst() && previous instanceof LocationStep prevStep) {
                 prevSteps.add(0, prevStep);
                 previous = parent.getPrevious(previous);
             }

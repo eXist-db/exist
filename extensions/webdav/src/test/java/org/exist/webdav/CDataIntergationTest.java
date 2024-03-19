@@ -91,9 +91,8 @@ public class CDataIntergationTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = CDATA_XML.getBytes(UTF_8);
         final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
+        Files.writeString(tmpStoreFile.toPath(), CDATA_XML);
         assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
         // retrieve document
@@ -103,6 +102,6 @@ public class CDataIntergationTest {
         assertEquals("application/xml", ((File) resource).contentType);
         final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
         resource.downloadTo(tempRetrieveFile, null);
-        assertEquals(CDATA_XML, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+        assertEquals(CDATA_XML, Files.readString(tempRetrieveFile.toPath()));
     }
 }

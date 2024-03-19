@@ -381,18 +381,7 @@ public class LuceneIndexConfig {
         return matchAttrs != null;
     }
 
-    private static class MatchAttrData {
+    private record MatchAttrData(String qname, String value, float boost, boolean onSibling) {
 
-        final String qname;
-        final String value;
-        final float boost;
-        final boolean onSibling;
-
-        MatchAttrData(String qname, String value, float boost, boolean onSibling) {
-            this.qname = qname;
-            this.value = value;
-            this.boost = boost;
-            this.onSibling = onSibling;
-        }
     }
 }

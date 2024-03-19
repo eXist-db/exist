@@ -34,7 +34,6 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Class implementing the ft:search() method

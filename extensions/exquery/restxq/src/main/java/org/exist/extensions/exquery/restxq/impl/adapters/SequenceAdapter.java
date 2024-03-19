@@ -63,23 +63,23 @@ public class SequenceAdapter implements Sequence<Item> {
     
     @Override
     public Iterator<TypedValue<Item>> iterator() {
-        return new Iterator<TypedValue<Item>>(){
+        return new Iterator<>() {
 
             private SequenceIterator iterator;
-            
+
             private SequenceIterator getIterator() {
-                if(iterator == null) {
+                if (iterator == null) {
                     try {
-                         iterator = sequence.iterate();
-                    } catch(final XPathException xpe) {
+                        iterator = sequence.iterate();
+                    } catch (final XPathException xpe) {
                         LOG.error("Unable to extract the underlying Sequence Iterator: {}. Falling back to EMPTY_ITERATOR", xpe.getMessage(), xpe);
-                        
+
                         iterator = SequenceIterator.EMPTY_ITERATOR;
                     }
                 }
                 return iterator;
             }
-            
+
             @Override
             public boolean hasNext() {
                 return getIterator().hasNext();
@@ -98,7 +98,7 @@ public class SequenceAdapter implements Sequence<Item> {
     }
     
     private TypedValue<Item> createTypedValue(final Item item) {
-        return new TypedValue<Item>(){
+        return new TypedValue<>() {
             @Override
             public Type getType() {
                 return TypeAdapter.toExQueryType(item.getType());
@@ -106,8 +106,8 @@ public class SequenceAdapter implements Sequence<Item> {
 
             @Override
             public Item getValue() {
-                if(item instanceof NodeProxy) {
-                    return DomEnhancingNodeProxyAdapter.create((NodeProxy)item); //RESTXQ expects to find DOM Nodes not NodeProxys
+                if (item instanceof NodeProxy) {
+                    return DomEnhancingNodeProxyAdapter.create((NodeProxy) item); //RESTXQ expects to find DOM Nodes not NodeProxys
                 } else {
                     return item;
                 }

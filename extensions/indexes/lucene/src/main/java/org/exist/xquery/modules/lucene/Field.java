@@ -133,17 +133,15 @@ public class Field extends BasicFunction {
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
-            switch (called) {
-                case FS_FIELD_NAME:
-                    return getFieldValues(fieldName, type, match, index);
-                case FS_HIGHLIGHT_FIELD_MATCHES_NAME:
+            return switch (called) {
+                case FS_FIELD_NAME -> getFieldValues(fieldName, type, match, index);
+                case FS_HIGHLIGHT_FIELD_MATCHES_NAME -> {
                     final Sequence result = getFieldValues(fieldName, type, match, index);
-                    return highlightMatches(fieldName, proxy, match, result);
-                case FS_BINARY_FIELD_NAME:
-                    return getBinaryFieldValue(fieldName, type, match, index);
-                default:
-                    throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
-            }
+                    yield highlightMatches(fieldName, proxy, match, result);
+                }
+                case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, match, index);
+                default -> throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
+            };
         } catch (final IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
@@ -288,63 +286,31 @@ public class Field extends BasicFunction {
     }
 
     static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
-        switch (type) {
-            case Type.TIME:
-                return TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DATE_TIME:
-                return DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DATE:
-                return DateValue.deserialize(ByteBuffer.wrap(field.bytes));
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                return IntegerValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DOUBLE:
-                return DoubleValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.FLOAT:
-                return FloatValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DECIMAL:
-                return DecimalValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            default:
-                return new StringValue(field.utf8ToString());
-        }
+        return switch (type) {
+            case Type.TIME -> TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.DATE_TIME -> DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.DATE -> DateValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG, Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT ->
+                    IntegerValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.DOUBLE -> DoubleValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.FLOAT -> FloatValue.deserialize(ByteBuffer.wrap(field.bytes));
+            case Type.DECIMAL -> DecimalValue.deserialize(ByteBuffer.wrap(field.bytes));
+            default -> new StringValue(field.utf8ToString());
+        };
     }
 
     static AtomicValue stringToAtomic(final int type, final String value) throws XPathException {
-        switch(type) {
-            case Type.TIME:
-                return new TimeValue(value);
-            case Type.DATE_TIME:
-                return new DateTimeValue(value);
-            case Type.DATE:
-                return new DateValue(value);
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                return new IntegerValue(value);
-            case Type.DOUBLE:
-                return new DoubleValue(value);
-            case Type.FLOAT:
-                return new FloatValue(value);
-            case Type.DECIMAL:
-                return new DecimalValue(value);
-            default:
-                return new StringValue(value);
-        }
+        return switch (type) {
+            case Type.TIME -> new TimeValue(value);
+            case Type.DATE_TIME -> new DateTimeValue(value);
+            case Type.DATE -> new DateValue(value);
+            case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG, Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT ->
+                    new IntegerValue(value);
+            case Type.DOUBLE -> new DoubleValue(value);
+            case Type.FLOAT -> new FloatValue(value);
+            case Type.DECIMAL -> new DecimalValue(value);
+            default -> new StringValue(value);
+        };
     }
 
     static AtomicValue numberToAtomic(final int type, final Number value) throws XPathException {

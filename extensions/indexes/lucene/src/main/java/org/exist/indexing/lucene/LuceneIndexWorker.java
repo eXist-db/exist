@@ -1346,35 +1346,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 	    }
     }
 
-    private static class PendingDoc {
-        private final NodeId nodeId;
-        private final QName qname;
-        private final NodePath path;
-        private final CharSequence text;
-        private final float boost;
-        private final LuceneIndexConfig idxConf;
-
-        private PendingDoc(final NodeId nodeId, final QName qname, final NodePath path, final CharSequence text,
-                final float boost, final LuceneIndexConfig idxConf) {
-            this.nodeId = nodeId;
-            this.qname = qname;
-            this.path = path;
-            this.text = text;
-            this.idxConf = idxConf;
-            this.boost = boost;
-        }
+    private record PendingDoc(NodeId nodeId, QName qname, NodePath path, CharSequence text, float boost,
+                              LuceneIndexConfig idxConf) {
     }
 
-    private static class PendingAttr {
-	    private final AttrImpl attr;
-	    private final LuceneIndexConfig conf;
-	    private final NodePath path;
-
-        public PendingAttr(final AttrImpl attr, final NodePath path, final LuceneIndexConfig conf) {
-            this.attr = attr;
-            this.conf = conf;
-            this.path = path;
-        }
+    private record PendingAttr(AttrImpl attr, NodePath path, LuceneIndexConfig conf) {
     }
     
     private void write() {

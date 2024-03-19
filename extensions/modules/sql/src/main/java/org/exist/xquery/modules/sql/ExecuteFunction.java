@@ -228,9 +228,8 @@ public class ExecuteFunction extends BasicFunction {
                         child = ((ReferenceNode) child).getReference().getNode();
                     }
 
-                    if (child instanceof Element) {
+                    if (child instanceof Element elem) {
                         // check for <sql:null/>
-                        final Element elem = (Element)child;
                         if ("null".equals(elem.getLocalName()) && NAMESPACE_URI.equals(elem.getNamespaceURI())) {
                             value = null;
                         } else {

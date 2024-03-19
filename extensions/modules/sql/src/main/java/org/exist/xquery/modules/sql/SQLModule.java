@@ -37,7 +37,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.exist.dom.QName;
 import org.exist.xquery.*;
 
 import java.sql.Connection;
@@ -53,8 +52,6 @@ import java.util.regex.Pattern;
 
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 
 import javax.annotation.Nullable;
 

@@ -63,9 +63,9 @@ public class AnalyzerConfigTest {
         final Element elemParam = parse(strParam).getDocumentElement();
         final AnalyzerConfig.KeyTypedValue<?> constructorParameter = AnalyzerConfig.getConstructorParameter(elemParam);
 
-        assertEquals("punctuationDictionary", constructorParameter.getKey());
-        assertEquals(char[].class, constructorParameter.getValueClass());
-        assertArrayEquals(new char[] {'\'', '-', '’'}, (char[])constructorParameter.getValue());
+        assertEquals("punctuationDictionary", constructorParameter.key());
+        assertEquals(char[].class, constructorParameter.valueClass());
+        assertArrayEquals(new char[] {'\'', '-', '’'}, (char[])constructorParameter.value());
     }
 
     @Test(expected = AnalyzerConfig.ParameterException.class)
@@ -94,9 +94,9 @@ public class AnalyzerConfigTest {
         final Element elemParam = parse(strParam).getDocumentElement();
         final AnalyzerConfig.KeyTypedValue<?> constructorParameter = AnalyzerConfig.getConstructorParameter(elemParam);
 
-        assertEquals("dictionary", constructorParameter.getKey());
-        assertEquals(String[].class, constructorParameter.getValueClass());
-        assertArrayEquals(new String[] {"hello", "hi", "", "goodbye"}, (String[])constructorParameter.getValue());
+        assertEquals("dictionary", constructorParameter.key());
+        assertEquals(String[].class, constructorParameter.valueClass());
+        assertArrayEquals(new String[] {"hello", "hi", "", "goodbye"}, (String[])constructorParameter.value());
     }
 
     @Test
@@ -116,15 +116,15 @@ public class AnalyzerConfigTest {
         assertEquals(2, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("minimumTermLength", extractedConstructorArg1.getKey());
-        assertEquals(Integer.class, extractedConstructorArg1.getValueClass());
-        assertEquals(Integer.valueOf(2), extractedConstructorArg1.getValue());
+        assertEquals("minimumTermLength", extractedConstructorArg1.key());
+        assertEquals(Integer.class, extractedConstructorArg1.valueClass());
+        assertEquals(Integer.valueOf(2), extractedConstructorArg1.value());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
-        assertEquals("punctuationDictionary", extractedConstructorArg2.getKey());
-        assertEquals(Set.class, extractedConstructorArg2.getValueClass());
-        assertTrue(extractedConstructorArg2.getValue() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.getValue()).size());
+        assertEquals("punctuationDictionary", extractedConstructorArg2.key());
+        assertEquals(Set.class, extractedConstructorArg2.valueClass());
+        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -144,15 +144,15 @@ public class AnalyzerConfigTest {
         assertEquals(2, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("minimumTermLength", extractedConstructorArg1.getKey());
-        assertEquals(int.class, extractedConstructorArg1.getValueClass());
-        assertEquals(2, extractedConstructorArg1.getValue());
+        assertEquals("minimumTermLength", extractedConstructorArg1.key());
+        assertEquals(int.class, extractedConstructorArg1.valueClass());
+        assertEquals(2, extractedConstructorArg1.value());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
-        assertEquals("punctuationDictionary", extractedConstructorArg2.getKey());
-        assertEquals(Set.class, extractedConstructorArg2.getValueClass());
-        assertTrue(extractedConstructorArg2.getValue() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.getValue()).size());
+        assertEquals("punctuationDictionary", extractedConstructorArg2.key());
+        assertEquals(Set.class, extractedConstructorArg2.valueClass());
+        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -172,15 +172,15 @@ public class AnalyzerConfigTest {
         assertEquals(2, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("minimumTermLength", extractedConstructorArg1.getKey());
-        assertEquals(Boolean.class, extractedConstructorArg1.getValueClass());
-        assertEquals(Boolean.TRUE, extractedConstructorArg1.getValue());
+        assertEquals("minimumTermLength", extractedConstructorArg1.key());
+        assertEquals(Boolean.class, extractedConstructorArg1.valueClass());
+        assertEquals(Boolean.TRUE, extractedConstructorArg1.value());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
-        assertEquals("punctuationDictionary", extractedConstructorArg2.getKey());
-        assertEquals(Set.class, extractedConstructorArg2.getValueClass());
-        assertTrue(extractedConstructorArg2.getValue() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.getValue()).size());
+        assertEquals("punctuationDictionary", extractedConstructorArg2.key());
+        assertEquals(Set.class, extractedConstructorArg2.valueClass());
+        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -200,15 +200,15 @@ public class AnalyzerConfigTest {
         assertEquals(2, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("minimumTermLength", extractedConstructorArg1.getKey());
-        assertEquals(boolean.class, extractedConstructorArg1.getValueClass());
-        assertEquals(true, extractedConstructorArg1.getValue());
+        assertEquals("minimumTermLength", extractedConstructorArg1.key());
+        assertEquals(boolean.class, extractedConstructorArg1.valueClass());
+        assertEquals(true, extractedConstructorArg1.value());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg2 = extractedConstructorArgs.get(1);
-        assertEquals("punctuationDictionary", extractedConstructorArg2.getKey());
-        assertEquals(Set.class, extractedConstructorArg2.getValueClass());
-        assertTrue(extractedConstructorArg2.getValue() instanceof HashSet);
-        assertEquals(2, ((Set<Character>)extractedConstructorArg2.getValue()).size());
+        assertEquals("punctuationDictionary", extractedConstructorArg2.key());
+        assertEquals(Set.class, extractedConstructorArg2.valueClass());
+        assertTrue(extractedConstructorArg2.value() instanceof HashSet);
+        assertEquals(2, ((Set<Character>)extractedConstructorArg2.value()).size());
     }
 
     @Test
@@ -227,9 +227,9 @@ public class AnalyzerConfigTest {
         assertEquals(1, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("punctuationDictionary", extractedConstructorArg1.getKey());
-        assertEquals(char[].class, extractedConstructorArg1.getValueClass());
-        assertArrayEquals(new char[] {'\'', '-'}, (char[])extractedConstructorArg1.getValue());
+        assertEquals("punctuationDictionary", extractedConstructorArg1.key());
+        assertEquals(char[].class, extractedConstructorArg1.valueClass());
+        assertArrayEquals(new char[] {'\'', '-'}, (char[])extractedConstructorArg1.value());
     }
 
     @Test
@@ -248,9 +248,9 @@ public class AnalyzerConfigTest {
         assertEquals(1, extractedConstructorArgs.size());
 
         final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
-        assertEquals("punctuationDictionary", extractedConstructorArg1.getKey());
-        assertEquals(String[].class, extractedConstructorArg1.getValueClass());
-        assertArrayEquals(new String[] {"abc", "def"}, (String[])extractedConstructorArg1.getValue());
+        assertEquals("punctuationDictionary", extractedConstructorArg1.key());
+        assertEquals(String[].class, extractedConstructorArg1.valueClass());
+        assertArrayEquals(new String[] {"abc", "def"}, (String[])extractedConstructorArg1.value());
     }
 
     @Test

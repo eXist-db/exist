@@ -158,10 +158,9 @@ public class NGramSearch extends Function implements Optimizable {
             LocationStep firstStep = steps.get(0);
             LocationStep lastStep = steps.get(steps.size() - 1);
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
-                Expression outerExpr = contextInfo.getContextStep();
-                if (outerExpr != null && outerExpr instanceof LocationStep) {
-                    LocationStep outerStep = (LocationStep) outerExpr;
-                    NodeTest test = outerStep.getTest();
+                final Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr instanceof LocationStep outerStep) {
+                    final NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
                         if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS
                             || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
@@ -175,7 +174,7 @@ public class NGramSearch extends Function implements Optimizable {
                     }
                 }
             } else if (lastStep != null && firstStep != null) {
-                NodeTest test = lastStep.getTest();
+                final NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS
                         || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS) {
@@ -419,7 +418,7 @@ public class NGramSearch extends Function implements Optimizable {
             } else {
                 if (currentChar == '.') {
                     int wildcardEnd = i;
-                    if (token.length() > 0) {
+                    if (!token.isEmpty()) {
                         result.add(token.toString());
                         token = new StringBuilder();
                     }
@@ -450,7 +449,7 @@ public class NGramSearch extends Function implements Optimizable {
                             throw new XPathException(expression,
                                 "err:FTDY0020: query string violates wildcard syntax: Unmatched [ in query string; marked by <-- HERE in \""
                                     + query.substring(0, i + 1) + " <-- HERE " + query.substring(i + 1) + "\"");
-                        if (token.length() > 0) {
+                        if (!token.isEmpty()) {
                             result.add(token.toString());
                             token = new StringBuilder();
                         }
@@ -458,14 +457,14 @@ public class NGramSearch extends Function implements Optimizable {
                         i = characterClassEnd;
                     } else {
                         if (currentChar == '^') {
-                            if (token.length() > 0) {
+                            if (!token.isEmpty()) {
                                 result.add(token.toString());
                                 token = new StringBuilder();
 
                             }
                             result.add("^");
                         } else if (currentChar == '$') {
-                            if (token.length() > 0) {
+                            if (!token.isEmpty()) {
                                 result.add(token.toString());
                                 token = new StringBuilder();
                             }
@@ -478,7 +477,7 @@ public class NGramSearch extends Function implements Optimizable {
                 }
             }
 
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             result.add(token.toString());
         }
 

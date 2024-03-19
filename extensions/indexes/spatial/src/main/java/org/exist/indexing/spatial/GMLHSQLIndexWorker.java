@@ -190,12 +190,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     protected int removeDocument(DocumentImpl doc, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
             "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
-        ); 
-        ps.setString(1, doc.getURI().toString());
-        try {
+        );
+        try (ps) {
+            ps.setString(1, doc.getURI().toString());
             return ps.executeUpdate();
-        } finally {
-            ps.close();
         }
     }
 
@@ -203,13 +201,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     protected int removeCollection(Collection collection, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
             "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE SUBSTRING(DOCUMENT_URI, 1, ?) = ?;"
-        ); 
-        ps.setInt(1, collection.getURI().toString().length());
-        ps.setString(2, collection.getURI().toString());
-        try {
+        );
+        try (ps) {
+            ps.setInt(1, collection.getURI().toString().length());
+            ps.setString(2, collection.getURI().toString());
             return ps.executeUpdate();
-        } finally {
-            ps.close();
         }
     }
 
@@ -338,32 +334,17 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         if (!geometryMatches) {	
                             try {
                                 Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
-                                switch (spatialOp) {
-                                case SpatialOperator.EQUALS:
-                                    geometryMatches = geometry.equals(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.DISJOINT:
-                                    geometryMatches = geometry.disjoint(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.INTERSECTS:
-                                    geometryMatches = geometry.intersects(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.TOUCHES:
-                                    geometryMatches = geometry.touches(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.CROSSES:
-                                    geometryMatches = geometry.crosses(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.WITHIN:
-                                    geometryMatches = geometry.within(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.CONTAINS:
-                                    geometryMatches = geometry.contains(EPSG4326_geometry);
-                                    break;
-                                case SpatialOperator.OVERLAPS:
-                                    geometryMatches = geometry.overlaps(EPSG4326_geometry);
-                                    break;
-                                }
+                                geometryMatches = switch (spatialOp) {
+                                    case SpatialOperator.EQUALS -> geometry.equals(EPSG4326_geometry);
+                                    case SpatialOperator.DISJOINT -> geometry.disjoint(EPSG4326_geometry);
+                                    case SpatialOperator.INTERSECTS -> geometry.intersects(EPSG4326_geometry);
+                                    case SpatialOperator.TOUCHES -> geometry.touches(EPSG4326_geometry);
+                                    case SpatialOperator.CROSSES -> geometry.crosses(EPSG4326_geometry);
+                                    case SpatialOperator.WITHIN -> geometry.within(EPSG4326_geometry);
+                                    case SpatialOperator.CONTAINS -> geometry.contains(EPSG4326_geometry);
+                                    case SpatialOperator.OVERLAPS -> geometry.overlaps(EPSG4326_geometry);
+                                    default -> geometryMatches;
+                                };
                             } catch (ParseException e) {
                                 //Transforms the exception into an SQLException.
                                 //Very unlikely to happen though...
@@ -478,19 +459,16 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             LOG.debug("Refine query on documents is {}", refine_query_on_doc ? "enabled." : "disabled.");
         }
 
-        PreparedStatement ps = conn.prepareStatement(
-            "SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-            " FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
-        );
-        ResultSet rs = null;
-        try {
-            rs = ps.executeQuery();
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+                        " FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
+        ); ResultSet rs = ps.executeQuery()) {
             Geometry[] result = new Geometry[contextSet.getLength()];
-            int index= 0;
+            int index = 0;
             while (rs.next()) {
                 DocumentImpl doc = null;
                 try {
-                    doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+                    doc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
                 } catch (PermissionDeniedException e) {
                     LOG.debug(e);
                     result[index++] = null;
@@ -498,7 +476,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                     continue;
                 }
                 if (contextSet == null || refine_query_on_doc || contextSet.getDocumentSet().contains(doc.getDocId())) {
-                    NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
+                    NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0);
                     NodeProxy p = new NodeProxy(null, doc, nodeId);
                     //Node is in the context : check if it is accurate
                     //contextSet.contains(p) would have made more sense but there is a problem with
@@ -516,11 +494,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             SQLException ee = new SQLException(e.getMessage());
             ee.initCause(e);
             throw ee;
-        } finally {
-            if (rs != null)
-                rs.close();
-            if (ps != null)
-                ps.close();
         }
     }
 
@@ -590,13 +563,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             }
         }
 
-        PreparedStatement ps = conn.prepareStatement(
-            "SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + 
-            " FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
-        );
-        ResultSet rs = null;
-        try {
-            rs = ps.executeQuery();
+        try (PreparedStatement ps = conn.prepareStatement(
+                "SELECT " + propertyName + ", DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+                        " FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
+        ); ResultSet rs = ps.executeQuery()) {
             ValueSequence result;
             if (contextSet == null)
                 result = new ValueSequence();
@@ -605,7 +575,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             while (rs.next()) {
                 DocumentImpl doc = null;
                 try {
-                    doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));        			
+                    doc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
                 } catch (PermissionDeniedException e) {
                     LOG.debug(e);
                     //Untested, but that is roughly what should be returned.
@@ -615,9 +585,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         result.add(AtomicValue.EMPTY_VALUE);
                     } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                         result.add(AtomicValue.EMPTY_VALUE);
-                    } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+                    } else if (rs.getMetaData().getColumnType(1) == Types.BINARY) {
                         result.add(AtomicValue.EMPTY_VALUE);
-                    } else 
+                    } else
                         throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     //Ignore since the broker has no right on the document
                     continue;
@@ -635,30 +605,22 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                             result.add(new DoubleValue(rs.getDouble(1)));
                         } else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
                             result.add(new StringValue(rs.getString(1)));
-                        } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
-                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)),null));
-                        } else 
+                        } else if (rs.getMetaData().getColumnType(1) == Types.BINARY) {
+                            result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)), null));
+                        } else
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
                     }
                 }
             }
             return result;
-        } finally {
-            if (rs != null)
-                rs.close();
-            if (ps != null)
-                ps.close();
         }
     }
 
     @Override
     protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
+        try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
-        );
-        ResultSet rs = null;
-        try {
-            rs = ps.executeQuery();
+        ); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));
                 if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
@@ -757,7 +719,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 
                 DocumentImpl doc = null;
                 try {
-                    doc = (DocumentImpl)broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
+                    doc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
                 } catch (PermissionDeniedException e) {
                     //The broker has no right on the document
                     LOG.error(e);
@@ -791,11 +753,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             SQLException ee = new SQLException(e.getMessage());
             ee.initCause(e);
             throw ee;
-        } finally {
-            if (rs != null)
-                rs.close();
-            if (ps != null)
-                ps.close();
         }
     }
 

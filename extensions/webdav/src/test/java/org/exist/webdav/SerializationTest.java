@@ -93,9 +93,8 @@ public class SerializationTest {
             assertNotNull(folder);
 
             // store document
-            final byte data[] = XML_WITH_DOCTYPE.getBytes(UTF_8);
             final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
-            Files.write(tmpStoreFile.toPath(), data);
+            Files.writeString(tmpStoreFile.toPath(), XML_WITH_DOCTYPE);
             assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
             // retrieve document
@@ -105,7 +104,7 @@ public class SerializationTest {
             assertEquals("application/xml", ((File) resource).contentType);
             final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
             resource.downloadTo(tempRetrieveFile, null);
-            assertEquals(XML_WITH_DOCTYPE, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+            assertEquals(XML_WITH_DOCTYPE, Files.readString(tempRetrieveFile.toPath()));
         }
     }
 
@@ -127,9 +126,8 @@ public class SerializationTest {
             assertNotNull(folder);
 
             // store document
-            final byte data[] = XML_WITH_XMLDECL.getBytes(UTF_8);
             final java.io.File tmpStoreFile = TEMP_FOLDER.newFile();
-            Files.write(tmpStoreFile.toPath(), data);
+            Files.writeString(tmpStoreFile.toPath(), XML_WITH_XMLDECL);
             assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
             // retrieve document
@@ -139,7 +137,7 @@ public class SerializationTest {
             assertEquals("application/xml", ((File) resource).contentType);
             final java.io.File tempRetrieveFile = TEMP_FOLDER.newFile();
             resource.downloadTo(tempRetrieveFile, null);
-            assertEquals(XML_WITH_XMLDECL, new String(Files.readAllBytes(tempRetrieveFile.toPath()), UTF_8));
+            assertEquals(XML_WITH_XMLDECL, Files.readString(tempRetrieveFile.toPath()));
         }
     }
 }

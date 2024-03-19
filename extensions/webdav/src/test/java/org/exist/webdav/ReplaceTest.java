@@ -101,9 +101,8 @@ public class ReplaceTest {
         assertNotNull(folder);
 
         // store document
-        final byte data[] = docContent.getBytes(UTF_8);
         final java.io.File tmpStoreFile = tempFolder.newFile();
-        Files.write(tmpStoreFile.toPath(), data);
+        Files.writeString(tmpStoreFile.toPath(), docContent);
         assertNotNull(folder.uploadFile(docName, tmpStoreFile, null));
 
         // retrieve document
@@ -113,12 +112,11 @@ public class ReplaceTest {
         assertEquals(expectedMediaType, ((File) srcResource).contentType);
         final java.io.File tempRetrievedSrcFile = tempFolder.newFile();
         srcResource.downloadTo(tempRetrievedSrcFile, null);
-        assertEquals(docContent, new String(Files.readAllBytes(tempRetrievedSrcFile.toPath()), UTF_8));
+        assertEquals(docContent, Files.readString(tempRetrievedSrcFile.toPath()));
 
         // replace document
-        final byte replacementData[] = replacementDocContent.getBytes(UTF_8);
         final java.io.File tmpReplacementFile = tempFolder.newFile();
-        Files.write(tmpReplacementFile.toPath(), replacementData);
+        Files.writeString(tmpReplacementFile.toPath(), replacementDocContent);
         assertNotNull(folder.uploadFile(docName, tmpReplacementFile, null));
 
         // retrieve replaced document
@@ -128,6 +126,6 @@ public class ReplaceTest {
         assertEquals(expectedMediaType, ((File) replacedResource).contentType);
         final java.io.File tempRetrievedReplacedFile = tempFolder.newFile();
         replacedResource.downloadTo(tempRetrievedReplacedFile, null);
-        assertEquals(replacementDocContent, new String(Files.readAllBytes(tempRetrievedReplacedFile.toPath()), UTF_8));
+        assertEquals(replacementDocContent, Files.readString(tempRetrievedReplacedFile.toPath()));
     }
 }

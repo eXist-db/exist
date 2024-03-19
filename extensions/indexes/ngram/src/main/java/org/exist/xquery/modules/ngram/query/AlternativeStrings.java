@@ -72,8 +72,7 @@ public class AlternativeStrings implements EvaluatableExpression, MergeableExpre
     public AlternativeStrings mergeWith(final WildcardedExpression otherExpression) {
         Set<String> concatenatedStrings = null;
 
-        if (otherExpression instanceof FixedString) {
-            FixedString fixedString = (FixedString) otherExpression;
+        if (otherExpression instanceof FixedString fixedString) {
             concatenatedStrings = new HashSet<>(strings.size());
             for (String s : strings)
                 concatenatedStrings.add(s + fixedString.fixedString);

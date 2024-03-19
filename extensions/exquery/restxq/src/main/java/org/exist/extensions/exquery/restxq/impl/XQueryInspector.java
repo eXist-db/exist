@@ -122,8 +122,7 @@ class XQueryInspector {
             final Iterator<Module> itModule = xqyCtx.getModules();
             while(itModule.hasNext()) {
                 final Module module = itModule.next();
-                if(module instanceof ExternalModule) {
-                    final ExternalModule extModule = (ExternalModule)module;
+                if(module instanceof ExternalModule extModule) {
                     final Source source = extModule.getSource();
                     if(source instanceof DBSource) {
                         final String moduleUri = getDbUri(source);

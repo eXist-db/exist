@@ -579,17 +579,17 @@ public class SendEmailFunction extends BasicFunction {
             for (final Iterator<MailAttachment> itAttachment = aMail.attachmentIterator(); itAttachment.hasNext(); ) {
                 final MailAttachment ma = itAttachment.next();
 
-                out.print("Content-Type: " + ma.getMimeType() + "; name=" + parameterValue(ma.getFilename()) + eol);
+                out.print("Content-Type: " + ma.mimeType() + "; name=" + parameterValue(ma.filename()) + eol);
                 out.print("Content-Transfer-Encoding: base64" + eol);
-                out.print("Content-Description: " + ma.getFilename() + eol);
-                out.print("Content-Disposition: attachment; filename=" + parameterValue(ma.getFilename()) + eol);
+                out.print("Content-Description: " + ma.filename() + eol);
+                out.print("Content-Disposition: attachment; filename=" + parameterValue(ma.filename()) + eol);
                 out.print(eol);
 
 
                 //write out the attachment encoded data in fixed width lines
                 final char[] buf = new char[MIME_BASE64_MAX_LINE_LENGTH];
                 int read = -1;
-                final Reader attachmentDataReader = new StringReader(ma.getData());
+                final Reader attachmentDataReader = new StringReader(ma.data());
                 while ((read = attachmentDataReader.read(buf, 0, MIME_BASE64_MAX_LINE_LENGTH)) > -1) {
                     out.print(String.valueOf(buf, 0, read) + eol);
                 }
@@ -962,35 +962,16 @@ public class SendEmailFunction extends BasicFunction {
         final Calendar rightNow = Calendar.getInstance();
 
         //Day of the week
-        switch (rightNow.get(Calendar.DAY_OF_WEEK)) {
-            case Calendar.MONDAY:
-                dateString = "Mon";
-                break;
-
-            case Calendar.TUESDAY:
-                dateString = "Tue";
-                break;
-
-            case Calendar.WEDNESDAY:
-                dateString = "Wed";
-                break;
-
-            case Calendar.THURSDAY:
-                dateString = "Thu";
-                break;
-
-            case Calendar.FRIDAY:
-                dateString = "Fri";
-                break;
-
-            case Calendar.SATURDAY:
-                dateString = "Sat";
-                break;
-
-            case Calendar.SUNDAY:
-                dateString = "Sun";
-                break;
-        }
+        dateString = switch (rightNow.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY -> "Mon";
+            case Calendar.TUESDAY -> "Tue";
+            case Calendar.WEDNESDAY -> "Wed";
+            case Calendar.THURSDAY -> "Thu";
+            case Calendar.FRIDAY -> "Fri";
+            case Calendar.SATURDAY -> "Sat";
+            case Calendar.SUNDAY -> "Sun";
+            default -> dateString;
+        };
 
         dateString += ", ";
 
@@ -1160,34 +1141,13 @@ public class SendEmailFunction extends BasicFunction {
 
     /**
      * A simple data class to represent an email attachment.
-     *
+     * <p>
      * It doesn't do anything fancy, it just has private
      * members and get and set methods.
-     *
+     * <p>
      * Access is package-private for unit testing purposes.
      */
-    static class MailAttachment {
-        private final String filename;
-        private final String mimeType;
-        private final String data;
-
-        public MailAttachment(final String filename, final String mimeType, final String data) {
-            this.filename = filename;
-            this.mimeType = mimeType;
-            this.data = data;
-        }
-
-        public String getData() {
-            return data;
-        }
-
-        public String getFilename() {
-            return filename;
-        }
-
-        public String getMimeType() {
-            return mimeType;
-        }
+        record MailAttachment(String filename, String mimeType, String data) {
     }
 
     /**

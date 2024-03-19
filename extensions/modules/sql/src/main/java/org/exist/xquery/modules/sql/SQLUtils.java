@@ -23,11 +23,6 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Types;
 
-import org.exist.dom.QName;
-import org.exist.xquery.FunctionDSL;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Type;
 
 /**
@@ -43,48 +38,28 @@ public final class SQLUtils {
     public static int sqlTypeFromString(String sqlType) {
         sqlType = sqlType.toUpperCase();
 
-        switch (sqlType) {
-            case "ARRAY":
-                return (Types.ARRAY);
-            case "BIGINT":
-                return (Types.BIGINT);
-            case "BINARY":
-                return (Types.BINARY);
-            case "BIT":
-                return (Types.BIT);
-            case "BLOB":
-                return (Types.BLOB);
-            case "BOOLEAN":
-                return (Types.BOOLEAN);
-            case "CHAR":
-                return (Types.CHAR);
-            case "CLOB":
-                return (Types.CLOB);
-            case "DECIMAL":
-                return (Types.DECIMAL);
-            case "DOUBLE":
-                return (Types.DOUBLE);
-            case "FLOAT":
-                return (Types.FLOAT);
-            case "LONGVARCHAR":
-                return (Types.LONGVARCHAR);
-            case "NUMERIC":
-                return (Types.NUMERIC);
-            case "SMALLINT":
-                return (Types.SMALLINT);
-            case "TINYINT":
-                return (Types.TINYINT);
-            case "INTEGER":
-                return (Types.INTEGER);
-            case "VARCHAR":
-                return (Types.VARCHAR);
-            case "SQLXML":
-                return Types.SQLXML;
-            case "TIMESTAMP":
-                return Types.TIMESTAMP;
-            default:
-                return (Types.VARCHAR); //default
-        }
+        return switch (sqlType) {
+            case "ARRAY" -> (Types.ARRAY);
+            case "BIGINT" -> (Types.BIGINT);
+            case "BINARY" -> (Types.BINARY);
+            case "BIT" -> (Types.BIT);
+            case "BLOB" -> (Types.BLOB);
+            case "BOOLEAN" -> (Types.BOOLEAN);
+            case "CHAR" -> (Types.CHAR);
+            case "CLOB" -> (Types.CLOB);
+            case "DECIMAL" -> (Types.DECIMAL);
+            case "DOUBLE" -> (Types.DOUBLE);
+            case "FLOAT" -> (Types.FLOAT);
+            case "LONGVARCHAR" -> (Types.LONGVARCHAR);
+            case "NUMERIC" -> (Types.NUMERIC);
+            case "SMALLINT" -> (Types.SMALLINT);
+            case "TINYINT" -> (Types.TINYINT);
+            case "INTEGER" -> (Types.INTEGER);
+            case "VARCHAR" -> (Types.VARCHAR);
+            case "SQLXML" -> Types.SQLXML;
+            case "TIMESTAMP" -> Types.TIMESTAMP;
+            default -> (Types.VARCHAR); //default
+        };
     }
 
     /**
@@ -94,88 +69,28 @@ public final class SQLUtils {
      * @return The XML Type as specified by eXist
      */
     public static int sqlTypeToXMLType(int sqlType) {
-        switch (sqlType) {
-
-            case Types.ARRAY: {
-                return (Type.NODE);
-            }
-
-            case Types.BIGINT: {
-                return (Type.INT);
-            }
-
-            case Types.BINARY: {
-                return (Type.BASE64_BINARY);
-            }
-
-            case Types.BIT: {
-                return (Type.INT);
-            }
-
-            case Types.BLOB: {
-                return (Type.BASE64_BINARY);
-            }
-
-            case Types.BOOLEAN: {
-                return (Type.BOOLEAN);
-            }
-
-            case Types.CHAR: {
-                return (Type.STRING);
-            }
-
-            case Types.CLOB: {
-                return (Type.STRING);
-            }
-
-            case Types.DECIMAL: {
-                return (Type.DECIMAL);
-            }
-
-            case Types.DOUBLE: {
-                return (Type.DOUBLE);
-            }
-
-            case Types.FLOAT: {
-                return (Type.FLOAT);
-            }
-
-            case Types.LONGVARCHAR: {
-                return (Type.STRING);
-            }
-
-            case Types.NUMERIC: {
-                return (Type.NUMBER);
-            }
-
-            case Types.SMALLINT: {
-                return (Type.INT);
-            }
-
-            case Types.TINYINT: {
-                return (Type.INT);
-            }
-
-            case Types.INTEGER: {
-                return (Type.INTEGER);
-            }
-
-            case Types.VARCHAR: {
-                return (Type.STRING);
-            }
-
-            case Types.SQLXML: {
-                return (Type.NODE);
-            }
-
-            case Types.TIMESTAMP: {
-                return Type.DATE_TIME;
-            }
-
-            default: {
-                return (Type.ANY_TYPE);
-            }
-        }
+        return switch (sqlType) {
+            case Types.ARRAY -> (Type.NODE);
+            case Types.BIGINT -> (Type.INT);
+            case Types.BINARY -> (Type.BASE64_BINARY);
+            case Types.BIT -> (Type.INT);
+            case Types.BLOB -> (Type.BASE64_BINARY);
+            case Types.BOOLEAN -> (Type.BOOLEAN);
+            case Types.CHAR -> (Type.STRING);
+            case Types.CLOB -> (Type.STRING);
+            case Types.DECIMAL -> (Type.DECIMAL);
+            case Types.DOUBLE -> (Type.DOUBLE);
+            case Types.FLOAT -> (Type.FLOAT);
+            case Types.LONGVARCHAR -> (Type.STRING);
+            case Types.NUMERIC -> (Type.NUMBER);
+            case Types.SMALLINT -> (Type.INT);
+            case Types.TINYINT -> (Type.INT);
+            case Types.INTEGER -> (Type.INTEGER);
+            case Types.VARCHAR -> (Type.STRING);
+            case Types.SQLXML -> (Type.NODE);
+            case Types.TIMESTAMP -> Type.DATE_TIME;
+            default -> (Type.ANY_TYPE);
+        };
     }
 
     public static String escapeXmlText(String text) {

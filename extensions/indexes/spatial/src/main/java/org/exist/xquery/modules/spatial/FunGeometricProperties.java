@@ -31,7 +31,6 @@ import org.exist.indexing.spatial.SpatialIndexException;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;

@@ -124,28 +124,21 @@ public class EntryFunctions extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        switch (getName().getLocalPart()) {
-
-            case FS_NO_FILTER_NAME:
-                return BooleanValue.TRUE;
-
-            case FS_FS_STORE_ENTRY_NAME3:
+        return switch (getName().getLocalPart()) {
+            case FS_NO_FILTER_NAME -> BooleanValue.TRUE;
+            case FS_FS_STORE_ENTRY_NAME3 -> {
                 checkIsDBA();
-                return fsStoreEntry3(args);
-
-            case FS_FS_STORE_ENTRY_NAME4:
+                yield fsStoreEntry3(args);
+            }
+            case FS_FS_STORE_ENTRY_NAME4 -> {
                 checkIsDBA();
-                return fsStoreEntry4(args);
-
-            case FS_DB_STORE_ENTRY_NAME3:
-                return dbStoreEntry3(args);
-
-            case FS_DB_STORE_ENTRY_NAME4:
-                return dbStoreEntry4(args);
-
-            default:
-                throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
-        }
+                yield fsStoreEntry4(args);
+            }
+            case FS_DB_STORE_ENTRY_NAME3 -> dbStoreEntry3(args);
+            case FS_DB_STORE_ENTRY_NAME4 -> dbStoreEntry4(args);
+            default ->
+                    throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
+        };
     }
 
     private void checkIsDBA() throws XPathException {

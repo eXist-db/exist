@@ -24,7 +24,6 @@ package org.exist.xquery.modules.ngram.utils;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.NodeSetIterator;
 import org.exist.xquery.XPathException;
 
 import java.util.function.Function;

@@ -81,8 +81,7 @@ public class PlainTextHighlighter {
                     // phrase queries need to be handled differently to filter
                     // out wrong matches: only the phrase should be marked, not single
                     // words which may also occur elsewhere in the document
-                    if (termQuery instanceof PhraseQuery) {
-                        PhraseQuery phraseQuery = (PhraseQuery) termQuery;
+                    if (termQuery instanceof PhraseQuery phraseQuery) {
                         Term[] terms = phraseQuery.getTerms();
                         if (text.equals(terms[0].text())) {
                             // scan the following text and collect tokens to see if

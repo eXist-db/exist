@@ -745,13 +745,6 @@ public class WriteMessageTest {
         return messageBodyLines.toArray(new String[0]);
     }
 
-    static class Part {
-        final String[] headerLines;
-        final String[] bodyLines;
-
-        Part(final String[] headerLines, final String[] bodyLines) {
-            this.headerLines = headerLines;
-            this.bodyLines = bodyLines;
-        }
+    record Part(String[] headerLines, String[] bodyLines) {
     }
 }

@@ -22,7 +22,6 @@
 package org.exist.security.realm.ldap;
 
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import javax.naming.Context;

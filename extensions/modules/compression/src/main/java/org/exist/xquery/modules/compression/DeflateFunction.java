@@ -36,7 +36,6 @@ import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;

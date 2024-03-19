@@ -376,8 +376,7 @@ public class ExistXqueryRegistry {
         
         MissingModuleHint missingModuleHint = null;
         
-        if(e.getCause() instanceof XPathException) {
-            final XPathException xpe = (XPathException)e.getCause();
+        if(e.getCause() instanceof XPathException xpe) {
             if(xpe.getErrorCode() == ErrorCodes.XQST0059) {
                 final Sequence errorVals = xpe.getErrorVal();
                 

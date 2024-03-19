@@ -114,7 +114,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
 
     @Override
     protected void processText(CharSequence text, Document luceneDoc) {
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             luceneDoc.add(new FacetField(dimension, text.toString()));
         }
     }

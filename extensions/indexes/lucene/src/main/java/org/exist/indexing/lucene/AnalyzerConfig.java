@@ -202,8 +202,8 @@ public class AnalyzerConfig {
             final Object cParamValues[] = new Object[cParams.size()];
             for (int i = 0; i < cParams.size(); i++) {
                 KeyTypedValue<?> ktv = cParams.get(i);
-                cParamClasses[i] = ktv.getValueClass();
-                cParamValues[i] = ktv.getValue();
+                cParamClasses[i] = ktv.valueClass();
+                cParamValues[i] = ktv.value();
             }
 
             // Create new analyzer
@@ -474,7 +474,7 @@ public class AnalyzerConfig {
                     }
                     try {
                         final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue<>(name, n.intValue(), int.class);
+                        parameter = new KeyTypedValue<>(name, n, int.class);
                     } catch (final NumberFormatException ex) {
                         LOG.error(String.format("Value %s could not be converted to an int. %s", value, ex.getMessage()));
                     }
@@ -493,7 +493,7 @@ public class AnalyzerConfig {
                         throw new ParameterException("The 'value' attribute must exist and must contain a boolean value.");
                     }
                     final Boolean b2 = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue<>(name, b2.booleanValue(), boolean.class);
+                    parameter = new KeyTypedValue<>(name, b2, boolean.class);
                     break;
 
                 default:
@@ -588,32 +588,11 @@ public class AnalyzerConfig {
     }
 
     /**
-     * CLass for containing the Triple : key (name), corresponding value and
-     * class type of value.
-     */
-    static class KeyTypedValue<T> {
+         * CLass for containing the Triple : key (name), corresponding value and
+         * class type of value.
+         */
+        record KeyTypedValue<T>(String key, T value, Class<T> valueClass) {
 
-        private final String key;
-        private final T value;
-        private final Class<T> valueClass;
-
-        public KeyTypedValue(final String key, final T value, final Class<T> valueClass) {
-            this.key = key;
-            this.value = value;
-            this.valueClass = valueClass;
-        }
-
-        public String getKey() {
-            return key;
-        }
-
-        public T getValue() {
-            return value;
-        }
-
-        public Class<T> getValueClass() {
-            return valueClass;
-        }
     }
 
     /**
