@@ -29,6 +29,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
 import org.exist.indexing.range.RangeIndex.Operator;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
@@ -274,7 +275,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
         try {
             if (numericComparison) {
-                return testValue.toJavaObject(Double.class).equals(numericValue);
+                return testValue instanceof NumericValue &&
+                        testValue.toJavaObject(Double.class).equals(numericValue);
             }
             if (testValue instanceof StringValue) {
                 final String testString = testValue.getStringValue();
@@ -291,24 +293,28 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return false;
     }
 
-    private Expression unwrapSubExpression(final Expression expr) {
+    private Expression unwrapSubExpression(Expression expr) {
+
         if (expr instanceof Atomize atomize) {
-            return atomize.getExpression();
+            expr = atomize.getExpression();
         }
 
-        if (
-                (expr instanceof DynamicCardinalityCheck || expr instanceof PathExpr)
-                && expr.getSubExpressionCount() == 1
-        ) {
-            return expr.getSubExpression(0);
+        if (expr instanceof DynamicCardinalityCheck cardinalityCheck
+                && expr.getSubExpressionCount() == 1) {
+            expr = cardinalityCheck.getSubExpression(0);
+        }
+
+        if (expr instanceof PathExpr pathExpr &&
+                expr.getSubExpressionCount() == 1) {
+            expr = pathExpr.getSubExpression(0);
         }
 
         return expr;
     }
 
     private LocationStep findLocationStep(final Expression expr) {
-        if (expr instanceof LocationStep) {
-            return (LocationStep) expr;
+        if (expr instanceof LocationStep step) {
+            return step;
         }
 
         return null;
