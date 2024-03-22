@@ -43,13 +43,12 @@ import java.util.regex.PatternSyntaxException;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 
 /**
- *
  * A condition that can be defined for complex range config elements
  * that compares an attribute.
  *
  * @author Marcel Schaeben
  */
-public class RangeIndexConfigAttributeCondition extends RangeIndexConfigCondition{
+public class RangeIndexConfigAttributeCondition extends RangeIndexConfigCondition {
 
     private final String attributeName;
     private final QName attribute;
@@ -64,8 +63,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
 
         if (parentPath.getLastComponent().getNameType() == ElementValue.ATTRIBUTE) {
-            throw new DatabaseConfigurationException(
-                    "Range index module: Attribute condition cannot be defined for an attribute:" + parentPath);
+            throw new DatabaseConfigurationException("Range index module: Attribute condition cannot be defined for an attribute:" + parentPath);
         }
 
         attributeName = elem.getAttribute("attribute");
@@ -74,24 +72,12 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         }
 
         try {
-            attribute = new QName(QName.extractLocalName(attributeName), XMLConstants.NULL_NS_URI,
-                    QName.extractPrefix(attributeName), ElementValue.ATTRIBUTE);
+            attribute = new QName(QName.extractLocalName(attributeName), XMLConstants.NULL_NS_URI, QName.extractPrefix(attributeName), ElementValue.ATTRIBUTE);
         } catch (final QName.IllegalQNameException e) {
-            throw new DatabaseConfigurationException("Rand index module error: " + e.getMessage(), e);
+            throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
         }
-        value = elem.getAttribute("value");
 
-        // parse operator (default to 'eq' if missing)
-        if (elem.hasAttribute("operator")) {
-            final String operatorName = elem.getAttribute("operator");
-            operator = Operator.getByName(operatorName.toLowerCase());
-            if (operator == null) {
-                throw new DatabaseConfigurationException(
-                        "Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
-            }
-        } else {
-            operator = Operator.EQ;
-        }
+        value = elem.getAttribute("value");
 
         final String caseString = elem.getAttribute("case");
         caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
@@ -165,8 +151,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     @Override
     public boolean matches(final Node node) {
-        return node.getNodeType() == Node.ELEMENT_NODE
-                && matchValue(((Element) node).getAttribute(attributeName));
+        return node.getNodeType() == Node.ELEMENT_NODE && matchValue(((Element) node).getAttribute(attributeName));
     }
 
     private boolean matchValue(final String testValue) {
@@ -181,10 +166,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         };
     }
 
-    private boolean stringMatch (final BiPredicate<String, String> predicate, final String testValue) {
-        return caseSensitive
-                ? predicate.test(testValue, value)
-                : predicate.test(testValue.toLowerCase(), getLowercaseValue());
+    private boolean stringMatch(final BiPredicate<String, String> predicate, final String testValue) {
+        return caseSensitive ? predicate.test(testValue, value) : predicate.test(testValue.toLowerCase(), getLowercaseValue());
     }
 
     private boolean booleanMatch(final String testValue) {
@@ -220,9 +203,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private Double toDouble(final String value) {
         try {
             return Double.parseDouble(value);
-        } catch (NumberFormatException e)  {
-            RangeIndex.LOG.debug(
-                    "Non-numeric value encountered for numeric condition on @'{}': {}", attributeName, value);
+        } catch (NumberFormatException e) {
+            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", attributeName, value);
             return (double) 0;
         }
     }
@@ -242,9 +224,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         // get the type of the expression inside the predicate and determine right and left hand arguments
         if (inner instanceof InternalFunctionCall funcCall) {
             // calls to matches() will not have been rewritten to a comparison, so check for function call
-            final InternalFunctionCall funcCall = (InternalFunctionCall) inner;
             final Function func = funcCall.getFunction();
-
             if (!func.isCalledAs("matches")) {
                 // predicate expression cannot be parsed as condition
                 return false;
@@ -295,8 +275,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
         try {
             if (numericComparison) {
-                return testValue instanceof NumericValue &&
-                        testValue.toJavaObject(Double.class).equals(numericValue);
+                return testValue instanceof NumericValue && testValue.toJavaObject(Double.class).equals(numericValue);
             }
             if (testValue instanceof StringValue) {
                 final String testString = testValue.getStringValue();
@@ -306,8 +285,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
                 return testString.equalsIgnoreCase(value);
             }
         } catch (XPathException e) {
-            RangeIndex.LOG.error(
-                    "Value conversion error when testing predicate for condition, value: {}", testValue.toString());
+            RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", testValue.toString());
             RangeIndex.LOG.error(e);
         }
         return false;
@@ -328,13 +306,11 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             expr = atomize.getExpression();
         }
 
-        if (expr instanceof DynamicCardinalityCheck cardinalityCheck
-                && expr.getSubExpressionCount() == 1) {
+        if (expr instanceof DynamicCardinalityCheck cardinalityCheck && expr.getSubExpressionCount() == 1) {
             expr = cardinalityCheck.getSubExpression(0);
         }
 
-        if (expr instanceof PathExpr pathExpr &&
-                expr.getSubExpressionCount() == 1) {
+        if (expr instanceof PathExpr pathExpr && expr.getSubExpressionCount() == 1) {
             expr = pathExpr.getSubExpression(0);
         }
 
