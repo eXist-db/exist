@@ -37,7 +37,6 @@ import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
 import java.util.function.BiPredicate;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -58,9 +57,9 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private final Operator operator;
     private final boolean caseSensitive;
     private final boolean numericComparison;
-    private Double numericValue = null;
+    private final Pattern pattern;
+    private final Double numericValue;
     private String lowercaseValue = null;
-    private Pattern pattern = null;
 
     public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
 
@@ -100,35 +99,60 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         final String numericString = elem.getAttribute("numeric");
         numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
 
-        // try to create a pattern matcher for a 'matches' condition
-        if (operator == Operator.MATCH) {
-            final int flags = caseSensitive ? 0 : CASE_INSENSITIVE;
-            try {
-                pattern = Pattern.compile(value, flags);
-            } catch (PatternSyntaxException e) {
-                RangeIndex.LOG.error(e);
-                throw new DatabaseConfigurationException(
-                        "Range index module: Invalid regular expression in condition: " + value);
-            }
-        }
+        operator = getOperator(elem, numericComparison);
 
         // try to parse the number value if numeric comparison is specified
         // store a reference to numeric value to avoid having to parse each time
-        if (numericComparison) {
-            switch (operator) {
-                case MATCH, STARTS_WITH, ENDS_WITH, CONTAINS -> throw new DatabaseConfigurationException(
-                        "Range index module: Numeric comparison not applicable for operator: " + operator.name());
-            }
+        numericValue = numericComparison ? getNumericValue(value) : null;
 
-            try {
-                numericValue = Double.parseDouble(value);
-            } catch (NumberFormatException e)  {
-                throw new DatabaseConfigurationException(
-                        "Range index module: Numeric attribute condition specified, " +
-                                "but required value cannot be parsed as number: " + value);
-            }
+        // try to create a pattern matcher for a 'matches' condition
+        pattern = operator == Operator.MATCH ? getPattern(value, caseSensitive) : null;
+    }
+
+    private static Pattern getPattern(final String value, final boolean caseSensitive) throws DatabaseConfigurationException {
+        final int flags = caseSensitive ? 0 : CASE_INSENSITIVE;
+        try {
+            return Pattern.compile(value, flags);
+        } catch (PatternSyntaxException e) {
+            RangeIndex.LOG.error(e);
+            throw new DatabaseConfigurationException("Range index module: Invalid regular expression in condition: " + value);
+        }
+    }
+
+    private static Double getNumericValue(final String value) throws DatabaseConfigurationException {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            throw new DatabaseConfigurationException("Range index module: Numeric attribute condition specified, but required value cannot be parsed as number: " + value);
+        }
+    }
+
+    /**
+     * parse operator (default to 'eq' if missing)
+     *
+     * @param elem configuration element
+     * @return parsed operator
+     * @throws DatabaseConfigurationException Operator not set or incompatible
+     */
+    private static Operator getOperator(final Element elem, final boolean numericComparison) throws DatabaseConfigurationException {
+        if (!elem.hasAttribute("operator")) {
+            return Operator.EQ;
+        }
+        final String operatorName = elem.getAttribute("operator");
+        final Operator operator = Operator.getByName(operatorName.toLowerCase());
+        if (operator == null) {
+            throw new DatabaseConfigurationException("Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
         }
 
+        if (!numericComparison) {
+            return operator;
+        }
+
+        return switch (operator) {
+            case MATCH, STARTS_WITH, ENDS_WITH, CONTAINS ->
+                    throw new DatabaseConfigurationException("Range index module: Numeric comparison not applicable for operator: " + operator.name());
+            default -> operator;
+        };
     }
 
     // lazily evaluate lowercase value to convert once when needed
@@ -153,10 +177,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             case ENDS_WITH -> stringMatch(String::endsWith, testValue);
             case STARTS_WITH -> stringMatch(String::startsWith, testValue);
             case CONTAINS -> stringMatch(String::contains, testValue);
-            case MATCH -> {
-                final Matcher matcher = pattern.matcher(testValue);
-                yield matcher.matches();
-            }
+            case MATCH -> pattern.matcher(testValue).matches();
         };
     }
 
@@ -168,8 +189,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     private boolean booleanMatch(final String testValue) {
         if (numericComparison) {
-            final double testDouble = toDouble(testValue);
-            return this.numericValue.equals(testDouble);
+            return numericValue.equals(toDouble(testValue));
         }
         if (caseSensitive) {
             return value.equals(testValue);
@@ -209,24 +229,18 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     @Override
     public boolean find(final Predicate predicate) {
-        final Expression inner = this.getInnerExpression(predicate);
+        final Expression inner = getInnerExpression(predicate);
         if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall)) {
             // predicate expression cannot be parsed as condition
             return false;
         }
 
-        Operator rewrittenOperator;
+        Operator currentOperator;
         final Expression lhe;
         final Expression rhe;
 
         // get the type of the expression inside the predicate and determine right and left hand arguments
-        if (inner instanceof GeneralComparison comparison) {
-
-            rewrittenOperator = RangeQueryRewriter.getOperator(inner);
-            lhe = comparison.getLeft();
-            rhe = comparison.getRight();
-
-        } else {
+        if (inner instanceof InternalFunctionCall funcCall) {
             // calls to matches() will not have been rewritten to a comparison, so check for function call
             final InternalFunctionCall funcCall = (InternalFunctionCall) inner;
             final Function func = funcCall.getFunction();
@@ -236,9 +250,15 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
                 return false;
             }
 
-            rewrittenOperator = Operator.MATCH;
             lhe = unwrapSubExpression(func.getArgument(0));
             rhe = unwrapSubExpression(func.getArgument(1));
+            currentOperator = Operator.MATCH;
+        } else {
+            final GeneralComparison comp = (GeneralComparison) inner;
+
+            lhe = comp.getLeft();
+            rhe = comp.getRight();
+            currentOperator = RangeQueryRewriter.getOperator(comp);
         }
 
         // find the attribute name and value pair from the predicate to check against
@@ -259,12 +279,12 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
                 case GT, LT, GE, LE -> {
                     testStep = findLocationStep(rhe);
                     testValue = findAtomicValue(lhe);
-                    rewrittenOperator = invertOrdinalOperator(rewrittenOperator);
+                    currentOperator = invertOrdinalOperator(currentOperator);
                 }
             }
         }
 
-        if (testStep == null || testValue == null || !rewrittenOperator.equals(operator)) {
+        if (testStep == null || testValue == null || !currentOperator.equals(operator)) {
             return false;
         }
 
@@ -293,6 +313,15 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return false;
     }
 
+    /**
+     * Unwrap an expression
+     * <p>
+     * A PathExpr can be wrapped in a DynamicCardinalityCheck, which is why this has to happen in series.
+     * </p>
+     *
+     * @param expr to unwrap
+     * @return unwrapped expression
+     */
     private Expression unwrapSubExpression(Expression expr) {
 
         if (expr instanceof Atomize atomize) {
@@ -346,11 +375,10 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             if (result instanceof AtomicValue atomic) {
                 return atomic;
             }
-            return null;
         } catch (XPathException e) {
             RangeIndex.LOG.error(e);
-            return null;
         }
+        return null;
     }
 
     private Operator invertOrdinalOperator(Operator operator) {
