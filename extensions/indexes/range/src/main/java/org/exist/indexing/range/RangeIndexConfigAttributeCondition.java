@@ -34,9 +34,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.xml.XMLConstants;
-import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -52,23 +53,27 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     private final String attributeName;
     private final QName attribute;
-    private final String value;
     private final Operator operator;
-    private final boolean caseSensitive;
-    private final boolean numericComparison;
-    private final Pattern pattern;
-    private final Double numericValue;
-    private String lowercaseValue = null;
+
+    private final boolean commutative;
+    private final boolean commutativeNegate;
+
+
+    private final Predicate<String> indexPredicate;
+    private final Predicate<AtomicValue> queryPredicate;
 
     public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
-
         if (parentPath.getLastComponent().getNameType() == ElementValue.ATTRIBUTE) {
             throw new DatabaseConfigurationException("Range index module: Attribute condition cannot be defined for an attribute:" + parentPath);
         }
 
+        if (!elem.hasAttribute("attribute")) {
+            throw new DatabaseConfigurationException("Range index module: No attribute qname in condition");
+        }
+
         attributeName = elem.getAttribute("attribute");
-        if (attributeName == null || attributeName.isEmpty()) {
-            throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
+        if (attributeName.isEmpty()) {
+            throw new DatabaseConfigurationException("Range index module: Attribute qname is empty");
         }
 
         try {
@@ -77,31 +82,21 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
         }
 
-        value = elem.getAttribute("value");
+        final String value = elem.getAttribute("value");
 
-        final String caseString = elem.getAttribute("case");
-        caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
+        operator = getOperator(elem);
+        commutative = (operator == Operator.EQ || operator == Operator.NE);
+        commutativeNegate = (operator == Operator.GT || operator == Operator.LT || operator == Operator.GE || operator == Operator.LE);
 
-        final String numericString = elem.getAttribute("numeric");
-        numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
-
-        operator = getOperator(elem, numericComparison);
-
-        // try to parse the number value if numeric comparison is specified
-        // store a reference to numeric value to avoid having to parse each time
-        numericValue = numericComparison ? getNumericValue(value) : null;
-
-        // try to create a pattern matcher for a 'matches' condition
-        pattern = operator == Operator.MATCH ? getPattern(value, caseSensitive) : null;
-    }
-
-    private static Pattern getPattern(final String value, final boolean caseSensitive) throws DatabaseConfigurationException {
-        final int flags = caseSensitive ? 0 : CASE_INSENSITIVE;
-        try {
-            return Pattern.compile(value, flags);
-        } catch (PatternSyntaxException e) {
-            RangeIndex.LOG.error(e);
-            throw new DatabaseConfigurationException("Range index module: Invalid regular expression in condition: " + value);
+        boolean numericComparison = elem.hasAttribute("numeric") && elem.getAttribute("numeric").equalsIgnoreCase("yes");
+        if (numericComparison) {
+            final Double num = getNumericValue(value);
+            indexPredicate = getNumericMatcher(operator, num);
+            queryPredicate = getNumericTester(num);
+        } else {
+            boolean caseSensitive = elem.hasAttribute("case") && !elem.getAttribute("case").equalsIgnoreCase("no");
+            indexPredicate = caseSensitive ? getCaseMatcher(operator, value) : getMatcher(operator, value);
+            queryPredicate = getTester(value, caseSensitive);
         }
     }
 
@@ -120,7 +115,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
      * @return parsed operator
      * @throws DatabaseConfigurationException Operator not set or incompatible
      */
-    private static Operator getOperator(final Element elem, final boolean numericComparison) throws DatabaseConfigurationException {
+    private static Operator getOperator(final Element elem) throws DatabaseConfigurationException {
         if (!elem.hasAttribute("operator")) {
             return Operator.EQ;
         }
@@ -130,165 +125,89 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             throw new DatabaseConfigurationException("Range index module: Invalid operator specified in range index condition: " + operatorName + ".");
         }
 
-        if (!numericComparison) {
-            return operator;
-        }
+        return operator;
+    }
 
+    private Predicate<String> getNumericMatcher(final Operator operator, final Double value) throws DatabaseConfigurationException {
         return switch (operator) {
-            case MATCH, STARTS_WITH, ENDS_WITH, CONTAINS ->
-                    throw new DatabaseConfigurationException("Range index module: Numeric comparison not applicable for operator: " + operator.name());
-            default -> operator;
+            case EQ -> v -> value.equals(toDouble(v));
+            case NE -> v -> !value.equals(toDouble(v));
+            case GT -> v -> Double.compare(toDouble(v), value) > 0;
+            case LT -> v -> Double.compare(toDouble(v), value) < 0;
+            case GE -> v -> Double.compare(toDouble(v), value) >= 0;
+            case LE -> v -> Double.compare(toDouble(v), value) <= 0;
+            default -> throw new DatabaseConfigurationException("Range index module: Numeric comparison not applicable for operator: " + operator.name());
         };
     }
 
-    // lazily evaluate lowercase value to convert once when needed
-    private String getLowercaseValue() {
-        if (lowercaseValue == null && value != null) {
-            lowercaseValue = value.toLowerCase();
-        }
-        return lowercaseValue;
-    }
-
-    @Override
-    public boolean matches(final Node node) {
-        return node.getNodeType() == Node.ELEMENT_NODE && matchValue(((Element) node).getAttribute(attributeName));
-    }
-
-    private boolean matchValue(final String testValue) {
+    private static Predicate<String> getCaseMatcher(final Operator operator, final String value) throws DatabaseConfigurationException {
         return switch (operator) {
-            case EQ -> booleanMatch(testValue);
-            case NE -> !booleanMatch(testValue);
-            case GT, LT, GE, LE -> matchOrdinal(operator, testValue);
-            case ENDS_WITH -> stringMatch(String::endsWith, testValue);
-            case STARTS_WITH -> stringMatch(String::startsWith, testValue);
-            case CONTAINS -> stringMatch(String::contains, testValue);
-            case MATCH -> pattern.matcher(testValue).matches();
+            case EQ -> v -> v.equals(value);
+            case NE -> v -> !v.equals(value);
+            case GT -> v -> v.compareTo(value) > 0;
+            case LT -> v -> v.compareTo(value) < 0;
+            case GE -> v -> v.compareTo(value) >= 0;
+            case LE -> v -> v.compareTo(value) <= 0;
+            case ENDS_WITH -> v -> v.endsWith(value);
+            case STARTS_WITH -> v -> v.startsWith(value);
+            case CONTAINS -> v -> v.contains(value);
+            case MATCH -> {
+                final Pattern pattern = getPattern(value, 0);
+                yield v -> pattern.matcher(v).matches();
+            }
         };
     }
 
-    private boolean stringMatch(final BiPredicate<String, String> predicate, final String testValue) {
-        return caseSensitive ? predicate.test(testValue, value) : predicate.test(testValue.toLowerCase(), getLowercaseValue());
-    }
-
-    private boolean booleanMatch(final String testValue) {
-        if (numericComparison) {
-            return numericValue.equals(toDouble(testValue));
-        }
-        if (caseSensitive) {
-            return value.equals(testValue);
-        }
-        return value.equalsIgnoreCase(testValue);
-    }
-
-    private boolean matchOrdinal(final Operator operator, final String testValue) {
-        final int result;
-        if (numericComparison) {
-            final double testDouble = toDouble(testValue);
-            result = Double.compare(testDouble, numericValue);
-        } else if (caseSensitive) {
-            result = testValue.compareTo(value);
-        } else {
-            result = testValue.toLowerCase().compareTo(getLowercaseValue());
-        }
-
+    private static Predicate<String> getMatcher(final Operator operator, final String value) throws DatabaseConfigurationException {
         return switch (operator) {
-            case GT -> result > 0;
-            case LT -> result < 0;
-            case GE -> result >= 0;
-            case LE -> result <= 0;
-            default -> false;
+            case EQ -> v -> v.equalsIgnoreCase(value);
+            case NE -> v -> !v.equalsIgnoreCase(value);
+            case GT -> v -> v.compareToIgnoreCase(value) > 0;
+            case LT -> v -> v.compareToIgnoreCase(value) < 0;
+            case GE -> v -> v.compareToIgnoreCase(value) >= 0;
+            case LE -> v -> v.compareToIgnoreCase(value) <= 0;
+            case ENDS_WITH -> v -> StringUtils.endsWithIgnoreCase(v, value);
+            case STARTS_WITH -> v -> StringUtils.startsWithIgnoreCase(v, value);
+            case CONTAINS -> v -> StringUtils.containsIgnoreCase(v, value);
+            case MATCH -> {
+                final Pattern pattern = getPattern(value, CASE_INSENSITIVE);
+                yield v -> pattern.matcher(v).matches();
+            }
         };
     }
 
-    private Double toDouble(final String value) {
+    private static Pattern getPattern(final String value, final int flags) throws DatabaseConfigurationException {
         try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", attributeName, value);
-            return (double) 0;
+            return Pattern.compile(value, flags);
+        } catch (PatternSyntaxException e) {
+            RangeIndex.LOG.error(e);
+            throw new DatabaseConfigurationException("Range index module: Invalid regular expression in condition: " + value);
         }
     }
 
-    @Override
-    public boolean find(final Predicate predicate) {
-        final Expression inner = getInnerExpression(predicate);
-        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall)) {
-            // predicate expression cannot be parsed as condition
-            return false;
-        }
+    static Predicate<AtomicValue> throwingPredicateWrapper(
+            ThrowingPredicate<AtomicValue, XPathException> throwingPredicate) {
 
-        Operator currentOperator;
-        final Expression lhe;
-        final Expression rhe;
-
-        // get the type of the expression inside the predicate and determine right and left hand arguments
-        if (inner instanceof InternalFunctionCall funcCall) {
-            // calls to matches() will not have been rewritten to a comparison, so check for function call
-            final Function func = funcCall.getFunction();
-            if (!func.isCalledAs("matches")) {
-                // predicate expression cannot be parsed as condition
+        return v -> {
+            try {
+                return throwingPredicate.test(v);
+            } catch (XPathException e) {
+                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", v.toString());
+                RangeIndex.LOG.error(e);
                 return false;
             }
+        };
+    }
 
-            lhe = unwrapSubExpression(func.getArgument(0));
-            rhe = unwrapSubExpression(func.getArgument(1));
-            currentOperator = Operator.MATCH;
-        } else {
-            final GeneralComparison comp = (GeneralComparison) inner;
+    private static Predicate<AtomicValue> getNumericTester (final Double value) {
+        return throwingPredicateWrapper(v -> v instanceof NumericValue && v.toJavaObject(Double.class).equals(value));
+    }
 
-            lhe = comp.getLeft();
-            rhe = comp.getRight();
-            currentOperator = RangeQueryRewriter.getOperator(comp);
+    private static java.util.function.Predicate<AtomicValue> getTester (final String value, final boolean caseSensitive) {
+        if (caseSensitive) {
+            return throwingPredicateWrapper(v -> v instanceof StringValue && v.getStringValue().equals(value));
         }
-
-        // find the attribute name and value pair from the predicate to check against
-        // first assume attribute is on the left and value is on the right
-        LocationStep testStep = findLocationStep(lhe);
-        AtomicValue testValue = findAtomicValue(rhe);
-
-        if (testStep == null && testValue == null) {
-            switch (operator) {
-                // the equality operators are commutative so if attribute/value pair has not been found,
-                // check the other way around
-                case EQ, NE -> {
-                    testStep = findLocationStep(rhe);
-                    testValue = findAtomicValue(lhe);
-                }
-                // for ordinal comparisons, attribute and value can also be the other way around in the predicate
-                // but the operator has to be inverted
-                case GT, LT, GE, LE -> {
-                    testStep = findLocationStep(rhe);
-                    testValue = findAtomicValue(lhe);
-                    currentOperator = invertOrdinalOperator(currentOperator);
-                }
-            }
-        }
-
-        if (testStep == null || testValue == null || !currentOperator.equals(operator)) {
-            return false;
-        }
-
-        final QName qname = testStep.getTest().getName();
-        if (qname.getNameType() != ElementValue.ATTRIBUTE || !qname.equals(attribute)) {
-            return false;
-        }
-
-        try {
-            if (numericComparison) {
-                return testValue instanceof NumericValue && testValue.toJavaObject(Double.class).equals(numericValue);
-            }
-            if (testValue instanceof StringValue) {
-                final String testString = testValue.getStringValue();
-                if (caseSensitive) {
-                    return testString.equals(value);
-                }
-                return testString.equalsIgnoreCase(value);
-            }
-        } catch (XPathException e) {
-            RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", testValue.toString());
-            RangeIndex.LOG.error(e);
-        }
-        return false;
+        return throwingPredicateWrapper(v -> v instanceof StringValue && v.getStringValue().equalsIgnoreCase(value));
     }
 
     /**
@@ -300,7 +219,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
      * @param expr to unwrap
      * @return unwrapped expression
      */
-    private Expression unwrapSubExpression(Expression expr) {
+    private static Expression unwrapSubExpression(Expression expr) {
 
         if (expr instanceof Atomize atomize) {
             expr = atomize.getExpression();
@@ -317,7 +236,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return expr;
     }
 
-    private LocationStep findLocationStep(final Expression expr) {
+    private static LocationStep findLocationStep(final Expression expr) {
         if (expr instanceof LocationStep step) {
             return step;
         }
@@ -325,7 +244,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return null;
     }
 
-    private AtomicValue findAtomicValue(final Expression expr) {
+    private static AtomicValue findAtomicValue(final Expression expr) {
         if (expr instanceof AtomicValue atomic) {
             return atomic;
         }
@@ -357,7 +276,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return null;
     }
 
-    private Operator invertOrdinalOperator(Operator operator) {
+    private static Operator invertOrdinalOperator(final Operator operator) {
         return switch (operator) {
             case LE -> Operator.GE;
             case GE -> Operator.LE;
@@ -365,5 +284,91 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             case GT -> Operator.LT;
             default -> null;
         };
+    }
+
+    @Override
+    public boolean matches(final Node node) {
+        return node.getNodeType() == Node.ELEMENT_NODE && indexPredicate.test(((Element) node).getAttribute(attributeName));
+    }
+
+    private Double toDouble(final String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            RangeIndex.LOG.debug("Non-numeric value encountered for numeric condition on @'{}': {}", attributeName, value);
+            return (double) 0;
+        }
+    }
+
+    private boolean match(final InternalFunctionCall functionCall) {
+        if (!operator.equals(Operator.MATCH)) {
+            return false; // nothing to do, everything else but matches is not handled here
+        }
+        final Function func = functionCall.getFunction();
+        if (!func.isCalledAs("matches")) {
+            return false; // only calls to fn:matches() are handled here
+        }
+        final Expression lhe = unwrapSubExpression(func.getArgument(0));
+        final Expression rhe = unwrapSubExpression(func.getArgument(1));
+        final LocationStep testStep = findLocationStep(lhe);
+        final AtomicValue testValue = findAtomicValue(rhe);
+
+        return canTest(testStep, testValue) && queryPredicate.test(testValue);
+    }
+
+    private boolean compare(final GeneralComparison generalComparison) {
+        final Expression lhe = generalComparison.getLeft();
+        final Expression rhe = generalComparison.getRight();
+
+        // find the attribute name and value pair from the predicate to check against
+        // first assume attribute is on the left and value is on the right
+        Operator currentOperator = RangeQueryRewriter.getOperator(generalComparison);
+        Operator invertedOperator = invertOrdinalOperator(currentOperator);
+
+        if (!operator.equals(currentOperator) && !operator.equals(invertedOperator)) {
+            return false; // needless to do more as the operator cannot match
+        }
+
+        LocationStep testStep = findLocationStep(lhe);
+        AtomicValue testValue = findAtomicValue(rhe);
+
+        // the equality operators are commutative so if attribute/value pair has not been found,
+        // check the other way around
+        if (testStep == null && testValue == null && (commutative || commutativeNegate)) {
+            testStep = findLocationStep(rhe);
+            testValue = findAtomicValue(lhe);
+            // for LT, GT, GE and LE the operation has to be inverted
+            if (commutativeNegate) {
+                currentOperator = invertedOperator;
+            }
+        }
+
+        return currentOperator.equals(operator) && canTest(testStep, testValue) && queryPredicate.test(testValue);
+    }
+
+    private boolean canTest (final LocationStep step, final AtomicValue value) {
+        if (step == null || value == null) {
+            return false;
+        }
+        final QName qname = step.getTest().getName();
+        return qname.getNameType() == ElementValue.ATTRIBUTE && qname.equals(attribute);
+    }
+
+    @Override
+    public boolean find(final org.exist.xquery.Predicate predicate) {
+        final Expression inner = getInnerExpression(predicate);
+        if (inner instanceof InternalFunctionCall functionCall) {
+            return match(functionCall);
+        }
+        if (inner instanceof final GeneralComparison generalComparison) {
+            return compare(generalComparison);
+        }
+        // predicate expression cannot be parsed as condition
+        return false;
+    }
+
+    @FunctionalInterface
+    public interface ThrowingPredicate<T, E extends Exception> {
+        boolean test(T t) throws E;
     }
 }
