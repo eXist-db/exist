@@ -35,7 +35,9 @@ import org.exist.storage.BrokerPoolConstants;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
 import org.exist.util.io.ContentFilePool;
-import org.exist.xquery.*;
+import org.exist.xquery.Expression;
+import org.exist.xquery.PerformanceStats;
+import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -78,6 +80,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -238,7 +241,9 @@ public class Configuration implements ErrorHandler {
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     private static final String CANNOT_CONVERT_VALUE_TO_INTEGER = "Cannot convert {} value to integer: {}";
     private static final String ORG_EXIST_STORAGE_STARTUP_TRIGGER = "org.exist.storage.StartupTrigger";
+
     private final Map<String, Object> config = new HashMap<>(); //Configuration
+
     protected Optional<Path> configFilePath = Optional.empty();
     protected Optional<Path> existHome = Optional.empty();
 
@@ -1074,8 +1079,11 @@ public class Configuration implements ErrorHandler {
             }
 
             // Initialize trigger configuration
-            List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.
-                    computeIfAbsent(PROPERTY_STARTUP_TRIGGERS, this::initializetStartupTriggerConfigs);
+            List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(PROPERTY_STARTUP_TRIGGERS);
+            if (startupTriggers == null) {
+                startupTriggers = new ArrayList<>();
+                setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
+            }
 
             // Iterate over <trigger> elements
             for (int i = 0; i < nlTrigger.getLength(); i++) {
@@ -1116,12 +1124,6 @@ public class Configuration implements ErrorHandler {
                 }
             }
         });
-    }
-
-    private List<StartupTriggerConfig> initializetStartupTriggerConfigs(String key) {
-        List<StartupTriggerConfig> startupTriggerConfigs = new ArrayList<>();
-        setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggerConfigs);
-        return startupTriggerConfigs;
     }
 
     private void configurePool(final Element pool) {
