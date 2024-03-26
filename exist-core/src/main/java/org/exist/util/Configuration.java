@@ -80,7 +80,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -241,6 +240,7 @@ public class Configuration implements ErrorHandler {
     private static final String XQUERY_BUILTIN_MODULES_CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     private static final String CANNOT_CONVERT_VALUE_TO_INTEGER = "Cannot convert {} value to integer: {}";
     private static final String ORG_EXIST_STORAGE_STARTUP_TRIGGER = "org.exist.storage.StartupTrigger";
+    private static final String ERROR_READING_CONFIGURATION_FILE_LINE = "Error occurred while reading configuration file [line: {}]:{}";
 
     private final Map<String, Object> config = new HashMap<>(); //Configuration
 
@@ -425,6 +425,7 @@ public class Configuration implements ErrorHandler {
         return booleanValue.booleanValue();
     }
 
+    @Nullable
     private static Boolean asBoolean(@Nullable final String value) {
         if (value != null) {
             return Boolean.valueOf("yes".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value));
@@ -432,6 +433,7 @@ public class Configuration implements ErrorHandler {
         return null;
     }
 
+    @Nullable
     private static Integer asInteger(@Nullable final String value) {
         if (value != null) {
             try {
@@ -443,6 +445,7 @@ public class Configuration implements ErrorHandler {
         return null;
     }
 
+    @Nullable
     private static Long asLong(@Nullable final String value) {
         if (value != null) {
             try {
@@ -1079,11 +1082,8 @@ public class Configuration implements ErrorHandler {
             }
 
             // Initialize trigger configuration
-            List<StartupTriggerConfig> startupTriggers = (List<StartupTriggerConfig>) config.get(PROPERTY_STARTUP_TRIGGERS);
-            if (startupTriggers == null) {
-                startupTriggers = new ArrayList<>();
-                setProperty(PROPERTY_STARTUP_TRIGGERS, startupTriggers);
-            }
+            var startupTriggers = (List<StartupTriggerConfig>) config
+                    .computeIfAbsent(PROPERTY_STARTUP_TRIGGERS, key -> new ArrayList<StartupTriggerConfig>());
 
             // Iterate over <trigger> elements
             for (int i = 0; i < nlTrigger.getLength(); i++) {
@@ -1094,15 +1094,9 @@ public class Configuration implements ErrorHandler {
                 // Get @class
                 final String startupTriggerClass = trigger.getAttribute("class");
 
-                boolean isStartupTrigger = false;
                 try {
                     // Verify if class is StartupTrigger
-                    for (final Class<?> iface : Class.forName(startupTriggerClass).getInterfaces()) {
-                        if (ORG_EXIST_STORAGE_STARTUP_TRIGGER.equals(iface.getName())) {
-                            isStartupTrigger = true;
-                            break;
-                        }
-                    }
+                    final boolean isStartupTrigger = isStartupTrigger(startupTriggerClass);
 
                     // if it actually is a StartupTrigger
                     if (isStartupTrigger) {
@@ -1124,6 +1118,15 @@ public class Configuration implements ErrorHandler {
                 }
             }
         });
+    }
+
+    private static boolean isStartupTrigger(String startupTriggerClass) throws ClassNotFoundException {
+        for (final Class<?> iface : Class.forName(startupTriggerClass).getInterfaces()) {
+            if (ORG_EXIST_STORAGE_STARTUP_TRIGGER.equals(iface.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void configurePool(final Element pool) {
@@ -1328,11 +1331,11 @@ public class Configuration implements ErrorHandler {
      */
     private String getAttributeSystemPropertyName(Element element, String attributeName) {
         final StringBuilder property = new StringBuilder(attributeName);
-        Node parent = element.getParentNode();
 
         property.insert(0, ".");
         property.insert(0, element.getLocalName());
 
+        Node parent = element.getParentNode();
         while (parent instanceof Element) {
             final String parentName = parent.getLocalName();
 
@@ -1382,7 +1385,7 @@ public class Configuration implements ErrorHandler {
 
     public int getInteger(final String name, final int defaultValue) {
         return Optional.ofNullable(getProperty(name))
-                .filter(v -> v instanceof Integer)
+                .filter(Integer.class::isInstance)
                 .map(v -> (int) v)
                 .orElse(defaultValue);
     }
@@ -1396,8 +1399,7 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void error(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}",
-                exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error(ERROR_READING_CONFIGURATION_FILE_LINE, exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -1409,8 +1411,7 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}",
-                exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error(ERROR_READING_CONFIGURATION_FILE_LINE, exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     /**
@@ -1422,8 +1423,7 @@ public class Configuration implements ErrorHandler {
      */
     @Override
     public void warning(SAXParseException exception) throws SAXException {
-        LOG.error("error occurred while reading configuration file [line: {}]:{}",
-                exception.getLineNumber(), exception.getMessage(), exception);
+        LOG.error(ERROR_READING_CONFIGURATION_FILE_LINE, exception.getLineNumber(), exception.getMessage(), exception);
     }
 
     public record StartupTriggerConfig(String clazz, Map<String, List<? extends Object>> params) {
