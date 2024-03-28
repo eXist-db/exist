@@ -203,7 +203,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         return throwingPredicateWrapper(v -> v instanceof NumericValue && v.toJavaObject(Double.class).equals(value));
     }
 
-    private static java.util.function.Predicate<AtomicValue> getTester (final String value, final boolean caseSensitive) {
+    private static Predicate<AtomicValue> getTester (final String value, final boolean caseSensitive) {
         if (caseSensitive) {
             return throwingPredicateWrapper(v -> v instanceof StringValue && v.getStringValue().equals(value));
         }
