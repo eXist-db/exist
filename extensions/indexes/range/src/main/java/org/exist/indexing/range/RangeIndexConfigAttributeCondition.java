@@ -192,7 +192,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             try {
                 return throwingPredicate.test(v);
             } catch (XPathException e) {
-                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", v.toString());
+                RangeIndex.LOG.error("Value conversion error when testing predicate for condition, value: {}", v);
                 RangeIndex.LOG.error(e);
                 return false;
             }
@@ -343,7 +343,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             }
         }
 
-        return currentOperator.equals(operator) && canTest(testStep, testValue) && queryPredicate.test(testValue);
+        return operator.equals(currentOperator) && canTest(testStep, testValue) && queryPredicate.test(testValue);
     }
 
     private boolean canTest (final LocationStep step, final AtomicValue value) {
