@@ -46,7 +46,7 @@
     </scm>
 
     <properties>
-        <tika.version>2.9.1</tika.version>
+        <tika.version>2.9.2</tika.version>
     </properties>
 
     <dependencies>
