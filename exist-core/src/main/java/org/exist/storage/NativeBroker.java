@@ -3033,7 +3033,7 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             // create a copy of the old doc to copy the nodes into it
-            final DocumentImpl tempDoc = new DocumentImpl(null, null, doc.getCollection(), doc.getDocId(), doc.getFileURI());
+            final DocumentImpl tempDoc = new DocumentImpl(null, pool, doc.getCollection(), doc.getDocId(), doc.getFileURI());
             tempDoc.copyOf(this, doc, doc);
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
