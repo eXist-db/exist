@@ -42,6 +42,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -95,6 +96,17 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
      */
     public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy, final boolean useTemporaryStorage, @Nullable final Path configFile) {
         this.existEmbeddedServer = new ExistEmbeddedServer(null, configFile, null, disableAutoDeploy, useTemporaryStorage);
+        this.asGuest = asGuest;
+    }
+
+    /**
+     * @param asGuest Use the guest account, default is the admin account
+     * @param disableAutoDeploy Whether auto-deployment of XARs should be disabled
+     * @param useTemporaryStorage Whether the data and journal folder should use temporary storage
+     * @param settings set properties
+     */
+    public ExistXmldbEmbeddedServer(final boolean asGuest, final boolean disableAutoDeploy, final boolean useTemporaryStorage, final Properties settings) {
+        this.existEmbeddedServer = new ExistEmbeddedServer(null, null, settings, disableAutoDeploy, useTemporaryStorage);
         this.asGuest = asGuest;
     }
 
