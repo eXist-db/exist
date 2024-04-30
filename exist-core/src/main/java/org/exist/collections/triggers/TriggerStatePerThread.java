@@ -28,6 +28,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Avoid infinite recursions in Triggers by preventing the same trigger
@@ -37,10 +39,10 @@ import java.util.Objects;
  */
 public class TriggerStatePerThread {
 
-    private static final ThreadLocal<Deque<TriggerState>> THREAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
+    private static final ConcurrentMap<Thread, Deque<TriggerState>> THREAD_LOCAL_STATES = new ConcurrentHashMap<>();
 
     public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
-        final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
+        final Deque<TriggerState> states = getStates();
 
         if (states.isEmpty()) {
             if (triggerPhase != TriggerPhase.BEFORE) {
@@ -117,7 +119,7 @@ public class TriggerStatePerThread {
         if (phase == TriggerPhase.AFTER) {
 
             int depth = 0;
-            final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
+            final Deque<TriggerState> states = getStates();
             for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
                 final TriggerState state = it.next();
                 switch (state.triggerPhase) {
@@ -139,14 +141,18 @@ public class TriggerStatePerThread {
     }
 
     public static void clear() {
-        THREAD_LOCAL_STATES.remove();
+        THREAD_LOCAL_STATES.remove(Thread.currentThread());
     }
 
     public static boolean isEmpty() {
-        return THREAD_LOCAL_STATES.get().isEmpty();
+        return getStates().isEmpty();
     }
 
-    private record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
+    private static Deque<TriggerState> getStates() {
+        return THREAD_LOCAL_STATES.computeIfAbsent(Thread.currentThread(), thread -> new ArrayDeque<>());
+    }
+
+    record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
                                 @Nullable XmldbURI dst, boolean possiblyCyclic) {
 
         @Override
@@ -179,44 +185,8 @@ public class TriggerStatePerThread {
             return builder.toString();
         }
 
-        @Override
-        public boolean equals(final Object o) {
-            return equals(o, false);
-        }
 
-        public boolean equalsIgnoringPhase(final Object o) {
-            return equals(o, true);
-        }
-
-        private boolean equals(final Object o, final boolean ignorePhase) {
-            if (o instanceof TriggerState that) {
-                if (possiblyCyclic != that.possiblyCyclic) {
-                    return false;
-                }
-
-                if (!trigger.equals(that.trigger)) {
-                    return false;
-                }
-
-                if (!ignorePhase &&
-                        triggerPhase != that.triggerPhase) {
-                    return false;
-                }
-
-                if (triggerEvent != that.triggerEvent) {
-                    return false;
-                }
-
-                if (!src.equals(that.src)) {
-                    return false;
-                }
-
-                return Objects.equals(dst, that.dst);
-            }
-            return false;
-        }
-
-        private boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
+        boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
             if (!trigger.equals(otherTrigger)) {
                 return false;
             }
@@ -229,7 +199,7 @@ public class TriggerStatePerThread {
                 return false;
             }
 
-            return dst != null ? dst.equals(otherDst) : otherDst == null;
+            return Objects.equals(dst, otherDst);
         }
 
         public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
@@ -250,38 +220,7 @@ public class TriggerStatePerThread {
                 return false;
             }
 
-            return dst != null ? dst.equals(otherDst) : otherDst == null;
-        }
-
-        public boolean completes(final Object o) {
-            if (this == o) {
-                return false;
-            }
-
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            final TriggerState that = (TriggerState) o;
-
-            if (this.triggerPhase != TriggerPhase.AFTER
-                    || that.triggerPhase != TriggerPhase.BEFORE) {
-                return false;
-            }
-
-            if (!trigger.equals(that.trigger)) {
-                return false;
-            }
-
-            if (triggerEvent != that.triggerEvent) {
-                return false;
-            }
-
-            if (!src.equals(that.src)) {
-                return false;
-            }
-
-            return dst != null ? dst.equals(that.dst) : that.dst == null;
+            return Objects.equals(dst, otherDst);
         }
     }
 }
