@@ -21,6 +21,8 @@
  */
 package org.exist.collections.triggers;
 
+import org.exist.storage.txn.Txn;
+import org.exist.storage.txn.TxnListener;
 import org.exist.xmldb.XmldbURI;
 
 import javax.annotation.Nullable;
@@ -30,6 +32,8 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Avoid infinite recursions in Triggers by preventing the same trigger
@@ -39,10 +43,10 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class TriggerStatePerThread {
 
-    private static final ConcurrentMap<Thread, Deque<TriggerState>> THREAD_LOCAL_STATES = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Txn, Deque<TriggerState>> TRIGGER_STATES = new ConcurrentHashMap<>();
 
-    public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
-        final Deque<TriggerState> states = getStates();
+    public static void setAndTest(final Txn txn, final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
+        final Deque<TriggerState> states = getStates(txn);
 
         if (states.isEmpty()) {
             if (triggerPhase != TriggerPhase.BEFORE) {
@@ -115,11 +119,11 @@ public class TriggerStatePerThread {
         }
     }
 
-    public static void clearIfFinished(final TriggerPhase phase) {
+    public static void clearIfFinished(final Txn txn, final TriggerPhase phase) {
         if (phase == TriggerPhase.AFTER) {
 
             int depth = 0;
-            final Deque<TriggerState> states = getStates();
+            final Deque<TriggerState> states = getStates(txn);
             for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
                 final TriggerState state = it.next();
                 switch (state.triggerPhase) {
@@ -135,24 +139,45 @@ public class TriggerStatePerThread {
             }
 
             if (depth == 0) {
-                clear();
+                clear(txn);
             }
         }
     }
 
-    public static void clear() {
-        THREAD_LOCAL_STATES.remove(Thread.currentThread());
+    public static void clear(final Txn txn) {
+        TRIGGER_STATES.remove(txn);
     }
 
-    public static boolean isEmpty() {
-        return getStates().isEmpty();
+    public static boolean isEmpty(final Txn txn) {
+        return getStates(txn).isEmpty();
     }
 
-    private static Deque<TriggerState> getStates() {
-        return THREAD_LOCAL_STATES.computeIfAbsent(Thread.currentThread(), thread -> new ArrayDeque<>());
+    public static void forEach(BiConsumer<Txn, Deque<TriggerState>> action) {
+        TRIGGER_STATES.forEach(action);
     }
 
-    record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
+    private static Deque<TriggerState> getStates(final Txn txn) {
+        return TRIGGER_STATES.computeIfAbsent(txn, TriggerStatePerThread::initStates);
+    }
+
+    private static Deque<TriggerState> initStates(final Txn txn) {
+        txn.registerListener(new TransactionCleanUp(txn, TriggerStatePerThread::clear));
+        return new ArrayDeque<>();
+    }
+
+    public record TransactionCleanUp(Txn txn, Consumer<Txn> consumer) implements  TxnListener {
+        @Override
+        public void commit() {
+            consumer.accept(txn);
+        }
+
+        @Override
+        public void abort() {
+            consumer.accept(txn);
+        }
+    }
+
+    public record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
                                 @Nullable XmldbURI dst, boolean possiblyCyclic) {
 
         @Override
