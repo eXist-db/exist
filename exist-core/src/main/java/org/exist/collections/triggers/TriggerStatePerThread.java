@@ -33,6 +33,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -178,7 +179,7 @@ public class TriggerStatePerThread {
         return new TriggerStates();
     }
 
-    public record TransactionCleanUp(Txn txn, Consumer<Txn> consumer) implements  TxnListener {
+    public record TransactionCleanUp(Txn txn, Consumer<Txn> consumer) implements TxnListener {
         @Override
         public void commit() {
             consumer.accept(txn);
@@ -195,33 +196,37 @@ public class TriggerStatePerThread {
             super(new ArrayDeque<>());
         }
 
+        Optional<Deque<TriggerState>> states() {
+            return Optional.ofNullable(get());
+        }
+
         public Iterator<TriggerState> descendingIterator() {
-            return get().descendingIterator();
+            return states().map(Deque::descendingIterator).orElseGet(Collections::emptyIterator);
         }
 
         public boolean isEmpty() {
-            return get().isEmpty();
+            return states().map(Deque::isEmpty).orElse(true);
         }
 
         public int size() {
-            return get().size();
+            return states().map(Deque::size).orElse(0);
         }
 
         public Iterator<TriggerState> iterator() {
-            return get().iterator();
+            return states().map(Deque::iterator).orElseGet(Collections::emptyIterator);
         }
 
         public TriggerState peekFirst() {
-            return get().peekFirst();
+            return states().map(Deque::peekFirst).orElse(null);
         }
 
         public void addFirst(TriggerState newState) {
-            get().addFirst(newState);
+            states().ifPresent(states -> states.addFirst(newState));
         }
     }
 
     public record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
-                                @Nullable XmldbURI dst, boolean possiblyCyclic) {
+                               @Nullable XmldbURI dst, boolean possiblyCyclic) {
 
         @Override
         public String toString() {
