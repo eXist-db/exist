@@ -119,7 +119,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	private String bindingPrefix = null;
 	private XQuery service;
 
-    public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
+    public static final String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
+
+	public XQueryTrigger() {
+		XQueryTriggerMBeanImpl.init();		
+	}
 
     @Override
 	public void configure(final DBBroker broker, final Txn transaction, final Collection parent, final Map<String, List<?>> parameters) throws TriggerException {

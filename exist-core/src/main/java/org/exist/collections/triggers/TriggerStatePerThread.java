@@ -26,12 +26,14 @@ import org.exist.storage.txn.TxnListener;
 import org.exist.xmldb.XmldbURI;
 
 import javax.annotation.Nullable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.WeakHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -42,11 +44,10 @@ import java.util.function.Consumer;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class TriggerStatePerThread {
-
-    private static final ConcurrentMap<Txn, Deque<TriggerState>> TRIGGER_STATES = new ConcurrentHashMap<>();
+    private static final Map<Thread, TriggerStates> TRIGGER_STATES = Collections.synchronizedMap(new WeakHashMap<>());
 
     public static void setAndTest(final Txn txn, final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
-        final Deque<TriggerState> states = getStates(txn);
+        final TriggerStates states = getStates(txn);
 
         if (states.isEmpty()) {
             if (triggerPhase != TriggerPhase.BEFORE) {
@@ -123,7 +124,7 @@ public class TriggerStatePerThread {
         if (phase == TriggerPhase.AFTER) {
 
             int depth = 0;
-            final Deque<TriggerState> states = getStates(txn);
+            final TriggerStates states = getStates(txn);
             for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
                 final TriggerState state = it.next();
                 switch (state.triggerPhase) {
@@ -144,25 +145,37 @@ public class TriggerStatePerThread {
         }
     }
 
+    public static int keys() {
+        return TRIGGER_STATES.size();
+    }
+
+    public static void clearAll() {
+        TRIGGER_STATES.clear();
+    }
+
     public static void clear(final Txn txn) {
-        TRIGGER_STATES.remove(txn);
+        TRIGGER_STATES.remove(Thread.currentThread());
     }
 
     public static boolean isEmpty(final Txn txn) {
         return getStates(txn).isEmpty();
     }
 
-    public static void forEach(BiConsumer<Txn, Deque<TriggerState>> action) {
+    public static void dumpTriggerStates() {
+        TRIGGER_STATES.forEach((k, s) -> System.err.format("key: %s, size: %s", k, s.size()).println());
+    }
+
+    public static void forEach(BiConsumer<Thread, TriggerStates> action) {
         TRIGGER_STATES.forEach(action);
     }
 
-    private static Deque<TriggerState> getStates(final Txn txn) {
-        return TRIGGER_STATES.computeIfAbsent(txn, TriggerStatePerThread::initStates);
+    private static TriggerStates getStates(final Txn txn) {
+        return TRIGGER_STATES.computeIfAbsent(Thread.currentThread(), key -> new TriggerStates());
     }
 
-    private static Deque<TriggerState> initStates(final Txn txn) {
+    private static TriggerStates initStates(final Txn txn) {
         txn.registerListener(new TransactionCleanUp(txn, TriggerStatePerThread::clear));
-        return new ArrayDeque<>();
+        return new TriggerStates();
     }
 
     public record TransactionCleanUp(Txn txn, Consumer<Txn> consumer) implements  TxnListener {
@@ -174,6 +187,36 @@ public class TriggerStatePerThread {
         @Override
         public void abort() {
             consumer.accept(txn);
+        }
+    }
+
+    public static final class TriggerStates extends WeakReference<Deque<TriggerState>> {
+        public TriggerStates() {
+            super(new ArrayDeque<>());
+        }
+
+        public Iterator<TriggerState> descendingIterator() {
+            return get().descendingIterator();
+        }
+
+        public boolean isEmpty() {
+            return get().isEmpty();
+        }
+
+        public int size() {
+            return get().size();
+        }
+
+        public Iterator<TriggerState> iterator() {
+            return get().iterator();
+        }
+
+        public TriggerState peekFirst() {
+            return get().peekFirst();
+        }
+
+        public void addFirst(TriggerState newState) {
+            get().addFirst(newState);
         }
     }
 
