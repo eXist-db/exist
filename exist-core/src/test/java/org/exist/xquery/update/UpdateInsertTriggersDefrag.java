@@ -21,66 +21,56 @@
  */
 package org.exist.xquery.update;
 
-import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.test.TestConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
+import static org.exist.storage.DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR;
+import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
+import static org.exist.test.TestConstants.TEST_XML_URI;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 
 public class UpdateInsertTriggersDefrag {
     @ClassRule
-    public static final ExistXmldbEmbeddedServer exist = new ExistXmldbEmbeddedServer(false, true, true, propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build());
-    final String path = TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI.toString();
-    final String xml = "<list><item>initial</item></list>";
-    Collection testCollection;
-    XQueryService queryService;
-    CollectionManagementService collectionService;
-
-    /**
-     * stores XML String and get Query Service
-     *
-     * @param documentName to be stored in the DB
-     * @param content      to be stored in the DB
-     * @throws XMLDBException if an error occurs storing the document
-     */
-    private void storeXML(final String documentName, final String content) throws XMLDBException {
-        final XMLResource doc = testCollection.createResource(documentName, XMLResource.class);
-        doc.setContent(content);
-        testCollection.storeResource(doc);
-    }
+    public static final ExistXmldbEmbeddedServer exist = new ExistXmldbEmbeddedServer(false, true, true,
+            propertiesBuilder().put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build());
+    private final String path = TEST_COLLECTION_URI + "/" + TEST_XML_URI.toString();
+    private Collection testCollection;
+    private CollectionManagementService collectionService;
 
     @Before
     public void setUp() throws Exception {
         collectionService = exist.getRoot().getService(CollectionManagementService.class);
-        testCollection = collectionService.createCollection(TestConstants.TEST_COLLECTION_URI.toString());
-        queryService = (XQueryService) testCollection.getService(XPathQueryService.class);
-        storeXML(TestConstants.TEST_XML_URI.toString(), xml);
+        testCollection = collectionService.createCollection(TEST_COLLECTION_URI.lastSegment().toString());
+        final XMLResource doc = testCollection.createResource(TEST_XML_URI.toString(), XMLResource.class);
+
+        doc.setContent("<list><item>initial</item></list>");
+        testCollection.storeResource(doc);
     }
 
     @After
     public void tearDown() throws Exception {
         collectionService.removeCollection(testCollection.getName());
+        testCollection.close();
     }
 
     @Test
     public void triggerDefragAfterUpdate() throws Exception {
+        final XQueryService queryService = testCollection.getService(XQueryService.class);
+
         final String update = "update insert <item>new node</item> into doc('" + path + "')//list";
-        final ResourceSet updateResult = queryService.queryResource(TestConstants.TEST_XML_URI.toString(), update);
+        final ResourceSet updateResult = queryService.queryResource(path, update);
         assertEquals("Update expression returns an empty sequence", 0, updateResult.getSize());
 
-        final ResourceSet itemResult = queryService.queryResource(TestConstants.TEST_XML_URI.toString(), "//item");
+        final ResourceSet itemResult = queryService.queryResource(path, "//item");
         assertEquals("Both items are returned", 2, itemResult.getSize());
     }
 
