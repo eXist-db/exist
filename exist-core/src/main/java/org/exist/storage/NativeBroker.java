@@ -3173,7 +3173,7 @@ public class NativeBroker implements DBBroker {
             }.run();
             // Create a copy of the old document to copy the nodes into it.
             // tempDoc serves as a storage container for the child nodes.
-            final DocumentImpl tempDoc = new DocumentImpl(null, doc.getDocId(), doc);
+            final DocumentImpl tempDoc = new DocumentImpl(null, pool, doc.getCollection(), doc.getDocId(), doc.getFileURI());
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
