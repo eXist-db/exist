@@ -30,6 +30,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -191,8 +192,11 @@ public class TriggerStatePerThread {
         }
     }
 
-    public static final class TriggerStates extends WeakReference<Deque<TriggerState>> {
-        public TriggerStates() {
+    public static final class TriggerStates extends ArrayDeque<TriggerState> {
+    }
+
+    public static final class TriggerStatesX extends WeakReference<Deque<TriggerState>> {
+        public TriggerStatesX() {
             super(new ArrayDeque<>());
         }
 
