@@ -76,9 +76,11 @@ public class Restore {
         }
 
         // continue restore
-        final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
+        final XMLReaderPool parserPool = broker.getBrokerPool().getXmlReaderPool();
+        final boolean triggersEnabled = broker.isTriggersEnabled();
         XMLReader reader = null;
         try {
+            broker.setTriggersEnabled(false);
             reader = parserPool.borrowXMLReader();
             listener.started(totalNrOfFiles);
 
@@ -99,10 +101,14 @@ public class Restore {
             }
 
         } finally {
-            listener.finished();
+            try {
+                listener.finished();
+            } finally {
+                broker.setTriggersEnabled(triggersEnabled);
 
-            if (reader != null) {
-                parserPool.returnXMLReader(reader);
+                if (reader != null) {
+                    parserPool.returnXMLReader(reader);
+                }
             }
         }
     }
