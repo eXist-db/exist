@@ -27,6 +27,10 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.StringValue;
 import org.junit.Test;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -36,9 +40,9 @@ import static org.junit.Assert.assertEquals;
 public class BinaryToStringTest {
 
     @Test
-    public void roundtrip() throws XPathException {
+    public void roundTrip() throws XPathException {
         final String value = "hello world";
-        final String encoding = "UTF-8";
+        final Charset encoding = StandardCharsets.UTF_8;
 
         TestableBinaryToString testable = new TestableBinaryToString(new MockXQueryContext(), null);
 
@@ -54,12 +58,12 @@ public class BinaryToStringTest {
         }
 
         @Override
-        public StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
+        public StringValue binaryToString(BinaryValue binary, Charset encoding) throws XPathException {
             return super.binaryToString(binary, encoding);
         }
 
         @Override
-        public BinaryValue stringToBinary(String str, String encoding) throws XPathException {
+        public BinaryValue stringToBinary(String str, Charset encoding) throws XPathException {
             return super.stringToBinary(str, encoding);
         }
     }

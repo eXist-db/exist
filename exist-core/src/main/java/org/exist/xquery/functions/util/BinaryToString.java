@@ -22,29 +22,18 @@
 package org.exist.xquery.functions.util;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.Base64;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.dom.QName;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 public class BinaryToString extends BasicFunction {
 
@@ -95,37 +84,47 @@ public class BinaryToString extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
 
-        if(args[0].isEmpty()) {
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        String encoding = UTF_8.name();
-        if(args.length == 2) {
-            encoding = args[1].getStringValue();
-        }
-        if(isCalledAs("binary-to-string")) {
+
+        final Charset encoding = getCharset(args);
+
+        if (isCalledAs("binary-to-string")) {
             return binaryToString((BinaryValue) args[0].itemAt(0), encoding);
-        } else {
-            return stringToBinary(args[0].getStringValue(), encoding);
         }
+
+        return stringToBinary(args[0].getStringValue(), encoding);
     }
 
-    protected StringValue binaryToString(BinaryValue binary, String encoding) throws XPathException {
+    private Charset getCharset(Sequence[] args) throws XPathException {
+        final Charset encoding;
+        if (args.length == 2) {
+            final String stringValue = args[1].getStringValue();
+            try {
+                encoding = stringValue.isEmpty() ? StandardCharsets.UTF_8 : Charset.forName(stringValue);
+            } catch(final UnsupportedCharsetException e) {
+                throw new XPathException(this, UtilErrorCodes.UNRECOGNIZED_ENCODING, "Unsupported encoding: " + stringValue);
+            }
+        } else {
+            encoding = StandardCharsets.UTF_8;
+        }
+        return encoding;
+    }
+
+    protected StringValue binaryToString(final BinaryValue binary, final Charset encoding) throws XPathException {
         try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             binary.streamBinaryTo(os);
             return new StringValue(this, os.toString(encoding));
         } catch(final IOException ioe) {
-            throw new XPathException(this, ioe);
+            throw new XPathException(this, UtilErrorCodes.IO_ERROR, ioe);
         }
     }
 
-    protected BinaryValue stringToBinary(String str, String encoding) throws XPathException {
-        try {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(str.getBytes(encoding)), this);
-        } catch(final UnsupportedEncodingException e) {
-            throw new XPathException(this, "Unsupported encoding: " + encoding);
-        }
+    protected BinaryValue stringToBinary(final String str, final Charset encoding) throws XPathException {
+        return new BinaryValueFromBinaryString(new Base64BinaryValueType(),
+                Base64.getEncoder().encodeToString(str.getBytes(encoding)));
     }
 }
