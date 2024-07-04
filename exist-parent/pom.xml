@@ -108,7 +108,7 @@
         <aspectj.version>1.9.22.1</aspectj.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
         <icu.version>59.1</icu.version>
-        <izpack.version>5.2.1</izpack.version>
+        <izpack.version>5.2.2</izpack.version>
         <jansi.version>2.4.1</jansi.version>
         <jaxb.api.version>4.0.2</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
