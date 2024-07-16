@@ -119,7 +119,7 @@ public class SerializationTest {
 
 	private Collection testCollection;
 
-	private final String getBaseUri() {
+	private String getBaseUri() {
 		return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
 	}
 
@@ -178,10 +178,6 @@ public class SerializationTest {
 	@Test
 	public void getDocTypeDefault() throws XMLDBException {
 		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
-		// FIXME (JL): local and remote collections apparently have different output properties set
-		// INDENT is set to "no" for remote collections that's why it is explicitly set to true here
-		// Also, setting INDENT to "no" does not work for local collections and only somewhat for remote ones.
-		testCollection.setProperty(INDENT, "yes");
 		assertEquals(XML_WITH_DOCTYPE, res.getContent());
 	}
 
@@ -191,7 +187,7 @@ public class SerializationTest {
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_DOCTYPE_URI.lastSegmentString());
 			testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
-			assertEquals("<bookmap id=\"bookmap-1\"/>", res.getContent());
+			assertEquals("<bookmap id=\"bookmap-1\">\n   asdf\n   </bookmap>", res.getContent());
 		} finally {
 			if (prevOutputDocType != null) {
 				testCollection.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, prevOutputDocType);
@@ -276,7 +272,11 @@ public class SerializationTest {
 		final XMLResource res2 = testCollection.createResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString(), XMLResource.class);
 		res2.setContent(XML_WITH_XMLDECL);
 		testCollection.storeResource(res2);
-    }
+
+		// FIXME (JL): local and remote collections apparently have different output properties set
+		// local collections have INDENT set to "yes" whereas remote collections have "no" by default
+		testCollection.setProperty(INDENT, "yes");
+	}
 
     @After
     public void tearDown() throws XMLDBException {
