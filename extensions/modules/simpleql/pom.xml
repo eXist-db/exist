@@ -67,9 +67,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>org.omnifaces</groupId>
                 <artifactId>antlr-maven-plugin</artifactId>
-                <version>2.2</version>
+                <version>2.3</version>
                 <configuration>
                     <grammars>org/exist/xquery/modules/simpleql/SimpleQLParser.g</grammars>
                 </configuration>
