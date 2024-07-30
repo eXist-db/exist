@@ -131,7 +131,7 @@ public class MiltonDocument extends MiltonResource
 
                 } catch (IllegalArgumentException ex) {
                     LOG.debug(ex.getMessage());
-                    // Set preffered default
+                    // Set preferred default
                     propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
                 }
             }
@@ -207,31 +207,47 @@ public class MiltonDocument extends MiltonResource
     @Override
     public Long getContentLength() {
 
-
-        // Note
-        // Whilst for non-XML documents the exact size of the documents can
-        // be determined by checking the administration, this is not possible
-        // for XML documents.
-        //
-        // For XML documents by default the 'approximate' size is available
-        // which can be sufficient (pagesize * nr of pages). Exact size
-        // is dependant on many factors, the serialization parameters.
-        //
-        // The approximate size is a good indication of the size of document
-        // but some WebDAV client, mainly the MacOsX Finder version, can
-        // not deal with this guesstimate, resulting in incomplete or overcomplete
-        // documents.
-        //
-        // Special for this, two system variables can be set to change the
-        // way the size is calculated. Supported values are
-        // NULL, EXACT, APPROXIMATE
-        //
-        // PROPFIND: Unfortunately both NULL and APPROXIMATE do not work for
-        // MacOsX Finder. The default behaviour for the Finder 'user-agent' is
-        // exact, for the others it is approximate.
-        // This behaviour is swiched by the system properties.
-        //
-        // GET: the NULL value seems to be working well for macosx too.
+        /*
+            ## Whilst for non-XML documents the exact size of the documents can
+            ## be determined by checking the blob store metadata, this is not possible
+            ## for XML documents.
+            ##
+            ## For XML documents by default the 'approximate' size is available
+            ## which can be sufficient (pagesize * number of pages). Exact size
+            ## is dependent on factors like the serialization parameters.
+            ##
+            ## The approximate size is a good indication of the size of document
+            ## but some WebDAV clients, in particular the macOS Finder version, can
+            ## not deal with this estimate, resulting in incomplete or overcomplete
+            ## documents.
+            ##
+            ## To address these various possibilities, two system variables can be set
+            ## to change the way the size is calculated.
+            ##
+            ## Supported values are NULL, EXACT, APPROXIMATE
+            ##
+            ## PROPFIND:
+            ## Unfortunately both NULL and APPROXIMATE do not work for
+            ## macOS Finder. The default behaviour for the Finder 'user-agent' is
+            ## exact, for the others it is approximate.
+            ##
+            ## GET:
+            ## The NULL value seems to be working well for macOS too.
+            ##
+            ## The system properties are:
+            ## -Dorg.exist.webdav.PROPFIND_METHOD_XML_SIZE=..  (used for listing documents in collection)
+            ## -Dorg.exist.webdav.GET_METHOD_XML_SIZE=...      (used during download of one document)
+            ##
+            ## Supported values are:
+            ## NULL         - document sizes are NOT reported                              [Alternative]
+            ## EXACT        - document sizes are reported using document pre-serialization [Slow]
+            ## APPROXIMATE  - document sizes are reported as (pagesize * number of pages)  [Default]
+            ##
+            ## Depending on the WebDAV client needs, one or both properties can be set.
+            #
+            # org.exist.webdav.PROPFIND_METHOD_XML_SIZE=APPROXIMATE
+            # org.exist.webdav.GET_METHOD_XML_SIZE=APPROXIMATE
+         */
 
         Long size = null;
 
