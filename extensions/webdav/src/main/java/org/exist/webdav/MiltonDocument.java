@@ -116,13 +116,13 @@ public class MiltonDocument extends MiltonResource
 
         // PROPFIND method
         if (propfindSizeMethod == null) {
-            LOG.info("Try read {} from System Property", PROPFIND_METHOD_XML_SIZE);
+            LOG.info("Try to obtain {} from System Property", PROPFIND_METHOD_XML_SIZE);
             String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
             propfindSizeMethod = getSizeMethod(systemProp);
         }
 
         if (propfindSizeMethod == null) {
-            LOG.info("Try read {} from properties file", PROPFIND_METHOD_XML_SIZE);
+            LOG.info("Alternatively try to obtain {} from properties file", PROPFIND_METHOD_XML_SIZE);
             String fileProp = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
             propfindSizeMethod = getSizeMethod(fileProp);
         }
@@ -134,13 +134,13 @@ public class MiltonDocument extends MiltonResource
 
         // GET method
         if (getSizeMethod == null) {
-            LOG.info("Try read {} from System Property", GET_METHOD_XML_SIZE);
+            LOG.info("Try to obtain {} from System Property", GET_METHOD_XML_SIZE);
             String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
             getSizeMethod = getSizeMethod(systemProp);
         }
 
         if (getSizeMethod == null) {
-            LOG.info("Try read {} from properties file", GET_METHOD_XML_SIZE);
+            LOG.info("Alternatively try to obtain {} from properties file", GET_METHOD_XML_SIZE);
             String fileProp = configuration.getProperty(GET_METHOD_XML_SIZE);
             getSizeMethod = getSizeMethod(fileProp);
         }
@@ -235,7 +235,7 @@ public class MiltonDocument extends MiltonResource
             ## To address these various possibilities, two system variables can be set
             ## to change the way the size is calculated.
             ##
-            ## Supported values are NULL, EXACT, APPROXIMATE
+            ## Supported values are APPROXIMATE, EXACT, NULL
             ##
             ## PROPFIND:
             ## Unfortunately both NULL and APPROXIMATE do not work for
@@ -250,15 +250,15 @@ public class MiltonDocument extends MiltonResource
             ## -Dorg.exist.webdav.GET_METHOD_XML_SIZE=...      (used during download of one document)
             ##
             ## Supported values are:
-            ## NULL         - document sizes are NOT reported                              [Alternative]
+            ## NULL         - document sizes are NOT reported
             ## EXACT        - document sizes are reported using document pre-serialization [Slow]
-            ## APPROXIMATE  - document sizes are reported as (pagesize * number of pages)  [Default]
+            ## APPROXIMATE  - document sizes are reported as (pagesize * number of pages)
             ##
             ## Depending on the WebDAV client needs, one or both properties can be set.
             #
             # org.exist.webdav.PROPFIND_METHOD_XML_SIZE=APPROXIMATE
-            # org.exist.webdav.GET_METHOD_XML_SIZE=APPROXIMATE
-         */
+            # org.exist.webdav.GET_METHOD_XML_SIZE=NULL
+        */
 
         Long size = null;
 
