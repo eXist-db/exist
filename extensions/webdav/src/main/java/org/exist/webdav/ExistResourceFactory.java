@@ -55,7 +55,7 @@ public class ExistResourceFactory implements ResourceFactory {
     /**
      * XML serialization options
      */
-    private Properties webDavOptions = new Properties();
+    private final Properties webDavOptions = new Properties();
 
     /**
      * Default constructor. Get access to instance of exist-db broker pool.
@@ -173,7 +173,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
         // MacOsX finder specific files
         String documentSeqment = xmldbUri.lastSegment().toString();
-        if (documentSeqment.startsWith("._") || documentSeqment.equals(".DS_Store")) {
+        if (documentSeqment.startsWith("._") || ".DS_Store".equals(documentSeqment)) {
             //LOG.debug(String.format("Ignoring MacOSX file '%s'", xmldbUri.lastSegment().toString()));
             //return ResourceType.IGNORABLE;
         }

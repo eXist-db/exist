@@ -52,7 +52,7 @@ public class MiltonCollection extends MiltonResource
         DeletableResource, MakeCollectionableResource, PutableResource, LockingCollectionResource 
         /*, DigestResource */, MoveableResource, CopyableResource, LockNullResource {
 
-    private ExistCollection existCollection;
+    private final ExistCollection existCollection;
 
     /**
      * Constructor of representation of a Collection in the Milton framework, without subject information.
