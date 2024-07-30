@@ -208,13 +208,13 @@ public class MiltonDocument extends MiltonResource
     public Long getContentLength() {
 
         /*
-            ## Whilst for non-XML documents the exact size of the documents can
-            ## be determined by checking the blob store metadata, this is not possible
-            ## for XML documents.
+            ## Due to the way eXist-db stores XML, the exact size of an XML document when
+            ## it is serialized (e.g., sent to a WebDAV client) may vary depending upon
+            ## serialization parameters.
             ##
-            ## For XML documents by default the 'approximate' size is available
-            ## which can be sufficient (pagesize * number of pages). Exact size
-            ## is dependent on factors like the serialization parameters.
+            ## For performance reasons, eXist by default only reports an approximate file size
+            ## for XML documents. (eXist reports accurate sizes for binary documents,
+            ## which aren't subject to serialization parameters.)
             ##
             ## The approximate size is a good indication of the size of document
             ## but some WebDAV clients, in particular the macOS Finder version, can
