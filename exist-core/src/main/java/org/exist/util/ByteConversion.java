@@ -42,6 +42,7 @@ public class ByteConversion {
      * @deprecated reads the lowest byte first. will be replaced with
      *     {@link #byteToIntH(byte[], int)} for consistency.
      */
+    @Deprecated
     public final static int byteToInt(final byte[] data, final int start ) {
         return ( data[start] & 0xff ) |
             ( ( data[start + 1] & 0xff ) << 8 ) |
@@ -144,6 +145,7 @@ public class ByteConversion {
      *
      * @return the short integer
      */
+    @Deprecated
     public final static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
             ( data[start] & 0xff ) );
@@ -190,6 +192,7 @@ public class ByteConversion {
      * @param  start  the offset
      * @return   the byte array
      */
+    @Deprecated
     public final static byte[] intToByte( final int v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
@@ -302,6 +305,7 @@ public class ByteConversion {
      * @param  start  the offset
      * @return   the byte array
      */
+    @Deprecated
     public final static byte[] shortToByte( final short v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );

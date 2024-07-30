@@ -29,6 +29,7 @@ package org.exist.collections.triggers;
  * 
  * @deprecated use SAXTrigger
  */
+@Deprecated
 public abstract class FilteringTrigger extends SAXTrigger {
 
 }

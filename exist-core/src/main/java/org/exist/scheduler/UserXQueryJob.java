@@ -117,6 +117,7 @@ public class UserXQueryJob extends UserJob {
      * @return  The User for this Job
      * @deprecated use getCurrentSubject method
      */
+    @Deprecated
     public Subject getUser() {
         return subject;
     }

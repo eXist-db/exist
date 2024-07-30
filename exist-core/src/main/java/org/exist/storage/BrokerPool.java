@@ -843,6 +843,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * @deprecated use countActiveBrokers
      */
     //TODO : rename as getActiveBrokers ?
+    @Deprecated
     public int active() {
         return activeBrokers.size();
     }
