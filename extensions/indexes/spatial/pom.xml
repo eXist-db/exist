@@ -198,7 +198,7 @@
                             <url>http://data.exist-db.org/spatial/os-mastermap-topography-layer-sample-data.gz</url>
                             <readTimeOut>120000</readTimeOut>
                             <sha1>ca14a6dafcdec4cbe9bbadcf65fa1e245665c0e5</sha1>
-                            <checkSignature>true</checkSignature>
+                            <alwaysVerifyChecksum>true</alwaysVerifyChecksum>
                             <unpack>true</unpack>
                             <outputFileName>15385-SS7886-5i1.gml.gzip</outputFileName>
                             <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
