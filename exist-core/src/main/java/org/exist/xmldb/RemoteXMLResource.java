@@ -110,6 +110,7 @@ public class RemoteXMLResource
      * @throws XMLDBException if an error occurs during construction
      * @deprecated Use {@link #RemoteXMLResource(RemoteCollection, int, int, XmldbURI, Optional, Optional)}.
      */
+    @Deprecated
     public RemoteXMLResource(final RemoteCollection parent, final XmldbURI docId, final Optional<String> id, final Optional<String> type)
             throws XMLDBException {
         this(parent, -1, -1, docId, id, type);

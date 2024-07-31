@@ -618,6 +618,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>software.xdev</groupId>
+                    <artifactId>find-and-replace-maven-plugin</artifactId>
+                    <version>1.0.2</version>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.4.0</version>
@@ -979,6 +984,11 @@
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
                                 <exclude>LGPL-21-license.template.txt</exclude>                    
                                 <exclude>LGPL-21-license.txt</exclude>
+                                <exclude>LGPL-21-license.template.txt</exclude>
+                                <exclude>**/README.md</exclude>
+                                <exclude>**/README</exclude>
+                                <exclude>**/LICENSE</exclude>
+                                <exclude>**/*.xar</exclude>
                             </excludes>
                         </licenseSet>
                     </licenseSets>
@@ -1006,13 +1016,6 @@
                         <email>${contact.email}</email>
                         <url>${project.organization.url}</url>
                     </properties>
-                    <excludes>
-                        <exclude>LGPL-21-license.template.txt</exclude>
-                        <exclude>**/README.md</exclude>
-                        <exclude>**/README</exclude>
-                        <exclude>**/LICENSE</exclude>
-                        <exclude>**/*.xar</exclude>
-                    </excludes>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
                 <executions>
@@ -1041,6 +1044,7 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <propertiesEncoding>${project.build.sourceEncoding}</propertiesEncoding>
                 </configuration>
             </plugin>
             <plugin>

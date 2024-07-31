@@ -241,7 +241,7 @@ public class AccountImpl extends AbstractAccount {
      * @return Description of the Return Value
      * @deprecated
      */
-    @Override
+    @Override @Deprecated
     public final String getPassword() {
         return password;
     }

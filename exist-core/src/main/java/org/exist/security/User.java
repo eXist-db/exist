@@ -103,6 +103,7 @@ public interface User extends Principal {
      * @return The users password
      * @deprecated
      */
+    @Deprecated
     String getPassword();
 
     @Deprecated
