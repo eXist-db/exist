@@ -21,25 +21,23 @@
  */
 package org.exist.indexing.range;
 
+import nl.altindag.log.LogCaptor;
 import org.apache.logging.log4j.Logger;
 import org.easymock.Capture;
-import org.exist.util.JDKCompatibility;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.easymock.EasyMock.*;
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
 import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
+import static org.junit.Assert.assertTrue;
 
 public class RangeIndexConfigTest {
 
@@ -88,30 +86,20 @@ public class RangeIndexConfigTest {
         replay(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList, mockLogger);
 
 
-
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("tei", "http://www.tei-c.org/ns/1.0");
 
-        overrideLogger(RangeIndexConfig.class, mockLogger);
+        LogCaptor logCaptor = LogCaptor.forClass(RangeIndexConfig.class);
+
         final RangeIndexConfig config = new RangeIndexConfig(mockConfigNodes, namespaces);
 
-        assertTrue(errorMsgCapture.getValue().contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
-        assertTrue(errorMsgCapture.getValue().contains("(" + mockCollectionXConfUri + ")"));
+        assertTrue(logCaptor.getLogs().get(0)
+                .contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
 
-        verify(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList, mockLogger);
+        assertTrue(logCaptor.getLogs().get(0)
+                .contains("(" + mockCollectionXConfUri + ")"));
+
+        verify(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList);
     }
 
-    private void overrideLogger(final Class clazz, final Logger logger) throws NoSuchFieldException, IllegalAccessException {
-        final Field loggerField = clazz.getDeclaredField("LOG");
-
-        // allow access to private field
-        loggerField.setAccessible(true);
-
-        // remove final modifier
-        final Field modifiersField = JDKCompatibility.getModifiersField();
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(loggerField, loggerField.getModifiers() & ~Modifier.FINAL);
-
-        loggerField.set(null, logger);
-    }
 }
