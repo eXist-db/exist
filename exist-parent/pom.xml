@@ -118,7 +118,7 @@
         <milton.version>1.8.1.3</milton.version>
         <saxon.version>9.9.1-8</saxon.version>
         <xmlresolver.version>4.6.4</xmlresolver.version>
-        <xmlunit.version>2.9.1</xmlunit.version>
+        <xmlunit.version>2.10.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.platform.version>1.10.2</junit.platform.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
