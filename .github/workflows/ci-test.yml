@@ -42,10 +42,10 @@ jobs:
         jvm: ['8']
         exclude:
           - os: macOS-latest
-            version: '8'
+            jvm: '8'
         include:
           - os: macOS-latest
-            version: '11'
+            jvm: '11'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
