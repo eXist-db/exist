@@ -1069,7 +1069,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
             <plugin>
                 <groupId>org.omnifaces</groupId>
                 <artifactId>antlr-maven-plugin</artifactId>
-                <version>2.3</version>
+                <version>2.4</version>
                 <configuration>
                     <grammars>
                         org/exist/xquery/parser/XQuery.g,org/exist/xquery/parser/XQueryTree.g,org/exist/xquery/parser/DeclScanner.g,org/exist/xquery/xqdoc/parser/XQDocParser.g
