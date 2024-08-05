@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
-            <version>${jdom.version}</version>
+            <version>${jdom1.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -193,7 +193,7 @@
                                 <ignoredUnusedDeclaredDependency>java3d:vecmath:jar:1.3.1</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>javax.media:jai_core:jar:1.1.3</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.jdom:jdom:jar:${jdom.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.jdom:jdom:jar:${jdom1.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
