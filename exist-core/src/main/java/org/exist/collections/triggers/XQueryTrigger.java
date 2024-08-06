@@ -451,6 +451,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("No such function '" + functionName + "' in XQueryTrigger: " + compiledQuery.getSource());
 					}
+					TriggerStatePerThread.clearIfFinished(phase);
 					return;
 				}
 			}
