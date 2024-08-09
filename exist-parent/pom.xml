@@ -131,7 +131,7 @@
         <assertj.version>3.26.3</assertj.version>
         <awaitility.version>4.2.2</awaitility.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
-        <hamcrest.version>2.2</hamcrest.version>
+        <hamcrest.version>3.0</hamcrest.version>
 
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
