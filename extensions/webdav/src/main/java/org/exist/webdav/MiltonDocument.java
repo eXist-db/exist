@@ -61,7 +61,7 @@ public class MiltonDocument extends MiltonResource
     private static SIZE_METHOD getSizeMethod = null;
 
     private static UserAgentHelper userAgentHelper = null;
-    private ExistDocument existDocument;
+    private final ExistDocument existDocument;
 
     // Only for PROPFIND the estimate size for an XML document must be shown
     private boolean isPropFind = false;
@@ -114,52 +114,63 @@ public class MiltonDocument extends MiltonResource
             existDocument.initMetadata();
         }
 
-
         // PROPFIND method
         if (propfindSizeMethod == null) {
-            // get user supplied preferred size determination approach
+            LOG.info("Try to obtain {} from System Property", PROPFIND_METHOD_XML_SIZE);
             String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
+            propfindSizeMethod = getSizeMethod(systemProp);
+        }
 
-            if (systemProp == null) {
-                // Default method is approximate
-                propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
+        if (propfindSizeMethod == null) {
+            LOG.info("Alternatively try to obtain {} from properties file", PROPFIND_METHOD_XML_SIZE);
+            String fileProp = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
+            propfindSizeMethod = getSizeMethod(fileProp);
+        }
 
-            } else {
-                // Try to parse from environment property
-                try {
-                    propfindSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
-
-                } catch (IllegalArgumentException ex) {
-                    LOG.debug(ex.getMessage());
-                    // Set preffered default
-                    propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
-                }
-            }
+        if (propfindSizeMethod == null) {
+            LOG.info("Use default value {}", SIZE_METHOD.APPROXIMATE);
+            propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
         }
 
         // GET method
         if (getSizeMethod == null) {
-            // get user supplied preferred size determination approach
+            LOG.info("Try to obtain {} from System Property", GET_METHOD_XML_SIZE);
             String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
-
-            if (systemProp == null) {
-                // Default method is NULL
-                getSizeMethod = SIZE_METHOD.NULL;
-
-            } else {
-                // Try to parse from environment property
-                try {
-                    getSizeMethod = SIZE_METHOD.valueOf(systemProp.toUpperCase());
-
-                } catch (IllegalArgumentException ex) {
-                    LOG.debug(ex.getMessage());
-                    // Set preffered default
-                    getSizeMethod = SIZE_METHOD.APPROXIMATE;
-                }
-            }
+            getSizeMethod = getSizeMethod(systemProp);
         }
 
+        if (getSizeMethod == null) {
+            LOG.info("Alternatively try to obtain {} from properties file", GET_METHOD_XML_SIZE);
+            String fileProp = configuration.getProperty(GET_METHOD_XML_SIZE);
+            getSizeMethod = getSizeMethod(fileProp);
+        }
 
+        if (getSizeMethod == null) {
+            LOG.info("Use default value {}", SIZE_METHOD.NULL);
+            getSizeMethod = SIZE_METHOD.NULL;
+        }
+
+    }
+
+    /**
+     * Determine what size methodology shall be applied.
+     *
+     * @param value Properties value
+     * @return Corresponding SIZE_METHOD, or else NULL.
+     */
+    SIZE_METHOD getSizeMethod(String value) {
+        if (value == null || value.strip().isEmpty()) {
+            return null;
+        }
+
+        try {
+            final SIZE_METHOD sizeMethod = SIZE_METHOD.valueOf(value.toUpperCase());
+            LOG.info("Found value {}", sizeMethod);
+            return sizeMethod;
+        } catch (IllegalArgumentException ex) {
+            LOG.debug(ex.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -207,31 +218,47 @@ public class MiltonDocument extends MiltonResource
     @Override
     public Long getContentLength() {
 
-
-        // Note
-        // Whilst for non-XML documents the exact size of the documents can
-        // be determined by checking the administration, this is not possible
-        // for XML documents.
-        //
-        // For XML documents by default the 'approximate' size is available
-        // which can be sufficient (pagesize * nr of pages). Exact size
-        // is dependant on many factors, the serialization parameters.
-        //
-        // The approximate size is a good indication of the size of document
-        // but some WebDAV client, mainly the MacOsX Finder version, can
-        // not deal with this guesstimate, resulting in incomplete or overcomplete
-        // documents.
-        //
-        // Special for this, two system variables can be set to change the
-        // way the size is calculated. Supported values are
-        // NULL, EXACT, APPROXIMATE
-        //
-        // PROPFIND: Unfortunately both NULL and APPROXIMATE do not work for
-        // MacOsX Finder. The default behaviour for the Finder 'user-agent' is
-        // exact, for the others it is approximate.
-        // This behaviour is swiched by the system properties.
-        //
-        // GET: the NULL value seems to be working well for macosx too.
+        /*
+            ## Due to the way eXist-db stores XML, the exact size of an XML document when
+            ## it is serialized (e.g., sent to a WebDAV client) may vary depending upon
+            ## serialization parameters.
+            ##
+            ## For performance reasons, eXist by default only reports an approximate file size
+            ## for XML documents. (eXist reports accurate sizes for binary documents,
+            ## which aren't subject to serialization parameters.)
+            ##
+            ## The approximate size is a good indication of the size of document
+            ## but some WebDAV clients, in particular the macOS Finder version, can
+            ## not deal with this estimate, resulting in incomplete or overcomplete
+            ## documents.
+            ##
+            ## To address these various possibilities, two system variables can be set
+            ## to change the way the size is calculated.
+            ##
+            ## Supported values are APPROXIMATE, EXACT, NULL
+            ##
+            ## PROPFIND:
+            ## Unfortunately both NULL and APPROXIMATE do not work for
+            ## macOS Finder. The default behaviour for the Finder 'user-agent' is
+            ## exact, for the others it is approximate.
+            ##
+            ## GET:
+            ## The NULL value seems to be working well for macOS too.
+            ##
+            ## The system properties are:
+            ## -Dorg.exist.webdav.PROPFIND_METHOD_XML_SIZE=..  (used for listing documents in collection)
+            ## -Dorg.exist.webdav.GET_METHOD_XML_SIZE=...      (used during download of one document)
+            ##
+            ## Supported values are:
+            ## NULL         - document sizes are NOT reported
+            ## EXACT        - document sizes are reported using document pre-serialization [Slow]
+            ## APPROXIMATE  - document sizes are reported as (pagesize * number of pages)
+            ##
+            ## Depending on the WebDAV client needs, one or both properties can be set.
+            #
+            # org.exist.webdav.PROPFIND_METHOD_XML_SIZE=APPROXIMATE
+            # org.exist.webdav.GET_METHOD_XML_SIZE=NULL
+        */
 
         Long size = null;
 
