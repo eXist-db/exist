@@ -60,6 +60,19 @@
             <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
             <artifactId>milton-api</artifactId>
             <version>${milton.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jdom</groupId>
+                    <artifactId>jdom</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>${jdom1.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -180,6 +193,7 @@
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
                                 <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.jdom:jdom:jar:${jdom1.version}</ignoredUnusedDeclaredDependency>
 
                                 <!-- needed for running tests that depend on eXist-db Jetty server -->
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>

@@ -75,6 +75,22 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt2-main</artifactId>
             <version>${geotools.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jdom</groupId>
+                    <artifactId>jdom</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-beanutils</groupId>
+                    <artifactId>commons-beanutils</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>${jdom1.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -177,6 +193,7 @@
                                 <ignoredUnusedDeclaredDependency>java3d:vecmath:jar:1.3.1</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>javax.media:jai_core:jar:1.1.3</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.junit.vintage:junit-vintage-engine:jar</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.jdom:jdom:jar:${jdom1.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
