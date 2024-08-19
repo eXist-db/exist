@@ -121,7 +121,7 @@
         <nekohtml.version>2.1.3</nekohtml.version>
         <saxon.version>9.9.1-8</saxon.version>
         <xalan.version>2.7.3</xalan.version>
-        <xmlresolver.version>5.2.3</xmlresolver.version>
+        <xmlresolver.version>6.0.8</xmlresolver.version>
         <xmlunit.version>2.10.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.platform.version>1.10.3</junit.platform.version>
