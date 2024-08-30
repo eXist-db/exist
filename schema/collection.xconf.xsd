@@ -183,6 +183,7 @@
         <xs:attributeGroup ref="cc:typeOpt"/>
         <xs:attributeGroup ref="cc:analyzerOpt"/>
         <xs:attributeGroup ref="cc:storeOpt"/>
+        <xs:attributeGroup ref="cc:binaryOpt"/>
     </xs:complexType>
 
     <xs:complexType name="matchAttrBoostType">
@@ -287,6 +288,24 @@
     </xs:attributeGroup>
     <xs:attributeGroup name="attributeReq">
         <xs:attribute name="attribute" type="xs:NCName" use="required"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="binaryOpt">
+        <xs:attribute name="binary" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="yes">
+                        <xs:annotation>
+                            <xs:documentation>Index as a binary field</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="no">
+                        <xs:annotation>
+                            <xs:documentation>Do not index as a binary field</xs:documentation>
+                        </xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:attributeGroup>
     <xs:attributeGroup name="boostOpt">
         <xs:attribute name="boost" type="xs:double" use="optional" form="unqualified"/>
