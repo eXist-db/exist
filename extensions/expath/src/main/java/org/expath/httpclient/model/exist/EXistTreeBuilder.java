@@ -34,6 +34,8 @@ import org.expath.tools.ToolsException;
 
 import javax.xml.XMLConstants;
 
+import static org.expath.httpclient.HttpClientError.HC001;
+
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
  */
@@ -93,7 +95,7 @@ public class EXistTreeBuilder implements TreeBuilder {
                 endElem();
             }
             catch ( ToolsException ex ) {
-                throw new HttpClientException("Error building the header " + name, ex);
+                throw new HttpClientException(HC001, "Error building the header " + name, ex);
             }
         }
     }
