@@ -21,13 +21,14 @@
  */
 package org.exist.xquery.modules.range;
 
-import org.exist.indexing.range.RangeIndex;
+import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -60,16 +61,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                 // will become true if optimizable expression is found
                 boolean canOptimize = false;
                 // get path of path expression before the predicates
-                NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
+                final NodePath contextPath = toNodePath(getPrecedingSteps(locationStep));
                 // process the remaining predicates
-                for (Predicate pred : preds) {
+                for (final Predicate pred : preds) {
                     if (pred.getLength() != 1) {
                         // can only optimize predicates with one expression
                         break;
                     }
 
-                    Expression innerExpr = pred.getExpression(0);
-                    List<LocationStep> steps = getStepsToOptimize(innerExpr);
+                    final Expression innerExpr = pred.getExpression(0);
+                    final List<LocationStep> steps = getStepsToOptimize(innerExpr);
                     if (steps == null || steps.isEmpty()) {
                         // no optimizable steps found
                         continue;
@@ -89,11 +90,11 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     // compute left hand path
-                    NodePath innerPath = toNodePath(steps);
+                    final NodePath innerPath = toNodePath(steps);
                     if (innerPath == null) {
                         continue;
                     }
-                    NodePath path;
+                    final NodePath path;
                     if (contextPath == null) {
                         path = innerPath;
                     } else {
@@ -102,14 +103,24 @@ public class RangeQueryRewriter extends QueryRewriter {
                     }
 
                     if (path.length() > 0) {
-                        // replace with call to lookup function
-                        // collect arguments
-                        Lookup func = rewrite(innerExpr, path);
-                        // preserve original comparison: may need it for in-memory lookups
-                        func.setFallback(innerExpr, axis);
-                        func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
+                        if (innerExpr instanceof final InternalFunctionCall internalFunctionCall
+                                && internalFunctionCall.getFunction() instanceof final Lookup lookup) {
 
-                        pred.replace(innerExpr, new InternalFunctionCall(func));
+                            // innerExpr was already optimized, just update the contextPath if it is missing
+                            if (lookup.getContextPath() == null) {
+                                lookup.setContextPath(path);;
+                            }
+
+                        } else {
+                            // replace with call to lookup function
+                            final Lookup func = rewrite(innerExpr, path);
+                            // preserve original comparison: may need it for in-memory lookups
+                            func.setFallback(innerExpr, axis);
+                            func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
+
+                            pred.replace(innerExpr, new InternalFunctionCall(func));
+                        }
+
                         canOptimize = true;
                     }
                 }
@@ -125,28 +136,22 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
-    protected static Lookup rewrite(Expression expression, NodePath path) throws XPathException {
-        ArrayList<Expression> eqArgs = new ArrayList<>(2);
-        if (expression instanceof GeneralComparison comparison) {
-            eqArgs.add(comparison.getLeft());
-            eqArgs.add(comparison.getRight());
-            Lookup func = Lookup.create(comparison.getContext(), getOperator(expression), path);
-            if (func != null) {
-                func.setArguments(eqArgs);
-                return func;
+    protected static @Nullable Lookup rewrite(final Expression expression, final NodePath path) throws XPathException {
+        if (expression instanceof final GeneralComparison comparison) {
+            final List<Expression> eqArgs = Arrays.asList(comparison.getLeft(), comparison.getRight());
+            final Lookup lookup = Lookup.create(comparison.getContext(), getOperator(expression), path);
+            if (lookup != null) {
+                lookup.setArguments(eqArgs);
             }
-
-        } else if (expression instanceof InternalFunctionCall fcall) {
-            Function function = fcall.getFunction();
-            if (function != null && function instanceof Lookup) {
-                final RangeIndex.Operator operator = RangeIndex.Operator.getByName(function.getName().getLocalPart());
-                eqArgs.add(function.getArgument(0));
-                eqArgs.add(function.getArgument(1));
-                Lookup func = Lookup.create(function.getContext(), operator, path);
-                func.setArguments(eqArgs);
-                return func;
+            return lookup;
+        } else if (expression instanceof final InternalFunctionCall fcall) {
+            final Function function = fcall.getFunction();
+            if (function instanceof final Lookup lookup && lookup.getContextPath() == null) {
+                lookup.setContextPath(path);
+                return lookup;
             }
         }
+
         return null;
     }
 
@@ -156,6 +161,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         } else if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
             if (function instanceof Lookup) {
+                // TODO(AR) is this check for range:matches needed here?
                 if (function.isCalledAs("matches")) {
                     return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
                 } else {
@@ -168,14 +174,20 @@ public class RangeQueryRewriter extends QueryRewriter {
     }
 
     public static RangeIndex.Operator getOperator(Expression expr) {
-        if (expr instanceof InternalFunctionCall fcall) {
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup) {
-                expr = ((Lookup)function).getFallback();
+        if (expr instanceof final InternalFunctionCall fcall) {
+            final Function function = fcall.getFunction();
+            if (function instanceof final Lookup lookup) {
+                final Expression fallback = lookup.getFallback();
+                if (fallback != null) {
+                    expr = fallback;
+                } else {
+                    expr = lookup;
+                }
             }
         }
+
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
-        if (expr instanceof GeneralComparison comparison) {
+        if (expr instanceof final GeneralComparison comparison) {
             final Comparison relation = comparison.getRelation();
             operator = switch (relation) {
                 case LT -> RangeIndex.Operator.LT;
@@ -191,14 +203,14 @@ public class RangeQueryRewriter extends QueryRewriter {
                 case NEQ -> RangeIndex.Operator.NE;
                 default -> operator;
             };
-        } else if (expr instanceof InternalFunctionCall fcall) {
-            Function function = fcall.getFunction();
-            if (function instanceof Lookup && function.isCalledAs("matches")) {
-                operator = RangeIndex.Operator.MATCH;
-            }
-        } else if (expr instanceof Lookup && ((Function)expr).isCalledAs("matches")) {
+        } else if (expr instanceof final InternalFunctionCall fcall) {
+            expr = fcall.getFunction();
+        }
+
+        if (expr instanceof final Lookup lookup && lookup.isCalledAs("matches")) {
             operator = RangeIndex.Operator.MATCH;
         }
+
         return operator;
     }
 

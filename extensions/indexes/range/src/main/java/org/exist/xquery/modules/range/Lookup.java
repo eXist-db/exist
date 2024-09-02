@@ -38,6 +38,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -134,8 +135,8 @@ public class Lookup extends Function implements Optimizable {
         )
     };
 
-    public static Lookup create(XQueryContext context, RangeIndex.Operator operator, NodePath contextPath) {
-        for (FunctionSignature sig: signatures) {
+    public static @Nullable Lookup create(final XQueryContext context, final RangeIndex.Operator operator, final NodePath contextPath) {
+        for (final FunctionSignature sig : signatures) {
             if (sig.getName().getLocalPart().equals(operator.toString())) {
                 return new Lookup(context, sig, contextPath);
             }
@@ -143,29 +144,61 @@ public class Lookup extends Function implements Optimizable {
         return null;
     }
 
-    private LocationStep contextStep = null;
-    protected QName contextQName = null;
-    protected int axis = Constants.UNKNOWN_AXIS;
-    private NodeSet preselectResult = null;
-    protected boolean canOptimize = false;
-    protected boolean optimizeSelf = false;
-    protected boolean optimizeChild = false;
-    protected boolean usesCollation = false;
-    protected Expression fallback = null;
-    protected NodePath contextPath = null;
+    @Nullable private LocationStep contextStep = null;
+    @Nullable private QName contextQName = null;
+    private int axis = Constants.UNKNOWN_AXIS;
+    @Nullable private NodeSet preselectResult = null;
+    private boolean canOptimize = false;
+    private boolean optimizeSelf = false;
+    private boolean optimizeChild = false;
+    private boolean usesCollation = false;
+    @Nullable private Expression fallback = null;
+    @Nullable private NodePath contextPath;
 
-    public Lookup(XQueryContext context, FunctionSignature signature) {
+    /**
+     * Constructor called via reflection from {@link Function#createFunction(XQueryContext, XQueryAST, Module, FunctionDef)}.
+     *
+     * @param context The XQuery Context.
+     * @param signature The signature of the Lookup function.
+     */
+    @SuppressWarnings("unused")
+    public Lookup(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, null);
     }
 
-    public Lookup(XQueryContext context, FunctionSignature signature, NodePath contextPath) {
+    /**
+     * Constructor called via {@link #create(XQueryContext, RangeIndex.Operator, NodePath)}.
+     *
+     * @param context The XQuery Context.
+     * @param signature The signature of the Lookup function.
+     * @param contextPath the node path of the optimization.
+     */
+    private Lookup(final XQueryContext context, final FunctionSignature signature, @Nullable final NodePath contextPath) {
         super(context, signature);
         this.contextPath = contextPath;
     }
 
-    public void setFallback(Expression expression, int optimizeAxis) {
-        if (expression instanceof InternalFunctionCall) {
-            expression = ((InternalFunctionCall)expression).getFunction();
+    /**
+     * Get the node path of the optimization.
+     *
+     * @return the node path of the optimization, or null if unknown.
+     */
+    public @Nullable NodePath getContextPath() {
+        return contextPath;
+    }
+
+    /**
+     * Set the node path of the optimization.
+     *
+     * @param contextPath the node path of the optimization, or null if unknown.
+     */
+    public void setContextPath(@Nullable final NodePath contextPath) {
+        this.contextPath = contextPath;
+    }
+
+    public void setFallback(@Nullable Expression expression, final int optimizeAxis) {
+        if (expression instanceof final InternalFunctionCall fcall) {
+            expression = fcall.getFunction();
         }
         this.fallback = expression;
         // we need to know the axis at this point. the optimizer will call
@@ -173,7 +206,7 @@ public class Lookup extends Function implements Optimizable {
         this.axis = optimizeAxis;
     }
 
-    public Expression getFallback() {
+    public @Nullable Expression getFallback() {
         return fallback;
     }
 
