@@ -635,7 +635,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>10.0.3</version>
+                    <version>10.0.4</version>
                     <configuration>
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
