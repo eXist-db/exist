@@ -115,7 +115,7 @@
         <eclipse.angus-activation.version>2.0.2</eclipse.angus-activation.version>
         <jetty.version>11.0.24</jetty.version>
         <log4j.version>2.23.1</log4j.version>
-        <lucene.version>4.10.4</lucene.version>
+        <lucene.version>8.0.0</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
         <nekohtml.version>2.1.3</nekohtml.version>
