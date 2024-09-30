@@ -855,6 +855,7 @@
                             <user.timezone>Europe/Berlin</user.timezone>
                             <java.locale.providers>JRE,CLDR,SPI</java.locale.providers>
                             <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                            <log4j2.disableJmx>false</log4j2.disableJmx>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
