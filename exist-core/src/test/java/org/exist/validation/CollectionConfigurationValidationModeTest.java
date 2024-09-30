@@ -127,11 +127,10 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (!msg.contains("Cannot find the declaration of element 'schema'.")) {
+            if (!msg.contains("cvc-elt.1.a: Cannot find the declaration of element 'schema'.")) {
                 fail(msg);
             }
         }
-
 
         // non resolvable namespace provided, should fail
         try {
@@ -139,11 +138,10 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            if (!msg.contains("schema_reference.4: Failed to read schema document")) {
+            if (!msg.contains("cvc-elt.1.a: Cannot find the declaration of element 'asd:schema'")) {
                 fail(msg);
             }
         }
-            
     }
 
     @Test
@@ -153,7 +151,6 @@ public class CollectionConfigurationValidationModeTest {
 
         // namespace provided, valid document; should pass
         storeDocument("/db/auto", "valid.xml", valid);
-
 
         // namespace provided, invalid document, should fail
         try {
@@ -177,14 +174,7 @@ public class CollectionConfigurationValidationModeTest {
         }
 
         // non resolvable namespace provided, should fail
-        try {
-            storeDocument("/db/auto", "different.xml", different);
-            fail("should have failed");
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
-            if (!msg.contains("schema_reference.4: Failed to read schema document")) {
-                fail(msg);
-            }
-        }
+        storeDocument("/db/auto", "different.xml", different);
+        fail("schema https://www.w3.org/2001/XMLSchemaschema is missing, document should not be insertable");
     }
 }
