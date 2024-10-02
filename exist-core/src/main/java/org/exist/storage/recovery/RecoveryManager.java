@@ -301,6 +301,8 @@ public class RecoveryManager {
             if (runningTxns.size() > 0) {
                 // do a reverse scan of the log, undoing all uncommitted transactions
                 try {
+                    final long lastSize = FileUtils.sizeQuietly(last);
+                    final ProgressBar undoProgressBar = new ProgressBar("Undo ", lastSize);
                     while((next = reader.previousEntry()) != null) {
                         if (next.getLogType() == LogEntryTypes.TXN_START) {
                             if (runningTxns.get(next.getTransactionId()) != null) {
@@ -321,7 +323,10 @@ public class RecoveryManager {
     //					LOG.debug("Undo: " + next.dump());
                             next.undo();
                         }
+
+                        undoProgressBar.set(lastSize - next.getLsn().getOffset());
                     }
+                    undoProgressBar.set(lastSize);   // 100% done
                 } catch (final Exception e) {
                     LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
                             "to be undone: " + runningTxns.size() + ". Aborting recovery to avoid possible damage. " +
