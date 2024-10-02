@@ -150,7 +150,7 @@ public class RecoveryManager {
 	    			// if the last checkpoint record is not the last record in the file
 	    			// we need a recovery.
 	    			if ((lastCheckpoint == null || !lastCheckpoint.getLsn().equals(lastLsn)) &&
-	    					txnsStarted.size() > 0) {
+                !txnsStarted.isEmpty()) {
 	    				LOG.info("Dirty transactions: " + txnsStarted.size());
 	    				// starting recovery: reposition the log reader to the last checkpoint
 						if (lastCheckpoint == null)
@@ -298,7 +298,7 @@ public class RecoveryManager {
                 {LOG.info("Second pass: undoing dirty transactions. Uncommitted transactions: " +
                         runningTxns.size());}
             // see if there are uncommitted transactions pending
-            if (runningTxns.size() > 0) {
+            if (!runningTxns.isEmpty()) {
                 // do a reverse scan of the log, undoing all uncommitted transactions
                 try {
                     final long lastSize = FileUtils.sizeQuietly(last);
@@ -307,9 +307,10 @@ public class RecoveryManager {
                         if (next.getLogType() == LogEntryTypes.TXN_START) {
                             if (runningTxns.get(next.getTransactionId()) != null) {
                                 runningTxns.remove(next.getTransactionId());
-                                if (runningTxns.size() == 0)
+                                if (runningTxns.isEmpty()) {
                                     // all dirty transactions undone
-                                    {break;}
+                                    break;
+                                }
                             }
                         } else if (next.getLogType() == LogEntryTypes.TXN_COMMIT) {
                             // ignore already committed transaction
