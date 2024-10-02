@@ -53,7 +53,7 @@ jobs:
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
         with:
-          version: '1.0.1'
+          version: '1.0.2'
           file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
