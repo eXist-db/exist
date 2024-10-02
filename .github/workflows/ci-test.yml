@@ -49,8 +49,8 @@ jobs:
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
         with:
-          version: '1.0-m7'
-          file-version-suffix: '-m39'
+          version: '1.0.2'
+          file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
         timeout-minutes: 10
