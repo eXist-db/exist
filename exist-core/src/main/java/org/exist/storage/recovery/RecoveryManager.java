@@ -45,6 +45,8 @@ import org.exist.util.ProgressBar;
 import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.util.sanity.SanityCheck;
 
+import javax.annotation.Nullable;
+
 /**
  * Database recovery. This class is used once during startup to check
  * if the database is in a consistent state. If not, the class attempts to recover
@@ -59,11 +61,13 @@ public class RecoveryManager {
     private final DBBroker broker;
     private final JournalRecoveryAccessor journalRecovery;
     private final boolean restartOnError;
+    private final boolean hideProgressBar;
 
     public RecoveryManager(final DBBroker broker, final JournalManager journalManager, final boolean restartOnError) {
         this.broker = broker;
         this.journalRecovery = journalManager.getRecoveryAccessor(this);
         this.restartOnError = restartOnError;
+        this.hideProgressBar = Boolean.getBoolean("exist.recovery.progressbar.hide");
 	}
 
 	/**
@@ -122,7 +126,7 @@ public class RecoveryManager {
 	                Loggable next;
 	                try {
 						final long lastSize = FileUtils.sizeQuietly(last);
-						final ProgressBar scanProgressBar = new ProgressBar("Scanning journal ", lastSize);
+            @Nullable final ProgressBar scanProgressBar = hideProgressBar ? null : new ProgressBar("Scanning journal ", lastSize);
 	        			while ((next = reader.nextEntry()) != null) {
 //	                        LOG.debug(next.dump());
 							if (next.getLogType() == LogEntryTypes.TXN_START) {
@@ -137,9 +141,14 @@ public class RecoveryManager {
 				            }
 	        				lastLsn = next.getLsn();
 
-                  scanProgressBar.set(next.getLsn().getOffset());
+                  if (scanProgressBar != null) {
+                      scanProgressBar.set(next.getLsn().getOffset());
+                  }
 	        			}
-                scanProgressBar.set(lastSize);  // 100%
+
+                if (scanProgressBar != null) {
+                    scanProgressBar.set(lastSize);  // 100%
+                }
 	                } catch (final LogException e) {
 	                    if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
@@ -258,7 +267,7 @@ public class RecoveryManager {
             int redoCnt = 0;
             try {
                 final long lastSize = FileUtils.sizeQuietly(last);
-                final ProgressBar redoProgressBar = new ProgressBar("Redo ", lastSize);
+                @Nullable final ProgressBar redoProgressBar = hideProgressBar ? null : new ProgressBar("Redo ", lastSize);
                 while ((next = reader.nextEntry()) != null) {
                     SanityCheck.ASSERT(next.getLogType() != LogEntryTypes.CHECKPOINT,
                             "Found a checkpoint during recovery run! This should not ever happen.");
@@ -276,13 +285,20 @@ public class RecoveryManager {
         //            LOG.debug("Redo: " + next.dump());
                     // redo the log entry
                     next.redo();
-                    redoProgressBar.set(next.getLsn().getOffset());
+
+                    if (redoProgressBar != null) {
+                        redoProgressBar.set(next.getLsn().getOffset());
+                    }
+
                     if (next.getLsn().equals(lastLsn)) {
                         // last readable entry reached. Stop here.
                         break;
                     }
                 }
-                redoProgressBar.set(lastSize);  // 100% done
+
+                if (redoProgressBar != null) {
+                    redoProgressBar.set(lastSize);  // 100% done
+                }
             } catch (final Exception e) {
                 LOG.error("Exception caught while redoing transactions. Aborting recovery to avoid possible damage. " +
                     "Before starting again, make sure to run a check via the emergency export tool.", e);
@@ -302,7 +318,7 @@ public class RecoveryManager {
                 // do a reverse scan of the log, undoing all uncommitted transactions
                 try {
                     final long lastSize = FileUtils.sizeQuietly(last);
-                    final ProgressBar undoProgressBar = new ProgressBar("Undo ", lastSize);
+                    @Nullable final ProgressBar undoProgressBar = hideProgressBar ? null : new ProgressBar("Undo ", lastSize);
                     while((next = reader.previousEntry()) != null) {
                         if (next.getLogType() == LogEntryTypes.TXN_START) {
                             if (runningTxns.get(next.getTransactionId()) != null) {
@@ -325,9 +341,14 @@ public class RecoveryManager {
                             next.undo();
                         }
 
-                        undoProgressBar.set(lastSize - next.getLsn().getOffset());
+                        if (undoProgressBar != null) {
+                            undoProgressBar.set(lastSize - next.getLsn().getOffset());
+                        }
                     }
-                    undoProgressBar.set(lastSize);   // 100% done
+
+                    if (undoProgressBar != null) {
+                        undoProgressBar.set(lastSize);   // 100% done
+                    }
                 } catch (final Exception e) {
                     LOG.warn("Exception caught while undoing dirty transactions. Remaining transactions " +
                             "to be undone: " + runningTxns.size() + ". Aborting recovery to avoid possible damage. " +
