@@ -20,13 +20,13 @@ jobs:
           distribution: liberica
           java-version: 11
       - name: Cache SonarCloud packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: sonarcloud-${{ runner.os }}-cache-${{ hashFiles('**/pom.xml') }}
           restore-keys: sonarcloud-${{ runner.os }}-cache
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: sonarcloud-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
