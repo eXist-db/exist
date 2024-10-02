@@ -120,10 +120,10 @@ public class RecoveryManager {
                     Lsn lastLsn = Lsn.LSN_INVALID;
                     Loggable next;
                     try {
-                        final ProgressBar progress = new ProgressBar("Scanning journal ", FileUtils.sizeQuietly(last));
+                        final long lastSize = FileUtils.sizeQuietly(last);
+                        final ProgressBar scanProgressBar = new ProgressBar("Scanning journal ", lastSize);
                         while ((next = reader.nextEntry()) != null) {
 //	                        LOG.debug(next.dump());
-                            progress.set(next.getLsn().getOffset());
                             if (next.getLogType() == LogEntryTypes.TXN_START) {
                                 // new transaction starts: add it to the transactions table
                                 txnsStarted.put(next.getTransactionId(), next);
@@ -135,7 +135,10 @@ public class RecoveryManager {
                                 lastCheckpoint = (Checkpoint) next;
                             }
                             lastLsn = next.getLsn();
+
+                            scanProgressBar.set(next.getLsn().getOffset());
                         }
+                        scanProgressBar.set(lastSize);  // 100%
                     } catch (final LogException e) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Caught exception while reading log", e);
@@ -250,10 +253,11 @@ public class RecoveryManager {
             if (LOG.isInfoEnabled())
                 {
                     LOG.info("First pass: redoing {} transactions...", txnCount);}
-            final ProgressBar progress = new ProgressBar("Redo ", FileUtils.sizeQuietly(last));
             Loggable next = null;
             int redoCnt = 0;
             try {
+                final long lastSize = FileUtils.sizeQuietly(last);
+                final ProgressBar redoProgressBar = new ProgressBar("Redo ", lastSize);
                 while ((next = reader.nextEntry()) != null) {
                     SanityCheck.ASSERT(next.getLogType() != LogEntryTypes.CHECKPOINT,
                             "Found a checkpoint during recovery run! This should not ever happen.");
@@ -271,10 +275,13 @@ public class RecoveryManager {
         //            LOG.debug("Redo: " + next.dump());
                     // redo the log entry
                     next.redo();
-                    progress.set(next.getLsn().getOffset());
-                    if (next.getLsn().equals(lastLsn))
-                        {break;} // last readable entry reached. Stop here.
+                    redoProgressBar.set(next.getLsn().getOffset());
+                    if (next.getLsn().equals(lastLsn)) {
+                        // last readable entry reached. Stop here.
+                        break;
+                    }
                 }
+                redoProgressBar.set(lastSize);  // 100% done
             } catch (final Exception e) {
                 LOG.error("Exception caught while redoing transactions. Aborting recovery to avoid possible damage. " +
                     "Before starting again, make sure to run a check via the emergency export tool.", e);
