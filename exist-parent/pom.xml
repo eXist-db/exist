@@ -211,7 +211,7 @@
             <dependency>
                 <groupId>com.evolvedbinary.j8fu</groupId>
                 <artifactId>j8fu</artifactId>
-                <version>1.23.0</version>
+                <version>1.24.0</version>
             </dependency>
             <dependency>
                 <groupId>com.evolvedbinary.multilock</groupId>
