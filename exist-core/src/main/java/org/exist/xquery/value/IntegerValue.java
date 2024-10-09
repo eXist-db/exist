@@ -291,7 +291,7 @@ public class IntegerValue extends NumericValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             case Type.NUMERIC:
-                return new IntegerValue(getExpression(), value, requiredType, false);
+                return new IntegerValue(getExpression(), value, type);
             case Type.LONG:
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
