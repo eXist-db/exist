@@ -790,6 +790,7 @@
                                 <exclude>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</exclude>
                                 <exclude>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/CastExpressionTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/Materializable.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
@@ -953,6 +954,7 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</include>
                                 <include>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</include>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
+                                <exclude>src/test/java/org/exist/xquery/CastExpressionTest.java</exclude>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/main/java/org/exist/xquery/Materializable.java</include>
                                 <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
