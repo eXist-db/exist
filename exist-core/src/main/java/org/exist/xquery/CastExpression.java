@@ -97,7 +97,7 @@ public class CastExpression extends AbstractExpression {
         final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
         if (seq.isEmpty()) {
             if (cardinality.atLeastOne()) {
-                throw new XPathException(this, "Type error: empty sequence is not allowed here");
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: empty sequence is not allowed here");
             } else {
                 result = Sequence.EMPTY_SEQUENCE;
             }
