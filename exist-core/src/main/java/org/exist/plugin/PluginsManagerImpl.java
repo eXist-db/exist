@@ -241,7 +241,7 @@ public class PluginsManagerImpl implements Configurable, BrokerPoolService, Plug
                 // NOTE: must set interrupted flag
                 Thread.currentThread().interrupt();
             }
-            LOG.error(e);
+            LOG.warn(e);
 		}
 	}
 

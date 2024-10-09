@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - run: mvn -V -B license:check
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - name: OWASP dependency check
@@ -40,26 +40,20 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         jvm: ['8']
-        exclude:
-          - os: macOS-latest
-            jvm: '8'
-        include:
-          - os: macOS-latest
-            jvm: '11'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ matrix.jvm }}
           cache: 'maven'
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
         with:
-          version: '1.0.1'
+          version: '1.0.2'
           file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
