@@ -52,7 +52,7 @@ public class SetStatusCode extends StrictResponseFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("code", Type.INTEGER, Cardinality.EXACTLY_ONE, "The status code")
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public SetStatusCode(final XQueryContext context) {
         super(context, signature);

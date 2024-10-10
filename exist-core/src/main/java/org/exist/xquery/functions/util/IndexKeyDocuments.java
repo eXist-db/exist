@@ -55,7 +55,7 @@ public class IndexKeyDocuments extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(IndexKeyDocuments.class);
 	protected static final FunctionParameterSequenceType nodeParam = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes whose content is indexed");
-	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The indexed value to search for");
+	protected static final FunctionParameterSequenceType valueParam = new FunctionParameterSequenceType("value", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The indexed value to search for");
 	protected static final FunctionParameterSequenceType indexParam = new FunctionParameterSequenceType("index", Type.STRING, Cardinality.EXACTLY_ONE, "The index in which the search is made");
 	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the number of documents for the indexed value");
 

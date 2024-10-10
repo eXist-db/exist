@@ -170,7 +170,7 @@ public class DoubleValue extends NumericValue {
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
         return switch (requiredType) {
-            case Type.ITEM, Type.NUMBER, Type.ATOMIC, Type.DOUBLE -> this;
+            case Type.ITEM, Type.NUMERIC, Type.ANY_ATOMIC_TYPE, Type.DOUBLE -> this;
             case Type.FLOAT -> new FloatValue(getExpression(), (float) value);
             case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
             case Type.STRING -> new StringValue(getExpression(), getStringValue());
@@ -306,7 +306,7 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public ComputableValue div(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
                 return NaN;

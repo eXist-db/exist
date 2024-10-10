@@ -123,7 +123,7 @@ class Convert {
                 return ofNode(nodeProxy.getNode());
             }
             final int itemType = item.getType();
-            if (Type.subTypeOf(itemType, Type.ATOMIC)) {
+            if (Type.subTypeOf(itemType, Type.ANY_ATOMIC_TYPE)) {
                 return ofAtomic((AtomicValue) item);
             } else if (Type.subTypeOf(itemType, Type.NODE)) {
                 return ofNode((Node) item);
@@ -136,7 +136,7 @@ class Convert {
             final int itemType = atomicValue.getType();
             if (Type.subTypeOf(itemType, Type.INTEGER)) {
                 return XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
-            } else if (Type.subTypeOf(itemType, Type.NUMBER)) {
+            } else if (Type.subTypeOf(itemType, Type.NUMERIC)) {
                 return XdmValue.makeValue(((NumericValue) atomicValue).getDouble());
             } else if (Type.subTypeOf(itemType, Type.BOOLEAN)) {
                 return XdmValue.makeValue(((BooleanValue) atomicValue).getValue());

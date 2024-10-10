@@ -80,7 +80,7 @@ public class Compare extends BasicFunction {
             FNS_DIFF,
             "Reports on the differences between two nodes sets to determine their equality." +
                     "Equality is determined in 3 stages, first by sequence length, then equivalent Node types, and finally by XMLUnit Diff for Document and Element nodes, or fn:deep-equals for all other node types.",
-            returns(Type.MAP, "Returns a map(xs:string, xs:anyAtomicType). When the node sets are equivalent the map is: map {'equivalent': fn:true() }. When the nodesets are not equivalent, the map is structured like: map {'equivalent': fn:false(), 'position': xs:integer, 'message': xs:string}."),
+            returns(Type.MAP_ITEM, "Returns a map(xs:string, xs:anyAtomicType). When the node sets are equivalent the map is: map {'equivalent': fn:true() }. When the nodesets are not equivalent, the map is structured like: map {'equivalent': fn:false(), 'position': xs:integer, 'message': xs:string}."),
             FS_PARAM_NODE_SET_1,
             FS_PARAM_NODE_SET_2
     );

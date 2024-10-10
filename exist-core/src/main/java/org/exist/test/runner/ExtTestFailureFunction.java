@@ -50,8 +50,8 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         super("ext-test-failure-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
-                        param("expected", Type.MAP, "expected result of the test"),
-                        param("actual", Type.MAP, "actual result of the test")
+                        param("expected", Type.MAP_ITEM, "expected result of the test"),
+                        param("actual", Type.MAP_ITEM, "actual result of the test")
                 ), context, parentName, notifier);
     }
 

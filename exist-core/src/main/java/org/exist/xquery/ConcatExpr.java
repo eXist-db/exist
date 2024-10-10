@@ -43,7 +43,7 @@ public class ConcatExpr extends PathExpr {
 	public void add(PathExpr pathExpr) {
 		Expression expr = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, pathExpr,
             new Error(Error.FUNC_PARAM_CARDINALITY));
-        if (!Type.subTypeOf(expr.returnsType(), Type.ATOMIC))
+        if (!Type.subTypeOf(expr.returnsType(), Type.ANY_ATOMIC_TYPE))
             {expr = new Atomize(context, expr);}
 		super.add(expr);
 	}
@@ -65,7 +65,7 @@ public class ConcatExpr extends PathExpr {
             final Sequence seq = step.eval(contextSequence, contextItem);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                if (Type.subTypeOf(item.getType(), Type.FUNCTION_REFERENCE))
+                if (Type.subTypeOf(item.getType(), Type.FUNCTION))
                     {throw new XPathException(this, ErrorCodes.FOTY0013, "Got a function item as operand in string concatenation");}
                 concat.append(item.getStringValue());
             }

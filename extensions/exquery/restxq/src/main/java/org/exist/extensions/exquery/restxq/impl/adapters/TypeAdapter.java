@@ -156,19 +156,19 @@ public class TypeAdapter {
             mappings.put(Type.DAY_TIME_DURATION,
                 org.exquery.xquery.Type.DAY_TIME_DURATION);
                 
-            mappings.put(Type.GYEAR,
+            mappings.put(Type.G_YEAR,
                 org.exquery.xquery.Type.G_YEAR);
                 
-            mappings.put(Type.GMONTH,
+            mappings.put(Type.G_MONTH,
                 org.exquery.xquery.Type.G_MONTH);
                 
-            mappings.put(Type.GDAY,
+            mappings.put(Type.G_DAY,
                 org.exquery.xquery.Type.G_DAY);
                 
-            mappings.put(Type.GYEARMONTH,
+            mappings.put(Type.G_YEAR_MONTH,
                 org.exquery.xquery.Type.G_YEAR_MONTH);
                 
-            mappings.put(Type.GMONTHDAY,
+            mappings.put(Type.G_MONTH_DAY,
                 org.exquery.xquery.Type.G_MONTH_DAY);
     
             mappings.put(Type.TOKEN,

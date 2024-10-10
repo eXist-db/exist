@@ -271,18 +271,21 @@ public class    AnyURIValue extends AtomicValue {
         return !uri.isEmpty();
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.Sequence#convertTo(int)
-     */
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.ITEM, Type.ATOMIC, Type.ANY_URI -> this;
-            case Type.STRING -> new StringValue(getExpression(), uri);
-            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                    "Type error: cannot cast xs:anyURI to "
-                            + Type.getTypeName(requiredType));
-        };
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.ITEM:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.ANY_URI:
+                return this;
+            case Type.STRING:
+                return new StringValue(getExpression(), uri);
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getExpression(), getStringValue());
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                        "Type error: cannot cast xs:anyURI to "
+                                + Type.getTypeName(requiredType));
+        }
     }
 
     @Override

@@ -130,7 +130,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             Expression arg = arguments.get(1);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-            if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+            if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
                 arg = new Atomize(context, arg);
             }
             steps.add(arg);
@@ -140,7 +140,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             Expression arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
-            if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+            if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
                 arg = new Atomize(context, arg);
             }
             steps.add(arg);

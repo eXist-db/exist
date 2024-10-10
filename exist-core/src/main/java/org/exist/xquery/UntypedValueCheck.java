@@ -55,7 +55,7 @@ public class UntypedValueCheck extends AbstractExpression {
 	public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression, Error error) {
 		super(context);
 		this.requiredType = requiredType;
-        if (expression instanceof Atomize && !Type.subTypeOf(requiredType, Type.ATOMIC)) {
+        if (expression instanceof Atomize && !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
             this.expression = ((Atomize)expression).getExpression();
             this.atomize = true;
         } else {
@@ -109,7 +109,7 @@ public class UntypedValueCheck extends AbstractExpression {
 	}
 
     private Item convert(Item item) throws XPathException {
-        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.hasMember(Type.NUMBER, requiredType) && Type.subTypeOfUnion(item.getType(), Type.NUMBER)) {
+        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.hasMember(Type.NUMERIC, requiredType) && Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
             try {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;

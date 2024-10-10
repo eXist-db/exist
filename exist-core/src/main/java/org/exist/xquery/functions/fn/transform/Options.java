@@ -305,13 +305,13 @@ class Options {
     private static final Option<BooleanValue> ENABLE_TRACE = new ItemOption<>(
             Type.BOOLEAN, "enable-trace", BooleanValue.TRUE, V2_0, V3_0);
     private static final Option<ArrayType> FUNCTION_PARAMS = new ItemOption<>(
-            Type.ARRAY,"function-params", V3_0);
+            Type.ARRAY_ITEM,"function-params", V3_0);
     private static final Option<Item> GLOBAL_CONTEXT_ITEM = new ItemOption<>(
             Type.ITEM, "global-context-item", V3_0);
     static final Option<QNameValue> INITIAL_FUNCTION = new ItemOption<>(
             Type.QNAME,"initial-function", V3_0);
     static final Option<Sequence> INITIAL_MATCH_SELECTION = new SequenceOption<>(
-            Type.ATOMIC,Type.NODE, "initial-match-selection", V3_0);
+            Type.ANY_ATOMIC_TYPE,Type.NODE, "initial-match-selection", V3_0);
     static final Option<QNameValue> INITIAL_MODE = new ItemOption<>(
             Type.QNAME,"initial-mode", V1_0, V2_0, V3_0);
     static final Option<QNameValue> INITIAL_TEMPLATE = new ItemOption<>(
@@ -327,15 +327,15 @@ class Options {
     private static final Option<StringValue> PACKAGE_VERSION = new ItemOption<>(
             Type.STRING,"package-version", new StringValue("*"), V3_0);
     private static final Option<FunctionReference> POST_PROCESS = new ItemOption<>(
-            Type.FUNCTION_REFERENCE,"post-process", V1_0, V2_0, V3_0);
+            Type.FUNCTION,"post-process", V1_0, V2_0, V3_0);
     private static final Option<MapType> REQUESTED_PROPERTIES = new ItemOption<>(
-            Type.MAP,"requested-properties", V1_0, V2_0, V3_0);
+            Type.MAP_ITEM,"requested-properties", V1_0, V2_0, V3_0);
     private static final Option<MapType> SERIALIZATION_PARAMS = new ItemOption<>(
-            Type.MAP,"serialization-params", V1_0, V2_0, V3_0);
+            Type.MAP_ITEM,"serialization-params", V1_0, V2_0, V3_0);
     static final Option<NodeValue> SOURCE_NODE = new ItemOption<>(
             Type.NODE,"source-node", V1_0, V2_0, V3_0);
     private static final Option<MapType> STATIC_PARAMS = new ItemOption<>(
-            Type.MAP,"static-params", V3_0);
+            Type.MAP_ITEM,"static-params", V3_0);
     private static final Option<StringValue> STYLESHEET_BASE_URI = new ItemOption<>(
             Type.STRING, "stylesheet-base-uri", V1_0, V2_0, V3_0);
     static final Option<StringValue> STYLESHEET_LOCATION = new ItemOption<>(
@@ -343,15 +343,15 @@ class Options {
     static final Option<NodeValue> STYLESHEET_NODE = new ItemOption<>(
             Type.NODE,"stylesheet-node", V1_0, V2_0, V3_0);
     private static final Option<MapType> STYLESHEET_PARAMS = new ItemOption<>(
-            Type.MAP,"stylesheet-params", V1_0, V2_0, V3_0);
+            Type.MAP_ITEM,"stylesheet-params", V1_0, V2_0, V3_0);
     static final Option<StringValue> STYLESHEET_TEXT = new ItemOption<>(
             Type.STRING,"stylesheet-text", V1_0, V2_0, V3_0);
     private static final Option<MapType> TEMPLATE_PARAMS = new ItemOption<>(
-            Type.MAP,"template-params", V3_0);
+            Type.MAP_ITEM,"template-params", V3_0);
     private static final Option<MapType> TUNNEL_PARAMS = new ItemOption<>(
-            Type.MAP,"tunnel-params", V3_0);
+            Type.MAP_ITEM,"tunnel-params", V3_0);
     private static final Option<MapType> VENDOR_OPTIONS = new ItemOption<>(
-            Type.MAP,"vendor-options", V1_0, V2_0, V3_0);
+            Type.MAP_ITEM,"vendor-options", V1_0, V2_0, V3_0);
     private static final Option<DecimalValue> XSLT_VERSION = new ItemOption<>(
             Type.DECIMAL,"xslt-version", V1_0, V2_0, V3_0);
 
@@ -444,7 +444,7 @@ class Options {
                 if (item0 != null) {
                     if (Type.subTypeOf(item0.getType(), itemSubtype)) {
                         return Optional.of((T) item0);
-                    } else if (itemSubtype == Type.STRING && Type.subTypeOf(item0.getType(), Type.ATOMIC)) {
+                    } else if (itemSubtype == Type.STRING && Type.subTypeOf(item0.getType(), Type.ANY_ATOMIC_TYPE)) {
                         return Optional.of((T)new StringValue(item0.getStringValue()));
                     } else {
                         throw new XPathException(

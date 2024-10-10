@@ -53,13 +53,13 @@ public class ContextItemExpression extends LocationStep {
 
         // function types in context item are returned unchanged
         if (contextItem != null &&
-                Type.subTypeOf(contextItem.getType(), Type.FUNCTION_REFERENCE)) {
+                Type.subTypeOf(contextItem.getType(), Type.FUNCTION)) {
             return contextItem.toSequence();
         }
 
         // function types in context sequence are returned unchanged
         if (contextSequence != null &&
-                Type.subTypeOf(contextSequence.getItemType(), Type.FUNCTION_REFERENCE)) {
+                Type.subTypeOf(contextSequence.getItemType(), Type.FUNCTION)) {
             return contextSequence;
         }
 

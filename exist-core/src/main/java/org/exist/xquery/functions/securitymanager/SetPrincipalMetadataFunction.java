@@ -55,7 +55,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
             new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
     public final static FunctionSignature FNS_SET_GROUP_METADATA = new FunctionSignature(
@@ -66,7 +66,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
             new FunctionParameterSequenceType("attribute", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The metadata attribute key."),
             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The metadata value,")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public SetPrincipalMetadataFunction(final XQueryContext context, final FunctionSignature signature) {

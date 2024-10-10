@@ -122,7 +122,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     private final static Logger LOG = LogManager.getLogger(NativeValueIndex.class);
 
     public static final String FILE_NAME = "values.dbx";
-    public static final short FILE_FORMAT_VERSION_ID = 14;
+    public static final short FILE_FORMAT_VERSION_ID = 15;
     public static final String FILE_KEY_IN_CONFIG = "db-connection.values";
 
     private static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
@@ -1421,7 +1421,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             data = new byte[len];
             data[SimpleValue.OFFSET_IDX_TYPE] = IndexType.GENERIC.val;
             ByteConversion.intToByte(collectionId, data, SimpleValue.OFFSET_COLLECTION_ID);
-            data[SimpleValue.OFFSET_VALUE] = (byte) type;
+            data[SimpleValue.OFFSET_VALUE] = (byte) type;  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
             pos = SimpleValue.OFFSET_IDX_TYPE;
         }
     }
@@ -1480,7 +1480,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             data[QNameValue.OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, QNameValue.OFFSET_NS_URI);
             ByteConversion.shortToByte(localNameId, data, QNameValue.OFFSET_LOCAL_NAME);
-            data[QNameValue.OFFSET_VALUE] = (byte) type;
+            data[QNameValue.OFFSET_VALUE] = (byte) type;  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
             pos = QNameValue.OFFSET_IDX_TYPE;
         }
     }

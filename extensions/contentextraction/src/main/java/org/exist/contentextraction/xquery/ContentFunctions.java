@@ -87,7 +87,7 @@ public class ContentFunctions extends BasicFunction {
             new FunctionParameterSequenceType("binary", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to extract from"),
             new FunctionParameterSequenceType("paths", Type.STRING, Cardinality.ZERO_OR_MORE,
             		"A sequence of (simple) node paths which should be passed to the callback function"),
-            new FunctionParameterSequenceType("callback", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, 
+            new FunctionParameterSequenceType("callback", Type.FUNCTION, Cardinality.EXACTLY_ONE,
             		"The callback function. Expected signature: " +
 					"callback($node as node(), $userData as item()*, $retValue as item()*)," +
 					"where $node is the currently processed node, $userData contains the data supplied in the " +
@@ -100,7 +100,7 @@ public class ContentFunctions extends BasicFunction {
             new FunctionParameterSequenceType("userData", Type.ITEM, Cardinality.ZERO_OR_MORE,
             		"Additional data which will be passed to the callback function.")
         },
-        new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE, "Returns empty sequence")
+        new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE, "Returns empty sequence")
     );
     
     public ContentFunctions(XQueryContext context, FunctionSignature signature) {

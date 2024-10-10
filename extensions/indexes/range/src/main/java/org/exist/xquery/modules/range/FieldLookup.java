@@ -44,7 +44,7 @@ public class FieldLookup extends Function implements Optimizable {
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
         new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
                 "The name of the field(s) to search"),
-        new FunctionParameterSequenceType("keys", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+        new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "The keys to look up for each field.")
     };
 
@@ -57,7 +57,7 @@ public class FieldLookup extends Function implements Optimizable {
                             "The name of the field(s) to search"),
                     new FunctionParameterSequenceType("operators", Type.STRING, Cardinality.ONE_OR_MORE,
                             "The operators to use as strings: eq, lt, gt, contains ..."),
-                    new FunctionParameterSequenceType("keys", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+                    new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                             "The keys to look up for each field.")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE,

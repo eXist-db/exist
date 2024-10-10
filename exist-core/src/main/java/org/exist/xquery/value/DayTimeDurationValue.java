@@ -172,35 +172,39 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.ITEM, Type.ATOMIC, Type.DAY_TIME_DURATION ->
-                    new DayTimeDurationValue(getExpression(), getCanonicalDuration());
-            case Type.STRING -> {
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.ITEM:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.DAY_TIME_DURATION:
+                return new DayTimeDurationValue(getExpression(), getCanonicalDuration());
+            case Type.STRING: {
                 final DayTimeDurationValue dtdv = new DayTimeDurationValue(getExpression(), getCanonicalDuration());
-                yield new StringValue(getExpression(), dtdv.getStringValue());
+                return new StringValue(getExpression(), dtdv.getStringValue());
             }
-            case Type.DURATION -> new DurationValue(getExpression(), TimeUtils.getInstance().newDuration(
-                    duration.getSign() >= 0, null, null,
-                    (BigInteger) duration.getField(DatatypeConstants.DAYS),
-                    (BigInteger) duration.getField(DatatypeConstants.HOURS),
-                    (BigInteger) duration.getField(DatatypeConstants.MINUTES),
-                    (BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
-            case Type.YEAR_MONTH_DURATION ->
-                    new YearMonthDurationValue(getExpression(), YearMonthDurationValue.CANONICAL_ZERO_DURATION);
+            case Type.DURATION:
+                return new DurationValue(getExpression(), TimeUtils.getInstance().newDuration(
+                        duration.getSign() >= 0, null, null,
+                        (BigInteger) duration.getField(DatatypeConstants.DAYS),
+                        (BigInteger) duration.getField(DatatypeConstants.HOURS),
+                        (BigInteger) duration.getField(DatatypeConstants.MINUTES),
+                        (BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
+            case Type.YEAR_MONTH_DURATION:
+                return new YearMonthDurationValue(getExpression(), YearMonthDurationValue.CANONICAL_ZERO_DURATION);
             //case Type.DOUBLE:
             //return new DoubleValue(monthsValueSigned().doubleValue());
             //return new DoubleValue(Double.NaN);
             //case Type.DECIMAL:
             //return new DecimalValue(monthsValueSigned().doubleValue());
-            case Type.UNTYPED_ATOMIC -> {
+            case Type.UNTYPED_ATOMIC: {
                 final DayTimeDurationValue dtdv = new DayTimeDurationValue(getExpression(), getCanonicalDuration());
-                yield new UntypedAtomicValue(getExpression(), dtdv.getStringValue());
+                return new UntypedAtomicValue(getExpression(), dtdv.getStringValue());
             }
-            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '" +
-                    Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
-                    Type.getTypeName(requiredType));
-        };
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '" +
+                        Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
+                        Type.getTypeName(requiredType));
+        }
     }
 
     protected DurationValue createSameKind(Duration dur) throws XPathException {

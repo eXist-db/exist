@@ -94,7 +94,7 @@ public class DocumentConstructor extends NodeConstructor {
                             Type.getTypeName(next.getType()) + " inside a document constructor");}
                     // if item is an atomic value, collect the string values of all
                     // following atomic values and seperate them by a space. 
-                    if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+                    if (Type.subTypeOf(next.getType(), Type.ANY_ATOMIC_TYPE)) {
                         if(buf == null)
                             {buf = new StringBuilder();}
                         else if (buf.length() > 0)

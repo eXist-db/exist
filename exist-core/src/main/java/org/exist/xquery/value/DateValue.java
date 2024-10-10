@@ -95,27 +95,37 @@ public class DateValue extends AbstractDateTimeValue {
         return Type.DATE;
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.DATE, Type.ATOMIC, Type.ITEM -> this;
-            case Type.DATE_TIME -> new DateTimeValue(getExpression(), calendar);
-            case Type.GYEAR -> new GYearValue(getExpression(), this.calendar);
-            case Type.GYEARMONTH -> new GYearMonthValue(getExpression(), calendar);
-            case Type.GMONTHDAY -> new GMonthDayValue(getExpression(), calendar);
-            case Type.GDAY -> new GDayValue(getExpression(), calendar);
-            case Type.GMONTH -> new GMonthValue(getExpression(), calendar);
-            case Type.UNTYPED_ATOMIC -> {
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.DATE:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.ITEM:
+                return this;
+            case Type.DATE_TIME:
+                return new DateTimeValue(getExpression(), calendar);
+            case Type.G_YEAR:
+                return new GYearValue(getExpression(), this.calendar);
+            case Type.G_YEAR_MONTH:
+                return new GYearMonthValue(getExpression(), calendar);
+            case Type.G_MONTH_DAY:
+                return new GMonthDayValue(getExpression(), calendar);
+            case Type.G_DAY:
+                return new GDayValue(getExpression(), calendar);
+            case Type.G_MONTH:
+                return new GMonthValue(getExpression(), calendar);
+            case Type.UNTYPED_ATOMIC: {
                 final DateValue dv = new DateValue(getExpression(), getStringValue());
-                yield new UntypedAtomicValue(getExpression(), dv.getStringValue());
+                return new UntypedAtomicValue(getExpression(), dv.getStringValue());
             }
-            case Type.STRING -> {
+            case Type.STRING: {
                 final DateValue dv = new DateValue(getExpression(), calendar);
-                yield new StringValue(getExpression(), dv.getStringValue());
+                return new StringValue(getExpression(), dv.getStringValue());
             }
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
-                    Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
-                    Type.getTypeName(requiredType));
-        };
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
+                        Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+                        Type.getTypeName(requiredType));
+        }
     }
 
     public ComputableValue minus(ComputableValue other) throws XPathException {

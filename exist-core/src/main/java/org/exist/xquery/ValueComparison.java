@@ -146,7 +146,7 @@ public class ValueComparison extends GeneralComparison {
 		final int ctype = Type.getCommonSuperType(ltype, rtype);
 		//Next, if possible, the two operands are converted to their least common type 
 		//by a combination of type promotion and subtype substitution.
-		if (ctype == Type.NUMBER) {
+		if (ctype == Type.NUMERIC) {
 			//Numeric type promotion:
 
 			//A value of type xs:decimal (or any type derived by restriction from xs:decimal) 

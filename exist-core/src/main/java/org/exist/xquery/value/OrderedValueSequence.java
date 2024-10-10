@@ -346,8 +346,8 @@ public class OrderedValueSequence extends AbstractSequence {
                 try {
                     final AtomicValue a = values[i];
                     final AtomicValue b = other.values[i];
-                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
+                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
                     if (aIsEmpty) {
                         if (bIsEmpty)
                         // both values are empty

@@ -49,14 +49,14 @@ import static org.exist.xquery.modules.compression.CompressionModule.functionSig
 public class UnTarFunction extends AbstractExtractFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_TAR_DATA = param("tar-data", Type.BASE64_BINARY, "The tar file data");
-    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_FILTER = param("entry-filter", Type.FUNCTION_REFERENCE,
+    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_FILTER = param("entry-filter", Type.FUNCTION,
             "A user defined function for filtering resources from the tar file. The function takes 2 parameters e.g. "
             + "user:untar-entry-filter($path as xs:string, $data-type as xs:string) as xs:boolean. "
             + "$data-type may be 'resource' or 'folder'. If the return type is true() it indicates the entry "
             + "should be processed and passed to the entry-data function, else the resource is skipped. "
             + "If you wish to extract all resources you can use the provided compression:no-filter#2 function."
     );
-    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_FILTER_WITH_PARAMS = param("entry-filter", Type.FUNCTION_REFERENCE,
+    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_FILTER_WITH_PARAMS = param("entry-filter", Type.FUNCTION,
             "A user defined function for filtering resources from the tar file. The function takes 3 parameters e.g. "
             + "user:untar-entry-filter($path as xs:string, $data-type as xs:string, $param as item()*) as xs:boolean. "
             + "$data-type may be 'resource' or 'folder'. $param is a sequence with any additional parameters, "
@@ -65,7 +65,7 @@ public class UnTarFunction extends AbstractExtractFunction {
             + "If you wish to extract all resources you can use the provided compression:no-filter#3 function."
     );
     private static final FunctionParameterSequenceType FS_PARAM_ENTRY_FILTER_PARAM = optManyParam("entry-filter-param", Type.ANY_TYPE, "A sequence with an additional parameters for filtering function.");
-    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_DATA = param("entry-data", Type.FUNCTION_REFERENCE,
+    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_DATA = param("entry-data", Type.FUNCTION,
             "A user defined function for storing an extracted resource from the tar file. The function takes 3 parameters e.g. "
             + "user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?). "
             + "Or a user defined function which returns a db path for storing an extracted resource from the tar file. "
@@ -73,7 +73,7 @@ public class UnTarFunction extends AbstractExtractFunction {
             + "$param as item()*) as xs:anyURI. $data-type may be 'resource' or 'folder'. "
             + "Functions for storing the entries to a folder on the filesystem or a collection in the database "
             + "provided by compression:fs-store-entry3($dest) and compression:db-store-entry3($dest).");
-    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_DATA_WITH_PARAMS = param("entry-data", Type.FUNCTION_REFERENCE,
+    private static final FunctionParameterSequenceType FS_PARAM_ENTRY_DATA_WITH_PARAMS = param("entry-data", Type.FUNCTION,
             "A user defined function for storing an extracted resource from the tar file. The function takes 4 parameters e.g. "
             + "user:untar-entry-data($path as xs:string, $data-type as xs:string, $data as item()?, $param as item()*). "
             + "Or a user defined function which returns a db path for storing an extracted resource from the tar file. The function takes 3 parameters e.g. "

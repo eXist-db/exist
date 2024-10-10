@@ -86,7 +86,7 @@ public abstract class NumericValue extends ComputableValue {
             return false;
         }
 
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             if (isNaN() || ((NumericValue) other).isNaN()) {
                 // left or right is NaN
 
@@ -133,7 +133,7 @@ public abstract class NumericValue extends ComputableValue {
             return Constants.INFERIOR;
         }
 
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             if (isNaN()) {
                 //NaN does not equal itself.
                 if (((NumericValue) other).isNaN()) {

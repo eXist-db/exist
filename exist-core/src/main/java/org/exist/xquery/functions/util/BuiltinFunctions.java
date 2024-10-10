@@ -71,13 +71,13 @@ public class BuiltinFunctions extends BasicFunction {
 					new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 					"Returns a sequence of function items for each function in the current module.",
 					null,
-					new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
+					new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.ZERO_OR_MORE, "sequence of function references"),
 					"Use inspect:module-functions#0 instead."),
 			new FunctionSignature(
 					new QName("list-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 					"Returns a sequence of function items for each function in the specified module.",
 					new SequenceType[] { new FunctionParameterSequenceType("namespace-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The namespace URI of the function module") },
-					new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_MORE, "sequence of function references"),
+					new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.ZERO_OR_MORE, "sequence of function references"),
 					"Use inspect:module-functions-by-uri#1 instead.")
 	};
 

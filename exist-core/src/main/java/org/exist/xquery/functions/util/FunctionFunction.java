@@ -40,7 +40,7 @@ public class FunctionFunction extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(FunctionFunction.class);
 	protected static final FunctionParameterSequenceType functionName = new FunctionParameterSequenceType("name", Type.QNAME, Cardinality.EXACTLY_ONE, "The name of the function");
 	protected static final FunctionParameterSequenceType arity = new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "The arity of the function");
-	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "the reference to the XQuery function");
+	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE, "the reference to the XQuery function");
 
     public final static FunctionSignature signature =
         new FunctionSignature(

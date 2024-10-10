@@ -84,7 +84,7 @@ public class CastExpression extends AbstractExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
 		//Should be handled by the parser
-        if (requiredType == Type.ATOMIC || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
+        if (requiredType == Type.ANY_ATOMIC_TYPE || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
 			throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " +
 					Type.getTypeName(requiredType));
         }
@@ -103,7 +103,7 @@ public class CastExpression extends AbstractExpression {
 		} else {        
             final Item item = seq.itemAt(0);
 
-            if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ATOMIC))
+            if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE))
 				{throw new XPathException(this, 
 				        ErrorCodes.XPTY0004, 
 				        "cardinality error: sequence with more than one item is not allowed here");}
@@ -113,7 +113,7 @@ public class CastExpression extends AbstractExpression {
                     if (item.getType() == Type.QNAME)
                         {result = item.toSequence();}
                     
-                    else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
+                    else if(item.getType() == Type.ANY_ATOMIC_TYPE || Type.subTypeOf(item.getType(), Type.STRING)) {
                         result = new QNameValue(this, context, item.getStringValue());
                     
                     } else {
@@ -190,7 +190,7 @@ public class CastExpression extends AbstractExpression {
 	    try {
             final QName qname = QName.parse(context, typeName);
             final FunctionSignature signature = new FunctionSignature(qname);
-            final SequenceType argType = new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE);
+            final SequenceType argType = new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE);
             signature.setArgumentTypes(new SequenceType[]{argType});
             signature.setReturnType(new SequenceType(CastExpression.this.requiredType, CastExpression.this.cardinality));
             return new FunctionWrapper(this, signature);

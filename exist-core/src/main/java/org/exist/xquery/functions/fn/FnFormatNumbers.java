@@ -108,7 +108,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
  */
 public class FnFormatNumbers extends BasicFunction {
 
-    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optParam("value", Type.NUMBER, "The number to format");
+    private static final FunctionParameterSequenceType FS_PARAM_VALUE = optParam("value", Type.NUMERIC, "The number to format");
     private static final FunctionParameterSequenceType FS_PARAM_PICTURE = param("picture", Type.STRING, "The picture string to use for formatting. To understand the picture string syntax, see: https://www.w3.org/TR/xpath-functions-31/#func-format-number");
 
     private static final String FS_FORMAT_NUMBER_NAME = "format-number";
@@ -157,7 +157,7 @@ public class FnFormatNumbers extends BasicFunction {
         final NumericValue number;
         if (args[0].isEmpty()) {
             number = new DoubleValue(this, Double.NaN);
-        } else if (context.isBackwardsCompatible() && !Type.subTypeOfUnion(args[0].getItemType(), Type.NUMBER)) {
+        } else if (context.isBackwardsCompatible() && !Type.subTypeOfUnion(args[0].getItemType(), Type.NUMERIC)) {
             number = new DoubleValue(this, Double.NaN);
         } else {
             number = (NumericValue) args[0].itemAt(0);

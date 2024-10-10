@@ -48,7 +48,7 @@ public class FunXmlToJson extends BasicFunction {
 
     private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
     private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
-    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = param("options", Type.MAP, "The options map");
+    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = param("options", Type.MAP_ITEM, "The options map");
     static final FunctionSignature[] FS_XML_TO_JSON = functionSignatures(
             new QName(FS_XML_TO_JSON_NAME, Function.BUILTIN_FUNCTION_NS),
             "Converts an XML tree (in w3c 'XML Representation of JSON' format) into a string conforming to the JSON grammar. Basic string (un)escaping.",

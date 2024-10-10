@@ -53,7 +53,7 @@ public class Facets extends BasicFunction {
                         new FunctionParameterSequenceType("dimension", Type.STRING, Cardinality.EXACTLY_ONE,
                                 "The facet dimension. This should correspond to a dimension defined in the index configuration")
                 },
-                new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
+                new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
                         "A map having the facet label as key and the facet count as value")
         ),
         new FunctionSignature(
@@ -70,7 +70,7 @@ public class Facets extends BasicFunction {
                             "The number of facet labels to be returned. Facets with more occurrences in the result will be returned " +
                                     "first.")
             },
-            new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
                     "A map having the facet label as key and the facet count as value")
         ),
         new FunctionSignature(
@@ -90,7 +90,7 @@ public class Facets extends BasicFunction {
                             "For hierarchical facets, specify a sequence of paths leading to the position in the hierarchy you" +
                                     "would like to get facet counts for.")
             },
-                new FunctionReturnSequenceType(Type.MAP, Cardinality.EXACTLY_ONE,
+                new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
                         "A map having the facet label as key and the facet count as value")
         )
     };

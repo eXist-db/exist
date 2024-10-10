@@ -45,7 +45,7 @@ public class ValueIndexFactory {
     private static final int LENGTH_VALUE_TYPE = 1; // sizeof byte
 
     public final static Indexable deserialize(final byte[] data, final int start, final int len) throws EXistException {
-        final int type = data[start];
+        final int type = data[start];  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
         // TODO : improve deserialization (use static methods in the org.exist.xquery.Value package
         /* xs:string */
         if (Type.subTypeOf(type, Type.STRING)) {
@@ -134,7 +134,7 @@ public class ValueIndexFactory {
                     ((StringValue) value).getStringValue() :
                     ((StringValue) value).getStringValue().toLowerCase();
             final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
-            data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
+            data[offset] = (byte) value.getType();  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
             UTF8.encode(val, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
             return data;
         }
@@ -199,7 +199,7 @@ public class ValueIndexFactory {
             final BigDecimal dec = ((DecimalValue) value).getValue();
             final String val = dec.toString();
             final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + UTF8.encoded(val)];
-            data[offset] = (byte) value.getType(); // TODO: cast to byte is not safe
+            data[offset] = (byte) value.getType();  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
             UTF8.encode(val, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
             return data;
         }

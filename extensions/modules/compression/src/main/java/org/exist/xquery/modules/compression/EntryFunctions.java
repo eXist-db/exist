@@ -90,7 +90,7 @@ public class EntryFunctions extends BasicFunction {
     static final FunctionSignature FS_FS_STORE_ENTRY3 = functionSignature(
             FS_FS_STORE_ENTRY_NAME3,
             "Stores an entry to the filesystem. This method is only available to the DBA role. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
-            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#3"),
+            returns(Type.FUNCTION, "A function suitable for passing as the $entry-data#3"),
             FS_PARAM_FS_DEST_PATH
     );
 
@@ -98,7 +98,7 @@ public class EntryFunctions extends BasicFunction {
     static final FunctionSignature FS_FS_STORE_ENTRY4 = functionSignature(
             FS_FS_STORE_ENTRY_NAME4,
             "Stores an entry to the filesystem. This method is only available to the DBA role. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
-            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#4"),
+            returns(Type.FUNCTION, "A function suitable for passing as the $entry-data#4"),
             FS_PARAM_FS_DEST_PATH
     );
 
@@ -106,7 +106,7 @@ public class EntryFunctions extends BasicFunction {
     static final FunctionSignature FS_DB_STORE_ENTRY3 = functionSignature(
             FS_DB_STORE_ENTRY_NAME3,
             "Stores an entry to the database. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
-            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#3"),
+            returns(Type.FUNCTION, "A function suitable for passing as the $entry-data#3"),
             FS_PARAM_DB_DEST_COLLECTION
     );
 
@@ -114,7 +114,7 @@ public class EntryFunctions extends BasicFunction {
     static final FunctionSignature FS_DB_STORE_ENTRY4 = functionSignature(
             FS_DB_STORE_ENTRY_NAME4,
             "Stores an entry to the database. Attempts to guard against exit attacks; If an exit attack is detected then the error `compression:archive-exit-attack is raised`.",
-            returns(Type.FUNCTION_REFERENCE, "A function suitable for passing as the $entry-data#4"),
+            returns(Type.FUNCTION, "A function suitable for passing as the $entry-data#4"),
             FS_PARAM_DB_DEST_COLLECTION
     );
 

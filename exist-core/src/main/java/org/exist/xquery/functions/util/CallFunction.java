@@ -50,7 +50,7 @@ public class CallFunction extends Function {
             "to be called is passed as the first argument. All remaining arguments are " +
             "forwarded to the called function.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to ba called"),
+                new FunctionParameterSequenceType("function-reference", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to ba called"),
                 new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_MORE, "The parameters to be passed into the function")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the results from the function called"),
@@ -71,7 +71,7 @@ public class CallFunction extends Function {
         if(arg0.getCardinality() != Cardinality.EXACTLY_ONE)
             {throw new XPathException(this, "Expected exactly one item for first argument");}
         final Item item0 = arg0.itemAt(0);
-        if(item0.getType() != Type.FUNCTION_REFERENCE)
+        if(item0.getType() != Type.FUNCTION)
             {throw new XPathException(this, "Type error: expected function, got " + Type.getTypeName(item0.getType()));}
         try (final FunctionReference ref = (FunctionReference)item0) {
 

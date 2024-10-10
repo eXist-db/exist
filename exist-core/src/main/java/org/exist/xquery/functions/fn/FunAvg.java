@@ -61,9 +61,9 @@ public class FunAvg extends Function {
             "Returns the average of the values in the input sequence $values, " +
             "that is, the sum of the values divided by the number of values.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("values", Type.ATOMIC,
+                new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The values")},
-            new FunctionReturnSequenceType(Type.ATOMIC, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE,
                 "The average of the values in the input sequence"));
 
     public FunAvg(XQueryContext context) {
@@ -113,7 +113,7 @@ public class FunAvg extends Function {
                         Type.getTypeName(value.getType()) + "(" + value +
                         ") can not be an operand in a sum", value);
                 }
-                if (Type.subTypeOfUnion(value.getType(), Type.NUMBER)) {
+                if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
                     if (((NumericValue)value).isInfinite())
                         {gotInfinity = true;}
                     if (((NumericValue)value).isNaN()) {
@@ -132,7 +132,7 @@ public class FunAvg extends Function {
             result = sum.div(new IntegerValue(this, inner.getItemCount()));
         }
         if (!gotInfinity) {
-            if (Type.subTypeOfUnion(result.getItemType(), Type.NUMBER) &&
+            if (Type.subTypeOfUnion(result.getItemType(), Type.NUMERIC) &&
                 ((NumericValue)result).isInfinite()) {
                 //Throw an overflow exception here since we get an infinity 
                 //whereas is hasn't been provided by the sequence
