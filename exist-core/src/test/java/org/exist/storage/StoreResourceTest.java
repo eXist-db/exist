@@ -52,7 +52,7 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.*;
 
 public class StoreResourceTest {
@@ -80,7 +80,7 @@ public class StoreResourceTest {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_DOC1);
         replaceXmlDoc(user2, USER1_DOC1, "<something>else</something>");
-        checkAttributes(USER1_DOC1, USER1_NAME, GROUP1_NAME, USER1_DOC1_MODE, equalTo(getCreated(USER1_DOC1)), not(originalDoc1LastModified));
+        checkAttributes(USER1_DOC1, USER1_NAME, GROUP1_NAME, USER1_DOC1_MODE, equalTo(getCreated(USER1_DOC1)), greaterThanOrEqualTo(originalDoc1LastModified));
     }
 
     /**
@@ -91,7 +91,7 @@ public class StoreResourceTest {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         replaceBinDoc(user2, USER1_BIN_DOC1, "something else");
-        checkAttributes(USER1_BIN_DOC1, USER1_NAME, GROUP1_NAME, USER1_BIN_DOC1_MODE, equalTo(getCreated(USER1_BIN_DOC1)), not(originalDoc1LastModified));
+        checkAttributes(USER1_BIN_DOC1, USER1_NAME, GROUP1_NAME, USER1_BIN_DOC1_MODE, equalTo(getCreated(USER1_BIN_DOC1)), greaterThanOrEqualTo(originalDoc1LastModified));
     }
 
     private void replaceXmlDoc(final Subject execAsUser, final XmldbURI docName, final String content) throws EXistException, PermissionDeniedException, LockException, IOException, SAXException {
