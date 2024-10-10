@@ -46,7 +46,7 @@
   </scm>
 
     <properties>
-        <geotools.version>28.5</geotools.version>
+        <geotools.version>32.0</geotools.version>
     </properties>
     
     <dependencies>
@@ -62,23 +62,13 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-main</artifactId>
+            <artifactId>gt-api</artifactId>
             <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-opengis</artifactId>
+            <artifactId>gt-main</artifactId>
             <version>${geotools.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>jdom</groupId>
-                    <artifactId>jdom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.jdom</groupId>
