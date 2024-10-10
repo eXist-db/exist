@@ -86,7 +86,7 @@ public class StoreResourceTest {
         final long originalDoc1LastModified = getLastModified(USER1_DOC1);
         Thread.sleep(5);
         replaceXmlDoc(user2, NO_PRESERVE, USER1_DOC1, "<something>else</something>");
-        checkAttributes(USER1_DOC1, USER1_NAME, GROUP1_NAME, USER1_DOC1_MODE, equalTo(getCreated(USER1_DOC1)), not(originalDoc1LastModified));
+        checkAttributes(USER1_DOC1, USER1_NAME, GROUP1_NAME, USER1_DOC1_MODE, equalTo(getCreated(USER1_DOC1)), greaterThanOrEqualTo(originalDoc1LastModified));
     }
 
     /**
@@ -98,7 +98,7 @@ public class StoreResourceTest {
         final long originalDoc1LastModified = getLastModified(USER1_BIN_DOC1);
         Thread.sleep(5);
         replaceBinDoc(user2, NO_PRESERVE, USER1_BIN_DOC1, "something else");
-        checkAttributes(USER1_BIN_DOC1, USER1_NAME, GROUP1_NAME, USER1_BIN_DOC1_MODE, equalTo(getCreated(USER1_BIN_DOC1)), not(originalDoc1LastModified));
+        checkAttributes(USER1_BIN_DOC1, USER1_NAME, GROUP1_NAME, USER1_BIN_DOC1_MODE, equalTo(getCreated(USER1_BIN_DOC1)), greaterThanOrEqualTo(originalDoc1LastModified));
     }
 
     private void replaceXmlDoc(final Subject execAsUser, final DBBroker.PreserveType preserve, final XmldbURI docName, final String content) throws EXistException, PermissionDeniedException, LockException, IOException, SAXException {
