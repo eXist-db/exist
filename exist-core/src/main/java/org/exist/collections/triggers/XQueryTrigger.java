@@ -407,6 +407,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			compiledQuery = getScript(broker, transaction);
 			if (compiledQuery == null) {
 				// NOTE: can occur if there is no such XQueryTrigger library module available in the database
+				TriggerStatePerThread.clearIfFinished(phase);
 				return;
 			}
 		} catch (final TriggerException e) {
@@ -447,6 +448,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 					if (LOG.isDebugEnabled()) {
 						LOG.debug("No such function '" + functionName + "' in XQueryTrigger: " + compiledQuery.getSource());
 					}
+					TriggerStatePerThread.clearIfFinished(phase);
 					return;
 				}
 			}
