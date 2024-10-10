@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - run: mvn -V -B license:check
@@ -23,9 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - run: mvn -V -B install dependency-check:check -DskipTests
@@ -40,17 +40,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ env.DEV_JDK }}
           cache: 'maven'
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
         with:
-          version: '1.0-m7'
-          file-version-suffix: '-m39'
+          version: '1.0.2'
+          file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
         timeout-minutes: 10
@@ -72,7 +72,7 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B jacoco:report coveralls:report
       - name: Archive build logs
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build-logs
           retention-days: 5
