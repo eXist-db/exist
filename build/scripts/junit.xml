@@ -40,6 +40,9 @@
         depends="test-prepare, test-local, test-extensions, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup, test-ant"
             description="Run jUnit tests"/>
 
+    <!-- Hide the progress bar of RecoveryManager.java when running the tests -->
+    <property name="exist.recovery.progressbar.hide" value="true"/>
+
     <!-- jetty.port and jetty.port.ssl with defaults. /ljo -->
     <property name="jetty.port" value="8080" />
     <property name="jetty.port.ssl" value="8443" />
@@ -157,6 +160,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-local_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -261,6 +265,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-jetty_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -299,6 +304,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-concurrent_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -328,6 +334,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-recovery_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -388,6 +395,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-remote_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.standalone /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port.standalone}" />
@@ -424,6 +432,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/test-ant_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- local database, so should not be needed. /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -453,6 +462,7 @@
             <jvmarg line="${gc.log.file.prefix}${junit.reports.dat}/extra-tests_gc.log" />
 
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -522,6 +532,7 @@
         </copy>
         <java classname="org.exist.xquery.xqts.XQTS_To_junit">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="exist.jmxagent" value="" />
             <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -551,6 +562,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
             <!-- fixme! - jetty.port.jetty /ljo -->
             <sysproperty key="jetty.port" value="${jetty.port}" />
@@ -591,6 +603,7 @@
         </delete>
         <java classname="org.exist.xquery.xqts.QT3TS_To_junit">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="exist.jmxagent" value="" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.aspectj"/>
@@ -608,6 +621,7 @@
         <echo message="--------------"/>
         <junit haltonfailure="${junit.haltonfailure}" haltonerror="${junit.haltonerror}" printsummary="on" showoutput="${junit.output}" fork="yes" maxmemory="${junit.forked.VM.maxmemory.external}">
             <sysproperty key="exist.home" value="${basedir}" />
+            <sysproperty key="exist.recovery.progressbar.hide" value="${exist.recovery.progressbar.hide}"/>
             <sysproperty key="java.util.logging.manager" value="org.apache.logging.log4j.jul.LogManager"/>
 
             <classpath refid="classpath.core"/>

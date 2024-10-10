@@ -10,14 +10,14 @@ jobs:
         jdk: ['8']
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up JDK ${{ matrix.jdk }}
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: liberica
           java-version: ${{ matrix.jdk }}
       - name: Cache local Ivy repository
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.ivy/cache
           key: ${{ runner.os }}-ivy-${{ hashFiles('**/ivy.xml') }}
@@ -39,7 +39,7 @@ jobs:
         run: ./build.sh test -Dtest.haltonerror=true -Dtest.haltonfailure=true
       - name: Archive build logs
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-jdk${{ matrix.jdk }}-build-logs
           retention-days: 5
