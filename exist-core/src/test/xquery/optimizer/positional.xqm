@@ -106,7 +106,7 @@ function ot:simple-following() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -123,7 +123,7 @@ function ot:simple-following-node() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following-node() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -132,7 +132,7 @@ function ot:optimize-simple-following-node() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following-in-for() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     for $i in 1 to 3
@@ -150,7 +150,7 @@ function ot:simple-following-text() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following-text() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -167,7 +167,7 @@ function ot:simple-following-nested() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following-nested() {
     let $w := doc($ot:DOC_NESTED)/test/*[1]/w[@xml:id='20']
     return
@@ -176,7 +176,7 @@ function ot:optimize-simple-following-nested() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:optimize-simple-preceding() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -185,7 +185,7 @@ function ot:optimize-simple-preceding() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:optimize-simple-preceding-sibling() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -194,7 +194,7 @@ function ot:optimize-simple-preceding-sibling() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-simple-following-sibling() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -203,7 +203,7 @@ function ot:optimize-simple-following-sibling() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-following-multiple-filters() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -212,7 +212,7 @@ function ot:optimize-following-multiple-filters() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-following-filter-with-operator() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     for $i in 1 to 5
@@ -222,7 +222,7 @@ function ot:optimize-following-filter-with-operator() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-following-filter-with-operator2() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     for $i in 1 to 5
@@ -241,7 +241,7 @@ function ot:optimize-following-filter-with-at() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:no-optimize-following-filter-with-function() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     let $i := 1
@@ -252,7 +252,7 @@ function ot:no-optimize-following-filter-with-function() {
 
 declare
     %test:stats
-    %test:assertXPath("$result//stats:optimization[@type = 'PositionalPredicate']")
+    %test:assertXPath("$result//stats:optimization[@type eq 'POSITIONAL_PREDICATE']")
 function ot:optimize-following-filter-with-function() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -261,7 +261,7 @@ function ot:optimize-following-filter-with-function() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:optimize-following-filter-position() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -270,7 +270,7 @@ function ot:optimize-following-filter-position() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:optimize-following-filter-last() {
     let $w := doc($ot:DOC)//w[@xml:id='25000']
     return
@@ -279,7 +279,7 @@ function ot:optimize-following-filter-last() {
 
 declare
     %test:stats
-    %test:assertXPath("not($result//stats:optimization[@type = 'PositionalPredicate'])")
+    %test:assertXPath("not($result//stats:optimization[@type eq 'POSITIONAL_PREDICATE'])")
 function ot:optimize-following-nested-filter() {
     doc($ot:DOC)//w[@xml:id='25000'][following::*[1] = "25001"]
 };

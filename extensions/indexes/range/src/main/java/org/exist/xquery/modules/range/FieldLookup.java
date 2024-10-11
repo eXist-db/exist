@@ -229,7 +229,7 @@ public class FieldLookup extends Function implements Optimizable {
         }
         LOG.info("preselect for {} on {}returned {} and took {}", Arrays.toString(keys), contextSequence.getItemCount(), preselectResult.getItemCount(), System.currentTimeMillis() - start);
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
         //preselectResult.setSelfAsContext(getContextId());
         return preselectResult;
@@ -321,7 +321,7 @@ public class FieldLookup extends Function implements Optimizable {
             }
 
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
