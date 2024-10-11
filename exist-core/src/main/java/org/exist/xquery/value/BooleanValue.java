@@ -95,7 +95,7 @@ public class BooleanValue extends AtomicValue {
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
             boolean otherVal = ((BooleanValue) other).getValue();
             return switch (operator) {

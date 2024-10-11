@@ -73,13 +73,13 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public Sequence preEval(Sequence seq) throws XPathException {
+    public Sequence preEval(final Sequence seq) throws XPathException {
         stack.push(new GroupByData(new DeepEqualKeysHashStrategy(groupSpecs)));
         return super.preEval(seq);
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         final GroupByData data = stack.peek();
 
         // Evaluate group spec to create grouping key sequence
@@ -186,7 +186,7 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
 
