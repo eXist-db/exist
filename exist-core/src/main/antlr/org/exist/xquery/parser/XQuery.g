@@ -86,7 +86,7 @@ options {
 
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
-		this.lexer= lexer;
+		this.lexer = lexer;
 		setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
 
@@ -95,8 +95,8 @@ options {
 	}
 
 	public String getErrorMessage() {
-		StringBuilder buf= new StringBuilder();
-		for (Iterator i= exceptions.iterator(); i.hasNext();) {
+		StringBuilder buf = new StringBuilder();
+		for (Iterator i = exceptions.iterator(); i.hasNext();) {
 			buf.append(((Exception) i.next()).toString());
 			buf.append('\n');
 		}
@@ -104,6 +104,9 @@ options {
 	}
 
 	public Exception getLastException() {
+		if (!foundError) {
+			return null;
+		}
 		return (Exception) exceptions.get(exceptions.size() - 1);
 	}
 
@@ -112,7 +115,7 @@ options {
 	}
 
 	protected void handleException(Exception e) {
-		foundError= true;
+		foundError = true;
 		exceptions.add(e);
 	}
 }
@@ -184,6 +187,11 @@ imaginaryTokenDefinitions
 	PRAGMA
 	GTEQ
 	SEQUENCE
+	TUMBLING_WINDOW
+	CURRENT_ITEM
+	PREVIOUS_ITEM
+	NEXT_ITEM
+	WINDOW_VARS
 	;
 
 // === XPointer ===
@@ -694,7 +702,7 @@ expr throws XPathException
 
 exprSingle throws XPathException
 :
-	( ( "for" | "let" ) DOLLAR ) => flworExpr
+	( ( "for" | "let" ) ("tumbling" | "sliding" | DOLLAR ) ) => flworExpr
 	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr
@@ -801,7 +809,9 @@ flworExpr throws XPathException
 
 initialClause throws XPathException
 :
-    ( forClause | letClause )
+    ( ( "for" DOLLAR ) => forClause
+    | ( "for" ( "tumbling" | "sliding" ) ) => windowClause
+    | letClause )
     ;
 
 intermediateClause throws XPathException
@@ -831,6 +841,11 @@ letClause throws XPathException
 	"let"^ letVarBinding ( COMMA! letVarBinding )*
 	;
 
+windowClause throws XPathException
+:
+	"for"! ("tumbling"|"sliding") "window"^ inVarBinding windowStartCondition ( windowEndCondition )?
+	;
+
 inVarBinding throws XPathException
 { String varName; }
 :
@@ -854,6 +869,37 @@ allowingEmpty
 :
 	"allowing"! "empty"
 	;
+
+windowStartCondition throws XPathException
+:
+    "start"^ windowVars "when" exprSingle
+;
+
+windowEndCondition throws XPathException
+:
+    ( "only" )? "end"^ windowVars "when" exprSingle
+;
+
+windowVars throws XPathException
+{ String currentItemName = null, positionalVarName = null, previousItemName = null, nextItemName = null; }
+:
+    ( DOLLAR! currentItemName=eqName! )?
+    ( "at"! DOLLAR! positionalVarName=eqName! )?
+    ( "previous"! DOLLAR! previousItemName=eqName! )?
+    ( "next"! DOLLAR! nextItemName=eqName! )?
+    {
+        windowVars_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(WINDOW_VARS);
+        if (currentItemName != null)
+            windowVars_AST.addChild(astFactory.create(CURRENT_ITEM,currentItemName));
+        if (positionalVarName != null)
+            windowVars_AST.addChild(astFactory.create(POSITIONAL_VAR,positionalVarName));
+        if (previousItemName != null)
+            windowVars_AST.addChild(astFactory.create(PREVIOUS_ITEM,previousItemName));
+        if (nextItemName != null)
+            windowVars_AST.addChild(astFactory.create(NEXT_ITEM,nextItemName));
+        currentAST.root = (org.exist.xquery.parser.XQueryAST) windowVars_AST;
+    }
+;
 
 letVarBinding throws XPathException
 { String varName; }
@@ -887,7 +933,6 @@ orderModifier
 groupByClause throws XPathException
 :
 	"group"! "by"! groupingSpecList
-    // "group"! toGroupVarRef "as"! groupVarBinding "by"! groupSpecList
     { #groupByClause= #([GROUP_BY, "group by"], #groupByClause); }
     ;
 
@@ -899,7 +944,7 @@ groupingSpecList throws XPathException
 groupingSpec throws XPathException
 { String groupKeyVarName; }
 :
-	DOLLAR! groupKeyVarName=varName! ( COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
+	DOLLAR! groupKeyVarName=varName! ( ( typeDeclaration )? COLON! EQ! exprSingle )? ( "collation" STRING_LITERAL )?
     { #groupingSpec = #(#[VARIABLE_BINDING, groupKeyVarName], #groupingSpec); }
     ;
 
@@ -2241,7 +2286,26 @@ reservedKeywords returns [String name]
 	"empty-sequence" { name = "empty-sequence"; }
 	|
 	"schema-element" { name = "schema-element"; }
+	|
+	"tumbling" { name = "tumbling"; }
+	|
+	"sliding" { name = "sliding"; }	
+	|
+	"window" { name = "window"; }
+	|
+	"start" { name = "start"; }
+	|
+	"end" { name = "end"; }
+	|
+	"only" { name = "only"; }
+	|
+	"previous" { name = "previous"; }
+	|
+	"next" { name = "next"; }
+	|
+	"when" { name = "when"; }
 	;
+
 
 /**
  * The XQuery/XPath lexical analyzer.

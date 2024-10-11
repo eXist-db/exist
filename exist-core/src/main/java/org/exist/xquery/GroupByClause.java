@@ -22,16 +22,21 @@
 package org.exist.xquery;
 
 import com.ibm.icu.text.Collator;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.Hash.Strategy;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMap;
 import org.exist.dom.QName;
+import org.exist.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Implements a "group by" clause inside a FLWOR.
  *
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  * @author wolf
  */
 public class GroupByClause extends AbstractFLWORClause {
@@ -46,24 +51,15 @@ public class GroupByClause extends AbstractFLWORClause {
      * in a separate object and push it to a stack, otherwise recursive calls
      * would overwrite data.
      */
-    private class GroupByData {
-
-        private Map<List<AtomicValue>, Tuple> groupedMap = null;
-        private Map<QName, LocalVariable> variables = null;
-        private List<LocalVariable> groupingVars = null;
+    private static class GroupByData {
+        private final Object2ObjectSortedMap<Sequence, Tuple> groupedMap;
+        private final Map<QName, LocalVariable> variables = new HashMap<>();
+        private final List<LocalVariable> groupingVars = new ArrayList<>();
 
         private boolean initialized = false;
 
-        public GroupByData() {
-            // check if we can use a hash map
-            if (usesDefaultCollator()) {
-                groupedMap = new HashMap<>();
-            } else {
-                // non-default collation: must use tree map
-                groupedMap = new TreeMap<>(GroupByClause.this::compareKeys);
-            }
-            variables = new HashMap<>();
-            groupingVars = new ArrayList<>();
+        public GroupByData(final Strategy<Sequence> keyHashStrategy) {
+            this.groupedMap = new Object2ObjectLinkedOpenCustomHashMap<>(8, Hash.FAST_LOAD_FACTOR, keyHashStrategy);
         }
     }
 
@@ -77,19 +73,19 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public Sequence preEval(Sequence seq) throws XPathException {
-        stack.push(new GroupByData());
+    public Sequence preEval(final Sequence seq) throws XPathException {
+        stack.push(new GroupByData(new DeepEqualKeysHashStrategy(groupSpecs)));
         return super.preEval(seq);
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         final GroupByData data = stack.peek();
 
         // Evaluate group spec to create grouping key sequence
         final List<Sequence> groupingValues = new ArrayList<>();
-        final List<AtomicValue> groupingKeys = new ArrayList<>();
-        for (GroupSpec spec: groupSpecs) {
+        final Sequence groupingKeys = new ArrayListValueSequence();
+        for (final GroupSpec spec: groupSpecs) {
             final Sequence groupingSeq = spec.getGroupExpression().eval(null, null);
             if (groupingSeq.getItemCount() > 1) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable " + spec.getKeyVarName() + " " +
@@ -97,13 +93,21 @@ public class GroupByClause extends AbstractFLWORClause {
             }
             final AtomicValue groupingValue = groupingSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : groupingSeq.itemAt(0)
                     .atomize();
+
+            final SequenceType groupingVarType = spec.getKeyVarType() != null ? spec.getKeyVarType() : new SequenceType(Type.ANY_ATOMIC_TYPE, groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE);
+            final SequenceType groupingValueType = new SequenceType(groupingValue.getType(), groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE);
+            if (!Type.subTypeOf(groupingValueType.getPrimaryType(), groupingVarType.getPrimaryType())
+                    || !groupingValueType.getCardinality().isSubCardinalityOrEqualOf(groupingVarType.getCardinality())) {
+                throw new XPathException(this, ErrorCodes.XPTY0004, "Grouping variable expects type: " + groupingVarType + ", but pre-grouping tuple is of type: " + groupingValueType);
+            }
+
             if (!data.initialized) {
                 final LocalVariable groupingVar = new LocalVariable(spec.getKeyVarName());
-                groupingVar.setSequenceType(new SequenceType(Type.ANY_ATOMIC_TYPE, groupingValue.isEmpty() ? Cardinality.EMPTY_SEQUENCE : Cardinality.EXACTLY_ONE));
+                groupingVar.setSequenceType(groupingVarType);
                 groupingVar.setStaticType(groupingValue.getType());
                 data.groupingVars.add(groupingVar);
             }
-            groupingValues.add(groupingSeq);
+            groupingValues.add(groupingValue);
             groupingKeys.add(groupingValue);
         }
 
@@ -156,7 +160,7 @@ public class GroupByClause extends AbstractFLWORClause {
                             Sequence val = siter.next();
                             var.setValue(val);
                         } else {
-                            throw new XPathException(this, "Internal error: missing grouping value");
+                            throw new XPathException(this, ErrorCodes.XPTY0004, "Internal error: missing grouping value for variable: $" + var.getQName());
                         }
                     }
                     // set values of non-grouping variables
@@ -182,14 +186,32 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         unordered = (contextInfo.getFlags() & UNORDERED) > 0;
+
+        final Set<QName> preGroupingTupleVariables = new HashSet<>();
+        FLWORClause prevClause = getPreviousClause();
+        while (prevClause != null) {
+            rootClause = prevClause;
+            preGroupingTupleVariables.addAll(prevClause.getTupleStreamVariables());
+            prevClause = prevClause.getPreviousClause();
+        }
+
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             if (groupSpecs != null) {
                 for (final GroupSpec spec : groupSpecs) {
-                    final LocalVariable groupKeyVar = new LocalVariable(spec.getKeyVarName());
+                    final QName keyVarName = spec.getKeyVarName();
+
+                    if (spec.getGroupExpression() instanceof VariableReference groupExpressionVariableRef) {
+                        if (groupExpressionVariableRef.getName().equals(keyVarName)
+                                && !preGroupingTupleVariables.contains(keyVarName)) {
+                            throw new XPathException(this, ErrorCodes.XQST0094, "Undeclared grouping variable: $" + keyVarName);
+                        }
+                    }
+
+                    final LocalVariable groupKeyVar = new LocalVariable(keyVarName);
                     context.declareVariableBinding(groupKeyVar);
                 }
             }
@@ -204,12 +226,6 @@ public class GroupByClause extends AbstractFLWORClause {
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark);
-        }
-
-        FLWORClause prevClause = getPreviousClause();
-        while (prevClause != null) {
-            rootClause = prevClause;
-            prevClause = prevClause.getPreviousClause();
         }
     }
 
@@ -265,33 +281,79 @@ public class GroupByClause extends AbstractFLWORClause {
     }
 
     /**
-     * Compare keys using the collator given in the group spec. Used to
-     * sort keys into the grouping map.
+     * Compare map keys using the collator given in the group spec.
      */
-    private int compareKeys(List<AtomicValue> s1, List<AtomicValue> s2) {
-        final int c1 = s1.size();
-        final int c2 = s2.size();
-        if (c1 == c2) {
-            try {
+    private static class DeepEqualKeysHashStrategy implements Strategy<Sequence> {
+        private final GroupSpec[] groupSpecs;
+
+        public DeepEqualKeysHashStrategy(final GroupSpec[] groupSpecs) {
+            this.groupSpecs = groupSpecs;
+        }
+
+        @Override
+        public boolean equals(final Sequence s1, final Sequence s2) {
+            // NOTE(AR): intentional reference equality check
+            if (s1 == s2) {
+                return true;
+            }
+
+            final int c1 = s1 != null ? s1.getItemCount() : -1;
+            final int c2 = s2 != null ? s2.getItemCount() : -1;
+            if (c1 == c2) {
                 for (int i = 0; i < c1; i++) {
-                    final AtomicValue v1 = s1.get(i);
-                    final AtomicValue v2 = s2.get(i);
+                    final Item v1 = s1.itemAt(i);
+                    final Item v2 = s2.itemAt(i);
                     final Collator collator = groupSpecs[i].getCollator();
-                    final int r = v1.compareTo(collator, v2);
-                    if (r != Constants.EQUAL) {
-                        return r;
+
+                    final int comparison = FunDeepEqual.deepCompare(v1, v2, collator);
+                    if (comparison != Constants.EQUAL) {
+                        return false;
                     }
                 }
-                return Constants.EQUAL;
-            } catch (XPathException e) {
-                return Constants.INFERIOR;
+                return true;
             }
+            return false;
         }
-        return c1 < c2 ? Constants.INFERIOR : Constants.SUPERIOR;
-    }
 
-    private boolean usesDefaultCollator() {
-        return Stream.of(groupSpecs).allMatch(spec -> spec.getCollator() == null);
+        @Override
+        public int hashCode(final Sequence s) {
+            if (s == null) {
+                return 0;
+            }
+
+            int hashCode = 1;
+
+            final int c = s.getItemCount();
+            for (int i = 0; i < c; i++) {
+                final Item v = s.itemAt(i);
+
+                final Collator collator = groupSpecs[i].getCollator();
+
+                if (v.getType() == Type.STRING && collator != null) {
+                    hashCode = 31 * hashCode + collator.getCollationKey(((StringValue) v).getStringValue()).hashCode();
+
+                } else if (v.getType() == Type.UNTYPED_ATOMIC && collator != null) {
+                    try {
+                        hashCode = 31 * hashCode + collator.getCollationKey(v.getStringValue()).hashCode();
+                    } catch (final XPathException e) {
+                        if (v instanceof AbstractDateTimeValue adtv) {
+                            hashCode = 31 * hashCode + adtv.hashCodeWithTimeZone();  // best attempt fallback?
+                        } else {
+                            hashCode = 31 * hashCode + v.hashCode();  // best attempt fallback?
+                        }
+                    }
+
+                } else {
+                    if (v instanceof AbstractDateTimeValue adtv) {
+                        hashCode = 31 * hashCode + adtv.hashCodeWithTimeZone();
+                    } else {
+                        hashCode = 31 * hashCode + v.hashCode();
+                    }
+                }
+            }
+
+            return hashCode;
+        }
     }
 
     static class Tuple extends HashMap<QName, Sequence> {
@@ -313,5 +375,24 @@ public class GroupByClause extends AbstractFLWORClause {
                 seq.addAll(val);
             }
         }
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        if (groupSpecs != null) {
+            for (final GroupSpec spec : groupSpecs) {
+                final QName keyVarName = spec.getKeyVarName();
+                vars.add(keyVarName);
+            }
+        }
+
+        return vars;
     }
 }

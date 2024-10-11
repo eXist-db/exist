@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -113,7 +114,7 @@ public class FunEquals extends CollatingFunction {
             // Make sure we have a collator!
             if (collator == null) {
                 //TODO : raise exception ? -pb
-                collator = Collations.getCollationFromURI("?strength=identical", contextItem != null ? contextItem.getExpression() : null);
+                collator = Collations.getCollationFromURI("?strength=identical", contextItem != null ? contextItem.getExpression() : null, ErrorCodes.FOCH0002);
             }
             if (Collations.equals(collator, s1, s2)) {
                 result = BooleanValue.TRUE;

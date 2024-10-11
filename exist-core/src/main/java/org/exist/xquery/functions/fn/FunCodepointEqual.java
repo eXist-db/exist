@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.fn;
 
+import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.BasicFunction;
@@ -35,9 +36,12 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import javax.annotation.Nullable;
 
 /**
  *
@@ -74,21 +78,34 @@ public class FunCodepointEqual extends BasicFunction {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                 "CONTEXT SEQUENCE", contextSequence);}
         }
-        Sequence result;
-        if (args[0].isEmpty())
-            {result = Sequence.EMPTY_SEQUENCE;}
-        else if (args[1].isEmpty())
-            {result =  Sequence.EMPTY_SEQUENCE;}
-        else {
-            result = new BooleanValue(this, Collations.compare(
-                //TODO : how ugly ! We should be able to use Collations.UNICODE_CODEPOINT_COLLATION_URI here ! -pb
-                context.getDefaultCollator(),
-                getArgument(0).eval(contextSequence, null).getStringValue(),
-                getArgument(1).eval(contextSequence, null).getStringValue())
-                == Constants.EQUAL);
+        final Sequence result;
+        if (args[0].isEmpty() || args[1].isEmpty()) {
+            result = Sequence.EMPTY_SEQUENCE;
+        } else {
+            result = new BooleanValue(this,
+                    codepointEqual(args[0].itemAt(0), args[1].itemAt(0), context.getDefaultCollator())
+            );
+
         }
-        if (context.getProfiler().isEnabled()) 
+
+        if (context.getProfiler().isEnabled())
             {context.getProfiler().end(this, "", result);}
+
         return result;
+    }
+
+    /**
+     * Apply fn:codepoint-equal logic to the provided items.
+     *
+     * @param item1 the first Item to be compared.
+     * @param item2 the second Item to be compared.
+     * @param collator a collator to use for the comparison, or null to use the default collator.
+     *
+     * @return true if the items are codepoint equal, false otherwise.
+     *
+     * @throws XPathException if atomisation fails.
+     */
+    public static boolean codepointEqual(final Item item1, final Item item2, @Nullable final Collator collator) throws XPathException {
+        return Collations.compare(collator, item1.getStringValue(), item2.getStringValue()) == Constants.EQUAL;
     }
 }

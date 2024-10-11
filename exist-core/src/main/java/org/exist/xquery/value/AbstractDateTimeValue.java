@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +50,7 @@ import java.util.regex.Pattern;
  * @author wolf
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  * @author ljo
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 
@@ -292,6 +294,15 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
     }
 
+    /**
+     * Returns true if a timezone is defined.
+     *
+     * @return true if a timezone is defined.
+     */
+    public boolean hasTimezone() {
+        return calendar.getTimezone() != DatatypeConstants.FIELD_UNDEFINED;
+    }
+
     protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
         final Duration tz = offset.duration;
         final Number secs = tz.getField(DatatypeConstants.SECONDS);
@@ -466,6 +477,22 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
     public int hashCode() {
         return calendar.hashCode();
+    }
+
+    public int hashCodeWithTimeZone() {
+        if (hasTimezone()) {
+            return hashCode();
+        }
+
+        final TimeZone implicitTimeZone = TimeZone.getDefault();
+        if (implicitTimeZone.inDaylightTime(new Date())) {
+            implicitTimeZone.setRawOffset(implicitTimeZone.getRawOffset() + implicitTimeZone.getDSTSavings());
+        }
+
+        final XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
+        xgc.setTimezone((implicitTimeZone.getRawOffset() / 1000) / 60);
+
+        return xgc.hashCode();
     }
 
     /**

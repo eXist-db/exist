@@ -113,7 +113,24 @@ public class Collations {
      * @throws XPathException If an error occurs whilst constructing the Collator
      */
     public static @Nullable Collator getCollationFromURI(final String uri) throws XPathException {
-        return getCollationFromURI(uri, null);
+        return getCollationFromURI(uri, (Expression)null);
+    }
+
+    /**
+     * Get a {@link Comparator}from the specified URI.
+     *
+     * The original code is from saxon (@linkplain http://saxon.sf.net).
+     *
+     *
+     * @param uri The URI describing the collation and settings
+     * @param errorCode the error code if the URI cannot be resolved
+     *
+     * @return The Collator for the URI, or null.
+     *
+     * @throws XPathException If an error occurs whilst constructing the Collator
+     */
+    public static @Nullable Collator getCollationFromURI(final String uri, final ErrorCodes.ErrorCode errorCode) throws XPathException {
+        return getCollationFromURI(uri, null, errorCode);
     }
 
     /**
@@ -130,6 +147,24 @@ public class Collations {
      * @throws XPathException If an error occurs whilst constructing the Collator
      */
     public static @Nullable Collator getCollationFromURI(final String uri, @Nullable final Expression expression) throws XPathException {
+        return getCollationFromURI(uri, expression, ErrorCodes.XQST0076);
+    }
+
+    /**
+     * Get a {@link Comparator}from the specified URI.
+     *
+     * The original code is from saxon (@linkplain http://saxon.sf.net).
+     *
+     *
+     * @param uri The URI describing the collation and settings
+     * @param expression The expression from which the collation derives
+     * @param errorCode the error code if the URI cannot be resolved
+     *
+     * @return The Collator for the URI, or null.
+     *
+     * @throws XPathException If an error occurs whilst constructing the Collator
+     */
+    public static @Nullable Collator getCollationFromURI(final String uri, @Nullable final Expression expression, final ErrorCodes.ErrorCode errorCode) throws XPathException {
         final Collator collator;
 
         if (uri.startsWith(EXIST_COLLATION_URI) || uri.startsWith(UCA_COLLATION_URI) || uri.startsWith("?")) {
@@ -269,7 +304,7 @@ public class Collations {
         } else {
             final String msg = "Unknown collation : '" + uri + "'";
             logger.error(msg);
-            throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
+            throw new XPathException(expression, errorCode, msg);
         }
 
         if (collator != null) {

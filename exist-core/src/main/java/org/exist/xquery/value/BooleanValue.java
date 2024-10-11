@@ -95,7 +95,7 @@ public class BooleanValue extends AtomicValue {
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
             boolean otherVal = ((BooleanValue) other).getValue();
             return switch (operator) {
@@ -114,14 +114,17 @@ public class BooleanValue extends AtomicValue {
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        final boolean otherVal = other.effectiveBooleanValue();
-        if (otherVal == value) {
-            return Constants.EQUAL;
-        } else if (value) {
-            return Constants.SUPERIOR;
-        } else {
-            return Constants.INFERIOR;
+        if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
+            final boolean otherVal = other.effectiveBooleanValue();
+            if (otherVal == value) {
+                return Constants.EQUAL;
+            } else if (value) {
+                return Constants.SUPERIOR;
+            } else {
+                return Constants.INFERIOR;
+            }
         }
+        return Constants.INFERIOR;
     }
 
     /* (non-Javadoc)

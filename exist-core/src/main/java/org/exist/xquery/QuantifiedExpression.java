@@ -21,12 +21,16 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a quantified expression: "some ... in ... satisfies", 
@@ -84,7 +88,7 @@ public class QuantifiedExpression extends BindingExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }        
         
-		final LocalVariable var = new LocalVariable(varName);
+		final LocalVariable localVariable = new LocalVariable(varName);
         
 		final Sequence inSeq = inputSequence.eval(contextSequence, contextItem);
         if (sequenceType != null) {
@@ -104,16 +108,17 @@ public class QuantifiedExpression extends BindingExpression {
 			
 			final Item item = i.nextItem();			
 			// set variable value to current item
-            var.setValue(item.toSequence());
-            if (sequenceType == null) 
-                {var.checkType();} //... because is makes some conversions
+            localVariable.setValue(item.toSequence());
+            if (sequenceType == null) {
+				localVariable.checkType();  //... because is makes some conversions
+			}
 			
             Sequence satisfiesSeq = null;
             
             //Binds the variable : now in scope
     		final LocalVariable mark = context.markLocalVariables(false);
     		try {
-    			context.declareVariableBinding(var);
+    			context.declareVariableBinding(localVariable);
     			//Evaluate the return clause for the current value of the variable
     			satisfiesSeq = returnExpr.eval(contextSequence, contextItem);
     		} finally {
@@ -135,7 +140,7 @@ public class QuantifiedExpression extends BindingExpression {
     						Type.getTypeName(Type.NODE) +
     						" (or more specific), got " + Type.getTypeName(item.getType()), inSeq);}
     	    	//trigger the old behaviour
-        		else {var.checkType();}
+        		else {localVariable.checkType();}
             }	
             
 			found = satisfiesSeq.effectiveBooleanValue();
@@ -194,6 +199,23 @@ public class QuantifiedExpression extends BindingExpression {
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+	}
+
+	@Override
+	public Set<QName> getTupleStreamVariables() {
+		final Set<QName> variables = new HashSet<>();
+
+		final QName variable = getVariable();
+		if (variable != null) {
+			variables.add(variable);
+		}
+
+		final LocalVariable startVar = getStartVariable();
+		if (startVar != null) {
+			variables.add(startVar.getQName());
+		}
+
+		return variables;
 	}
 
 }

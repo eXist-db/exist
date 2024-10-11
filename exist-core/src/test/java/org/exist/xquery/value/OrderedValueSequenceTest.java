@@ -27,6 +27,8 @@ import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
@@ -101,7 +103,7 @@ public class OrderedValueSequenceTest {
         expect(mockSortExpr.eval(null, null)).andReturn(Sequence.EMPTY_SEQUENCE).anyTimes();
         replay(mockSortExpr);
 
-        final OrderedValueSequence orderedValueSequence = new OrderedValueSequence(new OrderSpec[] { new OrderSpec(null, mockSortExpr) }, size);
+        final OrderedValueSequence orderedValueSequence = new OrderedValueSequence(Arrays.asList(new OrderSpec(null, mockSortExpr)), size);
         for (int i = 0; i < size; i++) {
             final Item item = createMock(Item.class);
             expect(item.getType()).andReturn(Type.ANY_TYPE);

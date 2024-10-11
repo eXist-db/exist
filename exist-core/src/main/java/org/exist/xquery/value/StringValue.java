@@ -672,7 +672,7 @@ public class StringValue extends AtomicValue {
     }
 
     @Override
-    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+    public int compareTo(final Collator collator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             //No possible comparisons
             if (((NumericValue) other).isNaN()) {
@@ -682,12 +682,18 @@ public class StringValue extends AtomicValue {
                 return Constants.INFERIOR;
             }
         }
-        try {
-            return Collations.compare(collator, value, other.getStringValue());
-        } catch (final UnsupportedOperationException e) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
+
+        if (Type.subTypeOf(other.getType(), Type.STRING)) {
+            try {
+                return Collations.compare(collator, value, other.getStringValue());
+            } catch (final UnsupportedOperationException e) {
+                throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
+            }
+        } else {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot compare string value to non-string value");
         }
     }
+
 
     @Override
     public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {

@@ -31,6 +31,7 @@ import org.apache.lucene.collation.ICUCollationAttributeFactory;
 import org.apache.lucene.util.AttributeFactory;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Element;
 
@@ -96,7 +97,7 @@ public class RangeIndexAnalyzer extends Analyzer {
 
     public void addCollation(String uri) throws DatabaseConfigurationException {
         try {
-            collator = Collations.getCollationFromURI(uri, null);
+            collator = Collations.getCollationFromURI(uri, null, ErrorCodes.FOCH0002);
         } catch (XPathException e) {
             throw new DatabaseConfigurationException(e.getMessage(), e);
         }

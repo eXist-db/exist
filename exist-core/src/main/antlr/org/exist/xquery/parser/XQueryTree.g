@@ -136,6 +136,8 @@ options {
         FLWORClause.ClauseType type = FLWORClause.ClauseType.FOR;
         List<GroupSpec> groupSpecs = null;
         List<OrderSpec> orderSpecs = null;
+        List<WindowCondition> windowConditions = null;
+        WindowExpr.WindowType windowType = null;
         boolean allowEmpty = false;
     }
 
@@ -195,6 +197,18 @@ options {
             func.addVariable(param.getAttributeName());
         }
         signature.setArgumentTypes(types);
+    }
+
+    private static class DistinctVariableNames {
+        private final Set<QName> distinctVariableNames = new HashSet<>();
+
+        public QName check(final ErrorCodes.ErrorCode errorCode, final AST astNode, final QName variableName) throws XPathException {
+            if (distinctVariableNames.contains(variableName)) {
+                throw new XPathException(astNode.getLine(), astNode.getColumn(), errorCode, "Variable $" + variableName + " is defined twice");
+            }
+            distinctVariableNames.add(variableName);
+            return variableName;
+        }
     }
 }
 
@@ -1578,7 +1592,8 @@ throws PermissionDeniedException, EXistException, XPathException
                             ForLetClause clause= new ForLetClause();
                             clause.ast = varName;
                             PathExpr inputSequence= new PathExpr(context);
-                            inputSequence.setASTNode(expr_AST_in);
+                            inputSequence.setASTNode(expr_AST_in);inputSequence.setASTNode(expr_AST_in);
+			    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
                         }
                         (
                             #(
@@ -1595,7 +1610,7 @@ throws PermissionDeniedException, EXistException, XPathException
                             posVar:POSITIONAL_VAR
                             {
                                 try {
-                                    clause.posVar = QName.parse(staticContext, posVar.getText(), null);
+                                    clause.posVar = distinctVariableNames.check(ErrorCodes.XQST0089, posVar, QName.parse(staticContext, posVar.getText(), null));
                                 } catch (final IllegalQNameException iqe) {
                                     throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + posVar.getText());
                                 }
@@ -1604,7 +1619,7 @@ throws PermissionDeniedException, EXistException, XPathException
                         step=expr [inputSequence]
                         {
                             try {
-                                clause.varName = QName.parse(staticContext, varName.getText(), null);
+                                clause.varName = distinctVariableNames.check(ErrorCodes.XQST0089, varName, QName.parse(staticContext, varName.getText(), null));
                             } catch (final IllegalQNameException iqe) {
                                 throw new XPathException(varName.getLine(), varName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + varName.getText());
                             }
@@ -1648,11 +1663,206 @@ throws PermissionDeniedException, EXistException, XPathException
                 )+
             )
             |
-            // XQuery 3.0 group by clause
+	    #(
+            	wc:"window"
+            	{
+            	    ForLetClause clause= new ForLetClause();
+                    clause.type = FLWORClause.ClauseType.WINDOW;
+                    clause.windowConditions = new ArrayList<WindowCondition>(2);
+                    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
+            	}
+            	(
+                    "tumbling"
+                    {
+                        clause.windowType = WindowExpr.WindowType.TUMBLING_WINDOW;
+                    }
+                    |
+                    "sliding"
+                    {
+                        clause.windowType = WindowExpr.WindowType.SLIDING_WINDOW;
+                    }
+                )?
+            	// invarBinding
+            	(
+            		#(
+            			windowWarName:VARIABLE_BINDING
+            			{
+            				clause.ast = windowWarName;
+            				PathExpr inputSequence= new PathExpr(context);
+            			}
+            			(
+            				#(
+            					"as"
+            					{ clause.sequenceType= new SequenceType(); }
+            					sequenceType [clause.sequenceType]
+            				)
+            			)?
+            			step=expr [inputSequence]
+            			{
+            			  try {
+            				  clause.varName = distinctVariableNames.check(ErrorCodes.XQST0103, windowWarName, QName.parse(staticContext, windowWarName.getText(), null));
+            				} catch (final IllegalQNameException iqe) {
+                      throw new XPathException(windowWarName.getLine(), windowWarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + windowWarName.getText());
+                    }
+            				clause.inputSequence= inputSequence;
+            				clauses.add(clause);
+            			}
+            		)
+            	)
+            	// windowStartCondition
+            	#(
+            	    "start"
+            	    {
+            	        PathExpr whenExpr = new PathExpr(context);
+                        QName currentItemName = null;
+                        QName previousItemName = null;
+                        QName nextItemName = null;
+                        QName windowStartPosVar = null;
+            	    }
+            	    #(
+                    	// WINDOW_VARS
+                    	WINDOW_VARS
+                    	(
+                    	    currentItem:CURRENT_ITEM
+                    	    {
+                    	        if (currentItem != null && currentItem.getText() != null) {
+                    	            try {
+                                        currentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, currentItem, QName.parse(staticContext, currentItem.getText()));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(currentItem.getLine(), currentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + currentItem.getText());
+                                    }
+                                }
+                    	    }
+                    	)?
+                    	(
+                    	    startPosVar:POSITIONAL_VAR
+                            {
+                                try {
+                                    windowStartPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, startPosVar, QName.parse(staticContext, startPosVar.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(startPosVar.getLine(), startPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + startPosVar.getText());
+                                }
+                            }
+                    	)?
+                    	(
+                            previousItem:PREVIOUS_ITEM
+                            {
+                                if (previousItem != null && previousItem.getText() != null) {
+                                    try {
+                                       previousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, previousItem, QName.parse(staticContext, previousItem.getText()));
+                                   } catch (final IllegalQNameException iqe) {
+                                       throw new XPathException(previousItem.getLine(), previousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + previousItem.getText());
+                                   }
+                                }
+                            }
+                        )?
+                        (
+                            nextItem:NEXT_ITEM
+                            {
+                                if (nextItem != null && nextItem.getText() != null) {
+                                    try {
+                                           nextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, nextItem, QName.parse(staticContext, nextItem.getText()));
+                                    } catch (final IllegalQNameException iqe) {
+                                           throw new XPathException(nextItem.getLine(), nextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + nextItem.getText());
+                                    }
+                                }
+                            }
+                        )?
+                    )
+                    "when"
+                    step=expr [whenExpr]
+                    {
+                        WindowCondition windowCondition = new WindowCondition(
+                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, whenExpr
+                    	);
+                    	clause.windowConditions.add(windowCondition);
+                    }
+            	)
+            	// windowEndCondition
+            	(
+                    {
+                         PathExpr endWhenExpr = new PathExpr(context);
+                         QName endCurrentItemName = null;
+                         QName endPreviousItemName = null;
+                         QName endNextItemName = null;
+                         QName windowEndPosVar = null;
+                         Boolean only = false;
+                    }
+                    #(
+                        "end"
+                        (
+                            "only"
+                            {
+                                only = true;
+                            }
+                        )?
+                        #(
+                            // WINDOW_VARS
+                            WINDOW_VARS
+                           	(
+                           	    endCurrentItem:CURRENT_ITEM
+                           	    {
+                           	        if (endCurrentItem != null && endCurrentItem.getText() != null) {
+                           	            try {
+                                               endCurrentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endCurrentItem, QName.parse(staticContext, endCurrentItem.getText()));
+                                           } catch (final IllegalQNameException iqe) {
+                                               throw new XPathException(endCurrentItem.getLine(), endCurrentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endCurrentItem.getText());
+                                           }
+                                       }
+                           	    }
+                           	)?
+                           	(
+                           	    endPosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        windowEndPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, endPosVar, QName.parse(staticContext, endPosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(endPosVar.getLine(), endPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPosVar.getText());
+                                    }
+                                }
+                           	)?
+                           	(
+                                endPreviousItem:PREVIOUS_ITEM
+                                {
+                                    if (endPreviousItem != null && endPreviousItem.getText() != null) {
+                                       try {
+                                            endPreviousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endPreviousItem, QName.parse(staticContext, endPreviousItem.getText()));
+                                       } catch (final IllegalQNameException iqe) {
+                                           throw new XPathException(endPreviousItem.getLine(), endPreviousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPreviousItem.getText());
+                                       }
+                                    }
+                                }
+                            )?
+                            (
+                                endNextItem:NEXT_ITEM
+                                {
+                                    if (endNextItem != null && endNextItem.getText() != null) {
+                                        try {
+                                            endNextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endNextItem, QName.parse(staticContext, endNextItem.getText()));
+                                        } catch (final IllegalQNameException iqe) {
+                                               throw new XPathException(endNextItem.getLine(), endNextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endNextItem.getText());
+                                        }
+                                    }
+                                }
+                            )?
+                        )
+                        "when"
+                        step=expr [endWhenExpr]
+                        {
+                        	WindowCondition endWindowCondition = new WindowCondition(
+                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, endWhenExpr
+                        	);
+                            clause.windowConditions.add(endWindowCondition);
+                        }
+                    )
+                )?
+            )
+			|
+      // XQuery 3.0 group by clause
       #(
           gb:GROUP_BY
           {
-              ForLetClause clause= new ForLetClause();
+              ForLetClause clause = new ForLetClause();
               clause.ast = gb;
               clause.type = FLWORClause.ClauseType.GROUPBY;
               clause.groupSpecs = new ArrayList<GroupSpec>(4);
@@ -1661,15 +1871,23 @@ throws PermissionDeniedException, EXistException, XPathException
           (
               #(
                   groupVarName:VARIABLE_BINDING
-
-                  // optional := exprSingle
-                  { PathExpr groupSpecExpr= null; }
+                  { PathExpr groupSpecExpr = null; }
                   (
+                    (
+                      #(
+                        "as"
+                        { clause.sequenceType = new SequenceType(); }
+                        sequenceType [clause.sequenceType]
+                      )
+                    )?
+                    // optional := exprSingle
+                    (
                       {
                           groupSpecExpr = new PathExpr(context);
                           groupSpecExpr.setASTNode(expr_AST_in);
                       }
-                      step=expr [groupSpecExpr]
+                        step=expr [groupSpecExpr]
+                    )
                   )?
                   {
                       final QName groupKeyVar;
@@ -1679,7 +1897,7 @@ throws PermissionDeniedException, EXistException, XPathException
                           throw new XPathException(groupVarName.getLine(), groupVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + groupVarName.getText());
                       }
 
-                      GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar);
+                      GroupSpec groupSpec = new GroupSpec(context, groupSpecExpr, groupKeyVar, clause.sequenceType);
                       clause.groupSpecs.add(groupSpec);
                   }
                   (
@@ -1814,29 +2032,33 @@ throws PermissionDeniedException, EXistException, XPathException
                     case COUNT:
                         expr = new CountClause(context, clause.varName);
                         break;
+                    case WINDOW:
+                        expr = new WindowExpr(context, clause.windowType, clause.windowConditions.get(0), clause.windowConditions.size() > 1 ? clause.windowConditions.get(1) : null);
+                        break;
                     default:
                         expr = new ForExpr(context, clause.allowEmpty);
                         break;
                 }
                 expr.setASTNode(clause.ast);
-                if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET) {
+                if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET
+                		|| clause.type == FLWORClause.ClauseType.WINDOW) {
                     final BindingExpression bind = (BindingExpression)expr;
             bind.setVariable(clause.varName);
             bind.setSequenceType(clause.sequenceType);
             bind.setInputSequence(clause.inputSequence);
             if (clause.type == FLWORClause.ClauseType.FOR) {
                  ((ForExpr) bind).setPositionalVariable(clause.posVar);
-                         }
-                } else if (clause.type == FLWORClause.ClauseType.GROUPBY ) {
-                    if (clause.groupSpecs != null) {
-                GroupSpec specs[]= new GroupSpec[clause.groupSpecs.size()];
-                int k= 0;
+						 }
+				} else if (clause.type == FLWORClause.ClauseType.GROUPBY) {
+				    if (clause.groupSpecs != null) {
+                GroupSpec specs[] = new GroupSpec[clause.groupSpecs.size()];
+                int k = 0;
                 for (GroupSpec groupSpec : clause.groupSpecs) {
                     specs[k++]= groupSpec;
                 }
                 ((GroupByClause)expr).setGroupSpecs(specs);
             }
-                }
+            }
         if (!(action instanceof FLWORClause))
             expr.setReturnExpression(new DebuggableExpression(action));
         else {

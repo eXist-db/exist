@@ -105,4 +105,6 @@ public interface ExpressionVisitor {
     void visitVariableDeclaration(VariableDeclaration decl);
 
     void visitSimpleMapOperator(OpSimpleMap simpleMap);
+
+    void visitWindowExpression(WindowExpr windowExpr);
 }

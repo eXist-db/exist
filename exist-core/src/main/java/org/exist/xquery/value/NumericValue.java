@@ -70,6 +70,24 @@ public abstract class NumericValue extends ComputableValue {
 
     public abstract boolean isPositive();
 
+    /**
+     * Returns true if this value is +INF.
+     *
+     * @return true if this value is +INF.
+     */
+    public boolean isPositiveInfinity() {
+        return isInfinite() && isPositive();
+    }
+
+    /**
+     * Returns true if this value is -INF.
+     *
+     * @return true if this value is -INF.
+     */
+    public boolean isNegativeInfinity() {
+        return isInfinite() && isNegative();
+    }
+
     @Override
     public boolean effectiveBooleanValue() {
         //If its operand is a singleton value of any numeric type or derived from a numeric type,
