@@ -47,7 +47,7 @@
 
     <properties>
         <avalon.framework.version>4.3.1</avalon.framework.version>
-        <fop.version>2.10</avalon.framework.version>
+        <fop.version>2.10</fop.version>
     </properties>
 
     <dependencies>
