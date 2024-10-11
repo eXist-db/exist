@@ -50,10 +50,11 @@ public class UpdateInsertTriggersDefrag {
     public void setUp() throws Exception {
         collectionService = exist.getRoot().getService(CollectionManagementService.class);
         testCollection = collectionService.createCollection(TEST_COLLECTION_URI.lastSegment().toString());
-        final XMLResource doc = testCollection.createResource(TEST_XML_URI.toString(), XMLResource.class);
 
-        doc.setContent("<list><item>initial</item></list>");
-        testCollection.storeResource(doc);
+        try (final XMLResource doc = testCollection.createResource(TEST_XML_URI.toString(), XMLResource.class)) {
+            doc.setContent("<list><item>initial</item></list>");
+            testCollection.storeResource(doc);
+        }
     }
 
     @After
