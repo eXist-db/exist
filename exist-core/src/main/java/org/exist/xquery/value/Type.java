@@ -551,12 +551,19 @@ public class Type {
      *
      * @param subtype type code of the sub type
      * @return type constant for the super type
+     *
+     * @throws IllegalArgumentException if {@code subtype} has no defined super type
      */
     public static int getSuperType(final int subtype) {
         if (subtype == ITEM || subtype == NODE) {
             return ITEM;
         } else if (subtype == ANY_TYPE) {
             return subtype;
+        }
+
+        if (subtype >= superTypes.length) {
+            // Note that EMPTY_SEQUENCE is *not* a sub-type of anything else than itself
+            throw new IllegalArgumentException("Type: " + subtype + " has no super types defined");
         }
 
         final int supertype = superTypes[subtype];

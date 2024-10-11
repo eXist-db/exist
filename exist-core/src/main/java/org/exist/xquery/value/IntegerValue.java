@@ -278,7 +278,7 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        if (this.type == requiredType) {
+        if (this.type == requiredType || requiredType == Type.NUMERIC) {
             return this;
         }
 
@@ -290,8 +290,6 @@ public class IntegerValue extends NumericValue {
                 return new DecimalValue(getExpression(), new BigDecimal(value));
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
-            case Type.NUMERIC:
-                return new IntegerValue(getExpression(), value, requiredType, false);
             case Type.LONG:
             case Type.INTEGER:
             case Type.NON_POSITIVE_INTEGER:
