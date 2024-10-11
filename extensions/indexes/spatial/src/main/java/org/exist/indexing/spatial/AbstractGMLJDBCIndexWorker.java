@@ -21,11 +21,11 @@
  */
 package org.exist.indexing.spatial;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
-import com.vividsolutions.jts.io.WKTReader;
-import com.vividsolutions.jts.io.WKTWriter;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -55,10 +55,10 @@ import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
 import org.geotools.gml.producer.GeometryTransformer;
 import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.OperationNotFoundException;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.OperationNotFoundException;
+import org.geotools.api.referencing.operation.TransformException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -74,6 +74,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -111,7 +112,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected TreeMap<String, MathTransform> transformations = new TreeMap<>();
     protected boolean useLenientMode = false;
     protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
-    protected GeometryTransformer gmlTransformer = new GeometryTransformer();
+    protected final GeometryTransformer gmlTransformer;
     protected WKBWriter wkbWriter = new WKBWriter();
     protected WKBReader wkbReader = new WKBReader();
     protected WKTWriter wktWriter = new WKTWriter();
@@ -120,6 +121,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
         this.index = index;
         this.broker = broker;
+        this.gmlTransformer = new GeometryTransformer();
+        gmlTransformer.setEncoding(StandardCharsets.UTF_8);
+        gmlTransformer.setIndentation(4);
+        gmlTransformer.setNamespaceDeclarationEnabled(true);
+        gmlTransformer.setOmitXMLDeclaration(false);
     }
 
     protected DBBroker getBroker() {
