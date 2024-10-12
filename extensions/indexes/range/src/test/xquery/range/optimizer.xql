@@ -474,7 +474,7 @@ function ot:optimize-matches-field($city as xs:string) {
 declare
     %test:stats
     %test:args("[rR]üssel.*")
-    %test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 1]")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'BASIC']")
 function ot:matches-field-filtered($city as xs:string) {
     let $address := collection($ot:COLLECTION)//address
     return
