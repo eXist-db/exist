@@ -119,7 +119,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	private String bindingPrefix = null;
 	private XQuery service;
 
-    public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
+    public static final String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
+
+	public XQueryTrigger() {
+		XQueryTriggerMBeanImpl.init();		
+	}
 
     @Override
 	public void configure(final DBBroker broker, final Txn transaction, final Collection parent, final Map<String, List<?>> parameters) throws TriggerException {
@@ -227,7 +231,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 		// avoid infinite recursion
 		try {
-			TriggerStatePerThread.setAndTest(this, TriggerPhase.BEFORE, event, src, dst);
+			TriggerStatePerThread.setAndTest(transaction,this, TriggerPhase.BEFORE, event, src, dst);
 		} catch (final TriggerStatePerThread.CyclicTriggerException e) {
 			LOG.warn(e.getMessage());
 			return;
@@ -241,7 +245,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			declareExternalVariables(context, TriggerPhase.BEFORE, event, src, dst, isCollection);
         	
         } catch (final XPathException | IOException | PermissionDeniedException e) {
-    		TriggerStatePerThread.clear();
+    		TriggerStatePerThread.clear(transaction);
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
 	    }
 
@@ -255,7 +259,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				LOG.debug("Trigger fired for prepare");
 			}
         } catch (final XPathException | PermissionDeniedException e) {
-			TriggerStatePerThread.clear();
+			TriggerStatePerThread.clear(transaction);
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
         	context.runCleanupTasks();
@@ -271,7 +275,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 		// avoid infinite recursion
 		try {
-			TriggerStatePerThread.setAndTest(this, TriggerPhase.AFTER, event, src, dst);
+			TriggerStatePerThread.setAndTest(transaction,this, TriggerPhase.AFTER, event, src, dst);
 		} catch (final TriggerStatePerThread.CyclicTriggerException e) {
 			LOG.warn(e.getMessage());
 			return;
@@ -305,7 +309,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
         	context.runCleanupTasks();
         }
 
-		TriggerStatePerThread.clearIfFinished(TriggerPhase.AFTER);
+		TriggerStatePerThread.clearIfFinished(transaction, TriggerPhase.AFTER);
 
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Trigger fired for finish");
@@ -393,10 +397,11 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
     }
 
 	private void execute(final TriggerPhase phase, final TriggerEvent event, final DBBroker broker, final Txn transaction, final QName functionName, final XmldbURI src, final XmldbURI dst) throws TriggerException {
+		System.err.format("phase: %s, event: %s, tx: %s, thread: %s", phase, event, transaction, Thread.currentThread()).println();
 
 		// avoid infinite recursion
 		try {
-			TriggerStatePerThread.setAndTest(this, phase, event, src, dst);
+			TriggerStatePerThread.setAndTest(transaction, this, phase, event, src, dst);
 		} catch (final TriggerStatePerThread.CyclicTriggerException e) {
 			LOG.warn("Skipping Trigger: {}", e.getMessage());
 			return;
@@ -415,7 +420,7 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				return;
 			}
 		} catch (final TriggerException e) {
-			TriggerStatePerThread.clear();
+			TriggerStatePerThread.clear(transaction);
 			throw e;
 		}
 
@@ -456,14 +461,14 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				}
 			}
 
-			TriggerStatePerThread.clear();
+			TriggerStatePerThread.clear(transaction);
         	throw new TriggerException(PREPARE_EXCEPTION_MESSAGE, e);
         } finally {
     		compiledQuery.reset();
         	context.runCleanupTasks();
         }
 
-		TriggerStatePerThread.clearIfFinished(phase);
+		TriggerStatePerThread.clearIfFinished(transaction, phase);
 
 		if (LOG.isDebugEnabled()) {
 			if (phase == TriggerPhase.AFTER) {
