@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.persistentlogin;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.AuthenticationException;
@@ -30,14 +31,42 @@ import org.exist.storage.BrokerPool;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Functions to access the persistent login module.
  */
 public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
+    private enum Fn {
+        REGISTER("register"),
+        LOGIN("login"),
+        INVALIDATE("invalidate");
 
-    public final static FunctionSignature signatures[] = {
+        final static Map<QName, Fn> lookup = new HashMap<>();
+        static {
+            for (Fn fn: EnumSet.allOf(Fn.class)) {
+                lookup.put(fn.getQName(), fn);
+            }
+        }
+
+        static Fn get(Function f) {
+            return lookup.get(f.getName());
+        }
+
+        private final QName qname;
+
+        Fn(String name) {
+            qname = new QName(name, PersistentLoginModule.NAMESPACE, PersistentLoginModule.PREFIX);
+        }
+
+        public QName getQName() { return qname; }
+    }
+
+    public final static FunctionSignature[] signatures = {
             new FunctionSignature(
-                    new QName("register", PersistentLoginModule.NAMESPACE, PersistentLoginModule.PREFIX),
+                    Fn.REGISTER.getQName(),
                     "Try to log in the user and create a one-time login token. The token can be stored to a cookie and used to log in " +
                             "(via the login function) as the same user without " +
                             "providing credentials. However, for security reasons the token will be valid only for " +
@@ -55,7 +84,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the callback function or the empty sequence")
             ),
             new FunctionSignature(
-                    new QName("login", PersistentLoginModule.NAMESPACE, PersistentLoginModule.PREFIX),
+                    Fn.LOGIN.getQName(),
                     "Try to log in the user based on the supplied token. If the login succeeds, the provided callback function " +
                             "is called with 4 arguments: $token as xs:string, $user as xs:string, $password as xs:string, $timeToLive as duration. " +
                             "$token will be a new token which can be used for the next request. The old token is deleted.",
@@ -67,7 +96,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the callback function or the empty sequence")
             ),
             new FunctionSignature(
-                    new QName("invalidate", PersistentLoginModule.NAMESPACE, PersistentLoginModule.PREFIX),
+                    Fn.INVALIDATE.getQName(),
                     "Invalidate the supplied one-time token, so it can no longer be used to log in.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("token", Type.STRING, Cardinality.EXACTLY_ONE, "a valid one-time token")
@@ -85,77 +114,59 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
-        this.cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
     }
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (isCalledAs("register")) {
-            final String user = args[0].getStringValue();
-            final String pass;
-            if (!args[1].isEmpty()) {
-                pass = args[1].getStringValue();
-            } else {
-                pass = null;
-            }
-            final DurationValue timeToLive = (DurationValue) args[2].itemAt(0);
-            final FunctionReference callback;
-            if (!args[3].isEmpty()) {
-                callback = (FunctionReference) args[3].itemAt(0);
-            } else {
-                callback = null;
-            }
-            try {
-                return register(user, pass, timeToLive, callback);
-            } finally {
-                if (callback != null) {
-                    callback.close();
-                }
-            }
-        } else if (isCalledAs("login")) {
-            final String token = args[0].getStringValue();
-            final FunctionReference callback;
-            if (!args[1].isEmpty()) {
-                callback = (FunctionReference) args[1].itemAt(0);
-            } else {
-                callback = null;
-            }
-            try {
-                return authenticate(token, callback);
-            } finally {
-                if (callback != null) {
-                    callback.close();
-                }
-            }
+        switch (Fn.get(this)) {
+            case REGISTER: return register(args);
+            case LOGIN: return login(args);
+            case INVALIDATE: return invalidate(args);
+            default: throw new XPathException(this, ErrorCodes.ERROR, "Unknown function: " + getName());
+        }
+    }
+
+    private Sequence register(Sequence[] args) throws XPathException {
+        final String user = args[0].getStringValue();
+
+        final String pass;
+        if (args[1].isEmpty()) {
+            pass = null;
         } else {
-            PersistentLogin.getInstance().invalidate(args[0].getStringValue());
-            return Sequence.EMPTY_SEQUENCE;
+            pass = args[1].getStringValue();
         }
-    }
 
-    private Sequence register(final String user, final String pass, final DurationValue timeToLive, final FunctionReference callback) throws XPathException {
-        if (login(user, pass)) {
+        final DurationValue timeToLive = (DurationValue) args[2].itemAt(0);
+
+        try (FunctionReference callback = getCallBack(args[3])) {
+            if (!authenticated(user, pass)) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
             final PersistentLogin.LoginDetails details = PersistentLogin.getInstance().register(user, pass, timeToLive);
-            return callback(callback, null, details);
+            return call(callback, null, details);
         }
+    }
+
+    private Sequence login(Sequence[] args) throws XPathException {
+        final String token = args[0].getStringValue();
+        try (FunctionReference callback = getCallBack(args[1])) {
+            final PersistentLogin.LoginDetails data = PersistentLogin.getInstance().lookup(token);
+
+            if (data == null || !authenticated(data.getUser(), data.getPassword())) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            return call(callback, token, data);
+
+        }
+    }
+
+    private static Sequence invalidate(Sequence[] args) throws XPathException {
+        PersistentLogin.getInstance().invalidate(args[0].getStringValue());
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private Sequence authenticate(final String token, final FunctionReference callback) throws XPathException {
-        final PersistentLogin.LoginDetails data = PersistentLogin.getInstance().lookup(token);
-
-        if (data == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-
-        if (login(data.getUser(), data.getPassword())) {
-            return callback(callback, token, data);
-        }
-
-        return Sequence.EMPTY_SEQUENCE;
-    }
-
-    private boolean login(final String user, final String pass) throws XPathException {
+    private boolean authenticated(final String user, final String pass) {
         try {
             final SecurityManager sm = BrokerPool.getInstance().getSecurityManager();
             final Subject subject = sm.authenticate(user, pass);
@@ -169,7 +180,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
         }
     }
 
-    private Sequence callback(final FunctionReference func, final String oldToken, final PersistentLogin.LoginDetails details) throws XPathException {
+    private Sequence call(@Nullable final FunctionReference func, final String oldToken, final PersistentLogin.LoginDetails details) throws XPathException {
         final Sequence[] args = new Sequence[4];
         final String newToken = details.toString();
 
@@ -184,5 +195,12 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
 
         func.analyze(cachedContextInfo);
         return func.evalFunction(null, null, args);
+    }
+
+    private @Nullable FunctionReference getCallBack(final Sequence arg) {
+        if (arg.isEmpty()) {
+            return null;
+        }
+        return (FunctionReference) arg.itemAt(0);
     }
 }
