@@ -4,7 +4,7 @@ permissions:
   contents: read
 env:
   MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./ -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
-  DEV_JDK: '8'
+  DEV_JDK: '11'
 jobs:
   license:
     name: License check
