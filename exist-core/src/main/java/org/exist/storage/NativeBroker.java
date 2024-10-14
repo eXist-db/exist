@@ -3033,8 +3033,7 @@ public class NativeBroker extends DBBroker {
                 }
             }.run();
             // create a copy of the old doc to copy the nodes into it
-            final DocumentImpl tempDoc = new DocumentImpl(null, doc.getDocId(), doc);
-            tempDoc.copyOf(this, doc, doc);
+            final DocumentImpl tempDoc = new DocumentImpl(null, pool, doc.getCollection(), doc.getDocId(), doc.getFileURI());
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             // copy the nodes
             final NodeList nodes = doc.getChildNodes();
@@ -3067,7 +3066,7 @@ public class NativeBroker extends DBBroker {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Defragmentation took {} ms.", (System.currentTimeMillis() - start));
             }
-        } catch(final PermissionDeniedException | IOException e) {
+        } catch(IOException e) {
             LOG.error(e);
         }
     }
