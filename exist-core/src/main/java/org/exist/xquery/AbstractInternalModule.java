@@ -84,6 +84,15 @@ public abstract class AbstractInternalModule implements InternalModule {
         return parameters.get(paramName);
     }
 
+    /**
+     * Get the module parameters.
+     *
+     * @return the module parameters.
+     */
+    protected Map<String, List<? extends Object>> getParameters() {
+        return parameters;
+    }
+
     @Override
     public void setContextItem(final Sequence contextItem) {
         // not used for internal modules

@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<!--
     This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
     the WEB-INF directory of the web application. Otherwise, the configuration
@@ -12,10 +35,9 @@
                 startup
                     triggers
                 pool
-                query-pool
                 recovery
+                security
                 watchdog
-            lock-manager
             repository
             binary-manager
             indexer
@@ -52,9 +74,12 @@
     
         - http://exist-db.org/exist/apps/doc/configuration.xml
         - http://exist-db.org/exist/apps/doc/documentation.xml
+        - http://atomic.exist-db.org/
+        
+    Version: 4.11.0-SNAPSHOT
 
 -->
-<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../schema/conf.xsd">
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
 
     <!-- 
         Configures the database backend.
@@ -123,55 +148,27 @@
             with high load will never be shrinked. A negative value means that
             shrinkage will not be performed.
 
+         - doc-ids:
+            how document ids are managed by eXist. Takes the values
+            "default" or "incremental".
+            
+            eXist assigns a unique, 32bit integer document id to every 
+            document. When a document is deleted, its id will be freed 
+            and reused for the next document stored. The disadvantage 
+            of this approach is that document ids
+            are not stable, i.e. one cannot be sure that the same document
+            id will always identify the same document.
+
+            If you need stable, incremental ids, set the option doc-ids to
+            "incremental".
         - minDiskSpace:
             The amount of disk space (in megabytes) which should be available for
             the database to continue operations. If free disk space goes below
             the configured limit, eXist-db will flush all buffers to disk and
             switch to read-only mode in order to prevent potential data loss. 
             Set the limit large enough to allow all pending operations to 
-            complete. Set to -1 to disable. The default is 1 gigabyte.
-
-        - posix-chown-restricted:
-            As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
-
-            When posix-chown-restricted="true" (the default) then:
-                1. Only a superuser process can change the user ID of the file.
-                2. A non-superuser process can change the group ID of the file
-                   if the process owns the file (the effective user ID equals
-                   the user ID of the file), and group equals either the
-                   effective group ID of the process or one of the
-                   process’s supplementary group IDs.
-            This means that when posix-chown-restricted="true", you can’t change
-            the user ID of your files. You can change the group ID of files that
-            you own, but only to groups that you belong to.
-
-            When posix-chown-restricted="false" you can change the user ID of
-            any file that you own, effectively "giving away the file" to
-            another user. Such a setting has negative security implications,
-            further details can be seen in the "Rationale" section for the
-            chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
-            See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
-
-        - preserve-on-copy
-            When copying Collections and Documents within the database, the
-            default (`false`), is not to preserve their attributes
-            (modification time, mode, user-id, group-id, and ACL).
-
-            NOTE: Not preserving attributes, is inline with both the GNU and
-            BSD `cp` commands, and therefore expected behaviour; The target
-            Collection or Document is created following the rules of the
-            target parent, and the effective user and their umask.
-
-            Setting preserve-on-copy="true" changes the default behaviour
-            so that the target Collection or Document of a copy, has the same
-            attributes as the source.
-
-            The preserve-on-copy setting can be overridden on a case-by-case
-            basis by setting the `preserve` flag to either `true` or `false`
-            when calling xmldb:copy(), or via any other API that supports copy.
-            Omitting the preserve flag when calling a copy operation, implies
-            the behaviour that is set in this configuration.
-
+            complete. The default is 1 gigabyte.
+    
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
@@ -182,8 +179,8 @@
         collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
-        files="../data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
-        minDiskSpace="1024M" posix-chown-restricted="true" preserve-on-copy="false">
+        files="webapp/WEB-INF/data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        doc-ids="default" minDiskSpace="128M">
 
         <!--
             Startup Triggers are executed before the database becomes generally available
@@ -216,27 +213,9 @@
                 <!-- 
                     AutoDeploymentTrigger will install any .xar application package it finds
                     in the autodeploy directory unless the application has already been installed
-                    in the db.
-
-                    The trigger can be disabled by setting the Java System Property `exist.autodeploy=off`,
-                    if you are running multiple instances in a single JVM, this global behaviour can be
-                    overridden on a per-instance basis by setting the trigger param `ignore-autodeploy-system-property`.
-
-                    Parameters:
-
-                        * ignore-autodeploy-system-property
-                            Causes the AutoDeploymentTrigger to ignore the system property `exist.autodeploy`.
-
-                        * dir
-                            An absolute path to the directory which contains the XARs to autodeploy.
+                    in the db. 
                 -->   
-                <trigger class="org.exist.repo.AutoDeploymentTrigger">
-
-                    <!-- parameter name="ignore-autodeploy-system-property" value="true"/ -->
-
-                    <!-- parameter name="dir" value="${project.build.outputDirectory}/autodeploy"/ -->
-
-                </trigger>
+                <trigger class="org.exist.repo.AutoDeploymentTrigger"/>
                 
                 <!-- 
                     XQueryStartupTrigger will execute all xquery scripts stored in the
@@ -290,9 +269,12 @@
                 - size:                                                                  
                     number of copies of the same query kept in the query-pool.           
                     Value "-1" effectively disables caching. Queries cannot be shared     
-                    by threads, each thread needs a private copy of a query.
+                    by threads, each thread needs a private copy of a query.             
+                                                                                         
+                - timeout:                                                               
+                    amount of time that a query will be cached in the query-pool in milliseconds.
             -->
-        <query-pool max-stack-size="64" size="128"/>
+        <query-pool max-stack-size="64" size="128" timeout="120000"/>
 
         <!--
             Settings for the journaling and recovery of the database. With 
@@ -363,7 +345,7 @@
                 and if inconsistencies are found in the db, it writes an emergency
                 backup to the same directory.
         -->
-        <recovery enabled="yes"  group-commit="no"   journal-dir="../data"
+        <recovery enabled="yes"  group-commit="no"   journal-dir="webapp/WEB-INF/data"
                   size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
 
         <!--
@@ -389,92 +371,6 @@
         <watchdog output-size-limit="1000000" query-timeout="-1"/>
 
     </db-connection>
-
-
-    <!--
-        Settings for the Database Lock Manager
-
-        - upgrade-check
-            Used by developers for diagnosing illegal lock upgrade issues. When enabled
-            checks for lock upgrading within the same thread, i.e. READ_LOCK -> WRITE_LOCK
-            are enabled. When an illegal upgrade is detected a LockException is thrown.
-            Such behaviour will likely corrupt any database writes, and should only be
-            used by developers when debugging database issues.
-
-            This can also be set via the Java System Properties `org.exist.lock-manager.upgrade-check`,
-                or (legacy) `exist.lockmanager.upgrade.check`.
-
-        - warn-wait-on-read-for-write
-            Used by developers for diagnosing lock performance issues. When enabled
-            checks for detecting when a thread wants to acquire the WRITE_LOCK
-            but another thread holds the READ_LOCK are enabled. When such operations
-            are detected a log message is written to locks.log at WARN level.
-
-            This can also be set via the Java System Properties `org.exist.lock-manager.warn-wait-on-read-for-write`,
-                or (legacy) `exist.lockmanager.warn.waitonreadforwrite`.
-
-        - paths-multi-writer
-            Set to true to enable Multi-Writer/Multi-Reader semantics for
-            the database Collection/Document Hierarchy as opposed to the default (false)
-            for Single-Writer/Multi-Reader.
-
-            NOTE: Whilst enabling Multiple-Writers on the Collection and Document Hierarchy can improve concurrent
-            through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
-            Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
-            It is highly recommended that users leave this as the default setting. For more information, see:
-            "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
-            https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
-
-            This can also be set via the Java System Properties `org.exist.lock-manager.paths-multiple-writers`,
-            or (legacy) `exist.lockmanager.paths-multiwriter`.
-    -->
-    <lock-manager
-            upgrade-check="false"
-            warn-wait-on-read-for-write="false"
-            paths-multi-writer="false">
-
-        <!--
-            Settings for the Lock Table
-
-            - disabled
-                Disables the database lock table which tracks database locks. The Lock Table is enabled by default
-                and allows reporting on database locking via JMX.
-
-                NOTE: Tracking locks via the Lock Table imposes a small overhead per-Lock. Once users
-                have finished testing their system to ensure correct operation, they may wish to disable
-                this in production to ensure the absolute best performance.
-
-                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.disabled`,
-                    or (legacy) `exist.locktable.disable`.
-
-            - trace-stack-depth
-                When set above 0, this captures n frames of each threads stack that performs a try/lock/release
-                operation. These frames are visible from JMX reporting.
-                In addition, when the logging level for the Lock Table is set in log4j2.xml to TRACE the lock
-                events are written to the locks.log file.
-
-                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.trace-stack-depth`,
-                    or (legacy) `exist.locktable.trace.stack.depth`.
-        -->
-        <lock-table disabled="false" trace-stack-depth="0"/>
-
-
-        <!-- Settings for Document Locking
-
-            - use-path-locks
-                Set to true to have documents participate in the same hierarchical
-                path based locking strategy as Collections.
-
-                This has a performance and concurrency impact, but will ensure
-                that you cannot have deadlocks between Collections and Documents.
-
-                NOTE: in future this will likely be set to `true` by default.
-
-                This can also be set via the Java System Property `org.exist.lock-manager.document.use-path-locks`.
-        -->
-        <document use-path-locks="false"/>
-
-    </lock-manager>
 
     <!--
         Settings for the package repository:
@@ -541,35 +437,7 @@
         suppress-whitespace="none">
 
         <modules>
-            <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
-                    
-            <!--
-            <module id="spatial-index" connectionTimeout="10000" flushAfter="300" class="org.exist.indexing.spatial.GMLHSQLIndex"/>
-            -->
-            
-            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
 
-            <!--
-                The following index can be used to speed up 'order by' expressions
-                by pre-ordering a node set.
-            -->
-            <module id="sort-index"      class="org.exist.indexing.sort.SortIndex"/>
-
-            <!-- 
-                New range index based on Apache Lucene. Replaces the old range index which is
-                hard-wired into eXist core.
-            -->
-            <module id="range-index"    class="org.exist.indexing.range.RangeIndex"/>
-
-            <!--
-                 The following module is not really an index (though it sits 
-                 in the index pipeline). It gathers relevant statistics on the
-                 distribution of elements in the database, which can be used 
-                 by the query optimizer for additional optimizations. 
-            -->
-            <!--
-            <module id="index-stats" file="stats.dbx" class="org.exist.storage.statistics.IndexStatistics" />
-            -->
         </modules>
 
         <!--
@@ -932,179 +800,8 @@
         
         <builtin-modules>
 
-            <!--
-                Core Modules
-            -->
             <module uri="http://www.w3.org/2005/xpath-functions" class="org.exist.xquery.functions.fn.FnModule">
-
-                <!--
-                    Access to Environment Variables via the fn:available-environment-variables#0
-                    and fn:environment-variable#1 functions can be restricted for Security Purposes.
-                    The syntax of the parameter keys is:
-                        "environmentVariableAccess.<Name of an Environment Variable>.[requiresGroup|requiresUser]"
-                    If you have multiple users who wish to access the same Environment Variable, then you may
-                    add multiple parameters for the same key, e.g.:
-                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="dba"/>
-                    <parameter name="environmentVariableAccess.PATH.requiresGroup" value="admin"/>
-                    <parameter name="environmentVariableAccess.PATH.requiresUser" value="my-special-user"/>
-                    The special symbol "*", meaning "otherwise", may be used to indicate all Environment Variables
-                    which have not otherwise been specified in this config.
-                       If "*" is not set in this config, then it is set to the "DBA" group by default.
-                -->
-                <parameter name="environmentVariableAccess.*.requiresGroup" value="dba"/>
-
-            </module>
-            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule"/>
-            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule"/>
-            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule"/>
-            <module uri="http://exist-db.org/xquery/backups" class="org.exist.backup.xquery.BackupModule"/>
-            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
-            <module uri="http://www.json.org" src="resource:org/exist/xquery/lib/json.xq"/>
-            <module uri="http://www.jsonp.org" src="resource:org/exist/xquery/lib/jsonp.xq"/>
-            <module uri="http://exist-db.org/xquery/kwic" src="resource:org/exist/xquery/lib/kwic.xql"/>
-            <module uri="http://exist-db.org/xquery/request" class="org.exist.xquery.functions.request.RequestModule"/>
-            <module uri="http://exist-db.org/xquery/response" class="org.exist.xquery.functions.response.ResponseModule"/>
-            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
-            <module uri="http://exist-db.org/xquery/session" class="org.exist.xquery.functions.session.SessionModule"/>
-            <module uri="http://exist-db.org/xquery/system" class="org.exist.xquery.functions.system.SystemModule"/>
-            <module uri="http://exist-db.org/xquery/testing" src="resource:org/exist/xquery/lib/test.xq"/>
-            <module uri="http://exist-db.org/xquery/transform" class="org.exist.xquery.functions.transform.TransformModule"/>
-            <module uri="http://exist-db.org/xquery/util" class="org.exist.xquery.functions.util.UtilModule">
-                <!-- set to true to disable the util:eval functions -->
-                <parameter name="evalDisabled" value="false"/>
-
-                <!--
-                    Access to Java System Properties via the util:available-system-properties#0
-                    and util:system-property#1 functions can be restricted for Security Purposes.
-                    The syntax of the parameter keys is:
-                        "systemPropertyAccess.<Name of a Java System Property>.[requiresGroup|requiresUser]"
-                    If you have multiple users who wish to access the same System Property, then you may
-                    add multiple parameters for the same key, e.g.:
-                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="dba"/>
-                    <parameter name="systemPropertyAccess.PATH.requiresGroup" value="admin"/>
-                    <parameter name="systemPropertyAccess.PATH.requiresUser" value="my-special-user"/>
-                    The special symbol "*", meaning "otherwise", may be used to indicate all System Properties
-                    which have not otherwise been specified in this config.
-                       If "*" is not set in this config, then it is set to the "DBA" group by default.
-                -->
-                <parameter name="systemPropertyAccess.*.requiresGroup" value="dba"/>
-            </module>
-            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule"/>
-            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
-
-
-            <!-- 
-                Extension Indexes
-            -->
-            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule"/>
-            <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule"/>
-            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule"/>
-            <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule"/>
-            <!--
-            <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule"/>
-            -->
-
-
-            <!--
-                Extensions
-            -->
-            <module uri="http://exist-db.org/xquery/contentextraction"  class="org.exist.contentextraction.xquery.ContentExtractionModule"/>
-            <!-- module uri="http://exist-db.org/xquery/exiftool"  class="org.exist.exiftool.xquery.ExiftoolModule">
-                <parameter name="perl-path" value="/usr/bin/perl" description="file system path to the perl executable"/>
-                <parameter name="exiftool-path" value="/usr/bin/exiftool" description="file system path to the exiftool perl script"/>
-            </module -->
-            <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
-            <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule"/>
-            <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
-            <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
-            <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>
-            <module uri="http://exist-db.org/xquery/xqdoc" class="org.exist.xqdoc.xquery.XQDocModule"/>
-
-
-            <!--
-                Extension Modules
-            -->
-            <module uri="http://exist-db.org/xquery/cache" class="org.exist.xquery.modules.cache.CacheModule">
-                <!--
-                If a named Cache does not exist it can be created lazily on-demand
-                when an operation is first performed upon it.
-
-                    - enableLazyCreation
-                        true to enable lazy creation, false to disable.
-                        When false, if the Cache is not explicitly created before
-                        it is used then an error is raised.
-
-                    - lazy.*
-                        These settings are as documented for the Cache Module
-                        and control the config that is used when lazily creating
-                        a Cache.
-                        Valid settings are:
-                            - lazy.maximumSize
-                            - lazy.expireAfterAccess
-                            - lazy.putGroup
-                            - lazy.getGroup
-                            - lazy.removeGroup
-                            - lazy.clearGroup
-                -->
-                <parameter name="enableLazyCreation" value="true"/>
-                <parameter name="lazy.maximumSize" value="128"/>
-            </module>
-            <module uri="http://exist-db.org/xquery/compression" class="org.exist.xquery.modules.compression.CompressionModule"/>
-            <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.counter.CounterModule"/>
-            <module uri="http://exist-db.org/xquery/cqlparser" class="org.exist.xquery.modules.cqlparser.CQLParserModule"/>
-            <!-- module uri="http://exist-db.org/xquery/exi" class="org.exist.xquery.modules.exi.ExiModule"/ -->
-            <module uri="http://exist-db.org/xquery/repo" class="org.exist.xquery.modules.expathrepo.ExpathPackageModule"/>
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
-            <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule"/>
-            <module uri="http://exist-db.org/xquery/jndi" class="org.exist.xquery.modules.jndi.JNDIModule"/>
-            <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
-            <!-- module uri="http://exist-db.org/xquery/oracle" class="org.exist.xquery.modules.oracle.OracleModule"/ -->
-            <module uri="http://exist-db.org/xquery/persistentlogin" class="org.exist.xquery.modules.persistentlogin.PersistentLoginModule"/>
-            <module uri="http://exist-db.org/xquery/process" class="org.exist.xquery.modules.process.ProcessModule"/>
-            <module uri="http://exist-db.org/xquery/scheduler" class="org.exist.xquery.modules.scheduler.SchedulerModule"/>
-            <module uri="http://exist-db.org/xquery/simple-ql" class="org.exist.xquery.modules.simpleql.SimpleQLModule"/>
-            <module uri="http://exist-db.org/xquery/sql" class="org.exist.xquery.modules.sql.SQLModule">
-
-                <!--
-                Connection Pools can be setup for SQL connections, for use with sql:get-connection-from-pool($pool-name)
-                Each pool has a name and a number of configuration properties.
-                The HikariCP Connection Pool is used, you can find its configuration options
-                here: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
-
-                You can specify the username and password for a connection here, or you may specify it
-                when you call sql:get-connection-from-pool($pool-name, $username, $password).
-                -->
-
-                <!--
-                <parameter name="pool.1.name" value="pool-1"/>
-                <parameter name="pool.1.properties.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource"/>
-                <parameter name="pool.1.properties.dataSource.user" value="my-username"/>
-                <parameter name="pool.1.properties.dataSource.password" value="my-password"/>
-                <parameter name="pool.1.properties.dataSource.databaseName" value="my-db"/>
-                <parameter name="pool.1.properties.maximumPoolSize" value="10"/>
-                <parameter name="pool.1.properties.registerMbeans" value="false"/>
-                -->
-
-                <!--
-                <parameter name="pool.2.name" value="pool-2"/>
-                <parameter name="pool.2.properties.dataSourceClassName" value="org.mariadb.jdbc.MariaDbDataSource"/>
-                <parameter name="pool.2.properties.dataSource.user" value="my-other-username"/>
-                <parameter name="pool.2.properties.dataSource.password" value="my-other-password"/>
-                <parameter name="pool.2.properties.dataSource.databaseName" value="other-db"/>
-                <parameter name="pool.2.properties.maximumPoolSize" value="10"/>
-                <parameter name="pool.2.properties.registerMbeans" value="false"/>
-                -->
-            </module>
-            <module uri="http://exist-db.org/xquery/xmldiff" class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>
-            <!--
-                XSL:FO Transformation Module
-                    Valid processor adapters are:
-                        - org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter for Apache's FOP
-                        - org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter for RenderX's XEP
-                        - org.exist.xquery.modules.xslfo.AntennaHouseProcessorAdapter for AntennaHouse Formatter
-            -->
-            <module uri="http://exist-db.org/xquery/xslfo" class="org.exist.xquery.modules.xslfo.XSLFOModule">
-                <parameter name="processorAdapter" value="org.exist.xquery.modules.xslfo.ApacheFopProcessorAdapter"/>
+                <parameter name="environmentVariableAccess.*.requiresGroup" value="admins"/>
             </module>
 
         </builtin-modules>

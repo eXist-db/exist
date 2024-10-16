@@ -703,12 +703,15 @@
                                 <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/AccessUtil.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
+                                <include>src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java</include>
                                 <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
                                 <exclude>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
@@ -849,12 +852,15 @@ The original license statement is also included below.]]></preamble>
                                 <include>src/main/java/org/exist/xquery/Cardinality.java</include>
                                 <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
                                 <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/AccessUtil.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/fn/FunEnvironmentTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</include>
                                 <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
                                 <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/util/SystemPropertyTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
                                 <include>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</include>
                                 <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
