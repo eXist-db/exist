@@ -340,6 +340,9 @@ public class XQueryContext implements BinaryValueManager, Context {
     //For holding the environment variables
     private Map<String, String> envs;
 
+    //For holding the Java System Properties
+    private Map<String, String> props;
+
     private ContextUpdateListener updateListener = null;
 
     private boolean enableOptimizer = true;
@@ -2478,9 +2481,29 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public Map<String, String> getEnvironmentVariables() {
         if (envs == null) {
-            envs = System.getenv();
+            envs = Collections.unmodifiableMap(new HashMap<>(System.getenv()));
         }
         return envs;
+    }
+
+    /**
+     * Get Java System properties. The properties shall not change
+     * during execution of query.
+     *
+     * @return Map of Java System Properties
+     */
+    public Map<String, String> getJavaSystemProperties() {
+        if (props == null) {
+            final Map<String, String> strProps = new HashMap<>();
+            for (final Map.Entry<Object, Object> prop : System.getProperties().entrySet()) {
+                final Object value = prop.getValue();
+                if (value instanceof String) {
+                    strProps.put(prop.getKey().toString(), (String) value);
+                }
+            }
+            props = Collections.unmodifiableMap(strProps);
+        }
+        return props;
     }
 
     /**

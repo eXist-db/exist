@@ -19,7 +19,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -47,6 +47,6 @@ public class GetProductName extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        return new StringValue(SystemProperties.getInstance().getSystemProperty("product-name", "eXist"));
+        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_NAME, "eXist"));
     }
 }

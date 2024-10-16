@@ -22,9 +22,14 @@ package org.exist.xquery.functions.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
+import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.AccessUtil;
 import org.exist.xquery.functions.inspect.InspectFunction;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -36,7 +41,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author ljo
  * @author Andrzej Taramina (andrzej@chaeron.com)
- * @author Adam retter <adam.retter@googlemail.com>
+ * @author <a href="mailto:adam@evolvedbinary.com>Adam Retter</a>
  */
 public class UtilModule extends AbstractInternalModule {
 
@@ -96,7 +101,8 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(ExclusiveLockFunction.signature, ExclusiveLockFunction.class),
             new FunctionDef(SharedLockFunction.signature, SharedLockFunction.class),
             new FunctionDef(Collations.signature, Collations.class),
-            new FunctionDef(SystemProperty.signature, SystemProperty.class),
+            new FunctionDef(SystemProperty.FS_AVAILABLE_SYSTEM_PROPERTIES, SystemProperty.class),
+            new FunctionDef(SystemProperty.FS_SYSTEM_PROPERTY, SystemProperty.class),
             new FunctionDef(FunctionFunction.signature, FunctionFunction.class),
             new FunctionDef(CallFunction.signature, CallFunction.class),
             new FunctionDef(NodeId.signature, NodeId.class),
@@ -164,6 +170,11 @@ public class UtilModule extends AbstractInternalModule {
 
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
+    private static final Pattern PTN_SYSTEM_PROPERTY_ACCESS = PatternFactory.getInstance().getPattern("systemPropertyAccess\\.([^=\\00])+\\.requires((?:Group)|(?:User))");
+
+    private Map<String, Set<String>> systemPropertyAccessGroups = null;
+    private Map<String, Set<String>> systemPropertyAccessUsers = null;
+
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);
 
@@ -207,6 +218,33 @@ public class UtilModule extends AbstractInternalModule {
         return evalDisabled;
     }
 
+    /**
+     * Get the system property names and groups that are allowed to access them.
+     *
+     * @return a map where the key is the system property name, and the value is a set of group names.
+     */
+    Map<String, Set<String>> getSystemPropertyAccessGroups() {
+        if (systemPropertyAccessGroups == null) {
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
+            this.systemPropertyAccessGroups = accessRules._1;
+            this.systemPropertyAccessUsers = accessRules._2;
+        }
+        return systemPropertyAccessGroups;
+    }
+
+    /**
+     * Get the system property names and users that are allowed to access them.
+     *
+     * @return a map where the key is the system property name, and the value is a set of usernames.
+     */
+    Map<String, Set<String>> getSystemPropertyAccessUsers() {
+        if (systemPropertyAccessUsers == null) {
+            final Tuple2<Map<String, Set<String>>, Map<String, Set<String>>> accessRules = AccessUtil.parseAccessParameters(PTN_SYSTEM_PROPERTY_ACCESS, getParameters());
+            this.systemPropertyAccessGroups = accessRules._1;
+            this.systemPropertyAccessUsers = accessRules._2;
+        }
+        return systemPropertyAccessUsers;
+    }
 
     @Override
     public void reset(final XQueryContext xqueryContext, final boolean keepGlobals) {

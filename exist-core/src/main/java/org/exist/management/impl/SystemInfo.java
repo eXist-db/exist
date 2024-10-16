@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 
 /**
  * Class SystemInfo
@@ -39,12 +39,12 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getExistVersion() {
-        return SystemProperties.getInstance().getSystemProperty("product-version","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION,"unknown");
     }
 
     @Override
     public String getExistBuild() {
-        return SystemProperties.getInstance().getSystemProperty("product-build","unknown");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_BUILD,"unknown");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getGitCommit() {
-        return SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID");
+        return ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown Git commit ID");
     }
 
     @Override

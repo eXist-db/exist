@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
@@ -76,6 +77,15 @@ public abstract class AbstractInternalModule implements InternalModule {
      */
     protected List<? extends Object> getParameter(final String paramName) {
         return parameters.get(paramName);
+    }
+
+    /**
+     * Get the module parameters.
+     *
+     * @return the module parameters.
+     */
+    protected Map<String, List<? extends Object>> getParameters() {
+        return parameters;
     }
 
     @Override

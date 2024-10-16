@@ -20,7 +20,7 @@
  */
 package org.exist.xquery.functions.system;
 
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -56,6 +56,6 @@ public class GetRevision extends BasicFunction {
      */
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(SystemProperties.getInstance().getSystemProperty("git-commit", "unknown Git commit ID"));
+        return new StringValue(ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown Git commit ID"));
     }
 }
