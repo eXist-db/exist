@@ -54,7 +54,8 @@
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
         <mac.bundle.java.dir>${mac.bundle.dir}/Contents/Java</mac.bundle.java.dir>
         <mac.dmg>${project.build.directory}/eXist-db-${project.version}.dmg</mac.dmg>
-        <mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity>
+        <!-- mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity -->
+        <mac.codesign.identity>8B85321E0ECDA5AF4DA59EFC5B453983DEE3CBB4</mac.codesign.identity>
     </properties>
 
     <dependencies>
