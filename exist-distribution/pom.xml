@@ -1303,16 +1303,15 @@
                                     <useMavenLogger>true</useMavenLogger>
                                     <executable>/usr/bin/xcrun</executable>
                                     <arguments>
-                                        <argument>altool</argument>
-                                        <argument>--notarize-app</argument>
+                                        <argument>notarytool</argument>
+                                        <argument>submit</argument>
                                         <argument>--verbose</argument>
-                                        <argument>--primary-bundle-id</argument>
-                                        <argument>org.exist-db</argument>
-                                        <argument>--username</argument>
-                                        <argument>${existdb.release.notarize.username}</argument>
+                                        <argument>--apple-id</argument>
+                                        <argument>${existdb.release.notarize.apple-id}</argument>
+                                        <argument>--team-id</argument>
+                                        <argument>${existdb.release.notarize.team-id}</argument>
                                         <argument>--password</argument>
                                         <argument>${existdb.release.notarize.password}</argument>
-                                        <argument>--file</argument>
                                         <argument>${mac.dmg}</argument>
                                     </arguments>
                                 </configuration>
