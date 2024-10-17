@@ -21,8 +21,14 @@ package org.exist.xquery.functions.system;
 
 import java.util.List;
 import java.util.Map;
+
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 /**
  * Module function definitions for system module.
@@ -58,7 +64,8 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(Shutdown.signatures[1], Shutdown.class),
             new FunctionDef(GetModuleLoadPath.signature, GetModuleLoadPath.class),
             new FunctionDef(TriggerSystemTask.signature, TriggerSystemTask.class),
-            new FunctionDef(AsUser.signature, AsUser.class),
+            new FunctionDef(AsUser.FS_AS_USER, AsUser.class),
+			new FunctionDef(AsUser.FS_FUNCTION_AS_USER, AsUser.class),
             new FunctionDef(GetIndexStatistics.signature, GetIndexStatistics.class),
             new FunctionDef(UpdateStatistics.signature, UpdateStatistics.class),
             new FunctionDef(GetRunningXQueries.signature, GetRunningXQueries.class),
@@ -98,4 +105,11 @@ public class SystemModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
+	static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+		return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
+	}
+
+	static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+		return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
+	}
 }
