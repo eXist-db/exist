@@ -105,7 +105,7 @@ public class ParsingFunctions extends BasicFunction {
 
     private ValidationReport validate(final String xmlContent, final SAXAdapter saxAdapter) throws XPathException {
         final String xml;
-	    if (isCalledAs("parse-xml-fragment")) {
+	    if (isCalledAs("parse-xml-fragment") && !xmlContent.toLowerCase().startsWith("<?xml ")) {
             xml = "<" + FRAGMENT_WRAPPER_NAME + ">" + xmlContent + "</" + FRAGMENT_WRAPPER_NAME + ">";
         } else {
 	        xml = xmlContent;
