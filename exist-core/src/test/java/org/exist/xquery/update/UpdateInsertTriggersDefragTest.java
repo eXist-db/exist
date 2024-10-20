@@ -40,13 +40,13 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
 
 public class UpdateInsertTriggersDefragTest {
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer exist = new ExistXmldbEmbeddedServer(false, true, true, propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build());
-    final String path = TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI.toString();
-    final String xml = "<list><item>initial</item></list>";
-    Collection testCollection;
-    XQueryService queryService;
-    CollectionManagementService collectionService;
+
+    private Collection testCollection;
+    private XQueryService queryService;
+    private CollectionManagementService collectionService;
 
     /**
      * stores XML String and get Query Service
@@ -66,7 +66,7 @@ public class UpdateInsertTriggersDefragTest {
         collectionService = exist.getRoot().getService(CollectionManagementService.class);
         testCollection = collectionService.createCollection(TestConstants.TEST_COLLECTION_URI.toString());
         queryService = (XQueryService) testCollection.getService(XPathQueryService.class);
-        storeXML(TestConstants.TEST_XML_URI.toString(), xml);
+        storeXML(TestConstants.TEST_XML_URI.toString(), "<list><item>initial</item></list>");
     }
 
     @After
@@ -76,7 +76,7 @@ public class UpdateInsertTriggersDefragTest {
 
     @Test
     public void triggerDefragAfterUpdate() throws Exception {
-        final String update = "update insert <item>new node</item> into doc('" + path + "')//list";
+        final String update = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI.toString() + "')//list";
         final ResourceSet updateResult = queryService.queryResource(TestConstants.TEST_XML_URI.toString(), update);
         assertEquals("Update expression returns an empty sequence", 0, updateResult.getSize());
 
