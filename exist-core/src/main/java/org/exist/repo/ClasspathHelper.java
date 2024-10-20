@@ -23,7 +23,7 @@ package org.exist.repo;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.start.Classpath;
 import org.exist.start.EXistClassLoader;
 import org.exist.storage.BrokerPool;
@@ -109,7 +109,7 @@ public class ClasspathHelper implements BrokerPoolService {
     private static boolean isCompatible(final Package pkg) throws PackageException {
         // determine the eXist-db version this package is compatible with
         final Collection<ProcessorDependency> processorDeps = pkg.getProcessorDeps();
-        final String procVersion = SystemProperties.getInstance().getSystemProperty("product-version", "1.0");
+        final String procVersion = ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "1.0");
         PackageLoader.Version requiresExistVersion = null;
         for (final ProcessorDependency dependency: processorDeps) {
             if (Deployment.PROCESSOR_NAME.equals(dependency.getProcessor())) {

@@ -33,7 +33,7 @@ import org.eclipse.jetty.util.Jetty;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.xml.XmlConfiguration;
-import org.exist.SystemProperties;
+import org.exist.ExistSystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
@@ -190,9 +190,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             logger.info("Running as user '{}'", System.getProperty("user.name", "(unknown user.name)"));
             logger.info("[eXist Home : {}]", System.getProperty("exist.home", "unknown"));
-            logger.info("[eXist Version : {}]", SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-            logger.info("[eXist Build : {}]", SystemProperties.getInstance().getSystemProperty("product-build", "unknown"));
-            logger.info("[Git commit : {}]", SystemProperties.getInstance().getSystemProperty("git-commit", "unknown"));
+            logger.info("[eXist Version : {}]", ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_VERSION, "unknown"));
+            logger.info("[eXist Build : {}]", ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_PRODUCT_BUILD, "unknown"));
+            logger.info("[Git commit : {}]", ExistSystemProperties.getInstance().getExistSystemProperty(ExistSystemProperties.PROP_GIT_COMMIT, "unknown"));
 
             logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
             logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
