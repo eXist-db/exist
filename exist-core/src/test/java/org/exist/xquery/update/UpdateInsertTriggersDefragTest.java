@@ -56,9 +56,10 @@ public class UpdateInsertTriggersDefragTest {
      * @throws XMLDBException if an error occurs storing the document
      */
     private void storeXML(final String documentName, final String content) throws XMLDBException {
-        final XMLResource doc = testCollection.createResource(documentName, XMLResource.class);
-        doc.setContent(content);
-        testCollection.storeResource(doc);
+        try (final XMLResource doc = testCollection.createResource(documentName, XMLResource.class)) {
+            doc.setContent(content);
+            testCollection.storeResource(doc);
+        }
     }
 
     @Before
