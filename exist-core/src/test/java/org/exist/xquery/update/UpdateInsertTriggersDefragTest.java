@@ -39,9 +39,11 @@ import static org.exist.test.TestConstants.TEST_XML_URI;
 import static org.junit.Assert.assertEquals;
 
 public class UpdateInsertTriggersDefragTest {
+
     @ClassRule
     public static final ExistXmldbEmbeddedServer exist = new ExistXmldbEmbeddedServer(false, true, true,
             propertiesBuilder().put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build());
+
     private final String path = TEST_COLLECTION_URI + "/" + TEST_XML_URI.toString();
     private Collection testCollection;
     private CollectionManagementService collectionService;
