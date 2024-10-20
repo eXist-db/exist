@@ -73,6 +73,7 @@ public class UpdateInsertTriggersDefragTest {
     @After
     public void tearDown() throws Exception {
         collectionService.removeCollection(testCollection.getName());
+        testCollection.close();
     }
 
     @Test
