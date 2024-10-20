@@ -53,10 +53,11 @@ public class UpdateInsertTriggersDefragTest {
         collectionService = (CollectionManagementService) exist.getRoot().getService("CollectionManagementService","1.0");
 
         testCollection = collectionService.createCollection(TEST_COLLECTION_URI.lastSegment().toString());
-        final XMLResource doc = (XMLResource) testCollection.createResource(TEST_XML_URI.toString(), XMLResource.RESOURCE_TYPE);
+        try (final XMLResource doc = (XMLResource) testCollection.createResource(TEST_XML_URI.toString(), XMLResource.RESOURCE_TYPE)) {
 
-        doc.setContent("<list><item>initial</item></list>");
-        testCollection.storeResource(doc);
+            doc.setContent("<list><item>initial</item></list>");
+            testCollection.storeResource(doc);
+        };
     }
 
     @After
