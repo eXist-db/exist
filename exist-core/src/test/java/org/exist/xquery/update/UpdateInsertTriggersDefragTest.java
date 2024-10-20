@@ -21,68 +21,78 @@
  */
 package org.exist.xquery.update;
 
+import com.evolvedbinary.j8fu.function.Consumer2E;
+import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.security.PermissionDeniedException;
+import org.exist.source.StringSource;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.junit.After;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Sequence;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XQueryService;
 
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.exist.test.Util.executeQuery;
+import static org.exist.test.Util.withCompiledQuery;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UpdateInsertTriggersDefragTest {
 
     @ClassRule
-    public static final ExistXmldbEmbeddedServer exist = new ExistXmldbEmbeddedServer(false, true, true, propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build());
-
-    private Collection testCollection;
-    private XQueryService queryService;
-    private CollectionManagementService collectionService;
-
-    /**
-     * stores XML String and get Query Service
-     *
-     * @param documentName to be stored in the DB
-     * @param content      to be stored in the DB
-     * @throws XMLDBException if an error occurs storing the document
-     */
-    private void storeXML(final String documentName, final String content) throws XMLDBException {
-        try (final XMLResource doc = testCollection.createResource(documentName, XMLResource.class)) {
-            doc.setContent(content);
-            testCollection.storeResource(doc);
-        }
-    }
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(propertiesBuilder().put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, -1).build(), true, true);
 
     @Before
     public void setUp() throws Exception {
-        collectionService = exist.getRoot().getService(CollectionManagementService.class);
-        testCollection = collectionService.createCollection(TestConstants.TEST_COLLECTION_URI.toString());
-        queryService = (XQueryService) testCollection.getService(XPathQueryService.class);
-        storeXML(TestConstants.TEST_XML_URI.toString(), "<list><item>initial</item></list>");
-    }
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-    @After
-    public void tearDown() throws Exception {
-        testCollection.close();
+            // store the test document in the test collection
+            try (final Collection testCollection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI)) {
+                broker.storeDocument(transaction, TestConstants.TEST_XML_URI, new StringInputSource("<list><item>initial</item></list>"), MimeType.XML_TYPE, testCollection);
+            }
+
+            transaction.commit();
+        }
     }
 
     @Test
     public void triggerDefragAfterUpdate() throws Exception {
-        final String update = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI.toString() + "')//list";
-        final ResourceSet updateResult = queryService.queryResource(TestConstants.TEST_XML_URI.toString(), update);
-        assertEquals("Update expression returns an empty sequence", 0, updateResult.getSize());
+        final String updateQuery = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//list";
+        assertQuery(updateQuery, updateResults ->
+            assertTrue("Update expression returns an empty sequence", updateResults.isEmpty())
+        );
 
-        final ResourceSet itemResult = queryService.queryResource(TestConstants.TEST_XML_URI.toString(), "//item");
-        assertEquals("Both items are returned", 2, itemResult.getSize());
+        final String searchQuery = "doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//item";
+        assertQuery(searchQuery, searchResults ->
+            assertEquals("Both items are returned", 2, searchResults.getItemCount())
+        );
     }
 
+    private void assertQuery(final String query, final Consumer2E<Sequence, XPathException, PermissionDeniedException> assertions) throws EXistException, XPathException, PermissionDeniedException, IOException {
+        final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
+
+            withCompiledQuery(broker, new StringSource(query), compiledQuery -> {
+                final Sequence results = executeQuery(broker, compiledQuery);
+                assertions.accept(results);
+                return null;
+            });
+
+            transaction.commit();
+        }
+    }
 }
