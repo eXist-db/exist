@@ -1228,18 +1228,17 @@ The BaseX Team. The original license statement is also included below.]]></pream
     <profiles>
         <profile>
             <!--
-            Disable parallel tests on Windows.
-            When running multiple tests in parallel, Quartz seems to stop eXist-db from shutting down
-            on AppVeyor Windows CI, see: https://github.com/quartz-scheduler/quartz/issues/448
+            Disable parallel tests on Windows in CI, seems to cause an occasional issue with
+            Surefire that produces the Maven error: 'Corrupted channel by directly writing to native stream in forked JVM'.
             -->
-            <id>windows-disable-parallel-testing</id>
+            <id>windows-disable-parallel-ci-testing</id>
             <activation>
                 <os>
                     <family>windows</family>
                 </os>
                 <property>
-                    <name>env.APPVEYOR</name>
-                    <value>True</value>
+                    <name>env.GITHUB_ACTIONS</name>
+                    <value>true</value>
                 </property>
             </activation>
             <build>
@@ -1268,7 +1267,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                             <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
                             <forkCount>1C</forkCount>
                             <reuseForks>false</reuseForks>
-                            <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                            <argLine>-Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                             <systemPropertyVariables>
                                 <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                                 <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
@@ -1276,8 +1275,8 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                             </systemPropertyVariables>
                             <excludes>
-                                <!-- NOTE: this test fails on AppVeyor Windows CI with Oracle JDK 11,
-                                 but not on some other windows systems :-/ -->
+                                <!-- NOTE: this test occasionally fails on Windows CI
+                                 but not on some other Windows systems :-/ -->
                                 <exclude>org.exist.storage.lock.CollectionLocksTest</exclude>
 
                                 <!-- NOTE: these can still exhibit deadlocks -->
