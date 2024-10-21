@@ -4,7 +4,7 @@ permissions:
   contents: read
 env:
   MAVEN_OPTS: -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
-  DEV_JDK: '17'
+  DEV_JDK: '21'
 jobs:
   license:
     name: License check
