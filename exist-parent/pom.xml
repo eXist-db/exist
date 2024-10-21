@@ -92,8 +92,8 @@
     </mailingLists>
 
     <properties>
-        <project.build.source>17</project.build.source>
-        <project.build.target>17</project.build.target>
+        <project.build.source>21</project.build.source>
+        <project.build.target>21</project.build.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
