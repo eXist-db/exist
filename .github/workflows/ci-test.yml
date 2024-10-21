@@ -39,7 +39,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        jvm: ['17', '21']
+        jvm: ['21']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
