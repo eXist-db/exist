@@ -31,6 +31,7 @@ import org.exist.xquery.value.DurationValue;
 
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A persistent login feature ("remember me") similar to the implementation in <a href="https://github.com/SpringSource/spring-security">Spring Security</a>,
@@ -60,9 +61,9 @@ public class PersistentLogin {
 
     public final static int DEFAULT_TOKEN_LENGTH = 16;
 
-    public final static int INVALIDATION_TIMEOUT = 20000;
+    public final static int INVALIDATION_TIMEOUT = 1000;
 
-    private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, LoginDetails> seriesMap = new ConcurrentHashMap<>();
 
     private SecureRandom random;
 
@@ -76,7 +77,7 @@ public class PersistentLogin {
      *
      * The generated token will have the format base64(series-hash):base64(token-hash).
      *
-     * @param user the user name
+     * @param user the username
      * @param password the password
      * @param timeToLive timeout of the token
      * @return a first login token
@@ -154,17 +155,18 @@ public class PersistentLogin {
 
     public class LoginDetails {
 
-        private String userName;
-        private String password;
         private String token;
-        private String series;
-        private long expires;
-        private DurationValue timeToLive;
+
+        private final String userName;
+        private final String password;
+        private final String series;
+        private final long expires;
+        private final DurationValue timeToLive;
 
         // disable sequential token checking by default
-        private boolean seqBehavior = false;
+        private final boolean seqBehavior = false;
 
-        private Map<String, Long> invalidatedTokens = new HashMap<>();
+        private final Map<String, Long> invalidatedTokens = new HashMap<>();
 
         public LoginDetails(String user, String password, DurationValue timeToLive, long expires) {
             this.userName = user;
@@ -176,19 +178,19 @@ public class PersistentLogin {
         }
 
         public String getToken() {
-            return this.token;
+            return token;
         }
 
         public String getSeries() {
-            return this.series;
+            return series;
         }
 
         public String getUser() {
-            return this.userName;
+            return userName;
         }
 
         public String getPassword() {
-            return this.password;
+            return password;
         }
 
         public DurationValue getTimeToLive() {
@@ -197,13 +199,15 @@ public class PersistentLogin {
 
         public boolean checkAndUpdateToken(String token) {
             if (this.token.equals(token)) {
+                timeoutCheck();
                 update();
                 return true;
             }
             // check map of invalidating tokens
-            Long timeout = invalidatedTokens.get(token);
-            if (timeout == null)
+            final Long timeout = invalidatedTokens.get(token);
+            if (timeout == null) {
                 return false;
+            }
             // timed out: remove
             if (System.currentTimeMillis() > timeout) {
                 invalidatedTokens.remove(token);
@@ -214,22 +218,21 @@ public class PersistentLogin {
         }
 
         public String update() {
-            timeoutCheck();
-            // leave a small time window until previous token is deleted
+            // leave a small time-window until previous token is deleted
             // to allow for concurrent requests
-            invalidatedTokens.put(this.token, System.currentTimeMillis() + INVALIDATION_TIMEOUT);
-            this.token = generateToken();
-            return this.token;
+            invalidatedTokens.put(token, System.currentTimeMillis() + INVALIDATION_TIMEOUT);
+            token = generateToken();
+            return token;
         }
 
         private void timeoutCheck() {
-            long now = System.currentTimeMillis();
+            final long now = System.currentTimeMillis();
             invalidatedTokens.entrySet().removeIf(entry -> entry.getValue() < now);
         }
 
         @Override
         public String toString() {
-            return this.series + ":" + this.token;
+            return series + ":" + token;
         }
     }
 }
