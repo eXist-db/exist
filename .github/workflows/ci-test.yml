@@ -3,7 +3,7 @@ on: [push, pull_request]
 permissions:
   contents: read
 env:
-  MAVEN_OPTS: -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=./ -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
+  MAVEN_OPTS: -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
   DEV_JDK: '8'
 jobs:
   license:
@@ -20,6 +20,7 @@ jobs:
         timeout-minutes: 60
   dependencies:
     name: Dependency checks
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +67,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
       - name: Maven Code Coverage (Develop branch on Linux only)
-        if: ${{ github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
           CI_NAME: github
           BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
@@ -81,6 +82,5 @@ jobs:
           name: ${{ runner.os }}-build-logs
           retention-days: 5
           path: |
-            **/*.jfr
             **/hs_err_pid*.log
             **/target/surefire-reports/*

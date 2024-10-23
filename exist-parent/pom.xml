@@ -778,7 +778,7 @@
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
-                        <argLine>@{jacocoArgLine} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=debug --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=${project.build.directory}/ -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <argLine>@{jacocoArgLine} -XX:+IgnoreUnrecognizedVMOptions --illegal-access=debug --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <systemPropertyVariables>
                             <user.country>UK</user.country>
                             <user.language>en</user.language>
