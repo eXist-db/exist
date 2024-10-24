@@ -46,7 +46,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     private static final Logger LOG = LogManager.getLogger(ComplexRangeIndexConfigElement.class);
 
-    private Map<String, RangeIndexConfigField> fields = new HashMap<>();
+    private final Map<String, RangeIndexConfigField> fields = new HashMap<>();
 
 
     protected ArrayList<RangeIndexConfigCondition> conditions = new ArrayList<>();
