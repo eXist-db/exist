@@ -25,12 +25,11 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.BytesRef;
 import org.exist.Namespaces;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.Match;
@@ -41,77 +40,69 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.ByteBuffer;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Map;
-
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
-import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
 
 public class Field extends BasicFunction {
 
-    private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
-    private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING, "name of the field");
-    private static final FunctionParameterSequenceType TYPE_PARAMETER = param("type", Type.STRING, "intended target type to cast the field value to. Casting may fail with a dynamic error.");
-
-    private static final String FS_FIELD_NAME = "field";
-    static final FunctionSignature[] FS_FIELD = functionSignatures(
-            FS_FIELD_NAME,
-            "Returns the value of a field attached to a particular node obtained via a full text search." +
-            "The $type parameter allows you to name the target type into which the field " +
-            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
-            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
-            returnsOptMany(Type.ITEM, "Sequence corresponding to the values of the field attached, cast to the desired target type"),
-            arities(
-                    arity(
-                            FS_PARAM_NODE,
-                            FS_PARAM_FIELD
-                    ),
-                    arity(
-                            FS_PARAM_NODE,
-                            FS_PARAM_FIELD,
-                            TYPE_PARAMETER
-                    )
+    public final static FunctionSignature[] signatures = {
+            new FunctionSignature(
+                new QName("field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                "Returns the value of a field attached to a particular node obtained via a full text search." +
+                        "Only fields listed in the 'fields' option of ft:query will be attached to the query result.",
+                new SequenceType[]{
+                        new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                                "the context node to check for attached fields"),
+                        new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
+                                "name of the field")
+                },
+                new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE,
+                        "One or more string values corresponding to the values of the field attached")
+            ),
+            new FunctionSignature(
+                    new QName("field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    "Returns the value of a field attached to a particular node obtained via a full text search." +
+                            "Only fields listed in the 'fields' option of ft:query will be attached to the query result." +
+                            "Accepts an additional parameter to name the target type into which the field " +
+                            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
+                            "As lucene does not record type information, numbers or dates would be returned as numbers by default.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                                    "the context node to check for attached fields"),
+                            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "name of the field"),
+                            new FunctionParameterSequenceType("type", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "intended target type to cast the field value to. Casting may fail with a dynamic error.")
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
+                            "Sequence corresponding to the values of the field attached, cast to the desired target type")
+            ),
+            new FunctionSignature(
+                    new QName("highlight-field-matches", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
+                    "Highlights matches for the last executed lucene query within the value of a field " +
+                    "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
+                    "available to highlighting.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE,
+                                    "the context node to check for attached fields which should be highlighted"),
+                            new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE,
+                                    "name of the field to highlight")
+                    },
+                    new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_ONE,
+                            "An exist:field containing the content of the requested field with all query " +
+                                    "matches enclosed in an exist:match")
             )
-    );
+    };
 
-    private static final String FS_BINARY_FIELD_NAME = "binary-field";
-    static final FunctionSignature FS_BINARY_FIELD = functionSignature(
-            FS_BINARY_FIELD_NAME,
-            "Returns the value of a binary field attached to a particular node obtained via a full text search." +
-            "Accepts an additional parameter to name the target type into which the field " +
-            "value should be cast. This is mainly relevant for fields having a different type than xs:string. " +
-            "As lucene does not record type information, numbers or dates would be returned as strings by default.",
-            returnsOptMany(Type.ITEM, "Sequence corresponding to the values of the field attached, cast to the desired target type"),
-            FS_PARAM_NODE,
-            FS_PARAM_FIELD,
-            TYPE_PARAMETER
-    );
-
-    private static final String FS_HIGHLIGHT_FIELD_MATCHES_NAME = "highlight-field-matches";
-    static final FunctionSignature FS_HIGHLIGHT_FIELD_MATCHES = functionSignature(
-            FS_HIGHLIGHT_FIELD_MATCHES_NAME,
-            "Highlights matches for the last executed lucene query within the value of a field " +
-            "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
-            "available to highlighting.",
-            returnsOpt(Type.ELEMENT, "An exist:field containing the content of the requested field with all query matches enclosed in an exist:match"),
-            FS_PARAM_NODE,
-            FS_PARAM_FIELD
-    );
-
-    public Field(final XQueryContext context, final FunctionSignature signature) {
+    public Field(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -129,45 +120,15 @@ public class Field extends BasicFunction {
         if (match == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final String called = getSignature().getName().getLocalPart();
-
-        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        try {
-            switch (called) {
-                case FS_FIELD_NAME:
-                    return getFieldValues(fieldName, type, match, index);
-                case FS_HIGHLIGHT_FIELD_MATCHES_NAME:
-                    final Sequence result = getFieldValues(fieldName, type, match, index);
-                    return highlightMatches(fieldName, proxy, match, result);
-                case FS_BINARY_FIELD_NAME:
-                    return getBinaryFieldValue(fieldName, type, match, index);
-                default:
-                    throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
-            }
-        } catch (final IOException e) {
-            throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
-        }
-    }
-
-    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException {
-        final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
-        if (fieldValue == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-        return bytesToAtomic(fieldValue, type);
-    }
-
-    private Sequence getFieldValues(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
-        final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
-        final Sequence result = new ValueSequence(fields.length);
-        for (final IndexableField field : fields) {
-            if (field.numericValue() != null) {
-                result.add(numberToAtomic(type, field.numericValue()));
-            } else {
-                result.add(stringToAtomic(type, field.stringValue()));
+        final Sequence text = match.getField(fieldName, type);
+        if (isCalledAs("highlight-field-matches")) {
+            try {
+                return highlightMatches(fieldName, proxy, match, text);
+            } catch (IOException e) {
+                throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error highlighting matches in field: " + e.getMessage());
             }
         }
-        return result;
+        return text;
     }
 
     /**
@@ -285,104 +246,5 @@ public class Field extends BasicFunction {
             match = match.getNextMatch();
         }
         return null;
-    }
-
-    static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
-        switch (type) {
-            case Type.TIME:
-                return TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DATE_TIME:
-                return DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DATE:
-                return DateValue.deserialize(ByteBuffer.wrap(field.bytes));
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                return IntegerValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DOUBLE:
-                return DoubleValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.FLOAT:
-                return FloatValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            case Type.DECIMAL:
-                return DecimalValue.deserialize(ByteBuffer.wrap(field.bytes));
-
-            default:
-                return new StringValue(field.utf8ToString());
-        }
-    }
-
-    static AtomicValue stringToAtomic(final int type, final String value) throws XPathException {
-        switch(type) {
-            case Type.TIME:
-                return new TimeValue(value);
-            case Type.DATE_TIME:
-                return new DateTimeValue(value);
-            case Type.DATE:
-                return new DateValue(value);
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                return new IntegerValue(value);
-            case Type.DOUBLE:
-                return new DoubleValue(value);
-            case Type.FLOAT:
-                return new FloatValue(value);
-            case Type.DECIMAL:
-                return new DecimalValue(value);
-            default:
-                return new StringValue(value);
-        }
-    }
-
-    static AtomicValue numberToAtomic(final int type, final Number value) throws XPathException {
-        switch(type) {
-            case Type.TIME:
-                final Date time = new Date(value.longValue());
-                final GregorianCalendar gregorianCalendar = new GregorianCalendar();
-                gregorianCalendar.setTime(time);
-                final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
-                return new TimeValue(calendar);
-            case Type.DATE_TIME:
-                throw new XPathException(LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
-            case Type.DATE:
-                final long dl = value.longValue();
-                final int year = (int)(dl >> 16) & 0xFFFF;
-                final int month = (int)(dl >> 8) & 0xFF;
-                final int day = (int)(dl & 0xFF);
-                final DateValue date = new DateValue();
-                date.calendar.setYear(year);
-                date.calendar.setMonth(month);
-                date.calendar.setDay(day);
-                return date;
-            case Type.INTEGER:
-            case Type.LONG:
-            case Type.UNSIGNED_LONG:
-            case Type.INT:
-            case Type.UNSIGNED_INT:
-            case Type.SHORT:
-            case Type.UNSIGNED_SHORT:
-                return new IntegerValue(value.longValue());
-            case Type.DOUBLE:
-                return new DoubleValue(value.doubleValue());
-            case Type.FLOAT:
-                return new FloatValue(value.floatValue());
-            case Type.DECIMAL:
-                return new DecimalValue(value.doubleValue());
-            default:
-                return new StringValue(value.toString());
-        }
     }
 }

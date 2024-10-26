@@ -53,6 +53,7 @@ public class QueryOptions {
     public static final String DEFAULT_OPERATOR_OR = "or";
     public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
     public static final String OPTION_FACETS = "facets";
+    public static final String OPTION_FIELDS = "fields";
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
 
     protected enum DefaultOperator {
@@ -98,20 +99,21 @@ public class QueryOptions {
         }
     }
 
-    public QueryOptions(final AbstractMapType map) throws XPathException {
+    public QueryOptions(AbstractMapType map) throws XPathException {
         for (final IEntry<AtomicValue, Sequence> entry: map) {
             final String key = entry.key().getStringValue();
-            if (key.equals(OPTION_FACETS) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP) {
-
-                // iterate over each dimension and collect its values into a FacetQuery
-                final AbstractMapType subMap = (AbstractMapType) entry.value().itemAt(0);
-
+            if (key.equals(OPTION_FIELDS) && !entry.value().isEmpty()) {
+                fields = new HashSet<>();
+                for (SequenceIterator i = entry.value().unorderedIterator(); i.hasNext(); ) {
+                    fields.add(i.nextItem().getStringValue());
+                }
+            } else if (key.equals(OPTION_FACETS) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP) {
                 // map to hold the facet values for each dimension
-                final Map<String, FacetQuery> tf = new HashMap<>(subMap.size());
-
-                for (final IEntry<AtomicValue, Sequence> facet : subMap) {
+                final Map<String, FacetQuery> tf = new HashMap<>();
+                // iterate over each dimension and collect its values into a FacetQuery
+                for (final IEntry<AtomicValue, Sequence> facet: (AbstractMapType) entry.value().itemAt(0)) {
                     final Sequence value = facet.value();
-                    final FacetQuery values;
+                    FacetQuery values;
                     if (value.hasOne() && value.getItemType() == Type.ARRAY) {
                         values = new FacetQuery((ArrayType) facet.value().itemAt(0));
                     } else {

@@ -21,8 +21,6 @@
  */
 package org.exist.util;
 
-import java.nio.ByteBuffer;
-
 /**
  * A collection of static methods to write integer values from/to a
  * byte array.
@@ -67,27 +65,6 @@ public class ByteConversion {
     }
 
     /**
-     * Read an integer value from the specified byte buffer.
-     *
-     * This version of the method reads the highest byte first.
-     *
-     * @param buf the byte buffer to read from
-     *
-     * @return the integer
-     */
-    public final static int byteToIntH(final ByteBuffer buf) {
-        final byte b0 = buf.get();
-        final byte b1 = buf.get();
-        final byte b2 = buf.get();
-        final byte b3 = buf.get();
-
-        return (b3 & 0xff) |
-                ((b2 & 0xff) << 8) |
-                ((b1 & 0xff) << 16) |
-                ((b0 & 0xff) << 24);
-    }
-
-    /**
      *  Read a long value from the specified byte array, starting at start.
      *
      * @param data the input data
@@ -104,33 +81,6 @@ public class ByteConversion {
             ( ( ( (long) data[start + 5] ) & 0xffL ) << 16 ) |
             ( ( ( (long) data[start + 6] ) & 0xffL ) << 8 ) |
             ( ( (long) data[start + 7] ) & 0xffL );
-    }
-
-    /**
-     *  Read a long value from the specified byte buffer.
-     *
-     * @param buf the byte buffer to read from
-     *
-     * @return the long integer
-     */
-    public final static long byteToLong(final ByteBuffer buf) {
-        final byte b0 = buf.get();
-        final byte b1 = buf.get();
-        final byte b2 = buf.get();
-        final byte b3 = buf.get();
-        final byte b4 = buf.get();
-        final byte b5 = buf.get();
-        final byte b6 = buf.get();
-        final byte b7 = buf.get();
-
-        return ((((long) b0) & 0xffL) << 56) |
-                ((((long) b1) & 0xffL) << 48) |
-                ((((long) b2) & 0xffL) << 40) |
-                ((((long) b3) & 0xffL) << 32) |
-                ((((long) b4) & 0xffL) << 24) |
-                ((((long) b5) & 0xffL) << 16) |
-                ((((long) b6) & 0xffL) << 8) |
-                (((long) b7) & 0xffL);
     }
 
     /**
@@ -165,21 +115,6 @@ public class ByteConversion {
     }
 
     /**
-     * Read a short value from the specified byte array, starting at start.
-     *
-     * This version of the method reads the highest byte first.
-     *
-     * @param buf the byte buffer to read from
-     *
-     * @return the short integer
-     */
-    public final static short byteToShortH(final ByteBuffer buf) {
-        final byte b0 = buf.get();
-        final byte b1 = buf.get();
-        return (short) (((b0 & 0xff) << 8) | (b1 & 0xff));
-    }
-
-    /**
      * Write an int value to the specified byte array. The first byte is written
      * into the location specified by start.
      *
@@ -199,22 +134,7 @@ public class ByteConversion {
     }
 
     /**
-     * Write an int value to the specified byte array.
-     *
-     * This version of the method writes the highest byte first.
-     *
-     * @param v the value
-     * @param buf the byte buffer to write into
-     */
-    public final static void intToByteH(final int v, final ByteBuffer buf) {
-        buf.put((byte) ((v >>> 24) & 0xff));
-        buf.put((byte) ((v >>> 16) & 0xff));
-        buf.put((byte) ((v >>> 8) & 0xff));
-        buf.put((byte) ((v >>> 0) & 0xff));
-    }
-
-    /**
-     * Write an int value to the specified byte buffer. The first byte is written
+     * Write an int value to the specified byte array. The first byte is written
      * into the location specified by start.
      *
      * This version of the method writes the highest byte first.
@@ -253,22 +173,6 @@ public class ByteConversion {
         return data;
     }
 
-    /**
-     * Write a long value to the specified byte buffer.
-     *
-     * @param v the value
-     * @param buf the byte buffer to write into
-     */
-    public final static void longToByte(final long v, final ByteBuffer buf) {
-        buf.put((byte) ((v >>> 56) & 0xff));
-        buf.put((byte) ((v >>> 48) & 0xff));
-        buf.put((byte) ((v >>> 40) & 0xff));
-        buf.put((byte) ((v >>> 32) & 0xff));
-        buf.put((byte) ((v >>> 24) & 0xff));
-        buf.put((byte) ((v >>> 16) & 0xff));
-        buf.put((byte) ((v >>> 8) & 0xff));
-        buf.put((byte) ((v >>> 0) & 0xff));
-    }
 
     /**
      * Write an int value to a newly allocated byte array.
@@ -323,20 +227,6 @@ public class ByteConversion {
         data[start + 1] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
-    }
-
-    /**
-     * Write a short value to the specified byte array.
-     *
-     * This version writes the highest byte first.
-     *
-     * @param v the value
-     * @param buf the byte buffer to write into
-     */
-    public final static void shortToByteH(final short v, final ByteBuffer buf) {
-        buf.put( (byte) ((v >>> 8) & 0xff));
-        buf.put((byte) ((v >>> 0) & 0xff));
-
     }
 }
 
