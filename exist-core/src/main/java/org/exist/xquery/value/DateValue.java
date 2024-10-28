@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.util.ByteConversion;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -29,7 +28,6 @@ import org.exist.xquery.XPathException;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import java.nio.ByteBuffer;
 import java.util.GregorianCalendar;
 
 /**
@@ -37,8 +35,6 @@ import java.util.GregorianCalendar;
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
 public class DateValue extends AbstractDateTimeValue {
-
-    public static final int SERIALIZED_SIZE = 8;
 
     public DateValue() throws XPathException {
         super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
@@ -71,10 +67,6 @@ public class DateValue extends AbstractDateTimeValue {
         super(expression, stripCalendar(cloneXMLGregorianCalendar(calendar)));
     }
 
-    public DateValue(final int year, final int month, final int day, final int timezone) {
-        super(TimeUtils.getInstance().newXMLGregorianCalendarDate(year, month, day, timezone));
-    }
-    
     private static XMLGregorianCalendar stripCalendar(XMLGregorianCalendar calendar) {
         calendar.setHour(DatatypeConstants.FIELD_UNDEFINED);
         calendar.setMinute(DatatypeConstants.FIELD_UNDEFINED);
@@ -141,51 +133,5 @@ public class DateValue extends AbstractDateTimeValue {
                         "Operand to minus should be of type xdt:yearMonthDuration or xdt:dayTimeDuration; got: "
                                 + Type.getTypeName(other.getType()));
         }
-    }
-
-    @Override
-    public <T> T toJavaObject(final Class<T> target) throws XPathException {
-        if (target == byte[].class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf.array();
-        } else if (target == ByteBuffer.class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf;
-        } else {
-            return super.toJavaObject(target);
-        }
-    }
-
-    /**
-     * Serializes to a ByteBuffer.
-     *
-     * 8 bytes where: [0-3 (Year), 4 (Month), 5 (Day), 6-7 (Timezone)]
-     *
-     * @param buf the ByteBuffer to serialize to.
-     */
-    public void serialize(final ByteBuffer buf) {
-        ByteConversion.intToByteH(calendar.getYear(), buf);
-        buf.put((byte) calendar.getMonth());
-        buf.put((byte) calendar.getDay());
-
-        // values for timezone range from -14*60 to 14*60, so we can use a short, but
-        // need to choose a different value for FIELD_UNDEFINED, which is not the same as 0 (= UTC)
-        final int timezone = calendar.getTimezone();
-        ByteConversion.shortToByteH((short) (timezone == DatatypeConstants.FIELD_UNDEFINED ? Short.MAX_VALUE : timezone), buf);
-    }
-
-    public static AtomicValue deserialize(final ByteBuffer buf) {
-        final int year = ByteConversion.byteToIntH(buf);
-        final int month = buf.get();
-        final int day = buf.get();
-
-        int timezone = ByteConversion.byteToShortH(buf);
-        if (timezone == Short.MAX_VALUE) {
-            timezone = DatatypeConstants.FIELD_UNDEFINED;
-        }
-
-        return new DateValue(year, month, day, timezone);
     }
 }

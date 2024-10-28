@@ -22,7 +22,6 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -34,7 +33,6 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.nio.ByteBuffer;
 import java.util.function.IntSupplier;
 import java.util.regex.Pattern;
 
@@ -42,9 +40,6 @@ import java.util.regex.Pattern;
  * @author wolf
  */
 public class DecimalValue extends NumericValue {
-
-    public static final int SERIALIZED_SIZE = 8;
-
     public static final BigInteger BIG_INTEGER_TEN = BigInteger.valueOf(10);
     // i × 10^-n where i, n = integers  and n >= 0
     // All ·minimally conforming· processors ·must· support decimal numbers
@@ -593,14 +588,6 @@ public class DecimalValue extends NumericValue {
         } else if (target == Byte.class || target == byte.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
             return (T) Byte.valueOf((byte) v.getValue());
-        } else if (target == byte[].class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf.array();
-        } else if (target == ByteBuffer.class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf;
         } else if (target == String.class) {
             return (T) getStringValue();
         } else if (target == Boolean.class) {
@@ -614,22 +601,4 @@ public class DecimalValue extends NumericValue {
                         + target.getName());
     }
     //End of copy
-
-    /**
-     * Serializes to a ByteBuffer.
-     *
-     * 8 bytes.
-     *
-     * @param buf the ByteBuffer to serialize to.
-     */
-    public void serialize(final ByteBuffer buf) {
-        final long ddBits = Double.doubleToLongBits(value.doubleValue()) ^ 0x8000000000000000L;
-        ByteConversion.longToByte(ddBits, buf);
-    }
-
-    public static DecimalValue deserialize(final ByteBuffer buf) {
-        final long dBits = ByteConversion.byteToLong(buf) ^ 0x8000000000000000L;
-        final double d = Double.longBitsToDouble(dBits);
-        return new DecimalValue(d);
-    }
 }

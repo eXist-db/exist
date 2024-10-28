@@ -42,6 +42,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;

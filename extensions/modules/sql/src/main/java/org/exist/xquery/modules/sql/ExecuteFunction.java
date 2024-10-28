@@ -96,14 +96,31 @@ public class ExecuteFunction extends BasicFunction {
             "connection-handle",
             Type.LONG,
             "The connection handle");
+    private static final FunctionParameterSequenceType FS_PARAM_SQL_STATEMENT = param(
+            "sql-statement",
+            Type.STRING,
+            "The SQL statement");
     private static final FunctionParameterSequenceType FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME = param(
             "make-node-from-column-name",
             Type.BOOLEAN,
             "The flag that indicates whether the xml nodes should be formed from the column names" +
                     " (in this mode a space in a Column Name will be replaced by an underscore!)");
-    // Parameters for setting the namespace of result elements.
-    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_PREFIX = param("ns-prefix", Type.STRING, "The prefix of the result namespace.");
-    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_URI = param("ns-uri", Type.STRING, "The uri of the result namespace.");
+    private static final FunctionParameterSequenceType FS_PARAM_STATEMENT_HANDLE = param(
+            "statement-handle",
+            Type.LONG,
+            "The prepared statement handle");
+    private static final FunctionParameterSequenceType FS_PARAM_PARAMETERS = optParam(
+            "parameters",
+            Type.ELEMENT,
+            "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>");
+    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_URI = param(
+            "ns-uri",
+            Type.STRING,
+            "The uri of the result namespace.");
+    private static final FunctionParameterSequenceType FS_PARAM_NAMESPACE_PREFIX = param(
+            "ns-prefix",
+            Type.STRING,
+            "The prefix of the result namespace.");
 
     static final FunctionSignature[] FS_EXECUTE = functionSignatures(
             FS_EXECUTE_NAME,
@@ -112,28 +129,29 @@ public class ExecuteFunction extends BasicFunction {
             arities(
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("sql-statement", Type.STRING, "The SQL statement"),
+                            FS_PARAM_SQL_STATEMENT,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     ),
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("statement-handle", Type.LONG, "The prepared statement handle"),
-                            optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
+                            FS_PARAM_STATEMENT_HANDLE,
+                            FS_PARAM_PARAMETERS,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME
                     ),
-                    // New function signatures for setting the namespace of result elements.
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("sql-statement", Type.STRING, "The SQL statement"),
+                            FS_PARAM_SQL_STATEMENT,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME,
-                            FS_PARAM_NAMESPACE_PREFIX, FS_PARAM_NAMESPACE_URI
+                            FS_PARAM_NAMESPACE_URI,
+                            FS_PARAM_NAMESPACE_PREFIX
                     ),
                     arity(
                             FS_PARAM_CONNECTION_HANDLE,
-                            param("statement-handle", Type.LONG, "The prepared statement handle"),
-                            optParam("parameters", Type.ELEMENT, "Parameters for the prepared statement. e.g. <sql:parameters><sql:param sql:type=\"long\">1234</sql:param><sql:param sql:type=\"varchar\"><sql:null/></sql:param></sql:parameters>"),
+                            FS_PARAM_STATEMENT_HANDLE,
+                            FS_PARAM_PARAMETERS,
                             FS_PARAM_MAKE_NODE_FROM_COLUMN_NAME,
-                            FS_PARAM_NAMESPACE_PREFIX, FS_PARAM_NAMESPACE_URI
+                            FS_PARAM_NAMESPACE_URI,
+                            FS_PARAM_NAMESPACE_PREFIX
                     )
             )
     );
@@ -192,12 +210,12 @@ public class ExecuteFunction extends BasicFunction {
                 stmt = con.createStatement();
                 makeNodeFromColumnName = ((BooleanValue) args[2].itemAt(0)).effectiveBooleanValue();
                 if (args.length == 5) {
-                  namespacePrefix = args[3].itemAt(0).getStringValue();
-                  namespaceUri = args[4].itemAt(0).getStringValue();
+                    namespaceUri = args[3].itemAt(0).getStringValue();
+                    namespacePrefix = args[4].itemAt(0).getStringValue();
                 } else {
-                  // The default namespace for result elements.
-                  namespacePrefix = PREFIX;
-                  namespaceUri = NAMESPACE_URI;
+                    // The default namespace for result elements.
+                    namespaceUri = NAMESPACE_URI;
+                    namespacePrefix = PREFIX;
                 }
 
                 //execute the static SQL statement
@@ -216,12 +234,12 @@ public class ExecuteFunction extends BasicFunction {
 
                 makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
                 if (args.length == 6) {
-                  namespacePrefix = args[4].itemAt(0).getStringValue();
-                  namespaceUri = args[5].itemAt(0).getStringValue();
+                    namespaceUri = args[4].itemAt(0).getStringValue();
+                    namespacePrefix = args[5].itemAt(0).getStringValue();
                 } else {
-                  // The default namespace for result elements.
-                  namespacePrefix = PREFIX;
-                  namespaceUri = NAMESPACE_URI;
+                    // The default namespace for result elements.
+                    namespaceUri = NAMESPACE_URI;
+                    namespacePrefix = PREFIX;
                 }
 
                 if (!args[2].isEmpty()) {

@@ -24,7 +24,6 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.value.FloatingPointConverter;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -33,16 +32,12 @@ import org.exist.xquery.XPathException;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.ByteBuffer;
 import java.util.function.IntSupplier;
 
 /**
  * @author wolf
  */
 public class FloatValue extends NumericValue {
-
-    public static final int SERIALIZED_SIZE = 4;
-
     // m × 2^e, where m is an integer whose absolute value is less than 2^24, 
     // and e is an integer between -149 and 104, inclusive.
     // In addition also -INF, +INF and NaN.
@@ -489,14 +484,6 @@ public class FloatValue extends NumericValue {
         } else if (target == Byte.class || target == byte.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
             return (T) Byte.valueOf((byte) v.getValue());
-        } else if (target == byte[].class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf.array();
-        } else if (target == ByteBuffer.class) {
-            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
-            serialize(buf);
-            return (T) buf;
         } else if (target == String.class) {
             return (T) getStringValue();
         } else if (target == Boolean.class) {
@@ -525,23 +512,5 @@ public class FloatValue extends NumericValue {
     @Override
     public int hashCode() {
         return Float.valueOf(value).hashCode();
-    }
-
-    /**
-     * Serializes to a ByteBuffer.
-     *
-     * 4 bytes.
-     *
-     * @param buf the ByteBuffer to serialize to.
-     */
-    public void serialize(final ByteBuffer buf) {
-        final int fBits = Float.floatToIntBits(value) ^ 0x80000000;
-        ByteConversion.intToByteH(fBits, buf);
-    }
-
-    public static FloatValue deserialize(final ByteBuffer buf) {
-        final int fBits = ByteConversion.byteToIntH(buf) ^ 0x80000000;
-        final float f = Float.intBitsToFloat(fBits);
-        return new FloatValue(f);
     }
 }
