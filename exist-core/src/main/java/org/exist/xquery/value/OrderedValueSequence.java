@@ -28,6 +28,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
@@ -35,7 +36,13 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A sequence that sorts its entries in the order specified by the order specs of
@@ -49,16 +56,22 @@ import java.util.Arrays;
  */
 public class OrderedValueSequence extends AbstractSequence {
 
-    private final OrderSpec[] orderSpecs;
+    private final List<OrderSpec> orderSpecs;
+    private final List<BitSet> encounteredPrimitiveTypesForOrderSpecs;
     private Entry[] items;
     private int count = 0;
     private int state = 0;
 
     // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
+    private Sequence contextSequence;
 
-    public OrderedValueSequence(final OrderSpec orderSpecs[], final int size) {
+    public OrderedValueSequence(final List<OrderSpec> orderSpecs, final int size) {
         this.orderSpecs = orderSpecs;
+        this.encounteredPrimitiveTypesForOrderSpecs = new ArrayList<>(orderSpecs.size());
+        for (int i = 0; i < orderSpecs.size(); i++) {
+            this.encounteredPrimitiveTypesForOrderSpecs.add(new BitSet(Type.ARRAY_ITEM + 1));
+        }
         this.items = new Entry[size == 0 ? 1 : size];
     }
 
@@ -103,7 +116,7 @@ public class OrderedValueSequence extends AbstractSequence {
             System.arraycopy(items, 0, newItems, 0, count);
             items = newItems;
         }
-        items[count] = new Entry(item, count++);
+        items[count] = Entry.create(encounteredPrimitiveTypesForOrderSpecs, orderSpecs, item, count++, contextSequence);
         checkItemType(item.getType());
         setHasChanged();
     }
@@ -120,6 +133,79 @@ public class OrderedValueSequence extends AbstractSequence {
                 }
             }
         }
+    }
+
+    /**
+     * Coerce the types as required by <a href="https://www.w3.org/TR/xquery-31/#id-order-by-clause">Order By Clause</a>
+     * in the XQuery 3.1 specification before sorting them.
+     *
+     * @throws XPathException if the types cannot be coerced as according to the spec.
+     */
+    public void coerceTypesForOrderBy() throws XPathException {
+        for (int t = 0; t < encounteredPrimitiveTypesForOrderSpecs.size(); t++) {
+            final BitSet encounteredPrimitiveTypesForOrderSpec = encounteredPrimitiveTypesForOrderSpecs.get(t);
+            final int valueTypeCardinality = encounteredPrimitiveTypesForOrderSpec.cardinality();
+            if (valueTypeCardinality > 1) {
+
+                int coerceToType = -1;
+
+                /*
+                 If the resulting sequence contains values that are instances of more than one primitive type
+                 */
+
+                if (valueTypeCardinality == 2 && countSetBits(encounteredPrimitiveTypesForOrderSpec, Type.STRING, Type.ANY_URI) == 2) {
+                    /*
+                     If each value is an instance of one of the types xs:string or xs:anyURI, then all values are cast to type xs:string.
+                     */
+                    coerceToType = Type.STRING;
+
+
+                } else if (valueTypeCardinality == 2 && countSetBits(encounteredPrimitiveTypesForOrderSpec, Type.DECIMAL, Type.FLOAT) == 2) {
+                    /*
+                     If each value is an instance of one of the types xs:decimal or xs:float, then all values are cast to type xs:float.
+                     */
+                    coerceToType = Type.FLOAT;
+
+                } else if (valueTypeCardinality <= 3 && countSetBits(encounteredPrimitiveTypesForOrderSpec, Type.DECIMAL, Type.FLOAT, Type.DOUBLE) >= 2) {
+                    /*
+                    If each value is an instance of one of the types xs:decimal, xs:float, or xs:double, then all values are cast to type xs:double.
+                     */
+                    coerceToType = Type.DOUBLE;
+
+                } else {
+                    // Otherwise, a type error is raised [err:XPTY0004].
+                    final StringBuilder message = new StringBuilder("OrderSpec contains a mix of primitive types which can not be compared for sorting: [");
+                    try (final IntStream encounteredPrimitiveTypesStream = encounteredPrimitiveTypesForOrderSpec.stream()) {
+                        message.append(
+                                encounteredPrimitiveTypesStream
+                                        .mapToObj(Type::getTypeName)
+                                        .collect(Collectors.joining(", "))
+                        );
+                    }
+                    message.append(']');
+                    final Expression expression = (items != null && items.length >= 1 && items[0] != null && items[0].item != null) ? items[0].item.getExpression() : null;
+                    throw new XPathException(expression, ErrorCodes.XPTY0004, message.toString());
+                }
+
+                // perform the coercion
+                for (int i = 0; i < count; i++) {
+                    final Entry item = items[i];
+                    final AtomicValue value = item.values.get(t);
+                    item.values.set(t, value.convertTo(coerceToType));
+                }
+                checkItemType(coerceToType);
+            }
+        }
+    }
+
+    private int countSetBits(final BitSet bitSet, final int... bitIndex) {
+        int setBitsCount = 0;
+        for (int i = 0; i < bitIndex.length; i++) {
+            if (bitSet.get(bitIndex[i])) {
+                setBitsCount++;
+            }
+        }
+        return setBitsCount;
     }
 
     public void sort() {
@@ -311,76 +397,129 @@ public class OrderedValueSequence extends AbstractSequence {
         return false;
     }
 
-    private class Entry implements Comparable<Entry> {
-        Item item;
-        AtomicValue values[];
+    /**
+     * Set the Context Sequence.
+     * This is useful if it is needed to evaluate the {@link #orderSpecs}.
+     *
+     * @param contextSequence the context sequence
+     */
+    public void setContextSequence(@Nullable final Sequence contextSequence) {
+        this.contextSequence = contextSequence;
+    }
+
+    private static class Entry implements Comparable<Entry> {
+        private final List<BitSet> encounteredPrimitiveTypesForOrderSpecs;
+        private final List<OrderSpec> orderSpecs;
+        private Item item;
         private final int pos;
+        @Nullable private List<AtomicValue> values;
 
         /**
-         * @param item     the item in the sequence
-         * @param position the original position of the item in the result sequence
-         * @throws XPathException
+         * Private constructor, use {@link #create(List, List, Item, int, Sequence)} instead.
+         *
+         * @param encounteredPrimitiveTypesForOrderSpecs a list of bitset which will be populated with the primitive type of each value in the entry of each orderspec
+         * @param item the item in the sequence.
+         * @param position the original position of the item in the result sequence.
+         * @param values the values for the entry.
          */
-        public Entry(final Item item, final int position) throws XPathException {
+        private Entry(final List<BitSet> encounteredPrimitiveTypesForOrderSpecs, final List<OrderSpec> orderSpecs, final Item item, final int position, final List<AtomicValue> values) {
+            this.encounteredPrimitiveTypesForOrderSpecs = encounteredPrimitiveTypesForOrderSpecs;
+            this.orderSpecs = orderSpecs;
             this.item = item;
             this.pos = position;
-            values = new AtomicValue[orderSpecs.length];
-            for (int i = 0; i < orderSpecs.length; i++) {
-                final Sequence seq = orderSpecs[i].getSortExpression().eval(null, null);
-                values[i] = AtomicValue.EMPTY_VALUE;
+            this.values = values;
+        }
+
+        /**
+         * Create an Entry.
+         *
+         * @param encounteredPrimitiveTypesForOrderSpecs a list of bitset which will be populated with the primitive type of each value in the entry of each orderspec
+         * @param orderSpecs the ordering specifications.
+         * @param item the item in the sequence.
+         * @param position the original position of the item in the result sequence.
+         * @param contextSequence the context sequence if required for evaluating the ordering specifications, else null.
+         *
+         * @throws XPathException thrown if the evaluation of an order spec raises an error.
+         */
+        public static Entry create(final List<BitSet> encounteredPrimitiveTypesForOrderSpecs, final List<OrderSpec> orderSpecs, final Item item, final int position, @Nullable final Sequence contextSequence) throws XPathException {
+            final List<AtomicValue> values = new ArrayList<>(orderSpecs.size());
+            for (int i = 0; i < orderSpecs.size(); i++) {
+                final OrderSpec orderSpec = orderSpecs.get(i);
+                final Expression sortExpression = orderSpec.getSortExpression();
+                final Sequence seq = sortExpression.eval(contextSequence, null);
                 if (seq.hasOne()) {
-                    values[i] = seq.itemAt(0).atomize();
+                    AtomicValue value = seq.itemAt(0).atomize();
+                    int valueType = value.getType();
+
+                    /*
+                     If the value of an orderspec has the dynamic type xs:untypedAtomic (such as character data in a
+                     schemaless document), it is cast to the type xs:string.
+                     */
+                    if (Type.UNTYPED_ATOMIC == valueType) {
+                        value = value.convertTo(Type.STRING);
+                        valueType = Type.STRING;
+                    }
+
+                    final BitSet encounteredPrimitiveTypesForOrderSpec = encounteredPrimitiveTypesForOrderSpecs.get(i);
+                    encounteredPrimitiveTypesForOrderSpec.set(Type.primitiveTypeOf(valueType));
+                    values.add(value);
+
                 } else if (seq.hasMany()) {
-                    throw new XPathException((values[i] == null) ? null : values[i].getExpression(),
+                    throw new XPathException(item.getExpression(), ErrorCodes.XPTY0004,
                             "expected a single value for order expression " +
-                            ExpressionDumper.dump(orderSpecs[i].getSortExpression()) +
-                            " ; found: " + seq.getItemCount());
+                                    ExpressionDumper.dump(sortExpression) +
+                                    " ; found: " + seq.getItemCount());
+                } else {
+                    values.add(AtomicValue.EMPTY_VALUE);
                 }
             }
+
+            return new Entry(encounteredPrimitiveTypesForOrderSpecs, orderSpecs, item, position, values);
         }
 
         @Override
         public int compareTo(final Entry other) {
             int cmp = 0;
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.size(); i++) {
                 try {
-                    final AtomicValue a = values[i];
-                    final AtomicValue b = other.values[i];
-                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMBER) && ((NumericValue) a).isNaN()));
-                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMBER) && ((NumericValue) b).isNaN()));
+                    final AtomicValue a = values.get(i);
+                    final AtomicValue b = other.values.get(i);
+
+                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
+                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
                     if (aIsEmpty) {
                         if (bIsEmpty)
                         // both values are empty
                         {
                             return Constants.EQUAL;
-                        } else if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        } else if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.INFERIOR;
                         } else {
                             cmp = Constants.SUPERIOR;
                         }
                     } else if (bIsEmpty) {
                         // we don't need to check for equality since we know a is not empty
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.SUPERIOR;
                         } else {
                             cmp = Constants.INFERIOR;
                         }
                     } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.INFERIOR;
                         } else {
                             cmp = Constants.SUPERIOR;
                         }
                     } else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
-                        if ((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
+                        if ((orderSpecs.get(i).getModifiers() & OrderSpec.EMPTY_LEAST) != 0) {
                             cmp = Constants.SUPERIOR;
                         } else {
                             cmp = Constants.INFERIOR;
                         }
                     } else {
-                        cmp = a.compareTo(orderSpecs[i].getCollator(), b);
+                        cmp = a.compareTo(orderSpecs.get(i).getCollator(), b);
                     }
-                    if ((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0) {
+                    if ((orderSpecs.get(i).getModifiers() & OrderSpec.DESCENDING_ORDER) != 0) {
                         cmp = cmp * -1;
                     }
                     if (cmp != Constants.EQUAL) {
@@ -398,20 +537,27 @@ public class OrderedValueSequence extends AbstractSequence {
 
         @Override
         public String toString() {
-            final StringBuilder builder = new StringBuilder();
-            builder.append(item);
-            builder.append(" [");
-            for (int i = 0; i < values.length; i++) {
-                if (i > 0) {
-                    builder.append(", ");
+            if (values == null) {
+                return item.toString();
+            } else {
+                final StringBuilder builder = new StringBuilder();
+                builder.append(item);
+                builder.append(" [");
+                for (int i = 0; i < values.size(); i++) {
+                    if (i > 0) {
+                        builder.append(", ");
+                    }
+                    builder.append(values.get(i).toString());
                 }
-                builder.append(values[i].toString());
+                builder.append("]");
+                return builder.toString();
             }
-            builder.append("]");
-            return builder.toString();
         }
 
         public void clear() {
+            for (final BitSet encounteredPrimitiveTypesForOrderSpec : encounteredPrimitiveTypesForOrderSpecs) {
+                encounteredPrimitiveTypesForOrderSpec.clear();
+            }
             values = null;
         }
     }

@@ -31,14 +31,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class HexBinaryValueType extends BinaryValueType<HexOutputStream> {
 
     private final static Pattern hexPattern = Pattern.compile("[A-Fa-f0-9]*");
 
     public HexBinaryValueType() {
-        super(Type.HEX_BINARY, HexOutputStream::new);
+        super(Type.HEX_BINARY, (outputStream, doEncode) -> new HexOutputStream(outputStream, doEncode, false));
     }
 
     private Matcher getMatcher(final String toMatch) {

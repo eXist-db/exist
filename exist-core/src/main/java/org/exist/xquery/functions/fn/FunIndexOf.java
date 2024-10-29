@@ -54,9 +54,9 @@ public class FunIndexOf extends BasicFunction {
 
 	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 
-	protected static final FunctionParameterSequenceType SEARCH_PARAM = new FunctionParameterSequenceType("search", Type.ATOMIC, Cardinality.EXACTLY_ONE, "The search component");
+	protected static final FunctionParameterSequenceType SEARCH_PARAM = new FunctionParameterSequenceType("search", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The search component");
 
-	protected static final FunctionParameterSequenceType SEQ_PARAM = new FunctionParameterSequenceType("source", Type.ATOMIC, Cardinality.ZERO_OR_MORE, "The source sequence");
+	protected static final FunctionParameterSequenceType SEQ_PARAM = new FunctionParameterSequenceType("source", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The source sequence");
 
 	protected static final String FUNCTION_DESCRIPTION =
 

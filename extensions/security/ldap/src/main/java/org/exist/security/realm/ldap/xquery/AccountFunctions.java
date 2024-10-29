@@ -52,7 +52,7 @@ public class AccountFunctions extends BasicFunction {
                     new SequenceType[]{
                             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
                     },
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             )
     };
 

@@ -1026,7 +1026,7 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, "bar1", result.getResource(1).getContent());
         assertEquals("XQuery: " + query, "bar2", result.getResource(2).getContent());
 
-//			Non-heritance check
+//			Non-transitive inheritance check
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo1=\"foo1\"; \n" + "$foo1:bar";
         try {
             message = "";
@@ -1034,9 +1034,9 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPDY0002") > -1);
+        assertTrue(message.indexOf("XPST0008") > -1);
 
-//			Non-heritance check
+//			Non-transitive inheritance check
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo2=\"foo2\"; \n" + "$foo2:bar";
         try {
             message = "";
@@ -1044,7 +1044,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPDY0002") > -1);
+        assertTrue(message.indexOf("XPST0008") > -1);
         query = "xquery version \"1.0\";\n" + "import module namespace foo1=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "$foo1:bar";
         try {
             message = "";

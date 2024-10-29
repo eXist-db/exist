@@ -43,21 +43,6 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Expression;
-import org.exist.xquery.FunctionCall;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.LocalVariable;
-import org.exist.xquery.Module;
-import org.exist.xquery.Option;
-import org.exist.xquery.Pragma;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.TerminatedException;
-import org.exist.xquery.UserDefinedFunction;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.NodeValue;
@@ -260,7 +245,28 @@ public interface Context {
 
     String getDefaultCollation();
 
+    /**
+     * Get the Collator.
+     *
+     * @param uri The URI describing the collation and settings
+     *
+     * @return The Collator for the URI
+     *
+     * @throws XPathException if the collation is unknown.
+     */
     Collator getCollator(String uri) throws XPathException;
+
+    /**
+     * Get the Collator.
+     *
+     * @param uri The URI describing the collation and settings
+     * @param errorCode the error code if the URI cannot be resolved
+     *
+     * @return The Collator for the URI
+     *
+     * @throws XPathException if the collation is unknown.
+     */
+    Collator getCollator(String uri, ErrorCodes.ErrorCode errorCode) throws XPathException;
 
     Collator getDefaultCollator();
 

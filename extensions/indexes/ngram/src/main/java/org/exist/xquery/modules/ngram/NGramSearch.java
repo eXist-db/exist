@@ -140,7 +140,7 @@ public class NGramSearch extends Function implements Optimizable {
         Expression arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg, new org.exist.xquery.util.Error(
             Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
+        if(!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE))
             arg = new Atomize(context, arg);
         steps.add(arg);
     }
@@ -232,7 +232,7 @@ public class NGramSearch extends Function implements Optimizable {
 
         if( context.getProfiler().traceFunctions() ) {
             // report index use
-            context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
         return preselectResult;
     }
@@ -266,7 +266,7 @@ public class NGramSearch extends Function implements Optimizable {
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
                 if( context.getProfiler().traceFunctions() ) {
                     // report index use
-                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
                 }
             }
         } else {

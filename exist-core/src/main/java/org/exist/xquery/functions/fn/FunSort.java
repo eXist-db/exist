@@ -23,9 +23,7 @@ package org.exist.xquery.functions.fn;
 
 import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
-import org.exist.util.Collations;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -37,9 +35,15 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
+/**
+ * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ */
 public class FunSort extends BasicFunction {
 
   public final static FunctionSignature[] signatures = {
@@ -66,7 +70,7 @@ public class FunSort extends BasicFunction {
         new SequenceType[] {
             new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, ""),
             new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, ""),
-            new FunctionParameterSequenceType("key", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "")
+            new FunctionParameterSequenceType("key", Type.FUNCTION, Cardinality.EXACTLY_ONE, "")
         },
         new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the resulting sequence")
     )
@@ -74,12 +78,12 @@ public class FunSort extends BasicFunction {
 
   AnalyzeContextInfo cachedContextInfo;
 
-  public FunSort(XQueryContext context, FunctionSignature signature) {
+  public FunSort(final XQueryContext context, final FunctionSignature signature) {
     super(context, signature);
   }
 
   @Override
-  public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+  public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
     if (getContext().getXQueryVersion()<31) {
       throw new XPathException(this, ErrorCodes.EXXQDY0003,
           "Function " + getSignature().getName() + " is only supported for xquery version \"3.1\" and later.");
@@ -90,116 +94,46 @@ public class FunSort extends BasicFunction {
   }
 
   @Override
-  public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-    Sequence seq = args[0];
+  public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+    final Sequence seq = args[0];
+    final Collator collator = collator(args, 1);
+    final List<Sequence> keys = new ArrayList<>(seq.getItemCount());
 
-    Collator collator = collator(args, 1);
-    ArrayList<Sequence> keys = new ArrayList<>(seq.getItemCount());
-
-    try (FunctionReference ref = function(args, 2)) {
-
+    try (final FunctionReference ref = function(args, 2)) {
       final Sequence[] refArgs = new Sequence[1];
-
-      Item item;
-      Sequence value;
-
       for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-        item = i.nextItem();
+        final Item item = i.nextItem();
+        final Sequence value;
         if (ref != null) {
           refArgs[0] = item.toSequence();
           value = ref.evalFunction(null, null, refArgs);
         } else {
           value = item.toSequence();
         }
-
         keys.add(Atomize.atomize(value));
       }
     }
+
     return sort(seq, keys, collator);
   }
 
-  private Sequence sort(Sequence seq, ArrayList<Sequence> keys, Collator collator) throws XPathException {
-
-    final Holder<XPathException> exception = new Holder<>();
-
-    //preparing
+  private Sequence sort(final Sequence seq, final List<Sequence> keys, final Collator collator) throws XPathException {
+    // prepare
     final int size = seq.getItemCount();
     final Integer[] order = new Integer[size];
-    for(int i = 0; i < size; i++) order[i] = i;
-
-    //sorting
-    try {
-      Arrays.sort(order, (i1, i2) -> {
-
-        Sequence seq1 = keys.get(i1);
-        Sequence seq2 = keys.get(i2);
-
-        int size1 = seq1.getItemCount();
-        int size2 = seq2.getItemCount();
-        int minSize = Math.min(size1, size2);
-
-        if (size1 == 0) {
-          return -size2;
-        }
-
-        for (int pos = 0; pos < minSize; pos++) {
-          Item item1 = seq1.itemAt(pos);
-          Item item2 = seq2.itemAt(pos);
-
-//          int res;
-//          if (item1 instanceof org.exist.dom.memtree.NodeImpl && (!(item2 instanceof org.exist.dom.memtree.NodeImpl))) {
-//            res = Constants.INFERIOR;
-//          } else if (item1 instanceof Comparable && item2 instanceof Comparable) {
-//            res = ((Comparable) item1).compareTo(item2);
-//          } else {
-//            res = Constants.INFERIOR;
-//          }
-
-          int res = Constants.EQUAL;
-          if (FunDeepEqual.deepEquals(item1, item2, collator)) {
-            continue;
-          } if (Type.subTypeOfUnion(item1.getType(), Type.NUMBER) && ((NumericValue)item1).isNaN()) {
-            res = Constants.INFERIOR;
-
-          } else if (Type.subTypeOf(item1.getType(), Type.STRING) && Type.subTypeOf(item2.getType(), Type.STRING)) {
-            try {
-              res = Collations.compare(collator, item1.getStringValue(), item2.getStringValue());
-            } catch (XPathException e) {
-              exception.set(e);
-            }
-          } else if (item1 instanceof AtomicValue && item2 instanceof AtomicValue) {
-            try {
-              // throw type error if values cannot be compared with lt
-              ValueComparison.compareAtomic(collator, (AtomicValue)item1, (AtomicValue)item2, Constants.StringTruncationOperator.NONE, Constants.Comparison.LT);
-              res = ((AtomicValue)item1).compareTo(collator, (AtomicValue)item2);
-            } catch (XPathException e) {
-              exception.set(e);
-              throw new IllegalArgumentException();
-            }
-
-//          } else if (item1 instanceof Comparable && item2 instanceof Comparable) {
-//            res = ((Comparable) item1).compareTo(item2);
-
-          } else {
-            res = Constants.INFERIOR;
-          }
-
-          if (res != Constants.EQUAL) {
-            return res;
-          }
-        }
-
-        return (size1 - size2);
-      });
-    } catch (IllegalArgumentException e) {
-      if (exception.get() != null) {
-        throw new XPathException(FunSort.this, ErrorCodes.XPTY0004, exception.get());
-      } else {
-        throw new XPathException(FunSort.this, ErrorCodes.XPTY0004, e.getMessage());
-      }
+    for (int i = 0; i < size; i++) {
+      order[i] = i;
     }
 
-    //form final sequence
+    // sort
+    final FnSortComparator fnSortComparator = new FnSortComparator(keys, collator);
+    try {
+      Arrays.sort(order, fnSortComparator);
+    } catch (final FnSortComparator.SortCompareException e) {
+      throw (XPathException) e.getCause();
+    }
+
+    // form the final sequence
     final ValueSequence result = new ValueSequence(seq.getItemCount());
     result.keepUnOrdered(true);
 
@@ -210,21 +144,108 @@ public class FunSort extends BasicFunction {
     return result;
   }
 
-  private Collator collator(Sequence[] args, int pos) throws XPathException {
+  private static class FnSortComparator implements Comparator<Integer> {
+    private final List<Sequence> keys;
+    @Nullable private final Collator collator;
+
+    private FnSortComparator(final List<Sequence> keys, final @Nullable Collator collator) {
+      this.keys = keys;
+      this.collator = collator;
+    }
+
+    @Override
+    public int compare(final Integer i1, final Integer i2) {
+      final Sequence seq1 = keys.get(i1);
+      final Sequence seq2 = keys.get(i2);
+
+      // If (fn:deep-equal($key($A), $key($B), $C), then the relative order of $A and $B in the output
+      // is the same as their relative order in the input (that is, the sort is stable)
+      if (FunDeepEqual.deepEqualsSeq(seq1, seq2, collator)) {
+        return Constants.EQUAL;
+      }
+
+      // Otherwise, if (deep-less-than($key($A), $key($B), $C), then $A precedes $B in the output.
+      try {
+        if (deepLessThan(seq1, seq2, collator)) {
+          return Constants.INFERIOR;
+        } else {
+          return Constants.SUPERIOR;
+        }
+      } catch (final XPathException e) {
+        throw new SortCompareException(e);
+      }
+    }
+
+    public static class SortCompareException extends RuntimeException {
+      public SortCompareException(final XPathException e) {
+        super(e);
+      }
+    }
+
+    /**
+     * The function `deep-less-than` is defined as the boolean result of the expression:
+     *
+     * <code>
+     * if (fn:empty($A))
+     *      then fn:exists($B)
+     * else if (fn:empty($B))           See - https://xmlcom.slack.com/archives/C011NLXE4DU/p1659977972377909
+     *      then fn:false()
+     * else if (fn:deep-equal($A[1], $B[1], $C))
+     *      then deep-less-than(fn:tail($A), fn:tail($B), $C)
+     * else if ($A[1] ne $A[1] (:that is, $A[1] is NaN:))
+     *      then fn:true()
+     * else if (is-string($A[1]) and is-string($B[1])
+     *      then fn:compare($A[1], $B[1], $C) lt 0
+     * else $A[1] lt $B[1]
+     * </code>
+     */
+    private static boolean deepLessThan(final Sequence seq1, final Sequence seq2, @Nullable final Collator collator) throws XPathException {
+      if (seq1.isEmpty()) {
+        return !seq2.isEmpty();
+      }
+
+      if (seq2.isEmpty()) {
+        return false;
+      }
+
+      final Item seq1Item1 = seq1.itemAt(0);
+      final Item seq2Item1 = seq2.itemAt(0);
+
+      if (FunDeepEqual.deepEquals(seq1Item1, seq2Item1, collator)) {
+        return deepLessThan(seq1.tail(), seq2.tail(), collator);
+      }
+
+      if (Type.subTypeOfUnion(seq1Item1.getType(), Type.NUMERIC) && ((NumericValue)seq1Item1).isNaN()) {
+        return true;
+      }
+
+      if (deepLessThanIsString(seq1Item1) && deepLessThanIsString(seq2Item1)) {
+        return FunCompare.compare(seq1Item1, seq2Item1, collator) < 0;
+      }
+
+      return ValueComparison.compareAtomic(collator, seq1Item1.atomize(), seq2Item1.atomize(), Constants.StringTruncationOperator.NONE, Constants.Comparison.LT);
+    }
+
+    private static boolean deepLessThanIsString(final Item item) {
+      return Type.subTypeOf(item.getType(), Type.STRING) || item.getType() == Type.ANY_URI || item.getType() == Type.UNTYPED_ATOMIC;
+    }
+  }
+
+  private Collator collator(final Sequence[] args, final int pos) throws XPathException {
     if (args.length > pos) {
       if (args[pos].isEmpty()) {
         return context.getDefaultCollator();
       }
-      String collationURI = args[pos].getStringValue();
+      final String collationURI = args[pos].getStringValue();
       return context.getCollator(collationURI);
     } else {
       return context.getDefaultCollator();
     }
   }
 
-  private FunctionReference function(Sequence[] args, int pos) throws XPathException {
+  private @Nullable FunctionReference function(final Sequence[] args, final int pos) throws XPathException {
     if (args.length > pos) {
-      FunctionReference ref = (FunctionReference) args[2].itemAt(0);
+      final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
       if (ref != null) {
         // need to create a new AnalyzeContextInfo to avoid memory leak
         // cachedContextInfo will stay in memory
@@ -233,18 +254,6 @@ public class FunSort extends BasicFunction {
       return ref;
     } else {
       return null;
-    }
-  }
-
-  static class Holder<T> {
-    T obj;
-
-    public void set(T obj) {
-      this.obj = obj;
-    }
-
-    public T get() {
-      return obj;
     }
   }
 }

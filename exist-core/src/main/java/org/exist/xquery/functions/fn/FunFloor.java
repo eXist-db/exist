@@ -45,16 +45,16 @@ public class FunFloor extends Function {
 			"Returns the largest number not greater than the value of $number. " + 
 			"If $number is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMBER, Cardinality.ZERO_OR_ONE, "The number")
+                new FunctionParameterSequenceType("number", Type.NUMERIC, Cardinality.ZERO_OR_ONE, "The number")
             },
-			new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE, "the largest number without fraction part not greater than the value of $number"));
+			new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE, "the largest number without fraction part not greater than the value of $number"));
 
 	public FunFloor(XQueryContext context) {
 		super(context, signature);
 	}
 
 	public int returnsType() {
-		return Type.NUMBER;
+		return Type.NUMERIC;
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -80,7 +80,7 @@ public class FunFloor extends Function {
         	if (item instanceof NumericValue) {
 				value = (NumericValue) item;
 			} else {
-				value = (NumericValue) item.convertTo(Type.NUMBER);
+				value = (NumericValue) item.convertTo(Type.NUMERIC);
 			}
     		result = value.floor();
         }

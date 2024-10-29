@@ -69,6 +69,7 @@ import org.exist.util.*;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.PerformanceStats;
+import org.exist.xquery.PerformanceStatsService;
 import org.exist.xquery.XQuery;
 
 import java.io.IOException;
@@ -183,6 +184,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     .when(State.SHUTTING_DOWN_SYSTEM_MODE).on(Event.FINISHED_SHUTDOWN).switchTo(State.SHUTDOWN)
             .build()
     );
+
 
     public String getStatus() {
         return status.getCurrentState().name();
@@ -473,7 +475,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.cacheManager = servicesManager.register(new DefaultCacheManager(this));
         this.xQueryPool = servicesManager.register(new XQueryPool());
         this.processMonitor = servicesManager.register(new ProcessMonitor());
-        this.xqueryStats = servicesManager.register(new PerformanceStats(this));
+        this.xqueryStats = servicesManager.register(new PerformanceStatsService());
         final XMLReaderObjectFactory xmlReaderObjectFactory = servicesManager.register(new XMLReaderObjectFactory());
         this.xmlReaderPool = servicesManager.register(new XMLReaderPool(xmlReaderObjectFactory, maxBrokers, 0));
         final int bufferSize = Optional.of(conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE))

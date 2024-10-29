@@ -45,7 +45,7 @@ public class FunctionTrace extends BasicFunction {
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Enable function tracing on the database instance.",
                 new SequenceType[] { new FunctionParameterSequenceType("enable", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The boolean flag to enable/disable function tracing") },
-                new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
         ),
         new FunctionSignature(
                 new QName( "enable-tracing", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
@@ -55,7 +55,7 @@ public class FunctionTrace extends BasicFunction {
                     new FunctionParameterSequenceType("tracelog", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                         "The tracelog boolean flag: if set to true, entering/exiting a function will be logged to the logger 'xquery.profiling'")
                 },
-                new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
         ),
         new FunctionSignature(
                 new QName( "tracing-enabled", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
@@ -67,7 +67,7 @@ public class FunctionTrace extends BasicFunction {
                 new QName( "clear-trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Clear the global trace log.",
                 null,
-                new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
         )
     };
 
@@ -79,7 +79,7 @@ public class FunctionTrace extends BasicFunction {
         logger.info("Entering " + SystemModule.PREFIX + ":{}", getName().getLocalPart());
         if (isCalledAs("clear-trace")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":clear-trace XQuery function");
-            context.getBroker().getBrokerPool().getPerformanceStats().clear();
+            context.getBroker().getBrokerPool().getPerformanceStats().reset();
 
         } else if (isCalledAs("enable-tracing")) {
         	logger.info("Entering the " + SystemModule.PREFIX + ":enable-tracing XQuery function");
@@ -107,7 +107,7 @@ public class FunctionTrace extends BasicFunction {
 
                 builder.startDocument();
                 final BrokerPool brokerPool = context.getBroker().getBrokerPool();
-                brokerPool.getPerformanceStats().toXML(builder);
+                brokerPool.getPerformanceStats().serialize(builder);
                 builder.endDocument();
                 logger.info("Exiting " + SystemModule.PREFIX + ":{}", getName().getLocalPart());
                 return (NodeValue) builder.getDocument().getDocumentElement();

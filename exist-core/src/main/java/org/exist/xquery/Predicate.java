@@ -108,7 +108,7 @@ public class Predicate extends PathExpr {
             executionMode = NODE;
             // Case 2: predicate expression returns a unique number and has no
             // dependency with the context item.
-        } else if (Type.subTypeOfUnion(innerType, Type.NUMBER) &&
+        } else if (Type.subTypeOfUnion(innerType, Type.NUMERIC) &&
                 !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM) &&
                     inner.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EXACTLY_ONE)) {
             executionMode = POSITIONAL;
@@ -221,12 +221,12 @@ public class Predicate extends PathExpr {
         Sequence innerSeq = null;
 
         // Atomic context sequences :
-        if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
+        if (Type.subTypeOf(contextSequence.getItemType(), Type.ANY_ATOMIC_TYPE)) {
             // We can't have a node set operation : reconsider depending of
             // the inner sequence
             if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
                 // (1,2,2,4)[.]
-                if (Type.subTypeOfUnion(contextSequence.getItemType(), Type.NUMBER)) {
+                if (Type.subTypeOfUnion(contextSequence.getItemType(), Type.NUMERIC)) {
                     recomputedExecutionMode = POSITIONAL;
                 } else {
                     recomputedExecutionMode = BOOLEAN;
@@ -242,7 +242,7 @@ public class Predicate extends PathExpr {
                 innerSeq = inner.eval(contextSequence, null);
                 // Only if we have an actual *singleton* of numeric items
                 if (innerSeq.hasOne()
-                        && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMBER)) {
+                        && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMERIC)) {
                     recomputedExecutionMode = POSITIONAL;
                 }
             }
@@ -264,7 +264,7 @@ public class Predicate extends PathExpr {
                     // Try to promote a boolean evaluation to a positional one
                     // Only if we have an actual *singleton* of numeric items
                 } else if (innerSeq.hasOne()
-                        && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMBER)) {
+                        && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMERIC)) {
                     recomputedExecutionMode = POSITIONAL;
                 }
             }
@@ -312,7 +312,7 @@ public class Predicate extends PathExpr {
             // TODO : is this block also accurate in reverse-order processing ?
             // Compute each position in the boolean-like way...
             // ... but grab some context positions ! -<8-P
-            if (Type.subTypeOfUnion(inner.returnsType(), Type.NUMBER)
+            if (Type.subTypeOfUnion(inner.returnsType(), Type.NUMERIC)
                     && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
                 final Set<NumericValue> positions = new TreeSet<>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
@@ -342,7 +342,7 @@ public class Predicate extends PathExpr {
                     final Item item = i.nextItem();
                     final Sequence innerSeq = inner.eval(contextSequence, item);
                     if (innerSeq.hasOne()
-                            && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMBER)) {
+                            && Type.subTypeOfUnion(innerSeq.getItemType(), Type.NUMERIC)) {
                         // TODO : introduce a check in innerSeq.hasOne() ?
                         final NumericValue nv = (NumericValue) innerSeq;
                         // Non integers return... nothing, not even an error !

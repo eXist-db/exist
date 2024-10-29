@@ -26,6 +26,9 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Represents an XQuery "for" expression.
  * 
@@ -51,10 +54,10 @@ public class ForExpr extends BindingExpression {
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
      * 
-     * @param var the name of the variable to set
+     * @param variable the name of the variable to set
      */
-    public void setPositionalVariable(final QName var) {
-        positionalVariable = var;
+    public void setPositionalVariable(final QName variable) {
+        positionalVariable = variable;
     }
 
 	/* (non-Javadoc)
@@ -75,11 +78,6 @@ public class ForExpr extends BindingExpression {
             context.declareVariableBinding(inVar);
             // Declare positional variable
             if (positionalVariable != null) {
-                //could probably be detected by the parser
-                if (varName.equals(positionalVariable)) {
-                    throw new XPathException(this, ErrorCodes.XQST0089,
-                            "bound variable and positional variable have the same name");
-                }
                 final LocalVariable posVar = new LocalVariable(positionalVariable);
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
@@ -241,7 +239,13 @@ public class ForExpr extends BindingExpression {
         //Reset the context position
         context.setContextSequencePosition(0, null);
 
-        resultSequence.addAll(returnExpr.eval(null, null));
+        final Sequence returnExprResult;
+        if (returnExpr instanceof OrderByClause) {
+            returnExprResult = returnExpr.eval(contextSequence, null);
+        } else {
+            returnExprResult = returnExpr.eval(null, null);
+        }
+        resultSequence.addAll(returnExprResult);
 
         // free resources
         var.destroy(context, resultSequence);
@@ -270,9 +274,7 @@ public class ForExpr extends BindingExpression {
         return super.preEval(seq);
     }
 
-    /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
-         */
+    @Override
     public void dump(ExpressionDumper dumper) {
         dumper.display("for ", line);
         dumper.startIndent();
@@ -298,6 +300,7 @@ public class ForExpr extends BindingExpression {
         dumper.endIndent().nl();
     }
 
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("for ");
@@ -322,14 +325,28 @@ public class ForExpr extends BindingExpression {
         return result.toString();
     }
 
-    /* (non-Javadoc)
-    * @see org.exist.xquery.AbstractExpression#resetState()
-    */
-    public void resetState(boolean postOptimization) {
-        super.resetState(postOptimization);
+    @Override
+    public void accept(final ExpressionVisitor visitor) {
+        visitor.visitForExpression(this);
     }
 
-    public void accept(ExpressionVisitor visitor) {
-        visitor.visitForExpression(this);
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> variables = new HashSet<>();
+        if (positionalVariable != null) {
+            variables.add(positionalVariable);
+        }
+
+        final QName variable = getVariable();
+        if (variable != null) {
+            variables.add(variable);
+        }
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            variables.add(startVar.getQName());
+        }
+
+        return variables;
     }
 }

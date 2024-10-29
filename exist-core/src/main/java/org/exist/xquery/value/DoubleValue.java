@@ -151,8 +151,16 @@ public class DoubleValue extends NumericValue {
             comparison = () -> Constants.INFERIOR;
         } else if (other.isNaN()) {
             comparison = () -> Constants.SUPERIOR;
-        } else if (isInfinite() && other.isInfinite() && isPositive() == other.isPositive()) {
-            comparison = () -> Constants.EQUAL;
+        } else if (isPositiveInfinity()) {
+            // +INF
+            comparison = () -> other.isPositiveInfinity() ? Constants.EQUAL : Constants.SUPERIOR;
+        } else if (other.isPositiveInfinity()) {
+            comparison = () -> Constants.INFERIOR;
+        } else if (isNegativeInfinity()) {
+            // -INF
+            comparison = () -> other.isNegativeInfinity() ? Constants.EQUAL : Constants.INFERIOR;
+        } else if (other.isNegativeInfinity()) {
+            comparison = () -> Constants.SUPERIOR;
         } else if (other instanceof IntegerValue iv) {
             comparison = () -> BigDecimal.valueOf(value).compareTo(new BigDecimal(iv.value));
         } else if (other instanceof DecimalValue dv) {
@@ -170,7 +178,7 @@ public class DoubleValue extends NumericValue {
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
         return switch (requiredType) {
-            case Type.ITEM, Type.NUMBER, Type.ATOMIC, Type.DOUBLE -> this;
+            case Type.ITEM, Type.NUMERIC, Type.ANY_ATOMIC_TYPE, Type.DOUBLE -> this;
             case Type.FLOAT -> new FloatValue(getExpression(), (float) value);
             case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
             case Type.STRING -> new StringValue(getExpression(), getStringValue());
@@ -306,7 +314,7 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public ComputableValue div(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             //Positive or negative zero divided by positive or negative zero returns NaN.
             if (this.isZero() && ((NumericValue) other).isZero()) {
                 return NaN;

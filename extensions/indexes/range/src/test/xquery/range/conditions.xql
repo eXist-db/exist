@@ -218,16 +218,16 @@ function ct:cleanup() {
 (: the standard range lookup should not be used for the @type predicate :)
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq() {
-    collection($ct:COLLECTION)//tei:note[@type="availability"][.="publiziert"]
+    collection($ct:COLLECTION)//tei:note[@type eq "availability"][.="publiziert"]
 };
 
 (: rewrite expression with predicate that matches a condition to a field  :)
 (: the standard range lookup should not be used for the @type predicate :)
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-numeric() {
     collection($ct:COLLECTION)//tei:num[@value = 1][.="publiziert"]
 };
@@ -236,14 +236,14 @@ function ct:optimize-eq-numeric() {
 (: the standard range lookup should not be used for the @type predicate :)
 declare
 %test:stats
-%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+%test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
 function ct:no-optimize-eq-numeric() {
     collection($ct:COLLECTION)//tei:num[@value = "1"][.="publiziert"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-var() {
     let $var := "availability"
     return collection($ct:COLLECTION)//tei:note[@type=$var][.="publiziert"]
@@ -251,14 +251,14 @@ function ct:optimize-eq-var() {
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-func() {
     collection($ct:COLLECTION)//tei:note[@type=lower-case("AVAILABILITY")][.="publiziert"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-reverse-var-nested() {
     let $var := "availability"
     let $var2 := $var
@@ -268,14 +268,14 @@ function ct:optimize-eq-reverse-var-nested() {
 declare variable $ct:var := "availability";
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-static-var() {
     collection($ct:COLLECTION)//tei:note[@type=$ct:var][.="publiziert"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq-reverse() {
     collection($ct:COLLECTION)//tei:note["availability" = @type][.="publiziert"]
 };
@@ -284,9 +284,9 @@ function ct:optimize-eq-reverse() {
 (: rewrite expression with predicate that matches a condition to a field  :)
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-eq2() {
-    collection($ct:COLLECTION)//tei:note[@type="orig_place"][tei:place/tei:placeName eq "Oxyrhynchos"]
+    collection($ct:COLLECTION)//tei:note[@type eq "orig_place"][tei:place/tei:placeName eq "Oxyrhynchos"]
 };
 
 
@@ -299,9 +299,9 @@ count(range:index-keys-for-field("pCase", function($k, $n) { $k }, 10))
 
 declare
 %test:stats
-%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+%test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
 function ct:optimize-case() {
-collection($ct:COLLECTION)//tei:note[@type="Availablity"][.="publiziert"]
+collection($ct:COLLECTION)//tei:note[@type eq "Availablity"][.="publiziert"]
 };
 
 declare
@@ -313,9 +313,9 @@ range:index-keys-for-field("exactlyOne", function($k, $n) { $k }, 10)
 (: do not use a conditional field for optimizing if condition does not match :)
 declare
 %test:stats
-%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+%test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
 function ct:no-optimize-condition2() {
-collection($ct:COLLECTION)//tei:note[@type="something"][. = "literarisch"]
+collection($ct:COLLECTION)//tei:note[@type eq "something"][. = "literarisch"]
 };
 
 (: only the elements matching the condition should have been indexed :)
@@ -329,7 +329,7 @@ count(collection($ct:COLLECTION)//range:field-eq("text_type", "literarisch"))
 (: some have not, pick the one without condition if no condition matches :)
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2]")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ct:use-config-without-condition-optimize() {
 collection($ct:COLLECTION)//tei:note[.="foo"]
 };
@@ -343,16 +343,16 @@ count(collection($ct:COLLECTION)//tei:note[.="foo"])
 (: rewrite expression with multiple conditions to the correct field :)
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2][@calls = 1] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'][@calls = 1] and not($result//stats:index[@type eq 'range'])")
 function ct:multiple-conditions() {
-collection($ct:COLLECTION)//tei:placeName[@cert="high"][@type="someType"][.="Achmim"]
+collection($ct:COLLECTION)//tei:placeName[@cert="high"][@type eq "someType"][.="Achmim"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2][@calls = 1] and $result//stats:index[@type='range'][@calls=1]")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'][@calls = 1] and $result//stats:index[@type eq 'range'][@calls=1]")
 function ct:multiple-conditions-inbetween() {
-collection($ct:COLLECTION)//tei:placeName[@cert="high"][not(.="")][@type="someType"][.="Achmim"]
+collection($ct:COLLECTION)//tei:placeName[@cert="high"][not(.="")][@type eq "someType"][.="Achmim"]
 };
 
 
@@ -364,7 +364,7 @@ range:index-keys-for-field("text_type_end", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-ends-with() {
 collection($ct:COLLECTION)//tei:note[ends-with(@type, "end")][. = "startswithendswith"]
 };
@@ -377,7 +377,7 @@ range:index-keys-for-field("text_type_start", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-starts-with() {
 collection($ct:COLLECTION)//tei:note[starts-with(@type, "start")][. = "startswithendswith"]
 };
@@ -390,21 +390,21 @@ range:index-keys-for-field("termsBeforeB", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-lt() {
 collection($ct:COLLECTION)//tei:term[@n < "b"][. = "eins"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-lt-numeric() {
 collection($ct:COLLECTION)//tei:figure[@n < 2][. = "one"]
 };
 
 declare
 %test:stats
-%test:assertXPath("not($result//stats:index[@type = 'new-range'][@optimization = 2])")
+%test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
 function ct:no-optimize-lt-numeric() {
 collection($ct:COLLECTION)//tei:figure[@n < "2"][. = "one"]
 };
@@ -430,14 +430,14 @@ range:index-keys-for-field("termsAfterB", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-gt() {
 collection($ct:COLLECTION)//tei:term[@n > "b"][. = "drei"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-gt-inverse() {
 collection($ct:COLLECTION)//tei:term["b" < @n][. = "eins"]
 };
@@ -462,7 +462,7 @@ range:index-keys-for-field("termsBeforeOrEqualB", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-le() {
 collection($ct:COLLECTION)//tei:term[@n le "b"][. = "eins"]
 };
@@ -481,7 +481,7 @@ range:index-keys-for-field("termsAfterOrEqualB", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-ge() {
 collection($ct:COLLECTION)//tei:term[@n ge "b"][. = "drei"]
 };
@@ -495,7 +495,7 @@ range:index-keys-for-field("termsNotB", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-ne() {
 collection($ct:COLLECTION)//tei:term[@n ne "b"][. = "drei"]
 };
@@ -508,7 +508,7 @@ range:index-keys-for-field("entryNContains1234", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-contains() {
 collection($ct:COLLECTION)//tei:entry[contains(@n, "1234")][. = "something"]
 };
@@ -521,14 +521,14 @@ range:index-keys-for-field("entryNMatches", function($k, $n) { $k }, 10)
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-matches() {
 collection($ct:COLLECTION)//tei:entry[matches(@n, "some_\d+_thing")][. = "something"]
 };
 
 declare
 %test:stats
-%test:assertXPath("$result//stats:index[@type = 'new-range'][@optimization = 2] and not($result//stats:index[@type='range'])")
+%test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-matches-no-case() {
 collection($ct:COLLECTION)//tei:p[matches(@type, "bb")][. = "something"]
 };

@@ -479,7 +479,7 @@ public class StringValue extends AtomicValue {
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
             //TODO : should we allow these 2 type under-promotions ?
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.ITEM:
             case Type.STRING:
                 return this;
@@ -508,7 +508,7 @@ public class StringValue extends AtomicValue {
             case Type.FLOAT:
                 return new FloatValue(getExpression(), value);
             case Type.DOUBLE:
-            case Type.NUMBER:
+            case Type.NUMERIC:
                 return new DoubleValue(getExpression(), this);
             case Type.DECIMAL:
                 return new DecimalValue(getExpression(), value);
@@ -544,15 +544,15 @@ public class StringValue extends AtomicValue {
                 return new YearMonthDurationValue(getExpression(), value);
             case Type.DAY_TIME_DURATION:
                 return new DayTimeDurationValue(getExpression(), value);
-            case Type.GYEAR:
+            case Type.G_YEAR:
                 return new GYearValue(getExpression(), value);
-            case Type.GMONTH:
+            case Type.G_MONTH:
                 return new GMonthValue(getExpression(), value);
-            case Type.GDAY:
+            case Type.G_DAY:
                 return new GDayValue(getExpression(), value);
-            case Type.GYEARMONTH:
+            case Type.G_YEAR_MONTH:
                 return new GYearMonthValue(getExpression(), value);
-            case Type.GMONTHDAY:
+            case Type.G_MONTH_DAY:
                 return new GMonthDayValue(getExpression(), value);
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
@@ -672,8 +672,8 @@ public class StringValue extends AtomicValue {
     }
 
     @Override
-    public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+    public int compareTo(final Collator collator, final AtomicValue other) throws XPathException {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             //No possible comparisons
             if (((NumericValue) other).isNaN()) {
                 return Constants.INFERIOR;
@@ -682,12 +682,18 @@ public class StringValue extends AtomicValue {
                 return Constants.INFERIOR;
             }
         }
-        try {
-            return Collations.compare(collator, value, other.getStringValue());
-        } catch (final UnsupportedOperationException e) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
+
+        if (Type.subTypeOf(other.getType(), Type.STRING)) {
+            try {
+                return Collations.compare(collator, value, other.getStringValue());
+            } catch (final UnsupportedOperationException e) {
+                throw new XPathException(getExpression(), ErrorCodes.FOCH0004, e.getMessage());
+            }
+        } else {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot compare string value to non-string value");
         }
     }
+
 
     @Override
     public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {

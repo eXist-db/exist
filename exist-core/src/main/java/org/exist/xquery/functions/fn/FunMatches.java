@@ -130,7 +130,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             Expression arg = arguments.get(1);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-            if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+            if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
                 arg = new Atomize(context, arg);
             }
             steps.add(arg);
@@ -140,7 +140,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             Expression arg = arguments.get(2);
             arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
-            if (!Type.subTypeOf(arg.returnsType(), Type.ATOMIC)) {
+            if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
                 arg = new Atomize(context, arg);
             }
             steps.add(arg);
@@ -241,7 +241,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         }
         if (context.getProfiler().traceFunctions()) {
             context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                    PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start);
+                    PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start);
         }
         return preselectResult;
     }
@@ -333,7 +333,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                 }
                 if (context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                            PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start);
+                            PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start);
                 }
             } else {
                 if (context.isProfilingEnabled()) {
@@ -346,7 +346,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                 }
                 if (context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceIndexUsage(context, PerformanceStats.RANGE_IDX_TYPE, this,
-                            PerformanceStats.NO_INDEX, System.currentTimeMillis() - start);
+                            PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start);
                 }
             }
         } else {

@@ -51,7 +51,7 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType[]{
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to create.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_CREATE_GROUP_WITH_METADATA = new FunctionSignature(
@@ -61,7 +61,7 @@ public class GroupManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the group to create."),
             new FunctionParameterSequenceType("description", Type.STRING, Cardinality.EXACTLY_ONE, "A description of the group.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA = new FunctionSignature(
@@ -72,7 +72,7 @@ public class GroupManagementFunction extends BasicFunction {
             new FunctionParameterSequenceType("managers", Type.STRING, Cardinality.ONE_OR_MORE, "The usernames of users that will be a manager of this group."),
             new FunctionParameterSequenceType("description", Type.STRING, Cardinality.EXACTLY_ONE, "A description of the group.")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     public final static FunctionSignature FNS_REMOVE_GROUP = new FunctionSignature(
@@ -81,7 +81,7 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType[]{
             new FunctionParameterSequenceType("group-name", Type.STRING, Cardinality.EXACTLY_ONE, "The group-id to delete")
         },
-        new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+        new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
     //TODO implement later

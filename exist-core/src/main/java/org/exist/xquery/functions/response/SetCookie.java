@@ -61,17 +61,17 @@ public class SetCookie extends StrictResponseFunction {
                     new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Cookie on the HTTP Response.",
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
             new FunctionSignature(
                     new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Cookie on the HTTP Response.",
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)),
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
             new FunctionSignature(
                     new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Cookie on the HTTP Response.",
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM, MAX_AGE_PARAM, SECURE_PARAM, DOMAIN_PARAM, PATH_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE))
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE))
     };
 
     public SetCookie(final XQueryContext context, final FunctionSignature signature) {

@@ -115,7 +115,7 @@ public class Atomize extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return Type.ATOMIC;
+		return Type.ANY_ATOMIC_TYPE;
 	}
 	
 	/* (non-Javadoc)

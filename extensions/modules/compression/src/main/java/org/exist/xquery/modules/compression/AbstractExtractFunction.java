@@ -162,7 +162,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
             Sequence entryDataFunctionResult;
             Sequence uncompressedData = Sequence.EMPTY_SEQUENCE;
 
-            if (entryDataFunction.getSignature().getReturnType().getPrimaryType() != Type.EMPTY && entryDataFunction.getSignature().getArgumentCount() == 3) {
+            if (entryDataFunction.getSignature().getReturnType().getPrimaryType() != Type.EMPTY_SEQUENCE && entryDataFunction.getSignature().getArgumentCount() == 3) {
 
                 Sequence dataParams[] = new Sequence[3];
                 System.arraycopy(filterParams, 0, dataParams, 0, 2);

@@ -51,7 +51,7 @@ public class JSON extends BasicFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_JSON_TEXT = optParam("json-text", Type.STRING, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value");
     private static final FunctionParameterSequenceType FS_PARAM_HREF = optParam("href", Type.STRING,"URL pointing to a JSON resource");
-    private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = param("options", Type.MAP, "Parsing options");
+    private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = param("options", Type.MAP_ITEM, "Parsing options");
 
     private static final String FS_PARSE_JSON_NAME = "parse-json";
     static final FunctionSignature[] FS_PARSE_JSON = functionSignatures(
@@ -64,7 +64,7 @@ public class JSON extends BasicFunction {
                 ),
                 arity(
                         FS_PARAM_JSON_TEXT,
-                        param("options", Type.MAP, "Parsing options")
+                        param("options", Type.MAP_ITEM, "Parsing options")
                 )
             )
     );
@@ -280,10 +280,10 @@ public class JSON extends BasicFunction {
             }
             if (parent != null) {
                 switch (parent.getType()) {
-                    case Type.ARRAY:
+                    case Type.ARRAY_ITEM:
                         ((ArrayType)parent).add(next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
                         break;
-                    case Type.MAP:
+                    case Type.MAP_ITEM:
                         final String currentName = parser.getCurrentName();
                         if (currentName == null) {
                             throw new XPathException(next, ErrorCodes.FOJS0001, "Invalid JSON object");

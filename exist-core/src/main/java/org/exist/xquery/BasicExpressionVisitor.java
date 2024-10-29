@@ -244,6 +244,11 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         // Nothing to do
     }
 
+    @Override
+    public void visitWindowExpression(final WindowExpr windowExpr) {
+        // Nothing to do
+    }
+
     public static class FirstStepVisitor extends BasicExpressionVisitor {
 
         private LocationStep firstStep = null;

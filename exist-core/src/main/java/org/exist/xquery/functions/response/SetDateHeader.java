@@ -52,7 +52,7 @@ public class SetDateHeader extends StrictResponseFunction {
                     new QName("set-date-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Header on the HTTP Response.",
                     new SequenceType[]{NAME_PARAM, VALUE_PARAM},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE));
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE));
 
     public SetDateHeader(final XQueryContext context) {
         super(context, signature);

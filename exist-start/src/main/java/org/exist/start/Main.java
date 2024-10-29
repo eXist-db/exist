@@ -65,6 +65,7 @@ import java.util.stream.Stream;
 public class Main {
     public static final String STANDARD_ENABLED_JETTY_CONFIGS = "standard.enabled-jetty-configs";
     public static final String STANDALONE_ENABLED_JETTY_CONFIGS = "standalone.enabled-jetty-configs";
+    public static final String PROP_LOG4J_DISABLEJMX = "log4j2.disableJmx";
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
@@ -261,7 +262,6 @@ public class Main {
             }
 
             if (log4jConfigurationFile.isPresent() && Files.isReadable(log4jConfigurationFile.get())) {
-//                System.setProperty(PROP_LOG4J_CONFIGURATION_FILE, log4jConfigurationFile.get().toUri().toASCIIString());
                 System.setProperty(PROP_LOG4J_CONFIGURATION_FILE, log4jConfigurationFile.get().toAbsolutePath().toString());
             }
         }
@@ -270,6 +270,9 @@ public class Main {
             //redirect JUL to log4j2 unless otherwise specified
             System.setProperty(PROP_JUL_MANAGER, Optional.ofNullable(System.getProperty(PROP_JUL_MANAGER)).orElse("org.apache.logging.log4j.jul.LogManager"));
         }
+
+        // Enable JXM support log4j since v2.24.0 [2024]
+        System.setProperty(PROP_LOG4J_DISABLEJMX, "false");
 
         // clean up tempdir for Jetty...
         try {

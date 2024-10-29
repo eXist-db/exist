@@ -52,7 +52,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         this(null, binaryValueType, value);
     }
 
-    public BinaryValueFromBinaryString(final Expression expression, BinaryValueType binaryValueType, String value) throws XPathException {
+    public BinaryValueFromBinaryString(final Expression expression, final BinaryValueType binaryValueType, final String value) throws XPathException {
         super(expression, null, binaryValueType);
         this.value = binaryValueType.verifyAndFormatString(value);
     }

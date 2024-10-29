@@ -108,24 +108,23 @@
         <aspectj.version>1.9.22.1</aspectj.version>
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
         <icu.version>59.1</icu.version>
-        <izpack.version>5.2.2</izpack.version>
+        <izpack.version>5.2.3</izpack.version>
         <jansi.version>2.4.1</jansi.version>
         <jaxb.api.version>4.0.2</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.2</eclipse.angus-activation.version>
         <jetty.version>11.0.24</jetty.version>
-        <log4j.version>2.23.1</log4j.version>
+        <log4j.version>2.24.1</log4j.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
         <nekohtml.version>2.1.3</nekohtml.version>
-        <saxon.version>9.9.1-8</saxon.version>
-        <xalan.version>2.7.3</xalan.version>
-        <xmlresolver.version>6.0.10</xmlresolver.version>
+        <saxon.version>9.9.1-8</saxon.version>n>
+        <xmlresolver.version>6.0.11</xmlresolver.version>
         <xmlunit.version>2.10.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
-        <junit.platform.version>1.11.0</junit.platform.version>
-        <junit.jupiter.version>5.11.0</junit.jupiter.version>
+        <junit.platform.version>1.11.3</junit.platform.version>
+        <junit.jupiter.version>5.11.3</junit.jupiter.version>
         <easymock.version>5.4.0</easymock.version>
         <objenesis.version>3.4</objenesis.version>
         <assertj.version>3.26.3</assertj.version>
@@ -211,7 +210,7 @@
             <dependency>
                 <groupId>com.evolvedbinary.j8fu</groupId>
                 <artifactId>j8fu</artifactId>
-                <version>1.23.0</version>
+                <version>1.24.0</version>
             </dependency>
             <dependency>
                 <groupId>com.evolvedbinary.multilock</groupId>
@@ -461,7 +460,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.15.1</version>
+                <version>1.15.7</version>
             </dependency>
 
             <dependency>
@@ -497,7 +496,7 @@
             <dependency>
                 <groupId>it.unimi.dsi</groupId>
                 <artifactId>fastutil</artifactId>
-                <version>8.5.14</version>
+                <version>8.5.15</version>
             </dependency>
 
             <dependency>
@@ -630,12 +629,12 @@
                 <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>4.5</version>
+                    <version>4.6</version>
                 </plugin>
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>10.0.4</version>
+                    <version>11.0.0</version>
                     <configuration>
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
@@ -674,7 +673,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.8.0</version>
+                    <version>3.8.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -752,7 +751,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.10.0</version>
+                    <version>3.10.1</version>
                     <configuration>
                         <source>${project.build.source}</source>
                         <archive>
@@ -808,7 +807,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.5.1</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.junit.platform</groupId>
@@ -848,7 +847,7 @@
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
-                        <argLine>@{jacocoArgLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -XX:StartFlightRecording=maxsize=5g,disk=true,dumponexit=true,settings=default,filename=${project.build.directory}/ -Dfile.encoding=${project.build.sourceEncoding}</argLine>
+                        <argLine>@{jacocoArgLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <systemPropertyVariables>
                             <user.country>UK</user.country>
                             <user.language>en</user.language>
@@ -856,23 +855,24 @@
                             <java.locale.providers>JRE,CLDR,SPI</java.locale.providers>
                             <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                             <xml.catalog.alwaysResolve>false</xml.catalog.alwaysResolve>
+                            <log4j2.disableJmx>false</log4j2.disableJmx>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-report-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.5.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.8.0</version>
                     <configuration>
                         <dependencyDetailsEnabled>false</dependencyDetailsEnabled>  <!-- TODO(AR) disabled due to slow `mvn site` build times -->
                     </configuration>
@@ -885,7 +885,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.20.0</version>
+                    <version>3.21.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -924,7 +924,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>exec-maven-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -953,7 +953,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.6</version>
+                    <version>3.2.7</version>
                 </plugin>
                 <plugin>
                     <groupId>de.jutzig</groupId>
@@ -967,6 +967,11 @@
                     <configuration>
                         <repoToken>${env.COVERALLS_TOKEN}</repoToken>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>4.0.0.4121</version>
                 </plugin>
             </plugins>
         </pluginManagement>

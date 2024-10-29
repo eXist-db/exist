@@ -94,12 +94,12 @@ public class JSONSerializer {
     }
 
     private void serializeItem(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
-        if (item.getType() == Type.ARRAY) {
+        if (item.getType() == Type.ARRAY_ITEM) {
             serializeArray((ArrayType) item, generator);
-        } else if (item.getType() == Type.MAP) {
+        } else if (item.getType() == Type.MAP_ITEM) {
             serializeMap((MapType) item, generator);
-        } else if (Type.subTypeOf(item.getType(), Type.ATOMIC)) {
-            if (Type.subTypeOfUnion(item.getType(), Type.NUMBER)) {
+        } else if (Type.subTypeOf(item.getType(), Type.ANY_ATOMIC_TYPE)) {
+            if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
                 generator.writeNumber(item.getStringValue());
             } else {
                 switch (item.getType()) {

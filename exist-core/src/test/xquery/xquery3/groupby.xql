@@ -449,8 +449,8 @@ function groupby:useCase3() {
         order by $state, $category
         return
             <group>
-                <state>{$state/string()}</state>
-                <category>{$category/string()}</category>
+                <state>{$state}</state>
+                <category>{$category}</category>
                 <total-revenue>{sum($revenue)}</total-revenue>
             </group>
     }</result>
@@ -628,4 +628,93 @@ function groupby:issue-967() {
     group by $pos
     return
     $nr
+};
+
+declare
+  %test:assertEquals("<result><working-time><person/><other/></working-time><working-time><person>Anton</person><other><person>Anton</person></other></working-time><working-time><person>Barbara</person><other><person>Barbara</person></other></working-time><working-time><person>Clara</person><other><person>Clara</person></other></working-time></result>")
+function groupby:atomize-group-vars() {
+  let $data := document {
+    <stream>
+      <event time="2006-01-01T01:00:00-00:00"/>
+      <event time="2006-01-01T10:30:00-00:00">
+        <person>Anton</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-01T11:00:00-00:00">
+        <person>Barbara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-01T11:15:00-00:00">
+        <person>Clara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-01T12:15:00-00:00">
+        <person>Clara</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-01T14:00:00-00:00">
+        <person>Barbara</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-01T15:00:00-00:00">
+        <person>Anton</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-01T23:00:00-00:00"/>
+      <event time="2006-01-02T01:00:00-00:00"/>
+      <event time="2006-01-02T11:00:00-00:00">
+        <person>Anton</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-02T12:00:00-00:00">
+        <person>Clara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-02T12:10:00-00:00">
+        <person>Clara</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-02T12:15:00-00:00">
+        <person>Clara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-02T12:20:00-00:00">
+        <person>Clara</person>
+        <direction>out</direction>
+      </event>
+        <event time="2006-01-02T12:25:00-00:00">
+        <person>Clara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-02T12:40:00-00:00">
+        <person>Clara</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-02T14:00:00-00:00">
+        <person>Clara</person>
+        <direction>in</direction>
+      </event>
+      <event time="2006-01-02T16:00:00-00:00">
+        <person>Anton</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-02T16:15:00-00:00">
+        <person>Clara</person>
+        <direction>out</direction>
+      </event>
+      <event time="2006-01-02T23:00:00-00:00"/>
+    </stream>
+  } return
+    <result>{
+      for $s in $data/stream/event
+      let $person := $s/person
+      let $x := $s/person
+      group by $person
+      order by $person
+      return
+        <working-time>
+          <person>{$person}</person>
+          <other>{$x[1]}</other>
+        </working-time>
+    }</result>
 };

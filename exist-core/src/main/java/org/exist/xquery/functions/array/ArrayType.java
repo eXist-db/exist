@@ -250,12 +250,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     @Override
     public int getType() {
-        return Type.ARRAY;
+        return Type.ARRAY_ITEM;
     }
 
     @Override
     public int getItemType() {
-        return Type.ARRAY;
+        return Type.ARRAY_ITEM;
     }
 
     @Override
@@ -358,7 +358,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     protected static Sequence flatten(Sequence input, ValueSequence result) throws XPathException {
         for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
-            if (item.getType() == Type.ARRAY) {
+            if (item.getType() == Type.ARRAY_ITEM) {
                 final Sequence members = ((ArrayType) item).asSequence();
                 flatten(members, result);
             } else {
@@ -369,7 +369,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     }
 
     public static Sequence flatten(Item item) throws XPathException {
-        if (item.getType() == Type.ARRAY) {
+        if (item.getType() == Type.ARRAY_ITEM) {
             final Sequence members = ((ArrayType) item).asSequence();
             return flatten(members, new ValueSequence(members.getItemCount()));
         }
@@ -389,12 +389,12 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         }
         boolean flatten = false;
         final int itemType = input.getItemType();
-        if (itemType == Type.ARRAY) {
+        if (itemType == Type.ARRAY_ITEM) {
             flatten = true;
         } else if (itemType == Type.ITEM) {
             // may contain arrays - check
             for (SequenceIterator i = input.iterate(); i.hasNext(); ) {
-                if (i.nextItem().getType() == Type.ARRAY) {
+                if (i.nextItem().getType() == Type.ARRAY_ITEM) {
                     flatten = true;
                     break;
                 }

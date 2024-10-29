@@ -143,7 +143,7 @@ public class SerializerUtils {
         STANDALONE(OutputKeys.STANDALONE, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "omit"
         SUPPRESS_INDENTATION("suppress-indentation", Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
         UNDECLARE_PREFIXES("undeclare-prefixes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
-        USE_CHARACTER_MAPS(EXistOutputKeys.USE_CHARACTER_MAPS, Type.MAP, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
+        USE_CHARACTER_MAPS(EXistOutputKeys.USE_CHARACTER_MAPS, Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),
         VERSION(OutputKeys.VERSION, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("1.0"));
 
         private final String parameterName;
@@ -575,7 +575,7 @@ public class SerializerUtils {
                     properties.setProperty(localParameterName, value);
                 }
                 break;
-            case Type.MAP:
+            case Type.MAP_ITEM:
                 if (parameterConvention.getParameterName().equals(W3CParameterConvention.USE_CHARACTER_MAPS.parameterName)) {
                     final Int2ObjectMap<String> characterMap = createCharacterMap((MapType) parameterValue, parameterConvention);
                     setCharacterMap(properties, characterMap);

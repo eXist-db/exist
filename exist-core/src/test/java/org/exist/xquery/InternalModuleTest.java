@@ -104,9 +104,7 @@ public class InternalModuleTest {
         } catch (final XMLDBException e) {
             assertTrue(e.getCause() instanceof XPathException);
             final XPathException xpe = (XPathException)e.getCause();
-
-            //TODO(AR) should be XPST0008, eXist-db has a bug with the error code, see: https://github.com/eXist-db/exist/issues/2060
-            assertEquals(ErrorCodes.XPDY0002, xpe.getErrorCode());
+            assertEquals(ErrorCodes.XPST0008, xpe.getErrorCode());
         }
     }
 

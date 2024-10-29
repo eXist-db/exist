@@ -44,7 +44,7 @@ public class LuceneIndexKeys extends BasicFunction {
                     new SequenceType[] {
                             new FunctionParameterSequenceType("field", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the field"),
                             new FunctionParameterSequenceType("start-value", Type.STRING, Cardinality.ZERO_OR_ONE, "Only keys starting with the given prefix are reported."),
-                            new FunctionParameterSequenceType("function-reference", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A function reference. " +
+                            new FunctionParameterSequenceType("function-reference", Type.FUNCTION, Cardinality.EXACTLY_ONE, "A function reference. " +
                                     "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
                                     "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                                     "containing three int values: a) the overall frequency of the key within the node set, " +

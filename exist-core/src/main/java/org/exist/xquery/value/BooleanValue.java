@@ -69,25 +69,33 @@ public class BooleanValue extends AtomicValue {
         return value ? "true" : "false";
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xquery.value.AtomicValue#convertTo(int)
-     */
-    public AtomicValue convertTo(int requiredType) throws XPathException {
-        return switch (requiredType) {
-            case Type.BOOLEAN, Type.ATOMIC, Type.ITEM -> this;
-            case Type.NUMBER, Type.INTEGER -> new IntegerValue(getExpression(), value ? 1 : 0);
-            case Type.DECIMAL -> new DecimalValue(getExpression(), value ? 1 : 0);
-            case Type.FLOAT -> new FloatValue(getExpression(), value ? 1 : 0);
-            case Type.DOUBLE -> new DoubleValue(getExpression(), value ? 1 : 0);
-            case Type.STRING -> new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                    "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
-        };
+    public AtomicValue convertTo(final int requiredType) throws XPathException {
+        switch (requiredType) {
+            case Type.BOOLEAN:
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.ITEM:
+                return this;
+            case Type.NUMERIC:
+            case Type.INTEGER:
+                return new IntegerValue(getExpression(), value ? 1 : 0);
+            case Type.DECIMAL:
+                return new DecimalValue(getExpression(), value ? 1 : 0);
+            case Type.FLOAT:
+                return new FloatValue(getExpression(), value ? 1 : 0);
+            case Type.DOUBLE:
+                return new DoubleValue(getExpression(), value ? 1 : 0);
+            case Type.STRING:
+                return new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getExpression(), getStringValue());
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
+        }
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
             boolean otherVal = ((BooleanValue) other).getValue();
             return switch (operator) {
@@ -106,14 +114,17 @@ public class BooleanValue extends AtomicValue {
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        final boolean otherVal = other.effectiveBooleanValue();
-        if (otherVal == value) {
-            return Constants.EQUAL;
-        } else if (value) {
-            return Constants.SUPERIOR;
-        } else {
-            return Constants.INFERIOR;
+        if (Type.subTypeOf(other.getType(), Type.BOOLEAN)) {
+            final boolean otherVal = other.effectiveBooleanValue();
+            if (otherVal == value) {
+                return Constants.EQUAL;
+            } else if (value) {
+                return Constants.SUPERIOR;
+            } else {
+                return Constants.INFERIOR;
+            }
         }
+        return Constants.INFERIOR;
     }
 
     /* (non-Javadoc)

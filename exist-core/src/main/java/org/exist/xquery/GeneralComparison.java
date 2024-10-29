@@ -227,14 +227,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     axis        = firstStep.getAxis();
 
                     if( ( axis == Constants.SELF_AXIS ) && ( steps.size() > 1 ) ) {
-                    	if (steps.get(1) != null) {
-                    		axis = steps.get( 1 ).getAxis();
-                    	} else {
-                    		contextQName = null;
-                    		contextStep = null;
-                    		axis = Constants.UNKNOWN_AXIS;
-                    		optimizeChild = false;
-                    	}
+                        if (steps.get(1) != null) {
+                            axis = steps.get( 1 ).getAxis();
+                        } else {
+                            contextQName = null;
+                            contextStep = null;
+                            axis = Constants.UNKNOWN_AXIS;
+                            optimizeChild = false;
+                        }
                     }
                     optimizeChild = ( steps.size() == 1 ) && ( ( axis == Constants.CHILD_AXIS ) || ( axis == Constants.ATTRIBUTE_AXIS ) );
                 }
@@ -327,8 +327,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         
         // if the right hand sequence has more than one item, we need to merge them
         // into preselectResult
-        if (rightSeq.getItemCount() > 1)
-        	{preselectResult = new NewArrayNodeSet();}
+        if (rightSeq.getItemCount() > 1) {preselectResult = new NewArrayNodeSet();}
         
         // Iterate through each item in the right-hand sequence
         for( final SequenceIterator itRightSeq = Atomize.atomize(rightSeq).iterate(); itRightSeq.hasNext(); ) {
@@ -399,13 +398,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 if( preselectResult == null ) {
                     preselectResult = temp;
                 } else {
-                	preselectResult.addAll(temp);
+                    preselectResult.addAll(temp);
                 }
             }
         }
 
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
 
         return( ( preselectResult == null ) ? NodeSet.EMPTY_SET : preselectResult );
@@ -548,7 +547,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     break;
                 }
             }
-        } else if( ls.hasOne() && rs.hasOne() && ls.itemAt(0).getType() != Type.ARRAY && rs.itemAt(0).getType() != Type.ARRAY) {
+        } else if( ls.hasOne() && rs.hasOne() && ls.itemAt(0).getType() != Type.ARRAY_ITEM && rs.itemAt(0).getType() != Type.ARRAY_ITEM) {
             result = BooleanValue.valueOf( compareAtomic( collator, ls.itemAt( 0 ).atomize(), rs.itemAt( 0 ).atomize() ) );
         } else {
 
@@ -561,7 +560,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         result = BooleanValue.TRUE;
                         break;
                     }
-                } else if( rs.hasOne() && rs.itemAt(0).getType() != Type.ARRAY) {
+                } else if( rs.hasOne() && rs.itemAt(0).getType() != Type.ARRAY_ITEM) {
 
                     if( compareAtomic( collator, lv, rs.itemAt( 0 ).atomize() ) ) {
 
@@ -583,7 +582,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start );
         }
         return( result );
     }
@@ -652,7 +651,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         }
 
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.NO_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start );
         }
         return( result );
     }
@@ -905,7 +904,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
 
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
             }
             return( result );
         } else {
@@ -993,7 +992,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     i. If T is a numeric type or is derived from a numeric type,
                     then V is cast to xs:double.
                  */
-                if (Type.subTypeOfUnion(otherType, Type.NUMBER)) {
+                if (Type.subTypeOfUnion(otherType, Type.NUMERIC)) {
                     return value.convertTo(Type.DOUBLE);
                 }
 
@@ -1138,7 +1137,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     @SuppressWarnings( "unused" )
     private static boolean isEmptyString( AtomicValue lv ) throws XPathException
     {
-        if( Type.subTypeOf( lv.getType(), Type.STRING ) || ( lv.getType() == Type.ATOMIC ) ) {
+        if( Type.subTypeOf( lv.getType(), Type.STRING ) || ( lv.getType() == Type.ANY_ATOMIC_TYPE) ) {
 
             if( lv.getStringValue().length() == 0 ) {
                 return( true );

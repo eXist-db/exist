@@ -276,7 +276,7 @@ public class DurationValue extends ComputableValue {
         canonicalize();
         switch (requiredType) {
             case Type.ITEM:
-            case Type.ATOMIC:
+            case Type.ANY_ATOMIC_TYPE:
             case Type.DURATION:
                 return new DurationValue(getExpression(), canonicalDuration);
             case Type.YEAR_MONTH_DURATION:

@@ -80,7 +80,7 @@ public class ArrayFunction extends BasicFunction {
                     new QName(Fn.SIZE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns the number of members in the supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array")
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array")
                     },
                     new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The number of members in the supplied array")
             ),
@@ -89,7 +89,7 @@ public class ArrayFunction extends BasicFunction {
                     "Gets the value at the specified position in the supplied array (counting from 1). This is the same " +
                     "as calling $array($index).",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                        new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                         new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The value at $index")
@@ -99,16 +99,16 @@ public class ArrayFunction extends BasicFunction {
                     "Returns an array containing all the members of the supplied array, plus one additional" +
                     "member at the end.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("appendage", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A copy of $array with the new member attached")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A copy of $array with the new member attached")
             ),
             new FunctionSignature(
                     new QName(Fn.HEAD.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns the first member of an array, i.e. $array(1)",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array")
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The first member of the array")
             ),
@@ -116,100 +116,100 @@ public class ArrayFunction extends BasicFunction {
                     new QName(Fn.TAIL.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all members except the first from a supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array")
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members except the first")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members except the first")
             ),
             new FunctionSignature(
                     new QName(Fn.SUBARRAY.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Gets an array containing all members from a supplied array starting at a supplied position, up to the end of the array",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("start", Type.INTEGER, Cardinality.EXACTLY_ONE, "The start index")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members from $start")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members from $start")
             ),
             new FunctionSignature(
                     new QName(Fn.SUBARRAY.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Gets an array containing all members from a supplied array starting at a supplied position, up to a specified length.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                        new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                         new FunctionParameterSequenceType("start", Type.INTEGER, Cardinality.EXACTLY_ONE, "The start index"),
                         new FunctionParameterSequenceType("length", Type.INTEGER, Cardinality.EXACTLY_ONE, "Length of the subarray")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members from $start up to the specified length")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members from $start up to the specified length")
             ),
             new FunctionSignature(
                     new QName(Fn.REMOVE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, except for the members at specified positions.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("positions", Type.INTEGER, Cardinality.ZERO_OR_MORE, "Positions of the members to remove")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members from $array except the members whose position (counting from 1) is present in the sequence $positions")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members from $array except the members whose position (counting from 1) is present in the sequence $positions")
             ),
             new FunctionSignature(
                     new QName(Fn.INSERT_BEFORE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, with one additional member at a specified position.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position at which the new member is inserted"),
                             new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The member to insert")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
             ),
             new FunctionSignature(
                     new QName(Fn.PUT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, with one additional member at the specified position.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
                             new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "Position at which the new member is inserted"),
                             new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The member to insert")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members plus the new member")
             ),
             new FunctionSignature(
                     new QName(Fn.REVERSE.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, but in reverse order.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array")
+                        new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The array in reverse order")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array in reverse order")
             ),
             new FunctionSignature(
                     new QName(Fn.JOIN.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Concatenates the contents of several arrays into a single array",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("arrays", Type.ARRAY, Cardinality.ZERO_OR_MORE, "The arrays to join")
+                        new FunctionParameterSequenceType("arrays", Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE, "The arrays to join")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
             new FunctionSignature(
                     new QName(Fn.FOR_EACH.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array whose size is the same as array:size($array), in which each member is computed by applying " +
                     "$function to the corresponding member of $array.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
-                        new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
+                        new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
+                        new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
             new FunctionSignature(
                     new QName(Fn.FILTER.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing those members of the $array for which $function returns true.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
+                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
             new FunctionSignature(
                     new QName(Fn.FOLD_LEFT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Evaluates the supplied function cumulatively on successive values of the supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call")
+                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The result of the cumulative function call")
             ),
@@ -217,9 +217,9 @@ public class ArrayFunction extends BasicFunction {
                     new QName(Fn.FOLD_RIGHT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Evaluates the supplied function cumulatively on successive values of the supplied array.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call")
+                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The result of the cumulative function call")
             ),
@@ -228,11 +228,11 @@ public class ArrayFunction extends BasicFunction {
                     "Returns an array obtained by evaluating the supplied function once for each pair of members at the same position in the two " +
                     "supplied arrays.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array1", Type.ARRAY, Cardinality.EXACTLY_ONE, "The first array to process"),
-                            new FunctionParameterSequenceType("array2", Type.ARRAY, Cardinality.EXACTLY_ONE, "The second array to process"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "The function to call for each pair")
+                            new FunctionParameterSequenceType("array1", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The first array to process"),
+                            new FunctionParameterSequenceType("array2", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The second array to process"),
+                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call for each pair")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The resulting array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
             new FunctionSignature(
                     new QName(Fn.FLATTEN.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
@@ -246,28 +246,28 @@ public class ArrayFunction extends BasicFunction {
                     new QName(Fn.SORT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, sorted according to their typed value",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process")
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The sorted array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The sorted array")
             ),
             new FunctionSignature(
                     new QName(Fn.SORT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, sorted according to the value of a sort key supplied as a function.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, "The collation to use for sorting")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The sorted array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The sorted array")
             ),
             new FunctionSignature(
                     new QName(Fn.SORT.fname, ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
                     "Returns an array containing all the members of the supplied array, sorted according to the value of a sort key supplied as a function.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("array", Type.ARRAY, Cardinality.EXACTLY_ONE, "The array to process"),
+                            new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, "The collation to use for sorting"),
-                            new FunctionParameterSequenceType("key", Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE, "A function called for each array member which produces a sort key")
+                            new FunctionParameterSequenceType("key", Type.FUNCTION, Cardinality.EXACTLY_ONE, "A function called for each array member which produces a sort key")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY, Cardinality.EXACTLY_ONE, "The sorted array")
+                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The sorted array")
             )
     };
 

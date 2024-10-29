@@ -61,7 +61,7 @@ public class QNameIndexLookup extends Function {
 	protected static final Logger logger = LogManager.getLogger(QNameIndexLookup.class);
 
     private static final FunctionParameterSequenceType PARAM_QNAME = param("qname", Type.QNAME, "The QName");
-    private static final FunctionParameterSequenceType PARAM_COMPARISON_VALUE = param("comparison-value", Type.ATOMIC, "The comparison value");
+    private static final FunctionParameterSequenceType PARAM_COMPARISON_VALUE = param("comparison-value", Type.ANY_ATOMIC_TYPE, "The comparison value");
     private static final FunctionParameterSequenceType PARAM_ELEMENT_OR_ATTRIBUTE = param("element-or-attribute", Type.BOOLEAN, "true() to lookup an element, false to lookup an attribute");
 
 	private static String FN_QNAME_INDEX_LOOKUP_NAME = "qname-index-lookup";

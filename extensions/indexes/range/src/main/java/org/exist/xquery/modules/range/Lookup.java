@@ -49,7 +49,7 @@ public class Lookup extends Function implements Optimizable {
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "The node set to search using a range index which is defined on those nodes"),
-            new FunctionParameterSequenceType("key", Type.ATOMIC, Cardinality.ZERO_OR_MORE,
+            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                     "The key to look up.")
     };
 
@@ -315,7 +315,7 @@ public class Lookup extends Function implements Optimizable {
         //LOG.info("preselect for " + Arrays.toString(keys) + " on " + contextSequence.getItemCount() + "returned " + preselectResult.getItemCount() +
         //        " and took " + (System.currentTimeMillis() - start));
         if( context.getProfiler().traceFunctions() ) {
-            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.OPTIMIZED_INDEX, System.currentTimeMillis() - start );
+            context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
         if (preselectResult == null) {
             preselectResult = NodeSet.EMPTY_SET;
@@ -393,7 +393,7 @@ public class Lookup extends Function implements Optimizable {
                 }
             }
             if( context.getProfiler().traceFunctions() ) {
-                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.BASIC_INDEX, System.currentTimeMillis() - start );
+                context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {

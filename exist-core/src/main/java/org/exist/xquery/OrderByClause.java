@@ -21,32 +21,31 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.Sequence;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents an "order by" clause within a FLWOR expression.
  */
 public class OrderByClause extends AbstractFLWORClause {
 
-    protected OrderSpec[] orderSpecs = null;
+    private final List<OrderSpec> orderSpecs;
 
     /*  OrderByClause needs to keep state between calls to eval and postEval. We thus need
         to track state in a stack to avoid overwrites if we're called recursively. */
     private final Deque<OrderedValueSequence> stack = new ArrayDeque<>();
 
-    public OrderByClause(XQueryContext context, List<OrderSpec> orderSpecs) {
+    public OrderByClause(final XQueryContext context, final List<OrderSpec> orderSpecs) {
         super(context);
-        this.orderSpecs = orderSpecs.toArray(new OrderSpec[0]);
+        this.orderSpecs = orderSpecs;
     }
 
-    public OrderSpec[] getOrderSpecs() {
+    public List<OrderSpec> getOrderSpecs() {
         return orderSpecs;
     }
 
@@ -70,28 +69,36 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        final OrderedValueSequence orderedResult;
-        if (stack.isEmpty()) {
-            orderedResult = new OrderedValueSequence(orderSpecs, 100);
-        } else {
-            orderedResult = stack.pop();
-        }
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        OrderedValueSequence orderedResult = stack.pollFirst();
+
         final Sequence result = getReturnExpression().eval(contextSequence, contextItem);
-        if (result != null) {
-            orderedResult.addAll(result);
+
+        if (orderedResult == null) {
+            orderedResult = new OrderedValueSequence(orderSpecs, result != null ? result.getItemCount() : 100);
         }
-        stack.push(orderedResult);
+
+        if (result != null) {
+            orderedResult.setContextSequence(contextSequence);
+            orderedResult.addAll(result);
+            orderedResult.setContextSequence(null);
+        }
+
+        stack.addFirst(orderedResult);
+
         return result;
     }
 
     @Override
-    public Sequence postEval(Sequence seq) throws XPathException {
-        if (stack.isEmpty()) {
+    public Sequence postEval(final Sequence seq) throws XPathException {
+        final OrderedValueSequence orderedResult = stack.pollFirst();
+        if (orderedResult == null) {
             return seq;
         }
-        final OrderedValueSequence orderedResult = stack.pop();
+
+        orderedResult.coerceTypesForOrderBy();
         orderedResult.sort();
+
         Sequence result = orderedResult;
 
         if (getReturnExpression() instanceof FLWORClause flworClause) {
@@ -101,12 +108,13 @@ public class OrderByClause extends AbstractFLWORClause {
     }
 
     @Override
-    public void dump(ExpressionDumper dumper) {
+    public void dump(final ExpressionDumper dumper) {
         dumper.display("order by ");
-        for (int i = 0; i < orderSpecs.length; i++) {
-            if (i > 0)
-            {dumper.display(", ");}
-            dumper.display(orderSpecs[i]);
+        for (int i = 0; i < orderSpecs.size(); i++) {
+            if (i > 0) {
+                dumper.display(", ");
+            }
+            dumper.display(orderSpecs.get(i));
         }
         dumper.nl();
     }
@@ -115,11 +123,11 @@ public class OrderByClause extends AbstractFLWORClause {
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append("order by ");
-        for (int i = 0; i < orderSpecs.length; i++) {
+        for (int i = 0; i < orderSpecs.size(); i++) {
             if (i > 0) {
                 builder.append(", ");
             }
-            builder.append(orderSpecs[i]);
+            builder.append(orderSpecs.get(i));
         }
         return builder.toString();
     }
@@ -134,5 +142,17 @@ public class OrderByClause extends AbstractFLWORClause {
         super.resetState(postOptimization);
         returnExpr.resetState(postOptimization);
         stack.clear();
+    }
+
+    @Override
+    public Set<QName> getTupleStreamVariables() {
+        final Set<QName> vars = new HashSet<>();
+
+        final LocalVariable startVar = getStartVariable();
+        if (startVar != null) {
+            vars.add(startVar.getQName());
+        }
+
+        return vars;
     }
 }

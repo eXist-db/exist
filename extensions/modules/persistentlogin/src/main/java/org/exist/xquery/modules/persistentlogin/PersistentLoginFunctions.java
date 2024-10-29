@@ -49,7 +49,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
                             new FunctionParameterSequenceType("user", Type.STRING, Cardinality.EXACTLY_ONE, "user name"),
                             new FunctionParameterSequenceType("password", Type.STRING, Cardinality.ZERO_OR_ONE, "password"),
                             new FunctionParameterSequenceType("timeToLive", Type.DURATION, Cardinality.EXACTLY_ONE, "duration for which the user is remembered"),
-                            new FunctionParameterSequenceType("onLogin", Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_ONE,
+                            new FunctionParameterSequenceType("onLogin", Type.FUNCTION, Cardinality.ZERO_OR_ONE,
                                     "callback function to be called when the login succeeds")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the callback function or the empty sequence")
@@ -61,7 +61,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
                             "$token will be a new token which can be used for the next request. The old token is deleted.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("token", Type.STRING, Cardinality.EXACTLY_ONE, "a valid one-time token"),
-                            new FunctionParameterSequenceType("onLogin", Type.FUNCTION_REFERENCE, Cardinality.ZERO_OR_ONE,
+                            new FunctionParameterSequenceType("onLogin", Type.FUNCTION, Cardinality.ZERO_OR_ONE,
                                     "callback function to be called when the login succeeds"),
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "result of the callback function or the empty sequence")
@@ -72,7 +72,7 @@ public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("token", Type.STRING, Cardinality.EXACTLY_ONE, "a valid one-time token")
                     },
-                    new FunctionReturnSequenceType(Type.EMPTY, Cardinality.EXACTLY_ONE, "empty sequence")
+                    new FunctionReturnSequenceType(Type.EMPTY_SEQUENCE, Cardinality.EXACTLY_ONE, "empty sequence")
             )
     };
 

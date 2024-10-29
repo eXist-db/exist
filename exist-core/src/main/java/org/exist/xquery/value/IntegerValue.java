@@ -278,29 +278,49 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        if (this.type == requiredType) {
+        if (this.type == requiredType || requiredType == Type.NUMERIC) {
             return this;
         }
 
-        return switch (requiredType) {
-            case Type.ATOMIC, Type.ITEM -> this;
-            case Type.DECIMAL -> new DecimalValue(getExpression(), new BigDecimal(value));
-            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            case Type.NUMBER -> new IntegerValue(getExpression(), value, requiredType, false);
-            case Type.LONG, Type.INTEGER, Type.NON_POSITIVE_INTEGER, Type.NEGATIVE_INTEGER, Type.INT, Type.SHORT, Type.BYTE, Type.NON_NEGATIVE_INTEGER, Type.UNSIGNED_LONG, Type.UNSIGNED_INT, Type.UNSIGNED_SHORT, Type.UNSIGNED_BYTE, Type.POSITIVE_INTEGER ->
-                    new IntegerValue(getExpression(), value, requiredType);
-            case Type.DOUBLE -> new DoubleValue(getExpression(), value.doubleValue());
-            case Type.FLOAT -> new FloatValue(getExpression(), value.floatValue());
-            case Type.STRING -> new StringValue(getExpression(), getStringValue());
-            case Type.BOOLEAN -> (value.compareTo(ZERO_BIGINTEGER) == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                    "cannot convert '"
-                            + Type.getTypeName(this.getType())
-                            + " ("
-                            + value
-                            + ")' into "
-                            + Type.getTypeName(requiredType));
-        };
+        switch (requiredType) {
+            case Type.ANY_ATOMIC_TYPE:
+            case Type.ITEM:
+                return this;
+            case Type.DECIMAL:
+                return new DecimalValue(getExpression(), new BigDecimal(value));
+            case Type.UNTYPED_ATOMIC:
+                return new UntypedAtomicValue(getExpression(), getStringValue());
+            case Type.LONG:
+            case Type.INTEGER:
+            case Type.NON_POSITIVE_INTEGER:
+            case Type.NEGATIVE_INTEGER:
+            case Type.INT:
+            case Type.SHORT:
+            case Type.BYTE:
+            case Type.NON_NEGATIVE_INTEGER:
+            case Type.UNSIGNED_LONG:
+            case Type.UNSIGNED_INT:
+            case Type.UNSIGNED_SHORT:
+            case Type.UNSIGNED_BYTE:
+            case Type.POSITIVE_INTEGER:
+                return new IntegerValue(getExpression(), value, requiredType);
+            case Type.DOUBLE:
+                return new DoubleValue(getExpression(), value.doubleValue());
+            case Type.FLOAT:
+                return new FloatValue(getExpression(), value.floatValue());
+            case Type.STRING:
+                return new StringValue(getExpression(), getStringValue());
+            case Type.BOOLEAN:
+                return (value.compareTo(ZERO_BIGINTEGER) == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
+            default:
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                        "cannot convert '"
+                                + Type.getTypeName(this.getType())
+                                + " ("
+                                + value
+                                + ")' into "
+                                + Type.getTypeName(requiredType));
+        }
     }
 
     @Override

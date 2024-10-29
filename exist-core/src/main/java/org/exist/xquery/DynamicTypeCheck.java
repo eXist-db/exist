@@ -59,7 +59,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 		throws XPathException {
 		final Sequence seq = expression.eval(contextSequence, contextItem);
         Sequence result = null;
-        if (Type.subTypeOf(requiredType, Type.ATOMIC) && !Type.subTypeOf(seq.getItemType(), requiredType)) {
+        if (Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE) && !Type.subTypeOf(seq.getItemType(), requiredType)) {
             result = new ValueSequence();
         }
         if (seq.hasOne())
@@ -98,7 +98,7 @@ public class DynamicTypeCheck extends AbstractExpression {
             	item = item.convertTo(Type.STRING);
             //Then, if numeric, try to refine the type
             //xs:decimal(3) treat as xs:integer
-            } else if (Type.subTypeOfUnion(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
+            } else if (Type.subTypeOfUnion(requiredType, Type.NUMERIC) && Type.subTypeOf(type, requiredType)) {
                 try {
                     item = item.convertTo(requiredType);
                 //No way

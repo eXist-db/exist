@@ -70,6 +70,24 @@ public abstract class NumericValue extends ComputableValue {
 
     public abstract boolean isPositive();
 
+    /**
+     * Returns true if this value is +INF.
+     *
+     * @return true if this value is +INF.
+     */
+    public boolean isPositiveInfinity() {
+        return isInfinite() && isPositive();
+    }
+
+    /**
+     * Returns true if this value is -INF.
+     *
+     * @return true if this value is -INF.
+     */
+    public boolean isNegativeInfinity() {
+        return isInfinite() && isNegative();
+    }
+
     @Override
     public boolean effectiveBooleanValue() {
         //If its operand is a singleton value of any numeric type or derived from a numeric type,
@@ -86,7 +104,7 @@ public abstract class NumericValue extends ComputableValue {
             return false;
         }
 
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             if (isNaN() || ((NumericValue) other).isNaN()) {
                 // left or right is NaN
 
@@ -133,7 +151,7 @@ public abstract class NumericValue extends ComputableValue {
             return Constants.INFERIOR;
         }
 
-        if (Type.subTypeOfUnion(other.getType(), Type.NUMBER)) {
+        if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             if (isNaN()) {
                 //NaN does not equal itself.
                 if (((NumericValue) other).isNaN()) {

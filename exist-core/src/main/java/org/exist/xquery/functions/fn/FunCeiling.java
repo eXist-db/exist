@@ -46,10 +46,10 @@ public class FunCeiling extends Function {
             "returns the smallest (closest to negative infinity) number " +
             "with no fractional part that is not less than the value of the argument, $number.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("number", Type.NUMBER,
+                new FunctionParameterSequenceType("number", Type.NUMERIC,
                     Cardinality.ZERO_OR_ONE, "The number")
             },
-            new FunctionReturnSequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE,
+            new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE,
                 "The non-fractional number not less than $number")
         );
 
@@ -58,7 +58,7 @@ public class FunCeiling extends Function {
     }
 
     public int returnsType() {
-        return Type.NUMBER;
+        return Type.NUMERIC;
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -83,7 +83,7 @@ public class FunCeiling extends Function {
         	if (item instanceof NumericValue) {
 				value = (NumericValue) item;
 			} else {
-				value = (NumericValue) item.convertTo(Type.NUMBER);
+				value = (NumericValue) item.convertTo(Type.NUMERIC);
 			}
             result = value.ceiling();
         }

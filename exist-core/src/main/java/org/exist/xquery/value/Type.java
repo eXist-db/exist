@@ -30,6 +30,7 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
 
@@ -41,83 +42,105 @@ import javax.annotation.Nullable;
  */
 public class Type {
 
-    public static final int NODE = -1;
-    public final static int ELEMENT = 1;
-    public final static int ATTRIBUTE = 2;
-    public final static int TEXT = 3;
-    public final static int PROCESSING_INSTRUCTION = 4;
-    public final static int COMMENT = 5;
-    public final static int DOCUMENT = 6;
-    public final static int NAMESPACE = 500;
-    public final static int CDATA_SECTION = 501;
-    public final static int EMPTY = 10;
-    public final static int ITEM = 11;
-    public final static int ANY_TYPE = 12;
-    public final static int ANY_SIMPLE_TYPE = 13;
-    public final static int UNTYPED = 14;
-    public final static int ATOMIC = 20;
-    public final static int UNTYPED_ATOMIC = 21;
-    public final static int STRING = 22;
-    public final static int BOOLEAN = 23;
-    public final static int QNAME = 24;
-    public final static int ANY_URI = 25;
-    public final static int BASE64_BINARY = 26;
-    public final static int HEX_BINARY = 27;
-    public final static int NOTATION = 28;
-    public final static int NUMBER = 30;
-    public final static int INTEGER = 31;
-    public final static int DECIMAL = 32;
-    public final static int FLOAT = 33;
-    public final static int DOUBLE = 34;
-    public final static int NON_POSITIVE_INTEGER = 35;
-    public final static int NEGATIVE_INTEGER = 36;
-    public final static int LONG = 37;
-    public final static int INT = 38;
-    public final static int SHORT = 39;
-    public final static int BYTE = 40;
-    public final static int NON_NEGATIVE_INTEGER = 41;
-    public final static int UNSIGNED_LONG = 42;
-    public final static int UNSIGNED_INT = 43;
-    public final static int UNSIGNED_SHORT = 44;
-    public final static int UNSIGNED_BYTE = 45;
-    public final static int POSITIVE_INTEGER = 46;
-    public final static int DATE_TIME = 50;
-    public final static int DATE = 51;
-    public final static int TIME = 52;
-    public final static int DURATION = 53;
-    public final static int YEAR_MONTH_DURATION = 54;
-    public final static int DAY_TIME_DURATION = 55;
-    public final static int GYEAR = 56;
-    public final static int GMONTH = 57;
-    public final static int GDAY = 58;
-    public final static int GYEARMONTH = 59;
-    public final static int GMONTHDAY = 71;
-    public final static int DATE_TIME_STAMP = 72;
-    public final static int TOKEN = 60;
-    public final static int NORMALIZED_STRING = 61;
-    public final static int LANGUAGE = 62;
-    public final static int NMTOKEN = 63;
-    public final static int NAME = 64;
-    public final static int NCNAME = 65;
-    public final static int ID = 66;
-    public final static int IDREF = 67;
-    public final static int ENTITY = 68;
-    public final static int JAVA_OBJECT = 100;
-    public final static int FUNCTION_REFERENCE = 101;
-    public final static int MAP = 102;
-    public final static int ARRAY = 103;
     private final static Logger LOG = LogManager.getLogger(Type.class);
 
-    private static int NO_SUCH_VALUE = -99;
+    // Tombstone value used for FastUtil Int maps
+    private static final int NO_SUCH_VALUE = -99;
 
-    private final static int[] superTypes = new int[512];
-    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(64, Hash.FAST_LOAD_FACTOR);
-    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(100, Hash.FAST_LOAD_FACTOR);
+    public final static int ITEM = 1;
+
+    public final static int ANY_TYPE = 2;
+
+    public final static int ANY_SIMPLE_TYPE = 3;
+
+    /* xs:anyAtomicType and its subtypes */
+    public final static int ANY_ATOMIC_TYPE = 4;
+    public final static int UNTYPED_ATOMIC = 5;
+    public final static int DATE_TIME = 6;
+    public final static int DATE_TIME_STAMP = 7;
+    public final static int DATE = 8;
+    public final static int TIME = 9;
+    public final static int DURATION = 10;
+    public final static int YEAR_MONTH_DURATION = 11;
+    public final static int DAY_TIME_DURATION = 12;
+    public final static int FLOAT = 13;
+    public final static int DOUBLE = 14;
+    public final static int DECIMAL = 15;
+    public final static int INTEGER = 16;
+    public final static int NON_POSITIVE_INTEGER = 17;
+    public final static int NEGATIVE_INTEGER = 18;
+    public final static int LONG = 19;
+    public final static int INT = 20;
+    public final static int SHORT = 21;
+    public final static int BYTE = 22;
+    public final static int NON_NEGATIVE_INTEGER = 23;
+    public final static int UNSIGNED_LONG = 24;
+    public final static int UNSIGNED_INT = 25;
+    public final static int UNSIGNED_SHORT = 26;
+    public final static int UNSIGNED_BYTE = 27;
+    public final static int POSITIVE_INTEGER = 28;
+    public final static int G_YEAR_MONTH = 29;
+    public final static int G_YEAR = 30;
+    public final static int G_MONTH_DAY = 31;
+    public final static int G_DAY = 32;
+    public final static int G_MONTH = 33;
+    public final static int STRING = 34;
+    public final static int NORMALIZED_STRING = 35;
+    public final static int TOKEN = 36;
+    public final static int LANGUAGE = 37;
+    public final static int NMTOKEN = 38;
+    public final static int NAME = 39;
+    public final static int NCNAME = 40;
+    public final static int ID = 41;
+    public final static int IDREF = 42;
+    public final static int ENTITY = 43;
+    public final static int BOOLEAN = 44;
+    public final static int BASE64_BINARY = 45;
+    public final static int HEX_BINARY = 46;
+    public final static int ANY_URI = 47;
+    public final static int QNAME = 48;
+    public final static int NOTATION = 49;
+
+    /* list types */
+    public final static int NMTOKENS = 50;
+    public final static int IDREFS = 51;
+    public final static int ENTITIES = 52;
+
+    /* union types */
+    public final static int NUMERIC = 53;
+    public final static int ERROR = 54;
+
+    /* complex types */
+    public final static int UNTYPED = 55;
+
+    /* nodes */
+    public static final int NODE = 56;
+    public final static int ATTRIBUTE = 57;
+    public final static int COMMENT = 58;
+    public final static int DOCUMENT = 59;
+    public final static int ELEMENT = 60;
+    public final static int NAMESPACE = 61;
+    public final static int PROCESSING_INSTRUCTION = 62;
+    public final static int TEXT = 63;
+
+    /* functions */
+    public final static int FUNCTION = 64;
+    public final static int ARRAY_ITEM = 65;
+    public final static int MAP_ITEM = 66;
+
+    // NOTE(AR) the types below do NOT appear in the XDM 3.1 spec - https://www.w3.org/TR/xpath-datamodel-31
+    public final static int CDATA_SECTION = 67;
+    public final static int JAVA_OBJECT = 68;
+    public final static int EMPTY_SEQUENCE = 69;  // NOTE(AR) this types does appear in the XQ 3.1 spec - https://www.w3.org/TR/xquery-31/#id-sequencetype-syntax
+
+    private final static int[] superTypes = new int[69];
+    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(69, Hash.FAST_LOAD_FACTOR);
+    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(78, Hash.FAST_LOAD_FACTOR);
     static {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
-    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(1);
-    private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(44, Hash.FAST_LOAD_FACTOR);
+    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(2);
+    private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(45, Hash.FAST_LOAD_FACTOR);
     static {
         primitiveTypes.defaultReturnValue(NO_SUCH_VALUE);
     }
@@ -128,36 +151,40 @@ public class Type {
         defineSubType(ANY_TYPE, UNTYPED);
 
         // ANY_SIMPLE types
-        defineSubType(ANY_SIMPLE_TYPE, ATOMIC);
-        defineSubType(ANY_SIMPLE_TYPE, NUMBER);
+        defineSubType(ANY_SIMPLE_TYPE, ANY_ATOMIC_TYPE);
+        defineSubType(ANY_SIMPLE_TYPE, IDREFS);
+        defineSubType(ANY_SIMPLE_TYPE, NMTOKENS);
+        defineSubType(ANY_SIMPLE_TYPE, ENTITIES);
+        defineSubType(ANY_SIMPLE_TYPE, NUMERIC);
+        defineSubType(ANY_SIMPLE_TYPE, ERROR);
 
         // ITEM sub-types
-        defineSubType(ITEM, ATOMIC);
-        defineSubType(ITEM, FUNCTION_REFERENCE);
-        //defineSubType(ITEM, NODE);                // TODO(AR) this appears in the XDM 3.1, but uncommenting this breaks a lot of stuff in eXist-db
+        defineSubType(ITEM, ANY_ATOMIC_TYPE);
+        defineSubType(ITEM, FUNCTION);
+        defineSubType(ITEM, NODE);
 
         // ATOMIC sub-types
-        defineSubType(ATOMIC, ANY_URI);
-        defineSubType(ATOMIC, BASE64_BINARY);
-        defineSubType(ATOMIC, BOOLEAN);
-        defineSubType(ATOMIC, DATE);
-        defineSubType(ATOMIC, DATE_TIME);
-        defineSubType(ATOMIC, DECIMAL);
-        defineSubType(ATOMIC, DOUBLE);
-        defineSubType(ATOMIC, DURATION);
-        defineSubType(ATOMIC, FLOAT);
-        defineSubType(ATOMIC, GDAY);
-        defineSubType(ATOMIC, GMONTH);
-        defineSubType(ATOMIC, GMONTHDAY);
-        defineSubType(ATOMIC, GYEAR);
-        defineSubType(ATOMIC, GYEARMONTH);
-        defineSubType(ATOMIC, HEX_BINARY);
-        defineSubType(ATOMIC, JAVA_OBJECT);
-        defineSubType(ATOMIC, NOTATION);
-        defineSubType(ATOMIC, QNAME);
-        defineSubType(ATOMIC, STRING);
-        defineSubType(ATOMIC, TIME);
-        defineSubType(ATOMIC, UNTYPED_ATOMIC);
+        defineSubType(ANY_ATOMIC_TYPE, ANY_URI);
+        defineSubType(ANY_ATOMIC_TYPE, BASE64_BINARY);
+        defineSubType(ANY_ATOMIC_TYPE, BOOLEAN);
+        defineSubType(ANY_ATOMIC_TYPE, DATE);
+        defineSubType(ANY_ATOMIC_TYPE, DATE_TIME);
+        defineSubType(ANY_ATOMIC_TYPE, DECIMAL);
+        defineSubType(ANY_ATOMIC_TYPE, DOUBLE);
+        defineSubType(ANY_ATOMIC_TYPE, DURATION);
+        defineSubType(ANY_ATOMIC_TYPE, FLOAT);
+        defineSubType(ANY_ATOMIC_TYPE, G_DAY);
+        defineSubType(ANY_ATOMIC_TYPE, G_MONTH);
+        defineSubType(ANY_ATOMIC_TYPE, G_MONTH_DAY);
+        defineSubType(ANY_ATOMIC_TYPE, G_YEAR);
+        defineSubType(ANY_ATOMIC_TYPE, G_YEAR_MONTH);
+        defineSubType(ANY_ATOMIC_TYPE, HEX_BINARY);
+        defineSubType(ANY_ATOMIC_TYPE, JAVA_OBJECT);
+        defineSubType(ANY_ATOMIC_TYPE, NOTATION);
+        defineSubType(ANY_ATOMIC_TYPE, QNAME);
+        defineSubType(ANY_ATOMIC_TYPE, STRING);
+        defineSubType(ANY_ATOMIC_TYPE, TIME);
+        defineSubType(ANY_ATOMIC_TYPE, UNTYPED_ATOMIC);
 
         // DATE_TIME sub-types
         defineSubType(DATE_TIME, DATE_TIME_STAMP);
@@ -219,12 +246,12 @@ public class Type {
         defineSubType(NCNAME, IDREF);
 
         // FUNCTION_REFERENCE sub-types
-        defineSubType(FUNCTION_REFERENCE, MAP);
-        defineSubType(FUNCTION_REFERENCE, ARRAY);
+        defineSubType(FUNCTION, MAP_ITEM);
+        defineSubType(FUNCTION, ARRAY_ITEM);
 
         // NODE types
         defineSubType(NODE, ATTRIBUTE);
-        defineSubType(NODE, CDATA_SECTION);  // TODO(AR) this doesn't appear in the XDM 3.1
+        defineSubType(NODE, CDATA_SECTION);
         defineSubType(NODE, COMMENT);
         defineSubType(NODE, DOCUMENT);
         defineSubType(NODE, ELEMENT);
@@ -234,38 +261,21 @@ public class Type {
     }
 
     static {
-        defineBuiltInType(NODE, "node()");
         defineBuiltInType(ITEM, "item()");
-        defineBuiltInType(EMPTY, "empty-sequence()", "empty()");                                // keep `empty()` for backward compatibility
-
-        defineBuiltInType(ELEMENT, "element()");
-        defineBuiltInType(DOCUMENT, "document-node()");
-        defineBuiltInType(ATTRIBUTE, "attribute()");
-        defineBuiltInType(TEXT, "text()");
-        defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction()");
-        defineBuiltInType(COMMENT, "comment()");
-        defineBuiltInType(NAMESPACE, "namespace()");
-        defineBuiltInType(CDATA_SECTION, "cdata-section()");
-
-        defineBuiltInType(JAVA_OBJECT, "object");
-        defineBuiltInType(FUNCTION_REFERENCE, "function(*)", "function");
-        defineBuiltInType(MAP, "map(*)", "map");                                                // keep `map` for backward compatibility
-        defineBuiltInType(ARRAY, "array(*)","array");
-        defineBuiltInType(NUMBER, "xs:numeric", "numeric");                                     // keep `numeric` for backward compatibility
-
         defineBuiltInType(ANY_TYPE, "xs:anyType");
         defineBuiltInType(ANY_SIMPLE_TYPE, "xs:anySimpleType");
-        defineBuiltInType(UNTYPED, "xs:untyped");
-
-        defineBuiltInType(ATOMIC, "xs:anyAtomicType", "xdt:anyAtomicType");                     // keep `xdt:anyAtomicType` for backward compatibility
-
-        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");             // keep `xdt:untypedAtomic` for backward compatibility
-
-        defineBuiltInType(BOOLEAN, "xs:boolean");
-        defineBuiltInType(DECIMAL, "xs:decimal");
+        defineBuiltInType(ANY_ATOMIC_TYPE, "xs:anyAtomicType", "xdt:anyAtomicType");                // keep `xdt:anyAtomicType` for backward compatibility
+        defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic", "xdt:untypedAtomic");                 // keep `xdt:untypedAtomic` for backward compatibility
+        defineBuiltInType(DATE_TIME, "xs:dateTime");
+        defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
+        defineBuiltInType(DATE, "xs:date");
+        defineBuiltInType(TIME, "xs:time");
+        defineBuiltInType(DURATION, "xs:duration");
+        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");    // keep `xdt:yearMonthDuration` for backward compatibility
+        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");          // keep `xdt:dayTimeDuration` for backward compatibility
         defineBuiltInType(FLOAT, "xs:float");
         defineBuiltInType(DOUBLE, "xs:double");
-
+        defineBuiltInType(DECIMAL, "xs:decimal");
         defineBuiltInType(INTEGER, "xs:integer");
         defineBuiltInType(NON_POSITIVE_INTEGER, "xs:nonPositiveInteger");
         defineBuiltInType(NEGATIVE_INTEGER, "xs:negativeInteger");
@@ -279,28 +289,12 @@ public class Type {
         defineBuiltInType(UNSIGNED_SHORT, "xs:unsignedShort");
         defineBuiltInType(UNSIGNED_BYTE, "xs:unsignedByte");
         defineBuiltInType(POSITIVE_INTEGER, "xs:positiveInteger");
-
+        defineBuiltInType(G_YEAR_MONTH, "xs:gYearMonth");
+        defineBuiltInType(G_YEAR, "xs:gYear");
+        defineBuiltInType(G_MONTH_DAY, "xs:gMonthDay");
+        defineBuiltInType(G_DAY, "xs:gDay");
+        defineBuiltInType(G_MONTH, "xs:gMonth");
         defineBuiltInType(STRING, "xs:string");
-        defineBuiltInType(QNAME, "xs:QName");
-        defineBuiltInType(ANY_URI, "xs:anyURI");
-        defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
-        defineBuiltInType(HEX_BINARY, "xs:hexBinary");
-        defineBuiltInType(NOTATION, "xs:NOTATION");
-
-        defineBuiltInType(DATE_TIME_STAMP, "xs:dateTimeStamp");
-        defineBuiltInType(DATE_TIME, "xs:dateTime");
-        defineBuiltInType(DATE, "xs:date");
-        defineBuiltInType(TIME, "xs:time");
-        defineBuiltInType(DURATION, "xs:duration");
-        defineBuiltInType(GYEAR, "xs:gYear");
-        defineBuiltInType(GMONTH, "xs:gMonth");
-        defineBuiltInType(GDAY, "xs:gDay");
-        defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
-        defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
-
-        defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration", "xdt:yearMonthDuration");    // keep `xdt:yearMonthDuration` for backward compatibility
-        defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration", "xdt:dayTimeDuration");          // keep `xdt:dayTimeDuration` for backward compatibility
-
         defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
         defineBuiltInType(TOKEN, "xs:token");
         defineBuiltInType(LANGUAGE, "xs:language");
@@ -310,6 +304,32 @@ public class Type {
         defineBuiltInType(ID, "xs:ID");
         defineBuiltInType(IDREF, "xs:IDREF");
         defineBuiltInType(ENTITY, "xs:ENTITY");
+        defineBuiltInType(BOOLEAN, "xs:boolean");
+        defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
+        defineBuiltInType(HEX_BINARY, "xs:hexBinary");
+        defineBuiltInType(ANY_URI, "xs:anyURI");
+        defineBuiltInType(QNAME, "xs:QName");
+        defineBuiltInType(NOTATION, "xs:NOTATION");
+        defineBuiltInType(NMTOKENS, "xs:NMTOKENS");
+        defineBuiltInType(IDREFS, "xs:IDREFS");
+        defineBuiltInType(ENTITIES, "xs:ENTITIES");
+        defineBuiltInType(NUMERIC, "xs:numeric", "numeric");                                        // keep `numeric` for backward compatibility
+        defineBuiltInType(ERROR, "xs:error");
+        defineBuiltInType(UNTYPED, "xs:untyped");
+        defineBuiltInType(NODE, "node()");
+        defineBuiltInType(ATTRIBUTE, "attribute()");
+        defineBuiltInType(COMMENT, "comment()");
+        defineBuiltInType(DOCUMENT, "document-node()");
+        defineBuiltInType(ELEMENT, "element()");
+        defineBuiltInType(NAMESPACE, "namespace()");
+        defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction()");
+        defineBuiltInType(TEXT, "text()");
+        defineBuiltInType(FUNCTION, "function(*)", "function");
+        defineBuiltInType(ARRAY_ITEM, "array(*)", "array");
+        defineBuiltInType(MAP_ITEM, "map(*)", "map");                                               // keep `map` for backward compatibility
+        defineBuiltInType(CDATA_SECTION, "cdata-section()");
+        defineBuiltInType(JAVA_OBJECT, "object");
+        defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
 
         // reduce any unused space
         typeNames.trim();
@@ -317,7 +337,8 @@ public class Type {
     }
 
     static {
-        defineUnionType(NUMBER, new int[]{ DECIMAL, FLOAT, DOUBLE });
+        defineUnionType(NUMERIC, new int[]{ DECIMAL, FLOAT, DOUBLE });
+        defineUnionType(ERROR, new int[0] );
     }
 
     // https://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
@@ -360,11 +381,11 @@ public class Type {
         });
         definePrimitiveType(TIME);
         definePrimitiveType(DATE);
-        definePrimitiveType(GYEARMONTH);
-        definePrimitiveType(GYEAR);
-        definePrimitiveType(GMONTHDAY);
-        definePrimitiveType(GDAY);
-        definePrimitiveType(GMONTH);
+        definePrimitiveType(G_YEAR_MONTH);
+        definePrimitiveType(G_YEAR);
+        definePrimitiveType(G_MONTH_DAY);
+        definePrimitiveType(G_DAY);
+        definePrimitiveType(G_MONTH);
         definePrimitiveType(HEX_BINARY);
         definePrimitiveType(BASE64_BINARY);
         definePrimitiveType(ANY_URI);
@@ -500,13 +521,13 @@ public class Type {
         }
 
         if (supertype == ITEM || supertype == ANY_TYPE) {
-            // Note: this will return true even if subtype == EMPTY, maybe return subtype != EMPTY ?
+            // Note: this will return true even if subtype == EMPTY_SEQUENCE, maybe return subtype != EMPTY_SEQUENCE ?
             return true;
         }
 
-        // Note that EMPTY is *not* a sub-type of anything else than itself
+        // Note that EMPTY_SEQUENCE is *not* a sub-type of anything else than itself
         // EmptySequence has to take care of this when it checks its type
-        if (subtype == ITEM || subtype == EMPTY || subtype == ANY_TYPE || subtype == NODE) {
+        if (subtype == ITEM || subtype == EMPTY_SEQUENCE || subtype == ANY_TYPE || subtype == NODE) {
             return false;
         }
 
@@ -530,12 +551,19 @@ public class Type {
      *
      * @param subtype type code of the sub type
      * @return type constant for the super type
+     *
+     * @throws IllegalArgumentException if {@code subtype} has no defined super type
      */
     public static int getSuperType(final int subtype) {
         if (subtype == ITEM || subtype == NODE) {
             return ITEM;
         } else if (subtype == ANY_TYPE) {
             return subtype;
+        }
+
+        if (subtype >= superTypes.length) {
+            // Note that EMPTY_SEQUENCE is *not* a sub-type of anything else than itself
+            throw new IllegalArgumentException("Type: " + subtype + " has no super types defined");
         }
 
         final int supertype = superTypes[subtype];
@@ -564,16 +592,23 @@ public class Type {
         }
         // if one of the types is empty(), return the other type: optimizer is free to choose
         // an optimization based on the more specific type.
-        if (type1 == Type.EMPTY) {
+        if (type1 == Type.EMPTY_SEQUENCE) {
             return type2;
-        } else if (type2 == Type.EMPTY) {
+        } else if (type2 == Type.EMPTY_SEQUENCE) {
+            return type1;
+        }
+
+        if (unionTypes.containsKey(type1) && subTypeOfUnion(type2, type1)) {
+            return type2;
+        }
+        if (unionTypes.containsKey(type2) && subTypeOfUnion(type1, type2)) {
             return type1;
         }
 
         //TODO : optimize by swapping the arguments based on their numeric values ?
         //Processing lower value first *should* reduce the size of the Set
         //Collect type1's super-types
-        final IntSet t1 = new IntOpenHashSet(Hash.DEFAULT_INITIAL_SIZE, Hash.VERY_FAST_LOAD_FACTOR);
+        final IntSet t1 = new IntOpenHashSet(11, Hash.VERY_FAST_LOAD_FACTOR);
         //Don't introduce a shortcut (starting at getSuperType(type1) here
         //type2 might be a super-type of type1
         int t;
@@ -679,5 +714,45 @@ public class Type {
             throw new IllegalArgumentException("Primitive type is not defined for: " + (typeName != null ? typeName : type));
         }
         return primitiveType;
+    }
+
+    /**
+     * Get the XDM equivalent type of a DOM Node type (i.e. {@link Node#getNodeType()}).
+     *
+     * @param domNodeType the DOM node type as defined in {@link Node}.
+     *
+     * @return the equivalent XDM type.
+     *
+     * @throws IllegalArgumentException if the provided argument is not a DOM Node Type.
+     */
+    public static int fromDomNodeType(final short domNodeType) {
+        switch (domNodeType) {
+            case Node.ELEMENT_NODE:
+                return Type.ELEMENT;
+            case Node.ATTRIBUTE_NODE:
+                return Type.ATTRIBUTE;
+            case Node.TEXT_NODE:
+                return Type.TEXT;
+            case Node.CDATA_SECTION_NODE:
+                return Type.CDATA_SECTION;
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return Type.PROCESSING_INSTRUCTION;
+            case Node.COMMENT_NODE:
+                return Type.COMMENT;
+            case Node.DOCUMENT_NODE:
+                return Type.DOCUMENT;
+
+            // un-mappable Node types, so just return the XDM Node type
+            case Node.ENTITY_REFERENCE_NODE:
+            case Node.ENTITY_NODE:
+            case Node.DOCUMENT_TYPE_NODE:
+            case Node.DOCUMENT_FRAGMENT_NODE:
+            case Node.NOTATION_NODE:
+                return Type.NODE;
+
+            // unknown
+            default:
+                throw new IllegalArgumentException("Unknown DOM Node type: " + domNodeType);
+        }
     }
 }

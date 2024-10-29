@@ -59,25 +59,25 @@ public class LogFunction extends BasicFunction {
                     new QName(FUNCTION_LOG, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to the current logger.",
                     new SequenceType[]{PRIORITY_PARAMETER, MESSAGE_PARAMETER},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             ),
             new FunctionSignature(
                     new QName(FUNCTION_LOG_SYSTEM_OUT, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to System.out.",
                     new SequenceType[]{MESSAGE_PARAMETER},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             ),
             new FunctionSignature(
                     new QName(FUNCTION_LOG_SYSTEM_ERR, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to System.err.",
                     new SequenceType[]{MESSAGE_PARAMETER},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             ),
             new FunctionSignature(
                     new QName(FUNCTION_LOGAPP, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to the named logger",
                     new SequenceType[]{PRIORITY_PARAMETER, LOGGER_NAME_PARAMETER, MESSAGE_PARAMETER},
-                    new SequenceType(Type.EMPTY, Cardinality.EMPTY_SEQUENCE)
+                    new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
             )
     };
 
