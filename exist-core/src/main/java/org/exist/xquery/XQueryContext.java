@@ -574,46 +574,50 @@ public class XQueryContext implements BinaryValueManager, Context {
         // the repo and its eXist handler
         final Optional<ExistRepository> repo = getRepository();
 
+        if (!repo.isPresent()) {
+            return null;
+        }
         // try an internal module
-        if (repo.isPresent()) {
-            final Module jMod = repo.get().resolveJavaModule(namespace, this);
-            if (jMod != null) {
-                return jMod;
-            }
+        final Module jMod = repo.get().resolveJavaModule(namespace, this);
+        if (jMod != null) {
+            return jMod;
         }
 
         // try an eXist-specific module
-        if (repo.isPresent()) {
-            final Path resolved = repo.get().resolveXQueryModule(namespace);
+        final Path resolved = repo.get().resolveXQueryModule(namespace);
 
-            // use the resolved file or return null
-            if (resolved != null) {
-
-                String location = "";
-
-                try {
-
-                    // see if the src exists in the database and if so, use that instead
-                    Source src = repo.get().resolveStoredXQueryModuleFromDb(getBroker(), resolved);
-                    if (src != null) {
-                        // NOTE(AR) set the location of the module to import relative to this module's load path - so that transient imports of the imported module will resolve correctly!
-                        location = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath()).relativize(Paths.get(((DBSource)src).getDocumentPath().getCollectionPath())).toString();
-                    } else {
-                        // else, fallback to the one from the filesystem
-                        src = new FileSource(resolved, false);
-                    }
-
-                    // build a module object from the source
-                    final ExternalModule module = compileOrBorrowModule(prefix, namespace, location, src);
-                    return module;
-
-                } catch (final PermissionDeniedException e) {
-                    throw new XPathException(e.getMessage(), e);
-                }
-            }
+        if (resolved == null) {
+            return null;
         }
 
-        return null;
+        // use the resolved file
+        try {
+            // see if the src exists in the database and if so, use that instead
+            Source src = repo.get().resolveStoredXQueryModuleFromDb(getBroker(), resolved);
+            String location = "";
+            if (src == null) {
+                // fallback to load the source from the filesystem
+                src = new FileSource(resolved, false);
+            } else {
+                final String sourceCollection = ((DBSource)src).getDocumentPath().getCollectionPath();
+                if (".".equals(moduleLoadPath)) {
+                    // module is a string passed to the xquery context, has therefore no location of its own
+                    location = sourceCollection;
+                } else {
+                    // NOTE(AR) set the location of the module to import relative to this module's load path
+                    // - so that transient imports of the imported module will resolve correctly!
+                    final Path collectionPath = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath());
+                    final Path sourcePath = Paths.get(sourceCollection);
+                    location = collectionPath.relativize(sourcePath).toString();
+                }
+            }
+
+            // build a module object from the source
+            return compileOrBorrowModule(prefix, namespace, location, src);
+
+        } catch (final PermissionDeniedException | IllegalArgumentException e) {
+            throw new XPathException(e.getMessage(), e);
+        }
     }
 
     /**
