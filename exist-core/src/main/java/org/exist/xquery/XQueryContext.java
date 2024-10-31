@@ -587,33 +587,34 @@ public class XQueryContext implements BinaryValueManager, Context {
             return null;
         }
 
-        // use the resolved file or return null
-        if (resolved != null) {
-
-            String location = "";
-
-            try {
-
-                // see if the src exists in the database and if so, use that instead
-                Source src = repo.get().resolveStoredXQueryModuleFromDb(getBroker(), resolved);
-                if (src != null) {
-                    // NOTE(AR) set the location of the module to import relative to this module's load path - so that transient imports of the imported module will resolve correctly!
-                    location = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath()).relativize(Paths.get(((DBSource)src).getDocumentPath().getCollectionPath())).toString();
+        // use the resolved file
+        String location = "";
+        try {
+            // see if the src exists in the database and if so, use that instead
+            Source src = repo.get().resolveStoredXQueryModuleFromDb(getBroker(), resolved);
+            if (src == null) {
+                // fallback to load the source from the filesystem
+                src = new FileSource(resolved, false);
+            } else {
+                final String sourceCollection = ((DBSource)src).getDocumentPath().getCollectionPath();
+                if (".".equals(moduleLoadPath)) {
+                    // module is a string passed to the xquery context, has therefore no location of its own
+                    location = sourceCollection;
                 } else {
-                    // else, fallback to the one from the filesystem
-                    src = new FileSource(resolved, false);
+                    // NOTE(AR) set the location of the module to import relative to this module's load path
+                    // - so that transient imports of the imported module will resolve correctly!
+                    final Path collectionPath = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath());
+                    final Path sourcePath = Paths.get(sourceCollection);
+                    location = collectionPath.relativize(sourcePath).toString();
                 }
-
-                // build a module object from the source
-                final ExternalModule module = compileOrBorrowModule(namespace, prefix, location, src);
-                return module;
-
-            } catch (final PermissionDeniedException e) {
-                throw new XPathException(e.getMessage(), e);
             }
-        }
 
-        return null;
+            // build a module object from the source
+            return compileOrBorrowModule(namespace, prefix, location, src);
+
+        } catch (final PermissionDeniedException | IllegalArgumentException e) {
+            throw new XPathException(e.getMessage(), e);
+        }
     }
 
     /**
