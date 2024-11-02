@@ -5,6 +5,7 @@ jobs:
     name: Build and Test Images
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
+    # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.base_ref ==  'develop' || github.base_ref ==  'master'
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +16,10 @@ jobs:
         with:
           distribution: liberica
           java-version: '17'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64 
       - name: Make buildkit default
         uses: docker/setup-buildx-action@v3
         id: buildx
