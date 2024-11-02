@@ -22,7 +22,9 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -42,14 +44,15 @@
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <assemble.dir>${project.build.directory}/exist-docker-${project.version}-docker-dir</assemble.dir>
         <exist.uber.jar.filename>exist.uber.jar</exist.uber.jar.filename>
         <docker.tag>latest</docker.tag>
         <docker.debug.tag>debug</docker.debug.tag>
+        <docker.platforms>linux/amd64, linux/arm64</docker.platforms>
     </properties>
 
     <dependencies>
@@ -106,7 +109,9 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
+                                <ignoredUnusedDeclaredDependency>
+                                    ${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!--
+                                needed at runtime to support lucene query syntax -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -124,7 +129,8 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <archiveBaseDirectory>${project.basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir</archiveBaseDirectory>
+                            <archiveBaseDirectory>
+                                ${project.basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir</archiveBaseDirectory>
                             <attach>false</attach>
                             <descriptors>
                                 <descriptor>src/assembly/dist-assembly-docker.xml</descriptor>
@@ -183,18 +189,24 @@
                                 </filter>
                             </filters>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
                                     <addHeader>false</addHeader>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/mailcap</resource>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/mailcap.default</resource>
                                 </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Multi-Release>true</Multi-Release>
                                     </manifestEntries>
@@ -210,12 +222,18 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.45.1</version>
                 <configuration>
-                  <verbose>true</verbose>
+                    <verbose>true</verbose>
+                    <pushRegistry>registry.hub.docker.com</pushRegistry>
                     <images>
                         <image>
                             <name>existdb/existdb:%v</name>
                             <alias>exist</alias>
                             <build>
+                                <buildx>
+                                    <platforms>
+                                        <platform>${docker.platforms}</platform>
+                                    </platforms>
+                                </buildx>
                                 <tags>
                                     <tag>${docker.tag}</tag>
                                 </tags>
@@ -227,6 +245,11 @@
                             <name>existdb/existdb:%v-DEBUG</name>
                             <alias>exist-debug</alias>
                             <build>
+                                <buildx>
+                                    <platforms>
+                                        <platform>${docker.platforms}</platform>
+                                    </platforms>
+                                </buildx>
                                 <tags>
                                     <tag>${docker.debug.tag}</tag>
                                 </tags>
