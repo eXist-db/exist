@@ -48,10 +48,10 @@ ARG CACHE_MEM
 ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 
-ENV EXIST_HOME "/exist"
+ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-ENV JAVA_TOOL_OPTIONS \
+ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \
@@ -67,7 +67,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseStringDeduplication \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
-  -XX:+ExitOnOutOfMemoryError
+  -XX:+ExitOnOutOfMemoryError"
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
