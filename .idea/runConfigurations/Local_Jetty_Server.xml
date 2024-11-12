@@ -4,8 +4,8 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
     <module name="exist-distribution" />
-    <option name="PROGRAM_PARAMETERS" value="jetty $MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/conf.xml" />
-    <option name="VM_PARAMETERS" value="-Djetty.host=127.0.0.1 -Dexist.home=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir -Dexist.configurationFile=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/conf.xml -Dlog4j.configurationFile=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/log4j2.xml -Dorg.exist.db-connection.files=$MODULE_DIR$/target/data -Dorg.exist.db-connection.recovery.journal-dir=$MODULE_DIR$/target/data -Dexist.jetty.config=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/jetty/standard.enabled-jetty-configs -Djetty.home=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir -Dexist.ensurelocking.disabled=true -Dfile.encoding=UTF-8" />
+    <option name="PROGRAM_PARAMETERS" value="jetty $MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/conf.xml" />
+    <option name="VM_PARAMETERS" value="-Djetty.host=127.0.0.1 -Dexist.home=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir -Dexist.configurationFile=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/conf.xml -Dlog4j.configurationFile=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/log4j2.xml -Dorg.exist.db-connection.files=$MODULE_DIR$/target/data -Dorg.exist.db-connection.recovery.journal-dir=$MODULE_DIR$/target/data -Dexist.jetty.config=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/jetty/standard.enabled-jetty-configs -Djetty.home=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir -Dexist.ensurelocking.disabled=true -Dfile.encoding=UTF-8" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
