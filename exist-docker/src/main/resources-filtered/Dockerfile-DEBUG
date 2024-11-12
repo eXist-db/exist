@@ -52,10 +52,10 @@ ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 ARG JVM_JDWP_SUSPEND
 
-ENV EXIST_HOME "/exist"
+ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-ENV JAVA_TOOL_OPTIONS \
+ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \
@@ -72,7 +72,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
   -XX:+ExitOnOutOfMemoryError \
-  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${JVM_JDWP_SUSPEND:-n},address=5005
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${JVM_JDWP_SUSPEND:-n},address=5005"
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
