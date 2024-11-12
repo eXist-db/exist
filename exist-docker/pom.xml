@@ -220,13 +220,14 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.40.3</version>
+                <version>0.45.1</version>
                 <configuration>
                     <verbose>true</verbose>
                     <pushRegistry>registry.hub.docker.com</pushRegistry>
                     <images>
                         <image>
                             <name>existdb/existdb:%v</name>
+                            <registry>registry.hub.docker.com</registry>
                             <alias>exist</alias>
                             <build>
                                 <buildx>
@@ -243,6 +244,7 @@
                         </image>
                         <image>
                             <name>existdb/existdb:%v-DEBUG</name>
+                            <registry>registry.hub.docker.com</registry>
                             <alias>exist-debug</alias>
                             <build>
                                 <buildx>

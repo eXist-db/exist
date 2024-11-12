@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
     # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.base_ref ==  'develop' || github.base_ref ==  'master'
+    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-6.x.x' || github.base_ref ==  'develop' || github.base_ref ==  'develop-6.x.x'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -57,7 +57,7 @@ jobs:
         run: mvn -q -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         working-directory: ./exist-docker
       - name: Publish release images
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/develop-6.x.x'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
