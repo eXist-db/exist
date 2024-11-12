@@ -21,7 +21,7 @@
 #
 
 # Use JDK 17 in Debian Bullseye (as our production image gcr.io/distroless/java:17 is based on Debian Bullseye with just a JRE)
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get install -y openjdk-17-jdk-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
