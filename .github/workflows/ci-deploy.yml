@@ -32,7 +32,11 @@ jobs:
           key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: deploy-${{ runner.os }}-maven
       - name: Install bats
-        run: sudo apt-get install bats    
+        run: sudo apt-get install bats
+        # Hack around #5450
+      - name: pull base image
+        run: |
+          docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java17-debian12:latest      
       - name: Build images
         run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
       - name: Check local images
