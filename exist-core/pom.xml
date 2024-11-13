@@ -478,7 +478,7 @@
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
-            <version>2.3.2</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
+            <version>2.5.0</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
             <!-- exclude Quartz SQL connectivity options -->
             <exclusions>
                 <exclusion>
