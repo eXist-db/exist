@@ -32,7 +32,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>6.3.0-SNAPSHOT</version>
+        <version>6.4.0-SNAPSHOT</version>
         <relativePath>../../../exist-parent</relativePath>
     </parent>
 
