@@ -36,10 +36,11 @@ import org.exist.xquery.value.Base64BinaryValueType;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.BinaryValueFromInputStream;
 import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+
+import static java.util.zip.Deflater.DEFAULT_COMPRESSION;
 
 
 /**
@@ -52,7 +53,7 @@ public class DeflateFunction extends BasicFunction
 {
     private final static QName DEFLATE_FUNCTION_NAME = new QName("deflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
         new FunctionSignature(
 	    DEFLATE_FUNCTION_NAME,
             "Deflate data (RFC 1950)",
@@ -84,25 +85,29 @@ public class DeflateFunction extends BasicFunction
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
         // is there some data to Deflate?
-        if(args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
-        BinaryValue bin = (BinaryValue) args[0].itemAt(0);
+        final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
-	boolean rawflag = false;
-        if(args.length > 1 && !args[1].isEmpty())
-	    rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+	    boolean rawflag = false;
+        if (args.length > 1 && !args[1].isEmpty()) {
+            rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+        }
 
-	Deflater defl = new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, rawflag);
+    	final Deflater deflater = new Deflater(DEFAULT_COMPRESSION, rawflag);
 
         // deflate the data
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
-	    DeflaterOutputStream dos = new DeflaterOutputStream(baos, defl)) {
+        try (
+                final UnsynchronizedByteArrayOutputStream stream = new UnsynchronizedByteArrayOutputStream();
+	            DeflaterOutputStream dos = new DeflaterOutputStream(stream, deflater)
+        ) {
             bin.streamBinaryTo(dos);
             dos.flush();
             dos.finish();
             
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
+            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), stream.toInputStream(), this);
         } catch(IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }
