@@ -27,7 +27,7 @@ import org.exist.storage.BrokerPool;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class WebAppContext extends org.eclipse.jetty.webapp.WebAppContext {
+public class WebAppContext extends org.eclipse.jetty.ee10.webapp.WebAppContext {
 	
     @Override
 	public String toString() {
