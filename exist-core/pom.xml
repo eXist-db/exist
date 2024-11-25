@@ -1042,7 +1042,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty.ee10:jetty-ee10-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-security:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
