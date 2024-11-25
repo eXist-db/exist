@@ -26,13 +26,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.server.Handler.Wrapper;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.Jetty;
-import org.eclipse.jetty.util.MultiException;
+//import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.resource.PathResource;
+import org.eclipse.jetty.util.resource.PathResourceFactory;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
@@ -261,7 +262,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             XmlConfiguration last = null;
             for(final Path confFile : configFiles) {
                 logger.info("[loading jetty configuration : {}]", confFile.toString());
-                final Resource resource = new PathResource(confFile);
+                PathResourceFactory prf = new PathResourceFactory();
+                final Resource resource = prf.newResource(confFile);
                 final XmlConfiguration configuration = new XmlConfiguration(resource);
                 if (last != null) {
                     configuration.getIdMap().putAll(last.getIdMap());
@@ -304,17 +306,17 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 }
             }
             
-            //*************************************************************
-            final List<URI> serverUris = getSeverURIs(server);
-            if(!serverUris.isEmpty()) {
-                this.primaryPort = serverUris.get(0).getPort();
-
-            }
-            logger.info("-----------------------------------------------------");
-            logger.info("Server has started, listening on:");
-            for(final URI serverUri : serverUris) {
-                logger.info("{}", serverUri.resolve("/"));
-            }
+//            //*************************************************************
+//            final List<URI> serverUris = getSeverURIs(server);
+//            if(!serverUris.isEmpty()) {
+//                this.primaryPort = serverUris.get(0).getPort();
+//
+//            }
+//            logger.info("-----------------------------------------------------");
+//            logger.info("Server has started, listening on:");
+//            for(final URI serverUri : serverUris) {
+//                logger.info("{}", serverUri.resolve("/"));
+//            }
 
             logger.info("Configured contexts:");
             final LinkedHashSet<Handler> handlers = getAllHandlers(server.getHandler());
@@ -351,20 +353,20 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             setChanged();
             notifyObservers(SIGNAL_STARTED);
             
-        } catch (final MultiException e) {
+        } catch (final RuntimeException e) {
 
             // Mute the BindExceptions
 
             boolean hasBindException = false;
-            for (final Throwable t : e.getThrowables()) {
-                if (t instanceof java.net.BindException) {
-                    hasBindException = true;
-                    logger.error("----------------------------------------------------------");
-                    logger.error("ERROR: Could not bind to port because {}", t.getMessage());
-                    logger.error(t.toString());
-                    logger.error("----------------------------------------------------------");
-                }
-            }
+//            for (final Throwable t : e.getThrowables()) {
+//                if (t instanceof java.net.BindException) {
+//                    hasBindException = true;
+//                    logger.error("----------------------------------------------------------");
+//                    logger.error("ERROR: Could not bind to port because {}", t.getMessage());
+//                    logger.error(t.toString());
+//                    logger.error("----------------------------------------------------------");
+//                }
+//            }
 
             // If it is another error, print stacktrace
             if (!hasBindException) {
@@ -389,7 +391,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {
-        if(handler instanceof HandlerWrapper handlerWrapper) {
+        if(handler instanceof Handler.Wrapper handlerWrapper) {
             final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
             handlers.add(handlerWrapper);
             if(handlerWrapper.getHandler() != null) {
@@ -400,7 +402,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         } else if(handler instanceof HandlerContainer handlerContainer) {
             final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
             handlers.add(handler);
-            for(final Handler childHandler : handlerContainer.getChildHandlers()) {
+            for(final Handler childHandler : handlerContainer.getHandlers()) {
                 handlers.addAll(getAllHandlers(childHandler));
             }
             return handlers;
@@ -413,53 +415,53 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
     }
 
-    /**
-     * See {@link Server#getURI()}
-     */
-    private List<URI> getSeverURIs(final Server server) {
-        final ContextHandler context = server.getChildHandlerByClass(ContextHandler.class);
-        return Arrays.stream(server.getConnectors())
-                .filter(connector -> connector instanceof NetworkConnector)
-                .map(connector -> (NetworkConnector)connector)
-                .map(networkConnector -> getURI(networkConnector, context))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
+//    /**
+//     * See {@link Server#getURI()}
+//     */
+//    private List<URI> getSeverURIs(final Server server) {
+//        final ContextHandler context = server.getChildHandlerByClass(ContextHandler.class);
+//        return Arrays.stream(server.getConnectors())
+//                .filter(connector -> connector instanceof NetworkConnector)
+//                .map(connector -> (NetworkConnector)connector)
+//                .map(networkConnector -> getURI(networkConnector, context))
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+//    }
 
-    /**
-     * See {@link Server#getURI()}
-     */
-    private URI getURI(final NetworkConnector networkConnector, final ContextHandler context) {
-        try {
-            final String protocol = networkConnector.getDefaultConnectionFactory().getProtocol();
-            final String scheme;
-            if (protocol.startsWith("SSL-") || protocol.equals("SSL")) {
-                scheme = "https";
-            } else {
-                scheme = "http";
-            }
-
-            String host = null;
-            if (context != null && context.getVirtualHosts() != null && context.getVirtualHosts().length > 0) {
-                host = context.getVirtualHosts()[0];
-            } else {
-                host = networkConnector.getHost();
-            }
-
-            if (host == null) {
-                host = InetAddress.getLocalHost().getHostAddress();
-            }
-
-            String path = context == null ? null : context.getContextPath();
-            if (path == null) {
-                path = "/";
-            }
-            return new URI(scheme, null, host, networkConnector.getLocalPort(), path, null, null);
-        }  catch(final UnknownHostException | URISyntaxException e) {
-            logger.warn(e);
-            return null;
-        }
-    }
+//    /**
+//     * See {@link Server#getURI()}
+//     */
+//    private URI getURI(final NetworkConnector networkConnector, final ContextHandler context) {
+//        try {
+//            final String protocol = networkConnector.getDefaultConnectionFactory().getProtocol();
+//            final String scheme;
+//            if (protocol.startsWith("SSL-") || protocol.equals("SSL")) {
+//                scheme = "https";
+//            } else {
+//                scheme = "http";
+//            }
+//
+//            String host = null;
+//            if (context != null && context.getVirtualHosts() != null && context.getVirtualHosts().length > 0) {
+//                host = context.getVirtualHosts()[0];
+//            } else {
+//                host = networkConnector.getHost();
+//            }
+//
+//            if (host == null) {
+//                host = InetAddress.getLocalHost().getHostAddress();
+//            }
+//
+//            String path = context == null ? null : context.getContextPath();
+//            if (path == null) {
+//                path = "/";
+//            }
+//            return new URI(scheme, null, host, networkConnector.getLocalPort(), path, null, null);
+//        }  catch(final UnknownHostException | URISyntaxException e) {
+//            logger.warn(e);
+//            return null;
+//        }
+//    }
 
     private Optional<Server> startJetty(final List<Object> configuredObjects) throws Exception {
         // For all objects created by XmlConfigurations, start them if they are lifecycles.
