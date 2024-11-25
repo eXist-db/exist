@@ -1,0 +1,976 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<!--
+    This is the central configuration file for the database. If the database
+    is running in a servlet-context, the configuration file will be read from
+    the WEB-INF directory of the web application. Otherwise, the configuration
+    is read from the directory specified by the exist.home system property.
+    
+    Structure of this xml document:
+    
+        exist
+            db-connection
+                startup
+                    triggers
+                pool
+                query-pool
+                recovery
+                watchdog
+            lock-manager
+            repository
+            binary-manager
+            indexer
+            scheduler
+                job
+            parser
+            serializer
+            transformer
+            validation
+            xquery
+                builtin-modules
+                    module
+            xupdate
+    
+    Any unique attributes specified can also be overridden using a Java system 
+    property, typically specified on the command line, of the form:
+    
+        org.element.element....attribute
+        
+    where the nesting of the element names follows the structure of the 
+    XML configuration document, as was shown above.
+        
+    For example, to override the value of the cache size to be 128MB you could
+    specify:
+    
+        -Dorg.exist.db-connection.cacheSize=128M
+        
+    on your JVM startup command line or options.  Note that this only works 
+    for unique, non-repeating elements, so you can't override things like 
+    the transformer attribute element values or the XQuery module builtin 
+    definitions, since they are not unique.
+    
+    For detailed and latest information please consult the eXist documentation:
+    
+        - http://exist-db.org/exist/apps/doc/configuration.xml
+        - http://exist-db.org/exist/apps/doc/documentation.xml
+
+-->
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+
+    <!-- 
+        Configures the database backend.
+        
+        - cacheSize:
+            the maximum amount of memory to use for database page buffers.
+            Each database file has an associated page buffer for B+-tree and
+            data pages. However, the memory specified via cacheSize is shared
+            between all page buffers. It represents an absolute maximum, which
+            would be occupied if all page buffers were completely full.
+            
+            The cacheSize should typically not be more than half of the size of 
+            the JVM heap size (set by the JVM -Xmx parameter). It can be larger 
+            if you have a large-memory JVM (usually a 64bit JVM)
+        
+        - checkMaxCacheSize:
+            specifies whether eXist should check the max cache size on startup 
+            and reduce it if it is too large.
+            
+            This value should normally be set to true.
+            
+            Only set this value to false if:
+            
+                a) You know what you are doing!
+                b) You have a JVM with tons of memory (typically using a 64-bit 
+                   JVM, which is the scenario this setting is intended for).
+                c) You are really sure you've complied with a) and b) above.
+                
+            Setting this value to false may cause memory issues which may lead to 
+            database corruptions, since it disables the automated max cache size 
+            checks! You have been warned! ;-)
+            
+        - collectionCache:
+            maximum amount of memory (in megabytes) to use for collection caches.
+            Memory calculation is just approximate. If your collections are very 
+            different in size, it might be possible that the actual amount of 
+            memory used exceeds the specified limit. You should thus be careful 
+            with this setting.
+        
+        - database:
+            selects a database backend. Currently, "native" is the only valid setting.
+        
+        - files:
+            path to the directory where database files are stored.
+        
+        - pageSize:
+            the size of one page on the disk. This is the smallest unit
+            transferred from and to the database files. Should be a multiple of
+            the operating system's file system page size (usually 4096).
+
+        - nodesBuffer:
+            size of the temporary buffer used by eXist for caching index
+            data while indexing a document. If set to -1, eXist will use the
+            entire free memory to buffer index entries and will flush the
+            cache once the memory is full.
+
+            If set to a value > 0, the buffer will be fixed to the given size.
+            The specified number corresponds to the number of nodes the
+            buffer can hold, in thousands. Usually, a good default could be
+            nodesBuffer="1000".
+    
+         - cacheShrinkThreshold:
+            The minimum number of pages that must be read from a
+            cache between check intervals to be not considered for 
+            shrinking. This is a measure for the "load" of the cache. Caches
+            with high load will never be shrinked. A negative value means that
+            shrinkage will not be performed.
+
+        - minDiskSpace:
+            The amount of disk space (in megabytes) which should be available for
+            the database to continue operations. If free disk space goes below
+            the configured limit, eXist-db will flush all buffers to disk and
+            switch to read-only mode in order to prevent potential data loss. 
+            Set the limit large enough to allow all pending operations to 
+            complete. Set to -1 to disable. The default is 1 gigabyte.
+
+        - posix-chown-restricted:
+            As defined by POSIX.1 for _POSIX_CHOWN_RESTRICTED.
+
+            When posix-chown-restricted="true" (the default) then:
+                1. Only a superuser process can change the user ID of the file.
+                2. A non-superuser process can change the group ID of the file
+                   if the process owns the file (the effective user ID equals
+                   the user ID of the file), and group equals either the
+                   effective group ID of the process or one of the
+                   process’s supplementary group IDs.
+            This means that when posix-chown-restricted="true", you can’t change
+            the user ID of your files. You can change the group ID of files that
+            you own, but only to groups that you belong to.
+
+            When posix-chown-restricted="false" you can change the user ID of
+            any file that you own, effectively "giving away the file" to
+            another user. Such a setting has negative security implications,
+            further details can be seen in the "Rationale" section for the
+            chown function in the POSIX.1-2017 (Issue 7, 2018 edition) standard.
+            See: http://pubs.opengroup.org/onlinepubs/9699919799/functions/chown.html#tag_16_59_07
+
+        - preserve-on-copy
+            When copying Collections and Documents within the database, the
+            default (`false`), is not to preserve their attributes
+            (modification time, mode, user-id, group-id, and ACL).
+
+            NOTE: Not preserving attributes, is inline with both the GNU and
+            BSD `cp` commands, and therefore expected behaviour; The target
+            Collection or Document is created following the rules of the
+            target parent, and the effective user and their umask.
+
+            Setting preserve-on-copy="true" changes the default behaviour
+            so that the target Collection or Document of a copy, has the same
+            attributes as the source.
+
+            The preserve-on-copy setting can be overridden on a case-by-case
+            basis by setting the `preserve` flag to either `true` or `false`
+            when calling xmldb:copy(), or via any other API that supports copy.
+            Omitting the preserve flag when calling a copy operation, implies
+            the behaviour that is set in this configuration.
+
+        =====================================================================
+        
+        The settings below are very conservative to avoid out-of-memory
+        exceptions on machines with limited memory (256MB).
+        
+        Increase the buffer settings for elements_buffers and words_buffers if 
+        you have some more memory to waste. If you deal with lots of 
+        collections, you can also increase the collectionCacheSize value 
+    -->
+    <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
+        files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        minDiskSpace="1024M" posix-chown-restricted="true" preserve-on-copy="false">
+
+        <!--
+            Startup Triggers are executed before the database becomes generally available
+            for service and have complete access to the database as the SYSTEM broker
+        -->
+        <startup>
+            <triggers>
+
+		<!--
+		    Trigger for registering the GNU Crypto JCE Provider with Java
+		-->
+		<trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
+
+                <!--
+                    Trigger for registering eXists XML:DB URL handler with Java
+                -->
+                <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
+                    <!-- Keeps stream data on disk (temporary files are used for XML documents) -->
+                    <parameter name="mode" value="disk"/>
+
+                    <!-- Keep's stream data in memory -->
+                    <parameter name="mode" value="memory"/>
+                </trigger>
+
+                <!--
+                    AutoDeploymentTrigger will install any .xar application package it finds
+                    in the autodeploy directory unless the application has already been installed
+                    in the db.
+                -->
+                <trigger class="org.exist.repo.AutoDeploymentTrigger">
+                    <parameter name="ignore-autodeploy-system-property" value="true"/>
+                    <parameter name="dir" value="${project.build.testOutputDirectory}/functx"/>
+                </trigger>
+
+            </triggers>
+        </startup>
+
+
+        <!-- 
+            Settings for the database connection pool:
+            
+            - min:
+                minimum number of connections to keep alive.
+            
+            - max:
+                maximum number of connections allowed.
+            
+            - sync-period:
+                defines how often the database will flush its 
+                internal buffers to disk. The sync thread will interrupt 
+                normal database operation after the specified number of 
+                milliseconds and write all dirty pages to disk.
+            
+            - wait-before-shutdown:
+                defines how long the database instance will wait for running
+                operations to complete before it forces a shutdown. Forcing
+                a shutdown may leave the db in an unclean state and may
+                trigger a recovery run on restart.
+
+                Setting wait-before-shutdown="-1" means that the server will
+                wait for all threads to return, no matter how long it takes.
+                No thread will be killed.
+        -->
+        <pool max="20" min="1" sync-period="120000" wait-before-shutdown="120000"/>
+
+        <!--                                                                        
+                Configure the query pool.
+                
+                - max-stack-size:                                                        
+                    maximum number of queries in the query-pool.                         
+                                                                                         
+                - size:                                                                  
+                    number of copies of the same query kept in the query-pool.           
+                    Value "-1" effectively disables caching. Queries cannot be shared     
+                    by threads, each thread needs a private copy of a query.
+            -->
+        <query-pool max-stack-size="64" size="128"/>
+
+        <!--
+            Settings for the journaling and recovery of the database. With 
+            recovery enabled, the database is able to recover from an unclean
+            database shutdown due to, for example, power failures, OS reboots, 
+            and hanging processes. For this to work correctly, all database 
+            operations must be logged to a journal file. 
+                      
+            - enabled:
+                if this attribute is set to yes, automatic recovery is enabled.
+            
+            - journal-dir:     
+                this attribute sets the directory where journal files are to be
+                written. If no directory is specified, the default path is to
+                the data directory.
+            
+            - size:
+                this attributes sets the maximum allowed size of the journal 
+                file. Once the journal reaches this limit, a checkpoint will be
+                triggered and the journal will be cleaned. However, the database
+                waits for running transactions to return before processing this
+                checkpoint. In the event one of these transactions writes a lot
+                of data to the journal file, the file will grow until the 
+                transaction has completed. Hence, the size limit is not enforced
+                in all cases.
+            
+            - sync-on-commit:
+                this attribute determines whether or not to protect the journal
+                during operating system failures. That is, it determines whether
+                the database forces a file-sync on the journal after every 
+                commit. 
+                If this attribute is set to "yes", the journal is protected 
+                against operating system failures. However, this will slow 
+                performance - especially on Windows systems. 
+                If set to "no", eXist will rely on the operating system to flush
+                out the journal contents to disk. In the worst case scenario, 
+                in which there is a complete system failure, some committed 
+                transactions might not have yet been written to the journal, 
+                and so will be rolled back.
+
+            - group-commit:
+                If set to "yes", eXist will not sync the journal file 
+                immediately after every transaction commit. Instead, 
+                it will wait until the current file buffer (32kb)
+                is really full. This can speed up eXist on some systems 
+                where a file sync is an expensive operation (mainly windows 
+                XP; not necessary on Linux). However, group-comit="yes"
+                will increase the risk of an already committed 
+                operation being rolled back after a database crash.
+
+            - force-restart:
+                Try to restart the db even if crash recovery failed. This is
+                dangerous because there might be corruptions inside the
+                data files. The transaction log will be cleared, all locks removed
+                and the db reindexed.
+                
+                Set this option to "yes" if you need to make sure that the db is
+                online, even after a fatal crash. Errors encountered during recovery 
+                are written to the log files. Scan the log files to see if any problems
+                occurred.
+
+            - consistency-check:
+                If set to "yes", a consistency check will be run on the database
+                if an error was detected during crash recovery. This option requires
+                force-restart to be set to "yes", otherwise it has no effect.
+
+                The consistency check outputs a report to the directory {files}/sanity
+                and if inconsistencies are found in the db, it writes an emergency
+                backup to the same directory.
+        -->
+        <recovery enabled="yes"  group-commit="no"   journal-dir="${basedir}/target/test-data"
+                  size="100M" sync-on-commit="no"  force-restart="no"  consistency-check="yes"/>
+
+        <!--
+            This is the global configuration for the query watchdog. The 
+            watchdog monitors all query processes, and can terminate any 
+            long-running queries if they exceed one of the predefined limits. 
+            These limits are as follows:
+            
+            - output-size-limit:
+                this attribute limits the size of XML fragments constructed 
+                using XQuery, and thus sets the maximum amount of main memory a
+                query is allowed to use. This limit is expressed as the maximum
+                number of nodes allowed for an in-memory DOM tree. The purpose
+                of this option is to avoid memory shortages on the server in
+                cases where users are allowed to run queries that produce very
+                large output fragments.
+            
+            - query-timeout:
+                this attribute sets the maximum amount of time (expressed in 
+                milliseconds) that the query can take before it is killed..
+            
+        -->
+        <watchdog output-size-limit="1000000" query-timeout="-1"/>
+
+    </db-connection>
+
+
+    <!--
+        Settings for the Database Lock Manager
+
+        - upgrade-check
+            Used by developers for diagnosing illegal lock upgrade issues. When enabled
+            checks for lock upgrading within the same thread, i.e. READ_LOCK -> WRITE_LOCK
+            are enabled. When an illegal upgrade is detected a LockException is thrown.
+            Such behaviour will likely corrupt any database writes, and should only be
+            used by developers when debugging database issues.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.upgrade-check`,
+                or (legacy) `exist.lockmanager.upgrade.check`.
+
+        - warn-wait-on-read-for-write
+            Used by developers for diagnosing lock performance issues. When enabled
+            checks for detecting when a thread wants to acquire the WRITE_LOCK
+            but another thread holds the READ_LOCK are enabled. When such operations
+            are detected a log message is written to locks.log at WARN level.
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.warn-wait-on-read-for-write`,
+                or (legacy) `exist.lockmanager.warn.waitonreadforwrite`.
+
+        - paths-multi-writer
+            Set to true to enable Multi-Writer/Multi-Reader semantics for
+            the database Collection/Document Hierarchy as opposed to the default (false)
+            for Single-Writer/Multi-Reader.
+
+            NOTE: Whilst enabling Multiple-Writers on the Collection and Document Hierarchy can improve concurrent
+            through-put for write-heavy workloads, it can also can lead to deadlocks unless the User's
+            Collection Hierarchy is carefully designed to isolate query/database writes between Collection combs.
+            It is highly recommended that users leave this as the default setting. For more information, see:
+            "Locking and Cache Improvements for eXist-db", 2018-02-05, Section "Attempt 6" Page 58 -
+            https://www.evolvedbinary.com/technical-reports/exist-db/locking-and-cache-improvements/
+
+            This can also be set via the Java System Properties `org.exist.lock-manager.paths-multiple-writers`,
+            or (legacy) `exist.lockmanager.paths-multiwriter`.
+    -->
+    <lock-manager
+            upgrade-check="false"
+            warn-wait-on-read-for-write="false"
+            paths-multi-writer="false">
+
+        <!--
+            Settings for the Lock Table
+
+            - disabled
+                Disables the database lock table which tracks database locks. The Lock Table is enabled by default
+                and allows reporting on database locking via JMX.
+
+                NOTE: Tracking locks via the Lock Table imposes a small overhead per-Lock. Once users
+                have finished testing their system to ensure correct operation, they may wish to disable
+                this in production to ensure the absolute best performance.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.disabled`,
+                    or (legacy) `exist.locktable.disable`.
+
+            - trace-stack-depth
+                When set above 0, this captures n frames of each threads stack that performs a try/lock/release
+                operation. These frames are visible from JMX reporting.
+                In addition, when the logging level for the Lock Table is set in log4j2.xml to TRACE the lock
+                events are written to the locks.log file.
+
+                This can also be set via the Java System Properties `org.exist.lock-manager.lock-table.trace-stack-depth`,
+                    or (legacy) `exist.locktable.trace.stack.depth`.
+        -->
+        <lock-table disabled="false" trace-stack-depth="0"/>
+
+
+        <!-- Settings for Document Locking
+
+            - use-path-locks
+                Set to true to have documents participate in the same hierarchical
+                path based locking strategy as Collections.
+
+                This has a performance and concurrency impact, but will ensure
+                that you cannot have deadlocks between Collections and Documents.
+
+                NOTE: in future this will likely be set to `true` by default.
+
+                This can also be set via the Java System Property `org.exist.lock-manager.document.use-path-locks`.
+        -->
+        <document use-path-locks="false"/>
+
+    </lock-manager>
+
+    <!--
+        Settings for the package repository:
+
+        - root:
+            The root collection for deployed applications. Application collections will be saved below
+            this collection.
+    -->
+    <repository root="/db/apps"/>
+
+    <!--
+        Settings for the Binary Manager:
+        
+        - cache 
+            Defines the class to use to Cache InputStreams when reading binary documents
+            from the database or from a read once source such as a http request (e.g. request:get-data()).
+            There are currently three options available:
+            
+            - org.exist.util.io.FileFilterInputStreamCache
+                Default. Temporary binary streams are cached to a temporary file on disk.
+            
+            - org.exist.util.io.MemoryMappedFileFilterInputStreamCache
+                Temporary binary streams are cached to a temporary file on disk which
+                has been mapped into memory. Faster than FileFilterInputStreamCache.
+                Not reliable on Windows platforms.
+                
+            - org.exist.util.io.MemoryFilterInputStreamCache
+                Temporary binary streams are cached in memory.
+                This is the fastest approach. However it can result in out of memory
+                errors under heavy load or if using large binary files. 
+            
+           Where temporary files are used, they will be deleted after use.
+           However, due to a bug in the JVM on Windows platforms, temporary files cannot be deleted, so instead
+           they are re-cycled and re-used and deleted if the database is restarted.
+    -->
+    <binary-manager>
+        <cache class="org.exist.util.io.FileFilterInputStreamCache"/>
+    </binary-manager>
+    
+    <!-- 
+        Settings for the indexer:
+        
+        - caseSensitive:
+            should equality comparisons between strings be case-sensitive or
+            insensitive: "yes" or "no".
+        
+        - index-depth:
+            defines the maximum nesting depth of nodes which will be indexed
+            in the DOM index. Nodes below the specified nesting depth will
+            not be indexed in the DOM file. This has only an effect when 
+            retrieving query results or for some types of XPath subexpressions, 
+            like equality comparisons.
+        
+        - suppress-whitespace:
+            should leading or trailing whitespace be removed from a text node?
+            Set to "leading", "trailing", "both" or "none".
+            Changing the parameter will only have an effect on newly loaded 
+            files, not old ones.
+        
+        - preserve-whitespace-mixed-content:
+            preserve the white space inside a mixed content node: "yes" or "no".
+    -->
+    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no"
+        suppress-whitespace="none">
+
+        <modules>
+
+        </modules>
+
+        <!--
+            Default index settings. Default settings apply if there's no 
+            collection-specific configuration for a collection.
+        -->
+        <index>
+            <!-- settings go here -->
+        </index>
+    </indexer>
+
+    <!--
+        Configures user jobs for the scheduler
+    -->
+    <scheduler>
+        <!-- 
+            Job definitions:
+            
+            - type:
+            The type of the job to schedule. Must be either "system" 
+            or "user".
+            
+                system - System jobs require the database to be in a consistent state.
+                All database operations will be stopped until the method returns or 
+                throws an exception. Any exception will be caught and a warning written to
+                the log.
+                
+                user - User jobs may be scheduled at any time and may be mutually exclusive
+                or non-exclusive
+            
+            - class:
+            If the job is written in Java then this should be the name of the
+            class that extends either -
+                org.exist.storage.SystemTask
+                org.exist.scheduler.UserJavaJob
+            
+            - xquery:
+            If the job is written in XQuery (not suitable for system jobs) then 
+            this should be a path to an XQuery stored in the database. e.g. 
+            /db/myCollection/myJob.xql
+            XQuery job's will be launched under the guest account initially,
+            although the running XQuery may switch permissions through
+            calls to xmldb:login().
+            
+            - cron-trigger:
+            To define a firing pattern for the Job using Cron style syntax
+            use this attribute otherwise for a periodic job use the period
+            attribute. Not applicable to startup jobs.
+            
+            - unschedule-on-exception:
+            Boolean: yes/true, no/false. Default: true. If true and an exception is
+            encountered then the job is unscheduled for further execution until a
+            restart; otherwise, the exception is ignored.
+            
+            - period:
+            Can be used to define an explicit period for firing the job instead
+            of a Cron style syntax. The period should be in milliseconds.
+            Not applicable to startup jobs.
+            
+            - delay:
+            Can be used with a period to delay the start of a job. If unspecified jobs
+            will start as soon as the database and scheduler are initialised.
+            
+            - repeat:
+            Can be used with a period to define for how many periods a job should be
+            executed. If unspecified jobs will repeat for every period indefinitely.
+        -->
+        <!-- 
+        <job class="bar.foo.myjob" period="600000" delay="300000" repeat="10" />
+        -->
+        
+        <!--
+            Run a consistency check on the database. This will detect inconsistencies
+            or corruptions in documents or the collection store. The task can also
+            be used to create automatic backups. The backup routine is faster than
+            the one in the standard backup tool and it tries to export as much data
+            as possible, even if parts of the collection tree are destroyed.
+
+            If errors are detected during the consistency check, the job will
+            automatically start creating a backup.
+
+            Errors are reported via the JMX object with the name:
+
+            org.exist.management.tasks:type=SanityReport
+
+            Parameters:
+                output  The output directory used by the job. The path is interpreted
+                        relative to the data directory (WEB-INF/data).
+
+                backup  Set to "yes" to create a backup whenever the job runs, not just
+                        when it detects errors.
+        -->
+        <!--
+        <job type="system" name="check1" 
+            class="org.exist.storage.ConsistencyCheckTask"
+            cron-trigger="0 0 * * * ?">
+            <parameter name="output" value="export"/>
+            <parameter name="backup" value="yes"/>
+            <parameter name="incremental" value="no"/>
+            <parameter name="incremental-check" value="no"/>
+            <parameter name="max" value="2"/>
+        </job>
+        -->
+        
+        <!-- 
+            Automatically creates a copy of the database .dbx files every 2 minutes
+            
+            Parameters:
+            output-dir:
+                The directory into which the copy will be written
+        -->
+        <!--
+        <job type="system" name="databackup" 
+            class="org.exist.storage.DataBackup" period="120000">
+            <parameter name="output-dir" value="backup" />
+        </job>
+        -->
+        
+    </scheduler>
+
+    <!--
+        Default settings for parsing structured documents:
+
+        - xml (optional)
+
+            - features
+                Any default SAX2 feature flags to set on the parser
+
+                    - feature
+                        - name
+                            the name of the feature flag
+                        - value
+                            the value of the feature flag
+
+
+        - html-to-xml (optional)
+
+            - class
+                The Java classname of a parser which implements org.xml.sax.XMLReader
+                and is capable of parsing HTML and emitting an XML Sax Stream.
+
+                Whichever library you use for this, it must be present on the classpath
+                perhaps the best way to do this is to place it into $EXIST_HOME/lib/user
+
+                Examples include:
+                    - org.codelibs.nekohtml.parsers.SAXParser
+                        The Cyber NekoHTML parser from https://sourceforge.net/projects/nekohtml/
+
+                    - org.ccil.cowan.tagsoup.Parser
+                        The TagSoup parser from http://home.ccil.org/~cowan/XML/tagsoup/
+
+            - properties
+                Any default SAX2 properties to set on the Parser
+
+                    - property
+                        - name
+                            the name of the property
+                        - value
+                            the value of the property
+
+
+            - features
+                Any default SAX2 feature flags to set on the parser
+
+                    - feature
+                        - name
+                            the name of the feature flag
+                        - value
+                            the value of the feature flag
+    -->
+    <parser>
+
+        <xml>
+
+            <features>
+
+                <!-- NOTE: the following feature flags should likely be set in production to ensure a secure environment -->
+
+                <!--
+                <feature name="http://xml.org/sax/features/external-general-entities" value="false"/>
+                <feature name="http://xml.org/sax/features/external-parameter-entities" value="false"/>
+                <feature name="http://javax.xml.XMLConstants/feature/secure-processing" value="true"/>
+                -->
+
+            </features>
+
+        </xml>
+
+        <!-- html-to-xml class="org.ccil.cowan.tagsoup.Parser"/ -->
+
+        <html-to-xml class="org.codelibs.nekohtml.parsers.SAXParser">
+            <properties>
+                <property name="http://cyberneko.org/html/properties/names/elems" value="match"/>
+                <property name="http://cyberneko.org/html/properties/names/attrs" value="no-change"/>
+            </properties>
+        </html-to-xml>
+
+    </parser>
+
+    <!-- 
+        Default settings for the serializer. Most of these can be changed
+        by client code:
+
+        - add-exist-id:
+            for debugging: add an exist:id attribute to every element, showing
+            the internal node identifier (as a long int) assigned to this node.
+            Possible values are: "none", "element", "all". "all" displays the 
+            node of every element node; "element" displays the id only for the 
+            root nodes of the returned XML fragments.
+            
+       - compress-output:
+           should the output be compressed when serializing documents?
+           Sometimes useful with remote clients.
+           Remember to add a statement like this to your client code:
+           service.setProperty("compress-output", "yes");
+           to uncompress the retrieved result in the client too.
+
+        - output-doctype:
+            should the Doctype Declaration for a document be serialized
+            if it is present?
+
+        - enable-xinclude: 
+            should the database expand XInclude tags by default?
+        
+        - enable-xsl: 
+            should the database evaluate XSL processing instructions
+            when serializing documents?
+        
+        - indent:
+            should the serializer pretty-print (indent) XML?
+        
+        - match-tagging-attributes:
+            matches for attribute values can also be tagged using the character
+            sequence "||" to demarcate the matching text string. Since this 
+            changes the content of the attribute value, the feature is disabled
+            by default.
+        
+        - match-tagging-elements:
+            the database can highlight matches in the text content of a node by
+            tagging the matching text string with <exist:match>. Clearly, this
+            only works for XPath expressions using the some indexes.
+            
+            Set the parameter to "yes" to enable this feature.
+
+    -->
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+                enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+                match-tagging-elements="no">
+        <!--
+            You may add as many custom-filters as you want, they will be executed
+            in the order you specify them. Thus:
+            
+            <custom-filter class="org.exist.FirstFilter"/>
+            <custom-filter class="org.exist.SecondFilter"/>
+        -->
+
+        <!--
+            Custom filters can be used during backup serialize document.
+            You may add as many backup-filters as you want, they will be executed
+            in the order you specify them. Thus:
+
+            <backup-filter class="org.exist.FirstFilter"/>
+            <backup-filter class="org.exist.SecondFilter"/>
+        -->
+    </serializer>
+
+    <!--
+        Default settings for the XSLT Transformer. Allow's for a choice of 
+        implementation:
+        
+        - class:
+            the name of the class that implements javax.xml.transform.TransformerFactory
+            
+            for Saxon (XSLT 2.0 support):
+            - "net.sf.saxon.TransformerFactoryImpl"
+            
+            for Xalan (XSLT 1.0 support):
+            - "org.apache.xalan.processor.TransformerFactoryImpl"
+
+        - caching:
+            You can enable or disable xsl caching by this option.     
+            This option is set to "yes" by default.     
+            
+        For further details see - http://atomic.exist-db.org/wiki/HowTo/XSLT2/
+        
+        You can also include attribute child elements, if you wish to pass in 
+        attributes to your particular TransformerFactory as follows:
+        
+            <transformer class="net.sf.saxon.TransformerFactoryImpl">
+                <attribute name="http://saxon.sf.net/feature/version-warning" 
+                           value="false" type="boolean"/>
+            </transformer>
+            
+        The example above sets Saxon to suppress warnings when executing a 
+        XSLT 1.0 stylesheet with the XSLT 2.0 processor. Check the 
+        documentation for your selected TransformerFactory to determine which 
+        attributes can be set. Valid types include "boolean", "integer" 
+        and "string".  Anything else will be treated as type "string".
+        
+    -->
+    <transformer class="net.sf.saxon.TransformerFactoryImpl" caching="yes">
+        <attribute name="http://saxon.sf.net/feature/version-warning" value="false" type="boolean"/>
+    </transformer>
+
+    <!--
+        Settings for XML validation
+        - mode
+            should XML source files be validated against a schema or DTD before
+            storing them? The setting is passed to the XML parser. The actual
+            effects depend on the parser you use. eXist comes with Xerces which 
+            can validate against both: schemas and DTDs.
+            
+            Possible values: "yes", "no", "auto". "auto" will leave validation 
+            to the parser.   
+            
+     -->
+    <validation mode="no">
+        <!-- 
+            Specify the location of one or more catalog files. Catalogs are 
+            used to resolve external entities in XML documents.
+            
+            "${WEBAPP_HOME}" and "${EXIST_HOME}" can be used as magic string. 
+        -->
+        <entity-resolver>
+            <catalog uri="${project.build.testOutputDirectory}/org/exist/validation/catalog.xml"/>
+        </entity-resolver>
+    </validation>
+
+    <!-- 
+        Define modules that contain xQuery functions.
+        
+            - enable-java-binding:
+                eXist supports calls to arbitrary Java methods from within 
+                XQuery. Setting to "yes" might introduce a security risk.
+            -  disable-deprecated-functions:
+                Set to "yes" to disable deprecated functions
+            - enable-query-rewriting:
+                Set to "yes" to enable the new query-rewriting optimizer. This 
+                is work in progress and may lead to incorrect queries. Use at your
+                own risk.
+            -  backwardCompatible:
+                Set to "yes" to enable backward compatibility (untyped argument 
+                checks for instance)
+            - enforce-index-use
+                When set to "strict", eXist will not use a range index unless all
+                collections in the context sequence define it. When set to
+                "always", the query engine will still use an index, even if only
+                one collection has it defined. It thus leaves it to the user to
+                properly define indexes and if you forget to specify an index on
+                a particular collection, it will be missing in the results.
+            - raise-error-on-failed-retrieval
+                Set to "yes" if a call to doc(), xmldb:document(), collection() or 
+                xmldb:xcollection() should raise an error (FODC0002) when an 
+                XML resource can not be retrieved.
+                Set to "no" if a call to doc(), xmldb:document(), collection() or 
+                xmldb:xcollection() should return an empty sequence when an 
+                XML resource can not be retrieved. 
+    -->
+    <!-- TODO: add attribute 'enabled="yes/no"' -->
+    <xquery enable-java-binding="no" disable-deprecated-functions="no" 
+            enable-query-rewriting="yes" backwardCompatible="no" 
+            enforce-index-use="strict"
+            raise-error-on-failed-retrieval="no">
+        
+        <builtin-modules>
+
+            <!-- XQSuite Test Framework for XQuery testing -->
+            <module uri="http://exist-db.org/xquery/xqsuite" src="resource:org/exist/xquery/lib/xqsuite/xqsuite.xql" />
+
+            <module uri="http://www.w3.org/2005/xpath-functions/map"  class="org.exist.xquery.functions.map.MapModule" />
+            <module uri="http://www.w3.org/2005/xpath-functions/math" class="org.exist.xquery.functions.math.MathModule" />
+            <module uri="http://www.w3.org/2005/xpath-functions/array" class="org.exist.xquery.functions.array.ArrayModule" />
+
+            <module uri="http://exist-db.org/xquery/inspection" class="org.exist.xquery.functions.inspect.InspectionModule"/>
+            <module uri="http://exist-db.org/xquery/request"    class="org.exist.xquery.functions.request.RequestModule" />
+            <module uri="http://exist-db.org/xquery/response"   class="org.exist.xquery.functions.response.ResponseModule" />
+            <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>
+            <module uri="http://exist-db.org/xquery/session"    class="org.exist.xquery.functions.session.SessionModule" />
+            <module uri="http://exist-db.org/xquery/system"     class="org.exist.xquery.functions.system.SystemModule" />
+            <module uri="http://exist-db.org/xquery/transform"  class="org.exist.xquery.functions.transform.TransformModule" />
+            <module uri="http://exist-db.org/xquery/util"       class="org.exist.xquery.functions.util.UtilModule">
+                <!-- set to true to disable the util:eval functions -->
+                <parameter name="evalDisabled" value="false"/>
+            </module>
+            <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
+            <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
+
+        </builtin-modules>
+    </xquery>
+
+    <!-- 
+      Inserting new nodes into a document can lead to fragmentation
+      in the DOM storage file.
+
+        - allowed-fragmentation:
+            defines the maximum number of page splits allowed within a document
+            before a defragmentation run will be triggered.
+            
+        - enable-consistency-checks:
+            for debugging only. If the parameter is set to "yes", a consistency
+            check will be run on every modified document after every XUpdate 
+            request. It checks if the persistent DOM is complete and all 
+            pointers in the structural index point to valid storage addresses 
+            containing valid nodes.
+        
+    -->
+    <xupdate allowed-fragmentation="50000" enable-consistency-checks="no"/>
+
+    <!--
+        Load this configuration into Saxon
+        If `configuration-file` is a relative filename, it is relative to $EXIST_HOME/etc
+        (this is the same directory as the eXist-db configuration file `conf.xml`)
+        `configuration-file` may also be an absolute filename.
+
+    -->
+    <saxon configuration-file="saxon-config.xml"/>
+
+    <!--
+    Defines the RPC server backend specific options used to process the requests.
+    -->
+    <rpc-server>
+        <!--
+        Defines per document specific cache settings.
+
+        - max-in-memory-size:
+          Defines the maximum in memory hold data before storing on temporary disk space
+        -->
+        <content-file in-memory-size="4194304"/>
+        <!--
+        Defines content file pool handling.
+
+        - size:
+          Specifies the maximum pool size of total in memory content file objects. Those could
+          occupy a maximum of <size> * <maximum in memory size>
+
+        - max-idle:
+          Defines the maximum amount of idle pool entries that will not be removed for later reuse.
+        -->
+        <content-file-pool size="-1" max-idle="5"/>
+    </rpc-server>
+</exist>
