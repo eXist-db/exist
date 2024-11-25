@@ -25,7 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.Handler.List;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.DBUtils;
