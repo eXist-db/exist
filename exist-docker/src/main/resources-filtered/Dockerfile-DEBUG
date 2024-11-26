@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use JDK 17 in Debian Bullseye (as our production image gcr.io/distroless/java:17 is based on Debian Bullseye with just a JRE)
+# Use JDK 17 in Debian as our production image gcr.io/distroless/java is based on Debian with just a JRE)
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get install -y openjdk-17-jdk-headless
