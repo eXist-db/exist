@@ -243,6 +243,42 @@ public class ErrorCodes {
 
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 
+    /* New Error Codes https://www.w3.org/TR/xquery-update-30/#id-new-error-codes */
+    public static final ErrorCode XUST0001 = new W3CErrorCode("XUST0001", "It is a static error if an updating expression is used where the expression category rules prohibit it.");
+    public static final ErrorCode XUST0003 = new W3CErrorCode("XUST0003", "It is a static error if a Prolog contains more than one revalidation declaration.");
+    public static final ErrorCode XUTY0004 = new W3CErrorCode("XUTY0004", "It is a type error if the insertion sequence of an insert expression contains an attribute node following a node that is not an attribute node.");
+    public static final ErrorCode XUTY0005 = new W3CErrorCode("XUTY0005", "In an insert expression where into, as first into, or as last into is specified, it is a type error if the target expression returns a non-empty result that does not consist of a single element or document node.");
+    public static final ErrorCode XUTY0006 = new W3CErrorCode("XUTY0006", "In an insert expression where before or after is specified, it is a type error if the target expression returns a non-empty result that does not consist of a single element, text, comment, or processing instruction node.");
+    public static final ErrorCode XUTY0007 = new W3CErrorCode("XUTY0007", "It is a type error if the target expression of a delete expression does not return a sequence of zero or more nodes.");
+    public static final ErrorCode XUTY0008 = new W3CErrorCode("XUTY0008", "In a replace expression, it is a type error if the target expression returns a non-empty result that does not consist of a single element, attribute, text, comment, or processing instruction node.");
+    public static final ErrorCode XUDY0009 = new W3CErrorCode("XUDY0009", "In a replace expression where value of is not specified, it is a dynamic error if the node returned by the target expression does not have a parent.");
+    public static final ErrorCode XUTY0010 = new W3CErrorCode("XUTY0010", "In a replace expression where value of is not specified and the target is an element, text, comment, or processing instruction node, it is a type error if the replacement sequence does not consist of zero or more element, text, comment, or processing instruction nodes.");
+    public static final ErrorCode XUTY0011 = new W3CErrorCode("XUTY0011", "In a replace expression where value of is not specified and the target is an attribute node, it is a type error if the replacement sequence does not consist of zero or more attribute nodes.");
+    public static final ErrorCode XUTY0012 = new W3CErrorCode("XUTY0012", "In a rename expression, it is a type error if the target expression returns a non-empty result that does not consist of a single element, attribute, or processing instruction node.");
+    public static final ErrorCode XUTY0013 = new W3CErrorCode("XUTY0013", "In a copy modify expression, it is a type error if a source expression in the copy clause does not return a single node.");
+    public static final ErrorCode XUDY0014 = new W3CErrorCode("XUDY0014", "In a copy modify expression, it is a dynamic error if the modify clause modifies any node that was not created by the copy clause.");
+    public static final ErrorCode XUDY0015 = new W3CErrorCode("XUDY0015", "It is a dynamic error if any node is the target of more than one rename expression within the same query.");
+    public static final ErrorCode XUDY0016 = new W3CErrorCode("XUDY0016", "It is a dynamic error if any node is the target of more than one replace expression (without value of being specified) within the same query.");
+    public static final ErrorCode XUDY0017 = new W3CErrorCode("XUDY0017", "It is a dynamic error if any node is the target of more than one replace value of expression within the same query.");
+    public static final ErrorCode XUDY0018 = new W3CErrorCode("XUDY0018", "It is a dynamic error if a function that was declared to be external but not updating returns a non-empty pending update list.");
+    public static final ErrorCode XUDY0021 = new W3CErrorCode("XUDY0021", "It is a dynamic error if the XDM instance that would result from applying all the updates in a query violates any constraint specified in [XQuery and XPath Data Model (XDM) 3.0]. In this case, none of the updates in the query are made effective.");
+    public static final ErrorCode XUTY0022 = new W3CErrorCode("XUTY0022", "It is a type error if an insert expression specifies the insertion of an attribute node into a document node.");
+    public static final ErrorCode XUDY0023 = new W3CErrorCode("XUDY0023", "It is a dynamic error if an insert, replace, or rename expression affects an element node by introducing a new namespace binding that conflicts with one of its existing namespace bindings.");
+    public static final ErrorCode XUDY0024 = new W3CErrorCode("XUDY0024", "It is a dynamic error if the effect of a set of updating expressions is to introduce conflicting namespace bindings into an element node.");
+    public static final ErrorCode XUDY0025 = new W3CErrorCode("XUDY0025", "(Not currently used.)");
+    public static final ErrorCode XUST0026 = new W3CErrorCode("XUST0026", "It is a static error if a revalidation declaration in a Prolog specifies a revalidation mode that is not supported by the current implementation.");
+    public static final ErrorCode XUDY0027 = new W3CErrorCode("XUDY0027", "It is a dynamic error if the target expression of an insert, replace, or rename expression evaluates to an empty sequence.");
+    public static final ErrorCode XUDY0029 = new W3CErrorCode("XUDY0029", "In an insert expression where before or after is specified, it is a dynamic error if the node returned by the target expression does not have a parent.");
+    public static final ErrorCode XUDY0030 = new W3CErrorCode("XUDY0030", "It is a dynamic error if an insert expression specifies the insertion of an attribute node before or after a child of a document node.");
+    public static final ErrorCode XUDY0031 = new W3CErrorCode("XUDY0031", "It is a dynamic error if multiple calls to fn:put in the same snapshot specify the same URI (after resolution of relative URIs).");
+    public static final ErrorCode XUST0032 = new W3CErrorCode("XUST0032", "It is a static error if an %updating or %simple annotation is used on a VarDecl.");
+    public static final ErrorCode XUST0033 = new W3CErrorCode("XUST0033", "It is a static error to use more than one %updating or %simple annotation in a given annotation set.");
+    public static final ErrorCode XUST0034 = new W3CErrorCode("XUST0034", "It is a static error to use more than one updating function assertion in the function assertionXQ30 set of a FunctionTest.");
+    public static final ErrorCode XUDY0037 = new W3CErrorCode("XUDY0037", "It is a dynamic error if the pending update list returned by the modify expression of a CopyModifyExpr or TransformWithExpr contains a upd:put update primitive.");
+    public static final ErrorCode XUDY0038 = new W3CErrorCode("XUDY0038", "It is a dynamic error if the function returned by the PrimaryExpr of a dynamic function invocation is an updating function, and the dynamic function invocation is not a partial function applicationXQ30.");
+    public static final ErrorCode FOUP0001 = new W3CErrorCode("FOUP0001", "It is a dynamic error if the first operand of fn:put is not a node of a supported kind.");
+    public static final ErrorCode FOUP0002 = new W3CErrorCode("FOUP0002", "It is a dynamic error if the second operand of fn:put is not a valid lexical representation of the xs:anyURI type.");
+
     /* eXist specific XQuery and XPath errors
      *
      * Codes have the format [EX][XQ|XP][DY|SE|ST][nnnn]
