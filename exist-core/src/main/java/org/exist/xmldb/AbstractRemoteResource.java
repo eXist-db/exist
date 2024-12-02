@@ -30,18 +30,17 @@ import java.util.zip.Inflater;
 
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
-import org.exist.util.Leasable;
 import org.exist.util.io.ByteArrayContent;
 import org.exist.util.io.ContentFile;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.io.VirtualTempPath;
+import org.jline.utils.Log;
 import org.xml.sax.InputSource;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -63,6 +62,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     private Permission permissions = null;
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
+    private List<Runnable> closeActions;
 
     Date dateCreated = null;
     Date dateModified = null;
@@ -557,9 +557,27 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                     contentFile = null;
                 }
             } finally {
+                if (closeActions != null) {
+                    closeActions.removeIf(this::executeCloseAction);
+                }
                 closed = true;
             }
         }
+    }
+    protected void addCloseAction(Runnable action) {
+        if (closeActions == null) {
+            closeActions = new ArrayList<>(1);
+        }
+        closeActions.add(action);
+    }
+
+    private boolean executeCloseAction(Runnable action) {
+        try {
+            action.run();
+        } catch (Exception e) {
+            Log.error("Failed to execute close action", e);
+        }
+        return true;
     }
 
     @Override

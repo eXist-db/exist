@@ -25,12 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 import javax.xml.transform.OutputKeys;
@@ -41,7 +36,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Leasable;
@@ -57,24 +51,38 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteResourceSet implements ResourceSet, AutoCloseable {
 
+    private static final Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
+
     private final Leasable<XmlRpcClient> leasableXmlRpcClient;
     private final RemoteCollection collection;
+    private final List<ResourceEntry> resources;
+    private final Properties outputProperties;
+
     private int handle = -1;
     private int hash = -1;
-    private final List resources;
-    private final Properties outputProperties;
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
-
-    private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
     public RemoteResourceSet(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCollection col, final Properties properties, final Object[] resources, final int handle, final int hash) {
         this.leasableXmlRpcClient = leasableXmlRpcClient;
         this.handle = handle;
         this.hash = hash;
-        this.resources = new ArrayList(Arrays.asList(resources));
+        this.resources = new ArrayList(resources.length);
         this.collection = col;
         this.outputProperties = properties;
+        int index = 0;
+        for (Object resource : resources) {
+            this.resources.add(asEntry(index, resource));
+            index++;
+        }
+    }
+
+    private ResourceEntry asEntry(int index, Object resource) {
+        if (resource instanceof Resource) {
+            return new ResourceEntry(index, Collections.emptyMap(), (Resource) resource);
+        } else {
+            return new ResourceEntry(index, (Map<String, String>) resource, null);
+        }
     }
 
     private final int getInMemorySize(Properties properties) {
@@ -83,10 +91,10 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         }
         return inMemoryBufferSize.get();
     }
-    
+
     @Override
     public void addResource(final Resource resource) {
-        resources.add(resource);
+        resources.add(asEntry(resources.size(), resource));
     }
 
     @Override
@@ -199,40 +207,12 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         if (pos >= resources.size()) {
             return null;
         }
-
-        if(resources.get((int) pos) instanceof Resource) {
-            return (Resource) resources.get((int) pos);
-        } else {
-            final Map<String, String> item = (Map<String, String>)resources.get((int)pos);
-
-            switch(item.get("type")) {
-                case "node()":
-                case "document-node()":
-                case "element()":
-                case "attribute()":
-                case "text()":
-                case "processing-instruction()":
-                case "comment()":
-                case "namespace()":
-                case "cdata-section()":
-                    return getResourceNode((int)pos, item);
-
-                case "xs:base64Binary":
-                    return getResourceBinaryValue((int)pos, item, Base64::decodeBase64);
-
-                case "xs:hexBinary":
-                    return getResourceBinaryValue((int)pos, item, Hex::decodeHex);
-
-                default:    // atomic value
-                    return getResourceValue((int)pos, item);
-
-            }
-        }
+        return resources.get((int)pos).resource();
     }
 
     private RemoteXMLResource getResourceNode(final int pos, final Map<String, String> nodeDetail) throws XMLDBException {
         final String doc = nodeDetail.get("docUri");
-        final Optional<String> s_id =  Optional.ofNullable(nodeDetail.get("nodeId"));
+        final Optional<String> s_id = Optional.ofNullable(nodeDetail.get("nodeId"));
         final Optional<String> s_type = Optional.ofNullable(nodeDetail.get("type"));
         final XmldbURI docUri;
         try {
@@ -270,7 +250,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         final byte[] content;
         try {
             content = binaryDecoder.apply(valueDetail.get("value"));
-        } catch(final Exception e) {
+        } catch (final Exception e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
 
@@ -331,6 +311,53 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         @Override
         public Resource nextResource() throws XMLDBException {
             return getResource(pos++);
+        }
+    }
+
+    class ResourceEntry {
+        private final int pos;
+        private final Map<String, String> item;
+        private Resource resource;
+
+        private ResourceEntry(int pos, Map<String, String> item, Resource resource) {
+            this.pos = pos;
+            this.item = item;
+            this.resource = resource;
+        }
+
+        Resource resource() throws XMLDBException {
+            if (resource == null) {
+                final  AbstractRemoteResource remoteResource;
+                switch (item.get("type")) {
+                    case "node()":
+                    case "document-node()":
+                    case "element()":
+                    case "attribute()":
+                    case "text()":
+                    case "processing-instruction()":
+                    case "comment()":
+                    case "namespace()":
+                    case "cdata-section()":
+                        remoteResource = getResourceNode(pos, item);
+                        break;
+                    case "xs:base64Binary":
+                        remoteResource = getResourceBinaryValue(pos, item, Base64::decodeBase64);
+                        break;
+                    case "xs:hexBinary":
+                        remoteResource = getResourceBinaryValue(pos, item, Hex::decodeHex);
+                        break;
+                    default:    // atomic value
+                        remoteResource = getResourceValue(pos, item);
+                        break;
+                }
+                remoteResource.addCloseAction(this::reset);
+                resource = remoteResource;
+            }
+            return resource;
+        }
+
+        void reset() {
+            resource = null;
         }
     }
 }
