@@ -71,14 +71,14 @@ public class IdFunctionTest {
         expect(mckContext.getDocumentBuilder()).andReturn(new MemTreeBuilder());
         mckContext.popDocumentContext();
         expectLastCall().once();
-        expect(mckContext.getRealUser()).andReturn(mckRealUser).times(2);
+        expect(mckContext.getRealUser()).andReturn(mckRealUser);
         expect(mckRealUser.getName()).andReturn(realUsername);
         expect(mckRealUser.getGroups()).andReturn(new String[]{"realGroup1", "realGroup2"});
         expect(mckRealUser.getId()).andReturn(1);
 
         final Subject mckEffectiveUser = EasyMock.createMock(Subject.class);
         final String effectiveUsername = "effective";
-        expect(mckContext.getEffectiveUser()).andReturn(mckEffectiveUser).times(2);
+        expect(mckContext.getEffectiveUser()).andReturn(mckEffectiveUser);
         expect(mckEffectiveUser.getId()).andReturn(2);
         expect(mckEffectiveUser.getName()).andReturn(effectiveUsername);
         expect(mckEffectiveUser.getGroups()).andReturn(new String[]{"effectiveGroup1", "effectiveGroup2"});
@@ -127,7 +127,7 @@ public class IdFunctionTest {
         expect(mckContext.getDocumentBuilder()).andReturn(new MemTreeBuilder());
         mckContext.popDocumentContext();
         expectLastCall().once();
-        expect(mckContext.getRealUser()).andReturn(mckUser).times(2);
+        expect(mckContext.getRealUser()).andReturn(mckUser);
         expect(mckUser.getName()).andReturn(username);
         expect(mckUser.getGroups()).andReturn(new String[]{"group1", "group2"});
         expect(mckUser.getId()).andReturn(1);
@@ -183,7 +183,7 @@ public class IdFunctionTest {
         expect(mckContext.getDocumentBuilder()).andReturn(new MemTreeBuilder());
         mckContext.popDocumentContext();
         expectLastCall().once();
-        expect(mckContext.getRealUser()).andReturn(mckRealUser).times(2);
+        expect(mckContext.getRealUser()).andReturn(mckRealUser);
         expect(mckRealUser.getName()).andReturn(realUsername);
         expect(mckRealUser.getGroups()).andReturn(new String[]{"realGroup1"});
         expect(mckRealUser.getId()).andReturn(101);
@@ -191,7 +191,7 @@ public class IdFunctionTest {
 
         final Subject mckEffectiveUser = EasyMock.createMock(Subject.class);
         final String effectiveUsername = "user1";
-        expect(mckContext.getEffectiveUser()).andReturn(mckEffectiveUser).times(2);
+        expect(mckContext.getEffectiveUser()).andReturn(mckEffectiveUser);
         expect(mckEffectiveUser.getId()).andReturn(101);
         expect(mckEffectiveUser.getName()).andReturn(effectiveUsername);
         expect(mckEffectiveUser.getGroups()).andReturn(new String[]{"realGroup1", "effectiveGroup1"});
