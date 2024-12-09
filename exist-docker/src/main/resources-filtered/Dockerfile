@@ -20,25 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use Debian Bullseye (which is the base of gcr.io/distroless/java:17) for additional library dependencies that we need
-# FROM debian:bullseye-slim as debian-slim
-# RUN apt-get update && apt-get -y dist-upgrade
-# RUN apt-get install -y openjdk-17-jre-headless
-# RUN apt-get install -y expat fontconfig     # Install tools required by FOP
-
-FROM gcr.io/distroless/java17:latest
-
-# Copy over dependencies for Apache FOP, missing from GCR's JRE
-# COPY --from=debian-slim /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-# COPY --from=debian-slim /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-# COPY --from=debian-slim /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-# COPY --from=debian-slim /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
-
-# Copy dependencies for Apache Batik (used by Apache FOP to handle SVG rendering)
-# COPY --from=debian-slim /etc/fonts /etc/fonts
-# COPY --from=debian-slim /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
-# COPY --from=debian-slim /usr/share/fontconfig /usr/share/fontconfig
-# COPY --from=debian-slim /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
+FROM gcr.io/distroless/java17-debian12:latest
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
@@ -66,10 +48,10 @@ ARG CACHE_MEM
 ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 
-ENV EXIST_HOME "/exist"
+ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-ENV JAVA_TOOL_OPTIONS \
+ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \
@@ -85,7 +67,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseStringDeduplication \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
-  -XX:+ExitOnOutOfMemoryError
+  -XX:+ExitOnOutOfMemoryError"
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
