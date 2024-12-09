@@ -39,6 +39,10 @@ import static org.junit.Assert.assertNotNull;
  */
 public class TransformFromPkgTest {
 
+    private static final String moduleLocation = "/db/system/repo/functx-1.0.1/functx/functx.xsl";
+    private static final String inputXml = "<x>bonjourno</x>";
+    private static final String expectedOutput = "<r xmlns:functx=\"http://www.functx.com\">hello</r>";
+
     private static Path getConfigFile() {
         final ClassLoader loader = TransformFromPkgTest.class.getClassLoader();
         final char separator = System.getProperty("file.separator").charAt(0);
@@ -52,32 +56,53 @@ public class TransformFromPkgTest {
         }
     }
 
+    private static String getQuery(final String importLocation) {
+        final String xslt = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\n" +
+                "    xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
+                "    xmlns:functx=\"http://www.functx.com\"\n" +
+                "    exclude-result-prefixes=\"xs\"\n" +
+                "    version=\"2.0\">\n" +
+                "    \n" +
+                "    <xsl:import href=\"" + importLocation + "\"/>\n" +
+                "    \n" +
+                "    <xsl:template match=\"/\">\n" +
+                "      <r>" +
+                "        <xsl:value-of select=\"functx:replace-first(., 'bonjourno', 'hello')\"/>\n" +
+                "      </r>" +
+                "    </xsl:template>\n" +
+                "    \n" +
+                "</xsl:stylesheet>";
+
+        return "transform:transform(" + inputXml + ", " + xslt + ", ())";
+    }
+
+    private static void assertTransformationResult(ResourceSet result) throws XMLDBException {
+        assertNotNull(result);
+        assertEquals(1, result.getSize());
+        assertEquals(expectedOutput, result.getResource(0).getContent());
+    }
+
     @ClassRule
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(true, false, true, getConfigFile());
 
     @Test
-    public void transformWithModuleFromPkg() throws XMLDBException {
-        final String xslt =
-                "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\n" +
-                        "    xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
-                        "    xmlns:functx=\"http://www.functx.com\"\n" +
-                        "    exclude-result-prefixes=\"xs\"\n" +
-                        "    version=\"2.0\">\n" +
-                        "    \n" +
-                        "    <xsl:import href=\"http://www.functx.com/functx.xsl\"/>\n" +
-                        "    \n" +
-                        "    <xsl:template match=\"/\">\n" +
-                        "        <xsl:value-of select=\"functx:replace-first('hello', 'he', 'ho')\"/>\n" +
-                        "    </xsl:template>\n" +
-                        "    \n" +
-                        "</xsl:stylesheet>";
-
-        final String xml = "<x>bonjourno</x>";
-
-        final String xquery = "transform:transform(" + xml + ", " + xslt + ", ())";
-
+    public void testImportNoScheme() throws XMLDBException {
+        final String xquery = getQuery(moduleLocation);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
-        assertNotNull(result);
-        assertEquals(1, result.getSize());
+        assertTransformationResult(result);
+    }
+
+    @Test
+    public void testImportXmldbScheme() throws XMLDBException {
+        final String xquery = getQuery("xmldb:" + moduleLocation);
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
+        assertTransformationResult(result);
+    }
+
+    @Test
+    public void testImportXmldbSchemeDoubleSlash() throws XMLDBException {
+        final String xquery = getQuery("xmldb://" + moduleLocation);
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
+        assertTransformationResult(result);
     }
 }
