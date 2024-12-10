@@ -38,18 +38,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ * Test transform:transform with an imported stylesheet from various
+ * locations
+ *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
+ * @author <a href="mailto:juri.leino@existsolutions.com">Juri Leino</a>
  */
-public class TransformFromPkgTest {
+public class ImportStylesheetTest {
 
-    private static final String moduleLocation = "/db/system/repo/functx-1.0.1/functx/functx.xsl";
-    private static final String inputXml = "<x>bonjourno</x>";
-    private static final String expectedOutput = "<r xmlns:functx=\"http://www.functx.com\">hello</r>";
+    private static final String XSL_DB_LOCATION = "/db/system/repo/functx-1.0.1/functx/functx.xsl";
+    private static final String INPUT_XML = "<in>bonjourno</in>";
+    private static final String EXPECTED_OUTPUT = "<out>hello</out>";
 
     private static Path getConfigFile() {
-        final ClassLoader loader = TransformFromPkgTest.class.getClassLoader();
+        final ClassLoader loader = ImportStylesheetTest.class.getClassLoader();
         final char separator = System.getProperty("file.separator").charAt(0);
-        final String packagePath = TransformFromPkgTest.class.getPackage().getName().replace('.', separator);
+        final String packagePath = ImportStylesheetTest.class.getPackage().getName().replace('.', separator);
 
         try {
             return Paths.get(loader.getResource(packagePath + separator + "conf.xml").toURI());
@@ -60,51 +64,72 @@ public class TransformFromPkgTest {
     }
 
     private static String getQuery(final String importLocation) {
-        final String xslt = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\n" +
+        final String xslt =
+                "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\n" +
                 "    xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
                 "    xmlns:functx=\"http://www.functx.com\"\n" +
-                "    exclude-result-prefixes=\"xs\"\n" +
+                "    exclude-result-prefixes=\"functx xs\"\n" +
                 "    version=\"2.0\">\n" +
-                "    \n" +
                 "    <xsl:import href=\"" + importLocation + "\"/>\n" +
-                "    \n" +
                 "    <xsl:template match=\"/\">\n" +
-                "      <r>" +
+                "      <out>\n" +
                 "        <xsl:value-of select=\"functx:replace-first(., 'bonjourno', 'hello')\"/>\n" +
-                "      </r>" +
+                "      </out>\n" +
                 "    </xsl:template>\n" +
-                "    \n" +
                 "</xsl:stylesheet>";
 
-        return "transform:transform(" + inputXml + ", " + xslt + ", ())";
+        return "transform:transform(" + INPUT_XML + ", " + xslt + ", ())";
     }
 
     private static void assertTransformationResult(ResourceSet result) throws XMLDBException {
         assertNotNull(result);
         assertEquals(1, result.getSize());
-        assertEquals(expectedOutput, result.getResource(0).getContent());
+        assertEquals(EXPECTED_OUTPUT, result.getResource(0).getContent());
     }
 
     @ClassRule
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(true, false, true, getConfigFile());
 
     @Test
-    public void testImportNoScheme() throws XMLDBException {
-        final String xquery = getQuery(moduleLocation);
+    public void fromRegisteredImportUri() throws XMLDBException {
+        final String xquery = getQuery("http://www.functx.com/functx.xsl");
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @Test
-    public void testImportXmldbScheme() throws XMLDBException {
-        final String xquery = getQuery("xmldb:" + moduleLocation);
+    public void fromDbLocationWithoutScheme() throws XMLDBException {
+        final String xquery = getQuery(XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
 
     @Test
-    public void testImportXmldbSchemeDoubleSlash() throws XMLDBException {
-        final String xquery = getQuery("xmldb://" + moduleLocation);
+    public void fromDbLocationWithXmldbScheme() throws XMLDBException {
+        final String xquery = getQuery("xmldb:" + XSL_DB_LOCATION);
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
+        assertTransformationResult(result);
+    }
+
+    @Test
+    public void fromDbLocationWithXmldbSchemeDoubleSlash() throws XMLDBException {
+        final String xquery = getQuery("xmldb://" + XSL_DB_LOCATION);
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
+        assertTransformationResult(result);
+    }
+
+    /** This test fails at the moment with "unknown protocol: exist" */
+    @Test
+    @Ignore
+    public void fromDbLocationWithExistScheme() throws XMLDBException {
+        final String xquery = getQuery("exist:" + XSL_DB_LOCATION);
+        final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
+        assertTransformationResult(result);
+    }
+
+    @Test
+    public void fromDbLocationWithExistSchemeDoubleSlash() throws XMLDBException {
+        final String xquery = getQuery("exist://" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);
         assertTransformationResult(result);
     }
