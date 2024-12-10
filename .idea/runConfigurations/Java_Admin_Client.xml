@@ -5,7 +5,7 @@
     <option name="MAIN_CLASS_NAME" value="org.exist.start.Main" />
     <module name="exist-distribution" />
     <option name="PROGRAM_PARAMETERS" value="client" />
-    <option name="VM_PARAMETERS" value="-Dexist.home=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir -Dexist.configurationFile=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/conf.xml -Dlog4j.configurationFile=$MODULE_DIR$/target/exist-distribution-6.3.0-SNAPSHOT-dir/etc/log4j2.xml -Dorg.exist.db-connection.files=$MODULE_DIR$/target/data -Dorg.exist.db-connection.recovery.journal-dir=$MODULE_DIR$/target/data -Dexist.ensurelocking.disabled=true -Dfile.encoding=UTF-8" />
+    <option name="VM_PARAMETERS" value="-Dexist.home=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir -Dexist.configurationFile=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/conf.xml -Dlog4j.configurationFile=$MODULE_DIR$/target/exist-distribution-6.4.0-SNAPSHOT-dir/etc/log4j2.xml -Dorg.exist.db-connection.files=$MODULE_DIR$/target/data -Dorg.exist.db-connection.recovery.journal-dir=$MODULE_DIR$/target/data -Dexist.ensurelocking.disabled=true -Dfile.encoding=UTF-8" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
