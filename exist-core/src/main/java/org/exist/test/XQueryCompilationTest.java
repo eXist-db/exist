@@ -33,17 +33,22 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
 
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
+import static com.ibm.icu.impl.Assert.fail;
 
 /**
  * Base class for test suites testing XQuery compilation
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
 public abstract class XQueryCompilationTest {
-    @ClassRule
-    public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
+    @ClassRule
+    public static ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
     protected static Either<XPathException, CompiledXQuery> compileQuery(final String string) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = server.getBrokerPool();
         final XQuery xqueryService = pool.getXQueryService();

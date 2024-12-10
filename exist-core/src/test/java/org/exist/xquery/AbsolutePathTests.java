@@ -27,6 +27,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.test.XQueryCompilationTest;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.junit.Test;
 
 import javax.xml.transform.Source;
@@ -133,4 +134,5 @@ public class AbsolutePathTests extends XQueryCompilationTest {
 
         assertThatXQResult(actual, equalTo(expected));
     }
+
 }
