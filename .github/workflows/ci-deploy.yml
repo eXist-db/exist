@@ -5,6 +5,7 @@ jobs:
     name: Build and Test Images
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
+    # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.base_ref ==  'develop' || github.base_ref ==  'master'
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +16,10 @@ jobs:
         with:
           distribution: liberica
           java-version: '17'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64 
       - name: Make buildkit default
         uses: docker/setup-buildx-action@v3
         id: buildx
@@ -27,7 +32,11 @@ jobs:
           key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: deploy-${{ runner.os }}-maven
       - name: Install bats
-        run: sudo apt-get install bats    
+        run: sudo apt-get install bats
+        # Hack around #5450
+      - name: pull base image
+        run: |
+          docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java17-debian12:latest      
       - name: Build images
         run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
       - name: Check local images
