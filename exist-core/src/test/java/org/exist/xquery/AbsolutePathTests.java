@@ -133,4 +133,5 @@ public class AbsolutePathTests extends XQueryCompilationTest {
 
         assertThatXQResult(actual, equalTo(expected));
     }
+
 }
