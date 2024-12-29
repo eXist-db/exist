@@ -52,6 +52,9 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!--
+            Enforce transient dependency to an explicit version.
+        -->
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
