@@ -229,7 +229,8 @@ public class ForExpr extends BindingExpression {
         context.proceed(this);
         context.setContextSequencePosition(p, in);
         if (positionalVariable != null) {
-            at.setValue(new IntegerValue(this, p + 1));
+            final int position = contextItem == AtomicValue.EMPTY_VALUE ? 0 : p + 1;
+            at.setValue(new IntegerValue(this, position));
         }
         final Sequence contextSequence = contextItem.toSequence();
         // set variable value to current item

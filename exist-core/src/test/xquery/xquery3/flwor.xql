@@ -156,3 +156,32 @@ function flwor:allowing-empty($n as xs:integer) {
     return concat("[", $x, "]")
 };
 
+declare
+    %test:args(4)
+    %test:assertEquals(":0")
+    %test:args(2)
+    %test:assertEquals("b:1")
+    %test:args(1)
+    %test:assertEquals("a:1")
+    %test:args(5)
+    %test:assertEquals(":0")
+function flwor:allowing-empty-fix($n as xs:integer) {
+    let $sequence := ("a", "b", "c")[$n]
+    for $x allowing empty at $y in $sequence
+    return $x || ":" || $y
+};
+
+declare
+    %test:args(4)
+    %test:assertEquals("")
+    %test:args(2)
+    %test:assertEquals("b:1")
+function flwor:no-allow-empty($n as xs:integer) {
+    let $sequence := ("a", "b", "c")[$n]
+    return
+        if (empty($sequence)) then
+            ""
+        else
+            for $x at $y in $sequence
+            return $x || ":" || $y
+};
