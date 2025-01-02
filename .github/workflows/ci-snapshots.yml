@@ -1,0 +1,30 @@
+name: Publish Snaphots to Github Packages
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  publish-snapshots:
+    name: Deploy Snapshots
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: liberica
+          java-version: '17'
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: deploy-${{ runner.os }}-maven
+      - name: Deploy SNAPSHOT maven artefacts
+        run: mvn -V -B -q -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean deploy
