@@ -21,7 +21,7 @@
 #
 
 # Install latest JRE 8 in Debian bookworm (which is the base of gcr.io/distroless/java)
-FROM maven:3-eclipse-temurin-8 as updated-jre
+# FROM maven:3-eclipse-temurin-8 as updated-jre
 
 # RUN apt-get update && apt-get -y dist-upgrade
 # RUN apt install -y wget apt-transport-https gpg
@@ -32,7 +32,7 @@ FROM maven:3-eclipse-temurin-8 as updated-jre
 FROM gcr.io/distroless/java-base-debian12:latest
 
 ENV JAVA_HOME=/opt/java/openjdk
-COPY --from=updated-jre $JAVA_HOME $JAVA_HOME
+COPY --from=eclipse-temurin:8-jre $JAVA_HOME $JAVA_HOME
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Copy eXist-db
