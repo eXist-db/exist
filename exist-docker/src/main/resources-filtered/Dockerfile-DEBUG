@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use JDK 8 in Debian bookworm (as our production image gcr.io/distroless/ is based on Debian 12 with just a JRE)
+# Use JDK 8 in Debian (as our production image gcr.io/distroless/ is based on Debian with just a JRE)
 FROM debian:bookworm-slim as updated-jre
 
 RUN apt-get update && apt-get -y dist-upgrade
