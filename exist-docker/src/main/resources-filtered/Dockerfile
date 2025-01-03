@@ -29,11 +29,11 @@
 # RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
 # RUN apt-get update && apt-get install -y temurin-8-jre
 
-FROM gcr.io/distroless/java-base-debian12:latest
+FROM gcr.io/distroless/java-base-debian12
 
 ENV JAVA_HOME=/opt/java/openjdk
 COPY --from=eclipse-temurin:8-jre $JAVA_HOME $JAVA_HOME
-ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV PATH $JAVA_HOME/bin:$PATH
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
