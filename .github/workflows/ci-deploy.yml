@@ -65,12 +65,12 @@ jobs:
         run: mvn -q -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         working-directory: ./exist-docker
       # NOTE (DP): This is for debugging, publishes an experimental image from inside PRs against develop
-      - name: Publish experimental images
-        if: github.base_ref == 'develop-6.x.x'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: mvn -q -Ddocker.tag=experimental6 -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
-        working-directory: ./exist-docker  
+      # - name: Publish experimental images
+      #   if: github.base_ref == 'develop-6.x.x'
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      #   run: mvn -q -Ddocker.tag=experimental6 -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+      #   working-directory: ./exist-docker  
       
