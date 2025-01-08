@@ -1177,6 +1177,17 @@
     </reporting>
 
     <repositories>
+            <repository>
+                <id>github</id>
+                <name>GitHub Registry for Snapshots</name>
+                <url>https://maven.pkg.github.com/eXist-db/exist</url>
+                <releases>
+                    <enabled>false</enabled>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+            </repository>
         <repository>
             <id>exist-db-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
@@ -1228,13 +1239,24 @@
                 <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 
     <distributionManagement>
         <snapshotRepository>
-            <id>exist-db-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>

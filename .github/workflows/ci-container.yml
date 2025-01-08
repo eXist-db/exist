@@ -1,8 +1,8 @@
-name: Deploy
+name: Publish Container
 on: [push, pull_request]
 jobs:
   build:
-    name: Build and Test Images
+    name: Test and Publish Container Images
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
     # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
@@ -77,4 +77,4 @@ jobs:
       #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       #   run: mvn -q -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
       #   working-directory: ./exist-docker  
-      
+
