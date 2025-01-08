@@ -20,32 +20,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Install latest JRE 8 in Debian Stretch (which is the base of gcr.io/distroless/java:8)
-FROM debian:stretch-slim as updated-jre
-RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
-RUN echo "deb http://archive.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
-RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y openjdk-8-jre-headless
-RUN apt-get install -y expat fontconfig     # Install tools required by FOP
+# Install latest JRE 8 in Debian bookworm (which is the base of gcr.io/distroless/java)
+# FROM maven:3-eclipse-temurin-8 as updated-jre
 
-FROM gcr.io/distroless/java:8
+# RUN apt-get update && apt-get -y dist-upgrade
+# RUN apt install -y wget apt-transport-https gpg
+# RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+# RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+# RUN apt-get update && apt-get install -y temurin-8-jre
 
-# Copy over updated JRE from Debian Stretch
-COPY --from=updated-jre /etc/java-8-openjdk /etc/java-8-openjdk
-COPY --from=updated-jre /usr/lib/jvm/java-8-openjdk-amd64 /usr/lib/jvm/java-8-openjdk-amd64
-COPY --from=updated-jre /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64 /usr/share/gdb/auto-load/usr/lib/jvm/java-8-openjdk-amd64
+FROM gcr.io/distroless/java-base-debian12
 
-# Copy over dependencies for Apache FOP, missing from GCR's JRE
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfreetype.so.6 /usr/lib/x86_64-linux-gnu/libfreetype.so.6
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/liblcms2.so.2 /usr/lib/x86_64-linux-gnu/liblcms2.so.2
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libpng16.so.16 /usr/lib/x86_64-linux-gnu/libpng16.so.16
-COPY --from=updated-jre /usr/lib/x86_64-linux-gnu/libfontconfig.so.1 /usr/lib/x86_64-linux-gnu/libfontconfig.so.1
-
-# Copy dependencies for Apache Batik (used by Apache FOP to handle SVG rendering)
-COPY --from=updated-jre /etc/fonts /etc/fonts
-COPY --from=updated-jre /lib/x86_64-linux-gnu/libexpat.so.1 /lib/x86_64-linux-gnu/libexpat.so.1
-COPY --from=updated-jre /usr/share/fontconfig /usr/share/fontconfig
-COPY --from=updated-jre /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu
+ENV JAVA_HOME=/opt/java/openjdk
+COPY --from=eclipse-temurin:8-jre $JAVA_HOME $JAVA_HOME
+ENV PATH $JAVA_HOME/bin:$PATH
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
@@ -73,10 +61,10 @@ ARG CACHE_MEM
 ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 
-ENV EXIST_HOME "/exist"
+ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-ENV JAVA_TOOL_OPTIONS \
+ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \
@@ -91,7 +79,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseStringDeduplication \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
-  -XX:+ExitOnOutOfMemoryError
+  -XX:+ExitOnOutOfMemoryError"
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
