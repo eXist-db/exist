@@ -41,9 +41,9 @@ import static com.evolvedbinary.j8fu.Either.Right;
  * @author <a href="mailto:juri@existsolutions.com">Juri Leino</a>
  */
 public abstract class XQueryCompilationTest {
+
     @ClassRule
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
-
     protected static Either<XPathException, CompiledXQuery> compileQuery(final String string) throws EXistException, PermissionDeniedException {
         final BrokerPool pool = server.getBrokerPool();
         final XQuery xqueryService = pool.getXQueryService();
