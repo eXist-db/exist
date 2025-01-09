@@ -52,13 +52,15 @@ public class XsltURIResolverHelper {
             @Nullable final URIResolver defaultResolver, @Nullable final String base, final boolean avoidSelf) {
         final List<URIResolver> resolvers = new ArrayList<>();
 
+        // EXpath Pkg resolver
+        // This resolver needs to be the first one to prevent
+        // HTTP requests for registered package names (e.g. http://www.functx.com/functx.xsl)
+        brokerPool.getExpathRepo().map(repo -> resolvers.add(new PkgXsltModuleURIResolver(repo)));
+
         if (base != null) {
             // database resolver
-            resolvers.add(new EXistURISchemeURIResolver(new EXistURIResolver(brokerPool, base)));
+            resolvers.add(new EXistURIResolver(brokerPool, base));
         }
-
-        // EXpath Pkg resolver
-        brokerPool.getExpathRepo().map(repo -> resolvers.add(new PkgXsltModuleURIResolver(repo)));
 
         // default resolver
         if (defaultResolver != null) {
