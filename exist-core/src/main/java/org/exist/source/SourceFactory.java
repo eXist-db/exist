@@ -111,7 +111,7 @@ public class SourceFactory {
                 && ((location.startsWith("/db") && !Files.exists(Paths.get(firstPathSegment(location))))
                 || (contextPath != null && contextPath.startsWith("/db") && !Files.exists(Paths.get(firstPathSegment(contextPath)))))) {
             final XmldbURI pathUri;
-            if (contextPath == null) {
+            if (contextPath == null || ".".equals(contextPath)) {
                 pathUri = XmldbURI.create(location);
             } else {
                 pathUri = XmldbURI.create(contextPath).append(location);
