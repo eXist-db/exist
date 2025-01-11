@@ -224,7 +224,7 @@ public class CollectionConfigurationValidationModeTest {
             fail("should have failed");
         } catch (XMLDBException ex) {
             String msg = ex.getMessage();
-            assertTrue(msg.contains("schema_reference.4: Failed to read schema document"));
+            assertTrue(msg.contains("cvc-elt.1.a: Cannot find the declaration of element 'xsd:schema'"));
         }
     }
 
