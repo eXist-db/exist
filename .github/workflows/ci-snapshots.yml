@@ -20,6 +20,8 @@ jobs:
         with:
           distribution: liberica
           java-version: '17'
+          server-id: github
+          settings-path: ${{ github.workspace }}
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -27,4 +29,10 @@ jobs:
           key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: deploy-${{ runner.os }}-maven
       - name: Deploy SNAPSHOT maven artefacts
-        run: mvn -V -B -q -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn -V -B -q -DskipTests -Ddependency-check.skip=true \
+          -s $GITHUB_WORKSPACE/settings.xml \
+          -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
+          clean deploy
