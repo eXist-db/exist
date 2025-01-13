@@ -120,7 +120,7 @@
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
         <nekohtml.version>2.1.3</nekohtml.version>
         <saxon.version>9.9.1-8</saxon.version>
-        <xmlresolver.version>5.2.3</xmlresolver.version>
+        <xmlresolver.version>6.0.11</xmlresolver.version>
         <xmlunit.version>2.10.0</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.platform.version>1.11.4</junit.platform.version>
@@ -855,6 +855,7 @@
                             <java.locale.providers>JRE,CLDR,SPI</java.locale.providers>
                             <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                             <log4j2.disableJmx>false</log4j2.disableJmx>
+                            <xml.catalog.alwaysResolve>false</xml.catalog.alwaysResolve>
                         </systemPropertyVariables>
                     </configuration>
                 </plugin>

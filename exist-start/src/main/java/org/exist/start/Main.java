@@ -66,6 +66,7 @@ public class Main {
     public static final String STANDARD_ENABLED_JETTY_CONFIGS = "standard.enabled-jetty-configs";
     public static final String STANDALONE_ENABLED_JETTY_CONFIGS = "standalone.enabled-jetty-configs";
     public static final String PROP_LOG4J_DISABLEJMX = "log4j2.disableJmx";
+    public static final String PROP_XML_CATALOG_ALWAYS_RESOLVE = "xml.catalog.alwaysResolve";
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
@@ -84,7 +85,6 @@ public class Main {
     public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
     public static final String ENV_EXIST_HOME = "EXIST_HOME";
     public static final String ENV_JETTY_HOME = "JETTY_HOME";
-
 
     private static Main exist;
 
@@ -273,6 +273,9 @@ public class Main {
 
         // Enable JXM support log4j since v2.24.0 [2024]
         System.setProperty(PROP_LOG4J_DISABLEJMX, "false");
+
+        // Modify behavior XML resolver for > 5.x [2024]
+        System.setProperty(PROP_XML_CATALOG_ALWAYS_RESOLVE,"false");
 
         // clean up tempdir for Jetty...
         try {
