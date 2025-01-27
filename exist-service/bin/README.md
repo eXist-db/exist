@@ -3,8 +3,8 @@
 ## Windows Binary
 The Windows Binary is taken directly from the native binaries for Windows package provided by the Apache Commons Daemon project. For example:
 ```
-wget https://dlcdn.apache.org/commons/daemon/binaries/windows/commons-daemon-1.3.3-bin-windows.zip
-unzip commons-daemon-1.3.3-bin-windows.zip
+wget https://dlcdn.apache.org/commons/daemon/binaries/windows/commons-daemon-1.4.1-bin-windows.zip
+unzip commons-daemon-1.4.1-bin-windows.zip
 ```
 
 ## macOS Binary
@@ -14,9 +14,10 @@ It is compiled for a minimum version of 10.13 of macOS so as to provide some bac
 For example:
 
 ```bash
-wget https://dlcdn.apache.org/commons/daemon/source/commons-daemon-1.3.3-native-src.tar.gz
-tar zxvf commons-daemon-1.3.3-native-src.tar.gz
-cd commons-daemon-1.3.3-native-src/unix
+wget https://dlcdn.apache.org/commons/daemon/source/commons-daemon-1.4.1-native-src.tar.gz
+tar zxvf commons-daemon-1.4.1-native-src.tar.gz
+
+cd commons-daemon-1.4.1-native-src/unix
 export CFLAGS="-mmacosx-version-min=10.13 -arch x86_64 -arch arm64"
 export LDFLAGS="-mmacosx-version-min=10.13 -arch x86_64 -arch arm64"
 ./configure
@@ -30,14 +31,26 @@ It is compiled for a minimum glibc of 2.17 so as to provide some backwards compa
 CentOS 7 provides a glibc 2.17. If you have Docker, you can build it using the following example:
 
 ```bash
-wget https://dlcdn.apache.org/commons/daemon/source/commons-daemon-1.3.3-native-src.tar.gz
-tar zxvf commons-daemon-1.3.3-native-src.tar.gz
-docker run -it -v /tmp/commons-daemon-1.3.3-native-src/unix:/commons-daemon-src centos:7
+wget https://dlcdn.apache.org/commons/daemon/source/commons-daemon-1.4.1-native-src.tar.gz
+tar zxvf commons-daemon-1.4.1-native-src.tar.gz
+
+docker run -it -v ./commons-daemon-1.4.1-native-src/unix:/commons-daemon-1.4.1-native-src centos:7
+
+sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+
 yum install -y gcc make libcap-devel java-1.8.0-openjdk-headless java-1.8.0-openjdk-devel
+
 cd /commons-daemon-src
 export CFLAGS=-m64
 export LDFLAGS=-m64
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk
 ./configure
 make
+```
+
+For building a linux binary on MacOs Mx processors run docker like
+
+```
+docker run -it --platform linux/amd64 -v ./commons-daemon-1.4.1-native-src/unix:/commons-daemon-1.4.1-native-src centos:7
 ```
