@@ -502,7 +502,7 @@
             <dependency>
                 <groupId>io.lacuna</groupId>
                 <artifactId>bifurcan</artifactId>
-                <version>0.2.0-alpha7</version>
+                <version>0.2.0-rc1</version>
             </dependency>
 
             <dependency>
