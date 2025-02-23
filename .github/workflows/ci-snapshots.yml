@@ -15,11 +15,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: liberica
-          java-version: '17'
+          java-version: '21'
           server-id: github
           settings-path: ${{ github.workspace }}
       - name: Cache Maven packages
