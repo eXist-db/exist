@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-FROM gcr.io/distroless/java17-debian12:latest
+FROM gcr.io/distroless/java21-debian12:latest
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE

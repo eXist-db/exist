@@ -17,7 +17,7 @@ The images are based on Google Cloud Platform's ["Distroless" Docker Images](htt
 *   [Docker](https://www.docker.com): `18-stable`
 ### For building
 *   [maven](https://maven.apache.org/): `^3.6.0`
-*   [java](https://www.java.com/): `17`
+*   [java](https://www.java.com/): `21`
 *   [bats](https://github.com/bats-core/bats-core): `^1.1.0` (for testing)
 
 ## How to use
