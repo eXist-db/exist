@@ -21,12 +21,23 @@
  */
 package org.exist.collections.triggers;
 
+import org.exist.storage.txn.Txn;
+import org.exist.storage.txn.TxnListener;
 import org.exist.xmldb.XmldbURI;
 
 import javax.annotation.Nullable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.WeakHashMap;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Avoid infinite recursions in Triggers by preventing the same trigger
@@ -35,278 +46,258 @@ import java.util.Iterator;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class TriggerStatePerThread {
-	
-	private final static ThreadLocal<Deque<TriggerState>> THREAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
+    private static final Map<Thread, TriggerStates> TRIGGER_STATES = Collections.synchronizedMap(new WeakHashMap<>());
 
-	public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
-		final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
+    public static void setAndTest(final Txn txn, final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
+        final TriggerStates states = getStates(txn);
 
-		if (states.isEmpty()) {
-			if (triggerPhase != TriggerPhase.BEFORE) {
-				throw new IllegalStateException("The Before phase of a trigger must occur before the After phase");
-			}
-			states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
-			return;
-		}
+        if (states.isEmpty()) {
+            if (triggerPhase != TriggerPhase.BEFORE) {
+                throw new IllegalStateException("The Before phase of a trigger must occur before the After phase");
+            }
+            states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst, false));
+            return;
+        }
 
-		TriggerState prevState = states.peekFirst();
+        TriggerState prevState = states.peekFirst();
 
-		// is the new state the same as the previous state (excluding the phase)
-		if (prevState.equalsIgnoringPhase(trigger, triggerEvent, src, dst)) {
+        // is the new state the same as the previous state (excluding the phase)
+        if (prevState.equalsIgnoringPhase(trigger, triggerEvent, src, dst)) {
 
-			// is this the after phase (i.e. matching completion) of a previous non-cyclic before phase?
-			if (triggerPhase == TriggerPhase.AFTER) {
+            // is this the after phase (i.e. matching completion) of a previous non-cyclic before phase?
+            if (triggerPhase == TriggerPhase.AFTER) {
 
-				int skipBefores = 0;
+                int skipBefores = 0;
 
-				for (final Iterator<TriggerState> it = states.iterator(); it.hasNext(); ) {
-					prevState = it.next();
+                for (final Iterator<TriggerState> it = states.iterator(); it.hasNext(); ) {
+                    prevState = it.next();
 
-					// travel up, first "Before" we encounter - we should check if (a) that we complete it, and/or (b) is non-cyclic (if not we are also cyclic)
-					if (prevState.triggerPhase == TriggerPhase.BEFORE) {
+                    // travel up, first "Before" we encounter - we should check if (a) that we complete it, and/or (b) is non-cyclic (if not we are also cyclic)
+                    if (prevState.triggerPhase == TriggerPhase.BEFORE) {
 
-						if (skipBefores > 0) {
-							skipBefores--;
+                        if (skipBefores > 0) {
+                            skipBefores--;
 
-						} else {
-							if (prevState.isCompletedBy(trigger, triggerPhase, triggerEvent, src, dst)) {
-								if (prevState instanceof PossibleCyclicTriggerState) {
-									// if the Before phase is a PossibleCyclicTriggerState then this completing After phase must also be a PossibleCyclicTriggerState
-									final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
-									states.addFirst(newState);
+                        } else {
+                            if (prevState.isCompletedBy(trigger, triggerPhase, triggerEvent, src, dst)) {
+                                if (prevState.possiblyCyclic()) {
+                                    // if the Before phase is a PossibleCyclicTriggerState then this completing After phase must also be a PossibleCyclicTriggerState
+                                    final TriggerState newState = new TriggerState(trigger, triggerPhase, triggerEvent, src, dst, true);
+                                    states.addFirst(newState);
 
-									throw new CyclicTriggerException("Detected Matching possible cyclic trigger event for After phase (" + newState + ") of previous Before phase (" + prevState + ")");
+                                    throw new CyclicTriggerException("Detected Matching possible cyclic trigger event for After phase (" + newState + ") of previous Before phase (" + prevState + ")");
 
-								} else {
-									// if the Before Phase is NOT a PossibleCyclicTriggerState, then neither is this completing After phase...
-									states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
-									return;
-								}
+                                } else {
+                                    // if the Before Phase is NOT a PossibleCyclicTriggerState, then neither is this completing After phase...
+                                    states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst, false));
+                                    return;
+                                }
 
-							} else {
-								throw new IllegalStateException("Cannot interleave Trigger states");
-							}
-						}
-					} else if (prevState.triggerPhase == TriggerPhase.AFTER) {
-						skipBefores++;
-					}
-				}
+                            } else {
+                                throw new IllegalStateException("Cannot interleave Trigger states");
+                            }
+                        }
+                    } else if (prevState.triggerPhase == TriggerPhase.AFTER) {
+                        skipBefores++;
+                    }
+                }
 
-				throw new IllegalStateException("Could not find a matching Before phase for After phase");
+                throw new IllegalStateException("Could not find a matching Before phase for After phase");
 
-			} else {
-				// it's a cyclic exception!
-				final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
-				states.addFirst(newState);
+            } else {
+                // it's a cyclic exception!
+                final TriggerState newState = new TriggerState(trigger, triggerPhase, triggerEvent, src, dst, true);
+                states.addFirst(newState);
 
-				throw new CyclicTriggerException("Detected possible cyclic trigger events: " + newState);
-			}
-		}
+                throw new CyclicTriggerException("Detected possible cyclic trigger events: " + newState);
+            }
+        }
 
-		states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
-	}
+        states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst, false));
+    }
 
-	public static class CyclicTriggerException extends Exception {
-		public CyclicTriggerException(final String message) {
-			super(message);
-		}
-	}
+    public static class CyclicTriggerException extends Exception {
+        public CyclicTriggerException(final String message) {
+            super(message);
+        }
+    }
 
-	public static void clearIfFinished(final TriggerPhase phase) {
-		if (phase == TriggerPhase.AFTER) {
+    public static void clearIfFinished(final Txn txn, final TriggerPhase phase) {
+        if (phase == TriggerPhase.AFTER) {
 
-			int depth = 0;
-			final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();
-			for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
-				final TriggerState state = it.next();
-				switch (state.triggerPhase) {
-					case BEFORE:
-						depth++;
-						break;
-					case AFTER:
-						depth--;
-						break;
-					default:
-						throw new IllegalStateException("Unknown phase: " + state.triggerPhase + "for trigger state: " + state);
-				}
-			}
+            int depth = 0;
+            final TriggerStates states = getStates(txn);
+            for (final Iterator<TriggerState> it = states.descendingIterator(); it.hasNext(); ) {
+                final TriggerState state = it.next();
+                switch (state.triggerPhase) {
+                    case BEFORE:
+                        depth++;
+                        break;
+                    case AFTER:
+                        depth--;
+                        break;
+                    default:
+                        throw new IllegalStateException("Unknown phase: " + state.triggerPhase + "for trigger state: " + state);
+                }
+            }
 
-			if (depth == 0) {
-				clear();
-			}
-		}
-	}
+            if (depth == 0) {
+                clear(txn);
+            }
+        }
+    }
 
-	public static void clear() {
-		THREAD_LOCAL_STATES.remove();
-	}
+    public static int keys() {
+        return TRIGGER_STATES.size();
+    }
 
-	public static boolean isEmpty() {
-		return THREAD_LOCAL_STATES.get().isEmpty();
-	}
+    public static void clearAll() {
+        TRIGGER_STATES.clear();
+    }
 
-	private static class PossibleCyclicTriggerState extends TriggerState {
-		public PossibleCyclicTriggerState(final TriggerState triggerState) {
-			super(triggerState.trigger, triggerState.triggerPhase, triggerState.triggerEvent, triggerState.src, triggerState.dst);
-		}
+    public static void clear(final Txn txn) {
+        TRIGGER_STATES.remove(Thread.currentThread());
+    }
 
-		public PossibleCyclicTriggerState(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) {
-			super(trigger, triggerPhase, triggerEvent, src, dst);
-		}
-	}
+    public static boolean isEmpty(final Txn txn) {
+        return getStates(txn).isEmpty();
+    }
 
-	private static class TriggerState {
-		private final Trigger trigger;
-		private final TriggerPhase triggerPhase;
-		private final TriggerEvent triggerEvent;
-		private final XmldbURI src;
-		private final @Nullable XmldbURI dst;
+    public static void dumpTriggerStates() {
+        TRIGGER_STATES.forEach((k, s) -> System.err.format("key: %s, size: %s", k, s.size()).println());
+    }
 
-		public TriggerState(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) {
-			this.trigger = trigger;
-			this.triggerPhase = triggerPhase;
-			this.triggerEvent = triggerEvent;
-			this.src = src;
-			this.dst = dst;
-		}
+    public static void forEach(BiConsumer<Thread, TriggerStates> action) {
+        TRIGGER_STATES.forEach(action);
+    }
 
-		@Override
-		public String toString() {
-			final StringBuilder builder = new StringBuilder();
-			builder.append(triggerPhase);
-			builder.append(' ');
-			builder.append(triggerEvent);
-			builder.append('(');
-			if (triggerPhase == TriggerPhase.AFTER && dst != null) {
-				builder.append(dst);
-				builder.append(", ");
-			}
-			builder.append(src);
-			if (triggerPhase == TriggerPhase.BEFORE && dst != null) {
-				builder.append(", ");
-				builder.append(dst);
-			}
-			builder.append(')');
-			builder.append(": ");
-			builder.append(trigger.getClass().getSimpleName());
-			if (trigger instanceof XQueryTrigger) {
-				final String urlQuery = ((XQueryTrigger) trigger).getUrlQuery();
-				if (urlQuery != null && !urlQuery.isEmpty()) {
-					builder.append('(');
-					builder.append(urlQuery);
-					builder.append(')');
-				}
-			}
-			return builder.toString();
-		}
+    private static TriggerStates getStates(final Txn txn) {
+        return TRIGGER_STATES.computeIfAbsent(Thread.currentThread(), key -> new TriggerStates());
+    }
 
-		@Override
-		public boolean equals(final Object o) {
-			return equals(o, false);
-		}
+    private static TriggerStates initStates(final Txn txn) {
+        txn.registerListener(new TransactionCleanUp(txn, TriggerStatePerThread::clear));
+        return new TriggerStates();
+    }
 
-		public boolean equalsIgnoringPhase(final Object o) {
-			return equals(o, true);
-		}
+    public record TransactionCleanUp(Txn txn, Consumer<Txn> consumer) implements TxnListener {
+        @Override
+        public void commit() {
+            consumer.accept(txn);
+        }
 
-		private boolean equals(final Object o, final boolean ignorePhase) {
-			if (this == o) {
-				return true;
-			}
+        @Override
+        public void abort() {
+            consumer.accept(txn);
+        }
+    }
 
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
+    public static final class TriggerStates extends ArrayDeque<TriggerState> {
+    }
 
-			final TriggerState that = (TriggerState) o;
+    public static final class TriggerStatesX extends WeakReference<Deque<TriggerState>> {
+        public TriggerStatesX() {
+            super(new ArrayDeque<>());
+        }
 
-			if (!trigger.equals(that.trigger)) {
-				return false;
-			}
+        Optional<Deque<TriggerState>> states() {
+            return Optional.ofNullable(get());
+        }
 
-			if (!ignorePhase) {
-				if (triggerPhase != that.triggerPhase) {
-					return false;
-				}
-			}
+        public Iterator<TriggerState> descendingIterator() {
+            return states().map(Deque::descendingIterator).orElseGet(Collections::emptyIterator);
+        }
 
-			if (triggerEvent != that.triggerEvent) {
-				return false;
-			}
+        public boolean isEmpty() {
+            return states().map(Deque::isEmpty).orElse(true);
+        }
 
-			if (!src.equals(that.src)) {
-				return false;
-			}
+        public int size() {
+            return states().map(Deque::size).orElse(0);
+        }
 
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
-		}
+        public Iterator<TriggerState> iterator() {
+            return states().map(Deque::iterator).orElseGet(Collections::emptyIterator);
+        }
 
-		private boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
-			if (!trigger.equals(otherTrigger)) {
-				return false;
-			}
+        public TriggerState peekFirst() {
+            return states().map(Deque::peekFirst).orElse(null);
+        }
 
-			if (triggerEvent != otherTriggerEvent) {
-				return false;
-			}
+        public void addFirst(TriggerState newState) {
+            states().ifPresent(states -> states.addFirst(newState));
+        }
+    }
 
-			if (!src.equals(otherSrc)) {
-				return false;
-			}
+    public record TriggerState(Trigger trigger, TriggerPhase triggerPhase, TriggerEvent triggerEvent, XmldbURI src,
+                               @Nullable XmldbURI dst, boolean possiblyCyclic) {
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
-		}
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append(triggerPhase);
+            builder.append(' ');
+            builder.append(triggerEvent);
+            builder.append('(');
+            if (triggerPhase == TriggerPhase.AFTER && dst != null) {
+                builder.append(dst);
+                builder.append(", ");
+            }
+            builder.append(src);
+            if (triggerPhase == TriggerPhase.BEFORE && dst != null) {
+                builder.append(", ");
+                builder.append(dst);
+            }
+            builder.append(')');
+            builder.append(": ");
+            builder.append(trigger.getClass().getSimpleName());
+            if (trigger instanceof XQueryTrigger queryTrigger) {
+                final String urlQuery = queryTrigger.getUrlQuery();
+                if (urlQuery != null && !urlQuery.isEmpty()) {
+                    builder.append('(');
+                    builder.append(urlQuery);
+                    builder.append(')');
+                }
+            }
+            return builder.toString();
+        }
 
-		public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
-			if (this.triggerPhase != TriggerPhase.BEFORE
-					|| otherTriggerPhase != TriggerPhase.AFTER) {
-				return false;
-			}
 
-			if (!trigger.equals(otherTrigger)) {
-				return false;
-			}
+        boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
+            if (!trigger.equals(otherTrigger)) {
+                return false;
+            }
 
-			if (triggerEvent != otherTriggerEvent) {
-				return false;
-			}
+            if (triggerEvent != otherTriggerEvent) {
+                return false;
+            }
 
-			if (!src.equals(otherSrc)) {
-				return false;
-			}
+            if (!src.equals(otherSrc)) {
+                return false;
+            }
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
-		}
+            return Objects.equals(dst, otherDst);
+        }
 
-		public boolean completes(final Object o) {
-			if (this == o) {
-				return false;
-			}
+        public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
+            if (this.triggerPhase != TriggerPhase.BEFORE
+                    || otherTriggerPhase != TriggerPhase.AFTER) {
+                return false;
+            }
 
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
+            if (!trigger.equals(otherTrigger)) {
+                return false;
+            }
 
-			final TriggerState that = (TriggerState) o;
+            if (triggerEvent != otherTriggerEvent) {
+                return false;
+            }
 
-			if (this.triggerPhase != TriggerPhase.AFTER
-					|| that.triggerPhase != TriggerPhase.BEFORE) {
-				return false;
-			}
+            if (!src.equals(otherSrc)) {
+                return false;
+            }
 
-			if (!trigger.equals(that.trigger)) {
-				return false;
-			}
-
-			if (triggerEvent != that.triggerEvent) {
-				return false;
-			}
-
-			if (!src.equals(that.src)) {
-				return false;
-			}
-
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
-		}
-	}
+            return Objects.equals(dst, otherDst);
+        }
+    }
 }
