@@ -70,7 +70,6 @@ public class Main {
 
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
-    static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
 
     public static final String CONFIG_DIR_NAME = "etc";
 

@@ -38,10 +38,8 @@ import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
 import org.exist.start.Main;
-import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.*;
-import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
 import org.xmldb.api.DatabaseManager;
@@ -116,11 +114,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         final JettyStart start = new JettyStart();
         start.run(args, null);
-    }
-
-    public JettyStart() {
-        // Additional checks XML libs @@@@
-        XmlLibraryChecker.check();
     }
 
     private static void consoleOut(final String msg) {

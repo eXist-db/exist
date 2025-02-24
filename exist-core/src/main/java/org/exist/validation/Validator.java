@@ -84,12 +84,6 @@ public class Validator {
         this.brokerPool = brokerPool;
         this.subject = subject;
 
-        // Check xerces version        
-        final StringBuilder xmlLibMessage = new StringBuilder();
-        if (!XmlLibraryChecker.hasValidParser(xmlLibMessage)) {
-            logger.error(xmlLibMessage);
-        }
-
         final Configuration config = brokerPool.getConfiguration();
 
         // setup grammar brokerPool

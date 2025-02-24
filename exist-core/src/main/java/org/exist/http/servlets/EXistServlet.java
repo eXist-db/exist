@@ -35,7 +35,6 @@ import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 
 import jakarta.servlet.ServletConfig;
@@ -86,9 +85,6 @@ public class EXistServlet extends AbstractExistHttpServlet {
         // Instantiate REST Server
         srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), useDynamicContentType.equalsIgnoreCase("yes")
                 || useDynamicContentType.equalsIgnoreCase("true"), isInternalOnly(), xquerySubmission, xupdateSubmission);
-
-        // XML lib checks....
-        XmlLibraryChecker.check();
     }
 
     private FeatureEnabled parseFeatureEnabled(final ServletConfig config, final String paramName, final FeatureEnabled defaultValue) {
