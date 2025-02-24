@@ -38,7 +38,7 @@
         <authors>
             <author name="${izpack.installation.info.author.name}" email="${izpack.installation.info.author.email}"/>
         </authors>
-        <javaversion>@{project.build.target}</javaversion>
+        <javaversion>@{maven.compiler.release}</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall"/>
         <pack-compression-format>xz</pack-compression-format>
