@@ -21,7 +21,6 @@
  */
 package org.exist.management.client;
 
-import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
@@ -308,8 +307,6 @@ public class JMXClient {
     @SuppressWarnings("unchecked")
 	public static void main(final String[] args) {
         try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
             final ParsedArguments arguments = CommandLineParser
                     .withArguments(addressArg, portArg, instanceArg, waitArg)
                     .andArguments(cacheDisplayArg, locksDisplayArg)
@@ -319,11 +316,7 @@ public class JMXClient {
                     .parse(args);
 
             process(arguments);
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
+
         } catch (final ArgumentException e) {
             System.out.println(e.getMessageAndUsage());
             System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);

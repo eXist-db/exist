@@ -26,8 +26,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.exist.security.Permission;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
-import org.exist.start.CompatibleJavaVersionCheck;
-import org.exist.start.StartException;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.DatabaseManager;
@@ -63,12 +61,6 @@ public abstract class AbstractXMLDBTask extends Task
     @Override
     public void init() throws BuildException {
         super.init();
-
-        try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-        } catch (final StartException e) {
-            throw new BuildException(e.getMessage());
-        }
     }
 
     /**

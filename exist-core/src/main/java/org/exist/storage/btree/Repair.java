@@ -24,7 +24,6 @@ package org.exist.storage.btree;
 import org.exist.EXistException;
 import org.exist.indexing.Index;
 import org.exist.indexing.StructuralIndex;
-import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -107,14 +106,6 @@ public class Repair {
     }
 
     public static void main(final String[] args) {
-        try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
-        }
 
         if (args.length == 0) {
             System.out.println("\nUsage: " + Repair.class.getName() + " [index-name]+\n");

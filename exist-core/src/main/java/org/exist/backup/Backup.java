@@ -25,7 +25,6 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.Namespaces;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
-import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
@@ -147,19 +146,12 @@ public class Backup {
 
     public static void main(final String[] args) {
         try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             final Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             final Backup backup = new Backup("admin", null, Paths.get("backup"), URIUtils.encodeXmldbUriFor(args[0]));
             backup.backup(false, null);
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
         } catch (final Throwable e) {
             e.printStackTrace();
             System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);

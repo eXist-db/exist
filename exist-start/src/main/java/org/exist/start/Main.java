@@ -169,9 +169,6 @@ public class Main {
 
     public void runEx(String[] args) throws StartException {
 
-        // Check if the OpenJDK version can corrupt eXist-db
-        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
         final String _classname;
         if (args.length > 0) {
             if ("client".equals(args[0])) {

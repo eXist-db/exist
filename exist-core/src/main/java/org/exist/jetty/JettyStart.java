@@ -37,7 +37,6 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
-import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.Main;
 import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
@@ -104,19 +103,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     public static void main(final String[] args) {
         try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
             CommandLineParser
                     .withArguments(jettyConfigFilePath, existConfigFilePath)
                     .andArguments(helpArg)
                     .programName("startup" + (OSUtil.isWindows() ? ".bat" : ".sh"))
                     .parse(args);
 
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
         } catch (final ArgumentException e) {
             consoleOut(e.getMessageAndUsage().toString());
             System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);

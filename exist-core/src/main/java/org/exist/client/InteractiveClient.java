@@ -57,7 +57,6 @@ import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.UserAider;
-import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.storage.ElementIndex;
 import org.exist.util.*;
@@ -245,20 +244,12 @@ public class InteractiveClient {
      */
     public static void main(final String[] args) {
         try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
             // parse command-line options
             final CommandlineOptions options = CommandlineOptions.parse(args);
             final InteractiveClient client = new InteractiveClient(options);
             if (!client.run()) {
                 System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on failure
             }
-
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                consoleErr(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
 
         } catch (final ArgumentException e) {
             consoleOut(e.getMessageAndUsage().toString());
