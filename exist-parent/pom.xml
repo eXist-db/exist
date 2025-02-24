@@ -128,7 +128,7 @@
         <easymock.version>5.5.0</easymock.version>
         <objenesis.version>3.4</objenesis.version>
         <assertj.version>3.27.3</assertj.version>
-        <awaitility.version>4.2.2</awaitility.version>
+        <awaitility.version>4.3.0</awaitility.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
 
