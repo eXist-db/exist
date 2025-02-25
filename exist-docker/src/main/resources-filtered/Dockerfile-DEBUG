@@ -20,10 +20,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use JDK 21 in Debian as our production image gcr.io/distroless/java is based on Debian with just a JRE)
-FROM debian:bookworm-slim
+FROM openjdk:21-jdk-slim-bullseye
 RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y openjdk-21-jdk-headless
 RUN apt-get install -y expat fontconfig     # Install tools required by FOP
 
 # Copy eXist-db
