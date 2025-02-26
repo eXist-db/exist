@@ -20,13 +20,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-# Use JDK 8 in Debian Stretch (as our production image gcr.io/distroless/java:8 is based on Debian Stretch with just a JRE)
-FROM debian:stretch-slim
-RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
-RUN echo "deb http://archive.debian.org/debian stretch-backports main" >> /etc/apt/sources.list
+# Use JDK 8 in Debian (as our production image gcr.io/distroless/ is based on Debian with just a JRE)
+FROM debian:bookworm-slim as updated-jre
+
 RUN apt-get update && apt-get -y dist-upgrade
-RUN apt-get install -y openjdk-8-jdk-headless
-RUN apt-get install -y expat fontconfig     # Install tools required by FOP
+RUN apt install -y wget apt-transport-https gpg
+RUN wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor | tee /etc/apt/trusted.gpg.d/adoptium.gpg > /dev/null
+RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
+RUN apt-get update && apt-get install -y temurin-8-jdk
 
 # Copy eXist-db
 COPY LICENSE /exist/LICENSE
@@ -54,10 +55,10 @@ ARG MAX_BROKER
 ARG JVM_MAX_RAM_PERCENTAGE
 ARG JVM_JDWP_SUSPEND
 
-ENV EXIST_HOME "/exist"
+ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-ENV JAVA_TOOL_OPTIONS \
+ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
   -Djava.awt.headless=true \
@@ -73,7 +74,7 @@ ENV JAVA_TOOL_OPTIONS \
   -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENTAGE:-75.0} \
   -XX:+ExitOnOutOfMemoryError \
-  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${JVM_JDWP_SUSPEND:-n},address=5005
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${JVM_JDWP_SUSPEND:-n},address=5005"
 
 HEALTHCHECK CMD [ "java", \
     "org.exist.start.Main", "client", \
