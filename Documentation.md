@@ -4,6 +4,9 @@ Here are some diagrams for a better understanding of the project
 
 They are done in UML language.
 
+## Context Diagram
+
+<img src="Diagrams/Context Diagram.png" alt="Context Diagram" width="533" height="372"></img>
 
 ## Use Case Diagram
 
