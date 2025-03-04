@@ -1094,6 +1094,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
                     <execution>
@@ -1135,9 +1136,9 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <configuration>
                             <forceAjcCompile>true</forceAjcCompile>  <!-- Required, otherwise the Aspects are not re-compiled when the src/main/java is recompiled for the test phase -->
                             <showWeaveInfo>true</showWeaveInfo>
-                            <complianceLevel>${project.build.source}</complianceLevel>
-                            <source>${project.build.source}</source>
-                            <target>${project.build.target}</target>
+                            <complianceLevel>${maven.compiler.release}</complianceLevel>
+                            <source>${maven.compiler.source}</source>
+                            <target>${maven.compiler.target}</target>
                             <!-- sources>
                                 <source>
                                     <basedir>${project.build.sourceDirectory}</basedir>

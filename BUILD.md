@@ -1,7 +1,7 @@
 Building eXist-db from Source
 --------------------------
 
-eXist-db itself is written in Java 17. The build system is [Apache Maven](http://maven.apache.org/). If you're not familiar with Git, we recommend [this excellent online interactive tutorial](http://try.github.io).
+eXist-db itself is written in and qualified with Java 21. The build system is [Apache Maven](http://maven.apache.org/). If you're not familiar with Git, we recommend [this excellent online interactive tutorial](http://try.github.io).
 
 To build eXist-db:
 
