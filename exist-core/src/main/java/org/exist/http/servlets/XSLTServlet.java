@@ -86,13 +86,13 @@ public class XSLTServlet extends HttpServlet {
     private final static Logger LOG = LogManager.getLogger(XSLTServlet.class);
 
     private final static XSLTErrorsListener<ServletException> errorListener =
-        new XSLTErrorsListener<ServletException>(true, false) {
+            new XSLTErrorsListener<>(true, false) {
 
-            @Override
-            protected void raiseError(final String error, final TransformerException ex) throws ServletException {
-                throw new ServletException(error, ex);
-            }
-        };
+                @Override
+                protected void raiseError(final String error, final TransformerException ex) throws ServletException {
+                    throw new ServletException(error, ex);
+                }
+            };
 
     private BrokerPool pool;
 

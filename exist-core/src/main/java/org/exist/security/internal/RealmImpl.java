@@ -105,8 +105,10 @@ public class RealmImpl extends AbstractRealm {
 
         //guest group
         GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
-        GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
-            { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
+        GROUP_GUEST.setManagers(new ArrayList<>() {
+            {
+                add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER));
+            }
         });
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.registerGroup(GROUP_GUEST);

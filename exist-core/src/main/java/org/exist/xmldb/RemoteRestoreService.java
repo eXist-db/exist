@@ -242,7 +242,7 @@ public class RemoteRestoreService implements EXistRestoreService {
             final Path zipFile = Files.createTempFile("remote-restore-service", "zip");
             try (final OutputStream fos = new BufferedOutputStream(Files.newOutputStream(zipFile));
                  final ZipOutputStream zos = new ZipOutputStream(fos)) {
-                Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+                Files.walkFileTree(dir, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                         final Path zipEntryPath = dir.relativize(file);
