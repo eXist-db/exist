@@ -58,7 +58,7 @@ public class URLStreamHandlerStartupTrigger implements StartupTrigger {
         if (params != null) {
             List<?> list = params.get("mode");
             if (list != null && list.size() == 1) {
-                mode = list.get(0).toString();
+                mode = list.getFirst().toString();
             }
         }
 

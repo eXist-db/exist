@@ -487,7 +487,7 @@ class Options {
             throw new XPathException(fnTransform, ErrorCodes.FOXT0002, "None of stylesheet-location, stylesheet-node, or stylesheet-text was set");
         }
 
-        return results.get(0);
+        return results.getFirst();
     }
 
     /**

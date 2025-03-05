@@ -214,7 +214,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
         if (resources.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         } else if (resources.size() == 1) {
-            return ((Item) resources.get(0)).toSequence();
+            return ((Item) resources.getFirst()).toSequence();
         } else {
             final ValueSequence s = new ValueSequence();
             for (Object resource : resources) {

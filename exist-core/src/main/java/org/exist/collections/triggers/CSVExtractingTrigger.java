@@ -104,7 +104,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         if(separators == null || separators.size() != 1) {
             throw new TriggerException("A separator parameter must be provided to the CSVExtractingTrigger configuration");
         } else {
-            this.separator = separators.get(0);
+            this.separator = separators.getFirst();
         }
 
         //get the extractions
@@ -112,7 +112,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         for(final Map<String, List> path : paths){
             final List<String> xpaths = path.get("xpath");
             if(xpaths != null && xpaths.size() == 1) {
-                String xpath = xpaths.get(0);
+                String xpath = xpaths.getFirst();
 
                 //split out the path and preficate (if present) from the xpath
                 String pathExpr;

@@ -244,7 +244,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
-        final Expression arg = params.get(0);
+        final Expression arg = params.getFirst();
         final int code = Type.getType(qname);
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());

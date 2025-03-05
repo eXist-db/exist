@@ -120,8 +120,8 @@ public class Query extends Function implements Optimizable {
 
         final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            final LocationStep firstStep = steps.get(0);
-            final LocationStep lastStep = steps.get(steps.size() - 1);
+            final LocationStep firstStep = steps.getFirst();
+            final LocationStep lastStep = steps.getLast();
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 final Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr instanceof final LocationStep outerLocationStep) {

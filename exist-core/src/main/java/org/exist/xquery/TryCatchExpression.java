@@ -437,7 +437,7 @@ public class TryCatchExpression extends AbstractExpression {
     @Override
     public int returnsType() {
         // fixme! /ljo
-        return ((Expression) catchClauses.get(0).getCatchExpr()).returnsType();
+        return ((Expression) catchClauses.getFirst().getCatchExpr()).returnsType();
     }
 
     /* (non-Javadoc)

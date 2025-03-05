@@ -119,7 +119,7 @@ public class XMLDBModule extends AbstractInternalModule {
 
         final List<String> allowAnyUriParameterList = (List<String>) getParameter("allowAnyUri");
         if (allowAnyUriParameterList != null && !allowAnyUriParameterList.isEmpty()) {
-            final String strAllowAnyUri = allowAnyUriParameterList.get(0);
+            final String strAllowAnyUri = allowAnyUriParameterList.getFirst();
             if (strAllowAnyUri != null) {
                 this.allowAnyUri = Boolean.parseBoolean(strAllowAnyUri);
             }

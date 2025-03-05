@@ -133,7 +133,7 @@ class ACEAiderParser extends RecursiveTypeParserImpl {
             throw new SAXException("Inavlis list size for ACEAider");
         }
 
-        Object object = list.get(0);
+        Object object = list.getFirst();
         final ACE_ACCESS_TYPE aceAccessType;
         if (object instanceof String) {
             try {

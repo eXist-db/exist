@@ -307,7 +307,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             //*************************************************************
             final List<URI> serverUris = getSeverURIs(server);
             if(!serverUris.isEmpty()) {
-                this.primaryPort = serverUris.get(0).getPort();
+                this.primaryPort = serverUris.getFirst().getPort();
 
             }
             logger.info("-----------------------------------------------------");

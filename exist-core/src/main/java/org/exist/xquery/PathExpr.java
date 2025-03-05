@@ -95,7 +95,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
      */
     public void addPredicate(final Predicate predicate) {
         if (!steps.isEmpty()) {
-            final Expression e = steps.get(steps.size() - 1);
+            final Expression e = steps.getLast();
             if (e instanceof Step) {
                 ((Step) e).addPredicate(predicate);
             }
@@ -133,7 +133,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public Expression getFirst() {
-        return steps.isEmpty() ? null : steps.get(0);
+        return steps.isEmpty() ? null : steps.getFirst();
     }
 
     @Override
@@ -215,7 +215,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             result = contextSequence;
             Sequence currentContext = contextSequence;
             DocumentSet contextDocs = null;
-            Expression expr = steps.get(0);
+            Expression expr = steps.getFirst();
             if (expr instanceof VariableReference) {
                 final Variable var = ((VariableReference) expr).getVariable(new AnalyzeContextInfo(parent, 0));
                 //TOUNDERSTAND : how null could be possible here ? -pb
@@ -372,7 +372,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     public Expression getLastExpression() {
-        return steps.isEmpty() ? null : steps.get(steps.size() - 1);
+        return steps.isEmpty() ? null : steps.getLast();
     }
 
     /**
@@ -395,7 +395,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public boolean allowMixedNodesInReturn() {
         if (steps.size() == 1) {
-            return steps.get(0).allowMixedNodesInReturn();
+            return steps.getFirst().allowMixedNodesInReturn();
         }
         return super.allowMixedNodesInReturn();
     }
@@ -471,7 +471,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             //Not so simple. ITEM should be re-tuned in some circumstances that have to be determined
             return Type.NODE;
         }
-        return steps.get(steps.size() - 1).returnsType();
+        return steps.getLast().returnsType();
     }
 
     @Override
@@ -479,7 +479,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (steps.size() == 0) {
             return Cardinality.EMPTY_SEQUENCE;
         }
-        return (steps.get(steps.size() - 1)).getCardinality();
+        return (steps.getLast()).getCardinality();
     }
 
     @Override
@@ -502,7 +502,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (steps.size() == 0) {
             return "";
         }
-        final Expression next = steps.get(0);
+        final Expression next = steps.getFirst();
         if (next instanceof LiteralValue) {
             try {
                 return ((LiteralValue) next).getValue().getStringValue();
@@ -519,7 +519,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public int getLine() {
         if (line <= 0 && !steps.isEmpty()) {
-            return steps.get(0).getLine();
+            return steps.getFirst().getLine();
         }
         return line;
     }
@@ -527,7 +527,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public int getColumn() {
         if (column <= 0 && !steps.isEmpty()) {
-            return steps.get(0).getColumn();
+            return steps.getFirst().getColumn();
         }
         return column;
     }
@@ -535,14 +535,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public void setPrimaryAxis(final int axis) {
         if (steps.size() > 0) {
-            steps.get(0).setPrimaryAxis(axis);
+            steps.getFirst().setPrimaryAxis(axis);
         }
     }
 
     @Override
     public int getPrimaryAxis() {
         if (steps.size() > 0) {
-            return steps.get(0).getPrimaryAxis();
+            return steps.getFirst().getPrimaryAxis();
         }
         return Constants.UNKNOWN_AXIS;
     }
@@ -579,7 +579,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     @Override
     public Expression simplify() {
         if (steps.size() == 1) {
-            return steps.get(0).simplify();
+            return steps.getFirst().simplify();
         }
         return this;
     }

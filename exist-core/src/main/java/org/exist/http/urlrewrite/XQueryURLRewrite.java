@@ -1198,7 +1198,7 @@ public class XQueryURLRewrite extends HttpServlet {
         public String getParameter(final String name) {
             final List<String> paramValues = addedParams.get(name);
             if (paramValues != null && paramValues.size() > 0) {
-                return paramValues.get(0);
+                return paramValues.getFirst();
             }
             return null;
         }

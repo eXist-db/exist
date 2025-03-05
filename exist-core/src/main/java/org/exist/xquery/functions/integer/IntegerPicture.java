@@ -107,7 +107,7 @@ public abstract class IntegerPicture {
         // Rule 9 - sequences
         // <a href="https://www.w3.org/TR/xpath-functions-31/#formatting-integers"/>
         final List<Integer> codePoints = IntegerPicture.codePoints(primaryFormatToken);
-        final Optional<IntegerPicture> numberingPicture = NumberingPicture.fromIndexCodePoint(codePoints.get(0), formatModifier);
+        final Optional<IntegerPicture> numberingPicture = NumberingPicture.fromIndexCodePoint(codePoints.getFirst(), formatModifier);
 
         return numberingPicture.orElse(IntegerPicture.defaultPictureWithModifier(formatModifier));
     }

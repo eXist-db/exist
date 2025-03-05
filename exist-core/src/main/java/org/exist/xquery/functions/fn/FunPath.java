@@ -95,7 +95,7 @@ public class FunPath extends BasicFunction {
                       !((org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument()).isExplicitlyCreated()))) {
                     // This string is prefixed by "Q{http://www.w3.org/2005/xpath-functions}root()"
                     // if the root node is not a document node.
-                    pathValues.remove(0);
+                    pathValues.removeFirst();
                     result = new StringValue(this, String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
                 } else {
                     result = new StringValue(this, String.join("", pathValues));

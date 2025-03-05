@@ -147,7 +147,7 @@ public class JMXtoXML {
     public void connect() {
         final List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers.size() > 0) {
-            this.connection = servers.get(0);
+            this.connection = servers.getFirst();
         }
     }
 

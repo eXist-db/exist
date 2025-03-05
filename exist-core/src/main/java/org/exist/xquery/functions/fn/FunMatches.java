@@ -149,7 +149,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
         if (!steps.isEmpty()) {
             final LocationStep firstStep = steps.get(0);
-            LocationStep lastStep = steps.get(steps.size() - 1);
+            LocationStep lastStep = steps.getLast();
             if (firstStep != null && lastStep != null) {
                 final NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {

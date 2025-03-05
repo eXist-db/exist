@@ -188,7 +188,7 @@ public class JavaCall extends Function {
 		// get the actual arguments
 		final Sequence args[] = getArguments(contextSequence, contextItem);
 
-		AccessibleObject bestMethod = candidateMethods.get(0);
+		AccessibleObject bestMethod = candidateMethods.getFirst();
 		int conversionPrefs[] = getConversionPreferences(bestMethod, args);
 
 		for (AccessibleObject nextMethod : candidateMethods) {

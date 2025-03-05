@@ -103,7 +103,7 @@ public class FilteredExpression extends AbstractExpression {
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            final Predicate pred = predicates.get(0);
+            final Predicate pred = predicates.getFirst();
             context.setContextSequencePosition(0, seq);
             // If the current step is an // abbreviated step, we have to treat the predicate
             // specially to get the context position right. //a[1] translates 

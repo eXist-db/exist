@@ -234,7 +234,7 @@ public class LDAPRealm extends AbstractRealm {
 
                     //append the ldap primaryGroup to the head of the ldap group list, and compare
                     //to the account group list
-                    memberOf_groups.add(0, getGroup(ctx2, broker, primaryGroup));
+                    memberOf_groups.addFirst(getGroup(ctx2, broker, primaryGroup));
 
                     final String accountGroups[] = account.getGroups();
 

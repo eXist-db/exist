@@ -134,14 +134,14 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			}
 
  			final List<String> urlQueries = (List<String>) parameters.get("url");
-            this.urlQuery = urlQueries != null ? urlQueries.get(0) : null;
+            this.urlQuery = urlQueries != null ? urlQueries.getFirst() : null;
 
             final List<String> strQueries = (List<String>) parameters.get("query");
- 			this.strQuery = strQueries != null ? strQueries.get(0) : null;
+ 			this.strQuery = strQueries != null ? strQueries.getFirst() : null;
 
 			for (final Map.Entry<String, List<?>> entry : parameters.entrySet()) {
  				final String paramName = entry.getKey();
-				final Object paramValue = entry.getValue().get(0);
+				final Object paramValue = entry.getValue().getFirst();
 
  				//get the binding prefix (if any)
                 switch (paramName) {

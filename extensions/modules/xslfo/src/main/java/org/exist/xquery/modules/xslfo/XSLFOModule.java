@@ -84,7 +84,7 @@ public class XSLFOModule extends AbstractInternalModule {
         if (adapter == null) {
             final List<String> processorAdapterParamList = (List<String>) getParameter("processorAdapter");
             if (!processorAdapterParamList.isEmpty()) {
-                final String processorAdapter = processorAdapterParamList.get(0);
+                final String processorAdapter = processorAdapterParamList.getFirst();
 
                 try {
                     final Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>) Class.forName(processorAdapter);

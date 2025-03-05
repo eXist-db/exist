@@ -48,7 +48,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
 
         this.expressions = new ArrayList<>(expressions.size());
 
-        WildcardedExpression currentExpression = expressions.remove(0);
+        WildcardedExpression currentExpression = expressions.removeFirst();
 
         for (WildcardedExpression expression : expressions) {
             if (currentExpression instanceof MergeableExpression
@@ -70,24 +70,24 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         final int axis, final int expressionId) throws XPathException {
 
         boolean startAnchorPresent = false;
-        if (!expressions.isEmpty() && expressions.get(0) instanceof StartAnchor) {
+        if (!expressions.isEmpty() && expressions.getFirst() instanceof StartAnchor) {
             startAnchorPresent = true;
-            expressions.remove(0);
+            expressions.removeFirst();
         }
 
         Wildcard leadingWildcard = null;
-        if (!expressions.isEmpty() && expressions.get(0) instanceof Wildcard)
-            leadingWildcard = (Wildcard) expressions.remove(0);
+        if (!expressions.isEmpty() && expressions.getFirst() instanceof Wildcard)
+            leadingWildcard = (Wildcard) expressions.removeFirst();
 
         boolean endAnchorPresent = false;
-        if (!expressions.isEmpty() && expressions.get(expressions.size() - 1) instanceof EndAnchor) {
+        if (!expressions.isEmpty() && expressions.getLast() instanceof EndAnchor) {
             endAnchorPresent = true;
-            expressions.remove(expressions.size() - 1);
+            expressions.removeLast();
         }
 
         Wildcard trailingWildcard = null;
-        if (!expressions.isEmpty() && expressions.get(expressions.size() - 1) instanceof Wildcard)
-            trailingWildcard = (Wildcard) expressions.remove(expressions.size() - 1);
+        if (!expressions.isEmpty() && expressions.getLast() instanceof Wildcard)
+            trailingWildcard = (Wildcard) expressions.removeLast();
 
         while (expressions.size() >= 3) {
             formEvaluatableTriples(expressionId);
@@ -97,13 +97,13 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             return new EmptyNodeSet();
         // TODO: Should probably return nodes the satisfying the size constraint when wildcards are present
 
-        if (expressions.size() != 1 || !(expressions.get(0) instanceof EvaluatableExpression)) { // Should not happen.
+        if (expressions.size() != 1 || !(expressions.getFirst() instanceof EvaluatableExpression)) { // Should not happen.
             LOG.error("Expression {} could not be evaluated", toString());
             throw new XPathException((Expression) null, "Could not evaluate wildcarded query.");
         }
 
         LOG.trace("Evaluating expression {}", toString());
-        NodeSet result = ((EvaluatableExpression) expressions.get(0)).eval(index, docs, qnames, nodeSet, axis,
+        NodeSet result = ((EvaluatableExpression) expressions.getFirst()).eval(index, docs, qnames, nodeSet, axis,
             expressionId);
 
         if (leadingWildcard != null)
@@ -152,7 +152,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             WildcardedExpressionTriple triple = new WildcardedExpressionTriple((EvaluatableExpression) first,
                 (Wildcard) second, (EvaluatableExpression) third);
             expressions.subList(0, 3).clear();
-            expressions.add(0, triple);
+            expressions.addFirst(triple);
         } else {
             throw new IllegalArgumentException("Could not form evaluatable triples at the beginning of "
                 + toString());

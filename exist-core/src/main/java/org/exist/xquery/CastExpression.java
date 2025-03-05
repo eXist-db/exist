@@ -199,7 +199,7 @@ public class CastExpression extends AbstractExpression {
 
         @Override
         public void setArguments(final List<Expression> arguments) {
-            castExpression.setExpression(arguments.get(0));
+            castExpression.setExpression(arguments.getFirst());
         }
 
         @Override

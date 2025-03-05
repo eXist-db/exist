@@ -155,8 +155,8 @@ public class NGramSearch extends Function implements Optimizable {
         super.analyze(contextInfo);
         List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
         if (!steps.isEmpty()) {
-            LocationStep firstStep = steps.get(0);
-            LocationStep lastStep = steps.get(steps.size() - 1);
+            LocationStep firstStep = steps.getFirst();
+            LocationStep lastStep = steps.getLast();
             if (firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 final Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr instanceof LocationStep outerStep) {
@@ -321,18 +321,18 @@ public class NGramSearch extends Function implements Optimizable {
 
         List<WildcardedExpression> expressions = new ArrayList<>();
 
-        if (queryTokens.get(0).equals("^")) {
+        if (queryTokens.getFirst().equals("^")) {
             expressions.add(new StartAnchor());
-            queryTokens.remove(0);
+            queryTokens.removeFirst();
         }
 
         if (queryTokens.isEmpty())
             return new EmptyExpression();
 
         boolean endAnchorPresent = false;
-        if (queryTokens.get(queryTokens.size() - 1).equals("$")) {
+        if (queryTokens.getLast().equals("$")) {
             endAnchorPresent = true;
-            queryTokens.remove(queryTokens.size() - 1);
+            queryTokens.removeLast();
         }
 
         if (queryTokens.isEmpty())

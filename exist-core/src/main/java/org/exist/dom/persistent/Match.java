@@ -202,7 +202,7 @@ public abstract class Match implements Comparable<Match> {
             return null;
         }
 
-        final int wildCardSize = newMatchOffsets.get(0).length - matchTerm.length() - other.matchTerm.length();
+        final int wildCardSize = newMatchOffsets.getFirst().length - matchTerm.length() - other.matchTerm.length();
         final StringBuilder matched = new StringBuilder(matchTerm);
         for (int ii = 0; ii < wildCardSize; ii++) {
             matched.append('?');
@@ -319,7 +319,7 @@ public abstract class Match implements Comparable<Match> {
             }
         });
         final List<Offset> nonOverlappingMatchOffsets = new LinkedList<>();
-        nonOverlappingMatchOffsets.add(newMatchOffsets.remove(0));
+        nonOverlappingMatchOffsets.add(newMatchOffsets.removeFirst());
         for (final Offset o : newMatchOffsets) {
             boolean overlapsExistingOffset = false;
             for (final Offset eo : nonOverlappingMatchOffsets) {

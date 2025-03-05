@@ -248,7 +248,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         Expression previous = parent.getPrevious(current);
         if (previous != null) {
             while (previous != null && previous != parent.getFirst() && previous instanceof LocationStep prevStep) {
-                prevSteps.add(0, prevStep);
+                prevSteps.addFirst(prevStep);
                 previous = parent.getPrevious(previous);
             }
         }

@@ -81,7 +81,7 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
 
         if(parameters.containsKey(PARAM_ROOT_NAME)) {
             try {
-                rootPath = XmldbURI.xmldbUriFor(parameters.get(PARAM_ROOT_NAME).get(0).toString());
+                rootPath = XmldbURI.xmldbUriFor(parameters.get(PARAM_ROOT_NAME).getFirst().toString());
             } catch(final URISyntaxException e) {
                 throw new TriggerException(e);
             }

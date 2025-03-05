@@ -81,7 +81,7 @@ public class ConfigurationImpl implements Configuration {
         if (list == null)
             {return null;}
         if (list.size() > 0)
-            {return list.get(0);}
+            {return list.getFirst();}
         return null;
     }
 

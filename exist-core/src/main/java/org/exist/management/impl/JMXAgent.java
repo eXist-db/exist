@@ -60,7 +60,7 @@ public final class JMXAgent implements Agent {
 
         final ArrayList<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers.size() > 0) {
-            server = servers.get(0);
+            server = servers.getFirst();
         } else {
             server = MBeanServerFactory.createMBeanServer();
         }

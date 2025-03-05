@@ -47,7 +47,7 @@ public abstract class BinaryOp extends PathExpr {
     }
 
     public void setLeft(Expression expr) {
-        steps.add(0, expr);
+        steps.addFirst(expr);
     }
 
     public void setRight(Expression expr) {

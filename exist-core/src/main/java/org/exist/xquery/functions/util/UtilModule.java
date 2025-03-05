@@ -170,7 +170,7 @@ public class UtilModule extends AbstractInternalModule {
 
         final List<String> evalDisabledParamList = (List<String>) getParameter("evalDisabled");
         if (evalDisabledParamList != null && !evalDisabledParamList.isEmpty()) {
-            final String strEvalDisabled = evalDisabledParamList.get(0);
+            final String strEvalDisabled = evalDisabledParamList.getFirst();
             if (strEvalDisabled != null) {
                 this.evalDisabled = Boolean.parseBoolean(strEvalDisabled);
             }

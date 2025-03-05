@@ -65,14 +65,14 @@ public class ComplexTextCollector implements TextCollector {
         if (fieldConf != null) {
             Field field = new Field(fieldConf.getName(), true, fieldConf.whitespaceTreatment(), fieldConf.isCaseSensitive());
             field.append(attribute.getValue());
-            fields.add(0, field);
+            fields.addFirst(field);
         }
     }
 
     @Override
     public void characters(AbstractCharacterData text, NodePath path) {
         if (currentField != null) {
-            Field field = fields.get(fields.size() - 1);
+            Field field = fields.getLast();
             if (!field.isAttribute() && (currentField.includeNested() || currentField.match(path))) {
                 field.append(text.getXMLString());
                 length += text.getXMLString().length();

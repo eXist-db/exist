@@ -97,7 +97,7 @@ public class LatestFileResolver {
         }
 
         if (!jars.isEmpty()) {
-            final String actualFileName = jars.get(0).toAbsolutePath().toString();
+            final String actualFileName = jars.getFirst().toAbsolutePath().toString();
             if (_debug) {
                 System.err.println(
                     "Found match: " + actualFileName
