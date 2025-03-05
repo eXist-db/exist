@@ -65,6 +65,9 @@ public class AddGroupTask extends UserTask
     }
 
 
+    /**
+     * @param name
+     */
     public void setName(final String name )
     {
         this.name = name;

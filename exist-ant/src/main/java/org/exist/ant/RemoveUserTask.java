@@ -39,34 +39,54 @@ public class RemoveUserTask extends UserTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
+    
+    /**
+     * Executes the task to remove a user account from the database.
+     * 
+     * <p>This method first checks if a username is provided; if not, 
+     * it throws an exception. It then attempts to retrieve the user account 
+     * from the database. If the account exists, it is removed.</p>
+     * 
+     * <p>If an XMLDB-related error occurs, the method either logs the 
+     * error or throws an exception based on the {@code failonerror} setting.</p>
+     * 
+     * @throws BuildException if the username is not specified or if an XMLDB-related error occurs.
+     */
     public void execute() throws BuildException
     {
+        // Call the superclass execute method to ensure proper initialization.
         super.execute();
 
-        if( name == null ) {
-            throw( new BuildException( "You have to specify a name" ) );
+        // Ensure a username is specified before proceeding.
+        if (name == null) {
+            throw new BuildException("You have to specify a name");
         }
 
         try {
-            final Account u = service.getAccount( name );
+            // Retrieve the user account from the database.
+            final Account u = service.getAccount(name);
 
-            if( u != null ) {
-                service.removeAccount( u );
+            // If the user exists, remove the account.
+            if (u != null) {
+                service.removeAccount(u);
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
+            // Handle any XMLDB-related exceptions.
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            // If failonerror is true, throw an exception; otherwise, log the error.
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
-
+    /**
+     * @param name set for this object
+     */
     public void setName(final String name )
     {
         this.name = name;

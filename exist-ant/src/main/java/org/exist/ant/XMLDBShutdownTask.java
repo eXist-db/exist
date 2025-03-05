@@ -42,42 +42,59 @@ public class XMLDBShutdownTask extends AbstractXMLDBTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
-    public void execute() throws BuildException
-    {
-        if( uri == null ) {
-            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
-        }
+	
+	/**
+	 * Executes the task to shutdown the database instance associated with a specified XMLDB collection.
+	 * It checks for necessary parameters, logs actions, and handles exceptions appropriately.
+	 */
+	@Override
+	public void execute() throws BuildException
+	{
+	    // Ensure the URI for the XMLDB collection is specified
+	    if (uri == null) {
+	        throw new BuildException("You have to specify an XMLDB collection URI");
+	    }
 
-        registerDatabase();
+	    // Register the database before proceeding
+	    registerDatabase();
 
-        try {
-            log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            final Collection root = DatabaseManager.getCollection( uri, user, password );
+	    try {
+	        // Log the attempt to get the base collection
+	        log("Get base collection: " + uri, Project.MSG_DEBUG);
 
-            if( root == null ) {
-                final String msg = "Collection " + uri + " could not be found.";
+	        // Retrieve the root collection from the database
+	        final Collection root = DatabaseManager.getCollection(uri, user, password);
 
-                if( failonerror ) {
-                    throw( new BuildException( msg ) );
-                } else {
-                    log( msg, Project.MSG_ERR );
-                }
+	        // Check if the root collection was successfully retrieved
+	        if (root == null) {
+	            final String msg = "Collection " + uri + " could not be found.";
 
-            } else {
-                final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
-                log( "Shutdown database instance", Project.MSG_INFO );
-                mgr.shutdown();
-            }
+	            // Handle error based on failonerror flag
+	            if (failonerror) {
+	                throw new BuildException(msg);
+	            } else {
+	                log(msg, Project.MSG_ERR);
+	            }
 
-        }
-        catch( final XMLDBException e ) {
-            final String msg = "Error during database shutdown: " + e.getMessage();
+	        } else {
+	            // Get the DatabaseInstanceManager service for the root collection
+	            final DatabaseInstanceManager mgr = root.getService(DatabaseInstanceManager.class);
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
-            } else {
-                log( msg, e, Project.MSG_ERR );
-            }
-        }
-    }
+	            // Log and attempt to shutdown the database instance
+	            log("Shutdown database instance", Project.MSG_INFO);
+	            mgr.shutdown();
+	        }
+
+	    } catch (final XMLDBException e) {
+	        // Handle XMLDB exceptions that occur during the shutdown process
+	        final String msg = "Error during database shutdown: " + e.getMessage();
+
+	        // Handle error based on failonerror flag
+	        if (failonerror) {
+	            throw new BuildException(msg, e);
+	        } else {
+	            log(msg, e, Project.MSG_ERR);
+	        }
+	    }
+	}
 }

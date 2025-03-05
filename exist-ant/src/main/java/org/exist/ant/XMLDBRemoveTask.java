@@ -43,57 +43,74 @@ public class XMLDBRemoveTask extends AbstractXMLDBTask
     private String resource   = null;
     private String collection = null;
 
+    /**
+     * Executes the task to remove either a resource or a collection from the specified XMLDB collection.
+     * It checks for necessary parameters, logs actions, and handles exceptions appropriately.
+     */
     @Override
     public void execute() throws BuildException
     {
-        if( uri == null ) {
-            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
+        // Ensure the URI for the XMLDB collection is specified
+        if (uri == null) {
+            throw new BuildException("You have to specify an XMLDB collection URI");
         }
 
-        if( ( resource == null ) && ( collection == null ) ) {
-            throw( new BuildException( "Missing parameter: either resource or collection should be specified" ) );
+        // Ensure either a resource or collection is specified
+        if ((resource == null) && (collection == null)) {
+            throw new BuildException("Missing parameter: either resource or collection should be specified");
         }
 
+        // Register the database before proceeding
         registerDatabase();
 
         try {
-            log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            final Collection base = DatabaseManager.getCollection( uri, user, password );
+            // Log the attempt to get the base collection
+            log("Get base collection: " + uri, Project.MSG_DEBUG);
+            
+            // Retrieve the base collection from the database
+            final Collection base = DatabaseManager.getCollection(uri, user, password);
 
-            if( base == null ) {
-                throw( new BuildException( "Collection " + uri + " could not be found." ) );
+            // Check if the base collection was successfully retrieved
+            if (base == null) {
+                throw new BuildException("Collection " + uri + " could not be found.");
             }
 
-            if( resource != null ) {
-                log( "Removing resource: " + resource, Project.MSG_INFO );
-                final Resource res = base.getResource( resource );
+            // If a resource is specified, remove the resource
+            if (resource != null) {
+                log("Removing resource: " + resource, Project.MSG_INFO);
+                final Resource res = base.getResource(resource);
 
-                if( res == null ) {
+                // Check if the resource exists
+                if (res == null) {
                     final String msg = "Resource " + resource + " not found.";
 
-                    if( failonerror ) {
-                        throw( new BuildException( msg ) );
+                    // Handle error based on failonerror flag
+                    if (failonerror) {
+                        throw new BuildException(msg);
                     } else {
-                        log( msg, Project.MSG_ERR );
+                        log(msg, Project.MSG_ERR);
                     }
                 } else {
-                    base.removeResource( res );
+                    // Remove the resource
+                    base.removeResource(res);
                 }
 
             } else {
-                log( "Removing collection: " + collection, Project.MSG_INFO );
+                // If a collection is specified, remove the collection
+                log("Removing collection: " + collection, Project.MSG_INFO);
                 final CollectionManagementService service = base.getService(CollectionManagementService.class);
-                service.removeCollection( collection );
+                service.removeCollection(collection);
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
+            // Handle XMLDB exceptions that occur during the removal process
             final String msg = "XMLDB exception during remove: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            // Handle error based on failonerror flag
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }

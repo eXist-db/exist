@@ -37,38 +37,60 @@ public class RemoveGroupTask extends UserTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
+    
+    /**
+     * Executes the task to remove a group from the database.
+     * 
+     * <p>This method first checks if a group name is provided. If not, 
+     * it throws an exception. It then attempts to retrieve the group 
+     * from the database. If the group exists, it is removed; otherwise, 
+     * a message is logged indicating that the group does not exist.</p>
+     * 
+     * <p>If an XMLDB-related error occurs, the method either logs the 
+     * error or throws an exception based on the {@code failonerror} setting.</p>
+     * 
+     * @throws BuildException if the group name is not specified or an XMLDB-related error occurs.
+     */
     public void execute() throws BuildException
     {
+        // Call the parent class's execute method to ensure proper initialization.
         super.execute();
 
-        if( name == null ) {
-            throw( new BuildException( "You have to specify a name" ) );
+        // Ensure a group name is specified before proceeding.
+        if (name == null) {
+            throw new BuildException("You have to specify a name");
         }
 
-        log( "Removing group " + name, Project.MSG_INFO );
+        // Log the operation to indicate the removal attempt.
+        log("Removing group " + name, Project.MSG_INFO);
 
         try {
-            final Group group = service.getGroup( name );
+            // Retrieve the group from the database.
+            final Group group = service.getGroup(name);
 
-            if( group != null ) {
-                service.removeGroup( group );
+            // If the group exists, remove it; otherwise, log that it does not exist.
+            if (group != null) {
+                service.removeGroup(group);
             } else {
-                log( "Group " + name + " does not exist.", Project.MSG_INFO );
+                log("Group " + name + " does not exist.", Project.MSG_INFO);
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
+            // Handle any XMLDB-related exceptions.
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            // If failonerror is true, throw an exception; otherwise, log the error.
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
-
+    /**
+     * @param name set for this object
+     */
     public void setName(final String name )
     {
         this.name = name;

@@ -76,18 +76,27 @@ public class AddUserTask extends UserTask {
     }
 
 
+    /**
+     * @param name to be assigned to this object.
+     */
     public void setName(final String name )
     {
         this.name = name;
     }
 
 
+    /**
+     * @param primaryGroup to be set to this object.
+     */
     public void setPrimaryGroup(final String primaryGroup )
     {
         this.primaryGroup = primaryGroup;
     }
 
 
+    /**
+     * @param secret to be set to this object
+     */
     public void setSecret(final String secret )
     {
         this.secret = secret;

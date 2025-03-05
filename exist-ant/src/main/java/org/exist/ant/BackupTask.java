@@ -33,36 +33,61 @@ import java.nio.file.Paths;
  * DOCUMENT ME!
  *
  * @author  wolf
+ * @author carvazpal
  */
 public class BackupTask extends AbstractXMLDBTask
 {
     private String dir = null;
     private boolean deduplicateBlobs = false;
 
+    /**
+     * Executes the task of creating a backup for the specified XMLDB collection.
+     * 
+     * <p>This method performs the backup by first ensuring that the necessary parameters are provided 
+     * (the collection URI and backup directory). It then proceeds to register the database, 
+     * log the backup operation details, and finally calls the {@link Backup#backup} method to 
+     * perform the backup operation.</p>
+     * 
+     * <p>If any required parameters are missing or an exception occurs during the backup process, 
+     * an error message is logged or thrown, depending on the {@code failonerror} setting.</p>
+     *
+     * @throws BuildException If there is an error during the backup process or if required parameters are missing.
+     */
     @Override
     public void execute() throws BuildException
     {
+        // Check if the URI for the collection is provided, otherwise throw an exception
         if( uri == null ) {
-            throw( new BuildException( "you have to specify an XMLDB collection URI" ) );
+            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
         }
 
+        // Check if the backup directory is provided, otherwise throw an exception
         if( dir == null ) {
-            throw( new BuildException( "missing required parameter: dir" ) );
+            throw( new BuildException( "Missing required parameter: dir" ) );
         }
 
+        // Register the database to make sure it is available for the backup operation
         registerDatabase();
+        
+        // Log the details about the collection and backup directory
         log( "Creating backup of collection: " + uri );
         log( "Backup directory: " + dir );
 
         try {
-            final Backup backup = new Backup(user, password, Paths.get(dir), XmldbURI.create( uri ), null, deduplicateBlobs);
-            backup.backup( false, null );
-
+            // Initialize the Backup object with user credentials, directory, and URI
+            final Backup backup = new Backup(user, password, Paths.get(dir), XmldbURI.create(uri), null, deduplicateBlobs);
+            
+            // Perform the backup operation (passing false for incremental backup)
+            backup.backup(false, null);
         }
         catch( final Exception e ) {
+            // Print the stack trace for debugging purposes
             e.printStackTrace();
+            
+            // Prepare the error message for the exception that occurred during the backup
             final String msg = "Exception during backup: " + e.getMessage();
 
+            // If failonerror is true, throw an exception; otherwise, log the error
             if( failonerror ) {
                 throw( new BuildException( msg, e ) );
             } else {
@@ -82,6 +107,9 @@ public class BackupTask extends AbstractXMLDBTask
         this.dir = dir;
     }
 
+    /**
+     * @param deduplicateBlobs to be set to this object.
+     */
     public void setDeduplicateBlobs(final boolean deduplicateBlobs) {
         this.deduplicateBlobs = deduplicateBlobs;
     }

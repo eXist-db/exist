@@ -45,6 +45,7 @@ import java.util.StringTokenizer;
  *
  * @author  wolf
  * @author  andrzej@chaeron.com
+ * @author  carvazpal
  */
 public abstract class AbstractXMLDBTask extends Task
 {
@@ -137,24 +138,46 @@ public abstract class AbstractXMLDBTask extends Task
     }
 
 
+    /**
+     * @param config true to use the configuration, false otherwise.
+     */
     public void setConfiguration(final String config )
     {
         this.configuration = config;
     }
 
 
+    /**
+     * @param failonerror true to set the Failonerror, false otherwise.
+     */
     public void setFailonerror(final boolean failonerror )
     {
         this.failonerror = failonerror;
     }
     
     
+    /**
+     * @param permissions true to set the permissions, false otherwise.
+     */
     public void setPermissions(final String permissions )
     {
         this.permissions = permissions;
     }
 
 
+    /**
+     * Registers the XMLDB database driver and initializes it with the specified properties.
+     * 
+     * <p>This method checks if the database corresponding to the provided URI is already registered. 
+     * If the database is not registered, it attempts to load and initialize the driver class, set its 
+     * properties, and then register it with the {@link DatabaseManager}. The method also handles potential 
+     * errors by throwing a {@link BuildException} if any exceptions are encountered during the process.</p>
+     *
+     * <p>Properties such as whether the database should be created, whether SSL is enabled, and any 
+     * additional configuration are set based on the values provided by the caller.</p>
+     *
+     * @throws BuildException If there is an error while initializing or registering the database driver.
+     */
     protected void registerDatabase() throws BuildException
     {
         try {
@@ -186,6 +209,29 @@ public abstract class AbstractXMLDBTask extends Task
     }
 
 
+    /**
+     * Creates or retrieves a collection in the XML database by navigating through 
+     * the provided relative path. If any part of the path does not exist, it 
+     * creates the missing collections as needed.
+     *
+     * <p>The method starts by checking if the root collection is valid, and then 
+     * iterates through each segment of the given {@code relPath}. For each segment, 
+     * it attempts to retrieve the corresponding collection from the database. If the 
+     * collection is not found, it creates a new collection at that path. The path is 
+     * dynamically built as the method traverses each token in the relative path.</p>
+     *
+     * <p>This method relies on {@link CollectionManagementService} to create new 
+     * collections and uses {@link DatabaseManager} to fetch existing collections.</p>
+     *
+     * @param rootCollection The root collection from which the path traversal begins.
+     * @param baseURI The base URI used to resolve the collection's location.
+     * @param path The current path being constructed, which will be updated as the method processes 
+     * each segment of the {@code relPath}.
+     * @param relPath The relative path to the desired collection, with each segment separated by a "/".
+     * @return The final {@link Collection} corresponding to the full resolved path.
+     *         If any collections were created during the traversal, it returns the last created collection.
+     * @throws XMLDBException If any error occurs while retrieving or creating collections from the database.
+     */
     protected final Collection mkcol(final Collection rootCollection, final String baseURI, String path, final String relPath ) throws XMLDBException
     {
         CollectionManagementService mgtService;
@@ -224,6 +270,18 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
+    /**
+     * Sets the permissions for the given resource in the XMLDB collection specified by the URI.
+     * This method checks if the provided URI is valid, retrieves the base collection, 
+     * and then attempts to apply the permissions using the {@link UserManagementService}.
+     * 
+     * <p>If the collection cannot be found, it will either throw an exception or log an error, 
+     * depending on the value of the {@code failonerror} flag. If any XMLDB-related error occurs, 
+     * it is caught and either thrown as a {@link BuildException} or logged, based on the same flag.</p>
+     *
+     * @param res The {@link Resource} whose permissions are to be set in the collection.
+     * @throws BuildException If the specified collection cannot be found, or if an XMLDB error occurs during the process.
+     */
     protected final void setPermissions(final Resource res ) throws BuildException
     {
     	Collection            base    = null;
@@ -264,6 +322,18 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
+    /**
+     * Sets the permissions for the specified collection by using the UserManagementService.
+     * This method checks if any permissions are defined and, if so, proceeds to set them 
+     * using the UserManagementService associated with the given collection.
+     * 
+     * <p>If an XMLDB exception occurs while attempting to access the UserManagementService or 
+     * apply the permissions, it will either throw a {@link BuildException} or log the error, 
+     * depending on the {@code failonerror} flag.</p>
+     *
+     * @param col The {@link Collection} whose permissions will be set.
+     * @throws BuildException If an XMLDB error occurs during the process or if the permissions cannot be set.
+     */
     protected final void setPermissions(final Collection col ) throws BuildException
     {
         try {
@@ -283,6 +353,23 @@ public abstract class AbstractXMLDBTask extends Task
     }
     
     
+    /**
+     * Sets the permissions for the given resource using the specified {@link UserManagementService}.
+     * This method checks if the permissions string matches a Unix-style or eXist-style format and 
+     * applies the permissions accordingly.
+     * 
+     * <p>If the permissions string matches the Unix-style regular expression, the permissions 
+     * will be applied using Unix-style permission syntax. Otherwise, it is assumed that the 
+     * permissions are specified using eXist's own syntax (e.g., user=+write,...).</p>
+     * 
+     * <p>If any XMLDB-related or syntax errors occur during the process, they will either be 
+     * thrown as {@link BuildException} or logged, depending on the value of the {@code failonerror} flag.</p>
+     *
+     * @param res The {@link Resource} for which the permissions will be set. 
+     *            If null, permissions will be set globally.
+     * @param service The {@link UserManagementService} used to set the permissions on the resource.
+     * @throws BuildException If there is an XMLDB or syntax error while setting the permissions.
+     */
     protected final void setPermissions(final Resource res, final UserManagementService service ) throws BuildException
     {
     	 try {

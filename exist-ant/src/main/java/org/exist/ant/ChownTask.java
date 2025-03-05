@@ -42,30 +42,52 @@ public class ChownTask extends UserTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
+    
+    
+    /**
+     * Executes the task to change the ownership of a resource or collection. 
+     * 
+     * <p>This method ensures that both a user and a group are specified. If not, it throws an exception. 
+     * Then, it retrieves the user account from the service and applies the ownership change.</p>
+     * 
+     * <p>If a specific resource is provided, ownership is changed for that resource. Otherwise, 
+     * ownership is changed for the entire collection.</p>
+     * 
+     * <p>Any XMLDB-related errors are handled based on the {@code failonerror} setting.</p>
+     * 
+     * @throws BuildException if the user or group is not specified, or if an XMLDB-related error occurs.
+     */
     public void execute() throws BuildException
     {
+        // Call the parent class's execute method to ensure proper initialization.
         super.execute();
 
+        // Ensure that both a user and a group are specified.
         if( ( name == null ) || ( group == null ) ) {
-            throw( new BuildException( "Must specify user and group" ) );
+            throw new BuildException( "Must specify user and group" );
         }
 
         try {
+            // Retrieve the user account from the service.
             final Account usr = service.getAccount( name );
 
+            // If a resource is specified, apply ownership change to that resource.
             if( resource != null ) {
                 final Resource res = base.getResource( resource );
                 service.chown( res, usr, group );
-            } else {
+            } 
+            // Otherwise, apply ownership change at the collection level.
+            else {
                 service.chown( usr, group );
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch( final XMLDBException e ) {
+            // Capture any XMLDB-related exceptions and format the error message.
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
+            // If failonerror is set, throw an exception. Otherwise, log the error and continue.
             if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+                throw new BuildException( msg, e );
             } else {
                 log( msg, e, Project.MSG_ERR );
             }
@@ -73,18 +95,28 @@ public class ChownTask extends UserTask
     }
 
 
+
+    /**
+     * @param name sets name for this object
+     */
     public void setName(final String user )
     {
         this.name = user;
     }
 
 
+    /**
+     * @param resource set for this object
+     */
     public void setResource(final String resource )
     {
         this.resource = resource;
     }
 
 
+    /**
+     * @param group set for this object
+     */
     public void setGroup(final String group )
     {
         this.group = group;

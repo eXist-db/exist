@@ -38,56 +38,75 @@ public class UserPasswordTask extends UserTask
     private String name;
     private String secret;
 
+    /**
+     * Executes the task to update a user's password in the XMLDB system.
+     * 
+     * <p>This method retrieves an existing user account by name and updates the 
+     * password if a new secret is provided.</p>
+     * 
+     * <p>If the user is not found, it either logs an error or throws an exception 
+     * based on the {@code failonerror} flag.</p>
+     * 
+     * @throws BuildException if the user name is missing or if an error occurs during execution.
+     */
     @Override
     public void execute() throws BuildException
     {
         super.execute();
 
-        if( name == null ) {
-            throw( new BuildException( "Must specify at least a user name" ) );
+        // Ensure that a user name is provided
+        if (name == null) {
+            throw new BuildException("Must specify at least a user name");
         }
 
         try {
-            log( "Looking up user " + name, Project.MSG_INFO );
-            final Account usr = service.getAccount( name );
+            log("Looking up user " + name, Project.MSG_INFO);
+            final Account usr = service.getAccount(name);
 
-            if( usr != null ) {
-                log( "Setting password for user " + name, Project.MSG_INFO );
+            if (usr != null) {
+                log("Setting password for user " + name, Project.MSG_INFO);
 
-                if( secret != null ) {
+                // Update the password if a new secret is provided
+                if (secret != null) {
                     usr.setCredential(new Password(usr, secret));
-                    this.service.updateAccount(usr);
+                    service.updateAccount(usr);
                 }
 
             } else {
-                final String msg = "user " + name + " not found";
+                final String msg = "User " + name + " not found";
 
-                if( failonerror ) {
-                    throw( new BuildException( msg ) );
+                if (failonerror) {
+                    throw new BuildException(msg);
                 } else {
-                    log( msg, Project.MSG_ERR );
+                    log(msg, Project.MSG_ERR);
                 }
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
 
+
+    /**
+     * @param name set for this object
+     */
     public void setName(final String name )
     {
         this.name = name;
     }
 
 
+    /**
+     * @param secret set for this object
+     */
     public void setSecret(final String secret )
     {
         this.secret = secret;

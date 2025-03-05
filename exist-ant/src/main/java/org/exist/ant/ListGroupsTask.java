@@ -39,44 +39,64 @@ public class ListGroupsTask extends UserTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
+    
+    /**
+     * Executes the task to list all user groups in the database.
+     * 
+     * <p>This method retrieves the list of groups from the service and formats them 
+     * into a single string using the specified separator. If any groups exist, 
+     * it sets the formatted result as a project property.</p>
+     * 
+     * <p>If an XMLDB-related error occurs, the method either throws an exception 
+     * or logs the error based on the {@code failonerror} setting.</p>
+     * 
+     * @throws BuildException if an XMLDB-related error occurs.
+     */
     public void execute() throws BuildException
     {
+        // Call the parent class's execute method to ensure proper setup.
         super.execute();
 
         try {
             log( "Listing all groups", Project.MSG_DEBUG );
+
+            // Retrieve the list of groups from the service.
             final String[] groups = service.getGroups();
 
+            // Check if any groups were returned.
             if( groups != null ) {
 
-                boolean       isFirst = true;
-                final StringBuilder buffer  = new StringBuilder();
+                boolean isFirst = true; // Flag to track the first group.
+                final StringBuilder buffer = new StringBuilder();
 
+                // Iterate over the retrieved groups.
                 for( final String group : groups ) {
 
-                    // only insert separator for 2nd or later item
+                    // Append a separator only after the first group.
                     if( isFirst ) {
                         isFirst = false;
                     } else {
                         buffer.append( separator );
                     }
 
+                    // Append the group name to the buffer.
                     buffer.append( group );
-
                 }
 
+                // If the buffer contains any data, set it as a project property.
                 if( buffer.length() > 0 ) {
                     log( "Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG );
                     getProject().setNewProperty( outputproperty, buffer.toString() );
                 }
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch( final XMLDBException e ) {
+            // Handle any XMLDB-related exceptions.
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
+            // If failonerror is true, throw an exception; otherwise, log the error.
             if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+                throw new BuildException( msg, e );
             } else {
                 log( msg, e, Project.MSG_ERR );
             }
@@ -84,12 +104,18 @@ public class ListGroupsTask extends UserTask
     }
 
 
+    /**
+     * @param outputproperty set for this object
+     */
     public void setOutputproperty(final String outputproperty )
     {
         this.outputproperty = outputproperty;
     }
 
 
+    /**
+     * @param separator set for this object
+     */
     public void setSeparator(final String separator )
     {
         this.separator = separator;

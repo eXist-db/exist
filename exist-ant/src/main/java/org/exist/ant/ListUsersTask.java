@@ -40,57 +40,83 @@ public class ListUsersTask extends UserTask
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()
      */
+    
+    /**
+     * Executes the task to list all user accounts in the database.
+     * 
+     * <p>This method retrieves a list of all existing user accounts and 
+     * formats them into a single string, separating them using the specified 
+     * separator. If users exist, the formatted list is stored as a project property.</p>
+     * 
+     * <p>If an XMLDB-related error occurs, the method will either throw an 
+     * exception or log the error based on the {@code failonerror} setting.</p>
+     * 
+     * @throws BuildException if an XMLDB-related error occurs.
+     */
     public void execute() throws BuildException
     {
+        // Call the parent class's execute method to ensure proper setup.
         super.execute();
 
         try {
-            log( "Listing all users", Project.MSG_DEBUG );
+            log("Listing all users", Project.MSG_DEBUG);
+
+            // Retrieve the list of user accounts from the service.
             final Account[] users = service.getAccounts();
 
-            if( users != null ) {
+            // Check if any users were returned.
+            if (users != null) {
 
-                boolean       isFirst = true;
-                final StringBuilder buffer  = new StringBuilder();
+                boolean isFirst = true; // Used to control the separator placement.
+                final StringBuilder buffer = new StringBuilder();
 
-                for( final Account user : users ) {
+                // Iterate over the retrieved user accounts.
+                for (final Account user : users) {
 
-                    // only insert separator for 2nd or later item
-                    if( isFirst ) {
+                    // Append a separator only after the first user.
+                    if (isFirst) {
                         isFirst = false;
                     } else {
-                        buffer.append( separator );
+                        buffer.append(separator);
                     }
 
-                    buffer.append( user.getName() );
-
+                    // Append the user's name to the buffer.
+                    buffer.append(user.getName());
                 }
 
-                if( buffer.length() > 0 ) {
-                    log( "Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG );
-                    getProject().setNewProperty( outputproperty, buffer.toString() );
+                // If the buffer contains any data, store it as a project property.
+                if (buffer.length() > 0) {
+                    log("Setting output property " + outputproperty + " to " + buffer.toString(), Project.MSG_DEBUG);
+                    getProject().setNewProperty(outputproperty, buffer.toString());
                 }
             }
 
-        }
-        catch( final XMLDBException e ) {
+        } catch (final XMLDBException e) {
+            // Handle any XMLDB-related exceptions.
             final String msg = "XMLDB exception caught: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            // If failonerror is true, throw an exception; otherwise, log the error.
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }
 
 
+    /**
+     * @param outputproperty set for this object
+     */
     public void setOutputproperty(final String outputproperty )
     {
         this.outputproperty = outputproperty;
     }
 
 
+    /**
+     * @param separator set for this object
+     */
     public void setSeparator(final String separator )
     {
         this.separator = separator;
