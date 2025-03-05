@@ -93,7 +93,8 @@ public final class JMXAgent implements Agent {
             try {
                 addMBean(perInstanceMBean);
             } catch (final DatabaseConfigurationException e) {
-                LOG.warn("Exception while registering JMX MBean: {}, for database: {}.", perInstanceMBean.getClass().getName(), instance.getId(), e);
+                LOG.warn("Exception while registering JMX MBean: {}, for database: {}.", 
+                        perInstanceMBean.getClass().getName(), instance.getId(), e);
             }
         }
     }
@@ -116,11 +117,7 @@ public final class JMXAgent implements Agent {
         try {
             addMBean(mbean.getName(), mbean);
             if (mbean.getInstanceId() != null) {
-                Deque<ObjectName> stack = registeredMBeans.get(mbean.getInstanceId());
-                if (stack == null) {
-                    stack = new ArrayDeque<>();
-                    registeredMBeans.put(mbean.getInstanceId(), stack);
-                }
+                Deque<ObjectName> stack = registeredMBeans.computeIfAbsent(mbean.getInstanceId(), k -> new ArrayDeque<>());
                 stack.push(mbean.getName());
             }
             beanInstances.put(mbean.getName(), mbean);

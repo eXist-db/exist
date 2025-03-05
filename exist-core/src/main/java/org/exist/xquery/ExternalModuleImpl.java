@@ -188,11 +188,7 @@ public class ExternalModuleImpl implements ExternalModule {
      */
     public Variable declareVariable(QName qname, Object value) throws XPathException {
         final Sequence val = XPathUtil.javaObjectToXPath(value, mContext, null);
-        Variable var = mStaticVariables.get(qname);
-        if (var == null) {
-            var = new VariableImpl(qname);
-            mStaticVariables.put(qname, var);
-        }
+        Variable var = mStaticVariables.computeIfAbsent(qname, VariableImpl::new);
         var.setValue(val);
         return var;
     }

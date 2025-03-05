@@ -179,11 +179,7 @@ public abstract class AbstractInternalModule implements InternalModule {
     @Override
     public Variable declareVariable(final QName qname, final Object value) throws XPathException {
         final Sequence val = XPathUtil.javaObjectToXPath(value, null, null);
-        Variable var = mGlobalVariables.get(qname);
-        if (var == null){
-            var = new VariableImpl(qname);
-            mGlobalVariables.put(qname, var);
-        }
+        Variable var = mGlobalVariables.computeIfAbsent(qname, VariableImpl::new);
         var.setValue(val);
         return var;
     }

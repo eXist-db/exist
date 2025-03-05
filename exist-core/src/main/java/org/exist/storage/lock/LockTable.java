@@ -171,12 +171,8 @@ public class LockTable {
         switch (lockEventType) {
             case Attempt:
 
-                Entry entry = attempting.get(currentThread);
-                if (entry == null) {
-                    // happens once per thread!
-                    entry = new Entry();
-                    attempting.put(currentThread, entry);
-                }
+                // happens once per thread!
+                Entry entry = attempting.computeIfAbsent(currentThread, k -> new Entry());
 
                 entry.id = id;
                 entry.lockType = lockType;
