@@ -229,8 +229,7 @@ public class Configurator {
             //XXX: throw new ConfigurationException("No configuration [" + configName + "]");
         }
         
-        if (config instanceof ConfigurationImpl) {
-            final ConfigurationImpl impl = (ConfigurationImpl) config;
+        if (config instanceof ConfigurationImpl impl) {
             //XXX: lock issue here, fix it
             Configurable configurable = null;
             if (impl.configuredObjectReference != null) {

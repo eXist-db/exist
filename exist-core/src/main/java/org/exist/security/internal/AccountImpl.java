@@ -172,8 +172,7 @@ public class AccountImpl extends AbstractAccount {
         //copy umask
         setUserMask(from_user.getUserMask());
 
-        if(from_user instanceof AccountImpl) {
-            final AccountImpl user = (AccountImpl) from_user;
+        if(from_user instanceof AccountImpl user) {
 
             groups = new ArrayList<>(user.groups);
 
@@ -183,8 +182,7 @@ public class AccountImpl extends AbstractAccount {
             hasDbaRole = user.hasDbaRole;
 
             _cred = user._cred;
-        } else if(from_user instanceof UserAider) {
-            final UserAider user = (UserAider) from_user;
+        } else if(from_user instanceof UserAider user) {
 
             final String[] groups = user.getGroups();
             for (final String group : groups) {

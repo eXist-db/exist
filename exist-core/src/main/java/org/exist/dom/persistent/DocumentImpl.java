@@ -948,10 +948,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public IStoredNode updateChild(final Txn transaction, final Node oldChild, final Node newChild) throws DOMException {
-        if(!(oldChild instanceof StoredNode)) {
+        if(!(oldChild instanceof IStoredNode<?> oldNode)) {
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         }
-        final IStoredNode<?> oldNode = (IStoredNode<?>) oldChild;
         final IStoredNode<?> newNode = (IStoredNode<?>) newChild;
         final IStoredNode<?> previousNode = (IStoredNode<?>) oldNode.getPreviousSibling();
         if(previousNode == null) {
