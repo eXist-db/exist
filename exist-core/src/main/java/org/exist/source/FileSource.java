@@ -103,7 +103,7 @@ public class FileSource extends AbstractSource {
     @Override
     public String getContent() throws IOException {
         checkEncoding();
-        return new String(Files.readAllBytes(path), encoding);
+        return Files.readString(path, encoding);
     }
 
     @Override
