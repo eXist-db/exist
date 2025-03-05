@@ -315,15 +315,12 @@ public abstract class Serializer implements XMLReader {
     protected int getHighlightingMode() {
         final String option =
                 getProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
-        if ("both".equals(option) || "all".equals(option)) {
-            return TAG_BOTH;
-        } else if ("elements".equals(option)) {
-            return TAG_ELEMENT_MATCHES;
-        } else if ("attributes".equals(option)) {
-            return TAG_ATTRIBUTE_MATCHES;
-        } else {
-            return TAG_NONE;
-        }
+        return switch (option) {
+            case "both", "all" -> TAG_BOTH;
+            case "elements" -> TAG_ELEMENT_MATCHES;
+            case "attributes" -> TAG_ATTRIBUTE_MATCHES;
+            case null, default -> TAG_NONE;
+        };
     }
 
     /**

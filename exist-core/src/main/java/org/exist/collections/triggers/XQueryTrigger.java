@@ -144,31 +144,31 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 				final Object paramValue = entry.getValue().get(0);
 
  				//get the binding prefix (if any)
- 				if ("bindingPrefix".equals(paramName)) {
-					final String bindingPrefix = (String) paramValue;
- 					if (bindingPrefix != null && !bindingPrefix.trim().isEmpty()) {
- 						this.bindingPrefix = bindingPrefix.trim() + ":";
- 					}
- 				}
+                switch (paramName) {
+                    case "bindingPrefix" -> {
+                        final String bindingPrefix = (String) paramValue;
+                        if (bindingPrefix != null && !bindingPrefix.trim().isEmpty()) {
+                            this.bindingPrefix = bindingPrefix.trim() + ":";
+                        }
+                    }
 
- 				//get the URL of the query (if any)
- 				else if ("url".equals(paramName)) {
-					this.urlQuery = (String) paramValue;
- 				}
+                    //get the URL of the query (if any)
+                    case "url" -> this.urlQuery = (String) paramValue;
 
- 				//get the query (if any)
- 				else if ("query".equals(paramName)) {
-					this.strQuery = (String) paramValue;
- 				}
 
- 				//make any other parameters available as external variables for the query
- 				else {
-                    //TODO could be enhanced to setup a sequence etc
-					if (userDefinedVariables == null) {
-						this.userDefinedVariables = new Properties();
-					}
- 					this.userDefinedVariables.put(paramName, paramValue);
- 				}
+                    //get the query (if any)
+                    case "query" -> this.strQuery = (String) paramValue;
+
+
+                    //make any other parameters available as external variables for the query
+                    case null, default -> {
+                        //TODO could be enhanced to setup a sequence etc
+                        if (userDefinedVariables == null) {
+                            this.userDefinedVariables = new Properties();
+                        }
+                        this.userDefinedVariables.put(paramName, paramValue);
+                    }
+                }
  			}
  			
  			//set a default binding prefix if none was specified

@@ -152,25 +152,27 @@ public class Password implements Credential {
     	if(obj == this) {
             return true;
         }
-    	
-    	if(obj == null) {
-            return false;
-        }
-    	
-    	if(obj instanceof Password p) {
 
-            if(algorithm != p.algorithm) {
-                throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);
+        switch (obj) {
+            case null -> {
+                return false;
             }
-            
-            return (Objects.equals(pw, p.pw));
+            case Password p -> {
+
+                if (algorithm != p.algorithm) {
+                    throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);
+                }
+
+                return (Objects.equals(pw, p.pw));
+            }
+            case String s -> {
+                return (hashAndEncode(s)).equals(pw);
+            }
+            default -> {
+            }
         }
-    	
-    	if(obj instanceof String) {
-            return (hashAndEncode((String) obj)).equals(pw);
-        }
-    	
-    	return false;
+
+        return false;
     }
     
     @Override

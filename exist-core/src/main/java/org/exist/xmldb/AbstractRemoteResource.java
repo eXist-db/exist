@@ -86,16 +86,24 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             throws XMLDBException {
         final Object res = getExtendedContent();
         if (res != null) {
-            if (res instanceof byte[]) {
-                return res;
-            } else if (res instanceof Path) {
-                return readFile((Path) res);
-            } else if (res instanceof java.io.File) {
-                return readFile(((java.io.File) res).toPath());
-            } else if (res instanceof InputSource) {
-                return readFile((InputSource) res);
-            } else if (res instanceof ContentFile) {
-                return ((ContentFile) res).getBytes();
+            switch (res) {
+                case byte[] bytes -> {
+                    return res;
+                }
+                case Path path1 -> {
+                    return readFile(path1);
+                }
+                case File file1 -> {
+                    return readFile(file1.toPath());
+                }
+                case InputSource source -> {
+                    return readFile(source);
+                }
+                case ContentFile contentFile1 -> {
+                    return contentFile1.getBytes();
+                }
+                default -> {
+                }
             }
         }
         return res;
@@ -115,16 +123,24 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             throws XMLDBException {
         final Object res = getExtendedContent();
         if (res != null) {
-            if (res instanceof Path) {
-                return readFile((Path) res);
-            } else if (res instanceof java.io.File) {
-                return readFile(((java.io.File) res).toPath());
-            } else if (res instanceof InputSource) {
-                return readFile((InputSource) res);
-            } else if (res instanceof String) {
-                return ((String) res).getBytes(UTF_8);
-            } else if (res instanceof ContentFile) {
-                return ((ContentFile) res).getBytes();
+            switch (res) {
+                case Path path1 -> {
+                    return readFile(path1);
+                }
+                case File file1 -> {
+                    return readFile(file1.toPath());
+                }
+                case InputSource source -> {
+                    return readFile(source);
+                }
+                case String s -> {
+                    return s.getBytes(UTF_8);
+                }
+                case ContentFile contentFile1 -> {
+                    return contentFile1.getBytes();
+                }
+                default -> {
+                }
             }
         }
 

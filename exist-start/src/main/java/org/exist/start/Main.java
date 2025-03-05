@@ -174,33 +174,35 @@ public class Main {
 
         final String _classname;
         if (args.length > 0) {
-            if ("client".equals(args[0])) {
-                _classname = "org.exist.client.InteractiveClient";
-                _mode = "client";
-
-            } else if ("backup".equals(args[0])) {
-                _classname = "org.exist.backup.Main";
-                _mode = "backup";
-
-            } else if ("jetty".equals(args[0]) || "standalone".equals(args[0])) {
-                _classname = "org.exist.jetty.JettyStart";
-                _mode = args[0];
-
-            } else if ("launch".equals(args[0])) {
-                _classname = "org.exist.launcher.LauncherWrapper";
-                _mode = "jetty";
-
-            } else if ("launcher".equals(args[0])) {
-                _classname = "org.exist.launcher.LauncherWrapper";
-                _mode = "other";
-
-            } else if ("shutdown".equals(args[0])) {
-                _classname = "org.exist.jetty.ServerShutdown";
-                _mode = "other";
-
-            } else {
-                _classname = args[0];
-                _mode = "other";
+            switch (args[0]) {
+                case "client" -> {
+                    _classname = "org.exist.client.InteractiveClient";
+                    _mode = "client";
+                }
+                case "backup" -> {
+                    _classname = "org.exist.backup.Main";
+                    _mode = "backup";
+                }
+                case "jetty", "standalone" -> {
+                    _classname = "org.exist.jetty.JettyStart";
+                    _mode = args[0];
+                }
+                case "launch" -> {
+                    _classname = "org.exist.launcher.LauncherWrapper";
+                    _mode = "jetty";
+                }
+                case "launcher" -> {
+                    _classname = "org.exist.launcher.LauncherWrapper";
+                    _mode = "other";
+                }
+                case "shutdown" -> {
+                    _classname = "org.exist.jetty.ServerShutdown";
+                    _mode = "other";
+                }
+                case null, default -> {
+                    _classname = args[0];
+                    _mode = "other";
+                }
             }
 
             final String[] nargs = new String[args.length - 1];

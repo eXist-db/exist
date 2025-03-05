@@ -121,26 +121,35 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     private Object getContent(final Object res) throws XMLDBException {
         if(res != null) {
-            if(res instanceof Path) {
-                return readFile((Path)res);
-            } else if(res instanceof java.io.File) {
-                return readFile(((java.io.File)res).toPath());
-            } else if(res instanceof InputSource) {
-                return readFile((InputSource) res);
-            } else if(res instanceof byte[]) {
-                return res;
-            } else if(res instanceof BinaryValue) {
-                try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-                    ((BinaryValue) res).streamBinaryTo(baos);
-                    return baos.toByteArray();
-                } catch (final IOException e) {
-                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+            switch (res) {
+                case Path path -> {
+                    return readFile(path);
                 }
-            } else if(res instanceof InputStream) {
-                try(final InputStream is = (InputStream)res) {
-                    return readFile(is);
-                } catch (final IOException e) {
-                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                case File file1 -> {
+                    return readFile(file1.toPath());
+                }
+                case InputSource source -> {
+                    return readFile(source);
+                }
+                case byte[] bytes -> {
+                    return res;
+                }
+                case BinaryValue value -> {
+                    try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+                        ((BinaryValue) res).streamBinaryTo(baos);
+                        return baos.toByteArray();
+                    } catch (final IOException e) {
+                        throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                    }
+                }
+                case InputStream inputStream -> {
+                    try (final InputStream is = (InputStream) res) {
+                        return readFile(is);
+                    } catch (final IOException e) {
+                        throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                    }
+                }
+                default -> {
                 }
             }
         }
@@ -149,20 +158,15 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public void setContent(final Object value) throws XMLDBException {
-        if(value instanceof Path) {
-            file = (Path)value;
-        } else if(value instanceof java.io.File) {
-            file = ((java.io.File)value).toPath();
-        } else if(value instanceof InputSource) {
-            inputSource = (InputSource)value;
-        } else if(value instanceof byte[]) {
-            rawData = (byte[])value;
-        } else if(value instanceof String) {
-            rawData = ((String) value).getBytes();
-        } else if(value instanceof BinaryValue) {
-            binaryValue = (BinaryValue)value;
-        } else {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + value.getClass().getName());
+        switch (value) {
+            case Path path -> file = path;
+            case File file1 -> file = file1.toPath();
+            case InputSource source -> inputSource = source;
+            case byte[] bytes -> rawData = bytes;
+            case String s -> rawData = s.getBytes();
+            case BinaryValue binaryValue1 -> binaryValue = binaryValue1;
+            case null, default ->
+                    throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + value.getClass().getName());
         }
 
         isExternal = true;

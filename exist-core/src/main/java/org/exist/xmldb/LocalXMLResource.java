@@ -555,18 +555,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         inputSource = null;
         root = null;
 
-        if (obj instanceof Path) {
-            file = (Path) obj;
-        } else if (obj instanceof java.io.File) {
-            file = ((java.io.File) obj).toPath();
-        } else if (obj instanceof AtomicValue) {
-            value = (AtomicValue) obj;
-        } else if (obj instanceof InputSource) {
-            inputSource=(InputSource) obj;
-        } else if (obj instanceof byte[]) {
-            content = new String((byte[])obj, UTF_8);
-        } else {
-            content = obj.toString();
+        switch (obj) {
+            case Path path -> file = path;
+            case java.io.File file1 -> file = file1.toPath();
+            case AtomicValue atomicValue -> value = atomicValue;
+            case InputSource source -> inputSource = source;
+            case byte[] bytes -> content = new String(bytes, UTF_8);
+            case null, default -> content = obj.toString();
         }
     }
 

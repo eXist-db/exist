@@ -73,16 +73,14 @@ public class FilterInputStreamCacheMonitor {
         final StringBuilder builder = new StringBuilder();
         for (final FilterInputStreamCacheInfo info : getActive()) {
             final FilterInputStreamCache cache = info.getCache();
-            final String id;
-            if (cache instanceof FileFilterInputStreamCache) {
-                id = ((FileFilterInputStreamCache)cache).getFilePath().normalize().toAbsolutePath().toString();
-            } else if (cache instanceof MemoryMappedFileFilterInputStreamCache) {
-                id = ((MemoryMappedFileFilterInputStreamCache)cache).getFilePath().normalize().toAbsolutePath().toString();
-            } else if (cache instanceof MemoryFilterInputStreamCache) {
-                id = "mem";
-            } else {
-                id = "unknown";
-            }
+            final String id = switch (cache) {
+                case FileFilterInputStreamCache fileFilterInputStreamCache ->
+                        fileFilterInputStreamCache.getFilePath().normalize().toAbsolutePath().toString();
+                case MemoryMappedFileFilterInputStreamCache memoryMappedFileFilterInputStreamCache ->
+                        memoryMappedFileFilterInputStreamCache.getFilePath().normalize().toAbsolutePath().toString();
+                case MemoryFilterInputStreamCache memoryFilterInputStreamCache -> "mem";
+                case null, default -> "unknown";
+            };
             builder.append(info.getRegistered()).append(": ").append(id);
         }
         return builder.toString();
