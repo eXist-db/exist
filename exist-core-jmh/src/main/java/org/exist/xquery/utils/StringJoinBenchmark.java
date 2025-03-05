@@ -94,8 +94,8 @@ public class StringJoinBenchmark {
 //        final StringBuilder builder = builderState.builder;
         final StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < strings.size(); i++) {
-            builder.append(strings.get(i));
+        for (String string : strings) {
+            builder.append(string);
             builder.append(", ");
         }
 
