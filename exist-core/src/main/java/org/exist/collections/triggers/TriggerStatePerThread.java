@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Avoid infinite recursions in Triggers by preventing the same trigger
@@ -238,7 +239,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
+			return Objects.equals(dst, that.dst);
 		}
 
 		private boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
@@ -254,7 +255,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
+			return Objects.equals(dst, otherDst);
 		}
 
 		public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
@@ -275,7 +276,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
+			return Objects.equals(dst, otherDst);
 		}
 
 		public boolean completes(final Object o) {
@@ -306,7 +307,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
+			return Objects.equals(dst, that.dst);
 		}
 	}
 }

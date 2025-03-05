@@ -22,13 +22,7 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -490,27 +484,27 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 		final XQueryTrigger that = (XQueryTrigger) o;
 
-		if (events != null ? !events.equals(that.events) : that.events != null) {
+		if (!Objects.equals(events, that.events)) {
 			return false;
 		}
 
-		if (collection != null ? !collection.equals(that.collection) : that.collection != null) {
+		if (!Objects.equals(collection, that.collection)) {
 			return false;
 		}
 
-		if (strQuery != null ? !strQuery.equals(that.strQuery) : that.strQuery != null) {
+		if (!Objects.equals(strQuery, that.strQuery)) {
 			return false;
 		}
 
-		if (urlQuery != null ? !urlQuery.equals(that.urlQuery) : that.urlQuery != null) {
+		if (!Objects.equals(urlQuery, that.urlQuery)) {
 			return false;
 		}
 
-		if (userDefinedVariables != null ? !userDefinedVariables.equals(that.userDefinedVariables) : that.userDefinedVariables != null) {
+		if (!Objects.equals(userDefinedVariables, that.userDefinedVariables)) {
 			return false;
 		}
 
-		return bindingPrefix != null ? bindingPrefix.equals(that.bindingPrefix) : that.bindingPrefix == null;
+		return Objects.equals(bindingPrefix, that.bindingPrefix);
 	}
 
 	//Collection's methods
