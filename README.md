@@ -24,37 +24,6 @@ eXist-db es una base de datos nativa XML de código abierto que permite almacena
 - API REST y WebDAV para integración con otras aplicaciones.
 - Alta escalabilidad y rendimiento optimizado.
 
-## 🏗️ Arquitectura
-
-eXist-db sigue un modelo de base de datos orientado a documentos XML con una arquitectura modular basada en los siguientes componentes:
-
-```plantuml
-@startuml
-node "Cliente" {
-  [Aplicación Web]
-  [API REST]
-  [Interfaz Web]
-}
-
-node "Servidor eXist-db" {
-  [Motor XML]
-  [Manejador de Índices]
-  [Repositorio de Datos]
-}
-
-node "Almacenamiento" {
-  [Sistema de Archivos]
-  [Base de Datos]
-}
-
-[Aplicación Web] --> [API REST]
-[API REST] --> [Motor XML]
-[Motor XML] --> [Manejador de Índices]
-[Manejador de Índices] --> [Repositorio de Datos]
-[Repositorio de Datos] --> [Sistema de Archivos]
-@enduml
-```
-
 ## 🏁 Instalación rápida
 ```sh
 # Descargar la última versión estable
