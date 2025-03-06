@@ -39,11 +39,10 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBShutdownTask extends AbstractXMLDBTask
 {
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
 	
 	/**
+	 * @see org.apache.tools.ant.Task#execute()
+	 * 
 	 * Executes the task to shutdown the database instance associated with a specified XMLDB collection.
 	 * It checks for necessary parameters, logs actions, and handles exceptions appropriately.
 	 */

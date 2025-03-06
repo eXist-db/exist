@@ -36,11 +36,9 @@ public class ListGroupsTask extends UserTask
     private String outputproperty = null;
     private String separator      = ",";
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to list all user groups in the database.
      * 
      * <p>This method retrieves the list of groups from the service and formats them 

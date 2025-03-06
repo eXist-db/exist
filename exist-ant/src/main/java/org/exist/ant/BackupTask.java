@@ -30,7 +30,6 @@ import java.nio.file.Paths;
 
 
 /**
- * DOCUMENT ME!
  *
  * @author  wolf
  * @author carvazpal

@@ -38,11 +38,10 @@ public class LockResourceTask extends UserTask
     private String name     = null;
     private String resource = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
     
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to lock a resource for a specific user.
      * 
      * <p>This method verifies that both the resource name and user name 

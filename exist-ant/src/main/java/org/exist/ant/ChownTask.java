@@ -38,13 +38,10 @@ public class ChownTask extends UserTask
     private String name     = null;
     private String group    = null;
     private String resource = null;
-
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    
     
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to change the ownership of a resource or collection. 
      * 
      * <p>This method ensures that both a user and a group are specified. If not, it throws an exception. 

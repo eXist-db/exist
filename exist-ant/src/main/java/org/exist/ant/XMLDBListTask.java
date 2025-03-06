@@ -41,12 +41,10 @@ public class XMLDBListTask extends AbstractXMLDBTask
     private boolean hasResources   = false;
     private String  separator      = ",";
     private String  outputproperty;
-
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
     
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task of listing collections and/or resources in the specified XMLDB collection.
      * 
      * This method first checks if the required collection URI is provided. It also checks if 

@@ -37,11 +37,9 @@ public class ListUsersTask extends UserTask
     private String outputproperty = null;
     private String separator      = ",";
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to list all user accounts in the database.
      * 
      * <p>This method retrieves a list of all existing user accounts and 

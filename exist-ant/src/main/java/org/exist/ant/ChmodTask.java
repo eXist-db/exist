@@ -38,11 +38,9 @@ public class ChmodTask extends UserTask
     private String resource = null;
     private String mode     = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to set permissions on a specified resource. 
      * 
      * <p>This method checks the provided permissions and mode. If permissions are not provided, 

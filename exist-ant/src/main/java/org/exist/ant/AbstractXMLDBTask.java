@@ -41,7 +41,6 @@ import java.util.StringTokenizer;
 
 
 /**
- * DOCUMENT ME!
  *
  * @author  wolf
  * @author  andrzej@chaeron.com

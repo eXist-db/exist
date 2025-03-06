@@ -40,11 +40,9 @@ public abstract class UserTask extends AbstractXMLDBTask
     protected UserManagementService service = null;
     protected Collection            base    = null;
 
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
-    
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to retrieve and initialize the base collection from the XMLDB system.
      * 
      * <p>This method checks if the URI for the XMLDB collection is provided. It then attempts 

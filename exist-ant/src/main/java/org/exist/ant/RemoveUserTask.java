@@ -35,12 +35,10 @@ import org.xmldb.api.base.XMLDBException;
 public class RemoveUserTask extends UserTask
 {
     private String name = null;
-
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
     
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to remove a user account from the database.
      * 
      * <p>This method first checks if a username is provided; if not, 

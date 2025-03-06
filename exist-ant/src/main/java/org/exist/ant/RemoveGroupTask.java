@@ -33,12 +33,10 @@ import org.xmldb.api.base.XMLDBException;
 public class RemoveGroupTask extends UserTask
 {
     private String name = null;
-
-    /* (non-Javadoc)
-     * @see org.apache.tools.ant.Task#execute()
-     */
     
     /**
+     * @see org.apache.tools.ant.Task#execute()
+     * 
      * Executes the task to remove a group from the database.
      * 
      * <p>This method first checks if a group name is provided. If not, 
