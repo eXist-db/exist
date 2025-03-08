@@ -52,8 +52,8 @@ import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 public class CollectionXConf
 {
 
-    public final static String TYPE_QNAME = "qname";
-    public final static String TYPE_PATH = "path";
+    public static final String TYPE_QNAME = "qname";
+    public static final String TYPE_PATH = "path";
 
     private InteractiveClient client = null;	//the client
 	private String path = null;				//path of the collection.xconf file
