@@ -85,7 +85,7 @@ public class NativeStructuralIndexWorkerTest {
     public void getDocIdRanges_singleId() {
         final NativeStructuralIndexWorker indexWorker = new NativeStructuralIndexWorker(null);
 
-        final DocumentSet docs = documentIdSet(Arrays.asList(6574));
+        final DocumentSet docs = documentIdSet(List.of(6574));
 
         final List<NativeStructuralIndexWorker.Range> ranges = indexWorker.getDocIdRanges(docs);
 

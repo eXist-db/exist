@@ -80,7 +80,7 @@ public class ConfigurationImpl implements Configuration {
         final List<Configuration> list = getConfigurations(name);
         if (list == null)
             {return null;}
-        if (list.size() > 0)
+        if (!list.isEmpty())
             {return list.getFirst();}
         return null;
     }

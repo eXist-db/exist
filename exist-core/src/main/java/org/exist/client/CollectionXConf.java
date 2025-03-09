@@ -675,7 +675,7 @@ public class CollectionXConf
 				//parameters if any
 				if(parameters != null)
 				{
-					if(parameters.size() > 0)
+					if(!parameters.isEmpty())
 					{
 						for (Object o : parameters.keySet()) {
 							final String name = (String) o;

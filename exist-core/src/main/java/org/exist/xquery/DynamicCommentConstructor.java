@@ -80,7 +80,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     final Item next = i.nextItem();
-                    if(buf.length() > 0)
+                    if(!buf.isEmpty())
                         {buf.append(' ');}
                     buf.append(next.toString());
                 }

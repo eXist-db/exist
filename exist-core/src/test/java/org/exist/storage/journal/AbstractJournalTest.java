@@ -2193,9 +2193,7 @@ public abstract class AbstractJournalTest<T> {
         }
 
         public ExtendedArrayList<T> add(final T... items) {
-            for (final T item : items) {
-                super.add(item);
-            }
+            super.addAll(Arrays.asList(items));
             return this;
         }
     }

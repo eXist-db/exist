@@ -214,7 +214,7 @@ public class LauncherWrapper {
                 final String os = key.substring((LAUNCHER_PROPERTY_VMOPTIONS + '.').length()).toLowerCase();
                 if (OS.contains(os)) {
                     final String value = launcherProperties.getProperty(key);
-                    Arrays.stream(value.split("\\s+")).forEach(args::add);
+                    args.addAll(Arrays.asList(value.split("\\s+")));
                 }
             }
         }

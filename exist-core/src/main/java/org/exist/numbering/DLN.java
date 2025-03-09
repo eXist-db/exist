@@ -70,7 +70,7 @@ public class DLN extends DLNBase implements NodeId {
                 buf.append(ch);
             }
         }
-        if(buf.length() > 0) {
+        if(!buf.isEmpty()) {
             addLevelId(Integer.parseInt(buf.toString()), subValue);
         }
     }

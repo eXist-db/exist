@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.io.input.CountingInputStream;
 import org.exist.EXistException;
@@ -71,10 +72,10 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
     @BeforeClass
     public static void storeTempBinaryDocs() throws IOException {
         testFile1 = temporaryFolder.getRoot().toPath().resolve("blob1.bin");
-        Files.write(testFile1, Arrays.asList("blob1"), CREATE_NEW);
+        Files.write(testFile1, List.of("blob1"), CREATE_NEW);
 
         testFile2 = temporaryFolder.getRoot().toPath().resolve("blob2.bin");
-        Files.write(testFile2, Arrays.asList("blob2"), CREATE_NEW);
+        Files.write(testFile2, List.of("blob2"), CREATE_NEW);
     }
 
     @Override

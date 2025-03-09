@@ -85,14 +85,14 @@ public class DynamicTextConstructor extends NodeConstructor {
                 for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     final Item next = i.nextItem();
-                    if(buf.length() > 0)
+                    if(!buf.isEmpty())
                         {buf.append(' ');}
                     buf.append(next.toString());
                 }
                 //It is possible for a text node constructor to construct a text node containing a zero-length string.
                 //However, if used in the content of a constructed element or document node,
                 //such a text node will be deleted or merged with another text node.
-                if (!newDocumentContext && buf.length() == 0)
+                if (!newDocumentContext && buf.isEmpty())
                     {result = Sequence.EMPTY_SEQUENCE;}
                 else {
                     final int nodeNr = builder.characters(buf);

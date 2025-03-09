@@ -57,6 +57,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -77,10 +78,10 @@ public class RecoverXmlTest extends AbstractRecoverTest {
     @BeforeClass
     public static void storeTempXmlDocs() throws IOException {
         testFile1 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc1.xml");
-        Files.write(testFile1, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element1>text1</element1>"), CREATE_NEW);
+        Files.write(testFile1, List.of("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element1>text1</element1>"), CREATE_NEW);
 
         testFile2 = temporaryFolder.getRoot().toPath().resolve("RecoverXmlTest.doc2.xml");
-        Files.write(testFile2, Arrays.asList("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element2>text2</element2>"), CREATE_NEW);
+        Files.write(testFile2, List.of("<?xml version=\"1.0\" encoding=\"UTF-8\"?><element2>text2</element2>"), CREATE_NEW);
     }
 
     @Test

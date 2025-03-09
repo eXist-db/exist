@@ -48,8 +48,8 @@ public class TextUpdateTest extends ConcurrentTestBase {
 
 	@Override
 	public List<Runner> getRunners() {
-		return Arrays.asList(
-				new Runner(new TextUpdateAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml"), 1000, 0, 0)
-		);
+		return List.of(
+                new Runner(new TextUpdateAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml"), 1000, 0, 0)
+        );
 	}
 }

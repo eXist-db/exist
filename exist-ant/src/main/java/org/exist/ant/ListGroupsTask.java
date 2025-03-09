@@ -65,7 +65,7 @@ public class ListGroupsTask extends UserTask
 
                 }
 
-                if( buffer.length() > 0 ) {
+                if(!buffer.isEmpty()) {
                     log( "Setting output property " + outputproperty + " to " + buffer, Project.MSG_DEBUG );
                     getProject().setNewProperty( outputproperty, buffer.toString() );
                 }

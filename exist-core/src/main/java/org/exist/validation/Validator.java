@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.xml.parsers.ParserConfigurationException;
@@ -223,7 +224,7 @@ public class Validator {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation using user specified catalog '{}'.", grammarUrl);
                 }
-                final Resolver resolver = ResolverFactory.newResolver(Arrays.asList(Tuple(grammarUrl, Optional.empty())));
+                final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(grammarUrl, Optional.empty())));
                 XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else if (grammarUrl.endsWith("/")) {

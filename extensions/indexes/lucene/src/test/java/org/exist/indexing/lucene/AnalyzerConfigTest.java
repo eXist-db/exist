@@ -262,7 +262,7 @@ public class AnalyzerConfigTest {
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -283,7 +283,7 @@ public class AnalyzerConfigTest {
         final Object[] vcParamValues = {
                 LuceneIndex.LUCENE_VERSION_IN_USE,
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -302,7 +302,7 @@ public class AnalyzerConfigTest {
         };
         final Object[] vcParamValues = {
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -323,7 +323,7 @@ public class AnalyzerConfigTest {
         final Object[] vcParamValues = {
                 LuceneIndex.LUCENE_VERSION_IN_USE,
                 12345,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -342,7 +342,7 @@ public class AnalyzerConfigTest {
         };
         final Object[] vcParamValues = {
                 Boolean.TRUE,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -363,7 +363,7 @@ public class AnalyzerConfigTest {
         final Object[] vcParamValues = {
                 LuceneIndex.LUCENE_VERSION_IN_USE,
                 Boolean.TRUE,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -382,7 +382,7 @@ public class AnalyzerConfigTest {
         };
         final Object[] vcParamValues = {
                 true,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
@@ -403,7 +403,7 @@ public class AnalyzerConfigTest {
         final Object[] vcParamValues = {
                 LuceneIndex.LUCENE_VERSION_IN_USE,
                 true,
-                new HashSet<>(Arrays.asList("s1, s2"))
+                new HashSet<>(List.of("s1, s2"))
         };
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);

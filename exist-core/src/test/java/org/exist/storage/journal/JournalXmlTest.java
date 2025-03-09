@@ -90,10 +90,10 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
     @BeforeClass
     public static void storeTempXmlDocs() throws IOException {
         testFile1 = temporaryFolder.getRoot().toPath().resolve("JournalXmlTest.doc1.xml");
-        Files.write(testFile1, Arrays.asList("<element1>text1</element1>"), CREATE_NEW);
+        Files.write(testFile1, List.of("<element1>text1</element1>"), CREATE_NEW);
 
         testFile2 = temporaryFolder.getRoot().toPath().resolve("JournalXmlTest.doc2.xml");
-        Files.write(testFile2, Arrays.asList("<element2>text2</element2>"), CREATE_NEW);
+        Files.write(testFile2, List.of("<element2>text2</element2>"), CREATE_NEW);
     }
 
     @Test

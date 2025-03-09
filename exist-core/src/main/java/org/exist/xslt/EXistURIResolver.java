@@ -139,7 +139,7 @@ public class EXistURIResolver implements URIResolver {
           path = href;
         } else if (href.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX)) {
           path = href.substring(XmldbURI.EMBEDDED_SERVER_URI_PREFIX.length());
-        } else if (base == null || base.length() == 0) {
+        } else if (base == null || base.isEmpty()) {
           path = basePath + "/" + href;
         } else {
           // Maybe base never contains this prefix?  Check to be sure.

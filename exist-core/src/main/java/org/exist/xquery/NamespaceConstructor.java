@@ -94,7 +94,7 @@ public class NamespaceConstructor extends NodeConstructor {
         String prefix = XMLConstants.DEFAULT_NS_PREFIX;
         if (!prefixSeq.isEmpty()) {
             prefix = prefixSeq.getStringValue();
-            if (!(prefix.length() == 0 || XMLNames.isNCName(prefix))) {
+            if (!(prefix.isEmpty() || XMLNames.isNCName(prefix))) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "Prefix cannot be cast to xs:NCName");
             }
         }
@@ -115,7 +115,7 @@ public class NamespaceConstructor extends NodeConstructor {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to XML namespace");
         } else if (value.equals(Namespaces.XMLNS_NS)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to xmlns namespace");
-        } else if (value.length() == 0) {
+        } else if (value.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to empty or zero-length namespace");
         }
 

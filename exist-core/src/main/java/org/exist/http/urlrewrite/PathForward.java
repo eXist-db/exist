@@ -42,7 +42,7 @@ public class PathForward extends Forward {
             servletName = null;
         }
         if (servletName == null) {
-            if (url == null || url.length() == 0) {
+            if (url == null || url.isEmpty()) {
                 throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");
             }
             setTarget(URLRewrite.normalizePath(url));

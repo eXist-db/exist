@@ -106,7 +106,7 @@ public class JMXClient {
             echo(String.format("%17d %17d %17d", values[0], values[1], values[2]));
 
             final TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
-            if (table.size() > 0) {
+            if (!table.isEmpty()) {
                 echo("\nCurrently active threads:");
             }
 

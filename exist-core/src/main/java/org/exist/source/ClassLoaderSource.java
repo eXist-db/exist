@@ -65,7 +65,7 @@ public class ClassLoaderSource extends URLSource {
     public String type() {
         final String protocol = url.getProtocol();
         final String host = url.getHost();
-        if ("file".equals(protocol) && (host == null || host.length() == 0 || "localhost".equals(host) || "127.0.0.1".equals(host))) {
+        if ("file".equals(protocol) && (host == null || host.isEmpty() || "localhost".equals(host) || "127.0.0.1".equals(host))) {
             return "File";
         }
         return "Classloader";

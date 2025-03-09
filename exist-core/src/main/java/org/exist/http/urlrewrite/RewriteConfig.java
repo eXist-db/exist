@@ -232,7 +232,7 @@ public class RewriteConfig {
                  * as an attribute on the ControllerForward object.
                  */
                 final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
-                if (serverName != null && serverName.length() > 0) {
+                if (serverName != null && !serverName.isEmpty()) {
                     cf.setServerName(serverName);
                 }
                 rewrite = cf;

@@ -132,7 +132,7 @@ public class UnionTest {
         final int offset = collectionPath.indexOf("/") > -1 ? collectionPath.indexOf("/") : collectionPath.length();
         final String colName = collectionPath.substring(0, offset);
         
-        if(colName.length() == 0) {
+        if(colName.isEmpty()) {
             return currentCollection;
         }
         

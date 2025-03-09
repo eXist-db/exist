@@ -184,7 +184,7 @@ public class NativeSerializer extends Serializer {
 	        	}
 	        }
 	        final String ns = defaultNS == null ? node.getNamespaceURI() : defaultNS;
-	        if (ns != null && ns.length() > 0 && (!namespaces.contains(ns))) {
+	        if (ns != null && !ns.isEmpty() && (!namespaces.contains(ns))) {
                 String prefix = node.getPrefix();
                 if(prefix == null) {
                     prefix = XMLConstants.DEFAULT_NS_PREFIX;
@@ -294,7 +294,7 @@ public class NativeSerializer extends Serializer {
                     receiver.endPrefixMapping(prefix);
                 }
             }
-            if (ns != null && ns.length() > 0 && (!namespaces.contains(ns))) {
+            if (ns != null && !ns.isEmpty() && (!namespaces.contains(ns))) {
                 String prefix = node.getPrefix();
                 if(prefix == null) {
                     prefix = XMLConstants.DEFAULT_NS_PREFIX;

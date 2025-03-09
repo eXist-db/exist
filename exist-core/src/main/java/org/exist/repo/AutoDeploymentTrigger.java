@@ -135,7 +135,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
 
     private @Nullable <T> T getFirstParamValue(final Map<String, List<? extends Object>> params, final String paramName, final Function<Object, T> valueConverter) {
         final List<? extends Object> values = params.get(paramName);
-        if (values != null && values.size() > 0) {
+        if (values != null && !values.isEmpty()) {
             final Object value = values.getFirst();
             if (value != null) {
                 return valueConverter.apply(value);

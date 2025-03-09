@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -143,7 +144,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
                         maybeInputSource.get().setSystemId(catalogPath);
                     }
 
-                    final Resolver resolver = ResolverFactory.newResolver(Arrays.asList(Tuple(catalogPath, maybeInputSource)));
+                    final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(catalogPath, maybeInputSource)));
                     final InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
                     if (source != null) {
                         resourcePath = source.getSystemId();

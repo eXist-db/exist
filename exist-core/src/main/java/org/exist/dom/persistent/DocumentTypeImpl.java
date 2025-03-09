@@ -88,11 +88,11 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     public static DocumentTypeImpl read(final VariableByteInput istream) throws IOException {
         final String name = istream.readUTF();
         String systemId = istream.readUTF();
-        if(systemId.length() == 0) {
+        if(systemId.isEmpty()) {
             systemId = null;
         }
         String publicId = istream.readUTF();
-        if(publicId.length() == 0) {
+        if(publicId.isEmpty()) {
             publicId = null;
         }
 

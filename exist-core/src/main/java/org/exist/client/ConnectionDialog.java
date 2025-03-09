@@ -514,7 +514,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     private void btnSaveToFavouritesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveToFavouritesActionPerformed
         final String favouriteName = JOptionPane.showInputDialog(this, "Please enter a name for your favourite:", "Save Favourite", JOptionPane.QUESTION_MESSAGE);
 
-        if (favouriteName != null && favouriteName.length() > 0) {
+        if (favouriteName != null && !favouriteName.isEmpty()) {
             for (int i = 0; i < getFavouritesModel().getSize(); i++) {
                 if (getFavouritesModel().elementAt(i).equals(favouriteName)) {
                     final int result = JOptionPane.showConfirmDialog(this, Messages.getString("LoginPanel.19"), Messages.getString("LoginPanel.20"), JOptionPane.YES_NO_OPTION);

@@ -52,7 +52,7 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 
     @Override
     public List<Runner> getRunners() {
-        return Arrays.asList(
+        return List.of(
                 new Runner(new ComplexUpdateAction(XmldbURI.LOCAL_DB + "/complex", "R01.xml", 200), 1, 0, 0)
         );
     }

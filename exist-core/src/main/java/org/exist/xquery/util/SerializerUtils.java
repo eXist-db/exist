@@ -408,7 +408,7 @@ public class SerializerUtils {
             final StringBuilder qnamesValue = new StringBuilder();
             final String[] qnameStrs = value.split("\\s");
             for (final String qnameStr : qnameStrs) {
-                if (qnamesValue.length() > 0) {
+                if (!qnamesValue.isEmpty()) {
                     //separate entries with a space
                     qnamesValue.append(' ');
                 }

@@ -88,10 +88,10 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
     @BeforeClass
     public static void storeTempBinaryDocs() throws IOException {
         testFile1 = temporaryFolder.getRoot().toPath().resolve("blob1.bin");
-        Files.write(testFile1, Arrays.asList("blob1"), CREATE_NEW);
+        Files.write(testFile1, List.of("blob1"), CREATE_NEW);
 
         testFile2 = temporaryFolder.getRoot().toPath().resolve("blob2.bin");
-        Files.write(testFile2, Arrays.asList("blob2"), CREATE_NEW);
+        Files.write(testFile2, List.of("blob2"), CREATE_NEW);
     }
 
     @Override

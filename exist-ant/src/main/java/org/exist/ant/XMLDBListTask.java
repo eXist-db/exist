@@ -99,7 +99,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
                 final List<String> resources = base.listResources();
                 if( !resources.isEmpty() ) {
 
-                    if( buffer.length() > 0 ) {
+                    if(!buffer.isEmpty()) {
                         buffer.append( separator );
                     }
 
@@ -119,7 +119,7 @@ public class XMLDBListTask extends AbstractXMLDBTask
                 }
             }
 
-            if( buffer.length() > 0 ) {
+            if(!buffer.isEmpty()) {
                 log( "Set property " + outputproperty, Project.MSG_INFO );
                 getProject().setNewProperty( outputproperty, buffer.toString() );
             }

@@ -1374,7 +1374,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             }
 
             //If the database is now idle, do some useful stuff
-            if(activeBrokers.size() == 0) {
+            if(activeBrokers.isEmpty()) {
                 //TODO : use a "clean" dedicated method (we have some below) ?
                 if(syncRequired) {
                     //Note that the broker is not yet really inactive ;-)
@@ -1398,7 +1398,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
         serviceModeUser = user;
         synchronized(this) {
-            if(activeBrokers.size() != 0) {
+            if(!activeBrokers.isEmpty()) {
                 while(!inServiceMode) {
                     try {
                         wait();
@@ -1629,10 +1629,10 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                     final long waitStart = System.currentTimeMillis();
                     //Are there active brokers ?
-                    if (activeBrokers.size() > 0) {
+                    if (!activeBrokers.isEmpty()) {
                         printSystemInfo();
                         LOG.info("Waiting {}ms for remaining threads to shut down...", maxShutdownWait);
-                        while (activeBrokers.size() > 0) {
+                        while (!activeBrokers.isEmpty()) {
                             try {
                                 //Wait until they become inactive...
                                 this.wait(1000);

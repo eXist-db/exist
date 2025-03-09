@@ -65,7 +65,7 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 
     @Override
     public List<Runner> getRunners() {
-        return Arrays.asList(
+        return List.of(
                 new Runner(new AttributeUpdateAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml", wordList), 20, 0, 0)
                 //new Runner(new XQueryAction(getUri + "/C1", "R1.xml", QUERY), 100, 100, 30);
         );

@@ -344,7 +344,7 @@ public class QName implements Comparable<QName> {
     public static QName parse(final Context context, final String qname, final String defaultNS)
             throws IllegalQNameException {
 
-        final char firstChar = qname.length() > 0 ? qname.charAt(0) : 0;
+        final char firstChar = !qname.isEmpty() ? qname.charAt(0) : 0;
 
         // quick test if qname is in clark notation
         if (firstChar == '{') {

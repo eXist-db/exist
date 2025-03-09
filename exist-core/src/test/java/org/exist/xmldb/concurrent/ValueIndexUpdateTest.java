@@ -56,8 +56,8 @@ public class ValueIndexUpdateTest extends ConcurrentTestBase {
 
 	@Override
 	public List<Runner> getRunners() {
-		return Arrays.asList(
-				new Runner(new ValueAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml"), 50, 0, 100)
-		);
+		return List.of(
+                new Runner(new ValueAppendAction(XmldbURI.LOCAL_DB + "/C1", "R1.xml"), 50, 0, 100)
+        );
 	}
 }

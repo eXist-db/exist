@@ -665,7 +665,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     }
 
     public boolean isCollectionPathAbsolute() {
-        return (encodedCollectionPath != null) && (encodedCollectionPath.length() > 0) && (encodedCollectionPath.charAt(0) == '/');
+        return (encodedCollectionPath != null) && (!encodedCollectionPath.isEmpty()) && (encodedCollectionPath.charAt(0) == '/');
     }
 
     public XmldbURI normalizeCollectionPath() {

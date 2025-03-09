@@ -283,7 +283,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     public void endCDATA() {
         if (!stack.isEmpty()) {
             final ElementImpl last = stack.peek();
-            if (charBuf != null && charBuf.length() > 0) {
+            if (charBuf != null && !charBuf.isEmpty()) {
                 final CDATASectionImpl cdata = new CDATASectionImpl(last.getExpression(), charBuf);
                 cdata.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, cdata);
@@ -346,7 +346,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 	// }
 
         //from startElement method
-	if (charBuf != null && charBuf.length() > 0) {
+	if (charBuf != null && !charBuf.isEmpty()) {
 	    XMLString normalized = null;
             switch (ptp) {
                 case COMMENT:
@@ -600,7 +600,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             setPrevious(null);
             node.setOwnerDocument(document);
             node.setAttributes((short) attrLength);
-            if (nsMappings != null && nsMappings.size() > 0) {
+            if (nsMappings != null && !nsMappings.isEmpty()) {
                 node.setNamespaceMappings(nsMappings);
                 nsMappings.clear();
             }
@@ -624,7 +624,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             node.setOwnerDocument(document);
             node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
             node.setAttributes((short) attrLength);
-            if (nsMappings != null && nsMappings.size() > 0) {
+            if (nsMappings != null && !nsMappings.isEmpty()) {
                 node.setNamespaceMappings(nsMappings);
                 nsMappings.clear();
             }

@@ -67,7 +67,7 @@ public class Collations extends BasicFunction {
 		final Locale[] locales = Collator.getAvailableLocales();
 		for (Locale locale : locales) {
 			String language = locale.getLanguage();
-			if (locale.getCountry().length() > 0) {
+			if (!locale.getCountry().isEmpty()) {
 				language += '-' + locale.getCountry();
 			}
 			result.add(new StringValue(this, language));

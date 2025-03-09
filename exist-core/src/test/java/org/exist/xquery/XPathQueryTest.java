@@ -49,6 +49,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2194,7 +2195,7 @@ public class XPathQueryTest {
     public void cdataMemtreeDom() throws XMLDBException, IOException {
         final String docName = "cdata.xml";
         final Path tempFile = tempFolder.newFile().toPath();
-        Files.write(tempFile, Arrays.asList(cdata_xml));
+        Files.write(tempFile, List.of(cdata_xml));
 
         final XQueryService service = getQueryService();
 

@@ -116,7 +116,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
 
         this.myParent = new Repository(storage);
         final List<PackageException> exceptions = this.myParent.init();
-        if (exceptions.size() > 0) {
+        if (!exceptions.isEmpty()) {
             EXIST_LOG.warn("It may not have been possible to load all EXPath Packages, see repo.log for details...");
             for (final PackageException exception : exceptions) {
                 LOG.error(exception.getMessage(), exception);

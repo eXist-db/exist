@@ -177,7 +177,7 @@ class NodeStats {
             {newPath = currentPath;}
         else {
             newPath = new StringBuilder(currentPath);
-            if (newPath.length() > 0)
+            if (!newPath.isEmpty())
                 {newPath.append(" -> ");}
             newPath.append(qname);
             newPath.append('[').append(nodeCount).append(',');
