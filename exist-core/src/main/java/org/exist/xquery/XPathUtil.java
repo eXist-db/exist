@@ -90,64 +90,41 @@ public class XPathUtil {
     }
 
     public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
-            boolean expandChars, final Expression expression) throws XPathException {
+                                                   boolean expandChars, final Expression expression) throws XPathException {
 
-        switch (obj) {
-            case null -> {
-                //return Sequence.EMPTY_SEQUENCE;
-                return null;
-                //return Sequence.EMPTY_SEQUENCE;
+        return switch (obj) {
+            case null -> null; //return Sequence.EMPTY_SEQUENCE;
+            case Sequence sequence -> sequence;
+            case String stringValue -> {
+                final StringValue v = new StringValue(expression, stringValue);
+                yield (expandChars ? v.expand() : v);
             }
-            case Sequence sequence -> {
-                return sequence;
-            }
-            case String s -> {
-                final StringValue v = new StringValue(expression, s);
-                return (expandChars ? v.expand() : v);
-            }
-            case Boolean b -> {
-                return BooleanValue.valueOf(b);
-            }
-            case Float v -> {
-                return new FloatValue(expression, v);
-            }
-            case Double v -> {
-                return new DoubleValue(expression, v);
-            }
-            case Short aShort -> {
-                return new IntegerValue(expression, aShort, Type.SHORT);
-            }
-            case Integer integer -> {
-                return new IntegerValue(expression, integer, Type.INT);
-            }
-            case Long l -> {
-                return new IntegerValue(expression, l, Type.LONG);
-            }
-            case BigInteger bigInteger -> {
-                return new IntegerValue(expression, bigInteger);
-            }
-            case BigDecimal bigDecimal -> {
-                return new DecimalValue(expression, bigDecimal);
-            }
-            case byte[] bytes -> {
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(bytes), expression);
-            }
+            case Boolean booleanValue -> BooleanValue.valueOf(booleanValue);
+            case Float floatValue -> new FloatValue(expression, floatValue);
+            case Double doubleValue -> new DoubleValue(expression, doubleValue);
+            case Short shortValue -> new IntegerValue(expression, shortValue, Type.SHORT);
+            case Integer integerValue -> new IntegerValue(expression, integerValue, Type.INT);
+            case Long longValue -> new IntegerValue(expression, longValue, Type.LONG);
+            case BigInteger bigInteger -> new IntegerValue(expression, bigInteger);
+            case BigDecimal bigDecimal -> new DecimalValue(expression, bigDecimal);
+            case byte[] bytes ->
+                    BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(),
+                            new UnsynchronizedByteArrayInputStream(bytes), expression);
             case ResourceSet resourceSet -> {
                 final Sequence seq = new AVLTreeNodeSet();
                 try {
                     final DBBroker broker = context.getBroker();
-                    for (final ResourceIterator it = ((ResourceSet) obj).getIterator(); it.hasMoreResources(); ) {
+                    for (final ResourceIterator it = resourceSet.getIterator(); it.hasMoreResources(); ) {
                         seq.add(getNode(broker, (XMLResource) it.nextResource(), expression));
                     }
                 } catch (final XMLDBException xe) {
                     throw new XPathException(expression, "Failed to convert ResourceSet to node: " + xe.getMessage());
                 }
-                return seq;
+                yield seq;
 
             }
-            case XMLResource xmlResource -> {
-                return getNode(context.getBroker(), xmlResource, expression);
-            }
+            case XMLResource xmlResource -> getNode(context.getBroker(), xmlResource, expression);
+
             case Node node -> {
                 context.pushDocumentContext();
                 final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
@@ -156,16 +133,14 @@ public class XPathUtil {
                     builder.startDocument();
                     final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
                     streamer.setContentHandler(receiver);
-                    streamer.serialize((Node) obj, false);
-                    if (obj instanceof Document) {
-                        return builder.getDocument();
+                    streamer.serialize(node, false);
+                    if (node instanceof Document) {
+                        yield builder.getDocument();
                     } else {
-                        return builder.getDocument().getNode(1);
+                        yield builder.getDocument().getNode(1);
                     }
                 } catch (final SAXException e) {
-                    throw new XPathException(expression,
-                            "Failed to transform node into internal model: "
-                                    + e.getMessage());
+                    throw new XPathException(expression, "Failed to transform node into internal model: " + e.getMessage());
                 } finally {
                     context.popDocumentContext();
                     SerializerPool.getInstance().returnObject(streamer);
@@ -185,7 +160,7 @@ public class XPathUtil {
                 for (Object o : objects) {
                     seq.add((Item) javaObjectToXPath(o, context, expandChars, expression));
                 }
-                return seq;
+                yield seq;
 
             }
             case NodeList nodeList -> {
@@ -197,20 +172,17 @@ public class XPathUtil {
                     final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
                     streamer.setContentHandler(receiver);
                     final ValueSequence seq = new ValueSequence();
-                    final NodeList nl = (NodeList) obj;
                     int last = builder.getDocument().getLastNode();
-                    for (int i = 0; i < nl.getLength(); i++) {
-                        final Node n = nl.item(i);
+                    for (int i = 0; i < nodeList.getLength(); i++) {
+                        final Node n = nodeList.item(i);
                         streamer.serialize(n, false);
                         final NodeImpl created = builder.getDocument().getNode(last + 1);
                         seq.add(created);
                         last = builder.getDocument().getLastNode();
                     }
-                    return seq;
+                    yield seq;
                 } catch (final SAXException e) {
-                    throw new XPathException(expression,
-                            "Failed to transform node into internal model: "
-                                    + e.getMessage());
+                    throw new XPathException(expression, "Failed to transform node into internal model: " + e.getMessage());
                 } finally {
                     context.popDocumentContext();
                     SerializerPool.getInstance().returnObject(streamer);
@@ -230,13 +202,12 @@ public class XPathUtil {
                 for (Object arrayItem : array) {
                     seq.add((Item) javaObjectToXPath(arrayItem, context, expandChars, expression));
                 }
-                return seq;
+                yield seq;
 
             }
-            default -> {
-                return new JavaObjectValue(obj);
-            }
-        }
+            default -> new JavaObjectValue(obj);
+
+        };
     }
 
     public static final int javaClassToXPath(Class<?> clazz) {

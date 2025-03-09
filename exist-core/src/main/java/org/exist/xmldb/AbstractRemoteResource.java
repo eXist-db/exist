@@ -82,31 +82,15 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public Object getContent()
-            throws XMLDBException {
-        final Object res = getExtendedContent();
-        if (res != null) {
-            switch (res) {
-                case byte[] bytes -> {
-                    return res;
-                }
-                case Path path1 -> {
-                    return readFile(path1);
-                }
-                case File file1 -> {
-                    return readFile(file1.toPath());
-                }
-                case InputSource source -> {
-                    return readFile(source);
-                }
-                case ContentFile contentFile1 -> {
-                    return contentFile1.getBytes();
-                }
-                default -> {
-                }
-            }
-        }
-        return res;
+    public Object getContent()  throws XMLDBException {
+        return switch (getExtendedContent()) {
+            case byte[] bytes -> bytes;
+            case Path path -> readFile(path);
+            case File file -> readFile(file.toPath());
+            case InputSource inputSource -> readFile(inputSource);
+            case ContentFile contentFile -> contentFile.getBytes();
+            default -> null;
+        };
     }
 
     /**
@@ -119,49 +103,29 @@ public abstract class AbstractRemoteResource extends AbstractRemote
      * @deprecated instead use {@link org.xmldb.api.base.Resource#getContent()}
      */
     @Deprecated
-    protected byte[] getData()
-            throws XMLDBException {
-        final Object res = getExtendedContent();
-        if (res != null) {
-            switch (res) {
-                case Path path1 -> {
-                    return readFile(path1);
-                }
-                case File file1 -> {
-                    return readFile(file1.toPath());
-                }
-                case InputSource source -> {
-                    return readFile(source);
-                }
-                case String s -> {
-                    return s.getBytes(UTF_8);
-                }
-                case ContentFile contentFile1 -> {
-                    return contentFile1.getBytes();
-                }
-                default -> {
-                }
-            }
-        }
-
-        return (byte[]) res;
+    protected byte[] getData() throws XMLDBException {
+        return switch (getExtendedContent()) {
+            case Path path -> readFile(path);
+            case File file -> readFile(file.toPath());
+            case InputSource inputSource -> readFile(inputSource);
+            case String string -> string.getBytes(UTF_8);
+            case ContentFile contentFile -> contentFile.getBytes();
+            case null, default -> null;
+        };
     }
 
     @Override
-    public long getContentLength()
-            throws XMLDBException {
+    public long getContentLength() throws XMLDBException {
         return contentLen;
     }
 
     @Override
-    public Instant getCreationTime()
-            throws XMLDBException {
+    public Instant getCreationTime() throws XMLDBException {
         return dateCreated;
     }
 
     @Override
-    public Instant getLastModificationTime()
-            throws XMLDBException {
+    public Instant getLastModificationTime() throws XMLDBException {
         return dateModified;
     }
 
@@ -182,8 +146,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         }
     }
 
-    public long getExtendedContentLength()
-            throws XMLDBException {
+    public long getExtendedContentLength() throws XMLDBException {
         return contentLen;
     }
 
@@ -193,8 +156,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     }
 
     @Override
-    public Collection getParentCollection()
-            throws XMLDBException {
+    public Collection getParentCollection() throws XMLDBException {
         return collection;
     }
 
@@ -203,8 +165,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         return permissions;
     }
 
-    protected boolean setContentInternal(final Object value)
-            throws XMLDBException {
+    protected boolean setContentInternal(final Object value) throws XMLDBException {
 
         boolean wasSet = false;
         try {

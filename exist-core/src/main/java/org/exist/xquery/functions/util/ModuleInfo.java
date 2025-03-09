@@ -153,7 +153,7 @@ public class ModuleInfo extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 
-        switch (getSignature().getName().getLocalPart()) {
+        return switch (getSignature().getName().getLocalPart()) {
             case "get-module-description" -> {
                 final String uri = args[0].getStringValue();
                 final Module[] modules = context.getModules(uri);
@@ -164,23 +164,23 @@ public class ModuleInfo extends BasicFunction {
                 for (final Module module : modules) {
                     result.add(new StringValue(this, module.getDescription()));
                 }
-                return result;
+                yield result;
             }
             case "is-module-registered" -> {
                 final String uri = args[0].getStringValue();
                 final Module[] modules = context.getModules(uri);
-                return new BooleanValue(this, modules != null && modules.length > 0);
+                yield new BooleanValue(this, modules != null && modules.length > 0);
             }
             case "mapped-modules" -> {
                 final ValueSequence resultSeq = new ValueSequence();
                 for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext(); ) {
                     resultSeq.add(new StringValue(this, i.next()));
                 }
-                return resultSeq;
+                yield resultSeq;
             }
             case "is-module-mapped" -> {
                 final String uri = args[0].getStringValue();
-                return new BooleanValue(this, ((Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
+                yield new BooleanValue(this, ((Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
             }
             case "map-module" -> {
                 if (!context.getSubject().hasDbaRole()) {
@@ -192,7 +192,7 @@ public class ModuleInfo extends BasicFunction {
                 final String location = args[1].getStringValue();
                 final Map<String, String> moduleMap = (Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
                 moduleMap.put(namespace, location);
-                return Sequence.EMPTY_SEQUENCE;
+                yield Sequence.EMPTY_SEQUENCE;
             }
             case "unmap-module" -> {
                 if (!context.getSubject().hasDbaRole()) {
@@ -203,7 +203,7 @@ public class ModuleInfo extends BasicFunction {
                 final String namespace = args[0].getStringValue();
                 final Map<String, String> moduleMap = (Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
                 moduleMap.remove(namespace);
-                return Sequence.EMPTY_SEQUENCE;
+                yield Sequence.EMPTY_SEQUENCE;
             }
             case "get-module-info" -> {
                 context.pushDocumentContext();
@@ -223,7 +223,7 @@ public class ModuleInfo extends BasicFunction {
                             outputModule(builder, module);
                         }
                     }
-                    return builder.getDocument().getNode(1);
+                    yield builder.getDocument().getNode(1);
                 } finally {
                     context.popDocumentContext();
                 }
@@ -245,9 +245,9 @@ public class ModuleInfo extends BasicFunction {
                     tempContext.reset();
                     tempContext.runCleanupTasks();
                 }
-                return resultSeq;
+                yield resultSeq;
             }
-        }
+        };
 	}
 
 	private void outputModules(final MemTreeBuilder builder, final Module[] modules) {
