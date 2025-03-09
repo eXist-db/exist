@@ -131,7 +131,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                                     if (testName != null) {
                                         break;
                                     }
-                                } else if (annotationName.getLocalPart().equals("name")) {
+                                } else if ("name".equals(annotationName.getLocalPart())) {
                                     final LiteralValue[] annotationValues = annotation.getValue();
                                     if (annotationValues != null && annotationValues.length > 0) {
                                         testName = annotationValues[0].getValue().getStringValue();

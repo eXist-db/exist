@@ -138,7 +138,7 @@ public class HttpRequestWrapper implements RequestWrapper {
         // Determine if request is a multipart
 
         @Nullable final String contentType = servletRequest.getContentType();
-        isMultipartContent = servletRequest.getMethod().equalsIgnoreCase("POST") && contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
+        isMultipartContent = "POST".equalsIgnoreCase(servletRequest.getMethod()) && contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
 
         // Get multi-part formdata parameters when it is a mpfd request
         // and when instructed to do so

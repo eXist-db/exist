@@ -553,7 +553,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     final boolean hasNormAttribute(final Attributes attributes) {
         for (int i = 0; i < attributes.getLength(); i++) {
-            if(attributes.getLocalName(i).equals("norm")) {
+            if("norm".equals(attributes.getLocalName(i))) {
                 return true;
             }
         }

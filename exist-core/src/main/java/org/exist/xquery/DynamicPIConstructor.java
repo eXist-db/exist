@@ -99,7 +99,7 @@ public class DynamicPIConstructor extends NodeConstructor {
             if(!XMLNames.isNCName(nameSeq.getStringValue()))
                 {throw new XPathException(this, ErrorCodes.XQDY0041,
                     nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);}
-            if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
+            if ("XML".equalsIgnoreCase(nameSeq.getStringValue()))
                 {throw new XPathException(this, ErrorCodes.XQDY0064,
                     nameSeq.getStringValue() + "' is not a valid processing instruction name", nameSeq);}
             String contentString;

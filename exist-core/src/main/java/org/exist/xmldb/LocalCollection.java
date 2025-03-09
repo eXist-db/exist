@@ -661,7 +661,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      */
     private boolean useHtmlReader(final DBBroker broker, final Txn transaction, final LocalXMLResource res) throws XMLDBException {
         final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
-        return ((normalize.equalsIgnoreCase("yes") || normalize.equalsIgnoreCase("true")) &&
+        return (("yes".equalsIgnoreCase(normalize) || "true".equalsIgnoreCase(normalize)) &&
                 ("text/html".equals(res.getMimeType(broker, transaction)) || res.getId().endsWith(".htm") ||
                         res.getId().endsWith(".html")));
     }

@@ -1198,7 +1198,7 @@ public abstract class Serializer implements XMLReader {
      * @return link to the stylesheet, or null if there is no xml-stylesheet processing instruction.
      */
     public @Nullable String hasXSLPi(final Document doc) {
-        final boolean applyXSLPI = outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+        final boolean applyXSLPI = "yes".equalsIgnoreCase(outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no"));
         if (!applyXSLPI) {
             return null;
         }

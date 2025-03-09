@@ -88,7 +88,7 @@ public class RemoteRestoreService implements EXistRestoreService {
             } finally {
                 FileUtils.deleteQuietly(tmpZipFile);
             }
-        } else if (backupFileName.equals("__contents__.xml")) {
+        } else if ("__contents__.xml".equals(backupFileName)) {
             final Path tmpZipFile = zipBackupDir(backupPath.getParent(), restoreListener);
             try {
                 remoteFileName = uploadBackupFile(tmpZipFile, restoreListener);

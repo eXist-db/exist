@@ -348,7 +348,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
 
     private static void moveOldRepo(final Optional<Path> home, final Path newRepo) {
         final Path repo_dir = home.map(h -> {
-            if(FileUtils.fileName(h).equals("WEB-INF")) {
+            if("WEB-INF".equals(FileUtils.fileName(h))) {
                 return h.resolve(EXPATH_REPO_DIR_NAME);
             } else {
                 return h.resolve(LEGACY_DEFAULT_EXPATH_REPO_DIR);

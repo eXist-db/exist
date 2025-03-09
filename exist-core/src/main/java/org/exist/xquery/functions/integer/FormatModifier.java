@@ -62,8 +62,8 @@ class FormatModifier {
         }
         final String n = m.group(1);
         if (n != null) {
-            if (n.equals("c")) numbering = Numbering.CARDINAL;
-            if (n.equals("o")) numbering = Numbering.ORDINAL;
+            if ("c".equals(n)) numbering = Numbering.CARDINAL;
+            if ("o".equals(n)) numbering = Numbering.ORDINAL;
         }
         final String v = m.group(3);
         if (v != null) {
@@ -71,8 +71,8 @@ class FormatModifier {
         }
         final String l = m.group(4);
         if (l != null) {
-            if (l.equals("a")) letterSequence = LetterSequence.ALPHABETIC;
-            if (l.equals("t")) letterSequence = LetterSequence.TRADITIONAL;
+            if ("a".equals(l)) letterSequence = LetterSequence.ALPHABETIC;
+            if ("t".equals(l)) letterSequence = LetterSequence.TRADITIONAL;
         }
     }
 

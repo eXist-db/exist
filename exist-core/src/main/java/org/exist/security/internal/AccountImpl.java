@@ -280,7 +280,7 @@ public class AccountImpl extends AbstractAccount {
                 if(property == null || property.isEmpty()) {
                     checkPasswords = DEFAULT_CHECK_PASSWORDS;
                 } else {
-                    checkPasswords = property.equalsIgnoreCase("yes") || property.equalsIgnoreCase("true");
+                    checkPasswords = "yes".equalsIgnoreCase(property) || "true".equalsIgnoreCase(property);
                 }
             }
             return checkPasswords;

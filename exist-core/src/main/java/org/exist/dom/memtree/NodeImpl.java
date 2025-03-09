@@ -165,9 +165,9 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
     public void setPrefix(final String prefix) throws DOMException {
         if(prefix == null || getNodeType() == Node.DOCUMENT_NODE) {
             return;
-        } else if(getOwnerDocument().getXmlVersion().equals("1.0") && !XMLChar.isValidNCName(prefix)) {
+        } else if("1.0".equals(getOwnerDocument().getXmlVersion()) && !XMLChar.isValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.0 contains invalid characters");
-        } else if(getOwnerDocument().getXmlVersion().equals("1.1") && !XML11Char.isXML11ValidNCName(prefix)) {
+        } else if("1.1".equals(getOwnerDocument().getXmlVersion()) && !XML11Char.isXML11ValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.1 contains invalid characters");
         } else if(getNamespaceURI() == null) {
             throw new DOMException(DOMException.NAMESPACE_ERR, "Cannot set prefix when namespace is null");

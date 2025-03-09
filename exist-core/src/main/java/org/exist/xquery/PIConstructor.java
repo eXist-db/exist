@@ -58,7 +58,7 @@ public class PIConstructor extends NodeConstructor {
                 }
             }
         }
-        if (target.equalsIgnoreCase("xml")) {
+        if ("xml".equalsIgnoreCase(target)) {
             throw new XPathException(this, ErrorCodes.XPST0003, "The target 'xml' is not allowed in XML processing instructions.");
         }
 	}

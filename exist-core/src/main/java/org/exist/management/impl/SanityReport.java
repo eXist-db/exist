@@ -218,14 +218,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private Properties parseParameter(String output, String backup, String incremental) {
         final Properties properties = new Properties();
-        final boolean doBackup = backup.equalsIgnoreCase("YES");
+        final boolean doBackup = "YES".equalsIgnoreCase(backup);
 
         // This should be simplified
-        if (backup != null && (doBackup) || backup.equalsIgnoreCase("no")) {
+        if (backup != null && (doBackup) || "no".equalsIgnoreCase(backup)) {
             properties.put("backup", backup);
         }
 
-        if (incremental != null && (incremental.equalsIgnoreCase("YES") || incremental.equalsIgnoreCase("no"))) {
+        if (incremental != null && ("YES".equalsIgnoreCase(incremental) || "no".equalsIgnoreCase(incremental))) {
             properties.put("incremental", incremental);
         }
 

@@ -105,13 +105,13 @@ public class PathFilter implements Filter {
         } else if (requestURI != null && requestURI.contains("/rest/") && filterNames.contains(TEST_REST)) {
             conditionMet = true;
             LOG.info(TEST_REST + " met");
-        } else if (httpServletRequest.getMethod().equalsIgnoreCase("PUT") && filterNames.contains(TEST_PUT)) {
+        } else if ("PUT".equalsIgnoreCase(httpServletRequest.getMethod()) && filterNames.contains(TEST_PUT)) {
             conditionMet = true;
             LOG.info(TEST_PUT + " met");
-        } else if (httpServletRequest.getMethod().equalsIgnoreCase("DELETE") && filterNames.contains(TEST_DELETE)) {
+        } else if ("DELETE".equalsIgnoreCase(httpServletRequest.getMethod()) && filterNames.contains(TEST_DELETE)) {
             conditionMet = true;
             LOG.info(TEST_DELETE + " met");
-        } else if (httpServletRequest.getMethod().equalsIgnoreCase("POST")) {
+        } else if ("POST".equalsIgnoreCase(httpServletRequest.getMethod())) {
 
         }
 
@@ -196,8 +196,8 @@ public class PathFilter implements Filter {
                     allows.add(value);
                 } else if (name.startsWith("type")) {
                     filterNames.add(value);
-                } else if (name.equalsIgnoreCase("order")) {
-                    allowFirst = value.equalsIgnoreCase("allow,deny");
+                } else if ("order".equalsIgnoreCase(name)) {
+                    allowFirst = "allow,deny".equalsIgnoreCase(value);
                 }
             }
         }

@@ -742,7 +742,7 @@ public class LockTable {
             final String className = stackTraceElement.getClassName();
 
             if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
-                if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || stackTraceElement.getMethodName().equals("lockCollectionCache"))) {
+                if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || "lockCollectionCache".equals(stackTraceElement.getMethodName()))) {
                     return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
                 }
             }

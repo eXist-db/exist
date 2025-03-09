@@ -286,7 +286,7 @@ public class NGramSearch extends Function implements Optimizable {
 
         EvaluatableExpression parsedQuery = null;
 
-        if (getLocalName().equals("wildcard-contains"))
+        if ("wildcard-contains".equals(getLocalName()))
             parsedQuery = parseQuery(query);
             	else
             parsedQuery = new FixedString(this, query);
@@ -321,7 +321,7 @@ public class NGramSearch extends Function implements Optimizable {
 
         List<WildcardedExpression> expressions = new ArrayList<>();
 
-        if (queryTokens.getFirst().equals("^")) {
+        if ("^".equals(queryTokens.getFirst())) {
             expressions.add(new StartAnchor());
             queryTokens.removeFirst();
         }
@@ -330,7 +330,7 @@ public class NGramSearch extends Function implements Optimizable {
             return new EmptyExpression();
 
         boolean endAnchorPresent = false;
-        if (queryTokens.getLast().equals("$")) {
+        if ("$".equals(queryTokens.getLast())) {
             endAnchorPresent = true;
             queryTokens.removeLast();
         }

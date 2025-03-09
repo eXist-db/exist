@@ -103,7 +103,7 @@ public class DatabaseImpl implements Database {
     public DatabaseImpl() {
         final String initdb = System.getProperty("exist.initdb");
         if (initdb != null) {
-            autoCreate = initdb.equalsIgnoreCase("true");
+            autoCreate = "true".equalsIgnoreCase(initdb);
         }
     }
 

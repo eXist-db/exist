@@ -154,11 +154,11 @@ public class ModifyFunction extends BasicFunction
 					if( name != null && value != null && op != null ) {
 						int opCode = 0;
 						
-						if(  op.equalsIgnoreCase( "add" ) ) {
+						if(  "add".equalsIgnoreCase(op) ) {
 							opCode = 1;
-						} else if(  op.equalsIgnoreCase( "replace" ) ) {
+						} else if(  "replace".equalsIgnoreCase(op) ) {
 							opCode = 2;
-						} else if(  op.equalsIgnoreCase( "remove" ) ) {
+						} else if(  "remove".equalsIgnoreCase(op) ) {
 							opCode = 3;
 						}
 						
@@ -190,7 +190,7 @@ public class ModifyFunction extends BasicFunction
 						if( existingAttr != null ) {
 							existingAttr.add( value );
 						} else {
-							items.add( new ModificationItem( opCode, new BasicAttribute( name, value, ordered != null && ordered.equalsIgnoreCase( "true" ) ) ) );
+							items.add( new ModificationItem( opCode, new BasicAttribute( name, value, ordered != null && "true".equalsIgnoreCase(ordered) ) ) );
 						}
 					} else {
 						logger.warn( "Name, value or operation attribute missing for attribute" );

@@ -185,7 +185,7 @@ public class LauncherWrapper {
             final String key = entry.getKey().toString();
             if (key.startsWith("exist.") || key.startsWith("log4j.") || key.startsWith("jetty.") || key.startsWith("app.")) {
                 args.add("-D" + key + "=" + entry.getValue().toString());
-                if (key.equals("exist.home")) {
+                if ("exist.home".equals(key)) {
                     foundExistHomeSysProp = true;
                 }
             }

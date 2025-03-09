@@ -422,7 +422,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final StringBuilder name = new StringBuilder();
         for (final SAXEvent event : deferred) {
             if (event instanceof Element element) {
-                if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && element.localName.equals("name")) {
+                if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && "name".equals(element.localName)) {
                     inName = !inName;
                 }
             }

@@ -95,10 +95,10 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         }
 
         final String caseString = elem.getAttribute("case");
-        caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
+        caseSensitive = (caseString != null && !"no".equalsIgnoreCase(caseString));
 
         final String numericString = elem.getAttribute("numeric");
-        numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
+        numericComparison = (numericString != null && "yes".equalsIgnoreCase(numericString));
 
         // try to create a pattern matcher for a 'matches' condition
         if (operator == Operator.MATCH) {

@@ -92,7 +92,7 @@ public class RangeIndexConfigElement {
             usesCollation = true;
         }
         String nested = node.getAttribute("nested");
-        includeNested = (nested == null || nested.isEmpty() || nested.equalsIgnoreCase("yes"));
+        includeNested = (nested == null || nested.isEmpty() || "yes".equalsIgnoreCase(nested));
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
@@ -106,7 +106,7 @@ public class RangeIndexConfigElement {
 
         String caseStr = node.getAttribute("case");
         if (caseStr != null && !caseStr.isEmpty()) {
-            caseSensitive = caseStr.equalsIgnoreCase("yes");
+            caseSensitive = "yes".equalsIgnoreCase(caseStr);
         }
         String custom = node.getAttribute("converter");
         if (custom != null && !custom.isEmpty()) {

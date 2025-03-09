@@ -310,7 +310,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             throw new SAXException("Resource requires a name attribute");
         }
 
-        final boolean xmlType = Optional.ofNullable(attributes.getValue("type")).filter(s -> s.equals("XMLResource")).isPresent();
+        final boolean xmlType = Optional.ofNullable(attributes.getValue("type")).filter(s -> "XMLResource".equals(s)).isPresent();
         final String filename = getAttr(attributes, "filename", commonAttributes.name);
         @Nullable final String mimeTypeStr = attributes.getValue("mimetype");
         @Nullable final String dateModifiedStr = attributes.getValue("modified");
@@ -639,7 +639,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
 
         public static EntryCommonMetadataAttributes fromAttributes(final Attributes attributes) {
             @Nullable final String skipStr = attributes.getValue("skip");
-            final boolean skip = skipStr != null && (skipStr.equalsIgnoreCase("true") || skipStr.equalsIgnoreCase("yes"));
+            final boolean skip = skipStr != null && ("true".equalsIgnoreCase(skipStr) || "yes".equalsIgnoreCase(skipStr));
             @Nullable final String name = attributes.getValue("name");
             final String owner = getAttr(attributes, "owner", SecurityManager.SYSTEM);
             final String group = getAttr(attributes, "group", SecurityManager.DBA_GROUP);

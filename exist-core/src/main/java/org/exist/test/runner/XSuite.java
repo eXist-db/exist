@@ -228,7 +228,7 @@ public class XSuite extends ParentRunner<Runner> {
     private static @Nullable Runner getRunner(final Path path, final boolean parallel) throws InitializationError {
         if(XMLFilenameFilter.asPredicate().test(path)) {
             return new XMLTestRunner(path, parallel);
-        } else if(XQueryFilenameFilter.asPredicate().test(path) && !path.getFileName().toString().equals("runTests.xql")) {
+        } else if(XQueryFilenameFilter.asPredicate().test(path) && !"runTests.xql".equals(path.getFileName().toString())) {
             return new XQueryTestRunner(path, parallel);
         } else {
             return null;

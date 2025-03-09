@@ -83,7 +83,7 @@ public class TreeLevelOrderTest {
 
         NodeList rootChildren = elem.getChildNodes();
         for (int r = 0; r < rootChildren.getLength(); r++) {
-            if (rootChildren.item(r).getLocalName().equals("to")) {
+            if ("to".equals(rootChildren.item(r).getLocalName())) {
                 Node to = rootChildren.item(r);
                 strTo = to.getTextContent();
                 break;

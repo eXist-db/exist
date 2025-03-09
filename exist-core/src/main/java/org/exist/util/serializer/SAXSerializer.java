@@ -64,7 +64,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
 
         // if set, enforce XHTML namespace on elements with no namespace
         final String xhtml = outputProperties.getProperty(EXistOutputKeys.ENFORCE_XHTML, "no");
-        enforceXHTML = xhtml.equalsIgnoreCase("yes");
+        enforceXHTML = "yes".equalsIgnoreCase(xhtml);
     }
 
     public Writer getWriter() {

@@ -355,12 +355,12 @@ public class ScheduleFunctions extends BasicFunction
 
     private void parseParameters( Node options, Properties properties ) throws XPathException
     {
-        if( ( options.getNodeType() == Node.ELEMENT_NODE ) && options.getLocalName().equals( "parameters" ) ) {
+        if( ( options.getNodeType() == Node.ELEMENT_NODE ) && "parameters".equals(options.getLocalName()) ) {
             Node child = options.getFirstChild();
 
             while( child != null ) {
 
-                if( ( child.getNodeType() == Node.ELEMENT_NODE ) && child.getLocalName().equals( "param" ) ) {
+                if( ( child.getNodeType() == Node.ELEMENT_NODE ) && "param".equals(child.getLocalName()) ) {
                     Element elem  = ( Element )child;
                     String  name  = elem.getAttribute( "name" );
                     String  value = elem.getAttribute( "value" );
