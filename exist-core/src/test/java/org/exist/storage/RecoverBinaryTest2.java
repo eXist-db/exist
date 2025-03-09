@@ -133,7 +133,7 @@ public class RecoverBinaryTest2 {
         // Get files in directory
         final Path dir = FileUtils.resolve(ConfigurationHelper.getExistHome(), directory);
         final List<Path> files = FileUtils.list(dir);
-        assertNotNull("Check directory '"+dir.toAbsolutePath().toString()+"'.",files);
+        assertNotNull("Check directory '"+ dir.toAbsolutePath() +"'.",files);
         
         // store some documents.
         for (int j = 0; j < 10; j++) {

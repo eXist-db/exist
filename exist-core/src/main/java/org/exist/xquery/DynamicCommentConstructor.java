@@ -87,7 +87,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 if (buf.indexOf("--") != Constants.STRING_NOT_FOUND ||
                         buf.toString().endsWith("-")) {
                     throw new XPathException(this, ErrorCodes.XQDY0072, 
-                        "'" + buf.toString() + "' is not a valid comment");
+                        "'" + buf + "' is not a valid comment");
                 }
                 final int nodeNr = builder.comment(buf.toString());
                 result = builder.getDocument().getNode(nodeNr);

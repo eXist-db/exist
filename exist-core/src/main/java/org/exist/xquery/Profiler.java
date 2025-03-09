@@ -261,7 +261,7 @@ public class Profiler {
             buf.append(message);
             buf.append("\t");
             printPosition(e.expr);
-            buf.append(expr.toString());             
+            buf.append(expr);
             log.debug(buf.toString());
         }         
     }
@@ -410,7 +410,7 @@ public class Profiler {
         }
         buf.append("\t");
         printPosition(expr); 
-        buf.append(expr.toString());         
+        buf.append(expr);
         log.debug(buf.toString());
     }    
     
@@ -450,7 +450,7 @@ public class Profiler {
 	private String sequencePreview(Sequence sequence) {
         final StringBuilder truncation = new StringBuilder();
         if (sequence.isEmpty())
-            {truncation.append(sequence.toString());}
+            {truncation.append(sequence);}
         else if (sequence.hasOne()) {
             truncation.append("(");            
             if (sequence.itemAt(0).toString().length() > 20) 

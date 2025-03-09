@@ -78,7 +78,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 if ((resource != null) && (destDir == null)) {
 
                     // extraction of a single resource
-                    log("Extracting resource: " + resource + " to " + destFile.toAbsolutePath().toString(), Project.MSG_INFO);
+                    log("Extracting resource: " + resource + " to " + destFile.toAbsolutePath(), Project.MSG_INFO);
                     final Resource res = base.getResource(resource);
 
                     if (res == null) {
@@ -138,7 +138,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         if (!resources.isEmpty()) {
             Path dir = destDir;
 
-            log("Extracting to directory " + destDir.toAbsolutePath().toString(), Project.MSG_DEBUG);
+            log("Extracting to directory " + destDir.toAbsolutePath(), Project.MSG_DEBUG);
 
             if (path != null) {
                 dir =  destDir.resolve(path);
@@ -241,7 +241,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 
             try (final Writer writer = getWriter(res, dest)) {
-                log("Writing resource " + res.getId() + " to destination " + dest.toAbsolutePath().toString(), Project.MSG_DEBUG);
+                log("Writing resource " + res.getId() + " to destination " + dest.toAbsolutePath(), Project.MSG_DEBUG);
                 serializer.setOutput(writer, outputProperties);
                 res.getContentAsSAX(serializer);
             } finally {

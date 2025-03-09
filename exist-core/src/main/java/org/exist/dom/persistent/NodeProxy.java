@@ -655,7 +655,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     public String debugContext() {
         final StringBuilder buf = new StringBuilder();
-        buf.append("Context for ").append(nodeId).append(" [ ").append(toString()).append("] : ");
+        buf.append("Context for ").append(nodeId).append(" [ ").append(this).append("] : ");
         ContextItem next = context;
         while(next != null) {
             buf.append('[');

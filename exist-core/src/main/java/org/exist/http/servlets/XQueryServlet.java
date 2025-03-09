@@ -343,7 +343,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
             try(final DBBroker broker = getPool().get(Optional.ofNullable(user))) {
                 source = SourceFactory.getSource(broker, moduleLoadPath, urlAttrib.toString(), true);
                 if (source == null) {
-                    final String msg = "Could not read source: context=" + moduleLoadPath + ", location=" + urlAttrib.toString();
+                    final String msg = "Could not read source: context=" + moduleLoadPath + ", location=" + urlAttrib;
                     getLog().error(msg);
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     sendError(output, "Error", msg);

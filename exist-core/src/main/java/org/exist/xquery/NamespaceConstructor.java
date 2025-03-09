@@ -156,7 +156,7 @@ public class NamespaceConstructor extends NodeConstructor {
         result.append("} ");
         result.append("{");
         if (content != null) {
-            result.append(content.toString());
+            result.append(content);
         }
         result.append("} ");
         return result.toString();

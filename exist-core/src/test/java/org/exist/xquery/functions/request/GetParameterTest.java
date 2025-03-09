@@ -316,7 +316,7 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request get = Request.Get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf.toString()));
+        Request get = Request.Get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf));
 
         testRequest(get, buf.toString().replaceAll("&", ""));
     }
@@ -353,7 +353,7 @@ public class GetParameterTest extends RESTTest {
             first = false;
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf.toString()));
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf));
 
         final List<NameValuePair> bodyPairs = new ArrayList<>();
         for (final NameValues formParam : formParams) {
@@ -365,7 +365,7 @@ public class GetParameterTest extends RESTTest {
 
         post = post.bodyForm(bodyPairs);
 
-        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + formBuf.toString());
+        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + formBuf);
     }
 
     private void testMultipartPost(final Param[] multipartParams) throws IOException {
@@ -419,10 +419,10 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf.toString()))
+        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf))
                 .body(multipart.build());
 
-        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + bodyBuf.toString());
+        testRequest(post, queryStringBuf.toString().replaceAll("&", "") + bodyBuf);
     }
 
     private void testRequest(final Request request, final String expected) throws IOException {

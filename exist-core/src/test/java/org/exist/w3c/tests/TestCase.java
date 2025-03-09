@@ -283,7 +283,7 @@ public abstract class TestCase {
         	System.out.println(expResult);
         	System.out.println("get:");
         	System.out.println(res);
-        	System.out.println(diff.toString());
+        	System.out.println(diff);
             return false;
         }
         

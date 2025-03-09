@@ -65,7 +65,7 @@ public class BTreeTest {
 
             String prefixStr = "KEY";
             for (int i = 1; i <= count; i++) {
-                Value value = new Value(prefixStr + Integer.toString(i));
+                Value value = new Value(prefixStr + i);
                 btree.addValue(value, i);
             }
             btree.flush();
@@ -107,7 +107,7 @@ public class BTreeTest {
 
             String prefixStr = "KEY";
             for (int i = 1; i <= count; i++) {
-                Value value = new Value(prefixStr + Integer.toString(i));
+                Value value = new Value(prefixStr + i);
                 long r = btree.findValue(value);
                 if (r == -1) {
                     System.out.println("Key not found: " + i);

@@ -209,7 +209,7 @@ public class IndexSpec {
         if (specs!= null) {
             for (final GeneralRangeIndexSpec spec : specs) {
                 if (spec != null) {
-                    result.append(spec.toString()).append('\n');
+                    result.append(spec).append('\n');
                 }
             }
         }

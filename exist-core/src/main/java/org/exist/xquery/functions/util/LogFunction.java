@@ -146,7 +146,7 @@ public class LogFunction extends BasicFunction {
                 try (StringWriter writer = new StringWriter()) {
                     XQuerySerializer xqs = new XQuerySerializer(context.getBroker(), props, writer);
                     xqs.serialize(next.toSequence());
-                    buf.append(writer.toString());
+                    buf.append(writer);
 
                 } catch (IOException | SAXException e) {
                     throw new XPathException(this, e.getMessage());

@@ -239,7 +239,7 @@ public class GroupDialog extends javax.swing.JFrame {
             return true;
         }
         
-        JOptionPane.showMessageDialog(this, "Group Name must be at least 3 characters (" + PTN_GROUPNAME.toString() + ")");
+        JOptionPane.showMessageDialog(this, "Group Name must be at least 3 characters (" + PTN_GROUPNAME + ")");
         return false;
     }
     

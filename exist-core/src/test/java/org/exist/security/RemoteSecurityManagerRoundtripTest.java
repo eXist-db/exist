@@ -40,7 +40,7 @@ public class RemoteSecurityManagerRoundtripTest extends AbstractSecurityManagerR
 
     @Override
     protected Collection getRoot() throws XMLDBException {
-        final String baseUri = "xmldb:exist://localhost:" + Integer.toString(existWebServer.getPort()) + "/xmlrpc";
+        final String baseUri = "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";
         return DatabaseManager.getCollection(baseUri + "/db", "admin", "");
     }
 

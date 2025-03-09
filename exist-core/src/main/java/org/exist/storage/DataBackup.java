@@ -77,13 +77,13 @@ public class DataBackup implements SystemTask {
             dest = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dest);
         }
         if (Files.exists(dest) && !(Files.isWritable(dest) && Files.isDirectory(dest))) {
-            throw new EXistException("Cannot write backup files to " + dest.toAbsolutePath().toString() +
+            throw new EXistException("Cannot write backup files to " + dest.toAbsolutePath() +
                     ". It should be a writable directory.");
         } else {
             try {
                 Files.createDirectories(dest);
             } catch(final IOException ioe) {
-                throw new EXistException("Unable to create directory: " + dest.toAbsolutePath().toString(), ioe);
+                throw new EXistException("Unable to create directory: " + dest.toAbsolutePath(), ioe);
             }
         }
 

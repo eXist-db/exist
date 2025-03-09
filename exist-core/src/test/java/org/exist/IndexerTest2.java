@@ -84,7 +84,7 @@ public class IndexerTest2 {
             "</TEI>" +
             "let $stored := doc('" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "') " +
             "return " +
-            "<result name=\"" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI2.toString() + "\">\n" +
+            "<result name=\"" + TestConstants.TEST_COLLECTION_URI + "/"+ TestConstants.TEST_XML_URI2 + "\">\n" +
             "    <inline>{string-join(local:get-text($in-memory))}</inline>\n" +
             "    <stored>{string-join(local:get-text($stored))}</stored>\n" +
             "</result>";

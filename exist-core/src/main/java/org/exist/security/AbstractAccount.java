@@ -235,7 +235,7 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         buf.append(name);
         buf.append("\" ");
         buf.append("id=\"");
-        buf.append(Integer.toString(id));
+        buf.append(id);
         buf.append("\"");
         buf.append(">");
         if (groups != null) {

@@ -119,7 +119,7 @@ public class RepoBackup {
                 final Path out = outdir.resolve(name);
 
                 if (!out.startsWith(outdir)) {
-                    throw new IOException("Detected archive exit attack! zipFile=" + fileUri.getRawCollectionPath() + ", entry=" + name + ", outdir=" + outdir.toAbsolutePath().normalize().toString());
+                    throw new IOException("Detected archive exit attack! zipFile=" + fileUri.getRawCollectionPath() + ", entry=" + name + ", outdir=" + outdir.toAbsolutePath().normalize());
                 }
 
                 if (entry.isDirectory() ) {

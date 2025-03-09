@@ -59,7 +59,7 @@ public class ProgressBar {
 		buf.append("] (");
 		buf.append(percent);
 		buf.append(" %)\r");
-		System.out.print(buf.toString());
+		System.out.print(buf);
 		mPosition = pos;
 	}
 }

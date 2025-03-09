@@ -359,7 +359,7 @@ public class LocationStep extends Step {
             if (contextSequence == null) {
                 throw new XPathException(this,
                         ErrorCodes.XPDY0002, "Undefined context sequence for '"
-                        + this.toString() + "'");
+                        + this + "'");
             }
 
             try {

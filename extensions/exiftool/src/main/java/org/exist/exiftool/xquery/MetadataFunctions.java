@@ -154,7 +154,7 @@ public class MetadataFunctions extends BasicFunction {
     private Sequence exifToolExtract(final Path binaryFile) throws XPathException {
         final ExiftoolModule module = (ExiftoolModule) getParentModule();
         try {
-            final Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.toAbsolutePath().toString());
+            final Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.toAbsolutePath());
             try(final InputStream stdIn = p.getInputStream();
                     final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
 
@@ -184,7 +184,7 @@ public class MetadataFunctions extends BasicFunction {
                 try(final OutputStream stdOut = p.getOutputStream()) {
                     final Source src = SourceFactory.getSource(context.getBroker(), null, uri.toString(), false);
                     if (src == null) {
-                        throw new XPathException(this, "Could not read source for the Exiftool: " + uri.toString());
+                        throw new XPathException(this, "Could not read source for the Exiftool: " + uri);
                     }
                     try(final InputStream isSrc = src.getInputStream()) {
 

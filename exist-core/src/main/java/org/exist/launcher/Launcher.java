@@ -865,12 +865,12 @@ public class Launcher extends Observable implements Observer {
             final Path logFile = FileUtils.resolve(home, "logs/exist.log");
 
             if (!Files.isReadable(logFile)) {
-                showTrayErrorMessage("Log file not found: " + logFile.toAbsolutePath().normalize().toString());
+                showTrayErrorMessage("Log file not found: " + logFile.toAbsolutePath().normalize());
             } else {
                 try {
                     desktop.open(logFile.toFile());
                 } catch (final IOException e) {
-                    showTrayErrorMessage("Failed to open log file: " + logFile.toAbsolutePath().normalize().toString() + ". " + e.getMessage());
+                    showTrayErrorMessage("Failed to open log file: " + logFile.toAbsolutePath().normalize() + ". " + e.getMessage());
                 }
             }
         }

@@ -123,7 +123,7 @@ public class BackupSystemTask implements SystemTask {
         try {
             Files.createDirectories(directory);
         } catch(final IOException ioe) {
-            throw new EXistException("Unable to create backup directory: " + directory.toAbsolutePath().toString(), ioe);
+            throw new EXistException("Unable to create backup directory: " + directory.toAbsolutePath(), ioe);
         }
 
         // check for max zip files

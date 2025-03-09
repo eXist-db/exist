@@ -551,7 +551,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
             if (temporaryUploadedFilePath == null) {
                 try {
-                    final String tmpFilename = UUID.randomUUID().toString() + ".tmp";
+                    final String tmpFilename = UUID.randomUUID() + ".tmp";
 
                     temporaryUploadedFilePath = TMP_DIR.resolve(tmpFilename);
                     part.write(temporaryUploadedFilePath.toAbsolutePath().toString());

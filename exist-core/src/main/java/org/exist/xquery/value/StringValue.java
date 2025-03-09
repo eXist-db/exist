@@ -153,7 +153,7 @@ public class StringValue extends AtomicValue {
 
         // start to collapse whitespace
         final StringBuilder sb = new StringBuilder(in.length());
-        sb.append(in.subSequence(0, i + 1).toString());
+        sb.append(in.subSequence(0, i + 1));
         boolean inWhitespace = true;
         for (; i < in.length(); i++) {
             final char c = in.charAt(i);
@@ -456,7 +456,7 @@ public class StringValue extends AtomicValue {
                     // Compose supplemental from high and low surrogate
                     final int suppChar = XMLChar.supplemental(ch, value.charAt(++i));
                     buf.append("&#");
-                    buf.append(Integer.toString(suppChar));
+                    buf.append(suppChar);
                     buf.append(";");
                 } else {
                     buf.append(ch);

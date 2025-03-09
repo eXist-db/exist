@@ -113,11 +113,11 @@ public class ExportGUI extends javax.swing.JFrame {
 
         if (!Files.exists(dir)) {
 
-            if (JOptionPane.showConfirmDialog(this, "The output directory " + dir.toAbsolutePath().toString() + " does not exist. Create it?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, "The output directory " + dir.toAbsolutePath() + " does not exist. Create it?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 try {
                     Files.createDirectories(dir);
                 } catch (final IOException e) {
-                    JOptionPane.showMessageDialog(this, "Could not create output dir: " + dir.toAbsolutePath().toString(), "Configuration Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Could not create output dir: " + dir.toAbsolutePath(), "Configuration Error", JOptionPane.ERROR_MESSAGE);
                     e.printStackTrace();
                     System.err.println("ERROR: Failed to create output dir: " + e.getMessage());
                 }
@@ -136,7 +136,7 @@ public class ExportGUI extends javax.swing.JFrame {
         final Path confFile = Paths.get(dbConfig.getText()).normalize();
 
         if (!(Files.exists(confFile) && Files.isReadable(confFile))) {
-            JOptionPane.showMessageDialog(this, "The selected database configuration file " + confFile.toAbsolutePath().toString() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "The selected database configuration file " + confFile.toAbsolutePath() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
@@ -494,7 +494,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
                 final long end = System.currentTimeMillis();
 
-                displayMessage("Export to " + file.toAbsolutePath().toString() + " completed successfully.");
+                displayMessage("Export to " + file.toAbsolutePath() + " completed successfully.");
                 displayMessage("Export took " + (end - start) + "ms.");
 
             } catch (final EXistException e) {

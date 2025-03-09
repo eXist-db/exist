@@ -157,7 +157,7 @@ public class DLNBase {
         }
         bits = new byte[blen];
         if (previous.bits.length < prefixLen) {
-            throw new IOException("Found wrong prefix len: " + prefixLen + ". Previous: " + previous.toString());
+            throw new IOException("Found wrong prefix len: " + prefixLen + ". Previous: " + previous);
         }
         System.arraycopy(previous.bits, 0, bits, 0, prefixLen);
         is.read(bits, prefixLen, blen - prefixLen);
@@ -551,7 +551,7 @@ public class DLNBase {
     }
 
     public String debug() {
-        return toString() + " = " + toBitString() + " [" +  (bitIndex + 1) + ']';
+        return this + " = " + toBitString() + " [" +  (bitIndex + 1) + ']';
     }
 
     @Override

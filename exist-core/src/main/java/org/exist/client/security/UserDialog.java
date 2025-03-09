@@ -473,7 +473,7 @@ public class UserDialog extends javax.swing.JFrame {
             return true;
         }
         
-        JOptionPane.showMessageDialog(this, "Username must be at least 3 characters (" + PTN_USERNAME.toString() + ")");
+        JOptionPane.showMessageDialog(this, "Username must be at least 3 characters (" + PTN_USERNAME + ")");
         return false;
     }
     

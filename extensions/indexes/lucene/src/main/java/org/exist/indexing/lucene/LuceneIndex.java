@@ -122,7 +122,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             if (Files.exists(dir)) {
                 if (!Files.isDirectory(dir))
                     throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
-                        dir.toAbsolutePath().toString());
+                            dir.toAbsolutePath());
             } else {
                 Files.createDirectories(taxoDir);
             }

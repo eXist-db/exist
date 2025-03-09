@@ -73,7 +73,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
                 try (final OutputStream os = response.getOutputStream()) {
                     binaryValue.streamBinaryTo(os);
                 } catch (final IOException ioe) {
-                    throw new RestXqServiceException("Error while serializing binary: " + ioe.toString(), ioe);
+                    throw new RestXqServiceException("Error while serializing binary: " + ioe, ioe);
                 }
 
                 return; //TODO support more than one binary result -- multipart?
@@ -92,7 +92,7 @@ class RestXqServiceSerializerImpl extends AbstractRestXqServiceSerializer {
             xqSerializer.serialize(((SequenceAdapter)result).getExistSequence());
             writer.flush();
         } catch(IOException | XPathException | SAXException | EXistException ioe) {
-            throw new RestXqServiceException("Error while serializing xml: " + ioe.toString(), ioe);
+            throw new RestXqServiceException("Error while serializing xml: " + ioe, ioe);
         }
     }
     

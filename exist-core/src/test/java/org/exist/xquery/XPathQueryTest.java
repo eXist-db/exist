@@ -2198,7 +2198,7 @@ public class XPathQueryTest {
 
         final XQueryService service = getQueryService();
 
-        String query = "doc(\"" + tempFile.toUri().toString() + "\")";
+        String query = "doc(\"" + tempFile.toUri() + "\")";
         ResourceSet result = queryAndAssert(service, query, 1, null);
         final String expected = "<elem1>" + cdata_content.replace("<", "&lt;").replace(">", "&gt;") + "</elem1>";
         assertEquals(expected, result.getResource(0).getContent().toString());
@@ -2206,12 +2206,12 @@ public class XPathQueryTest {
         query =
                 "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
                 "declare option output:cdata-section-elements \"elem1\";\n" +
-                "doc(\"" + tempFile.toUri().toString() + "\")\n";
+                "doc(\"" + tempFile.toUri() + "\")\n";
         result = queryAndAssert(service, query, 1, null);
         assertEquals(cdata_xml, result.getResource(0).getContent().toString());
 
         query =
-                "fn:serialize(doc(\"" + tempFile.toUri().toString() + "\"),\n" +
+                "fn:serialize(doc(\"" + tempFile.toUri() + "\"),\n" +
                         "<output:serialization-parameters xmlns:output = \"http://www.w3.org/2010/xslt-xquery-serialization\">\n" +
                         "    <output:method value=\"xml\"/>\n" +
                         "    <output:cdata-section-elements value=\"elem1\"/>\n" +
@@ -2220,7 +2220,7 @@ public class XPathQueryTest {
         assertEquals(cdata_xml, result.getResource(0).getContent().toString());
 
         query =
-                "fn:serialize(doc(\"" + tempFile.toUri().toString() + "\"),\n" +
+                "fn:serialize(doc(\"" + tempFile.toUri() + "\"),\n" +
                         "map {\n" +
                         "    \"method\": \"xml\",\n" +
                         "    \"cdata-section-elements\": xs:QName(\"elem1\")\n" +

@@ -95,7 +95,7 @@ public class InstanceOfExpression extends AbstractExpression {
     }
     
     public String toString() {
-		return String.valueOf(expression) + " instance of " + type.toString();
+		return expression + " instance of " + type.toString();
     }
     
 	/* (non-Javadoc)

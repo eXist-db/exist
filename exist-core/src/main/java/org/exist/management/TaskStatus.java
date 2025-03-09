@@ -81,7 +81,7 @@ public class TaskStatus {
             percentageInfo = " - " + _percentageDone + "% done";
             break;
         }
-        return toString() + percentageInfo;
+        return this + percentageInfo;
     }
 
     public Date getStatusChangeTime() {

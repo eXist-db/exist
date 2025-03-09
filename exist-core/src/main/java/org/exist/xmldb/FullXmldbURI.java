@@ -59,7 +59,7 @@ public class FullXmldbURI extends XmldbURI {
         wrappedURI = xmldbURI;
         if (hadXmldbPrefix) {
             if (wrappedURI.getScheme() == null) {
-                throw new URISyntaxException(XMLDB_URI_PREFIX + wrappedURI.toString(), "xmldb URI scheme has no instance name");
+                throw new URISyntaxException(XMLDB_URI_PREFIX + wrappedURI, "xmldb URI scheme has no instance name");
             }
 
             String userInfo = wrappedURI.getUserInfo();

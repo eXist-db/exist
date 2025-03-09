@@ -130,7 +130,7 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
 
         final Diff diff = diffBuilder.build();
         if (diff.hasDifferences()) {
-            mismatch.appendText("differences: " + diff.toString());
+            mismatch.appendText("differences: " + diff);
             return false;
         }
 
