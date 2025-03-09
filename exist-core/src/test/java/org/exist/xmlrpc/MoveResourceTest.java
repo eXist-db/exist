@@ -211,7 +211,7 @@ public class MoveResourceTest {
                     .build();
             final org.apache.http.client.fluent.Executor executor = Executor.newInstance(client);
 
-            final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
+            final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", UTF_8);
             final Request request = Request.Get(reqUrl);
 
             for (int i = 0; i < iterations; i++) {

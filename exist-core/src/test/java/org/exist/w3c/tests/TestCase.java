@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -346,7 +347,7 @@ public abstract class TestCase {
 			throw new IOException(e);
 		}
         
-        try(final InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), "UTF-8")) {
+        try(final InputStreamReader isr = new InputStreamReader(new FileInputStream(uri), StandardCharsets.UTF_8)) {
 //			URL url = new URL(uri);
 //			InputStreamReader isr = new InputStreamReader(url.openStream(), "UTF-8");
             InputSource src = new InputSource(isr);

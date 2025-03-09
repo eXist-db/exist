@@ -26,6 +26,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -50,7 +51,7 @@ public class StreamBinaryTest extends RESTTest {
 		final String testValue = "hello world";
 		final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
 
-		final Request get = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no");
+		final Request get = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, StandardCharsets.UTF_8) + "&_indent=no");
 
 		final HttpResponse response = get.execute().returnResponse();
 		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());

@@ -65,7 +65,7 @@ public class GetHeaderTest extends RESTTest {
 	}
 
 	private void testGetHeader(String headerValue) throws IOException, SAXException {
-		Request request = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no");
+		Request request = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, UTF_8) + "&_indent=no&_wrap=no");
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
 		if (headerValue != null) {

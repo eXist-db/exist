@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -155,7 +156,7 @@ public class XIncludeSerializerTest {
         connect.connect();
 
         final StringBuilder out = new StringBuilder();
-        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"))) {
+        try(final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 out.append(line);
@@ -178,7 +179,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         final StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {
@@ -201,7 +202,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         final StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {
@@ -223,7 +224,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {
@@ -245,7 +246,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         final StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {
@@ -267,7 +268,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         final StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {
@@ -289,7 +290,7 @@ public class XIncludeSerializerTest {
         connect.setRequestMethod("GET");
         connect.connect();
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
         String line;
         final StringBuilder out = new StringBuilder();
         while ((line = reader.readLine()) != null) {

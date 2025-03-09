@@ -24,6 +24,7 @@ package org.exist.security;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -192,7 +193,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
     
     private String createQueryUri(final String xquery) throws UnsupportedEncodingException {
-        return getServerUri() + baseUri + "/?_query=" + URLEncoder.encode(xquery, "UTF-8");
+        return getServerUri() + baseUri + "/?_query=" + URLEncoder.encode(xquery, StandardCharsets.UTF_8);
     }
     
     private String getResponseBody(final HttpEntity entity) throws IOException {

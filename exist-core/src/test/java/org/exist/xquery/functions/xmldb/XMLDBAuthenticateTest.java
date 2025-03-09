@@ -374,7 +374,7 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
     }
 
     public Request xqueryRequest(final String xquery) throws UnsupportedEncodingException {
-        return Request.Get(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8.name()) + "&_wrap=no");
+        return Request.Get(getCollectionRootUri() + "/?_query=" + URLEncoder.encode(xquery, UTF_8) + "&_wrap=no");
     }
 
     private static String readEntityAsString(final HttpEntity entity) throws IOException {
