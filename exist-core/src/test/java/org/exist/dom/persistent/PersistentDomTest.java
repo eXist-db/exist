@@ -115,7 +115,7 @@ public class PersistentDomTest {
                 assertComment(broker, "<!-- 2 -->", documentChildNodes.item(2));
             }
 
-            transaction.commit();;
+            transaction.commit();
         }
     }
 

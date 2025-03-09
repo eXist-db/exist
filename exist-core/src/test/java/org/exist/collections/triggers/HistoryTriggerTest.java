@@ -192,7 +192,7 @@ public class HistoryTriggerTest {
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-            try(final Collection historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK);) {
+            try(final Collection historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK)) {
                 assertNotNull(historyCollection);
 
                 final DocumentSet documentSet = historyCollection.getDocuments(broker, new DefaultDocumentSet());

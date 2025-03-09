@@ -122,7 +122,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test
-    public void changeDocumentModeAsDBA_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException { ;
+    public void changeDocumentModeAsDBA_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         // check the setGid bit is set before we begin

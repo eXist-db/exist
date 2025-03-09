@@ -92,7 +92,7 @@ public class StoreBinaryTest {
         BinaryDocument binaryDoc = null;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
 
             final Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);

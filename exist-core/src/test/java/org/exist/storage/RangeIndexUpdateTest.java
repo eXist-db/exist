@@ -93,7 +93,7 @@ public class RangeIndexUpdateTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
 
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Chair"), 1);
             checkIndex(broker, docs, ITEM_QNAME, new StringValue("Table892.25"), 1);

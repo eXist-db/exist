@@ -199,7 +199,7 @@ public class RemoveCollectionTest {
 
     public void recover(final BrokerPool pool, final boolean checkResource) throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException {
         LockedDocument lockedDoc = null;
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             if (checkResource) {
                 lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
                 assertNull("Resource should have been removed", lockedDoc);

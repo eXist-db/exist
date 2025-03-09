@@ -94,7 +94,7 @@ public abstract class AbstractUpdateTest {
 
     private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException {
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK)) {
 

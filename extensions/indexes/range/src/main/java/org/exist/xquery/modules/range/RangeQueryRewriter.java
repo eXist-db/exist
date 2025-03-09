@@ -108,7 +108,7 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                             // innerExpr was already optimized, just update the contextPath if it is missing
                             if (lookup.getContextPath() == null) {
-                                lookup.setContextPath(path);;
+                                lookup.setContextPath(path);
                             }
 
                         } else {

@@ -43,7 +43,7 @@ public interface PerformanceStats {
     enum IndexOptimizationLevel {
         NONE,
         BASIC,
-        OPTIMIZED;
+        OPTIMIZED
     }
 
     /**

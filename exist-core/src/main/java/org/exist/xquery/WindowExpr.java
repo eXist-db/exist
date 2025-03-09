@@ -630,7 +630,7 @@ public class WindowExpr extends BindingExpression {
 
         private enum State {
             STARTED,
-            ENDED;
+            ENDED
         }
 
         public void start(@Nullable final WindowContextVariables startVariables) {

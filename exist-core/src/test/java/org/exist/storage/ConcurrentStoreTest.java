@@ -102,7 +102,7 @@ public class ConcurrentStoreTest {
     protected void setupCollections(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);

@@ -119,7 +119,7 @@ public class TwoDatabasesTest {
         final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         try (final DBBroker broker2 = pool2.get(Optional.of(user1));
              final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
-            try(Collection top2 = storeBin(broker2, transaction2, "2");) {
+            try(Collection top2 = storeBin(broker2, transaction2, "2")) {
                 pool2.getTransactionManager().commit(transaction2);
             }
         }

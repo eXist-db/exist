@@ -104,7 +104,7 @@ public class SQLModule extends AbstractInternalModule {
                     if (poolName != null && !poolName.isEmpty()) {
                         if (!CONNECTION_POOLS.containsKey(poolName)) {
 
-                            final Properties poolProperties = new Properties();;
+                            final Properties poolProperties = new Properties();
                             poolProperties.setProperty("poolName", poolName);
 
                             final String poolPropertiesPrefix = poolId + ".properties.";
