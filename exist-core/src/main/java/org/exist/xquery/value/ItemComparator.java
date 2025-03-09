@@ -66,15 +66,16 @@ public class ItemComparator implements Comparator<Item> {
     }
 
     @Override
-    public int compare(final Item left, final Item right) {
-        return switch (left) {
-            case AtomicValue atomicValue when right instanceof AtomicValue -> {
+    public int compare(final Item n1, final Item n2) {
+        return switch (n1) {
+            case NodeImpl node when (!(n2 instanceof org.exist.dom.memtree.NodeImpl)) -> Constants.INFERIOR;
+            case AtomicValue atomicValue when n2 instanceof AtomicValue -> {
                 if (atomicValueComparator == null) {
                     atomicValueComparator = new AtomicValueComparator(collator);
                 }
-                yield atomicValueComparator.compare(atomicValue, (AtomicValue) right);
+                yield atomicValueComparator.compare(atomicValue, (AtomicValue) n2);
             }
-            case Comparable comparable -> comparable.compareTo(right);
+            case Comparable comparable -> comparable.compareTo(n2);
             case null, default -> Constants.INFERIOR;
         };
     }
