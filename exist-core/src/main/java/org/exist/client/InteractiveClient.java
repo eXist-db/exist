@@ -110,7 +110,7 @@ public class InteractiveClient {
     private static final String ANSI_CYAN = "\033[0;36m";
     private static final String ANSI_WHITE = "\033[0;37m";
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
     private static final Pattern UNKNOWN_USER_PATTERN = Pattern.compile("User .* unknown");
     private static final String DONE = "done.";
 

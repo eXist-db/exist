@@ -41,7 +41,7 @@ public class BrokerWatchdog {
 	public static final String TRACE_BROKERS_PROPERTY_NAME = "trace.brokers";
 
 	private static final DateFormat df = DateFormat.getDateTimeInstance();
-	private static final String EOL = System.getProperty("line.separator");
+	private static final String EOL = System.lineSeparator();
 
 	private static class WatchedBroker {
 		private final DBBroker broker;

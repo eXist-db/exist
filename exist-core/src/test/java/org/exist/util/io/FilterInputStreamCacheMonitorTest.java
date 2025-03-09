@@ -60,7 +60,7 @@ public class FilterInputStreamCacheMonitorTest {
         final FilterInputStreamCacheMonitor monitor = FilterInputStreamCacheMonitor.getInstance();
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            LOG.warn("FilterInputStreamCacheMonitor should have no active binaries, but found: {}.{}{}It is likely that a previous test or process within the same JVM is leaking file handles! This should be investigated...", activeCount, System.getProperty("line.separator"), monitor.dump());
+            LOG.warn("FilterInputStreamCacheMonitor should have no active binaries, but found: {}.{}{}It is likely that a previous test or process within the same JVM is leaking file handles! This should be investigated...", activeCount, System.lineSeparator(), monitor.dump());
         }
         monitor.clear();
 
@@ -87,7 +87,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." +  System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.lineSeparator() + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -108,7 +108,7 @@ public class FilterInputStreamCacheMonitorTest {
             // assert no active binaries as we just closed the resource in the try-with-resources
             activeCount = monitor.getActive().size();
             if (activeCount != 0) {
-                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.lineSeparator() + monitor.dump());
             }
 
         } finally {
@@ -123,7 +123,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "."  + System.lineSeparator() + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -139,7 +139,7 @@ public class FilterInputStreamCacheMonitorTest {
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator") + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.lineSeparator() + monitor.dump());
                 }
             }
 
@@ -155,7 +155,7 @@ public class FilterInputStreamCacheMonitorTest {
         // assert no binaries in use yet
         int activeCount = monitor.getActive().size();
         if (activeCount != 0) {
-            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.getProperty("line.separator") + monitor.dump());
+            fail("FilterInputStreamCacheMonitor should have no active binaries, but found: " + activeCount + "." + System.lineSeparator() + monitor.dump());
         }
 
         ResourceSet resourceSet = null;
@@ -173,7 +173,7 @@ public class FilterInputStreamCacheMonitorTest {
                 // assert still no active binaries (because they have been cleaned up)
                 activeCount = monitor.getActive().size();
                 if (activeCount != 0) {
-                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.getProperty("line.separator" ) + monitor.dump());
+                    fail("FilterInputStreamCacheMonitor should again have no active binaries, but found: " + activeCount + "."  + System.lineSeparator() + monitor.dump());
                 }
             }
 

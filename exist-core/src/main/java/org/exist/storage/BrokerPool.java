@@ -1144,13 +1144,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             sb.append("Broker was not obtained for thread '");
             sb.append(Thread.currentThread());
             sb.append("'.");
-            sb.append(System.getProperty("line.separator"));
+            sb.append(System.lineSeparator());
 
             for(final Entry<Thread, DBBroker> entry : activeBrokers.entrySet()) {
                 sb.append(entry.getKey());
                 sb.append(" = ");
                 sb.append(entry.getValue());
-                sb.append(System.getProperty("line.separator"));
+                sb.append(System.lineSeparator());
             }
 
             LOG.debug(sb.toString());

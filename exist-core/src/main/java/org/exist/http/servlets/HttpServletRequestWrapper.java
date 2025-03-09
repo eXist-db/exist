@@ -307,7 +307,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
                 }
             }
 
-            buf.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
+            buf.append(System.lineSeparator()).append(System.lineSeparator());
 
             return buf.toString();
         } else {

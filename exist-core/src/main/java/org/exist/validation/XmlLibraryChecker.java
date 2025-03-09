@@ -207,7 +207,7 @@ public class XmlLibraryChecker {
     public static boolean hasValidClassVersion(String type, 
                         ClassVersion[] validClasses, StringBuilder message) {
 
-        final String sep = System.getProperty("line.separator");
+        final String sep = System.lineSeparator();
 
         message.append("Looking for a valid ").append(type).append("...").append(sep);
 

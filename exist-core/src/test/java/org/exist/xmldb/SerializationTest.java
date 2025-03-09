@@ -58,7 +58,7 @@ public class SerializationTest {
 	public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 	private static final String PORT_PLACEHOLDER = "${PORT}";
 
-	private static final String EOL = System.getProperty("line.separator");
+	private static final String EOL = System.lineSeparator();
 
 	private static final String TEST_COLLECTION_NAME = "xmlrpc-serialization-test";
 

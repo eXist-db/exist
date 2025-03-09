@@ -44,7 +44,7 @@ import javax.annotation.Nullable;
  */
 public class SanityCheck {
     private static final Logger LOG = LogManager.getLogger(SanityCheck.class);
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
 
     public static void ASSERT(final boolean mustBeTrue) {
         ASSERT(mustBeTrue, null);

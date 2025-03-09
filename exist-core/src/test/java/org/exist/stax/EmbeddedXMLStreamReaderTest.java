@@ -308,7 +308,7 @@ public class EmbeddedXMLStreamReaderTest {
         final int maxLen = Math.max(expected.length, actual.length);
         final int maxIdxLen = String.valueOf(maxLen).length();
         final int maxNameLen = Math.max(maxNameLen(expected), maxNameLen(actual));
-        final String EOL = System.getProperty("line.separator");
+        final String EOL = System.lineSeparator();
         final StringBuilder tableBuilder = new StringBuilder();
         append(tableBuilder, "#", maxIdxLen).append(" | ");
         append(tableBuilder, "Expected", maxNameLen).append(" | Actual").append(EOL);

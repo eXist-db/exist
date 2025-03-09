@@ -476,14 +476,14 @@ public class CollectionXConf
 			}
 		}
 		xconf.append(">");
-		xconf.append(System.getProperty("line.separator"));
+		xconf.append(System.lineSeparator());
 		
 		//index
 		if(rangeIndexes != null)
 		{
 			xconf.append('\t');
 			xconf.append("<index>");
-			xconf.append(System.getProperty("line.separator"));
+			xconf.append(System.lineSeparator());
 		
 			//range indexes
 			if(rangeIndexes != null)
@@ -491,13 +491,13 @@ public class CollectionXConf
 				for (RangeIndex rangeIndex : rangeIndexes) {
 					xconf.append("\t\t\t");
 					xconf.append(rangeIndex.toXMLString());
-					xconf.append(System.getProperty("line.separator"));
+					xconf.append(System.lineSeparator());
 				}
 			}
 			
 			xconf.append('\t');
 			xconf.append("</index>");
-			xconf.append(System.getProperty("line.separator"));
+			xconf.append(System.lineSeparator());
 		}
 		
 		//triggers
@@ -509,12 +509,12 @@ public class CollectionXConf
 			for (Trigger trigger : triggers) {
 				xconf.append("\t\t\t");
 				xconf.append(trigger.toXMLString());
-				xconf.append(System.getProperty("line.separator"));
+				xconf.append(System.lineSeparator());
 			}
 			
 			xconf.append('\t');
 			xconf.append("</triggers>");
-			xconf.append(System.getProperty("line.separator"));
+			xconf.append(System.lineSeparator());
 		}
 		
 		xconf.append("</collection>");

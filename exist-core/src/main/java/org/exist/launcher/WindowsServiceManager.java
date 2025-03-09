@@ -368,7 +368,7 @@ class WindowsServiceManager implements ServiceManager {
                 UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(System.getProperty("line.separator")).append(line);
+                output.append(System.lineSeparator()).append(line);
             }
         }
         final int exitValue = process.waitFor();

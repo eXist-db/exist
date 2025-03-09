@@ -54,7 +54,7 @@ import javax.xml.stream.XMLStreamWriter;
  */
 public class LockTableUtils {
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
 
     public static String stateToString(final LockTable lockTable, final boolean includeStack) {
         final Map<String, Map<LockType, List<LockModeOwner>>> attempting = lockTable.getAttempting();

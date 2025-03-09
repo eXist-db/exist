@@ -354,7 +354,7 @@ public class Main {
         }
 
         private void addProblem(final boolean warning, final String message) {
-            final String sep = System.getProperty("line.separator");
+            final String sep = System.lineSeparator();
             if (allProblems == null) {
                 allProblems = new StringBuilder();
                 allProblems.append("------------------------------------").append(sep);

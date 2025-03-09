@@ -67,7 +67,7 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 // TODO: doLogRequestInReplayLog() - add the facility to log HTTP POST form file uploads, may need changes to HttpServletRequestWrapper
 
 public class Descriptor implements ErrorHandler {
-    private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String SYSTEM_LINE_SEPARATOR = System.lineSeparator();
     //References
     private static Descriptor singletonRef;
     private final static Logger LOG = LogManager.getLogger(Descriptor.class);        //Logger

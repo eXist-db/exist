@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class JSONWriterTest {
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
     private static final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     static {
         documentBuilderFactory.setIgnoringElementContentWhitespace(false);

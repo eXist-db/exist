@@ -32,7 +32,7 @@ import java.util.UUID;
  */
 public class UpdateInsertTest extends AbstractTestUpdate {
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
 
     @Test
     public void insertNamespacedAttribute() throws XMLDBException {

@@ -289,7 +289,7 @@ public class CollectionConfiguration {
     public String toString() {
         final StringBuilder result = new StringBuilder();
         if (indexSpec != null) {
-            result.append(indexSpec).append(System.getProperty("line.separator"));
+            result.append(indexSpec).append(System.lineSeparator());
         }
         return result.toString();
     }

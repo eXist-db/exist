@@ -54,7 +54,7 @@ public class InternalModuleTest {
     @Rule
     public final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(true, true, true);
 
-    private static final String EOL = System.getProperty("line.separator");
+    private static final String EOL = System.lineSeparator();
 
     @Test
     public void moduleVariables() throws XMLDBException {
