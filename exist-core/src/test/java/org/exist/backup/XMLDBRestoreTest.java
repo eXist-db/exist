@@ -342,10 +342,10 @@ public class XMLDBRestoreTest {
         }
         col1Contents.append("</collection>");
 
-        final Path dbContentsFile = Files.write(db.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path col1ContentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
+        final Path dbContentsFile = Files.writeString(db.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents);
+        final Path col1ContentsFile = Files.writeString(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString());
         for (final DocInfo backupDocInfo : BACKUP_DOCS) {
-            Files.write(col1.resolve(backupDocInfo.name), backupDocInfo.content.getBytes(UTF_8));
+            Files.writeString(col1.resolve(backupDocInfo.name), backupDocInfo.content);
         }
 
         return dbContentsFile;
@@ -379,10 +379,10 @@ public class XMLDBRestoreTest {
         final String doc2 = "<doc2>invalid";
         final String doc3 = "<doc3/>";
 
-        final Path contentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(col1.resolve("doc1.xml"), doc1.getBytes(UTF_8));
-        Files.write(col1.resolve("doc2.xml"), doc2.getBytes(UTF_8));
-        Files.write(col1.resolve("doc3.xml"), doc3.getBytes(UTF_8));
+        final Path contentsFile = Files.writeString(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents);
+        Files.writeString(col1.resolve("doc1.xml"), doc1);
+        Files.writeString(col1.resolve("doc2.xml"), doc2);
+        Files.writeString(col1.resolve("doc3.xml"), doc3);
 
         return contentsFile;
     }
@@ -415,9 +415,9 @@ public class XMLDBRestoreTest {
         final String admin = "<account xmlns=\"http://exist-db.org/Configuration\" id=\"1048574\"><password>{RIPEMD160}" + backupPasswordHash + "</password><digestPassword>" + backupPasswordDigest + "</digestPassword><group name=\"dba\"/><expired>false</expired><enabled>true</enabled><umask>022</umask><metadata key=\"http://exist-db.org/security/description\">System Administrator</metadata><metadata key=\"http://axschema.org/namePerson\">admin</metadata><name>admin</name></account>";
         final String guest = "<account xmlns=\"http://exist-db.org/Configuration\" id=\"1048573\"><password>{RIPEMD160}q2VXP75jMi+d8E5VAsEr6pD8V5w=</password><group name=\"guest\"/><expired>false</expired><enabled>true</enabled><umask>022</umask><metadata key=\"http://exist-db.org/security/description\">Anonymous User</metadata><metadata key=\"http://axschema.org/namePerson\">guest</metadata><name>guest</name></account>";
 
-        final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(accountsCol.resolve("admin.xml"), admin.getBytes(UTF_8));
-        Files.write(accountsCol.resolve("guest.xml"), guest.getBytes(UTF_8));
+        final Path contentsFile = Files.writeString(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents);
+        Files.writeString(accountsCol.resolve("admin.xml"), admin);
+        Files.writeString(accountsCol.resolve("guest.xml"), guest);
 
         return contentsFile;
     }
@@ -447,8 +447,8 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                         "</account>";
 
-        final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(accountsCol.resolve(username + ".xml"), invalidUserDoc.getBytes(UTF_8));
+        final Path contentsFile = Files.writeString(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents);
+        Files.writeString(accountsCol.resolve(username + ".xml"), invalidUserDoc);
 
         return contentsFile;
     }
@@ -479,8 +479,8 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                         "</account>\n";
 
-        final Path contentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents.getBytes(UTF_8));
-        Files.write(accountsCol.resolve(username + ".xml"), invalidUserDoc.getBytes(UTF_8));
+        final Path contentsFile = Files.writeString(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), contents);
+        Files.writeString(accountsCol.resolve(username + ".xml"), invalidUserDoc);
 
         return contentsFile;
     }
@@ -557,12 +557,12 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                         "</account>\n");
 
-        final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
-        final Path securityContentsFile = Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
-        final Path existRealmContentsFile = Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
-        final Path groupsContentsFile = Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
-        final Path accountsContentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
+        final Path dbContentsFile = Files.writeString(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents);
+        final Path systemContentsFile = Files.writeString(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents);
+        final Path securityContentsFile = Files.writeString(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents);
+        final Path existRealmContentsFile = Files.writeString(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents);
+        final Path groupsContentsFile = Files.writeString(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString());
+        final Path accountsContentsFile = Files.writeString(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents);
 
         int groupId = 123;
         for (final String groupName : groupNames) {
@@ -573,10 +573,10 @@ public class XMLDBRestoreTest {
                             "    <name>" + groupName + "</name>\n" +
                             "</group>";
 
-            Files.write(groupsCol.resolve(groupName + ".xml"), groupDoc.getBytes(UTF_8));
+            Files.writeString(groupsCol.resolve(groupName + ".xml"), groupDoc);
         }
 
-        Files.write(accountsCol.resolve(username + ".xml"), userDoc.toString().getBytes(UTF_8));
+        Files.writeString(accountsCol.resolve(username + ".xml"), userDoc.toString());
     }
 
     private static byte[] ripemd160(final String s) {

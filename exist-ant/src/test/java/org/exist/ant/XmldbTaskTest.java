@@ -257,7 +257,7 @@ public class XmldbTaskTest extends AbstractTaskTest {
     @Test
     public void store() throws IOException {
         final Path tmpFile = temporaryFolder.newFile().toPath();
-        Files.write(tmpFile, "<hello/>".getBytes(UTF_8));
+        Files.writeString(tmpFile, "<hello/>");
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_TEST_COLLECTION, TEST_COLLECTION_NAME);

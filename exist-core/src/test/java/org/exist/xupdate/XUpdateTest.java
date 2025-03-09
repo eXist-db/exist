@@ -180,7 +180,7 @@ public class XUpdateTest {
         final XUpdateQueryService service = col.getService(XUpdateQueryService.class);
 
         // Read XUpdate-Modifcations
-        final String xUpdateModifications = new String(Files.readAllBytes(updateFile), UTF_8);
+        final String xUpdateModifications = Files.readString(updateFile);
 
         service.update(xUpdateModifications);
 

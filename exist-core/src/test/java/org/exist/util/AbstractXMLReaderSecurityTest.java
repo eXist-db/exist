@@ -124,7 +124,7 @@ public abstract class AbstractXMLReaderSecurityTest {
     protected Tuple2<String, Path> createTempSecretFile() throws IOException {
         final Path file = Files.createTempFile("exist.XMLReaderSecurityTest", "topsecret");
         final String randomSecret = generateRandomString(SECRET_LENGTH);
-        return new Tuple2<>(randomSecret, Files.write(file, randomSecret.getBytes(UTF_8)));
+        return new Tuple2<>(randomSecret, Files.writeString(file, randomSecret));
     }
 
     private String generateRandomString(final int length) {

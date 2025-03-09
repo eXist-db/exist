@@ -83,7 +83,7 @@ public class ExtDocTest {
     @Before
     public void storeExtDoc() throws IOException {
         final Path externalDocFile = Files.createTempFile(docName, "xml");
-        Files.write(externalDocFile, docContent.getBytes(UTF_8));
+        Files.writeString(externalDocFile, docContent, UTF_8);
         this.externalDoc = externalDocFile;
     }
 

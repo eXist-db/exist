@@ -138,7 +138,7 @@ public class CollectionStoreTest {
 
                         final BinaryDocument doc = (BinaryDocument)lockedDoc.getDocument();
                         final Try<String, IOException> docContent = broker.withBinaryFile(transaction, doc, is ->
-                                Try.TaggedTryUnchecked(IOException.class, () -> new String(Files.readAllBytes(is), UTF_8))
+                                Try.TaggedTryUnchecked(IOException.class, () -> Files.readString(is))
                         );
                         assertEquals(TEST_BIN_DOC, docContent.get());
                     }

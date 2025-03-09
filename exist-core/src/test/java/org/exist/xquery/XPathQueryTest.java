@@ -1907,7 +1907,7 @@ public class XPathQueryTest {
         String content = null;
         if(rawContent instanceof File) {
             final Path p = ((File) rawContent).toPath();
-            content = new String(Files.readAllBytes(p), UTF_8);
+            content = Files.readString(p);
         } else {
             content = (String)r.getContent();
         }
