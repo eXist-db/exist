@@ -608,14 +608,10 @@ public class XIncludeFilter implements Receiver {
                 value = args.substring(start, end - 1);
             }
             start = end;
-            try {
-                param = URLDecoder.decode(param, UTF_8.name());
-                value = URLDecoder.decode(value, UTF_8.name());
-                LOG.debug("parameter: {} = {}", param, value);
-                parameters.put(param, value);
-            } catch (final UnsupportedEncodingException e) {
-                LOG.warn(e.getMessage(), e);
-            }
+            param = URLDecoder.decode(param, UTF_8);
+            value = URLDecoder.decode(value, UTF_8);
+            LOG.debug("parameter: {} = {}", param, value);
+            parameters.put(param, value);
         }
         return parameters;
     }
