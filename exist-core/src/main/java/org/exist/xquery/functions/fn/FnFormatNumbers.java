@@ -86,7 +86,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-import java.lang.String;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;

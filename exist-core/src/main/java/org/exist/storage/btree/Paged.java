@@ -80,7 +80,6 @@ import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.xquery.Constants;
 
-import java.lang.AutoCloseable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;

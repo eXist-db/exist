@@ -23,7 +23,6 @@ package org.exist.xslt;
 
 import org.exist.repo.PkgXsltModuleURIResolver;
 import org.exist.storage.BrokerPool;
-import org.exist.util.EXistURISchemeURIResolver;
 import org.exist.util.URIResolverHierarchy;
 
 import javax.annotation.Nullable;

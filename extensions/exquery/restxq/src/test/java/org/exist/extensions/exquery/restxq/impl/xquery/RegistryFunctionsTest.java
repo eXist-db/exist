@@ -46,7 +46,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.Override;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertFalse;

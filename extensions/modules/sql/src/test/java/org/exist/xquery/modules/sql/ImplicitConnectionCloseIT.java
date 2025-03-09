@@ -49,7 +49,6 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 
 import org.exist.xquery.ExternalModule;
-import org.exist.xquery.Module;
 import org.exist.xquery.ModuleContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -80,7 +79,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Uses JNDI to provide a StubDataSourceFactory
