@@ -179,7 +179,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 client.reloadCollection();
             } catch (final XMLDBException e1) {
-                //TODO report message
+                showErrorMessage(e1.getMessage(), e1);
             }
         });
         toolbar.add(button);
@@ -545,7 +545,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             doc.insertString(commandStart++, Messages.getString("ClientFrame.92"), defaultAttrs); //$NON-NLS-1$
             shell.setCaretPosition(commandStart);
         } catch (final BadLocationException e) {
-            //TODO show error
+            showErrorMessage(e.getMessage(), e);
         }
     }
 
@@ -561,7 +561,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             shell.setCaretPosition(commandStart);
 
         } catch (final BadLocationException e) {
-            //TODO show error
+            showErrorMessage(e.getMessage(), e);
         }
     }
 
