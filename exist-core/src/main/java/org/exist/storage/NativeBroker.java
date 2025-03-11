@@ -85,7 +85,6 @@ import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
