@@ -142,10 +142,9 @@ public class OneParamFunctions extends BasicFunction {
 
         } else {
             final NumericValue value = (NumericValue) firstArgument.itemAt(0).convertTo(Type.DOUBLE);
-            double calcValue = 0;
             final String functionName = getSignature().getName().getLocalPart();
 
-            calcValue = switch (functionName) {
+            final double calcValue = switch (functionName) {
                 case ACOS -> Math.acos(value.getDouble());
                 case ASIN -> Math.asin(value.getDouble());
                 case ATAN -> Math.atan(value.getDouble());
@@ -157,7 +156,8 @@ public class OneParamFunctions extends BasicFunction {
                 case SIN -> Math.sin(value.getDouble());
                 case SQRT -> Math.sqrt(value.getDouble());
                 case TAN -> Math.tan(value.getDouble());
-                case null, default -> throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
+                case null -> throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
+                default -> 0;
             };
             return new DoubleValue(this, calcValue);
         }

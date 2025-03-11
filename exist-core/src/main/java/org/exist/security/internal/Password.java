@@ -54,15 +54,15 @@ public class Password implements Credential {
     
     final Pattern ptnHash = Pattern.compile("\\{([A-Z0-9]+)\\}(.*)");
 
-    public Password(Account account, String password) {
-        
+    public Password(final Account account, final String password) {
+
         if (password == null) {
             this.algorithm = DEFAULT_ALGORITHM;
             this.pw = null;
             this.digestPw = null;
-        } else{
+        } else {
             final Matcher mtcHash = ptnHash.matcher(password);
-            
+
             if (mtcHash.matches()) {
                 this.algorithm = Hash.valueOf(mtcHash.group(1));
                 this.pw = mtcHash.group(2);
@@ -70,7 +70,7 @@ public class Password implements Credential {
                 this.algorithm = DEFAULT_ALGORITHM;
                 this.pw = hashAndEncode(password);
             }
-            
+
             this.digestPw = digest(account.getName(), account.getRealmId(), pw);
         }
     }
@@ -148,31 +148,22 @@ public class Password implements Credential {
 
     @Override
     public boolean equals(Object obj) {
-    	
-    	if(obj == this) {
+
+        if (obj == this) {
             return true;
         }
 
-        switch (obj) {
-            case null -> {
-                return false;
-            }
-            case Password p -> {
-
-                if (algorithm != p.algorithm) {
-                    throw new RuntimeException("Cannot compare passwords with different algorithms i.e. " + algorithm + " and " + p.algorithm);
+        return switch (obj) {
+            case Password password -> {
+                if (algorithm != password.algorithm) {
+                    throw new RuntimeException("Cannot compare passwords with different algorithms i.e. "
+                            + algorithm + " and " + password.algorithm);
                 }
-
-                return (Objects.equals(pw, p.pw));
+                yield Objects.equals(pw, password.pw);
             }
-            case String s -> {
-                return (hashAndEncode(s)).equals(pw);
-            }
-            default -> {
-            }
-        }
-
-        return false;
+            case String s -> (hashAndEncode(s)).equals(pw);
+            case null, default -> false;
+        };
     }
     
     @Override

@@ -120,41 +120,46 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
     }
 
     private Object getContent(final Object res) throws XMLDBException {
-        if(res != null) {
-            switch (res) {
-                case Path path -> {
-                    return readFile(path);
-                }
-                case File file1 -> {
-                    return readFile(file1.toPath());
-                }
-                case InputSource source -> {
-                    return readFile(source);
-                }
-                case byte[] bytes -> {
-                    return res;
-                }
-                case BinaryValue value -> {
-                    try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-                        ((BinaryValue) res).streamBinaryTo(baos);
-                        return baos.toByteArray();
-                    } catch (final IOException e) {
-                        throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-                    }
-                }
-                case InputStream inputStream -> {
-                    try (final InputStream is = (InputStream) res) {
-                        return readFile(is);
-                    } catch (final IOException e) {
-                        throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-                    }
-                }
-                default -> {
+
+        /*
+            DW: can use "return switch(res)" as this will give deep Java Validation errors.
+            This might be a java bug.
+         */
+        switch (res) {
+            case Path path -> {
+                return readFile(path);
+            }
+            case File file -> {
+                return readFile(file.toPath());
+            }
+            case InputSource inputSource -> {
+                return readFile(inputSource);
+            }
+            case byte[] bytes -> {
+                return res;
+            }
+            case BinaryValue binaryValue -> {
+                try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+                    binaryValue.streamBinaryTo(baos);
+                    return baos.toByteArray();
+                } catch (final IOException e) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
                 }
             }
+            case InputStream inputStream -> {
+                /* This will manage the inputstream */
+                try (final InputStream is = inputStream) {
+                    return readFile(is);
+                } catch (final IOException e) {
+                    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
+                }
+            }
+            case null, default -> {
+                return null;
+            }
         }
-        return res;
     }
+
 
     @Override
     public void setContent(final Object value) throws XMLDBException {

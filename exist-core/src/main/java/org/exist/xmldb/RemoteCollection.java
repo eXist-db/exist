@@ -471,36 +471,43 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
     @Override
     public void storeResource(final Resource res, final Instant a, final Instant b) throws XMLDBException {
-        final Object content = (res instanceof ExtendedResource) ? ((ExtendedResource) res).getExtendedContent() : res.getContent();
+
+        final Object content = (res instanceof ExtendedResource)
+                ? ((ExtendedResource) res).getExtendedContent()
+                : res.getContent();
+
         if (content instanceof Path || content instanceof File || content instanceof InputSource) {
-            long fileLength = -1;
-            switch (content) {
-                case Path file -> {
-                    if (!Files.isReadable(file)) {
-                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.toAbsolutePath());
+            long fileLength = switch (content) {
+                case Path path -> {
+                    if (!Files.isReadable(path)) {
+                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+                                "Failed to read resource from file " + path.toAbsolutePath());
                     }
-                    fileLength = FileUtils.sizeQuietly(file);
+                    yield FileUtils.sizeQuietly(path);
                 }
                 case File file -> {
                     if (!file.canRead()) {
-                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.getAbsolutePath());
+                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+                                "Failed to read resource from file " + file.getAbsolutePath());
                     }
-                    fileLength = file.length();
+                    yield file.length();
                 }
-                case EXistInputSource eXistInputSource -> fileLength = eXistInputSource.getByteStreamLength();
-                default -> {
-                }
-            }
+                case EXistInputSource eXistInputSource -> eXistInputSource.getByteStreamLength();
+                default -> -1;
+            };
+
             if (res instanceof AbstractRemoteResource) {
                 ((AbstractRemoteResource) res).dateCreated = a;
                 ((AbstractRemoteResource) res).dateModified = b;
             }
+
             if (!BINARY_RESOURCE.equals(res.getResourceType()) && fileLength != -1
                     && fileLength < MAX_CHUNK_LENGTH) {
                 store((RemoteXMLResource) res);
             } else {
                 uploadAndStore(res);
             }
+
         } else {
             ((AbstractRemoteResource) res).dateCreated = a;
             ((AbstractRemoteResource) res).dateModified = b;

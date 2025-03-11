@@ -53,26 +53,29 @@ public class Repair {
     }
 
     public void repair(String id) {
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
-            BTree btree = null;
-            switch (id) {
-                case "collections" -> btree = ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
-                case "dom" -> btree = ((NativeBroker) broker).getStorage(NativeBroker.DOM_DBX_ID);
-                case "range" -> btree = ((NativeBroker) broker).getStorage(NativeBroker.VALUES_DBX_ID);
+            final BTree btree = switch (id) {
+                case null -> null; // prevent NPE in index lookup (default)
+                case "collections" -> ((NativeBroker) broker).getStorage(NativeBroker.COLLECTIONS_DBX_ID);
+                case "dom" -> ((NativeBroker) broker).getStorage(NativeBroker.DOM_DBX_ID);
+                case "range" -> ((NativeBroker) broker).getStorage(NativeBroker.VALUES_DBX_ID);
                 case "structure" -> {
                     NativeStructuralIndexWorker index = (NativeStructuralIndexWorker)
                             broker.getIndexController().getWorkerByIndexName(StructuralIndex.STRUCTURAL_INDEX_ID);
-                    btree = index.getStorage();
+                    yield index.getStorage();
                 }
-                case null, default -> {
+                default -> {
                     // use index id defined in conf.xml
                     Index index = pool.getIndexManager().getIndexByName(id);
                     if (index != null) {
-                        btree = index.getStorage();
+                        yield index.getStorage();
+                    } else {
+                        yield null;
                     }
                 }
-            }
+            };
+
             if (btree == null) {
                 System.console().printf("Unkown index: %s\n", id);
                 return;

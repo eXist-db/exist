@@ -172,27 +172,23 @@ public class AccountImpl extends AbstractAccount {
         //copy umask
         setUserMask(from_user.getUserMask());
 
-        if(from_user instanceof AccountImpl user) {
-
-            groups = new ArrayList<>(user.groups);
-
-            password = user.password;
-            digestPassword = user.digestPassword;
-
-            hasDbaRole = user.hasDbaRole;
-
-            _cred = user._cred;
-        } else if(from_user instanceof UserAider user) {
-
-            final String[] groups = user.getGroups();
-            for (final String group : groups) {
-                addGroup(group);
+        switch (from_user) {
+            case AccountImpl user -> {
+                groups = new ArrayList<>(user.groups);
+                password = user.password;
+                digestPassword = user.digestPassword;
+                hasDbaRole = user.hasDbaRole;
+                _cred = user._cred;
             }
-
-            setPassword(user.getPassword());
-            digestPassword = user.getDigestPassword();
-        } else {
-            addGroup(from_user.getDefaultGroup());
+            case UserAider user -> {
+                final String[] groups = user.getGroups();
+                for (final String group : groups) {
+                    addGroup(group);
+                }
+                setPassword(user.getPassword());
+                digestPassword = user.getDigestPassword();
+            }
+            default -> addGroup(from_user.getDefaultGroup());
             //TODO: groups
         }
     }
