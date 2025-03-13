@@ -81,8 +81,7 @@ public class HttpClientTest {
         try {
             final URL url = new URL("http://www.exist-db.org");
             final URLConnection con = url.openConnection();
-            if (con instanceof HttpURLConnection) {
-                final HttpURLConnection httpConnection = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpConnection) {
                 hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
             }
         } catch(final MalformedURLException e) {

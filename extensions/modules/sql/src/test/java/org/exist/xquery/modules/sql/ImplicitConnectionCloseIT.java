@@ -247,8 +247,7 @@ public class ImplicitConnectionCloseIT {
 
         @Override
         public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
-            if (obj instanceof Reference) {
-                final Reference reference = (Reference)obj;
+            if (obj instanceof Reference reference) {
                 if (reference.getClassName().equals(StubDataSource.class.getName())) {
                     final StubDataSource dataSource = new StubDataSource();
                     dataSource.setURL((String)reference.get("url").getContent());
