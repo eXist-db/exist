@@ -141,7 +141,7 @@ class DigitsIntegerPicture extends IntegerPicture {
                 if (formatParser.end()) {
                     throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator at " + formatParser.match());
                 }
-                group.separator = Optional.of(String.valueOf(Character.toChars(formatParser.matchCodes().get(0))));
+                group.separator = Optional.of(String.valueOf(Character.toChars(formatParser.matchCodes().getFirst())));
                 groups.add(group);
             } else {
                 groups.add(group);
@@ -178,7 +178,7 @@ class DigitsIntegerPicture extends IntegerPicture {
      */
     private void regularizeGroups() {
         groupsAreRegular = false;
-        Group prev = groups.get(0);
+        Group prev = groups.getFirst();
         for (int i = 1; i < groups.size(); i++) {
             final Group group = groups.get(i);
 
@@ -206,7 +206,7 @@ class DigitsIntegerPicture extends IntegerPicture {
      */
     private Group getGroupFromEnd(final int index) {
         if (groupsAreRegular) {
-            return groups.get(0);
+            return groups.getFirst();
         } else if (index < groups.size()) {
             return groups.get(groups.size() - index - 1);
         } else {

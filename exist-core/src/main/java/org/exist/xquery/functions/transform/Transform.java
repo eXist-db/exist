@@ -186,12 +186,12 @@ public class Transform extends BasicFunction {
 
 
         final XSLTErrorsListener<XPathException> errorListener =
-            new XSLTErrorsListener<XPathException>(stopOnError, stopOnWarn) {
-                @Override
-                protected void raiseError(final String error, final TransformerException ex) throws XPathException {
-                    throw new XPathException(Transform.this, error, ex);
-                }
-            };
+                new XSLTErrorsListener<>(stopOnError, stopOnWarn) {
+                    @Override
+                    protected void raiseError(final String error, final TransformerException ex) throws XPathException {
+                        throw new XPathException(Transform.this, error, ex);
+                    }
+                };
 
         // Setup handler and error listener
         final TransformerHandler handler = createHandler(stylesheetItem, stylesheetParams, attributes, errorListener);

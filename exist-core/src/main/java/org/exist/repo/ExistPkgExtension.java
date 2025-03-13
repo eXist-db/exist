@@ -91,15 +91,14 @@ public class ExistPkgExtension
     private void handleElement(XMLStreamReader parser, Package pkg, ExistPkgInfo info)
             throws PackageException, XMLStreamException {
         final String local = parser.getLocalName();
-        if ("jar".equals(local)) {
-            final String jar = myXSHelper.getElementValue(parser);
-            info.addJar(jar);
-        } else if ("java".equals(local)) {
-            handleJava(parser, info);
-        } else if ("xquery".equals(local)) {
-            handleXQuery(parser, pkg, info);
-        } else {
-            throw new PackageException("Unknown eXist component type: " + local);
+        switch (local) {
+            case "jar" -> {
+                final String jar = myXSHelper.getElementValue(parser);
+                info.addJar(jar);
+            }
+            case "java" -> handleJava(parser, info);
+            case "xquery" -> handleXQuery(parser, pkg, info);
+            case null, default -> throw new PackageException("Unknown eXist component type: " + local);
         }
     }
 

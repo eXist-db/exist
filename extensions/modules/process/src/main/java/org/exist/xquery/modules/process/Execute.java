@@ -118,7 +118,7 @@ public class Execute extends BasicFunction {
             }
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Creating process {}", cmdArgs.get(0));
+            LOG.debug("Creating process {}", cmdArgs.getFirst());
 
         ProcessBuilder pb = new ProcessBuilder(cmdArgs);
         pb.redirectErrorStream(true);
@@ -141,9 +141,9 @@ public class Execute extends BasicFunction {
             int exitValue = process.waitFor();
             return createReport(exitValue, output, cmdArgs);
         } catch (IOException e) {
-            throw new XPathException(this, "An IO error occurred while executing the process " + cmdArgs.get(0) + ": " + e.getMessage(), e);
+            throw new XPathException(this, "An IO error occurred while executing the process " + cmdArgs.getFirst() + ": " + e.getMessage(), e);
         } catch (InterruptedException e) {
-            throw new XPathException(this, "process:execute was interrupted while waiting for process " + cmdArgs.get(0));
+            throw new XPathException(this, "process:execute was interrupted while waiting for process " + cmdArgs.getFirst());
         }
     }
 

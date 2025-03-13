@@ -817,7 +817,7 @@ public class EnsureLockingAspect {
         } else {
             final List<Lock.LockMode> lockModeArgs = getLockModeArgs(args);
             if(lockModeArgs.size() == 1) {
-                mode = new Tuple2<>(lockModeArgs.get(0), true);
+                mode = new Tuple2<>(lockModeArgs.getFirst(), true);
             } else if(lockModeArgs.isEmpty()) {
                 throw new IllegalArgumentException("No mode or modeParam was specified on @EnsureLocked and no LockMode parameter was found");
             } else {

@@ -307,7 +307,7 @@ public class MapFunction extends BasicFunction {
                 return Sequence.EMPTY_SEQUENCE;
             });
             if (!mergeExceptions.isEmpty()) {
-                throw mergeExceptions.get(0);
+                throw mergeExceptions.getFirst();
             }
             return merged;
         }

@@ -494,7 +494,7 @@ public class HttpRequestWrapper implements RequestWrapper {
 
         // If Parameter is a List, get first entry. The data is used later on
         if (o instanceof List lst) {
-            o = lst.get(0);
+            o = lst.getFirst();
         }
 
         // If parameter is file item, convert to string

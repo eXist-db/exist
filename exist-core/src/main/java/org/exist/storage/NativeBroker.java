@@ -722,7 +722,7 @@ public class NativeBroker implements DBBroker {
                     .map(h -> h.resolve("etc").resolve(INIT_COLLECTION_CONFIG))
                     .orElse(Paths.get("etc").resolve(INIT_COLLECTION_CONFIG));
             if (Files.exists(fInitCollectionConfig)) {
-                return new String(Files.readAllBytes(fInitCollectionConfig), UTF_8);
+                return Files.readString(fInitCollectionConfig, UTF_8);
             }
 
             // 2) fallback to attempting to load from classpath

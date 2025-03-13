@@ -124,7 +124,7 @@ public class AttributeConstructor extends NodeConstructor {
 	public String getLiteralValue() {
 		if(contents.size() == 0)
 			{return "";}
-		return (String)contents.get(0);
+		return (String)contents.getFirst();
 	}
 	
 	/* (non-Javadoc)

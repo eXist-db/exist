@@ -115,7 +115,7 @@ public class Classpath implements Iterable<Path> {
         final StringBuilder cp = new StringBuilder(1024);
         final int cnt = _elements.size();
         if (cnt >= 1) {
-            cp.append(_elements.get(0));
+            cp.append(_elements.getFirst());
         }
         for (int i=1; i < cnt; i++) {
             cp.append(File.pathSeparatorChar);

@@ -22,7 +22,7 @@
 package org.exist.xslt;
 
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -91,19 +91,19 @@ public class TransformerFactoryAllocator {
                     LOG.debug("Set transformer factory: {}", transformerFactoryClassName);
                 }
                 final Hashtable<String, Object> attributes = (Hashtable<String, Object>) pool.getConfiguration().getProperty(PROPERTY_TRANSFORMER_ATTRIBUTES);
-                final Iterator<String> iterator = attributes.keySet().iterator();
-                while (iterator.hasNext()) {
-                    final String name = iterator.next();
-                    final Object value = attributes.get(name);
+
+                for(Map.Entry<String, Object> entry : attributes.entrySet()){
                     try {
-                        factory.setAttribute(name, value);
+                        factory.setAttribute(entry.getKey(), entry.getValue());
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("Set transformer attribute: , name: {}, value: {}", name, value);
+                            LOG.debug("Set transformer attribute: name: {}, value: {}", entry.getKey(), entry.getValue());
                         }
                     } catch (final IllegalArgumentException iae) {
-                        LOG.warn("Unable to set attribute for TransformerFactory: '{}', name: {}, value: {}, exception: {}", transformerFactoryClassName, name, value, iae.getMessage());
+                        LOG.warn("Unable to set attribute for TransformerFactory: '{}', name: {}, value: {}, exception: {}",
+                                transformerFactoryClassName, entry.getKey(), entry.getValue(), iae.getMessage());
                     }
                 }
+
                 try {
                     factory.setAttribute(PROPERTY_BROKER_POOL, pool);
                 } catch (final Exception e) {

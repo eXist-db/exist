@@ -57,33 +57,38 @@ class TupleSerializer extends TypeSerializerImpl {
 
     private void writeData(final ContentHandler handler, final Object object) throws SAXException {
         final Tuple tuple = (Tuple) object;
-        if(tuple instanceof Tuple2) {
-            writeObject(handler, ((Tuple2)tuple)._1);
-            writeObject(handler, ((Tuple2)tuple)._2);
-        } else if(tuple instanceof Tuple3) {
-            writeObject(handler, ((Tuple3)tuple)._1);
-            writeObject(handler, ((Tuple3)tuple)._2);
-            writeObject(handler, ((Tuple3)tuple)._3);
-        } else if(tuple instanceof Tuple4) {
-            writeObject(handler, ((Tuple4)tuple)._1);
-            writeObject(handler, ((Tuple4)tuple)._2);
-            writeObject(handler, ((Tuple4)tuple)._3);
-            writeObject(handler, ((Tuple4)tuple)._4);
-        } else if(tuple instanceof Tuple5) {
-            writeObject(handler, ((Tuple5)tuple)._1);
-            writeObject(handler, ((Tuple5)tuple)._2);
-            writeObject(handler, ((Tuple5)tuple)._3);
-            writeObject(handler, ((Tuple5)tuple)._4);
-            writeObject(handler, ((Tuple5)tuple)._5);
-        } else if(tuple instanceof Tuple6) {
-            writeObject(handler, ((Tuple6) tuple)._1);
-            writeObject(handler, ((Tuple6) tuple)._2);
-            writeObject(handler, ((Tuple6) tuple)._3);
-            writeObject(handler, ((Tuple6) tuple)._4);
-            writeObject(handler, ((Tuple6) tuple)._5);
-            writeObject(handler, ((Tuple6) tuple)._6);
-        } else {
-            throw new SAXException("Unsupported Tuple class: " + tuple.getClass().getName());
+        switch (tuple) {
+            case Tuple2 tuple2 -> {
+                writeObject(handler, tuple2._1);
+                writeObject(handler, tuple2._2);
+            }
+            case Tuple3 tuple3 -> {
+                writeObject(handler, tuple3._1);
+                writeObject(handler, tuple3._2);
+                writeObject(handler, tuple3._3);
+            }
+            case Tuple4 tuple4 -> {
+                writeObject(handler, tuple4._1);
+                writeObject(handler, tuple4._2);
+                writeObject(handler, tuple4._3);
+                writeObject(handler, tuple4._4);
+            }
+            case Tuple5 tuple5 -> {
+                writeObject(handler, tuple5._1);
+                writeObject(handler, tuple5._2);
+                writeObject(handler, tuple5._3);
+                writeObject(handler, tuple5._4);
+                writeObject(handler, tuple5._5);
+            }
+            case Tuple6 tuple6 -> {
+                writeObject(handler, tuple6._1);
+                writeObject(handler, tuple6._2);
+                writeObject(handler, tuple6._3);
+                writeObject(handler, tuple6._4);
+                writeObject(handler, tuple6._5);
+                writeObject(handler, tuple6._6);
+            }
+            case null, default -> throw new SAXException("Unsupported Tuple class: " + tuple.getClass().getName());
         }
     }
 

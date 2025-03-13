@@ -90,133 +90,124 @@ public class XPathUtil {
     }
 
     public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
-            boolean expandChars, final Expression expression) throws XPathException {
+                                                   boolean expandChars, final Expression expression) throws XPathException {
 
-        if (obj == null) {
-            //return Sequence.EMPTY_SEQUENCE;
-            return null;
-        } else if (obj instanceof Sequence) {
-            return (Sequence) obj;
-        } else if (obj instanceof String) {
-            final StringValue v = new StringValue(expression, (String) obj);
-            return (expandChars ? v.expand() : v);
-        } else if (obj instanceof Boolean) {
-            return BooleanValue.valueOf(((Boolean) obj));
-        } else if (obj instanceof Float) {
-            return new FloatValue(expression, ((Float) obj));
-        } else if (obj instanceof Double) {
-            return new DoubleValue(expression, ((Double) obj));
-        } else if (obj instanceof Short) {
-            return new IntegerValue(expression, ((Short) obj), Type.SHORT);
-        } else if (obj instanceof Integer) {
-            return new IntegerValue(expression, ((Integer) obj), Type.INT);
-        } else if (obj instanceof Long) {
-            return new IntegerValue(expression, ((Long) obj), Type.LONG);
-        } else if (obj instanceof BigInteger) {
-             return new IntegerValue(expression, (BigInteger) obj);
-        } else if (obj instanceof BigDecimal) {
-            return new DecimalValue(expression, (BigDecimal) obj);
-        } else if (obj instanceof byte[]) {
-            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream((byte[]) obj), expression);
-        } else if (obj instanceof ResourceSet) {
-            final Sequence seq = new AVLTreeNodeSet();
-            try {
-                final DBBroker broker = context.getBroker();
-                for (final ResourceIterator it = ((ResourceSet) obj).getIterator(); it.hasMoreResources();) {
-                    seq.add(getNode(broker, (XMLResource) it.nextResource(), expression));
+        return switch (obj) {
+            case null -> null; //return Sequence.EMPTY_SEQUENCE;
+            case Sequence sequence -> sequence;
+            case String stringValue -> {
+                final StringValue v = new StringValue(expression, stringValue);
+                yield (expandChars ? v.expand() : v);
+            }
+            case Boolean booleanValue -> BooleanValue.valueOf(booleanValue);
+            case Float floatValue -> new FloatValue(expression, floatValue);
+            case Double doubleValue -> new DoubleValue(expression, doubleValue);
+            case Short shortValue -> new IntegerValue(expression, shortValue, Type.SHORT);
+            case Integer integerValue -> new IntegerValue(expression, integerValue, Type.INT);
+            case Long longValue -> new IntegerValue(expression, longValue, Type.LONG);
+            case BigInteger bigInteger -> new IntegerValue(expression, bigInteger);
+            case BigDecimal bigDecimal -> new DecimalValue(expression, bigDecimal);
+            case byte[] bytes ->
+                    BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(),
+                            new UnsynchronizedByteArrayInputStream(bytes), expression);
+            case ResourceSet resourceSet -> {
+                final Sequence seq = new AVLTreeNodeSet();
+                try {
+                    final DBBroker broker = context.getBroker();
+                    for (final ResourceIterator it = resourceSet.getIterator(); it.hasMoreResources(); ) {
+                        seq.add(getNode(broker, (XMLResource) it.nextResource(), expression));
+                    }
+                } catch (final XMLDBException xe) {
+                    throw new XPathException(expression, "Failed to convert ResourceSet to node: " + xe.getMessage());
                 }
-            } catch (final XMLDBException xe) {
-                throw new XPathException(expression, "Failed to convert ResourceSet to node: " + xe.getMessage());
+                yield seq;
+
             }
-            return seq;
+            case XMLResource xmlResource -> getNode(context.getBroker(), xmlResource, expression);
 
-        } else if (obj instanceof XMLResource) {
-            return getNode(context.getBroker(), (XMLResource) obj, expression);
-
-        } else if (obj instanceof Node) {
-            context.pushDocumentContext();
-            final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
-            try {
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                builder.startDocument();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
-                streamer.setContentHandler(receiver);
-                streamer.serialize((Node) obj, false);
-                if(obj instanceof Document) {
-                    return builder.getDocument();
-                } else {
-                    return builder.getDocument().getNode(1);
+            case Node node -> {
+                context.pushDocumentContext();
+                final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
+                try {
+                    final MemTreeBuilder builder = context.getDocumentBuilder();
+                    builder.startDocument();
+                    final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
+                    streamer.setContentHandler(receiver);
+                    streamer.serialize(node, false);
+                    if (node instanceof Document) {
+                        yield builder.getDocument();
+                    } else {
+                        yield builder.getDocument().getNode(1);
+                    }
+                } catch (final SAXException e) {
+                    throw new XPathException(expression, "Failed to transform node into internal model: " + e.getMessage());
+                } finally {
+                    context.popDocumentContext();
+                    SerializerPool.getInstance().returnObject(streamer);
                 }
-            } catch (final SAXException e) {
-                throw new XPathException(expression,
-                        "Failed to transform node into internal model: "
-                        + e.getMessage());
-            } finally {
-                context.popDocumentContext();
-                SerializerPool.getInstance().returnObject(streamer);
+
             }
+            case List<?> objects -> {
+                boolean createNodeSequence = true;
 
-        } else if (obj instanceof List<?>) {
-            boolean createNodeSequence = true;
-
-            for (Object next : ((List<?>) obj)) {
-                if (!(next instanceof NodeProxy)) {
-                    createNodeSequence = false;
-                    break;
+                for (Object next : objects) {
+                    if (!(next instanceof NodeProxy)) {
+                        createNodeSequence = false;
+                        break;
+                    }
                 }
-            }
-            Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
-            for (Object o : ((List<?>) obj)) {
-                seq.add((Item) javaObjectToXPath(o, context, expandChars, expression));
-            }
-            return seq;
-
-        } else if (obj instanceof NodeList) {
-            context.pushDocumentContext();
-            final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
-            try {
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                builder.startDocument();
-                final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
-                streamer.setContentHandler(receiver);
-                final ValueSequence seq = new ValueSequence();
-                final NodeList nl = (NodeList) obj;
-                int last = builder.getDocument().getLastNode();
-                for (int i = 0; i < nl.getLength(); i++) {
-                    final Node n = nl.item(i);
-                    streamer.serialize(n, false);
-                    final NodeImpl created = builder.getDocument().getNode(last + 1);
-                    seq.add(created);
-                    last = builder.getDocument().getLastNode();
+                Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
+                for (Object o : objects) {
+                    seq.add((Item) javaObjectToXPath(o, context, expandChars, expression));
                 }
-                return seq;
-            } catch (final SAXException e) {
-                throw new XPathException(expression,
-                        "Failed to transform node into internal model: "
-                        + e.getMessage());
-            } finally {
-                context.popDocumentContext();
-                SerializerPool.getInstance().returnObject(streamer);
-            }
+                yield seq;
 
-        } else if (obj instanceof Object[] array) {
-            boolean createNodeSequence = true;
-            for (Object arrayItem : array) {
-                if (!(arrayItem instanceof NodeProxy)) {
-                    createNodeSequence = false;
-                    break;
+            }
+            case NodeList nodeList -> {
+                context.pushDocumentContext();
+                final DOMStreamer streamer = (DOMStreamer) SerializerPool.getInstance().borrowObject(DOMStreamer.class);
+                try {
+                    final MemTreeBuilder builder = context.getDocumentBuilder();
+                    builder.startDocument();
+                    final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(expression, builder);
+                    streamer.setContentHandler(receiver);
+                    final ValueSequence seq = new ValueSequence();
+                    int last = builder.getDocument().getLastNode();
+                    for (int i = 0; i < nodeList.getLength(); i++) {
+                        final Node n = nodeList.item(i);
+                        streamer.serialize(n, false);
+                        final NodeImpl created = builder.getDocument().getNode(last + 1);
+                        seq.add(created);
+                        last = builder.getDocument().getLastNode();
+                    }
+                    yield seq;
+                } catch (final SAXException e) {
+                    throw new XPathException(expression, "Failed to transform node into internal model: " + e.getMessage());
+                } finally {
+                    context.popDocumentContext();
+                    SerializerPool.getInstance().returnObject(streamer);
                 }
-            }
 
-            Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
-            for (Object arrayItem : array) {
-                seq.add((Item) javaObjectToXPath(arrayItem, context, expandChars, expression));
             }
-            return seq;
+            case Object[] array -> {
+                boolean createNodeSequence = true;
+                for (Object arrayItem : array) {
+                    if (!(arrayItem instanceof NodeProxy)) {
+                        createNodeSequence = false;
+                        break;
+                    }
+                }
 
-        } else {
-            return new JavaObjectValue(obj);
-        }
+                Sequence seq = createNodeSequence ? new AVLTreeNodeSet() : new ValueSequence();
+                for (Object arrayItem : array) {
+                    seq.add((Item) javaObjectToXPath(arrayItem, context, expandChars, expression));
+                }
+                yield seq;
+
+            }
+            default -> new JavaObjectValue(obj);
+
+        };
     }
 
     public static final int javaClassToXPath(Class<?> clazz) {

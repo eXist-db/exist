@@ -324,14 +324,9 @@ public class URIUtils {
 	 * @return The UTF-8 encoded value of the supplied uri
 	 */
 	public static String urlEncodeUtf8(String uri) {
-		try {
-			final String almostEncoded = URLEncoder.encode(uri, UTF_8.name());
-			return almostEncoded.replaceAll("\\+","%20");
-		} catch(final UnsupportedEncodingException e) {
-			//wrap with a runtime Exception
-			throw new RuntimeException(e);
-		}
-	}
+        final String almostEncoded = URLEncoder.encode(uri, UTF_8);
+        return almostEncoded.replaceAll("\\+","%20");
+    }
 	
 	/**
 	 * This method decodes the provided uri for human readability.  The
@@ -342,13 +337,8 @@ public class URIUtils {
 	 * @return The decoded value of the supplied uri
 	 */
 	public static String urlDecodeUtf8(String uri) {
-		try {
-			return URLDecoder.decode(uri, UTF_8.name());
-		} catch(final UnsupportedEncodingException e) {
-			//wrap with a runtime Exception
-			throw new RuntimeException(e);
-		}
-	}
+        return URLDecoder.decode(uri, UTF_8);
+    }
 
 	/**
 	 * This method decodes the provided uri for human readability.  The
@@ -359,13 +349,8 @@ public class URIUtils {
 	 * @return The decoded value of the supplied uri
 	 */
 	public static String urlDecodeUtf8(XmldbURI uri) {
-		try {
-			return URLDecoder.decode(uri.toString(), UTF_8.name());
-		} catch(final UnsupportedEncodingException e) {
-			//wrap with a runtime Exception
-			throw new RuntimeException(e);
-		}
-	}
+        return URLDecoder.decode(uri.toString(), UTF_8);
+    }
 
 	/**
 	 * This method splits the supplied url on the character

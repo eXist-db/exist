@@ -22,13 +22,7 @@
 package org.exist.collections.triggers;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -140,41 +134,41 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 			}
 
  			final List<String> urlQueries = (List<String>) parameters.get("url");
-            this.urlQuery = urlQueries != null ? urlQueries.get(0) : null;
+            this.urlQuery = urlQueries != null ? urlQueries.getFirst() : null;
 
             final List<String> strQueries = (List<String>) parameters.get("query");
- 			this.strQuery = strQueries != null ? strQueries.get(0) : null;
+ 			this.strQuery = strQueries != null ? strQueries.getFirst() : null;
 
 			for (final Map.Entry<String, List<?>> entry : parameters.entrySet()) {
  				final String paramName = entry.getKey();
-				final Object paramValue = entry.getValue().get(0);
+				final Object paramValue = entry.getValue().getFirst();
 
  				//get the binding prefix (if any)
- 				if ("bindingPrefix".equals(paramName)) {
-					final String bindingPrefix = (String) paramValue;
- 					if (bindingPrefix != null && !bindingPrefix.trim().isEmpty()) {
- 						this.bindingPrefix = bindingPrefix.trim() + ":";
- 					}
- 				}
+                switch (paramName) {
+                    case "bindingPrefix" -> {
+                        final String bindingPrefix = (String) paramValue;
+                        if (bindingPrefix != null && !bindingPrefix.trim().isEmpty()) {
+                            this.bindingPrefix = bindingPrefix.trim() + ":";
+                        }
+                    }
 
- 				//get the URL of the query (if any)
- 				else if ("url".equals(paramName)) {
-					this.urlQuery = (String) paramValue;
- 				}
+                    //get the URL of the query (if any)
+                    case "url" -> this.urlQuery = (String) paramValue;
 
- 				//get the query (if any)
- 				else if ("query".equals(paramName)) {
-					this.strQuery = (String) paramValue;
- 				}
 
- 				//make any other parameters available as external variables for the query
- 				else {
-                    //TODO could be enhanced to setup a sequence etc
-					if (userDefinedVariables == null) {
-						this.userDefinedVariables = new Properties();
-					}
- 					this.userDefinedVariables.put(paramName, paramValue);
- 				}
+                    //get the query (if any)
+                    case "query" -> this.strQuery = (String) paramValue;
+
+
+                    //make any other parameters available as external variables for the query
+                    case null, default -> {
+                        //TODO could be enhanced to setup a sequence etc
+                        if (userDefinedVariables == null) {
+                            this.userDefinedVariables = new Properties();
+                        }
+                        this.userDefinedVariables.put(paramName, paramValue);
+                    }
+                }
  			}
  			
  			//set a default binding prefix if none was specified
@@ -490,27 +484,27 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 
 		final XQueryTrigger that = (XQueryTrigger) o;
 
-		if (events != null ? !events.equals(that.events) : that.events != null) {
+		if (!Objects.equals(events, that.events)) {
 			return false;
 		}
 
-		if (collection != null ? !collection.equals(that.collection) : that.collection != null) {
+		if (!Objects.equals(collection, that.collection)) {
 			return false;
 		}
 
-		if (strQuery != null ? !strQuery.equals(that.strQuery) : that.strQuery != null) {
+		if (!Objects.equals(strQuery, that.strQuery)) {
 			return false;
 		}
 
-		if (urlQuery != null ? !urlQuery.equals(that.urlQuery) : that.urlQuery != null) {
+		if (!Objects.equals(urlQuery, that.urlQuery)) {
 			return false;
 		}
 
-		if (userDefinedVariables != null ? !userDefinedVariables.equals(that.userDefinedVariables) : that.userDefinedVariables != null) {
+		if (!Objects.equals(userDefinedVariables, that.userDefinedVariables)) {
 			return false;
 		}
 
-		return bindingPrefix != null ? bindingPrefix.equals(that.bindingPrefix) : that.bindingPrefix == null;
+		return Objects.equals(bindingPrefix, that.bindingPrefix);
 	}
 
 	//Collection's methods

@@ -229,8 +229,7 @@ public class Configurator {
             //XXX: throw new ConfigurationException("No configuration [" + configName + "]");
         }
         
-        if (config instanceof ConfigurationImpl) {
-            final ConfigurationImpl impl = (ConfigurationImpl) config;
+        if (config instanceof ConfigurationImpl impl) {
             //XXX: lock issue here, fix it
             Configurable configurable = null;
             if (impl.configuredObjectReference != null) {
@@ -1418,8 +1417,8 @@ public class Configurator {
 
         @Override
         public Iterator<AField> iterator() {
-            return new Iterator<AField>() {
-                
+            return new Iterator<>() {
+
                 private final Iterator<AField<ConfigurationFieldAsAttribute>> itAttributes = attributes.iterator();
                 private final Iterator<AField<ConfigurationFieldAsElement>> itElements = elements.iterator();
 
@@ -1432,10 +1431,10 @@ public class Configurator {
                 public AField next() {
                     if (itAttributes.hasNext()) {
                         return itAttributes.next();
-                        
+
                     } else if (itElements.hasNext()) {
                         return itElements.next();
-                        
+
                     } else {
                         throw new NoSuchElementException();
                     }

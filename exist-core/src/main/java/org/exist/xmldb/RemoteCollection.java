@@ -471,34 +471,43 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
     @Override
     public void storeResource(final Resource res, final Instant a, final Instant b) throws XMLDBException {
-        final Object content = (res instanceof ExtendedResource) ? ((ExtendedResource) res).getExtendedContent() : res.getContent();
+
+        final Object content = (res instanceof ExtendedResource)
+                ? ((ExtendedResource) res).getExtendedContent()
+                : res.getContent();
+
         if (content instanceof Path || content instanceof File || content instanceof InputSource) {
-            long fileLength = -1;
-            if (content instanceof Path) {
-                final Path file = (Path) content;
-                if (!Files.isReadable(file)) {
-                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.toAbsolutePath());
+            long fileLength = switch (content) {
+                case Path path -> {
+                    if (!Files.isReadable(path)) {
+                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+                                "Failed to read resource from file " + path.toAbsolutePath());
+                    }
+                    yield FileUtils.sizeQuietly(path);
                 }
-                fileLength = FileUtils.sizeQuietly(file);
-            } else if (content instanceof File) {
-                final File file = (File) content;
-                if (!file.canRead()) {
-                    throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Failed to read resource from file " + file.getAbsolutePath());
+                case File file -> {
+                    if (!file.canRead()) {
+                        throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+                                "Failed to read resource from file " + file.getAbsolutePath());
+                    }
+                    yield file.length();
                 }
-                fileLength = file.length();
-            } else if (content instanceof EXistInputSource) {
-                fileLength = ((EXistInputSource) content).getByteStreamLength();
-            }
+                case EXistInputSource eXistInputSource -> eXistInputSource.getByteStreamLength();
+                default -> -1;
+            };
+
             if (res instanceof AbstractRemoteResource) {
                 ((AbstractRemoteResource) res).dateCreated = a;
                 ((AbstractRemoteResource) res).dateModified = b;
             }
+
             if (!BINARY_RESOURCE.equals(res.getResourceType()) && fileLength != -1
                     && fileLength < MAX_CHUNK_LENGTH) {
                 store((RemoteXMLResource) res);
             } else {
                 uploadAndStore(res);
             }
+
         } else {
             ((AbstractRemoteResource) res).dateCreated = a;
             ((AbstractRemoteResource) res).dateModified = b;
@@ -555,25 +564,27 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 descString = ((RemoteBinaryResource) res).getStreamSymbolicPath();
             } else {
                 final Object content = res.getContent();
-                if (content instanceof File file) {
-                    try {
-                        is = new BufferedInputStream(new FileInputStream(file));
-                    } catch (final FileNotFoundException e) {
-                        throw new XMLDBException(
-                                ErrorCodes.INVALID_RESOURCE,
-                                "could not read resource from file " + file.getAbsolutePath(),
-                                e);
+                switch (content) {
+                    case File file -> {
+                        try {
+                            is = new BufferedInputStream(new FileInputStream(file));
+                        } catch (final FileNotFoundException e) {
+                            throw new XMLDBException(
+                                    ErrorCodes.INVALID_RESOURCE,
+                                    "could not read resource from file " + file.getAbsolutePath(),
+                                    e);
+                        }
                     }
-                } else if (content instanceof InputSource) {
-                    is = ((InputSource) content).getByteStream();
-                    if (content instanceof EXistInputSource) {
-                        descString = ((EXistInputSource) content).getSymbolicPath();
+                    case InputSource inputSource -> {
+                        is = inputSource.getByteStream();
+                        if (content instanceof EXistInputSource) {
+                            descString = ((EXistInputSource) content).getSymbolicPath();
+                        }
                     }
-                } else if (content instanceof String) {
-                    // TODO(AR) we really should not allow String to be used here, as we loose the encoding info and default to UTF-8!
-                    is = new UnsynchronizedByteArrayInputStream(((String) content).getBytes(UTF_8));
-                } else {
-                    LOG.error("Unable to get content from {}", content);
+                    case String s ->
+                        // TODO(AR) we really should not allow String to be used here, as we loose the encoding info and default to UTF-8!
+                            is = new UnsynchronizedByteArrayInputStream(s.getBytes(UTF_8));
+                    case null, default -> LOG.error("Unable to get content from {}", content);
                 }
             }
 

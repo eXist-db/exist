@@ -1943,7 +1943,7 @@ public class InteractiveClient {
         } else if (options.xpath.isPresent() || !options.queryFiles.isEmpty()) {
             String xpath = null;
             if (!options.queryFiles.isEmpty()) {
-                try (final BufferedReader reader = Files.newBufferedReader(options.queryFiles.get(0))) {
+                try (final BufferedReader reader = Files.newBufferedReader(options.queryFiles.getFirst())) {
                     final StringBuilder buf = new StringBuilder();
                     String line;
                     while ((line = reader.readLine()) != null) {
@@ -2090,7 +2090,7 @@ public class InteractiveClient {
         printNotice();
 
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
-        properties.setProperty(URI, URLDecoder.decode(properties.getProperty(URI), UTF_8.name()));
+        properties.setProperty(URI, URLDecoder.decode(properties.getProperty(URI), UTF_8));
 
         final boolean interactive = isInteractive();
 

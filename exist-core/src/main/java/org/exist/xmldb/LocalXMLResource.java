@@ -397,22 +397,18 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
              */
             Object domResult = null;
             if(method.getName().equals("equals")
-                    && proxy instanceof StoredNodeIdentity
-                    && args.length == 1 && args[0] instanceof StoredNodeIdentity) {
-                final StoredNodeIdentity ni1 = ((StoredNodeIdentity) proxy);
-                final StoredNodeIdentity ni2 = ((StoredNodeIdentity) args[0]);
+                    && proxy instanceof StoredNodeIdentity ni1
+                    && args.length == 1 && args[0] instanceof StoredNodeIdentity ni2) {
 
                 final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n1id::equals));
                 if (niEquals.isPresent()) {
                     domResult = niEquals.get();
                 }
             } else if(method.getName().equals("equals")
-                        && proxy instanceof MemtreeNodeIdentity
-                        && args.length == 1 && args[0] instanceof MemtreeNodeIdentity) {
-                    final MemtreeNodeIdentity ni1 = ((MemtreeNodeIdentity) proxy);
-                    final MemtreeNodeIdentity ni2 = ((MemtreeNodeIdentity) args[0]);
+                        && proxy instanceof MemtreeNodeIdentity ni1
+                        && args.length == 1 && args[0] instanceof MemtreeNodeIdentity ni2) {
 
-                    final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n2id -> n1id._1 == n2id._1 && n1id._2 == n2id._2 && n1id._3 == n2id._3));
+                final Optional<Boolean> niEquals = ni1.getNodeId().flatMap(n1id -> ni2.getNodeId().map(n2id -> n1id._1 == n2id._1 && n1id._2 == n2id._2 && n1id._3 == n2id._3));
                     if (niEquals.isPresent()) {
                         domResult = niEquals.get();
                     }
@@ -555,18 +551,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
         inputSource = null;
         root = null;
 
-        if (obj instanceof Path) {
-            file = (Path) obj;
-        } else if (obj instanceof java.io.File) {
-            file = ((java.io.File) obj).toPath();
-        } else if (obj instanceof AtomicValue) {
-            value = (AtomicValue) obj;
-        } else if (obj instanceof InputSource) {
-            inputSource=(InputSource) obj;
-        } else if (obj instanceof byte[]) {
-            content = new String((byte[])obj, UTF_8);
-        } else {
-            content = obj.toString();
+        switch (obj) {
+            case Path path -> file = path;
+            case java.io.File file1 -> file = file1.toPath();
+            case AtomicValue atomicValue -> value = atomicValue;
+            case InputSource source -> inputSource = source;
+            case byte[] bytes -> content = new String(bytes, UTF_8);
+            case null, default -> content = obj.toString();
         }
     }
 

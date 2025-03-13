@@ -1073,7 +1073,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public Iterator<Collection> getCollectionIterator() {
-        return new Iterator<Collection>() {
+        return new Iterator<>() {
             boolean hasNext = true;
 
             @Override
@@ -1417,7 +1417,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
     @Override
     public Iterator<DocumentImpl> getDocumentIterator() {
-        return new Iterator<DocumentImpl>() {
+        return new Iterator<>() {
 
             private boolean hasMore = true;
 
@@ -1428,7 +1428,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
 
             @Override
             public final DocumentImpl next() {
-                if(!hasMore) {
+                if (!hasMore) {
                     throw new NoSuchElementException();
                 } else {
                     hasMore = false;

@@ -67,11 +67,11 @@ public class ExiftoolModule extends AbstractInternalModule {
     }
 
     protected String getExiftoolPath() {
-        return (String)getParameter("exiftool-path").get(0);
+        return (String)getParameter("exiftool-path").getFirst();
     }
 
     protected String getPerlPath() {
-        return (String)getParameter("perl-path").get(0);
+        return (String)getParameter("perl-path").getFirst();
     }
 
   

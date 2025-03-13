@@ -279,8 +279,7 @@ public class MapType extends AbstractMapType {
 
     @Override
     public boolean containsReference(final Item item) {
-        for (final Iterator<Sequence> it = map.values().iterator(); it.hasNext();) {
-            final Sequence value = it.next();
+        for (final Sequence value : map.values()) {
             if (value == item || value.containsReference(item)) {
                 return true;
             }
@@ -290,8 +289,7 @@ public class MapType extends AbstractMapType {
 
     @Override
     public boolean contains(final Item item) {
-        for (final Iterator<Sequence> it = map.values().iterator(); it.hasNext();) {
-            final Sequence value = it.next();
+        for (final Sequence value : map.values()) {
             if (value.equals(item) || value.contains(item)) {
                 return true;
             }

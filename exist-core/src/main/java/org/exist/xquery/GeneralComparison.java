@@ -191,7 +191,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         if( !steps.isEmpty() ) {
             LocationStep firstStep = steps.get( 0 );
-            LocationStep lastStep  = steps.get( steps.size() - 1 );
+            LocationStep lastStep  = steps.getLast();
 
             if( firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 final Expression outerExpr = contextInfo.getContextStep();

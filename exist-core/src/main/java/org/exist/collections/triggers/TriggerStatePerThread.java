@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Avoid infinite recursions in Triggers by preventing the same trigger
@@ -59,38 +60,38 @@ public class TriggerStatePerThread {
 
 				int skipBefores = 0;
 
-				for (final Iterator<TriggerState> it = states.iterator(); it.hasNext(); ) {
-					prevState = it.next();
+                for (TriggerState state : states) {
+                    prevState = state;
 
-					// travel up, first "Before" we encounter - we should check if (a) that we complete it, and/or (b) is non-cyclic (if not we are also cyclic)
-					if (prevState.triggerPhase == TriggerPhase.BEFORE) {
+                    // travel up, first "Before" we encounter - we should check if (a) that we complete it, and/or (b) is non-cyclic (if not we are also cyclic)
+                    if (prevState.triggerPhase == TriggerPhase.BEFORE) {
 
-						if (skipBefores > 0) {
-							skipBefores--;
+                        if (skipBefores > 0) {
+                            skipBefores--;
 
-						} else {
-							if (prevState.isCompletedBy(trigger, triggerPhase, triggerEvent, src, dst)) {
-								if (prevState instanceof PossibleCyclicTriggerState) {
-									// if the Before phase is a PossibleCyclicTriggerState then this completing After phase must also be a PossibleCyclicTriggerState
-									final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
-									states.addFirst(newState);
+                        } else {
+                            if (prevState.isCompletedBy(trigger, triggerPhase, triggerEvent, src, dst)) {
+                                if (prevState instanceof PossibleCyclicTriggerState) {
+                                    // if the Before phase is a PossibleCyclicTriggerState then this completing After phase must also be a PossibleCyclicTriggerState
+                                    final TriggerState newState = new PossibleCyclicTriggerState(trigger, triggerPhase, triggerEvent, src, dst);
+                                    states.addFirst(newState);
 
-									throw new CyclicTriggerException("Detected Matching possible cyclic trigger event for After phase (" + newState + ") of previous Before phase (" + prevState + ")");
+                                    throw new CyclicTriggerException("Detected Matching possible cyclic trigger event for After phase (" + newState + ") of previous Before phase (" + prevState + ")");
 
-								} else {
-									// if the Before Phase is NOT a PossibleCyclicTriggerState, then neither is this completing After phase...
-									states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
-									return;
-								}
+                                } else {
+                                    // if the Before Phase is NOT a PossibleCyclicTriggerState, then neither is this completing After phase...
+                                    states.addFirst(new TriggerState(trigger, triggerPhase, triggerEvent, src, dst));
+                                    return;
+                                }
 
-							} else {
-								throw new IllegalStateException("Cannot interleave Trigger states");
-							}
-						}
-					} else if (prevState.triggerPhase == TriggerPhase.AFTER) {
-						skipBefores++;
-					}
-				}
+                            } else {
+                                throw new IllegalStateException("Cannot interleave Trigger states");
+                            }
+                        }
+                    } else if (prevState.triggerPhase == TriggerPhase.AFTER) {
+                        skipBefores++;
+                    }
+                }
 
 				throw new IllegalStateException("Could not find a matching Before phase for After phase");
 
@@ -238,7 +239,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
+			return Objects.equals(dst, that.dst);
 		}
 
 		private boolean equalsIgnoringPhase(final Trigger otherTrigger, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
@@ -254,7 +255,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
+			return Objects.equals(dst, otherDst);
 		}
 
 		public boolean isCompletedBy(final Trigger otherTrigger, final TriggerPhase otherTriggerPhase, final TriggerEvent otherTriggerEvent, final XmldbURI otherSrc, @Nullable final XmldbURI otherDst) {
@@ -275,7 +276,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(otherDst) : otherDst == null;
+			return Objects.equals(dst, otherDst);
 		}
 
 		public boolean completes(final Object o) {
@@ -306,7 +307,7 @@ public class TriggerStatePerThread {
 				return false;
 			}
 
-			return dst != null ? dst.equals(that.dst) : that.dst == null;
+			return Objects.equals(dst, that.dst);
 		}
 	}
 }

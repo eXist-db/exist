@@ -63,7 +63,7 @@ public class LockEventLogListener implements LockTable.LockEventListener {
             final int localCount = entry.count;
 
             log.log(level, LockTable.formatString(lockEventType, groupId, entry.id, entry.lockType, entry.lockMode,
-                    entry.owner, localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.get(0)));
+                    entry.owner, localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.getFirst()));
         }
     }
 }

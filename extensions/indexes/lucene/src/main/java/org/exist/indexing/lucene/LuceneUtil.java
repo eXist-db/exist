@@ -142,34 +142,29 @@ public class LuceneUtil {
      * @throws UnsupportedOperationException if the query type is not supported
      */
     public static void extractTerms(final Query query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException, UnsupportedOperationException {
-        if (query instanceof BooleanQuery) {
-            extractTermsFromBoolean((BooleanQuery) query, terms, reader, includeFields);
-        } else if (query instanceof TermQuery) {
-            extractTermsFromTerm((TermQuery) query, terms, includeFields);
-        } else if (query instanceof WildcardQuery) {
-            extractTermsFromWildcard((WildcardQuery) query, terms, reader, includeFields);
-        } else if (query instanceof RegexpQuery) {
-            extractTermsFromRegex((RegexpQuery) query, terms, reader, includeFields);
-        } else if (query instanceof FuzzyQuery) {
-            extractTermsFromFuzzy((FuzzyQuery) query, terms, reader, includeFields);
-        } else if (query instanceof PrefixQuery) {
-            extractTermsFromPrefix((PrefixQuery) query, terms, reader, includeFields);
-        } else if (query instanceof PhraseQuery) {
-            extractTermsFromPhrase((PhraseQuery) query, terms, includeFields);
-        } else if (query instanceof TermRangeQuery) {
-            extractTermsFromTermRange((TermRangeQuery) query, terms, reader, includeFields);
-        } else if (query instanceof DrillDownQuery) {
-            extractTermsFromDrillDown((DrillDownQuery) query, terms, reader, includeFields);
-        } else {
-            // fallback to Lucene's Query.extractTerms if none of the
-            // above matches
-            final Set<Term> tempSet = new TreeSet<>();
-            query.extractTerms(tempSet);
-            for (final Term t : tempSet) {
-                if (includeFields) {
-                    terms.put(t, query);
-                } else {
-                    terms.put(t.text(), query);
+        switch (query) {
+            case BooleanQuery booleanClauses -> extractTermsFromBoolean(booleanClauses, terms, reader, includeFields);
+            case TermQuery termQuery -> extractTermsFromTerm(termQuery, terms, includeFields);
+            case WildcardQuery wildcardQuery -> extractTermsFromWildcard(wildcardQuery, terms, reader, includeFields);
+            case RegexpQuery regexpQuery -> extractTermsFromRegex(regexpQuery, terms, reader, includeFields);
+            case FuzzyQuery fuzzyQuery -> extractTermsFromFuzzy(fuzzyQuery, terms, reader, includeFields);
+            case PrefixQuery prefixQuery -> extractTermsFromPrefix(prefixQuery, terms, reader, includeFields);
+            case PhraseQuery phraseQuery -> extractTermsFromPhrase(phraseQuery, terms, includeFields);
+            case TermRangeQuery termRangeQuery ->
+                    extractTermsFromTermRange(termRangeQuery, terms, reader, includeFields);
+            case DrillDownQuery drillDownQuery ->
+                    extractTermsFromDrillDown(drillDownQuery, terms, reader, includeFields);
+            case null, default -> {
+                // fallback to Lucene's Query.extractTerms if none of the
+                // above matches
+                final Set<Term> tempSet = new TreeSet<>();
+                query.extractTerms(tempSet);
+                for (final Term t : tempSet) {
+                    if (includeFields) {
+                        terms.put(t, query);
+                    } else {
+                        terms.put(t.text(), query);
+                    }
                 }
             }
         }

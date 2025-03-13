@@ -287,8 +287,7 @@ public class LocationStep extends Step {
 //		case Constants.DESCENDANT_AXIS:
             case Constants.DESCENDANT_SELF_AXIS:
                 final Expression contextStep = contextInfo.getContextStep();
-                if (contextStep instanceof LocationStep) {
-                    final LocationStep cStep = (LocationStep) contextStep;
+                if (contextStep instanceof LocationStep cStep) {
 
                     if ((
                             cStep.getTest().getType() == Type.ATTRIBUTE ||

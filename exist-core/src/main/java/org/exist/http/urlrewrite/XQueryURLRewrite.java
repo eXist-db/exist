@@ -275,17 +275,19 @@ public class XQueryURLRewrite extends HttpServlet {
                                     final String nodeNs = node.getNamespaceURI();
                                     if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(nodeNs)) {
                                         final Element action = (Element) node;
-                                        if ("view".equals(action.getLocalName())) {
-                                            parseViews(modifiedRequest, action, modelView);
-                                        } else if ("error-handler".equals(action.getLocalName())) {
-                                            parseErrorHandlers(modifiedRequest, action, modelView);
-                                        } else if ("cache-control".equals(action.getLocalName())) {
-                                            final String option = action.getAttribute("cache");
-                                            modelView.setUseCache("yes".equals(option));
-                                        } else {
-                                            final URLRewrite urw = parseAction(modifiedRequest, action);
-                                            if (urw != null) {
-                                                modelView.setModel(urw);
+                                        switch (action.getLocalName()) {
+                                            case "view" -> parseViews(modifiedRequest, action, modelView);
+                                            case "error-handler" ->
+                                                    parseErrorHandlers(modifiedRequest, action, modelView);
+                                            case "cache-control" -> {
+                                                final String option = action.getAttribute("cache");
+                                                modelView.setUseCache("yes".equals(option));
+                                            }
+                                            case null, default -> {
+                                                final URLRewrite urw = parseAction(modifiedRequest, action);
+                                                if (urw != null) {
+                                                    modelView.setModel(urw);
+                                                }
                                             }
                                         }
                                     }
@@ -1196,7 +1198,7 @@ public class XQueryURLRewrite extends HttpServlet {
         public String getParameter(final String name) {
             final List<String> paramValues = addedParams.get(name);
             if (paramValues != null && paramValues.size() > 0) {
-                return paramValues.get(0);
+                return paramValues.getFirst();
             }
             return null;
         }

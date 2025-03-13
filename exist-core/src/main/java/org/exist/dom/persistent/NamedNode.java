@@ -74,7 +74,7 @@ public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
      * Extracts just the details of the NamedNode
      */
     public NamedNode<T> extract() {
-        return new NamedNode<T>(getExpression(), this) {
+        return new NamedNode<>(getExpression(), this) {
         };
     }
 

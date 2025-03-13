@@ -221,24 +221,23 @@ public class RewriteConfig {
 
     private URLRewrite parseAction(final ServletConfig config, final String pattern, final Element action) throws ServletException {
         final URLRewrite rewrite;
-        if ("forward".equals(action.getLocalName())) {
-            rewrite = new PathForward(config, action, pattern);
-        } else if ("redirect".equals(action.getLocalName())) {
-            rewrite = new Redirect(action, pattern);
-        } else if ("root".equals(action.getLocalName())) {
-            final ControllerForward cf = new ControllerForward(action, pattern);
+        switch (action.getLocalName()) {
+            case "forward" -> rewrite = new PathForward(config, action, pattern);
+            case "redirect" -> rewrite = new Redirect(action, pattern);
+            case "root" -> {
+                final ControllerForward cf = new ControllerForward(action, pattern);
 
-            /*
-             * If there is a server-name attribute on the root tag, then add that
-             * as an attribute on the ControllerForward object.
-             */
-            final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
-            if (serverName != null && serverName.length() > 0) {
-                cf.setServerName(serverName);
+                /*
+                 * If there is a server-name attribute on the root tag, then add that
+                 * as an attribute on the ControllerForward object.
+                 */
+                final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
+                if (serverName != null && serverName.length() > 0) {
+                    cf.setServerName(serverName);
+                }
+                rewrite = cf;
             }
-            rewrite = cf;
-        } else {
-            rewrite = null;
+            case null, default -> rewrite = null;
         }
         return rewrite;
     }

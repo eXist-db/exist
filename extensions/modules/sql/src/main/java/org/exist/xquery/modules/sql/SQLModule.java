@@ -100,7 +100,7 @@ public class SQLModule extends AbstractInternalModule {
             if (poolNameMatcher.matches()) {
                 if (parameter.getValue() != null && parameter.getValue().size() == 1) {
                     final String poolId = poolNameMatcher.group(1);
-                    final String poolName = parameter.getValue().get(0).toString();
+                    final String poolName = parameter.getValue().getFirst().toString();
                     if (poolName != null && !poolName.isEmpty()) {
                         if (!CONNECTION_POOLS.containsKey(poolName)) {
 
@@ -112,7 +112,7 @@ public class SQLModule extends AbstractInternalModule {
                                 if (poolParameter.getKey().startsWith(poolPropertiesPrefix)) {
                                     if (poolParameter.getValue() != null && poolParameter.getValue().size() == 1) {
                                         final String propertyName = poolParameter.getKey().replace(poolPropertiesPrefix, "");
-                                        final String propertyValue = poolParameter.getValue().get(0).toString();
+                                        final String propertyValue = poolParameter.getValue().getFirst().toString();
                                         poolProperties.setProperty(propertyName, propertyValue);
                                     }
                                 }

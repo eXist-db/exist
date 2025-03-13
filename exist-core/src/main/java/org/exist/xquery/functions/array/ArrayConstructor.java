@@ -74,7 +74,7 @@ public class ArrayConstructor extends AbstractExpression {
                 }
                 return new ArrayType(this, context, items);
             default:
-                final Sequence result =  arguments.isEmpty() ? Sequence.EMPTY_SEQUENCE : arguments.get(0).eval(contextSequence, contextItem);
+                final Sequence result =  arguments.isEmpty() ? Sequence.EMPTY_SEQUENCE : arguments.getFirst().eval(contextSequence, contextItem);
                 return new ArrayType(this, context, result);
         }
     }

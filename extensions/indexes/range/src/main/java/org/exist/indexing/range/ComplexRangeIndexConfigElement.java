@@ -63,15 +63,16 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
         for (int i = 0; i < children.getLength(); i++) {
             Node child = children.item(i);
             if (child.getNodeType() == Node.ELEMENT_NODE) {
-                if (FIELD_ELEMENT.equals(child.getLocalName())) {
-                    RangeIndexConfigField field = new RangeIndexConfigField(path, (Element) child, namespaces);
-                    fields.put(field.getName(), field);
-                } else if (CONDITION_ELEMENT.equals(child.getLocalName())){
-                    conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path));
-                } else if (FILTER_ELEMENT.equals(child.getLocalName())) {
-                    analyzer.addFilter((Element) child);
-                } else {
-                    LOG.warn("Invalid element encountered for range index configuration: {}", child.getLocalName());
+                switch (child.getLocalName()) {
+                    case FIELD_ELEMENT -> {
+                        RangeIndexConfigField field = new RangeIndexConfigField(path, (Element) child, namespaces);
+                        fields.put(field.getName(), field);
+                    }
+                    case CONDITION_ELEMENT ->
+                            conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path));
+                    case FILTER_ELEMENT -> analyzer.addFilter((Element) child);
+                    case null, default ->
+                            LOG.warn("Invalid element encountered for range index configuration: {}", child.getLocalName());
                 }
             }
         }

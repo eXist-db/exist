@@ -171,12 +171,8 @@ public class LockTable {
         switch (lockEventType) {
             case Attempt:
 
-                Entry entry = attempting.get(currentThread);
-                if (entry == null) {
-                    // happens once per thread!
-                    entry = new Entry();
-                    attempting.put(currentThread, entry);
-                }
+                // happens once per thread!
+                Entry entry = attempting.computeIfAbsent(currentThread, k -> new Entry());
 
                 entry.id = id;
                 entry.lockType = lockType;
@@ -364,7 +360,7 @@ public class LockTable {
 
                     // do the unmerge bit
                     if (local.stackTraces != null) {
-                        local.stackTraces.remove(local.stackTraces.size() - 1);
+                        local.stackTraces.removeLast();
                     }
                     local.count = local.count - 1;
 
@@ -395,7 +391,7 @@ public class LockTable {
                 } else {
                     // do the unmerge bit
                     if (local.stackTraces != null) {
-                        local.stackTraces.remove(local.stackTraces.size() - 1);
+                        local.stackTraces.removeLast();
                     }
                     local.count = local.count - 1;
 
@@ -539,7 +535,7 @@ public class LockTable {
                     if (v1 == null) {
                         v1 = new ArrayList<>();
                     }
-                    v1.add(new LockModeOwner(entry.lockMode, entry.owner, entry.stackTraces != null ? entry.stackTraces.get(0) : null));
+                    v1.add(new LockModeOwner(entry.lockMode, entry.owner, entry.stackTraces != null ? entry.stackTraces.getFirst() : null));
                     return v1;
                 });
 

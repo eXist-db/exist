@@ -133,44 +133,48 @@ public class CollectionConfiguration {
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
             if (NAMESPACE.equals(node.getNamespaceURI())) {
-                if (TRIGGERS_ELEMENT.equals(node.getLocalName())) {
-                    final NodeList triggers = node.getChildNodes();
-                    for (int j = 0; j < triggers.getLength(); j++) {
-                        node = triggers.item(j);
-                        if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
-                            configureTrigger(broker.getBrokerPool().getClassLoader(), (Element) node, srcCollectionURI, checkOnly);
+                switch (node.getLocalName()) {
+                    case TRIGGERS_ELEMENT -> {
+                        final NodeList triggers = node.getChildNodes();
+                        for (int j = 0; j < triggers.getLength(); j++) {
+                            node = triggers.item(j);
+                            if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
+                                configureTrigger(broker.getBrokerPool().getClassLoader(), (Element) node, srcCollectionURI, checkOnly);
+                            }
                         }
                     }
-                } else if (INDEX_ELEMENT.equals(node.getLocalName())) {
-                    final Element elem = (Element) node;
-                    try {
-                        if (indexSpec == null) {
-                            indexSpec = new IndexSpec(broker, elem);
-                        } else {
-                            indexSpec.read(broker, elem);
+                    case INDEX_ELEMENT -> {
+                        final Element elem = (Element) node;
+                        try {
+                            if (indexSpec == null) {
+                                indexSpec = new IndexSpec(broker, elem);
+                            } else {
+                                indexSpec.read(broker, elem);
+                            }
+                        } catch (final DatabaseConfigurationException e) {
+                            if (checkOnly) {
+                                throw new CollectionConfigurationException(e.getMessage(), e);
+                            } else {
+                                LOG.warn(e.getMessage(), e);
+                            }
                         }
-                    } catch (final DatabaseConfigurationException e) {
-                        if (checkOnly) {
-                            throw new CollectionConfigurationException(e.getMessage(), e);
-                        } else {
-                            LOG.warn(e.getMessage(), e);
-                        }
-                    }
 
-                } else if (VALIDATION_ELEMENT.equals(node.getLocalName())) {
-                    final Element elem = (Element) node;
-                    final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
-                    if (mode == null) {
-                        LOG.debug("Unable to determine validation mode in {}", srcCollectionURI);
-                        validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
-                    } else {
-                        LOG.debug("{} : Validation mode={}", srcCollectionURI, mode);
-                        validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.fromOption(mode);
                     }
+                    case VALIDATION_ELEMENT -> {
+                        final Element elem = (Element) node;
+                        final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
+                        if (mode == null) {
+                            LOG.debug("Unable to determine validation mode in {}", srcCollectionURI);
+                            validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
+                        } else {
+                            LOG.debug("{} : Validation mode={}", srcCollectionURI, mode);
+                            validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.fromOption(mode);
+                        }
 
-                } else {
-                    throwOrLog("Ignored node '" + node.getLocalName() +
+                    }
+                    case null, default -> throwOrLog("Ignored node '" + node.getLocalName() +
                             "' in configuration document", checkOnly);
+
                     //TODO : throw an exception like above ? -pb
                 }
 

@@ -214,17 +214,16 @@ public class RegistryFunctions extends BasicFunction {
     static void serializeSerializationAnnotation(final MemTreeBuilder builder, final SerializationAnnotation serializationAnnotation) {
         builder.startElement(QName.fromJavaQName(serializationAnnotation.getName()), null);
 
-        if(serializationAnnotation instanceof AbstractYesNoSerializationAnnotation) {
-            builder.characters(((AbstractYesNoSerializationAnnotation) serializationAnnotation).getStringValue());
-
-        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.MediaTypeAnnotation) {
-            builder.characters(((org.exquery.serialization.annotation.MediaTypeAnnotation) serializationAnnotation).getValue());
-
-        } else if(serializationAnnotation instanceof org.exquery.serialization.annotation.EncodingAnnotation) {
-            builder.characters(((org.exquery.serialization.annotation.EncodingAnnotation) serializationAnnotation).getValue());
-
-        } else if(serializationAnnotation instanceof MethodAnnotation) {
-            builder.characters(((org.exquery.serialization.annotation.MethodAnnotation) serializationAnnotation).getMethod());
+        switch (serializationAnnotation) {
+            case AbstractYesNoSerializationAnnotation abstractYesNoSerializationAnnotation ->
+                    builder.characters(abstractYesNoSerializationAnnotation.getStringValue());
+            case org.exquery.serialization.annotation.MediaTypeAnnotation mediaTypeAnnotation ->
+                    builder.characters(mediaTypeAnnotation.getValue());
+            case org.exquery.serialization.annotation.EncodingAnnotation encodingAnnotation ->
+                    builder.characters(encodingAnnotation.getValue());
+            case MethodAnnotation methodAnnotation -> builder.characters(methodAnnotation.getMethod());
+            default -> {
+            }
         }
 
         //TODO further output: annotations as they are implemented

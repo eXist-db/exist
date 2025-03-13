@@ -34,6 +34,7 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import net.jcip.annotations.NotThreadSafe;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.Constants;
 
 import javax.annotation.Nullable;
@@ -66,17 +67,16 @@ public class ItemComparator implements Comparator<Item> {
 
     @Override
     public int compare(final Item n1, final Item n2) {
-        if (n1 instanceof org.exist.dom.memtree.NodeImpl && (!(n2 instanceof org.exist.dom.memtree.NodeImpl))) {
-            return Constants.INFERIOR;
-        } else if (n1 instanceof AtomicValue && n2 instanceof AtomicValue) {
-            if (atomicValueComparator == null) {
-                atomicValueComparator = new AtomicValueComparator(collator);
+        return switch (n1) {
+            case NodeImpl node when (!(n2 instanceof org.exist.dom.memtree.NodeImpl)) -> Constants.INFERIOR;
+            case AtomicValue atomicValue when n2 instanceof AtomicValue -> {
+                if (atomicValueComparator == null) {
+                    atomicValueComparator = new AtomicValueComparator(collator);
+                }
+                yield atomicValueComparator.compare(atomicValue, (AtomicValue) n2);
             }
-            return atomicValueComparator.compare((AtomicValue)n1, (AtomicValue)n2);
-        } else if (n1 instanceof Comparable) {
-            return ((Comparable) n1).compareTo(n2);
-        } else {
-            return Constants.INFERIOR;
-        }
+            case Comparable comparable -> comparable.compareTo(n2);
+            case null, default -> Constants.INFERIOR;
+        };
     }
 }

@@ -147,7 +147,7 @@ public class JMXtoXML {
     public void connect() {
         final List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
         if (servers.size() > 0) {
-            this.connection = servers.get(0);
+            this.connection = servers.getFirst();
         }
     }
 
@@ -394,24 +394,17 @@ public class JMXtoXML {
     }
 
     private void serializeObject(final MemTreeBuilder builder, final Object object) throws SAXException {
-        if (object == null) {
-            return;
+        switch (object) {
+            case null -> {
+                return;
+            }
+            case TabularData tabularData -> serialize(builder, tabularData);
+            case CompositeData[] compositeData -> serialize(builder, compositeData);
+            case CompositeData compositeData -> serialize(builder, compositeData);
+            case Object[] objects -> serialize(builder, objects);
+            default -> builder.characters(object.toString());
         }
 
-        if (object instanceof TabularData) {
-            serialize(builder, (TabularData) object);
-
-        } else if (object instanceof CompositeData[]) {
-            serialize(builder, (CompositeData[]) object);
-        } else if (object instanceof CompositeData) {
-            serialize(builder, (CompositeData) object);
-
-        } else if (object instanceof Object[]) {
-            serialize(builder, (Object[]) object);
-
-        } else {
-            builder.characters(object.toString());
-        }
     }
 
     private void serialize(final MemTreeBuilder builder, final Object[] data) throws SAXException {

@@ -200,7 +200,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
             final List<RequestParameter> vecParameterValues = params.get(name);
 
             //return the first value in the vector
-            return vecParameterValues.get(0).getValue();
+            return vecParameterValues.getFirst().getValue();
         } else {
             return null;
         }

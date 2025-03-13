@@ -99,7 +99,7 @@ public class Collection {
      */
     public List<Collection> getCollection() {
         if (collection == null) {
-            collection = new ArrayList<Collection>();
+            collection = new ArrayList<>();
         }
         return this.collection;
     }

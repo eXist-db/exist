@@ -332,8 +332,7 @@ public final class XMLString implements CharSequence, Comparable<CharSequence> {
         if (this == anObject) {
             return true;
         }
-        if (anObject instanceof XMLString) {
-            final XMLString anotherString = (XMLString) anObject;
+        if (anObject instanceof XMLString anotherString) {
             if (length_ == anotherString.length_) {
                 int n = length_;
                 final char[] v1 = value_;

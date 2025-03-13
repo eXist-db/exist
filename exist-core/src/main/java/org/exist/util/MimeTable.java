@@ -184,7 +184,7 @@ public class MimeTable {
     	
     	final String preferred = preferredExtension.get(mimeType);
     	if(preferred != null && !extns.contains(preferred)) {
-            extns.add(0, preferred);
+            extns.addFirst(preferred);
     	}
     	
     	return extns;

@@ -46,7 +46,7 @@ public class TreeUtils {
             priors.add(prev);
             prev = prev.getPreviousSibling();
         }
-        final Node parent = priors.get(0).getParentNode();
+        final Node parent = priors.getFirst().getParentNode();
         final StringBuilder sb;
         if (parent == null || parent instanceof Document) {
             sb = new StringBuilder();
@@ -83,7 +83,7 @@ public class TreeUtils {
         } else {
             int i = 0;
             for (final XdmNode child : xdmNode.children()) {
-                if (i++ == index.get(0)) {
+                if (i++ == index.getFirst()) {
                     return xdmNodeAtIndex(child, index.subList(1,index.size()));
                 }
             }

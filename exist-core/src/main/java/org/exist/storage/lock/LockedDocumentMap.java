@@ -57,7 +57,7 @@ public class LockedDocumentMap {
     public MutableDocumentSet toDocumentSet() {
         final MutableDocumentSet docs = new DefaultDocumentSet(map.size());
         for(final List<LockedDocument> documentLocks : map.values()) {
-            docs.add(documentLocks.get(0).getDocument());
+            docs.add(documentLocks.getFirst().getDocument());
         }
         return docs;
     }
@@ -68,7 +68,7 @@ public class LockedDocumentMap {
         }
 
         for(final List<LockedDocument> documentLocks : map.values()) {
-            final DocumentImpl doc = documentLocks.get(0).getDocument();
+            final DocumentImpl doc = documentLocks.getFirst().getDocument();
             if(doc.getCollection().getURI().startsWith(collection.getURI())) {
                 targetSet.add(doc);
             }
@@ -98,7 +98,7 @@ public class LockedDocumentMap {
         for(int i = len - 1; i >= 0; i--) {
             final List<LockedDocument> documentLocks = documentsLockedDocuments.get(i);
 
-            final int docId = documentLocks.get(0).getDocument().getDocId();
+            final int docId = documentLocks.getFirst().getDocument().getDocId();
             if(!keep.contains(docId)) {
                 for (int j = documentLocks.size() - 1; j >= 0; j--) {
                     final LockedDocument documentLock = documentLocks.get(j);

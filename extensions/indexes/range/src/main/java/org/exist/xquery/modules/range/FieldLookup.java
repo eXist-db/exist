@@ -159,7 +159,7 @@ public class FieldLookup extends Function implements Optimizable {
 
     public void setArguments(List<Expression> arguments) throws XPathException {
         steps.clear();
-        Expression path = arguments.get(0);
+        Expression path = arguments.getFirst();
         path = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, path,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
         steps.add(path);

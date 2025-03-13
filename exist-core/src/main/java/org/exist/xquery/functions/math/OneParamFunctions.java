@@ -142,45 +142,23 @@ public class OneParamFunctions extends BasicFunction {
 
         } else {
             final NumericValue value = (NumericValue) firstArgument.itemAt(0).convertTo(Type.DOUBLE);
-            double calcValue = 0;
             final String functionName = getSignature().getName().getLocalPart();
 
-            if (ACOS.equals(functionName)) {
-                calcValue = Math.acos(value.getDouble());
-
-            } else if (ASIN.equals(functionName)) {
-                calcValue = Math.asin(value.getDouble());
-
-            } else if (ATAN.equals(functionName)) {
-                calcValue = Math.atan(value.getDouble());
-
-            } else if (COS.equals(functionName)) {
-                calcValue = Math.cos(value.getDouble());
-
-            } else if (EXP.equals(functionName)) {
-                calcValue = Math.exp(value.getDouble());
-
-            } else if (EXP10.equals(functionName)) {
-                calcValue = Math.pow(10.0d, value.getDouble());
-
-            } else if (LOG.equals(functionName)) {
-                calcValue = Math.log(value.getDouble());
-
-            } else if (LOG10.equals(functionName)) {
-                calcValue = Math.log10(value.getDouble());
-
-            } else if (SIN.equals(functionName)) {
-                calcValue = Math.sin(value.getDouble());
-
-            } else if (SQRT.equals(functionName)) {
-                calcValue = Math.sqrt(value.getDouble());
-
-            } else if (TAN.equals(functionName)) {
-                calcValue = Math.tan(value.getDouble());
-
-            } else {
-                throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
-            }
+            final double calcValue = switch (functionName) {
+                case ACOS -> Math.acos(value.getDouble());
+                case ASIN -> Math.asin(value.getDouble());
+                case ATAN -> Math.atan(value.getDouble());
+                case COS -> Math.cos(value.getDouble());
+                case EXP -> Math.exp(value.getDouble());
+                case EXP10 -> Math.pow(10.0d, value.getDouble());
+                case LOG -> Math.log(value.getDouble());
+                case LOG10 -> Math.log10(value.getDouble());
+                case SIN -> Math.sin(value.getDouble());
+                case SQRT -> Math.sqrt(value.getDouble());
+                case TAN -> Math.tan(value.getDouble());
+                case null -> throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
+                default -> 0;
+            };
             return new DoubleValue(this, calcValue);
         }
 

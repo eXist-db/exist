@@ -68,18 +68,18 @@ public class XercesXmlResolverAdapter implements XMLEntityResolver {
         try {
             // get the name
             final String name;
-            if (xmlResourceIdentifier instanceof XSDDescription) {
-                final QName triggeringComponent = ((XSDDescription) xmlResourceIdentifier).getTriggeringComponent();
-                name = triggeringComponent != null ? triggeringComponent.localpart : null;
-            } else if (xmlResourceIdentifier instanceof XMLSchemaDescription) {
-                final QName triggeringComponent = ((XMLSchemaDescription) xmlResourceIdentifier).getTriggeringComponent();
-                name = triggeringComponent != null ? triggeringComponent.localpart : null;
-            } else if (xmlResourceIdentifier instanceof XMLEntityDescriptionImpl) {
-                name = ((XMLEntityDescriptionImpl)xmlResourceIdentifier).getEntityName();
-            } else if (xmlResourceIdentifier instanceof XMLDTDDescription) {
-                name = ((XMLDTDDescription)xmlResourceIdentifier).getRootName();
-            } else {
-                name = null;
+            switch (xmlResourceIdentifier) {
+                case XSDDescription xsdDescription -> {
+                    final QName triggeringComponent = xsdDescription.getTriggeringComponent();
+                    name = triggeringComponent != null ? triggeringComponent.localpart : null;
+                }
+                case XMLSchemaDescription xmlSchemaDescription -> {
+                    final QName triggeringComponent = xmlSchemaDescription.getTriggeringComponent();
+                    name = triggeringComponent != null ? triggeringComponent.localpart : null;
+                }
+                case XMLEntityDescriptionImpl xmlEntityDescription -> name = xmlEntityDescription.getEntityName();
+                case XMLDTDDescription xmldtdDescription -> name = xmldtdDescription.getRootName();
+                case null, default -> name = null;
             }
 
             // get the systemId

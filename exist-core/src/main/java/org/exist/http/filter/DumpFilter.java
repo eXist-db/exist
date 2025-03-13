@@ -86,7 +86,7 @@ public class DumpFilter implements Filter {
         LOG.info("     contentLength={}", request.getContentLength());
         LOG.info("       contentType={}", request.getContentType());
         LOG.info("            locale={}", request.getLocale());
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("           locales=");
         final Enumeration locales = request.getLocales();
         boolean first = true;
@@ -102,7 +102,7 @@ public class DumpFilter implements Filter {
         Enumeration names = request.getParameterNames();
         while (names.hasMoreElements()) {
             final String name = (String) names.nextElement();
-            buffer = new StringBuffer();
+            buffer = new StringBuilder();
             buffer.append("         parameter=").append(name).append("=");
             final String values[] = request.getParameterValues(name);
             for (int i = 0; i < values.length; i++) {

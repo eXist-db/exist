@@ -240,8 +240,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
 
     @Override
     public boolean containsReference(final Item item) {
-        for (final Iterator<Item> it = values.iterator(); it.hasNext(); ) {
-            final Item value = it.next();
+        for (final Item value : values) {
             if (value == item) {
                 return true;
             }

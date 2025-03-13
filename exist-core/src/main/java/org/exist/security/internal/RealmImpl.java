@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
-import org.exist.config.Reference;
 import org.exist.config.ReferenceImpl;
 import org.exist.security.AXSchemaType;
 import org.exist.security.AbstractAccount;
@@ -91,7 +90,7 @@ public class RealmImpl extends AbstractRealm {
 
         //DBA group
         GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
-        GROUP_DBA.setManagers(new ArrayList<>(Arrays.asList(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))));
+        GROUP_DBA.setManagers(new ArrayList<>(List.of(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))));
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
         sm.registerGroup(GROUP_DBA);
         registerGroup(GROUP_DBA);
@@ -105,9 +104,9 @@ public class RealmImpl extends AbstractRealm {
 
         //guest group
         GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
-        GROUP_GUEST.setManagers(new ArrayList<Reference<SecurityManager, Account>>(){
-            { add(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER)); }
-        });
+        GROUP_GUEST.setManagers(new ArrayList<>(
+                List.of(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))
+            ));
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.registerGroup(GROUP_GUEST);
         registerGroup(GROUP_GUEST);
@@ -266,7 +265,7 @@ public class RealmImpl extends AbstractRealm {
     }
 
     @Override
-    public Subject authenticate(final String accountName, Object credentials) throws AuthenticationException {
+    public Subject authenticate(final String accountName, final Object credentials) throws AuthenticationException {
         final Account account = getAccount(accountName);
         
         if(account == null) {

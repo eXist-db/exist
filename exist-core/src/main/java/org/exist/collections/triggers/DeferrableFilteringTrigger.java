@@ -241,42 +241,32 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
     protected void applyDeferredEvents() throws SAXException {
         SAXEvent event = null;
         while((event = deferred.poll()) != null) {
-            if(event instanceof SetDocumentLocator setDocumentLocator) {
-                setDocumentLocator_deferred(setDocumentLocator.locator);
-            } else if(event instanceof StartDocument) {
-                startDocument_deferred();
-            } else if(event instanceof EndDocument) {
-                endDocument_deferred();
-            } else if(event instanceof StartPrefixMapping startPrefixMapping) {
-                startPrefixMapping_deferred(startPrefixMapping.prefix, startPrefixMapping.uri);
-            } else if(event instanceof EndPrefixMapping endPrefixMapping) {
-                endPrefixMapping_deferred(endPrefixMapping.prefix);
-            } else if(event instanceof StartElement startElement) {
-                startElement_deferred(startElement.namespaceURI, startElement.localName, startElement.qname, startElement.attributes);
-            } else if(event instanceof EndElement endElement) {
-                endElement_deferred(endElement.namespaceURI, endElement.localName, endElement.qname);
-            } else if(event instanceof Characters characters) {
-                characters_deferred(characters.ch, 0, characters.ch.length);
-            } else if(event instanceof IgnorableWhitespace ignorableWhitespace) {
-                ignorableWhitespace_deferred(ignorableWhitespace.ch, 0, ignorableWhitespace.ch.length);
-            } else if(event instanceof ProcessingInstruction processingInstruction) {
-                processingInstruction_deferred(processingInstruction.target, processingInstruction.data);
-            } else if(event instanceof SkippedEntity skippedEntity) {
-                skippedEntity_deferred(skippedEntity.name);
-            } else if(event instanceof StartDTD startDTD) {
-                startDTD_deferred(startDTD.name, startDTD.publicId, startDTD.systemId);
-            } else if(event instanceof EndDTD) {
-                endDTD_deferred();
-            } else if(event instanceof StartEntity startEntity) {
-                startEntity_deferred(startEntity.name);
-            } else if(event instanceof EndEntity endEntity) {
-                endEntity_deferred(endEntity.name);
-            } else if(event instanceof StartCDATA) {
-                startCDATA_deferred();
-            } else if(event instanceof EndCDATA) {
-                endCDATA_deferred();
-            } else if(event instanceof Comment comment) {
-                comment_deferred(comment.ch, 0, comment.ch.length);
+            switch (event) {
+                case SetDocumentLocator setDocumentLocator -> setDocumentLocator_deferred(setDocumentLocator.locator);
+                case StartDocument startDocument -> startDocument_deferred();
+                case EndDocument endDocument -> endDocument_deferred();
+                case StartPrefixMapping startPrefixMapping ->
+                        startPrefixMapping_deferred(startPrefixMapping.prefix, startPrefixMapping.uri);
+                case EndPrefixMapping endPrefixMapping -> endPrefixMapping_deferred(endPrefixMapping.prefix);
+                case StartElement startElement ->
+                        startElement_deferred(startElement.namespaceURI, startElement.localName, startElement.qname, startElement.attributes);
+                case EndElement endElement ->
+                        endElement_deferred(endElement.namespaceURI, endElement.localName, endElement.qname);
+                case Characters characters -> characters_deferred(characters.ch, 0, characters.ch.length);
+                case IgnorableWhitespace ignorableWhitespace ->
+                        ignorableWhitespace_deferred(ignorableWhitespace.ch, 0, ignorableWhitespace.ch.length);
+                case ProcessingInstruction processingInstruction ->
+                        processingInstruction_deferred(processingInstruction.target, processingInstruction.data);
+                case SkippedEntity skippedEntity -> skippedEntity_deferred(skippedEntity.name);
+                case StartDTD startDTD -> startDTD_deferred(startDTD.name, startDTD.publicId, startDTD.systemId);
+                case EndDTD endDTD -> endDTD_deferred();
+                case StartEntity startEntity -> startEntity_deferred(startEntity.name);
+                case EndEntity endEntity -> endEntity_deferred(endEntity.name);
+                case StartCDATA startCDATA -> startCDATA_deferred();
+                case EndCDATA endCDATA -> endCDATA_deferred();
+                case Comment comment -> comment_deferred(comment.ch, 0, comment.ch.length);
+                default -> {
+                }
             }
         }
     }

@@ -152,93 +152,102 @@ public class ModuleInfo extends BasicFunction {
 	@SuppressWarnings("unchecked")
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
-		
-		if("get-module-description".equals(getSignature().getName().getLocalPart())) {
-			final String uri = args[0].getStringValue();
-			final Module[] modules = context.getModules(uri);
-			if (isEmpty(modules)) {
-				throw new XPathException(this, "No module found matching namespace URI: " + uri);
-			}
-			final Sequence result = new ValueSequence();
-			for (final Module module : modules) {
-				result.add(new StringValue(this, module.getDescription()));
-			}
-			return result;
-		} else if ("is-module-registered".equals(getSignature().getName().getLocalPart())) {
-			final String uri = args[0].getStringValue();
-			final Module[] modules = context.getModules(uri);
-			return new BooleanValue(this, modules != null && modules.length > 0);
-        } else if ("mapped-modules".equals(getSignature().getName().getLocalPart())) {
-            final ValueSequence resultSeq = new ValueSequence();
-            for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext();) {
-                resultSeq.add(new StringValue(this, i.next()));
+
+        return switch (getSignature().getName().getLocalPart()) {
+            case "get-module-description" -> {
+                final String uri = args[0].getStringValue();
+                final Module[] modules = context.getModules(uri);
+                if (isEmpty(modules)) {
+                    throw new XPathException(this, "No module found matching namespace URI: " + uri);
+                }
+                final Sequence result = new ValueSequence();
+                for (final Module module : modules) {
+                    result.add(new StringValue(this, module.getDescription()));
+                }
+                yield result;
             }
-            return resultSeq;
-		} else if ("is-module-mapped".equals(getSignature().getName().getLocalPart())) {
-			final String uri = args[0].getStringValue();
-			return new BooleanValue(this, ((Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
-		} else if ("map-module".equals(getSignature().getName().getLocalPart())) {
-			if (!context.getSubject().hasDbaRole()) {
-				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
-				logger.error("Invalid user", xPathException);
-				throw xPathException;
-			}			
-			final String namespace = args[0].getStringValue();
-			final String location = args[1].getStringValue();
-			final Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
-			moduleMap.put(namespace, location);
-			return Sequence.EMPTY_SEQUENCE;
-		} else if ("unmap-module".equals(getSignature().getName().getLocalPart())) {
-			if (!context.getSubject().hasDbaRole()) {
-				final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
-				logger.error("Invalid user", xPathException);
-				throw xPathException;
-			}			
-			final String namespace = args[0].getStringValue();
-			final Map <String, String> moduleMap = (Map<String, String>)context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
-			moduleMap.remove(namespace);
-			return Sequence.EMPTY_SEQUENCE;
-		} else if ("get-module-info".equals(getSignature().getName().getLocalPart())) {
-			context.pushDocumentContext();
-			
-			try {
-				final MemTreeBuilder builder = context.getDocumentBuilder();
-				builder.startElement(MODULES_QNAME, null);
-				
-				if (getArgumentCount() == 1) {
-					final Module[] modules = context.getModules(args[0].getStringValue());
-					if (modules != null) {
-						outputModules(builder, modules);
-					}
-				} else {
-					for(final Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
-						final Module module = i.next();
-						outputModule(builder, module);
-					}
-				}
-				return builder.getDocument().getNode(1);
-			} finally {
-				context.popDocumentContext();
-			}
-		} else {
-			final ValueSequence resultSeq = new ValueSequence();
-            final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-			try {
-				for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-					final Module module = i.next();
-					resultSeq.add(new StringValue(this, module.getNamespaceURI()));
-				}
-				if (tempContext.getRepository().isPresent()) {
-					for (final URI uri : tempContext.getRepository().get().getJavaModules()) {
-						resultSeq.add(new StringValue(this, uri.toString()));
-					}
-				}
-			} finally {
-				tempContext.reset();
-				tempContext.runCleanupTasks();
-			}
-			return resultSeq;
-		}
+            case "is-module-registered" -> {
+                final String uri = args[0].getStringValue();
+                final Module[] modules = context.getModules(uri);
+                yield new BooleanValue(this, modules != null && modules.length > 0);
+            }
+            case "mapped-modules" -> {
+                final ValueSequence resultSeq = new ValueSequence();
+                for (final Iterator<String> i = context.getMappedModuleURIs(); i.hasNext(); ) {
+                    resultSeq.add(new StringValue(this, i.next()));
+                }
+                yield resultSeq;
+            }
+            case "is-module-mapped" -> {
+                final String uri = args[0].getStringValue();
+                yield new BooleanValue(this, ((Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP)).get(uri) != null);
+            }
+            case "map-module" -> {
+                if (!context.getSubject().hasDbaRole()) {
+                    final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+                    logger.error("Invalid user", xPathException);
+                    throw xPathException;
+                }
+                final String namespace = args[0].getStringValue();
+                final String location = args[1].getStringValue();
+                final Map<String, String> moduleMap = (Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+                moduleMap.put(namespace, location);
+                yield Sequence.EMPTY_SEQUENCE;
+            }
+            case "unmap-module" -> {
+                if (!context.getSubject().hasDbaRole()) {
+                    final XPathException xPathException = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
+                    logger.error("Invalid user", xPathException);
+                    throw xPathException;
+                }
+                final String namespace = args[0].getStringValue();
+                final Map<String, String> moduleMap = (Map<String, String>) context.getBroker().getConfiguration().getProperty(XQueryContext.PROPERTY_STATIC_MODULE_MAP);
+                moduleMap.remove(namespace);
+                yield Sequence.EMPTY_SEQUENCE;
+            }
+            case "get-module-info" -> {
+                context.pushDocumentContext();
+
+                try {
+                    final MemTreeBuilder builder = context.getDocumentBuilder();
+                    builder.startElement(MODULES_QNAME, null);
+
+                    if (getArgumentCount() == 1) {
+                        final Module[] modules = context.getModules(args[0].getStringValue());
+                        if (modules != null) {
+                            outputModules(builder, modules);
+                        }
+                    } else {
+                        for (final Iterator<Module> i = context.getRootModules(); i.hasNext(); ) {
+                            final Module module = i.next();
+                            outputModule(builder, module);
+                        }
+                    }
+                    yield builder.getDocument().getNode(1);
+                } finally {
+                    context.popDocumentContext();
+                }
+            }
+            case null, default -> {
+                final ValueSequence resultSeq = new ValueSequence();
+                final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
+                try {
+                    for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
+                        final Module module = i.next();
+                        resultSeq.add(new StringValue(this, module.getNamespaceURI()));
+                    }
+                    if (tempContext.getRepository().isPresent()) {
+                        for (final URI uri : tempContext.getRepository().get().getJavaModules()) {
+                            resultSeq.add(new StringValue(this, uri.toString()));
+                        }
+                    }
+                } finally {
+                    tempContext.reset();
+                    tempContext.runCleanupTasks();
+                }
+                yield resultSeq;
+            }
+        };
 	}
 
 	private void outputModules(final MemTreeBuilder builder, final Module[] modules) {

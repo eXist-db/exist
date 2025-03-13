@@ -82,9 +82,7 @@ public class CompatibleJavaVersionCheck {
         /* @Nullable */ final Integer minorJavaVersion = javaVersionComponents.length > 1 ? javaVersionComponents[1] : null;
         /* @Nullable */ final Integer patchJavaVersion = javaVersionComponents.length > 2 ? javaVersionComponents[2] : null;
 
-        for (int i = 0; i < INCOMPATIBLE_JAVA_VERSIONS.length; i++) {
-            final IncompatibleJavaVersion incompatibleJavaVersion = INCOMPATIBLE_JAVA_VERSIONS[i];
-
+        for (final IncompatibleJavaVersion incompatibleJavaVersion : INCOMPATIBLE_JAVA_VERSIONS) {
             // compare major versions
             if (majorJavaVersion == incompatibleJavaVersion.major) {
 

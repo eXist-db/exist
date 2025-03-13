@@ -63,7 +63,7 @@ public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger
     @Override
     public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException {
         super.configure(broker, transaction, parent, parameters);
-        final String stylesheet = (String)parameters.get("src").get(0);
+        final String stylesheet = (String)parameters.get("src").getFirst();
         if(stylesheet == null) {
                 throw new TriggerException("STXTransformerTrigger requires an attribute 'src'");
         }

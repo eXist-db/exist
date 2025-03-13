@@ -865,7 +865,7 @@ public class Configuration implements ErrorHandler {
             for (final Entry<String, List<?>> param : params.entrySet()) {
                 final List<?> values = param.getValue();
                 if (values != null && !values.isEmpty()) {
-                    jobConfig.addParameter(param.getKey(), values.get(0).toString());
+                    jobConfig.addParameter(param.getKey(), values.getFirst().toString());
 
                     if (values.size() > 1) {
                         LOG.warn("Parameter '{}' for job '{}' has more than one value, ignoring further values.", param.getKey(), jobName);

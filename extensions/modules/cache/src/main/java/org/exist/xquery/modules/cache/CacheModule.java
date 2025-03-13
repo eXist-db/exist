@@ -186,7 +186,7 @@ public class CacheModule extends AbstractInternalModule {
     private static Optional<String> getFirstString(final Map<String, List<?>> parameters, final String paramName) {
         return Optional.ofNullable(parameters.get(paramName))
                 .filter(l -> l.size() == 1)
-                .map(l -> l.get(0))
+                .map(l -> l.getFirst())
                 .filter(o -> o instanceof String)
                 .map(o -> (String)o);
     }

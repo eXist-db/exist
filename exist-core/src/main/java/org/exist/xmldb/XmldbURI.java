@@ -387,13 +387,8 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             return null;
         }
 
-        try {
-            //TODO: we might want to cache this value
-            return URLDecoder.decode(encodedCollectionPath, UTF_8.name());
-        } catch (final UnsupportedEncodingException e) {
-            //Should never happen
-            throw new IllegalArgumentException(encodedCollectionPath + " can not be properly escaped");
-        }
+        //TODO: we might want to cache this value
+        return URLDecoder.decode(encodedCollectionPath, UTF_8);
     }
 
     public XmldbURI toCollectionPathURI() {

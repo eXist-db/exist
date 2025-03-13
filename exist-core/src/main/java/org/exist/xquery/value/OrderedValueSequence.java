@@ -200,8 +200,8 @@ public class OrderedValueSequence extends AbstractSequence {
 
     private int countSetBits(final BitSet bitSet, final int... bitIndex) {
         int setBitsCount = 0;
-        for (int i = 0; i < bitIndex.length; i++) {
-            if (bitSet.get(bitIndex[i])) {
+        for (int index : bitIndex) {
+            if (bitSet.get(index)) {
                 setBitsCount++;
             }
         }

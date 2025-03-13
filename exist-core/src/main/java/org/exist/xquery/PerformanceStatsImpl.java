@@ -295,11 +295,9 @@ public class PerformanceStatsImpl implements PerformanceStats {
             return;
         }
 
-        if (!(otherPerformanceStats instanceof PerformanceStatsImpl)) {
+        if (!(otherPerformanceStats instanceof PerformanceStatsImpl other)) {
             throw new IllegalArgumentException("Argument must be of type: " + getClass().getName());
         }
-
-        final PerformanceStatsImpl other = (PerformanceStatsImpl) otherPerformanceStats;
 
         for (final QueryStats otherQueryStats : other.queries.values()) {
             final QueryStats copy = QueryStats.copy(otherQueryStats);

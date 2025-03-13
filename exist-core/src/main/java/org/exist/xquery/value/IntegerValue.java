@@ -261,19 +261,13 @@ public class IntegerValue extends NumericValue {
 
     @Override
     protected @Nullable IntSupplier createComparisonWith(final NumericValue other) {
-        final IntSupplier comparison;
-        if (other instanceof IntegerValue) {
-            comparison = () -> value.compareTo(((IntegerValue)other).value);
-        } else if (other instanceof DecimalValue) {
-            comparison = () -> new BigDecimal(value).compareTo(((DecimalValue)other).value);
-        } else if (other instanceof DoubleValue) {
-            comparison = () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(((DoubleValue)other).value));
-        } else if (other instanceof FloatValue) {
-            comparison = () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(((FloatValue)other).value));
-        } else {
-            return null;
-        }
-        return comparison;
+        return switch (other) {
+            case IntegerValue integerValue -> () -> value.compareTo(integerValue.value);
+            case DecimalValue decimalValue -> () -> new BigDecimal(value).compareTo(decimalValue.value);
+            case DoubleValue doubleValue -> () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(doubleValue.value));
+            case FloatValue floatValue -> () -> new BigDecimal(value).compareTo(BigDecimal.valueOf(floatValue.value));
+            case null, default -> null;
+        };
     }
 
     @Override
