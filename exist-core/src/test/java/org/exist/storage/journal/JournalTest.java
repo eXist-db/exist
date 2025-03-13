@@ -198,7 +198,7 @@ public class JournalTest {
 
         journalFile = Journal.getFile(mockJournalDir, (short)1);
         assertTrue(Files.exists(journalFile));
-        assertEquals(input.get(0), FileUtils.fileName(journalFile));
+        assertEquals(input.getFirst(), FileUtils.fileName(journalFile));
 
         journalFile = Journal.getFile(mockJournalDir, (short)2);
         assertFalse(Files.exists(journalFile));  // no such file!
@@ -225,7 +225,7 @@ public class JournalTest {
 
         journalFile = Journal.getFile(mockJournalDir, (short)1);
         assertTrue(Files.exists(journalFile));
-        assertEquals(input.get(0), FileUtils.fileName(journalFile));
+        assertEquals(input.getFirst(), FileUtils.fileName(journalFile));
 
         journalFile = Journal.getFile(mockJournalDir, (short)175);
         assertTrue(Files.exists(journalFile));

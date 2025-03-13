@@ -256,7 +256,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             final List<Account> commonGroupManagers = commonGroup.getManagers();
             assertNotNull(commonGroupManagers);
             assertEquals(1, commonGroupManagers.size());
-            assertEquals(commonGroupManagers.get(0).getName(), userName);
+            assertEquals(commonGroupManagers.getFirst().getName(), userName);
 
         } finally {
             //cleanup

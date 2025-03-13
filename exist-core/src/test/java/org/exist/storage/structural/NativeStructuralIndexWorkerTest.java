@@ -51,8 +51,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(1, ranges.size());
 
-        assertEquals(1, ranges.get(0).start);
-        assertEquals(6, ranges.get(0).end);
+        assertEquals(1, ranges.getFirst().start);
+        assertEquals(6, ranges.getFirst().end);
     }
 
     @Test
@@ -91,8 +91,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(1, ranges.size());
 
-        assertEquals(6574, ranges.get(0).start);
-        assertEquals(6574, ranges.get(0).end);
+        assertEquals(6574, ranges.getFirst().start);
+        assertEquals(6574, ranges.getFirst().end);
     }
 
     @Test

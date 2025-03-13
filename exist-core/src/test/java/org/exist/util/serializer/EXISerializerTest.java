@@ -99,9 +99,9 @@ public class EXISerializerTest {
 		serializer.startElement(testQName, testAttrList);
 		verify(mockEncoder);
 		List<Attributes> capturedAttributeList = capturedAttributes.getValues();
-		assertEquals("local", capturedAttributeList.get(0).getLocalName(0));
-		assertEquals("uri", capturedAttributeList.get(0).getURI(0));
-		assertEquals("value", capturedAttributeList.get(0).getValue(0));
+		assertEquals("local", capturedAttributeList.getFirst().getLocalName(0));
+		assertEquals("uri", capturedAttributeList.getFirst().getURI(0));
+		assertEquals("value", capturedAttributeList.getFirst().getValue(0));
 	}
 	
 	@Test

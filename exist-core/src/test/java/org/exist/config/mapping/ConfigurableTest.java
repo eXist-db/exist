@@ -62,8 +62,8 @@ public class ConfigurableTest {
         assertEquals(1, object.subclasses.subconfs.size());
         //XXX: assertEquals(2, object.subclasses.subconfs.size());
 
-        assertEquals("1", object.subclasses.subconfs.get(0).getKey());
-        assertEquals("secret1", object.subclasses.subconfs.get(0).getSecret());
+        assertEquals("1", object.subclasses.subconfs.getFirst().getKey());
+        assertEquals("secret1", object.subclasses.subconfs.getFirst().getSecret());
 
         //XXX: assertEquals("2", object.subclasses.subconfs.get(1).getKey());
         //XXX: assertEquals("secret2", object.subclasses.subconfs.get(1).getSecret());

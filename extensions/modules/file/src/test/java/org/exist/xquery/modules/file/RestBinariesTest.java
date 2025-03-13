@@ -206,14 +206,14 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
     @Override
     protected byte[] getBytes(final Result.Value item) throws Exception {
         return switch (item.getType()) {
-            case "xs:base64Binary" -> Base64.decodeBase64(item.getContent().get(0).toString());
-            case "xs:hexBinary" -> Hex.decodeHex(item.getContent().get(0).toString());
+            case "xs:base64Binary" -> Base64.decodeBase64(item.getContent().getFirst().toString());
+            case "xs:hexBinary" -> Hex.decodeHex(item.getContent().getFirst().toString());
             default -> throw new UnsupportedOperationException();
         };
     }
 
     @Override
     protected boolean getBoolean(final Result.Value item) throws Exception {
-        return Boolean.parseBoolean(item.getContent().get(0).toString());
+        return Boolean.parseBoolean(item.getContent().getFirst().toString());
     }
 }
