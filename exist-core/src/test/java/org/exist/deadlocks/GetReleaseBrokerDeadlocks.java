@@ -134,11 +134,11 @@ public class GetReleaseBrokerDeadlocks {
 		            	sb.append("THREAD: ");
 		            	sb.append(entry.getKey().getName());
 	            		sb.append("\n");
-		            	for (int n = 0; n < stacks.length; n++) {
-		            		sb.append(" ");
-		            		sb.append(stacks[n]);
-		            		sb.append("\n");
-		            	}
+                        for (StackTraceElement stack : stacks) {
+                            sb.append(" ");
+                            sb.append(stack);
+                            sb.append("\n");
+                        }
 		            }
 		            
 		            if (stackTraces.isEmpty())

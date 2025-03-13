@@ -44,12 +44,11 @@ public class MockBinaryValueManager implements BinaryValueManager {
     public void runCleanupTasks(final Predicate<Object> predicate) {
         if (values != null) {
             List<BinaryValue> removable = null;
-            for(final Iterator<BinaryValue> iterator = values.iterator(); iterator.hasNext();) {
-                final BinaryValue bv = iterator.next();
+            for (final BinaryValue bv : values) {
                 try {
                     if (predicate.test(bv)) {
                         bv.close();
-                        if(removable == null) {
+                        if (removable == null) {
                             removable = new ArrayList<>();
                         }
                         removable.add(bv);

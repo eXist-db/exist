@@ -158,9 +158,9 @@ public class QuerySessionTest {
 
         final TestDataGenerator generator = new TestDataGenerator("xdb", DOC_COUNT);
         final Path[] files = generator.generate(test, generateXQ);
-        for (int i = 0; i < files.length; i++) {
-            Resource resource = test.createResource(files[i].getFileName().toString(), XMLResource.class);
-            resource.setContent(files[i].toFile());
+        for (Path file : files) {
+            Resource resource = test.createResource(file.getFileName().toString(), XMLResource.class);
+            resource.setContent(file.toFile());
             test.storeResource(resource);
         }
         generator.releaseAll();

@@ -81,8 +81,8 @@ public class ByteBufferInputStreamTest {
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        for(int i = 0; i < testData.length; i++) {
-            assertEquals(testData[i], is.read());
+        for (byte testDatum : testData) {
+            assertEquals(testDatum, is.read());
         }
 
         //ensure reading past the end of the stream returns -1

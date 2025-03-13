@@ -70,9 +70,9 @@ class ListChecker extends SortMethodChecker {
 	 */
 	void init(int[] values) throws Exception {
 		a = new ArrayList<Integer>(values.length);
-		for (int i = 0; i < values.length; i++) {
-			a.add(Integer.valueOf(values[i]));
-		}
+        for (int value : values) {
+            a.add(Integer.valueOf(value));
+        }
 	}
 
 	/**

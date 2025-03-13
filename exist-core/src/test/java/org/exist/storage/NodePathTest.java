@@ -367,8 +367,7 @@ public class NodePathTest {
 
     private void addComponents(final NodePath destination, final String path) throws QName.IllegalQNameException {
         final String[] components = path.split("/");
-        for (int i = 0; i < components.length; i++) {
-            final String component = components[i];
+        for (final String component : components) {
             if (!component.isEmpty()) {
                 destination.addComponent(new QName(component));
             }

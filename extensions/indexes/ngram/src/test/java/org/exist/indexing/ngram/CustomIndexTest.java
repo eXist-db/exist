@@ -601,8 +601,7 @@ public class CustomIndexTest {
         XQueryContext context = new XQueryContext(broker.getBrokerPool());
         Occurrences[] occurrences = index.scanIndex(context, docs, null, null);
         int found = 0;
-        for (int i = 0; i < occurrences.length; i++) {
-            Occurrences occurrence = occurrences[i];
+        for (Occurrences occurrence : occurrences) {
             if (occurrence.getTerm().compareTo(term) == 0)
                 found++;
         }        
