@@ -108,15 +108,15 @@ public class XMLDeclarationImpl {
      */
     public static XMLDeclarationImpl read(final VariableByteInput istream) throws IOException {
         String version = istream.readUTF();
-        if(version.length() == 0) {
+        if(version.isEmpty()) {
             version = null;
         }
         String encoding = istream.readUTF();
-        if(encoding.length() == 0) {
+        if(encoding.isEmpty()) {
             encoding = null;
         }
         String standalone = istream.readUTF();
-        if(standalone.length() == 0) {
+        if(standalone.isEmpty()) {
             standalone = null;
         }
 

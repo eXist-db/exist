@@ -120,7 +120,7 @@ public class ProcessMonitor implements BrokerPoolService {
         final long waitStart = System.currentTimeMillis();
         synchronized (this) {
             if (maxShutdownWait > -1) {
-                while (processes.size() > 0) {
+                while (!processes.isEmpty()) {
                     try {
                         //Wait until they become inactive...
                         this.wait(1000);

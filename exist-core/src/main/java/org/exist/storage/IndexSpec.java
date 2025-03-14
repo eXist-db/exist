@@ -144,7 +144,7 @@ public class IndexSpec {
     }
 
     public boolean hasIndexesByQName() {
-        return qnameSpecs.size() > 0;
+        return !qnameSpecs.isEmpty();
     }
 
     public List<QName> getIndexedQNames() {

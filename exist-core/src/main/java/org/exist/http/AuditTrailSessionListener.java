@@ -87,7 +87,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
     }
 
     private void executeXQuery(String xqueryResourcePath) {
-        if (xqueryResourcePath != null && xqueryResourcePath.length() > 0) {
+        if (xqueryResourcePath != null && !xqueryResourcePath.isEmpty()) {
             xqueryResourcePath = xqueryResourcePath.trim();
 
             try {

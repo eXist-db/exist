@@ -3637,7 +3637,7 @@ public class NativeBroker implements DBBroker {
 
     private boolean checkNodeTree(final INodeIterator iterator, final IStoredNode node, final StringBuilder buf) {
         if(buf != null) {
-            if(buf.length() > 0) {
+            if(!buf.isEmpty()) {
                 buf.append(", ");
             }
             buf.append(node.getNodeId());

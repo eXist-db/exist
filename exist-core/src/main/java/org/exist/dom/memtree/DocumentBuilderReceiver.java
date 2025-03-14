@@ -129,7 +129,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void startPrefixMapping(final String prefix, final String namespaceURI) throws SAXException {
-        if(prefix == null || prefix.length() == 0) {
+        if(prefix == null || prefix.isEmpty()) {
             builder.setDefaultNamespace(namespaceURI);
         }
         if(!explicitNSDecl) {
@@ -143,7 +143,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endPrefixMapping(final String prefix) throws SAXException {
-        if(prefix == null || prefix.length() == 0) {
+        if(prefix == null || prefix.isEmpty()) {
             builder.setDefaultNamespace(XMLConstants.NULL_NS_URI);
         }
     }

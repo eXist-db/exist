@@ -168,7 +168,7 @@ public class FunUriCollection extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
                 }
 
-                if (queryStringMap.containsKey(KEY_MATCH) && queryStringMap.get(KEY_MATCH).length() > 0) {
+                if (queryStringMap.containsKey(KEY_MATCH) && !queryStringMap.get(KEY_MATCH).isEmpty()) {
                     final Pattern pattern = PatternFactory.getInstance().getPattern(queryStringMap.get(KEY_MATCH));
                     final List<String> matchedResultUris = resultUris.stream().filter(resultUri -> pattern.matcher(resultUri).find()).collect(Collectors.toList());
                     if (matchedResultUris.isEmpty()) {

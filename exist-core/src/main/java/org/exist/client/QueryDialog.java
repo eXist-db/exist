@@ -478,7 +478,7 @@ public class QueryDialog extends JFrame {
 
     private QueryRunnable doQuery() {
         final String xpath = query.getText();
-        if (xpath.length() == 0) {
+        if (xpath.isEmpty()) {
             return null;
         }
         resultDisplay.setText("");
@@ -492,7 +492,7 @@ public class QueryDialog extends JFrame {
 
     private void compileQuery() {
         final String xpath = query.getText();
-        if (xpath.length() == 0) {
+        if (xpath.isEmpty()) {
             return;
         }
         resultDisplay.setText("");

@@ -132,7 +132,7 @@ public class StringValue extends AtomicValue {
         if (in == null) {
             return "";
         }
-        if (in.length() == 0) {
+        if (in.isEmpty()) {
             return in.toString();
         }
         int i = 0;
@@ -179,7 +179,7 @@ public class StringValue extends AtomicValue {
         if (in == null) {
             return "";
         }
-        if (in.length() == 0) {
+        if (in.isEmpty()) {
             return in;
         }
         int first = 0;
@@ -628,7 +628,7 @@ public class StringValue extends AtomicValue {
         } else if (target == boolean.class || target == Boolean.class) {
             return (T) Boolean.valueOf(effectiveBooleanValue());
         } else if (target == char.class || target == Character.class) {
-            if (value.length() > 1 || value.length() == 0) {
+            if (value.length() > 1 || value.isEmpty()) {
                 throw new XPathException(getExpression(), "cannot convert string with length = 0 or length > 1 to Java character");
             }
             return (T) Character.valueOf(value.charAt(0));
@@ -728,7 +728,7 @@ public class StringValue extends AtomicValue {
     public boolean effectiveBooleanValue() throws XPathException {
         // If its operand is a singleton value of type xs:string, xs:anyURI, xs:untypedAtomic,
         //or a type derived from one of these, fn:boolean returns false if the operand value has zero length; otherwise it returns true.
-        return value.length() > 0;
+        return !value.isEmpty();
     }
 
     /* (non-Javadoc)

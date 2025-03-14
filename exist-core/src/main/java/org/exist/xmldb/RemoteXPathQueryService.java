@@ -83,10 +83,10 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
         if (sortExpr != null) {
             optParams.put(RpcAPI.SORT_EXPR, sortExpr);
         }
-        if (namespaceMappings.size() > 0) {
+        if (!namespaceMappings.isEmpty()) {
             optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
-        if (variableDecls.size() > 0) {
+        if (!variableDecls.isEmpty()) {
             optParams.put(RpcAPI.VARIABLES, variableDecls);
         }
         optParams.put(RpcAPI.BASE_URI, outputProperties.getProperty(RpcAPI.BASE_URI, collection.getPath()));
@@ -129,10 +129,10 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
     @Override
     public CompiledExpression compileAndCheck(final String query) throws XMLDBException, XPathException {
         final Map<String, Object> optParams = new HashMap<>();
-        if (namespaceMappings.size() > 0) {
+        if (!namespaceMappings.isEmpty()) {
             optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
-        if (variableDecls.size() > 0) {
+        if (!variableDecls.isEmpty()) {
             optParams.put(RpcAPI.VARIABLES, variableDecls);
         }
         if (moduleLoadPath != null) {
@@ -216,10 +216,10 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
             throws XMLDBException {
         final RemoteXMLResource resource = (RemoteXMLResource) res;
         final Map<String, Object> optParams = new HashMap<>();
-        if (namespaceMappings.size() > 0) {
+        if (!namespaceMappings.isEmpty()) {
             optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
-        if (variableDecls.size() > 0) {
+        if (!variableDecls.isEmpty()) {
             optParams.put(RpcAPI.VARIABLES, variableDecls);
         }
         if (sortExpr != null) {
@@ -349,10 +349,10 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
     public void dump(final CompiledExpression expression, final Writer writer) throws XMLDBException {
         final String query = ((RemoteCompiledExpression) expression).getQuery();
         final Map<String, Object> optParams = new HashMap<>();
-        if (namespaceMappings.size() > 0) {
+        if (!namespaceMappings.isEmpty()) {
             optParams.put(RpcAPI.NAMESPACES, namespaceMappings);
         }
-        if (variableDecls.size() > 0) {
+        if (!variableDecls.isEmpty()) {
             optParams.put(RpcAPI.VARIABLES, variableDecls);
         }
         optParams.put(RpcAPI.BASE_URI,

@@ -310,7 +310,7 @@ public class NodePath implements Comparable<NodePath> {
             case '/':
                 final String next = token.toString();
                 token.setLength(0);
-                if (next.length() > 0) {
+                if (!next.isEmpty()) {
                     addComponent(namespaces, next);
                 }
                 if (path.charAt(++pos ) == '/') {
@@ -322,7 +322,7 @@ public class NodePath implements Comparable<NodePath> {
                 pos++;
             }
         }
-        if (token.length() > 0) {
+        if (!token.isEmpty()) {
             addComponent(namespaces, token.toString());
         }
     }

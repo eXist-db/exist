@@ -34,7 +34,7 @@ public class Redirect extends URLRewrite {
     public Redirect(final Element config, final String uri) throws ServletException {
         super(config, uri);
         final String redirectTo = config.getAttribute("url");
-        if (redirectTo.length() == 0) {
+        if (redirectTo.isEmpty()) {
             throw new ServletException("<exist:redirect> needs an attribute 'url'.");
         }
         if (redirectTo.matches("^\\w+://.*")) {

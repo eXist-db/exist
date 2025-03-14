@@ -308,7 +308,7 @@ public class XIncludeFilter implements Receiver {
 
         if (docUri != null) {
             final String fragment = docUri.getFragment();
-            if (!(fragment == null || fragment.length() == 0)) {
+            if (!(fragment == null || fragment.isEmpty())) {
                 throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an xpointer, use the xpointer attribute.");
             }
 

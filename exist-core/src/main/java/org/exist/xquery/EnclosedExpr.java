@@ -103,7 +103,7 @@ public class EnclosedExpr extends PathExpr {
                     } else if (Type.subTypeOf(next.getType(), Type.ANY_ATOMIC_TYPE)) {
                         if (buf == null) {
                             buf = new StringBuilder();
-                        } else if (buf.length() > 0) {
+                        } else if (!buf.isEmpty()) {
                             buf.append(' ');
                         }
                         buf.append(next.getStringValue());
@@ -120,7 +120,7 @@ public class EnclosedExpr extends PathExpr {
                             next = i.nextItem();
                             continue;
                         }
-                        if (buf != null && buf.length() > 0) {
+                        if (buf != null && !buf.isEmpty()) {
                             receiver.characters(buf);
                             buf.setLength(0);
                         }
@@ -144,7 +144,7 @@ public class EnclosedExpr extends PathExpr {
                     }
                 }
                 // flush remaining character data
-                if (buf != null && buf.length() > 0) {
+                if (buf != null && !buf.isEmpty()) {
                     receiver.characters(buf);
                 }
             } catch (final SAXException e) {

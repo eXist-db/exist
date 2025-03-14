@@ -44,7 +44,7 @@ public class ModuleCall extends URLRewrite {
     public ModuleCall(final Element config, final XQueryContext context, final String uri) throws ServletException {
         super(config, uri);
         String funcName = config.getAttribute("function");
-        if (funcName == null || funcName.length() == 0) {
+        if (funcName == null || funcName.isEmpty()) {
             throw new ServletException("<exist:call> requires an attribute 'function'.");
         }
         int arity = 0;

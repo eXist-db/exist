@@ -149,7 +149,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
         final short id = ownerDocument.getBrokerPool().getSymbols().getSymbol(this);
         final byte idSizeType = Signatures.getSizeType(id);
         int prefixLen = 0;
-        if(nodeName.hasNamespace() && nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+        if(nodeName.hasNamespace() && nodeName.getPrefix() != null && !nodeName.getPrefix().isEmpty()) {
             prefixLen = UTF8.encoded(nodeName.getPrefix());
         }
         final int nodeIdLen = nodeId.size();
@@ -178,7 +178,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
             pos += LENGTH_NS_ID;
             ByteConversion.shortToByte((short) prefixLen, data, pos);
             pos += LENGTH_PREFIX_LENGTH;
-            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+            if(nodeName.getPrefix() != null && !nodeName.getPrefix().isEmpty()) {
                 UTF8.encode(nodeName.getPrefix(), data, pos);
             }
             pos += prefixLen;

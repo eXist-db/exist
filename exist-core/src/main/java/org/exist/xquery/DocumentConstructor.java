@@ -97,21 +97,21 @@ public class DocumentConstructor extends NodeConstructor {
                     if (Type.subTypeOf(next.getType(), Type.ANY_ATOMIC_TYPE)) {
                         if(buf == null)
                             {buf = new StringBuilder();}
-                        else if (buf.length() > 0)
+                        else if (!buf.isEmpty())
                             {buf.append(' ');}
                         buf.append(next.getStringValue());
                         next = i.nextItem();
                     // if item is a node, flush any collected character data and
                     // copy the node to the target doc. 
                     } else if (next.getType() == Type.DOCUMENT) {
-                        if (buf != null && buf.length() > 0) {
+                        if (buf != null && !buf.isEmpty()) {
                             receiver.characters(buf);
                             buf.setLength(0);
                         }
                         next.copyTo(context.getBroker(), receiver);
                         next = i.nextItem();
                     } else if (Type.subTypeOf(next.getType(), Type.NODE)) {
-                        if (buf != null && buf.length() > 0) {
+                        if (buf != null && !buf.isEmpty()) {
                             receiver.characters(buf);
                             buf.setLength(0);
                         }
@@ -120,7 +120,7 @@ public class DocumentConstructor extends NodeConstructor {
                     }
                 }
                 // flush remaining character data
-                if (buf != null && buf.length() > 0) {
+                if (buf != null && !buf.isEmpty()) {
                     receiver.characters(buf);
                     buf.setLength(0);
                 }

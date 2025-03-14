@@ -344,7 +344,7 @@ public class Profiler {
             buf.append(expr.toString()); 
             log.debug(buf.toString());
             
-            if (stack.size() == 0) {
+            if (stack.isEmpty()) {
                 log.debug("QUERY END");                
             }
 		} catch (final RuntimeException e) {

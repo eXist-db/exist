@@ -221,7 +221,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
         final List<Object> params = new ArrayList<>();
         params.add(path);
         final String userName = (String) collection.execute("hasUserLock", params);
-        return userName != null && userName.length() > 0 ? userName : null;
+        return userName != null && !userName.isEmpty() ? userName : null;
     }
 
     @Override

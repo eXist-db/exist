@@ -70,7 +70,7 @@ public class FilteredExpression extends AbstractExpression {
         parent = contextInfo.getParent();
         contextInfo.setParent(this);
         expression.analyze(contextInfo);
-        if (predicates.size() > 0) {
+        if (!predicates.isEmpty()) {
             final AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
             newContext.setParent(this);
             newContext.setContextStep(this);

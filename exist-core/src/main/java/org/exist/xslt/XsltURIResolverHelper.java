@@ -73,7 +73,7 @@ public class XsltURIResolverHelper {
             }
         }
 
-        if (resolvers.size() > 0) {
+        if (!resolvers.isEmpty()) {
             return new URIResolverHierarchy(resolvers);
         } else {
             return null;

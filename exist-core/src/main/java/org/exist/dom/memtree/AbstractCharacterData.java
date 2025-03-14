@@ -167,7 +167,7 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
 
     @Override
     public void appendData(final String arg) throws DOMException {
-        if(arg == null || arg.length() == 0) {
+        if(arg == null || arg.isEmpty()) {
             return;
         }
 

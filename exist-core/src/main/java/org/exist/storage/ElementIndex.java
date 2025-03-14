@@ -58,7 +58,7 @@ public abstract class ElementIndex extends Observable {
     }
 
     public void setDocument(DocumentImpl doc) {
-        if (pending.size() > 0 && this.doc.getDocId() != doc.getDocId()) {
+        if (!pending.isEmpty() && this.doc.getDocId() != doc.getDocId()) {
             LOG.error("Document changed but pending had {}", pending.size(), new Throwable());
             pending.clear();
         }

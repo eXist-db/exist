@@ -122,7 +122,7 @@ public class AttributeConstructor extends NodeConstructor {
 	 * @return the string value
 	 */
 	public String getLiteralValue() {
-		if(contents.size() == 0)
+		if(contents.isEmpty())
 			{return "";}
 		return (String)contents.getFirst();
 	}

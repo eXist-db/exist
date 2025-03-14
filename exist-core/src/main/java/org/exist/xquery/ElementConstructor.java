@@ -318,11 +318,11 @@ public class ElementConstructor extends NodeConstructor {
                     context.declareInScopeNamespace(prefix, qn.getNamespaceURI());
                     builder.namespaceNode(new QName(prefix, qn.getNamespaceURI(), XMLConstants.XMLNS_ATTRIBUTE));
                 }
-            } else if ((qn.getPrefix() == null || qn.getPrefix().length() == 0) &&
+            } else if ((qn.getPrefix() == null || qn.getPrefix().isEmpty()) &&
                     context.getInheritedNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
                 context.declareInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX, XMLConstants.NULL_NS_URI);
                 builder.namespaceNode(new QName("", XMLConstants.NULL_NS_URI, XMLConstants.XMLNS_ATTRIBUTE));
-            } else if (qn.getPrefix() == null || qn.getPrefix().length() == 0) {
+            } else if (qn.getPrefix() == null || qn.getPrefix().isEmpty()) {
                 context.declareInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX, XMLConstants.NULL_NS_URI);
             }
             // process element contents
