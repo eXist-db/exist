@@ -280,7 +280,7 @@ public class GetFragmentBetween extends BasicFunction {
             elemPart = elemPrefix + ":";
         }
         elemPart = elemPart + elemName;
-        return "<" + elemPart + elemNsString.toString() + elemAttrString.toString() + ">";
+        return "<" + elemPart + elemNsString + elemAttrString + ">";
     }
 
     private String getEndElementTag(final XMLStreamReader reader) {

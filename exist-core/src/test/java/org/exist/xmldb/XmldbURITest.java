@@ -822,7 +822,7 @@ public class XmldbURITest {
         String   append_txt_1 = "test/new_test.xml";
         XmldbURI root         = XmldbURI.ROOT_COLLECTION_URI;
         XmldbURI append_uri_1 = root.append(append_txt_1);
-        assertEquals( root.toString() +"/"+ append_txt_1 , append_uri_1.toString() );
+        assertEquals( root +"/"+ append_txt_1 , append_uri_1.toString() );
 
         assertEquals( 
                     TestConstants.TEST_COLLECTION_URI.toString() 

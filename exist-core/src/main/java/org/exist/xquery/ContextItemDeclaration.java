@@ -104,11 +104,11 @@ public class ContextItemDeclaration extends AbstractExpression implements Rewrit
     public String toString() {
         final StringBuilder result = new StringBuilder();
         result.append("declare context item");
-        itemType.map(it -> result.append(" as ").append(it.toString()));
+        itemType.map(it -> result.append(" as ").append(it));
         if(external) {
             result.append(" external ");
         }
-        value.map(v -> result.append(" := ").append(v.toString()));
+        value.map(v -> result.append(" := ").append(v));
         return result.toString();
     }
 

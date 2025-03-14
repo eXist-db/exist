@@ -180,7 +180,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     // otherwise, try for a doc
                     try(final Collection collection = context.getBroker().openCollection(xmldburi.removeLastSegment(), LockMode.READ_LOCK)) {
                         if(collection == null) {
-                            throw new XPathException(this, "Invalid URI: " + uri.toString());
+                            throw new XPathException(this, "Invalid URI: " + uri);
                         }
 
                         try(final LockedDocument doc = collection.getDocumentWithLock(context.getBroker(), xmldburi.lastSegment(), LockMode.READ_LOCK)) {
@@ -189,7 +189,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                             collection.close();
 
                             if(doc == null) {
-                                throw new XPathException(this, "Invalid URI: " + uri.toString());
+                                throw new XPathException(this, "Invalid URI: " + uri);
                             }
 
                             compressResource(os, doc.getDocument(), useHierarchy, stripOffset, method, resourceName);

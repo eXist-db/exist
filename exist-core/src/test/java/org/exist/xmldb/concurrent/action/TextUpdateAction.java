@@ -79,7 +79,7 @@ public class TextUpdateAction extends Action {
 		assertEquals(1, mods);
 		
 		// update paragraph content
-		String updateText = Integer.toString(rand.nextInt()) + " &amp; " + Integer.toString(rand.nextInt());
+		String updateText = rand.nextInt() + " &amp; " + rand.nextInt();
 		final String update = UPDATE_START + updateText + UPDATE_END;
 		mods = service.update(update);
 		

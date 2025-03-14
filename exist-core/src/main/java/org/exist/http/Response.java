@@ -103,7 +103,7 @@ public class Response {
 		final byte[] contentData = content == null ? (binaryContent != null ? binaryContent : null) : content.getBytes(encoding);
 		final StringBuilder buf = new StringBuilder();
 		buf.append("HTTP/1.0 ");
-		buf.append(Integer.toString(code));
+		buf.append(code);
 		if(statusDesc != null) {
 			buf.append(' ');
 			buf.append(statusDesc);

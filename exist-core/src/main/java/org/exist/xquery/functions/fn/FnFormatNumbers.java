@@ -728,7 +728,7 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         // Rule 14 - concatenate prefix, formatted number, and suffix
-        final String result = subPicture.getPrefixString() + formatted.toString() + subPicture.getSuffixString();
+        final String result = subPicture.getPrefixString() + formatted + subPicture.getSuffixString();
 
         return result;
     }

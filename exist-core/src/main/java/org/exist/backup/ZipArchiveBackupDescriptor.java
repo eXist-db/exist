@@ -95,12 +95,12 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
         }
 
         if (descriptor == null) {
-            throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath().toString() + " is not a valid eXist backup archive");
+            throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath() + " is not a valid eXist backup archive");
         }
 
         final Path fakeDbRoot = Paths.get("/db");
         if (!fakeDbRoot.resolve(Paths.get(base)).normalize().startsWith(fakeDbRoot)) {
-            throw new IOException("Detected archive exit attack! zipFile=" + fileArchive.toAbsolutePath().normalize().toString());
+            throw new IOException("Detected archive exit attack! zipFile=" + fileArchive.toAbsolutePath().normalize());
         }
 
         // Count number of files

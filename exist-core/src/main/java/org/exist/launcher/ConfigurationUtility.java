@@ -147,7 +147,7 @@ public class ConfigurationUtility {
             launcherProperties.setProperty(key, properties.getProperty(key));
         }
 
-        System.out.println("Launcher properties: " + launcherProperties.toString());
+        System.out.println("Launcher properties: " + launcherProperties);
         for (final String key: launcherProperties.stringPropertyNames()) {
             System.out.println(key + "=" + launcherProperties.getProperty(key));
         }

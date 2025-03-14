@@ -113,7 +113,7 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
             dataGuide.write(chan, getBrokerPool().getSymbols());
         } catch (final IOException e) {
             LOG.error(e.getMessage(), e);
-            throw new DBException("Error while writing " + dataFile.toAbsolutePath().toString() +
+            throw new DBException("Error while writing " + dataFile.toAbsolutePath() +
                     ": " + e.getMessage());
         }
     }

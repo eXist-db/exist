@@ -72,7 +72,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
         final Path tmpFile = createTemporaryFile(data);
 
         final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
-                "file:read-binary('" + tmpFile.toAbsolutePath().toString() + "')";
+                "file:read-binary('" + tmpFile.toAbsolutePath() + "')";
 
         final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
 
@@ -96,9 +96,9 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
         final Path tmpOutFile = temporaryFolder.newFile().toPath();
 
         final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
-                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
+                "let $bin := file:read-binary('" + tmpInFile.toAbsolutePath() + "')\n" +
                 "return\n" +
-                "    file:serialize-binary($bin, '" + tmpOutFile.toAbsolutePath().toString() + "')";
+                "    file:serialize-binary($bin, '" + tmpOutFile.toAbsolutePath() + "')";
 
         final QueryResultAccessor<T, E> resultsAccessor = executeXQuery(query);
 

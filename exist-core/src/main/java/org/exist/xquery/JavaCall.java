@@ -230,7 +230,7 @@ public class JavaCall extends Function {
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to constructor "
-						+ bestMethod.toString()
+						+ bestMethod
 						+ ": "
 						+ e.getMessage(),
 					e);
@@ -240,7 +240,7 @@ public class JavaCall extends Function {
 				else
 					{throw new XPathException(this,
 						"exception while calling constructor "
-							+ bestMethod.toString()
+							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
 						e);}
@@ -260,7 +260,7 @@ public class JavaCall extends Function {
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
 					"illegal argument to method "
-						+ bestMethod.toString()
+						+ bestMethod
 						+ ": "
 						+ e.getMessage(),
 					e);
@@ -270,7 +270,7 @@ public class JavaCall extends Function {
 				else
 					{throw new XPathException(this,
 						"exception while calling method "
-							+ bestMethod.toString()
+							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
 						e);}

@@ -164,7 +164,7 @@ public class JnlpJarFiles {
     }
 
     private Path getJarPackGz(final Path jarName) {
-        final String path = jarName.toAbsolutePath().toString() + ".pack.gz";
+        final String path = jarName.toAbsolutePath() + ".pack.gz";
         final Path pkgz = Paths.get(path);
 
         if (Files.exists(pkgz)) {

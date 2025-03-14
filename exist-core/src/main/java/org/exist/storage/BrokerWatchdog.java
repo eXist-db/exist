@@ -95,7 +95,7 @@ public class BrokerWatchdog {
 		for (final WatchedBroker broker : watched.values()) {
 			if (System.currentTimeMillis() - broker.timeAdded > 30000) {
 				throw new EXistException("Broker: " + broker.broker.getId() + 
-						" did not return for 30sec." + EOL + EOL + broker.trace.toString());
+						" did not return for 30sec." + EOL + EOL + broker.trace);
 			}
 		}
 	}

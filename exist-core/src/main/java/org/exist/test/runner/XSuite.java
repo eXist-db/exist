@@ -198,7 +198,7 @@ public class XSuite extends ParentRunner<Runner> {
                 // if directory/file does not exist - throw an exception
                 final Path path = Paths.get(suite);
                 if (!Files.exists(path)) {
-                    throw new InitializationError("XSuite does not exist: " + suite + ". path=" + path.toAbsolutePath().toString());
+                    throw new InitializationError("XSuite does not exist: " + suite + ". path=" + path.toAbsolutePath());
                 }
 
                 if (Files.isDirectory(path)) {

@@ -126,7 +126,7 @@ public class ModuleContext extends XQueryContext {
             } else {
                 // Check if there is already a path from the imported module to this module
                 if (getXQueryVersion() == 10 && namespaceURI != null && locationHints != null && hasModulePath(imporedModuleVertex, thisModuleVertex)) {
-                    throw new XPathException(ErrorCodes.XQST0093, "Detected cyclic import between modules: " + getModuleNamespace() + " at: " + getLocation() + ", and: " + namespaceURI + " at: " + locationHint.toString());
+                    throw new XPathException(ErrorCodes.XQST0093, "Detected cyclic import between modules: " + getModuleNamespace() + " at: " + getLocation() + ", and: " + namespaceURI + " at: " + locationHint);
                 }
             }
 

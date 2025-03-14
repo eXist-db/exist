@@ -196,7 +196,7 @@ public abstract class Step extends AbstractExpression {
         }
         result.append("::");
         if (test != null ) {
-            result.append(test.toString());
+            result.append(test);
         } else {
             result.append( "node()" );
         }

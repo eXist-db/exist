@@ -300,7 +300,7 @@ public class CollectionOrderTest {
 
             try(final Collection testCollection = broker.openCollection(TEST_COLLECTION, Lock.LockMode.WRITE_LOCK)) {
                 for (final String documentName : documentNames) {
-                    final String xml = "<document id='" + UUID.randomUUID().toString() + "'><name>" + documentName + "</name></document>";
+                    final String xml = "<document id='" + UUID.randomUUID() + "'><name>" + documentName + "</name></document>";
 
                     broker.storeDocument(transaction, XmldbURI.create(documentName), new StringInputSource(xml), MimeType.XML_TYPE, testCollection);
                 }

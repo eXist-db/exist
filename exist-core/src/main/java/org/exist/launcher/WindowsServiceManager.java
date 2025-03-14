@@ -117,7 +117,7 @@ class WindowsServiceManager implements ServiceManager {
                 "--Description=eXist-db NoSQL Database Server",
                 "--StdError=auto",
                 "--StdOutput=auto",
-                "--LogPath=\"" + existHome.resolve("logs").toAbsolutePath().toString() + "\"",
+                "--LogPath=\"" + existHome.resolve("logs").toAbsolutePath() + "\"",
                 "--LogPrefix=service",
                 "--PidFile=service.pid",
                 "--Startup=auto",
@@ -131,7 +131,7 @@ class WindowsServiceManager implements ServiceManager {
                 "--StopClass=org.exist.service.ExistDbDaemon",
                 "--StopMethod=stop",
                 "--JvmOptions=\"" + jvmOptions + "\"",
-                "--StartParams=\"" + configFile.toAbsolutePath().toString() + "\""
+                "--StartParams=\"" + configFile.toAbsolutePath() + "\""
         );
         minMemory.flatMap(WindowsServiceManager::asPrunSrvMemoryString).ifPresent(xms -> args.add("--JvmMs=" + xms));
         maxMemory.flatMap(WindowsServiceManager::asPrunSrvMemoryString).ifPresent(xmx -> args.add("--JvmMx=" + xmx));

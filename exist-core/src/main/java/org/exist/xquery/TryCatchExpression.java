@@ -545,7 +545,7 @@ public class TryCatchExpression extends AbstractExpression {
     // Local recursive function
     private void addJavaTrace(final Throwable t, final Sequence result) throws XPathException {
         final StackTraceElement[] elements = t.getStackTrace();
-        result.add(new StringValue(this, "Caused by: " + t.toString()));
+        result.add(new StringValue(this, "Caused by: " + t));
         for (final StackTraceElement elt : elements) {
             result.add(new StringValue(this, "at " + elt.toString()));
         }

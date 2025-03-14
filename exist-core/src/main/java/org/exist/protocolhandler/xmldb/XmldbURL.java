@@ -71,7 +71,7 @@ public class XmldbURL {
         if("xmldb".equals(url.getProtocol())){
             myUrl = url;
         } else {
-            throw new MalformedURLException("URL is not an \"xmldb:\" URL: "+url.toString() );
+            throw new MalformedURLException("URL is not an \"xmldb:\" URL: "+ url);
         }
     }
     

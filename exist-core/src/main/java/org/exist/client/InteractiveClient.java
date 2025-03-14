@@ -1044,7 +1044,7 @@ public class InteractiveClient {
                 }
                 final String xupdate = "<xu:modifications version=\"1.0\" "
                         + "xmlns:xu=\"http://www.xmldb.org/xupdate\">"
-                        + command.toString() + "</xu:modifications>";
+                        + command + "</xu:modifications>";
                 final XUpdateQueryService service = current.getService(XUpdateQueryService.class);
                 final long mods = service.update(xupdate);
                 consoleOut(mods + " modifications processed.");
@@ -1226,7 +1226,7 @@ public class InteractiveClient {
 
     private void xupdate(final Optional<String> resource, final Path file) throws XMLDBException, IOException {
         if (!(Files.exists(file) && Files.isReadable(file))) {
-            messageln("cannot read file " + file.normalize().toAbsolutePath().toString());
+            messageln("cannot read file " + file.normalize().toAbsolutePath());
             return;
         }
         final String commands = XMLUtil.readFile(file, UTF_8);
@@ -1433,7 +1433,7 @@ public class InteractiveClient {
             next = base.append(FileUtils.fileName(file));
             try {
                 if (Files.isDirectory(file)) {
-                    messageln("entering directory " + file.toAbsolutePath().toString());
+                    messageln("entering directory " + file.toAbsolutePath());
                     c = collection.getChildCollection(FileUtils.fileName(file));
                     if (c == null) {
                         mgtService = collection.getService(EXistCollectionManagementService.class);
@@ -1474,7 +1474,7 @@ public class InteractiveClient {
                     }
                 }
             } catch (final URISyntaxException e) {
-                errorln("uri syntax exception parsing " + file.toAbsolutePath().toString() + ": " + e.getMessage());
+                errorln("uri syntax exception parsing " + file.toAbsolutePath() + ": " + e.getMessage());
             }
         }
         return true;
@@ -1601,7 +1601,7 @@ public class InteractiveClient {
                 final String zeName = ze.getName().replace('\\', '/');
 
                 if (!Paths.get("/db").resolve(zeName).normalize().startsWith(Paths.get("/db"))) {
-                    throw new IOException("Detected archive exit attack! zipFile=" + zipPath.toAbsolutePath().toString() + ", entry=" + ze.getName());
+                    throw new IOException("Detected archive exit attack! zipFile=" + zipPath.toAbsolutePath() + ", entry=" + ze.getName());
                 }
 
                 final String[] pathSteps = zeName.split("/");
@@ -1651,7 +1651,7 @@ public class InteractiveClient {
             messageln("parsed " + bytes + " bytes in "
                     + (System.currentTimeMillis() - start0) + "ms.");
         } catch (final URISyntaxException e) {
-            errorln("uri syntax exception parsing a ZIP entry from " + zipPath.toString() + ": " + e.getMessage());
+            errorln("uri syntax exception parsing a ZIP entry from " + zipPath + ": " + e.getMessage());
         } catch (final IOException e) {
             errorln("could not parse ZIP file " + zipPath.toAbsolutePath() + ": " + e.getMessage());
         }
@@ -2345,7 +2345,7 @@ public class InteractiveClient {
         try {
             console.getHistory().save();
         } catch (final IOException e) {
-            consoleErr("Could not write history File to " + historyFile.toAbsolutePath().toString());
+            consoleErr("Could not write history File to " + historyFile.toAbsolutePath());
         }
 
         final SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
@@ -2401,7 +2401,7 @@ public class InteractiveClient {
         try {
             console.getHistory().save();
         } catch (final IOException e) {
-            consoleErr("Could not write history File to " + historyFile.toAbsolutePath().toString());
+            consoleErr("Could not write history File to " + historyFile.toAbsolutePath());
         }
         shutdown(false);
         messageln("quit.");

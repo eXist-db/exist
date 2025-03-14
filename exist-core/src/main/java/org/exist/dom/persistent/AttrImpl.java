@@ -352,7 +352,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
 
     @Override
     public String toString() {
-        return String.valueOf(nodeName) + "=\"" + value + "\"";
+        return nodeName + "=\"" + value + "\"";
     }
 
     @Override

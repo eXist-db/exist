@@ -62,7 +62,7 @@ public class BTreeTest {
 
             String prefixStr = "K";
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new Value(prefixStr + Integer.toString(i));
+                Value value = new Value(prefixStr + i);
                 btree.addValue(value, i);
             }
 
@@ -79,7 +79,7 @@ public class BTreeTest {
 
             //Reading data
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new Value(prefixStr + Integer.toString(i));
+                Value value = new Value(prefixStr + i);
                 btree.addValue(value, i);
             }
 
@@ -98,7 +98,7 @@ public class BTreeTest {
 
             String prefixStr = "C";
             for (int i = 1; i <= COUNT; i++) {
-                Value value = new Value(prefixStr + Integer.toString(i));
+                Value value = new Value(prefixStr + i);
                 btree.addValue(value, i);
             }
 
@@ -109,7 +109,7 @@ public class BTreeTest {
             }
 
             for (int i = 1; i <= COUNT; i++) {
-                long p = btree.findValue(new Value(prefixStr + Integer.toString(i)));
+                long p = btree.findValue(new Value(prefixStr + i));
                 assertEquals(p, i);
             }
 
@@ -159,7 +159,7 @@ public class BTreeTest {
             String prefixStr = "C";
             for (int i = 1; i <= COUNT; i++) {
                 StringBuilder buf = new StringBuilder();
-                buf.append(prefixStr).append(Integer.toString(i));
+                buf.append(prefixStr).append(i);
                 int nextLen = rand.nextInt(2000);
                 while (nextLen < 512) {
                     nextLen = rand.nextInt(2000);

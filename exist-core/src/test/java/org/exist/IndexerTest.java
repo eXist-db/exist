@@ -162,7 +162,7 @@ public class IndexerTest {
         "    </result>";
     
     private final static String XQUERY_XSLT =
-	"let $test := doc('" + TestConstants.TEST_COLLECTION_URI.toString() + "/"+ TestConstants.TEST_XML_URI.toString() + "')/* " +
+	"let $test := doc('" + TestConstants.TEST_COLLECTION_URI + "/"+ TestConstants.TEST_XML_URI + "')/* " +
 	"return " +
 	"    <result>{$test}</result>";
 

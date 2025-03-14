@@ -96,7 +96,7 @@ public class ParsingFunctions extends BasicFunction {
                 context.pushDocumentContext();
                 final MemTreeBuilder builder = context.getDocumentBuilder();
                 final NodeImpl result = Shared.writeReport(report, builder);
-                throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report.toString(), result);
+                throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report, result);
             } finally {
                 context.popDocumentContext();
             }

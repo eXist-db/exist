@@ -289,11 +289,11 @@ public final class Journal implements Closeable {
                 try {
                     Files.createDirectories(f);
                 } catch (final IOException | SecurityException e) {
-                    throw new EXistException("Failed to create output directory: " + f.toAbsolutePath().toString());
+                    throw new EXistException("Failed to create output directory: " + f.toAbsolutePath());
                 }
             }
             if (!Files.isWritable(f)) {
-                throw new EXistException("Cannot write to journal output directory: " + f.toAbsolutePath().toString());
+                throw new EXistException("Cannot write to journal output directory: " + f.toAbsolutePath());
             }
             this.dir = f;
         } else {
@@ -584,7 +584,7 @@ public final class Journal implements Closeable {
             initialised = true;
             currentJournalFileNumber = newJournalFileNumber;
         } catch (final IOException e) {
-            throw new LogException("Failed to open new journal: " + newJournalFile.toAbsolutePath().toString(), e);
+            throw new LogException("Failed to open new journal: " + newJournalFile.toAbsolutePath(), e);
         }
     }
 

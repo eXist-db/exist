@@ -282,7 +282,7 @@ public class FileLock {
 
     protected String message(String message, final Exception e) {
         final StringBuilder str = new StringBuilder(message);
-        str.append(' ').append(lockFile.toAbsolutePath().toString());
+        str.append(' ').append(lockFile.toAbsolutePath());
         if (e != null) {
             str.append(": ").append(e.getMessage());
         }

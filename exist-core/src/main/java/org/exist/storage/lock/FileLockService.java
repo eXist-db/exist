@@ -79,7 +79,7 @@ public class FileLockService implements BrokerPoolService {
                 LOG.info("Data directory '{}' does not exist. Creating one ...", dataDir.toAbsolutePath().toString());
                 Files.createDirectories(dataDir);
             } catch(final SecurityException | IOException e) {
-                throw new BrokerPoolServiceException("Cannot create data directory '" + dataDir.toAbsolutePath().toString() + "'", e);
+                throw new BrokerPoolServiceException("Cannot create data directory '" + dataDir.toAbsolutePath() + "'", e);
             }
         }
 
@@ -104,7 +104,7 @@ public class FileLockService implements BrokerPoolService {
             final boolean locked = fileLock.tryLock();
             if(!locked) {
                 throw new BrokerPoolServiceException(new EXistException("The directory seems to be locked by another " +
-                        "database instance. Found a valid lock file: " + fileLock.getFile().toAbsolutePath().toString()));
+                        "database instance. Found a valid lock file: " + fileLock.getFile().toAbsolutePath()));
             }
         } catch(final ReadOnlyException e) {
             LOG.warn(e);

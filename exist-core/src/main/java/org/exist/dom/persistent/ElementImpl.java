@@ -1446,13 +1446,13 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                         break;
 
                     default:
-                        children.append(child.toString());
+                        children.append(child);
                 }
             }
 
             if (childNodes.getLength() > 0) {
                 buf.append(">");
-                buf.append(children.toString());
+                buf.append(children);
                 buf.append("</").append(nodeName).append(">");
             } else {
                 buf.append("/>");

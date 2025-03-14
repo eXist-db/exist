@@ -74,7 +74,7 @@ public class JournalReader implements AutoCloseable {
             validateJournalHeader(file, fc);
         } catch (final IOException e) {
             close();
-            throw new LogException("Failed to read journal file " + file.toAbsolutePath().toString(), e);
+            throw new LogException("Failed to read journal file " + file.toAbsolutePath(), e);
         }
     }
 
@@ -92,7 +92,7 @@ public class JournalReader implements AutoCloseable {
                 && buf.get() == JOURNAL_MAGIC_NUMBER[3];
 
         if (!validMagic) {
-            throw new LogException("File was not recognised as a valid eXist-db journal file: " + file.toAbsolutePath().toString());
+            throw new LogException("File was not recognised as a valid eXist-db journal file: " + file.toAbsolutePath());
         }
 
         // check the version of the journal format
@@ -101,7 +101,7 @@ public class JournalReader implements AutoCloseable {
                 storedVersion == JOURNAL_VERSION;
 
         if (!validVersion) {
-            throw new LogException("Journal file was version " + storedVersion + ", but required version " + JOURNAL_VERSION + ": " + file.toAbsolutePath().toString());
+            throw new LogException("Journal file was version " + storedVersion + ", but required version " + JOURNAL_VERSION + ": " + file.toAbsolutePath());
         }
     }
 

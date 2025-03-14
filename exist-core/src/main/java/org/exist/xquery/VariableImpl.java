@@ -182,7 +182,7 @@ public class VariableImpl implements Variable {
 		if (value == null) {
 			result.append("[not set]");
 		} else {
-			result.append(":= ").append(value.toString());
+			result.append(":= ").append(value);
 		}
 		return result.toString();
 	}

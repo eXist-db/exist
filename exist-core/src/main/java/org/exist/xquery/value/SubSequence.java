@@ -179,7 +179,7 @@ public class SubSequence extends AbstractSequence {
             return Cardinality._MANY;
         }
 
-        throw new IllegalStateException("Unknown Cardinality of: " + toString());
+        throw new IllegalStateException("Unknown Cardinality of: " + this);
     }
 
     @Override

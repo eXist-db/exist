@@ -667,7 +667,7 @@ public class QueryDialog extends JFrame {
         if (query.length() > 40) {
             query = query.substring(0, 40);
         }
-        history.addElement(Integer.toString(history.getSize() + 1) + ". " + query);
+        history.addElement(history.getSize() + 1 + ". " + query);
     }
 
     private class GetCollectionsListSwingWorker extends SwingWorker<Void, String> {
