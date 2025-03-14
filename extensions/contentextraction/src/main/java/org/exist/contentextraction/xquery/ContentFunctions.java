@@ -186,7 +186,7 @@ public class ContentFunctions extends BasicFunction {
             while (reader.hasNext()) {
 
                 int status = reader.next();
-                if (status == XMLStreamReader.START_ELEMENT && reader.getLocalName().equals("namespace")) {
+                if (status == XMLStreamReader.START_ELEMENT && "namespace".equals(reader.getLocalName())) {
                     String prefix = reader.getAttributeValue("", "prefix");
                     String uri = reader.getAttributeValue("", "uri");
                     mappings.put(prefix, uri);

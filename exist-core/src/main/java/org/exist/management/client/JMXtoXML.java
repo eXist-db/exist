@@ -448,15 +448,15 @@ public class JMXtoXML {
     }
 
     private Object mapParameter(final String type, final String value) {
-        if (type.equals("int") || type.equals(Integer.class.getName())) {
+        if ("int".equals(type) || type.equals(Integer.class.getName())) {
             return Integer.parseInt(value);
-        } else if (type.equals("long") || type.equals(Long.class.getName())) {
+        } else if ("long".equals(type) || type.equals(Long.class.getName())) {
             return Long.parseLong(value);
-        } else if (type.equals("float") || type.equals(Float.class.getName())) {
+        } else if ("float".equals(type) || type.equals(Float.class.getName())) {
             return Float.parseFloat(value);
-        } else if (type.equals("double") || type.equals(Double.class.getName())) {
+        } else if ("double".equals(type) || type.equals(Double.class.getName())) {
             return Double.parseDouble(value);
-        } else if (type.equals("boolean") || type.equals(Boolean.class.getName())) {
+        } else if ("boolean".equals(type) || type.equals(Boolean.class.getName())) {
             return Boolean.parseBoolean(value);
         } else {
             return value;

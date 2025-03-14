@@ -111,7 +111,7 @@ public class NamespaceConstructor extends NodeConstructor {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xmlns prefix");
         } else if (prefix.equals(XMLConstants.XML_NS_PREFIX) && !value.equals(Namespaces.XML_NS)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xml prefix to another namespace");
-        } else if (value.equals(Namespaces.XML_NS) && !prefix.equals("xml")) {
+        } else if (value.equals(Namespaces.XML_NS) && !"xml".equals(prefix)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to XML namespace");
         } else if (value.equals(Namespaces.XMLNS_NS)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to xmlns namespace");

@@ -1607,7 +1607,7 @@ public class RpcConnection implements RpcAPI {
         if (resultSet.isEmpty()) {
             final StringBuilder buf = new StringBuilder();
             final String opt = (String) properties.get(OutputKeys.OMIT_XML_DECLARATION);
-            if (opt == null || opt.equalsIgnoreCase("no")) {
+            if (opt == null || "no".equalsIgnoreCase(opt)) {
                 buf.append("<?xml version=\"1.0\"?>\n");
             }
             buf.append(EXIST_RESULT_XMLNS_EXIST).append(Namespaces.EXIST_NS).append("\" ");
@@ -3763,7 +3763,7 @@ public class RpcConnection implements RpcAPI {
      * Determines if compression is switched on in the parameters
      */
     private boolean useCompression(final Map<String, Object> parameters) {
-        return Optional.ofNullable(parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)).map(c -> c.toString().equalsIgnoreCase("yes")).orElse(false);
+        return Optional.ofNullable(parameters.get(EXistOutputKeys.COMPRESS_OUTPUT)).map(c -> "yes".equalsIgnoreCase(c.toString())).orElse(false);
     }
 
     /**

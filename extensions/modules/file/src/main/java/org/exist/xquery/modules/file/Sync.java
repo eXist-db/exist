@@ -406,7 +406,7 @@ public class Sync extends BasicFunction {
     private void saveXML(final Path targetFile, final DocumentImpl doc, final MemTreeBuilder output) throws IOException {
         final SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
-            final boolean isRepoXML = Files.exists(targetFile) && FileUtils.fileName(targetFile).equals("repo.xml");
+            final boolean isRepoXML = Files.exists(targetFile) && "repo.xml".equals(FileUtils.fileName(targetFile));
 
             if (isRepoXML) {
                 processRepoDesc(targetFile, doc, sax, output);

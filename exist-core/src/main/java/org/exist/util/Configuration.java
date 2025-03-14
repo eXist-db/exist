@@ -672,11 +672,11 @@ public class Configuration implements ErrorHandler {
 
                 if (name == null || name.isEmpty()) {
                     LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name not specified", className);
-                } else if (type == null || type.isEmpty() || type.equalsIgnoreCase("string")) {
+                } else if (type == null || type.isEmpty() || "string".equalsIgnoreCase(type)) {
                     attributes.put(name, value);
-                } else if (type.equalsIgnoreCase("boolean")) {
+                } else if ("boolean".equalsIgnoreCase(type)) {
                     attributes.put(name, Boolean.valueOf(value));
-                } else if (type.equalsIgnoreCase("integer")) {
+                } else if ("integer".equalsIgnoreCase(type)) {
                     try {
                         attributes.put(name, Integer.valueOf(value));
                     } catch (final NumberFormatException nfe) {

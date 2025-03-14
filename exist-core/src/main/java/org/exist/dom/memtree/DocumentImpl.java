@@ -732,7 +732,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                     return getNode(nextNode);
                 } else if (hasIdTypeAttribute(nextNode, id)) {
                     return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
-                } else if (getNode(nextNode).getNodeName().equalsIgnoreCase("id") &&
+                } else if ("id".equalsIgnoreCase(getNode(nextNode).getNodeName()) &&
                         getNode(nextNode).getStringValue().equals(id)) {
                     return typeConsidered ? (NodeImpl) getNode(nextNode).getParentNode() : getNode(nextNode);
                 }
@@ -771,7 +771,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 if((document.attrType[attr] == AttrImpl.ATTR_ID_TYPE) &&
                         id.equals(document.attrValue[attr])) {
                     return true;
-                } else if (document.attrName[attr].getLocalPart().equals("id") &&
+                } else if ("id".equals(document.attrName[attr].getLocalPart()) &&
                            Objects.equals(document.attrValue[attr], id)) {
                     return true;
                 }

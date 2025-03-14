@@ -133,7 +133,7 @@ public class ConfigurationHelper {
                     LOG.warn("{} file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", config, existHome);
                 } else {
                     existHome = Paths.get(configUrl.toURI()).getParent().normalize();
-                    if (FileUtils.fileName(existHome).equals("etc")) {
+                    if ("etc".equals(FileUtils.fileName(existHome))) {
                         existHome = existHome.getParent().normalize();
                     }
                     LOG.debug("Got EXIST_HOME from classpath: {}", existHome.toAbsolutePath().toString());

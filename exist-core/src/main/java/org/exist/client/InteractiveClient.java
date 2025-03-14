@@ -526,7 +526,7 @@ public class InteractiveClient {
         try {
             XmldbURI newPath = path;
             final XmldbURI currUri = XmldbURI.xmldbUriFor(properties.getProperty(URI)).resolveCollectionPath(path);
-            if (args[0].equalsIgnoreCase("ls")) {
+            if ("ls".equalsIgnoreCase(args[0])) {
                 // list collection contents
                 getResources();
                 if ("true".equals(properties.getProperty(PERMISSIONS))) {
@@ -548,7 +548,7 @@ public class InteractiveClient {
                         messageln(buf.toString());
                     }
                 }
-            } else if (args[0].equalsIgnoreCase("cd")) {
+            } else if ("cd".equalsIgnoreCase(args[0])) {
                 // change current collection
                 completions.clear();
                 Collection temp;
@@ -578,7 +578,7 @@ public class InteractiveClient {
                     messageln("no such collection.");
                 }
                 getResources();
-            } else if (args[0].equalsIgnoreCase("cp")) {
+            } else if ("cp".equalsIgnoreCase(args[0])) {
                 if (args.length != 3) {
                     messageln("cp requires two arguments.");
                     return true;
@@ -595,7 +595,7 @@ public class InteractiveClient {
                 copy(src, dest);
                 getResources();
 
-            } else if (args[0].equalsIgnoreCase("edit")) {
+            } else if ("edit".equalsIgnoreCase(args[0])) {
                 if (args.length == 2) {
                     final XmldbURI resource;
                     try {
@@ -608,7 +608,7 @@ public class InteractiveClient {
                 } else {
                     messageln("Please specify a resource.");
                 }
-            } else if (args[0].equalsIgnoreCase("get")) {
+            } else if ("get".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
                     consoleErr("wrong number of arguments.");
                     return true;
@@ -639,7 +639,7 @@ public class InteractiveClient {
                     }
                 }
                 return true;
-            } else if (args[0].equalsIgnoreCase("find")) {
+            } else if ("find".equalsIgnoreCase(args[0])) {
                 // search
                 if (args.length < 2) {
                     messageln("no query argument found.");
@@ -657,7 +657,7 @@ public class InteractiveClient {
 
                 nextInSet = 1;
 
-            } else if (args[0].equalsIgnoreCase("run")) {
+            } else if ("run".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
                     messageln("please specify a query file.");
                     return true;
@@ -683,7 +683,7 @@ public class InteractiveClient {
                 } catch (final Exception e) {
                     errorln("An error occurred: " + e.getMessage());
                 }
-            } else if (args[0].equalsIgnoreCase("show")) {
+            } else if ("show".equalsIgnoreCase(args[0])) {
                 // show search results
                 if (result == null) {
                     messageln("no result set.");
@@ -726,7 +726,7 @@ public class InteractiveClient {
                     return true;
                 }
 
-            } else if (args[0].equalsIgnoreCase("mkcol")) {
+            } else if ("mkcol".equalsIgnoreCase(args[0])) {
                 // create collection
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -754,7 +754,7 @@ public class InteractiveClient {
                         .getProperty(PASSWORD));
                 getResources();
 
-            } else if (args[0].equalsIgnoreCase("put")) {
+            } else if ("put".equalsIgnoreCase(args[0])) {
                 // put a document or directory into the database
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -764,7 +764,7 @@ public class InteractiveClient {
                 getResources();
                 return r;
 
-            } else if (args[0].equalsIgnoreCase("putzip")) {
+            } else if ("putzip".equalsIgnoreCase(args[0])) {
                 // put the contents of a zip archive into the database
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -774,7 +774,7 @@ public class InteractiveClient {
                 getResources();
                 return r;
 
-            } else if (args[0].equalsIgnoreCase("putgz")) {
+            } else if ("putgz".equalsIgnoreCase(args[0])) {
                 // put the contents of a zip archive into the database
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -784,7 +784,7 @@ public class InteractiveClient {
                 getResources();
                 return r;
 
-            } else if (args[0].equalsIgnoreCase("blob")) {
+            } else if ("blob".equalsIgnoreCase(args[0])) {
                 // put a document or directory into the database
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -793,7 +793,7 @@ public class InteractiveClient {
                 storeBinary(args[1]);
                 getResources();
 
-            } else if (args[0].equalsIgnoreCase("rm")) {
+            } else if ("rm".equalsIgnoreCase(args[0])) {
                 // remove document
                 if (args.length < 2) {
                     messageln("missing argument.");
@@ -809,7 +809,7 @@ public class InteractiveClient {
                         .getProperty(PASSWORD));
                 getResources();
 
-            } else if (args[0].equalsIgnoreCase("rmcol")) {
+            } else if ("rmcol".equalsIgnoreCase(args[0])) {
                 // remove collection
                 if (args.length < 2) {
                     messageln("wrong argument count.");
@@ -829,7 +829,7 @@ public class InteractiveClient {
                         + path, properties.getProperty(USER), properties
                         .getProperty(PASSWORD));
                 getResources();
-            } else if (args[0].equalsIgnoreCase("adduser")) {
+            } else if ("adduser".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
                     consoleErr("Usage: adduser name");
                     return true;
@@ -874,7 +874,7 @@ public class InteractiveClient {
                     errorln("ERROR: " + e.getMessage());
                     e.printStackTrace();
                 }
-            } else if (args[0].equalsIgnoreCase("users")) {
+            } else if ("users".equalsIgnoreCase(args[0])) {
                 final UserManagementService mgtService = current.getService(UserManagementService.class);
                 final Account users[] = mgtService.getAccounts();
                 messageln("User\t\tGroups");
@@ -891,7 +891,7 @@ public class InteractiveClient {
                     }
                     messageln(sb.toString());
                 }
-            } else if (args[0].equalsIgnoreCase("passwd")) {
+            } else if ("passwd".equalsIgnoreCase(args[0])) {
                 if (options.startGUI) {
                     messageln("command not supported in GUI mode. Please use the \"Edit users\" menu option.");
                     return true;
@@ -924,7 +924,7 @@ public class InteractiveClient {
                     errorln("ERROR: " + e.getMessage());
                     e.printStackTrace();
                 }
-            } else if (args[0].equalsIgnoreCase("chmod")) {
+            } else if ("chmod".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
                     consoleOut("Usage: chmod [resource] mode");
                     return true;
@@ -957,7 +957,7 @@ public class InteractiveClient {
                         + path, properties.getProperty(USER), properties
                         .getProperty(PASSWORD));
                 getResources();
-            } else if (args[0].equalsIgnoreCase("chown")) {
+            } else if ("chown".equalsIgnoreCase(args[0])) {
                 if (args.length < 3) {
                     consoleOut("Usage: chown username group [resource]");
                     return true;
@@ -995,7 +995,7 @@ public class InteractiveClient {
                 }
                 consoleErr("Resource " + args[3] + " not found.");
 
-            } else if (args[0].equalsIgnoreCase("lock") || args[0].equalsIgnoreCase("unlock")) {
+            } else if ("lock".equalsIgnoreCase(args[0]) || "unlock".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
                     messageln("Usage: lock resource");
                     return true;
@@ -1004,14 +1004,14 @@ public class InteractiveClient {
                 if (res != null) {
                     final UserManagementService mgtService = current.getService(UserManagementService.class);
                     final Account user = mgtService.getAccount(properties.getProperty(USER, "guest"));
-                    if (args[0].equalsIgnoreCase("lock")) {
+                    if ("lock".equalsIgnoreCase(args[0])) {
                         mgtService.lockResource(res, user);
                     } else {
                         mgtService.unlockResource(res);
                     }
                 }
 
-            } else if (args[0].equalsIgnoreCase("elements")) {
+            } else if ("elements".equalsIgnoreCase(args[0])) {
                 consoleOut("Element occurrences in collection "
                         + current.getName());
                 consoleOut("--------------------------------------------"
@@ -1025,7 +1025,7 @@ public class InteractiveClient {
                 }
                 return true;
 
-            } else if (args[0].equalsIgnoreCase("xupdate")) {
+            } else if ("xupdate".equalsIgnoreCase(args[0])) {
                 if (options.startGUI) {
                     messageln("command not supported in GUI mode.");
                     return true;
@@ -1049,7 +1049,7 @@ public class InteractiveClient {
                 final long mods = service.update(xupdate);
                 consoleOut(mods + " modifications processed.");
 
-            } else if (args[0].equalsIgnoreCase("map")) {
+            } else if ("map".equalsIgnoreCase(args[0])) {
                 final StringTokenizer tok = new StringTokenizer(args[1], "= ");
                 final String prefix;
                 if (args[1].startsWith("=")) {
@@ -1064,7 +1064,7 @@ public class InteractiveClient {
                 final String uri = tok.nextToken();
                 namespaceMappings.put(prefix, uri);
 
-            } else if (args[0].equalsIgnoreCase("set")) {
+            } else if ("set".equalsIgnoreCase(args[0])) {
                 if (args.length == 1) {
                     properties.list(System.out);
                 } else {
@@ -1083,7 +1083,7 @@ public class InteractiveClient {
                         consoleErr("Exception: " + e.getMessage());
                     }
                 }
-            } else if (args[0].equalsIgnoreCase("shutdown")) {
+            } else if ("shutdown".equalsIgnoreCase(args[0])) {
                 final DatabaseInstanceManager mgr = current.getService(DatabaseInstanceManager.class);
                 if (mgr == null) {
                     messageln("Service is not available");
@@ -1091,9 +1091,9 @@ public class InteractiveClient {
                 }
                 mgr.shutdown();
                 return true;
-            } else if (args[0].equalsIgnoreCase("help") || "?".equals(args[0])) {
+            } else if ("help".equalsIgnoreCase(args[0]) || "?".equals(args[0])) {
                 displayHelp();
-            } else if (args[0].equalsIgnoreCase("quit")) {
+            } else if ("quit".equalsIgnoreCase(args[0])) {
                 return false;
             } else {
                 messageln("unknown command: '" + args[0] + "'");

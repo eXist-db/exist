@@ -89,7 +89,7 @@ public class RangeIndexConfigField {
             }
         }
         String nested = elem.getAttribute("nested");
-        includeNested = (nested == null || nested.equalsIgnoreCase("yes"));
+        includeNested = (nested == null || "yes".equalsIgnoreCase(nested));
         path.setIncludeDescendants(includeNested);
 
         // normalize whitespace if whitespace="normalize"
@@ -104,7 +104,7 @@ public class RangeIndexConfigField {
 
         String caseStr = elem.getAttribute("case");
         if (caseStr != null && !caseStr.isEmpty()) {
-            caseSensitive = caseStr.equalsIgnoreCase("yes");
+            caseSensitive = "yes".equalsIgnoreCase(caseStr);
         }
     }
 

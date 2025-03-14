@@ -127,11 +127,11 @@ public class SearchFunction extends BasicFunction
 						String 	filter 		= args[2].getStringValue();
 						String 	scope 		= args[3].getStringValue();
 						
-						if(  scope.equalsIgnoreCase( "object" ) ) {
+						if(  "object".equalsIgnoreCase(scope) ) {
 							scopeCode = 0;
-						} else if(  scope.equalsIgnoreCase( "onelevel" ) ) {
+						} else if(  "onelevel".equalsIgnoreCase(scope) ) {
 							scopeCode = 1;
-						} else if(  scope.equalsIgnoreCase( "subtree" ) ) {
+						} else if(  "subtree".equalsIgnoreCase(scope) ) {
 							scopeCode = 2;
 						}
 						
@@ -197,7 +197,7 @@ public class SearchFunction extends BasicFunction
 
 					String name = attr.getID();
 
-					if (!name.equals("objectClass")) {
+					if (!"objectClass".equals(name)) {
 
 						builder.startElement(new QName("attr", DSML_NAMESPACE, DSML_PREFIX), null);
 						builder.addAttribute(new QName("name", null, null), name);
@@ -206,7 +206,7 @@ public class SearchFunction extends BasicFunction
 							Object value = attr.get(i);
 
 							builder.startElement(new QName("value", DSML_NAMESPACE, DSML_PREFIX), null);
-							if (name.equals("userPassword")) {
+							if ("userPassword".equals(name)) {
 								builder.characters(new String((byte[]) value));
 							} else {
 								builder.characters(value.toString());

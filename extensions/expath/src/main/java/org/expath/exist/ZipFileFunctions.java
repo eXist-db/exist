@@ -244,10 +244,10 @@ public class ZipFileFunctions extends BasicFunction {
                 Element e = (Element) child;
                 // I need to be able to handle a dir element because that's in the SPEC
                 String s = e.getLocalName();
-                if (s.equals("entry")) {// process the entry by finding the content, serializing according to the attributes, and streaming into the new zip file
+                if ("entry".equals(s)) {// process the entry by finding the content, serializing according to the attributes, and streaming into the new zip file
                     logger.debug("zip:entry name: {} src: {}", e.getAttribute("name"), e.getAttribute("src"));
 
-                } else if (s.equals("dir")) {
+                } else if ("dir".equals(s)) {
                     logger.debug("zip:entry contains dir: {} src: {}", e.getAttribute("name"), e.getAttribute("src"));
 
                 }

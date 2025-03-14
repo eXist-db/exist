@@ -155,7 +155,7 @@ public class XMLTestRunner extends AbstractTestRunner {
         final NodeList testChildren = test.getChildNodes();
         for (int j = 0; j < testChildren.getLength(); j++) {
             final Node testChild = testChildren.item(j);
-            if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null && testChild.getLocalName().equals("task")) {
+            if (testChild.getNodeType() == Node.ELEMENT_NODE && testChild.getNamespaceURI() == null && "task".equals(testChild.getLocalName())) {
                 String textContent = testChild.getTextContent();
                 if (textContent != null) {
                     textContent = textContent.trim();

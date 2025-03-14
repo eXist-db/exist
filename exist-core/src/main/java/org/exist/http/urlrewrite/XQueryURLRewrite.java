@@ -140,12 +140,12 @@ public class XQueryURLRewrite extends HttpServlet {
 
         final String optCompiledCache = filterConfig.getInitParameter("compiled-cache");
         if (optCompiledCache != null) {
-            compiledCache = optCompiledCache.equalsIgnoreCase("true");
+            compiledCache = "true".equalsIgnoreCase(optCompiledCache);
         }
 
         final String optSendChallenge = filterConfig.getInitParameter("send-challenge");
         if (optSendChallenge != null) {
-            sendChallenge = optSendChallenge.equalsIgnoreCase("true");
+            sendChallenge = "true".equalsIgnoreCase(optSendChallenge);
         }
     }
 

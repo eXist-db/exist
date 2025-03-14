@@ -171,11 +171,11 @@ public class HttpServletRequestAdapter implements HttpRequest {
     //TODO consider moving more of this code into EXQuery impl
     @Override
     public Object getFormParam(final String key) {
-        if (request.getMethod().equals("GET")) {
+        if ("GET".equals(request.getMethod())) {
             return getGetParameters(key);
         }
 
-        if (request.getMethod().equals("POST") && request.getContentType() != null && request.getContentType().equals("application/x-www-form-urlencoded")) {
+        if ("POST".equals(request.getMethod()) && request.getContentType() != null && "application/x-www-form-urlencoded".equals(request.getContentType())) {
             if (formFields == null) {
 
                 try {

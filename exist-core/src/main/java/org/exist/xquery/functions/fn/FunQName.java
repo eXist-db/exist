@@ -112,18 +112,18 @@ public class FunQName extends BasicFunction {
 			if (namespace.equalsIgnoreCase(Namespaces.XMLNS_NS))
 				{if (prefix == null)
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with no prefix");
-				else if (!prefix.equalsIgnoreCase("xmlns"))
+				else if (!"xmlns".equalsIgnoreCase(prefix))
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with prefix '"+prefix+"'");}
 			
 			if (namespace.equalsIgnoreCase(Namespaces.XML_NS))
 				{if (prefix == null)
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with no prefix");
-				else if (!prefix.equalsIgnoreCase("xml"))
+				else if (!"xml".equalsIgnoreCase(prefix))
 					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with prefix '"+prefix+"'");}
 		}
 		
 		if (prefix != null) {
-			if (prefix.equalsIgnoreCase("xml") && !namespace.equalsIgnoreCase(Namespaces.XML_NS))
+			if ("xml".equalsIgnoreCase(prefix) && !namespace.equalsIgnoreCase(Namespaces.XML_NS))
 				{throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");}
 			
 		}

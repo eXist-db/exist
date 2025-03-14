@@ -127,7 +127,7 @@ public class PlainTextIndexConfig {
                     attributeNode = nnm.getNamedItem("store");
                     if (attributeNode != null) {
                     	String val = attributeNode.getNodeValue();
-                        boolean store = val != null && val.equalsIgnoreCase("yes");
+                        boolean store = val != null && "yes".equalsIgnoreCase(val);
                         field.setStore(store);
                     }
 

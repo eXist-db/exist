@@ -88,7 +88,7 @@ public class CollectionLocksTest {
      */
     static {
         final String ciEnv = System.getenv("CI");
-        if (ciEnv != null && ciEnv.equalsIgnoreCase("true") &&
+        if (ciEnv != null && "true".equalsIgnoreCase(ciEnv) &&
                 System.getProperty("os.name").toLowerCase().contains("mac")) {
             STRESS_DEADLOCK_TEST_TIMEOUT = (STRESS_DEADLOCK_THREAD_SLEEP * CONCURRENCY_LEVEL) * 4;
         }

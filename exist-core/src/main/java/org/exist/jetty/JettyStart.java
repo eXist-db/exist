@@ -431,7 +431,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         try {
             final String protocol = networkConnector.getDefaultConnectionFactory().getProtocol();
             final String scheme;
-            if (protocol.startsWith("SSL-") || protocol.equals("SSL")) {
+            if (protocol.startsWith("SSL-") || "SSL".equals(protocol)) {
                 scheme = "https";
             } else {
                 scheme = "http";

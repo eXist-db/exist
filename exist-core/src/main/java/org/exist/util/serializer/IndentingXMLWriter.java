@@ -210,7 +210,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     private boolean isMatchTag(final String namespaceURI, final String localName) {
-        return namespaceURI != null && namespaceURI.equals(Namespaces.EXIST_NS) && localName.equals("match");
+        return namespaceURI != null && namespaceURI.equals(Namespaces.EXIST_NS) && "match".equals(localName);
     }
 
     protected void addSpaceIfIndent() throws IOException {

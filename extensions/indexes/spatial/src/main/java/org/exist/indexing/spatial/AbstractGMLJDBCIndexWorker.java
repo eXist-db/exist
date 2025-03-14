@@ -763,7 +763,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 //Store the srs
                 if (GML_NS.equals(deferredElement.getNamespaceURI())) {
                     //Maybe we could assume a configurable default value here
-                    if (attrib.getName().equals("srsName")) {
+                    if ("srsName".equals(attrib.getName())) {
                         whatToPush = attrib.getValue();
                     }
                 }

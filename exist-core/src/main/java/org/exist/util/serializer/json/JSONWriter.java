@@ -115,13 +115,13 @@ public class JSONWriter extends XMLWriter {
         super.setOutputProperties(properties);
 
         final String useNSPrefixProp = properties.getProperty(EXistOutputKeys.JSON_OUTPUT_NS_PREFIX, "no");
-        useNSPrefix = useNSPrefixProp.equalsIgnoreCase("yes");
+        useNSPrefix = "yes".equalsIgnoreCase(useNSPrefixProp);
         final String prefixAttributesProp = properties.getProperty(EXistOutputKeys.JSON_PREFIX_ATTRIBUTES, "no");
-        prefixAttributes = prefixAttributesProp.equalsIgnoreCase("yes");
+        prefixAttributes = "yes".equalsIgnoreCase(prefixAttributesProp);
         final String ignoreWhitespaceTextNodesProp = properties.getProperty(EXistOutputKeys.JSON_IGNORE_WHITESPACE_TEXT_NODES, "no");
-        ignoreWhitespaceTextNodes = ignoreWhitespaceTextNodesProp.equalsIgnoreCase("yes");
+        ignoreWhitespaceTextNodes = "yes".equalsIgnoreCase(ignoreWhitespaceTextNodesProp);
         jsonp = properties.getProperty(EXistOutputKeys.JSONP);
-        indent = properties.getProperty(OutputKeys.INDENT, "no").equalsIgnoreCase("yes");
+        indent = "yes".equalsIgnoreCase(properties.getProperty(OutputKeys.INDENT, "no"));
     }
 
     @Override

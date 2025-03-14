@@ -104,16 +104,16 @@ public class ConsistencyCheckTask implements SystemTask {
         }
 
         final String backup = properties.getProperty(BACKUP_PROP_NAME, "no");
-        createBackup = backup.equalsIgnoreCase("YES");
+        createBackup = "YES".equalsIgnoreCase(backup);
 
         final String zip = properties.getProperty(ZIP_PROP_NAME, "yes");
-        createZip = zip.equalsIgnoreCase("YES");
+        createZip = "YES".equalsIgnoreCase(zip);
         
         final String inc = properties.getProperty(INCREMENTAL_PROP_NAME, "no");
-        incremental = inc.equalsIgnoreCase("YES");
+        incremental = "YES".equalsIgnoreCase(inc);
 
         final String incCheck = properties.getProperty(INCREMENTAL_CHECK_PROP_NAME, "yes");
-        incrementalCheck = incCheck.equalsIgnoreCase("YES");
+        incrementalCheck = "YES".equalsIgnoreCase(incCheck);
 
         final String max = properties.getProperty(MAX_PROP_NAME, "5");
         try {
@@ -123,7 +123,7 @@ public class ConsistencyCheckTask implements SystemTask {
         }
 
         final String check = properties.getProperty(CHECK_DOCS_PROP_NAME, "no");
-        checkDocs = check.equalsIgnoreCase("YES");
+        checkDocs = "YES".equalsIgnoreCase(check);
     }
 
     @Override

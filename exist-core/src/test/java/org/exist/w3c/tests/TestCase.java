@@ -210,7 +210,7 @@ public abstract class TestCase {
 				
 				boolean ok = false;
 				
-				if (compare.equals("XML")) {
+				if ("XML".equals(compare)) {
 					try {
 						ok = diffXML(expResult, res);
 					} catch (Exception e) {
@@ -219,7 +219,7 @@ public abstract class TestCase {
 
 				if (!ok) {
 					if (!expResult.equals(res))
-						if (compare.equals("FRAGMENT") || compare.equals("INSPECT")) {
+						if ("FRAGMENT".equals(compare) || "INSPECT".equals(compare)) {
 							
 							try {
 								ok = diffXML(expResult, res);
@@ -228,7 +228,7 @@ public abstract class TestCase {
 							
 							if (!ok) { 
 								//workaround problematic results
-								if (expResult.equals("<?pi ?>") && (res.equals("<?pi?>")))
+								if ("<?pi ?>".equals(expResult) && ("<?pi?>".equals(res)))
 									;
 								else
 									return false;
@@ -236,9 +236,9 @@ public abstract class TestCase {
 							
 						} else {
 							//workaround problematic results
-							if (expResult.equals("&amp;") && res.equals("&"))
+							if ("&amp;".equals(expResult) && "&".equals(res))
 								;
-							else if (expResult.equals("&lt;") && res.equals("<"))
+							else if ("&lt;".equals(expResult) && "<".equals(res))
 								;
 							else {
 								//last try
@@ -250,7 +250,7 @@ public abstract class TestCase {
 							}
 						}
 						
-					if ((compare.equals("TEXT") || compare.equals("FRAGMENT")) && (i.hasNext())) {
+					if (("TEXT".equals(compare) || "FRAGMENT".equals(compare)) && (i.hasNext())) {
 						reader.mark(1);
 						if (' ' != (char)reader.read())
 							reader.reset();
@@ -358,7 +358,7 @@ public abstract class TestCase {
 		} catch (SAXException e) {
 			
 			//workaround BOM
-			if (e.getMessage().equals("Content is not allowed in prolog.")) {
+			if ("Content is not allowed in prolog.".equals(e.getMessage())) {
 	            try {
 	            	String xml = readFileAsString(Paths.get(uri));
 	            	xml = xml.trim().replaceFirst("^([\\W]+)<","<");

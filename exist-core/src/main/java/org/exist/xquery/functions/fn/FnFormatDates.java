@@ -175,7 +175,7 @@ public class FnFormatDates extends BasicFunction {
     private String formatDate(String pic, AbstractDateTimeValue dt, final String language,
             final Optional<String> place) throws XPathException {
 
-        final boolean tzHMZNPictureHint = pic.equals("[H00]:[M00] [ZN]");
+        final boolean tzHMZNPictureHint = "[H00]:[M00] [ZN]".equals(pic);
 
         final StringBuilder sb = new StringBuilder();
         int i = 0;

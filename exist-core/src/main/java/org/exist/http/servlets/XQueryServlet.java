@@ -371,7 +371,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         boolean reportErrors = false;
         final String errorOpt = (String) request.getAttribute(ATTR_XQUERY_REPORT_ERRORS);
         if (errorOpt != null)
-            {reportErrors = errorOpt.equalsIgnoreCase("YES");}
+            {reportErrors = "YES".equalsIgnoreCase(errorOpt);}
         
         //allow source viewing for GET?
         if("GET".equals(request.getMethod().toUpperCase())) {

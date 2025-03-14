@@ -324,7 +324,7 @@ public class LuceneConfig {
                                 }
                                 if (elem.hasAttribute(DIACRITICS)) {
                                     String value = elem.getAttribute(DIACRITICS);
-                                    if (value.equalsIgnoreCase("no")) {
+                                    if ("no".equalsIgnoreCase(value)) {
                                         analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer(LuceneIndex.LUCENE_VERSION_IN_USE));
                                     }
                                 }

@@ -78,7 +78,7 @@ public class GuestFilter implements Filter {
                 final String key = (String) enumeration.nextElement();
                 final Object value = session.getAttribute(key);
                 LOG.info("session attribute [{}][{}]", key, value.toString());
-                if (key.equalsIgnoreCase("_eXist_xmldb_user")) {
+                if ("_eXist_xmldb_user".equalsIgnoreCase(key)) {
                     username = ((org.exist.security.internal.SubjectImpl)value).getUsername();
                     LOG.info("username [{}]", username);
                 }
@@ -91,7 +91,7 @@ public class GuestFilter implements Filter {
         LOG.info("requestURI [{}]", requestURI);
 
         if (requestURI.contains("/webdav/")) {
-            if (username != null && username.equalsIgnoreCase("guest")) {
+            if (username != null && "guest".equalsIgnoreCase(username)) {
                 LOG.info("Permission denied to : {}", requestURI);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
             } else if (!httpServletRequest.isSecure()) {
@@ -131,7 +131,7 @@ public class GuestFilter implements Filter {
 
                 LOG.info("Parameter [{}][{}]", name, value);
 
-                if (name.equalsIgnoreCase("sslport")) {
+                if ("sslport".equalsIgnoreCase(name)) {
                     sslPort = value;
                 }
             }

@@ -26,27 +26,27 @@ public abstract class CharacterSet {
 	public abstract boolean inCharacterSet(char ch);
 	
 	public static CharacterSet getCharacterSet(String encoding) {
-		if(encoding.equalsIgnoreCase("ASCII")) {
+		if("ASCII".equalsIgnoreCase(encoding)) {
 			return ASCIICharSet.getInstance();
-		} else if(encoding.equalsIgnoreCase("US-ASCII")) {
+		} else if("US-ASCII".equalsIgnoreCase(encoding)) {
 			return ASCIICharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("ISO-8859-1")) {
+		} else if ("ISO-8859-1".equalsIgnoreCase(encoding)) {
 			return Latin1CharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("ISO8859_1")) {
+		} else if ("ISO8859_1".equalsIgnoreCase(encoding)) {
 			return Latin1CharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("UTF-8")) {
+		} else if ("UTF-8".equalsIgnoreCase(encoding)) {
 			return UnicodeCharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("UTF8")) {
+		} else if ("UTF8".equalsIgnoreCase(encoding)) {
 			return UnicodeCharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("utf-16")) {
+		} else if ("utf-16".equalsIgnoreCase(encoding)) {
 			return UnicodeCharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("utf16")) {
+		} else if ("utf16".equalsIgnoreCase(encoding)) {
 			return UnicodeCharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("iso-8859-2")) {
+		} else if ("iso-8859-2".equalsIgnoreCase(encoding)) {
 			return Latin2CharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("ISO8859_2")) {
+		} else if ("ISO8859_2".equalsIgnoreCase(encoding)) {
 			return Latin2CharSet.getInstance();
-		} else if (encoding.equalsIgnoreCase("KOI8-R")) {
+		} else if ("KOI8-R".equalsIgnoreCase(encoding)) {
 			return KOI8RCharSet.getInstance();
 		} else
 			{return ASCIICharSet.getInstance();}

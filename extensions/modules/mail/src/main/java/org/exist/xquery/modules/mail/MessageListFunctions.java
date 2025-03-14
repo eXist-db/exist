@@ -476,31 +476,31 @@ public class MessageListFunctions extends BasicFunction
 	{
 		SearchTerm	st = null;
 		
-		if( terms.getNodeType() == Node.ELEMENT_NODE && terms.getLocalName().equalsIgnoreCase( "searchTerm" ) ) {
+		if( terms.getNodeType() == Node.ELEMENT_NODE && "searchTerm".equalsIgnoreCase(terms.getLocalName()) ) {
 			String type  = ((Element)terms).getAttribute( "type" );
 			
 			if( type != null ) {
-				if( type.equalsIgnoreCase( "not" ) ) {
+				if( "not".equalsIgnoreCase(type) ) {
 					st = new NotTerm( parseChildSearchTerm( terms ) );
-				} else if( type.equalsIgnoreCase( "and" ) ) {
+				} else if( "and".equalsIgnoreCase(type) ) {
 					st = new AndTerm( parseChildSearchTerms( terms ) );
-				} else if( type.equalsIgnoreCase( "or" ) ) {
+				} else if( "or".equalsIgnoreCase(type) ) {
 					st = new OrTerm( parseChildSearchTerms( terms ) );
-				} else if( type.equalsIgnoreCase( "from" ) ) {
+				} else if( "from".equalsIgnoreCase(type) ) {
 					st = parseFromTerm( terms );
-				} else if( type.equalsIgnoreCase( "subject" ) ) {
+				} else if( "subject".equalsIgnoreCase(type) ) {
 					st = parseSubjectTerm( terms );
-				} else if( type.equalsIgnoreCase( "body" ) ) {
+				} else if( "body".equalsIgnoreCase(type) ) {
 					st = parseBodyTerm( terms );
-				} else if( type.equalsIgnoreCase( "to" ) || type.equalsIgnoreCase( "recipient" ) ) {
+				} else if( "to".equalsIgnoreCase(type) || "recipient".equalsIgnoreCase(type) ) {
 					st = parseRecipientTerm( terms );
-				} else if( type.equalsIgnoreCase( "header" ) ) {
+				} else if( "header".equalsIgnoreCase(type) ) {
 					st = parseHeaderTerm( terms );
-				} else if( type.equalsIgnoreCase( "flag" ) ) {
+				} else if( "flag".equalsIgnoreCase(type) ) {
 					st = parseFlagTerm( terms );
-				} else if( type.equalsIgnoreCase( "sent" ) ) {
+				} else if( "sent".equalsIgnoreCase(type) ) {
 					st = parseSentDateTerm( terms );
-				} else if( type.equalsIgnoreCase( "received" ) ) {
+				} else if( "received".equalsIgnoreCase(type) ) {
 					st = parseReceivedDateTerm( terms );
 				} else {
 					throw( new XPathException(this, "Invalid Search Term type specified: " + type ) );
@@ -616,11 +616,11 @@ public class MessageListFunctions extends BasicFunction
 		if( pattern != null && !pattern.isEmpty()) {
 			Message.RecipientType rtype = null;
 			
-			if( type.equalsIgnoreCase( "to" ) ) {
+			if( "to".equalsIgnoreCase(type) ) {
 				rtype = Message.RecipientType.TO;
-			} else if( type.equalsIgnoreCase( "cc" ) ) {
+			} else if( "cc".equalsIgnoreCase(type) ) {
 				rtype = Message.RecipientType.CC;
-			} else if( type.equalsIgnoreCase( "bcc" ) ) {
+			} else if( "bcc".equalsIgnoreCase(type) ) {
 				rtype = Message.RecipientType.BCC;
 			} else {
 				throw( new XPathException(this, "Invalid recipientType: " + type + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
@@ -668,21 +668,21 @@ public class MessageListFunctions extends BasicFunction
 		if( flag != null && !flag.isEmpty()) {
 			Flags flags = null;
 			
-			if( flag.equalsIgnoreCase( "answered" ) ) {
+			if( "answered".equalsIgnoreCase(flag) ) {
 				flags = new Flags( Flags.Flag.ANSWERED );
-			} else if( flag.equalsIgnoreCase( "deleted" ) ) {
+			} else if( "deleted".equalsIgnoreCase(flag) ) {
 				flags = new Flags( Flags.Flag.DELETED );
-			} else if( flag.equalsIgnoreCase( "draft" ) ) {
+			} else if( "draft".equalsIgnoreCase(flag) ) {
 				flags = new Flags( Flags.Flag.DRAFT );
-			} else if( flag.equalsIgnoreCase( "recent" ) ) {
+			} else if( "recent".equalsIgnoreCase(flag) ) {
 				flags = new Flags( Flags.Flag.RECENT );
-			} else if( flag.equalsIgnoreCase( "seen" ) ) {
+			} else if( "seen".equalsIgnoreCase(flag) ) {
 				flags = new Flags( Flags.Flag.SEEN );
 			} else {
 				throw( new XPathException(this, "Invalid flag: " + flag + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 			}
 				
-			st = new FlagTerm( flags, value.equalsIgnoreCase( "true" ) );
+			st = new FlagTerm( flags, "true".equalsIgnoreCase(value) );
 		} else {
 			throw( new XPathException(this, "flag attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
@@ -759,17 +759,17 @@ public class MessageListFunctions extends BasicFunction
 		String comp  = ((Element)terms).getAttribute( "comparison" );
 		
 		if( comp != null && !comp.isEmpty()) {
-			if( comp.equalsIgnoreCase( "eq" ) ) {
+			if( "eq".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.EQ;
-			} else if( comp.equalsIgnoreCase( "ge" ) ) {
+			} else if( "ge".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.GE;
-			} else if( comp.equalsIgnoreCase( "gt" ) ) {
+			} else if( "gt".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.GT;
-			} else if( comp.equalsIgnoreCase( "le" ) ) {
+			} else if( "le".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.LE;
-			} else if( comp.equalsIgnoreCase( "lt" ) ) {
+			} else if( "lt".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.LT;
-			} else if( comp.equalsIgnoreCase( "ne" ) ) {
+			} else if( "ne".equalsIgnoreCase(comp) ) {
 				cp = ComparisonTerm.NE;
 			} else {
 				throw( new XPathException(this, "Invalid comparison: " + comp + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );

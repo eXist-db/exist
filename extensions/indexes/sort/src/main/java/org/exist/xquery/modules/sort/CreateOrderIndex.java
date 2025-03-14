@@ -104,11 +104,11 @@ public class CreateOrderIndex extends BasicFunction {
             final Element options = (Element) optionValue.getNode();
             String option = options.getAttribute("order");
             if (option != null) {
-                descending = option.equalsIgnoreCase("descending");
+                descending = "descending".equalsIgnoreCase(option);
             }
             option = options.getAttribute("empty");
             if (option != null) {
-                emptyLeast = option.equalsIgnoreCase("least");
+                emptyLeast = "least".equalsIgnoreCase(option);
             }
         }
 

@@ -215,7 +215,7 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_LEADING_WILDCARD:
-                allowLeadingWildcard = value.equalsIgnoreCase("yes");
+                allowLeadingWildcard = "yes".equalsIgnoreCase(value);
                 break;
             case OPTION_PHRASE_SLOP:
                 try {
@@ -225,10 +225,10 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_FILTER_REWRITE:
-                filterRewrite = value.equalsIgnoreCase("yes");
+                filterRewrite = "yes".equalsIgnoreCase(value);
                 break;
             case OPTION_LOWERCASE_EXPANDED_TERMS:
-                lowercaseExpandedTerms = value.equalsIgnoreCase("yes");
+                lowercaseExpandedTerms = "yes".equalsIgnoreCase(value);
                 break;
             case OPTION_QUERY_ANALYZER_ID:
                 queryAnalyzerId = value;
