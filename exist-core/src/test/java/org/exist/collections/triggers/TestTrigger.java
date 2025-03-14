@@ -86,8 +86,8 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
             // process the XUpdate
             Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
-            for (int i = 0; i < modifications.length; i++) {
-                modifications[i].process(transaction);
+            for (Modification modification : modifications) {
+                modification.process(transaction);
             }
 
             broker.flush();

@@ -652,8 +652,8 @@ public class XmlRpcTest {
         Object[] collections = (Object[]) collection.get("collections");
         boolean foundMatch = false;
         String targetCollectionName = SPECIAL_COLLECTION.lastSegment().toString();
-        for (int i = 0; i < collections.length; i++) {
-            String childName = (String) collections[i];
+        for (Object o : collections) {
+            String childName = (String) o;
             if (childName.equals(targetCollectionName)) {
                 foundMatch = true;
                 break;

@@ -72,9 +72,9 @@ public class SequencedLongHashMapTest {
 
 		final SequencedLongHashMap<String> map = new SequencedLongHashMap<>();
 
-		for (int i = 0; i < l.length; i++) {
-			map.put(l[i], "k" + l[i]);
-		}
+        for (long value : l) {
+            map.put(value, "k" + value);
+        }
 
 		map.removeFirst();
 		final Iterator<Long2ObjectMap.Entry<String>> entries = map.fastEntrySetIterator();

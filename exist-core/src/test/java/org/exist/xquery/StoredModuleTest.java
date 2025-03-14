@@ -103,8 +103,8 @@ public class StoredModuleTest {
         xqService.setNamespace("itg-modules", "http://localhost:80/itg/xquery");
 
         CompiledExpression compiledQuery = xqService.compile(query);
-        for (int i = 0; i < cols.length; i++) {
-            xqService.declareVariable("itg-modules:coll", cols[i]);
+        for (String col : cols) {
+            xqService.declareVariable("itg-modules:coll", col);
             ResourceSet result = xqService.execute(compiledQuery);
             result.getResource(0).getContent();
         }

@@ -119,9 +119,9 @@ public class GMLIndexTest {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, testCollection, COLLECTION_CONFIG);
 
-            for (int i = 0; i < FILES.length; i++) {
-                final URL url = GMLIndexTest.class.getResource("/" + FILES[i]);
-                broker.storeDocument(transaction, XmldbURI.create(FILES[i]), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE, testCollection);
+            for (String file : FILES) {
+                final URL url = GMLIndexTest.class.getResource("/" + file);
+                broker.storeDocument(transaction, XmldbURI.create(file), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE, testCollection);
             }
 
             transaction.commit();
@@ -175,8 +175,8 @@ public class GMLIndexTest {
                 Connection conn = null;
                 try {
                     conn = indexWorker.acquireConnection();
-                    for (int i = 0; i < FILES.length; i++) {
-                        try (final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(FILES[i]), Lock.LockMode.READ_LOCK)) {
+                    for (String file : FILES) {
+                        try (final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(file), Lock.LockMode.READ_LOCK)) {
                             final DocumentImpl doc = lockedDoc.getDocument();
 
                             PreparedStatement ps = conn.prepareStatement(
