@@ -1095,10 +1095,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         public String getInContextPath() {
-            if (inContextPath == null) {
-                return getRequestURI().substring(getContextPath().length());
-            }
-            return inContextPath;
+            return Objects.requireNonNullElseGet(inContextPath, () -> getRequestURI().substring(getContextPath().length()));
         }
 
         public void setInContextPath(final String path) {
@@ -1466,11 +1463,7 @@ public class XQueryURLRewrite extends HttpServlet {
         private final UnsynchronizedByteArrayInputStream istream;
 
         public CachingServletInputStream(final byte[] data) {
-            if (data == null) {
-                istream = new UnsynchronizedByteArrayInputStream(new byte[0]);
-            } else {
-                istream = new UnsynchronizedByteArrayInputStream(data);
-            }
+            istream = new UnsynchronizedByteArrayInputStream(Objects.requireNonNullElseGet(data, () -> new byte[0]));
         }
 
         @Override

@@ -27,6 +27,8 @@
 package org.exist.extensions.exquery.modules.request;
 
 import java.util.List;
+import java.util.Objects;
+
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -111,11 +113,7 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
         final Sequence result;
         final Object queryParamValues = request.getQueryParam(paramName);
         if(queryParamValues == null) {
-            if(defaultValues != null) {
-                result = defaultValues;
-            } else {
-                result = Sequence.EMPTY_SEQUENCE;
-            }
+            result = Objects.requireNonNullElse(defaultValues, Sequence.EMPTY_SEQUENCE);
         } else {
             result = new ValueSequence();
             if(queryParamValues instanceof List) {

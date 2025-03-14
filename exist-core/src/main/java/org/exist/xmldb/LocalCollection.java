@@ -617,11 +617,8 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     final InputSource source;
                     if (uri != null) {
                         source = new InputSource(uri);
-                    } else if (res.inputSource != null) {
-                        source = res.inputSource;
-                    } else {
-                        source = new StringInputSource(res.content);
-                    }
+                    } else
+                        source = Objects.requireNonNullElseGet(res.inputSource, () -> new StringInputSource(res.content));
 
                     final XMLReader reader;
                     if (useHtmlReader(broker, transaction, res)) {

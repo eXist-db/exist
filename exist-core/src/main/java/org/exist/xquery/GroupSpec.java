@@ -27,6 +27,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.SequenceType;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /** 
  * A XQuery grouping specifier as specified in a "group by" clause (based on
@@ -48,14 +49,10 @@ public class GroupSpec {
     private Collator collator;
      
     public GroupSpec(final XQueryContext context, @Nullable final Expression groupExpr, final QName keyVarName, @Nullable final SequenceType keyVarType) {
-        if (groupExpr != null) {
-            this.expression = groupExpr;
-        } else {
-            // Spec: "If the GroupingSpec does not contain an ExprSingle, an implicit
-            // expression is created, consisting of a variable reference with the
-            // same name as the grouping variable."
-            this.expression = new VariableReference(context, keyVarName);
-        }
+        // Spec: "If the GroupingSpec does not contain an ExprSingle, an implicit
+        // expression is created, consisting of a variable reference with the
+        // same name as the grouping variable."
+        this.expression = Objects.requireNonNullElseGet(groupExpr, () -> new VariableReference(context, keyVarName));
 
         this.context = context; 
         this.keyVarName = keyVarName;

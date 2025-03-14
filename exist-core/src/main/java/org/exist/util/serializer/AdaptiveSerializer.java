@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.transform.TransformerException;
 import java.io.Writer;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -52,11 +53,7 @@ public class AdaptiveSerializer extends AbstractSerializer {
 
     @Override
     public void setOutput(final Writer writer, final Properties properties) {
-        if (properties == null) {
-            outputProperties = new Properties(defaultProperties);
-        } else {
-            outputProperties = properties;
-        }
+        outputProperties = Objects.requireNonNullElseGet(properties, () -> new Properties(defaultProperties));
         for (SerializerWriter w: writers) {
             w.setWriter(writer);
             w.setOutputProperties(outputProperties);

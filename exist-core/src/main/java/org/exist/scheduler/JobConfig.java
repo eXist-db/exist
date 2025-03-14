@@ -21,6 +21,7 @@
  */
 package org.exist.scheduler;
 
+import java.util.Objects;
 import java.util.Properties;
 import org.exist.util.Configuration;
 import org.exist.scheduler.JobException.JobExceptionAction;
@@ -59,11 +60,7 @@ public final class JobConfig {
     private final Properties parameters = new Properties();
 
     public JobConfig(final JobType jobType, final String jobName, final String resourceName, final String schedule, final String unscheduleOnException) throws JobException {
-        if(jobType != null) {
-            this.jobType = jobType;
-        } else {
-            this.jobType = JobType.USER;
-        }
+        this.jobType = Objects.requireNonNullElse(jobType, JobType.USER);
 
         this.jobName = jobName;
 

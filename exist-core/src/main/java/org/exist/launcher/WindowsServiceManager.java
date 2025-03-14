@@ -396,13 +396,10 @@ class WindowsServiceManager implements ServiceManager {
         final String value = mtcJavaCmdlineMemoryString.group(1);
         @Nullable final String mnemonic = mtcJavaCmdlineMemoryString.group(2);
 
-        if (mnemonic == null) {
-            // no mnemonic supplied, assume `m` for megabytes
-            return Optional.of(value + "m");
-        }
+        // no mnemonic supplied, assume `m` for megabytes
+        return Optional.of(value + Objects.requireNonNullElse(mnemonic, "m"));
 
         // valid mnemonic supplied, so return as is (excluding any additional cruft)
-        return Optional.of(value + mnemonic);
     }
 
     /**

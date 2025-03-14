@@ -27,6 +27,8 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import java.util.Objects;
+
 public class GetAppRoot extends BasicFunction {
 
     public final static FunctionSignature signature =
@@ -45,10 +47,6 @@ public class GetAppRoot extends BasicFunction {
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         String configured = (String) context.getBroker().getConfiguration().getProperty(Deployment.PROPERTY_APP_ROOT);
-        if (configured != null) {
-            return new StringValue(this, configured);
-        } else {
-            return new StringValue(this, XmldbURI.ROOT_COLLECTION);
-        }
+        return new StringValue(this, Objects.requireNonNullElse(configured, XmldbURI.ROOT_COLLECTION));
     }
 }

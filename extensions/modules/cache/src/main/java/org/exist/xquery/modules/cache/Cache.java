@@ -29,6 +29,7 @@ import org.exist.xquery.value.ValueSequence;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -95,20 +96,12 @@ class Cache {
 
     public Sequence get(final String key) {
 	    final Sequence value = store.getIfPresent(key);
-	    if(value == null) {
-	        return Sequence.EMPTY_SEQUENCE;
-        } else {
-	        return value;
-        }
+        return Objects.requireNonNullElse(value, Sequence.EMPTY_SEQUENCE);
     }
 
     public Sequence remove(final String key) {
         final Sequence prevValue = store.asMap().remove(key);
-        if(prevValue == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        } else {
-            return prevValue;
-        }
+        return Objects.requireNonNullElse(prevValue, Sequence.EMPTY_SEQUENCE);
     }
 
     public void clear() {

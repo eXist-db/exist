@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Query rewriter for the range index. May replace path expressions like a[b = "c"] or a[b = "c"][d = "e"]
@@ -178,11 +179,7 @@ public class RangeQueryRewriter extends QueryRewriter {
             final Function function = fcall.getFunction();
             if (function instanceof final Lookup lookup) {
                 final Expression fallback = lookup.getFallback();
-                if (fallback != null) {
-                    expr = fallback;
-                } else {
-                    expr = lookup;
-                }
+                expr = Objects.requireNonNullElse(fallback, lookup);
             }
         }
 

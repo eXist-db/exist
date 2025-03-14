@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Objects;
 import java.util.Properties;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
@@ -70,11 +71,7 @@ public class TEXTWriter extends XMLWriter {
      */
     @Override
     public void setOutputProperties(final Properties properties) {
-        if (properties == null) {
-            outputProperties = defaultProperties;
-        } else {
-            outputProperties = properties;
-        }
+        outputProperties = Objects.requireNonNullElse(properties, defaultProperties);
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, UTF_8.name());
         charSet = CharacterSet.getCharacterSet(encoding);
     }

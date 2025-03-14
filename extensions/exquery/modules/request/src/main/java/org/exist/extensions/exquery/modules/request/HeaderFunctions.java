@@ -40,6 +40,8 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.exquery.http.HttpRequest;
 
+import java.util.Objects;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -110,11 +112,7 @@ public class HeaderFunctions extends AbstractRequestModuleFunction {
         final Sequence result;
         final String headerValue = request.getHeader(headerName);
         if(headerValue == null) {
-            if(defaultValues != null) {
-                result = defaultValues;
-            } else {
-                result = Sequence.EMPTY_SEQUENCE;
-            }
+            result = Objects.requireNonNullElse(defaultValues, Sequence.EMPTY_SEQUENCE);
         } else {
             result = new StringValue(this, headerValue);
         }

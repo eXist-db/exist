@@ -1255,10 +1255,7 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         public List<String> getBCC() {
-            if (this.bcc == null) {
-                return Collections.EMPTY_LIST;
-            }
-            return bcc;
+            return Objects.requireNonNullElse(this.bcc, Collections.EMPTY_LIST);
         }
 
         //Subject
@@ -1296,10 +1293,7 @@ public class SendEmailFunction extends BasicFunction {
         }
 
         public Iterator<MailAttachment> attachmentIterator() {
-            if (this.attachments == null) {
-                return Collections.EMPTY_LIST.iterator();
-            }
-            return attachments.iterator();
+            return Objects.requireNonNullElse(this.attachments, Collections.EMPTY_LIST).iterator();
         }
     }
 
