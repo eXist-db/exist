@@ -99,7 +99,7 @@ public class ResourceTest {
         final List<String> resources = testCollection.listResources();
         assertEquals(resources.size(), testCollection.getResourceCount());
 
-        final XMLResource doc = (XMLResource) testCollection.getResource(resources.get(0));
+        final XMLResource doc = (XMLResource) testCollection.getResource(resources.getFirst());
         assertNotNull(doc);
 
         try(final StringWriter sout = new StringWriter()) {

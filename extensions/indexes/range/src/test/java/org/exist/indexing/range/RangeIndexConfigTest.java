@@ -93,10 +93,10 @@ public class RangeIndexConfigTest {
 
         final RangeIndexConfig config = new RangeIndexConfig(mockConfigNodes, namespaces);
 
-        assertTrue(logCaptor.getLogs().get(0)
+        assertTrue(logCaptor.getLogs().getFirst()
                 .contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
 
-        assertTrue(logCaptor.getLogs().get(0)
+        assertTrue(logCaptor.getLogs().getFirst()
                 .contains("(" + mockCollectionXConfUri + ")"));
 
         verify(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList);

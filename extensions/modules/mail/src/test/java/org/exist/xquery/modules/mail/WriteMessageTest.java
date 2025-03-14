@@ -734,7 +734,7 @@ public class WriteMessageTest {
             final String line = messageLines[messageBodyOffset++];
             if (".".equals(line) && "".equals(prevLine)) {
                 // drop previous line
-                messageBodyLines.remove(messageBodyLines.size() - 1);
+                messageBodyLines.removeLast();
                 // exit loop, we have read the message body
                 break;
             }

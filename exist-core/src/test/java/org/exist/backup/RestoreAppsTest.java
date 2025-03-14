@@ -216,7 +216,7 @@ public class RestoreAppsTest {
 
             if (expectedMessage != null) {
                 assertEquals(1, listener.skipped.size());
-                assertTrue(listener.skipped.get(0).endsWith(expectedMessage));
+                assertTrue(listener.skipped.getFirst().endsWith(expectedMessage));
             } else {
                 assertEquals(0, listener.skipped.size());
             }

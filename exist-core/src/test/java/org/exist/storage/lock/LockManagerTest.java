@@ -826,7 +826,7 @@ public class LockManagerTest {
             // read count first to ensure memory visibility from volatile!
             final int localCount = entry.getCount();
             events.push(new LockAction(lockEventType, groupId, entry.getId(), entry.getLockType(), entry.getLockMode(),
-                    entry.getOwner(), localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.get(0)));
+                    entry.getOwner(), localCount, timestamp, entry.stackTraces == null ? null : entry.stackTraces.getFirst()));
         }
 
         public Stack<LockAction> getEvents() {

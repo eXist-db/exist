@@ -115,7 +115,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(2, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("minimumTermLength", extractedConstructorArg1.key());
         assertEquals(Integer.class, extractedConstructorArg1.valueClass());
         assertEquals(Integer.valueOf(2), extractedConstructorArg1.value());
@@ -143,7 +143,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(2, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("minimumTermLength", extractedConstructorArg1.key());
         assertEquals(int.class, extractedConstructorArg1.valueClass());
         assertEquals(2, extractedConstructorArg1.value());
@@ -171,7 +171,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(2, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("minimumTermLength", extractedConstructorArg1.key());
         assertEquals(Boolean.class, extractedConstructorArg1.valueClass());
         assertEquals(Boolean.TRUE, extractedConstructorArg1.value());
@@ -199,7 +199,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(2, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("minimumTermLength", extractedConstructorArg1.key());
         assertEquals(boolean.class, extractedConstructorArg1.valueClass());
         assertEquals(true, extractedConstructorArg1.value());
@@ -226,7 +226,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(1, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("punctuationDictionary", extractedConstructorArg1.key());
         assertEquals(char[].class, extractedConstructorArg1.valueClass());
         assertArrayEquals(new char[] {'\'', '-'}, (char[])extractedConstructorArg1.value());
@@ -247,7 +247,7 @@ public class AnalyzerConfigTest {
 
         assertEquals(1, extractedConstructorArgs.size());
 
-        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.get(0);
+        final AnalyzerConfig.KeyTypedValue<?> extractedConstructorArg1 = extractedConstructorArgs.getFirst();
         assertEquals("punctuationDictionary", extractedConstructorArg1.key());
         assertEquals(String[].class, extractedConstructorArg1.valueClass());
         assertArrayEquals(new String[] {"abc", "def"}, (String[])extractedConstructorArg1.value());

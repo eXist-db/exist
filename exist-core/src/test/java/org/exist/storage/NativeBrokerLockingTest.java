@@ -420,7 +420,7 @@ public class NativeBrokerLockingTest {
             // ignore sync events
             final StackTraceElement[] stackTrace;
             if (entry.getStackTraces() != null && !entry.getStackTraces().isEmpty()) {
-                stackTrace = entry.getStackTraces().get(0);
+                stackTrace = entry.getStackTraces().getFirst();
 
                 final String reason = LockTable.getSimpleStackReason(stackTrace);
                 if (reason != null && (reason.equals("sync") || reason.equals("notifySync"))) {
