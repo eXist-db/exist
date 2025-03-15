@@ -45,80 +45,98 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
     private String destination = null;
     private String name        = null;
 
+    /**
+     * Executes the task to copy a resource or collection from one location to another in an XMLDB.
+     * 
+     * <p>This method ensures that the required parameters (URI, resource, or collection) are provided. 
+     * It then retrieves the base collection, creates a management service, and performs the copy operation 
+     * for either a resource or collection based on the specified parameters.</p>
+     * 
+     * <p>Errors are logged or thrown as exceptions depending on the {@code failonerror} flag.</p>
+     * 
+     * @throws BuildException if any required parameter is missing, or if an error occurs during execution.
+     */
+    
     @Override
     public void execute() throws BuildException
     {
-        if( uri == null ) {
-            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
+        // Ensure that the XMLDB collection URI is provided
+        if (uri == null) {
+            throw new BuildException("You have to specify an XMLDB collection URI");
         }
 
-        if( ( resource == null ) && ( collection == null ) ) {
-            throw( new BuildException( "Missing parameter: either resource or collection should be specified" ) );
+        // Ensure that either resource or collection is provided
+        if ((resource == null) && (collection == null)) {
+            throw new BuildException("Missing parameter: either resource or collection should be specified");
         }
 
+        // Register the database
         registerDatabase();
 
         try {
-            log( "Get base collection: " + uri, Project.MSG_DEBUG );
-            final Collection base = DatabaseManager.getCollection( uri, user, password );
+            log("Get base collection: " + uri, Project.MSG_DEBUG);
 
-            if( base == null ) {
+            // Retrieve the base collection from the database
+            final Collection base = DatabaseManager.getCollection(uri, user, password);
+
+            if (base == null) {
+                // If the collection is not found, log the error or throw an exception
                 final String msg = "Collection " + uri + " could not be found.";
-
-                if( failonerror ) {
-                    throw( new BuildException( msg ) );
+                if (failonerror) {
+                    throw new BuildException(msg);
                 } else {
-                    log( msg, Project.MSG_ERR );
+                    log(msg, Project.MSG_ERR);
                 }
-
             } else {
-                log( "Create collection management service for collection " + base.getName(), Project.MSG_DEBUG );
+                // Create the service for managing collections
+                log("Create collection management service for collection " + base.getName(), Project.MSG_DEBUG);
                 final EXistCollectionManagementService service = base.getService(EXistCollectionManagementService.class);
 
-                if( resource != null ) {
-                    log( "Copying resource: " + resource, Project.MSG_INFO );
-                    final Resource res = base.getResource( resource );
+                // If resource is provided, copy the resource
+                if (resource != null) {
+                    log("Copying resource: " + resource, Project.MSG_INFO);
+                    final Resource res = base.getResource(resource);
 
-                    if( res == null ) {
+                    if (res == null) {
+                        // If resource not found, log the error or throw an exception
                         final String msg = "Resource " + resource + " not found.";
-
-                        if( failonerror ) {
-                            throw( new BuildException( msg ) );
+                        if (failonerror) {
+                            throw new BuildException(msg);
                         } else {
-                            log( msg, Project.MSG_ERR );
+                            log(msg, Project.MSG_ERR);
                         }
                     } else {
-
-                        //XmldbURI resource = XmldbURI.create(resource);
-                        service.copyResource( XmldbURI.xmldbUriFor( resource ), XmldbURI.xmldbUriFor( destination ), XmldbURI.xmldbUriFor( name ) );
+                        // Perform the resource copy operation
+                        service.copyResource(XmldbURI.xmldbUriFor(resource), XmldbURI.xmldbUriFor(destination), XmldbURI.xmldbUriFor(name));
                     }
 
                 } else {
-                    log( "Copying collection: " + collection, Project.MSG_INFO );
-                    service.copy( XmldbURI.xmldbUriFor( collection ), XmldbURI.xmldbUriFor( destination ), XmldbURI.xmldbUriFor( name ) );
+                    // If collection is provided, copy the entire collection
+                    log("Copying collection: " + collection, Project.MSG_INFO);
+                    service.copy(XmldbURI.xmldbUriFor(collection), XmldbURI.xmldbUriFor(destination), XmldbURI.xmldbUriFor(name));
                 }
             }
-        }
-        catch( final XMLDBException e ) {
-            final String msg = "XMLDB exception during copy: " + e.getMessage();
 
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+        } catch (final XMLDBException e) {
+            // Handle XMLDB exception
+            final String msg = "XMLDB exception during copy: " + e.getMessage();
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
 
-        }
-        catch( final URISyntaxException e ) {
+        } catch (final URISyntaxException e) {
+            // Handle URI syntax exception
             final String msg = "URI syntax exception: " + e.getMessage();
-
-            if( failonerror ) {
-                throw( new BuildException( msg, e ) );
+            if (failonerror) {
+                throw new BuildException(msg, e);
             } else {
-                log( msg, e, Project.MSG_ERR );
+                log(msg, e, Project.MSG_ERR);
             }
         }
     }
+
 
 
     /**
@@ -143,12 +161,18 @@ public class XMLDBCopyTask extends AbstractXMLDBTask
     }
 
 
+    /**
+     * @param destination set for this object
+     */
     public void setDestination(final String destination )
     {
         this.destination = destination;
     }
 
 
+    /**
+     * @param name set for this object
+     */
     public void setName(final String name )
     {
         this.name = name;

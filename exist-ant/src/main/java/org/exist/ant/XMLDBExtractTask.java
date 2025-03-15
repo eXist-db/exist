@@ -57,55 +57,68 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     private boolean overwrite = false;
 
 
+    /**
+     * Executes the task of extracting a resource or a collection from an XMLDB collection.
+     * This method checks the provided collection URI and resource, and either extracts
+     * a single resource or an entire collection based on the parameters.
+     *
+     * @throws BuildException If there is an error during the execution, such as a missing collection or resource.
+     */
+    
     @Override
     public void execute() throws BuildException {
+        // Check if the URI for the XMLDB collection is specified
         if (uri == null) {
-
+            // If the URI is missing and failonerror flag is true, throw an exception
             if (failonerror) {
                 throw (new BuildException("You need to specify an XMLDB collection URI"));
             }
-
         } else {
+            // Register the database connection before proceeding
             registerDatabase();
 
             try {
+                // Attempt to retrieve the base collection from the database using the URI, user, and password
                 final Collection base = DatabaseManager.getCollection(uri, user, password);
 
+                // Check if the collection exists
                 if (base == null) {
                     throw (new BuildException("Collection " + uri + " could not be found."));
                 }
 
+                // If a resource is specified and destination directory is not specified, extract the resource
                 if ((resource != null) && (destDir == null)) {
-
-                    // extraction of a single resource
                     log("Extracting resource: " + resource + " to " + destFile.toAbsolutePath().toString(), Project.MSG_INFO);
+
+                    // Try to get the resource from the collection
                     final Resource res = base.getResource(resource);
 
+                    // If the resource is not found, handle it accordingly
                     if (res == null) {
                         final String msg = "Resource " + resource + " not found.";
-
                         if (failonerror) {
                             throw (new BuildException(msg));
                         } else {
                             log(msg, Project.MSG_ERR);
                         }
                     } else {
+                        // Write the resource to the destination file
                         writeResource(res, destFile);
                     }
 
                 } else {
-
-                    // extraction of a collection
+                    // Otherwise, extract the entire collection
                     extractResources(base, null);
 
+                    // If subcollections are specified, extract them as well
                     if (subcollections) {
                         extractSubCollections(base, null);
                     }
                 }
 
             } catch (final XMLDBException e) {
+                // Handle XMLDB exceptions (e.g., errors during collection/resource retrieval)
                 final String msg = "XMLDB exception caught while executing query: " + e.getMessage();
-
                 if (failonerror) {
                     throw (new BuildException(msg, e));
                 } else {
@@ -113,8 +126,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
                 }
 
             } catch (final IOException e) {
+                // Handle IO exceptions (e.g., issues writing the destination file)
                 final String msg = "XMLDB exception caught while writing destination file: " + e.getMessage();
-
                 if (failonerror) {
                     throw (new BuildException(msg, e));
                 } else {
@@ -259,17 +272,38 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         }
     }
 
+    /**
+     * Retrieves a Writer to write the content of an XMLResource to a destination.
+     * If the destination is a directory, the content will be written to a file
+     * named after the resource's ID. Otherwise, the content will be written
+     * directly to the specified destination file.
+     *
+     * @param res The XMLResource to write to the destination.
+     * @param dest The destination path (either a file or a directory).
+     * @return A Writer that can be used to write the resource content.
+     * @throws XMLDBException If there is an error with the XMLDB resource.
+     * @throws IOException If there is an error while creating or writing to the file.
+     */
     private Writer getWriter(XMLResource res, Path dest) throws XMLDBException, IOException {
         final Writer writer;
+
+        // Check if the destination is a directory
         if (Files.isDirectory(dest)) {
+            // If it is a directory, create a new file inside the directory using the resource's ID as the file name
             final Path file = dest.resolve(res.getId());
+            // Create a BufferedWriter for the new file using UTF-8 encoding
             writer = Files.newBufferedWriter(file, UTF_8);
 
         } else {
+            // If it's not a directory, use the destination file directly
+            // Create a BufferedWriter for the destination file
             writer = Files.newBufferedWriter(destFile, UTF_8);
         }
+        
+        // Return the writer that can be used to write the resource's content
         return writer;
     }
+
 
     /**
      * Extract single binary resource.
@@ -310,14 +344,30 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
         }
     }
 
+    /**
+     * Sets the resource for this object.
+     * 
+     * @param resource The resource to set for this object
+     */
     public void setResource(final String resource) {
         this.resource = resource;
     }
 
+
+    /**
+     * Set the path for the destination file
+     * 
+     * @param destFile set the destination file
+     */
     public void setDestFile(final File destFile) {
         this.destFile = destFile.toPath();
     }
 
+    /**
+     * Set the path for the destination directory
+     * 
+     * @param destDir set the destination directory
+     */
     public void setDestDir(final File destDir) {
         this.destDir = destDir.toPath();
     }
@@ -334,14 +384,29 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
     public void setType(final String type) {
     }
 
+    /**
+     * Set if there will be created directories or not
+     * 
+     * @param createdirectories True to create it, false otherwise
+     */
     public void setCreatedirectories(final boolean createdirectories) {
         this.createdirectories = createdirectories;
     }
 
+    /**
+     * Set if there will be created subcollections or not
+     * 
+     * @param subcollections True to create it, false otherwise
+     */
     public void setSubcollections(final boolean subcollections) {
         this.subcollections = subcollections;
     }
-
+    
+    /**
+     * Set if there will be overwtited files or not
+     * 
+     * @param overwrite True to create it, false otherwise
+     */
     public void setOverwrite(final boolean overwrite) {
         this.overwrite = overwrite;
     }

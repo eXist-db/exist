@@ -39,45 +39,62 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
 {
     private String resource = null;
 
+    /**
+     * Evaluates whether a specified XMLDB collection and optional resource exist.
+     * This method checks if the collection URI is valid and if a specific resource
+     * exists within the collection.
+     *
+     * @return true if the collection and resource (if specified) exist, false otherwise.
+     * @throws BuildException If there is an error during execution.
+     */
     @Override
     public boolean eval() throws BuildException
     {
+        // Initialize the variable to track if the collection/resource exists
         boolean exist = false;
 
-        if( uri == null ) {
-            throw( new BuildException( "You have to specify an XMLDB collection URI" ) );
+        // Check if the URI for the XMLDB collection is specified
+        if (uri == null) {
+            throw (new BuildException("You have to specify an XMLDB collection URI"));
         }
 
+        // Register the database connection before attempting to retrieve the collection
         registerDatabase();
 
         try {
-            log( "Checking collection: " + uri, Project.MSG_INFO );
-            final Collection base = DatabaseManager.getCollection( uri, user, password );
+            // Log the process of checking the collection at the specified URI
+            log("Checking collection: " + uri, Project.MSG_INFO);
 
-            if( base != null ) {
-                log( "Base collection found", Project.MSG_DEBUG );
-                exist = true;
+            // Try to get the base collection from the database using the URI, user, and password
+            final Collection base = DatabaseManager.getCollection(uri, user, password);
+
+            // Check if the base collection exists
+            if (base != null) {
+                log("Base collection found", Project.MSG_DEBUG);
+                exist = true; // Set exist to true if the collection is found
             }
 
-            if( ( base != null ) && ( resource != null ) ) {
-                log( "Checking resource: " + resource, Project.MSG_INFO );
-                final Resource res = base.getResource( resource );
+            // If the collection exists and a resource is specified, check if the resource exists
+            if ((base != null) && (resource != null)) {
+                log("Checking resource: " + resource, Project.MSG_INFO);
+                final Resource res = base.getResource(resource);
 
-                if( res == null ) {
-                    log( "Resource not found", Project.MSG_DEBUG );
+                // If the resource is not found, set exist to false
+                if (res == null) {
+                    log("Resource not found", Project.MSG_DEBUG);
                     exist = false;
                 }
             }
 
         }
-        catch( final XMLDBException e ) {
-
-            // ignore is false already
-            log( "Resource or collection cannot be retrieved", Project.MSG_DEBUG );
+        catch (final XMLDBException e) {
+            // If an XMLDB exception occurs, log the issue and set exist to false
+            log("Resource or collection cannot be retrieved", Project.MSG_DEBUG);
             exist = false;
         }
 
-        return( exist );
+        // Return true if both the collection and resource (if specified) exist, otherwise false
+        return (exist);
     }
 
 
