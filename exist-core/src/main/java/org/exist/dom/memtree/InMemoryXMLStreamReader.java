@@ -576,7 +576,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
         @Override
         public Iterator getPrefixes(final String namespaceURI) {
             final Set<String> prefixes = byUri.get(namespaceURI);
-            return Objects.requireNonNullElse(prefixes, Collections.EMPTY_SET).iterator();
+            return Objects.requireNonNullElseGet(prefixes, Collections::emptySet).iterator();
         }
     }
 }

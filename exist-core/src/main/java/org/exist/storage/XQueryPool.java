@@ -113,11 +113,8 @@ public class XQueryPool implements BrokerPoolService {
         }
 
         cache.asMap().compute(source, (key, value) -> {
-            final Deque<CompiledXQuery> deque;
-            deque = Objects.requireNonNullElseGet(value, () -> new ArrayDeque<>(maxQueryStackSize));
-
+            final Deque<CompiledXQuery> deque = Objects.requireNonNullElseGet(value, () -> new ArrayDeque<>(maxQueryStackSize));
             deque.offerFirst(compiledXQuery);
-
             return deque;
         });
     }
