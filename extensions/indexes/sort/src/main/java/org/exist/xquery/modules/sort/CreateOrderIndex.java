@@ -102,14 +102,8 @@ public class CreateOrderIndex extends BasicFunction {
         if (args[3].getItemCount() > 0) {
             final NodeValue optionValue = (NodeValue) args[3].itemAt(0);
             final Element options = (Element) optionValue.getNode();
-            String option = options.getAttribute("order");
-            if (option != null) {
-                descending = "descending".equalsIgnoreCase(option);
-            }
-            option = options.getAttribute("empty");
-            if (option != null) {
-                emptyLeast = "least".equalsIgnoreCase(option);
-            }
+            descending = "descending".equalsIgnoreCase(options.getAttribute("order"));
+            emptyLeast = "least".equalsIgnoreCase(options.getAttribute("empty"));
         }
 
         // create the input list to be sorted below

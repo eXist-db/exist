@@ -86,9 +86,9 @@ public class PlainTextIndexConfig {
         
         /* Check <fields> and retrieve name, boost and value */
         
-        List<PlainTextField> fields = getFields();
+        final List<PlainTextField> fields = getFields();
 
-        NodeList nodeList = descriptor.getNode().getChildNodes();
+        final NodeList nodeList = descriptor.getNode().getChildNodes();
         int length = nodeList.getLength();
 
         for (int i = 0; i < length; i++) {
@@ -127,7 +127,7 @@ public class PlainTextIndexConfig {
                     attributeNode = nnm.getNamedItem("store");
                     if (attributeNode != null) {
                     	String val = attributeNode.getNodeValue();
-                        boolean store = val != null && "yes".equalsIgnoreCase(val);
+                        boolean store = "yes".equalsIgnoreCase(val);
                         field.setStore(store);
                     }
 

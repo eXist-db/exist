@@ -175,7 +175,7 @@ public class HttpServletRequestAdapter implements HttpRequest {
             return getGetParameters(key);
         }
 
-        if ("POST".equals(request.getMethod()) && request.getContentType() != null && "application/x-www-form-urlencoded".equals(request.getContentType())) {
+        if ("POST".equals(request.getMethod()) && "application/x-www-form-urlencoded".equals(request.getContentType())) {
             if (formFields == null) {
 
                 try {

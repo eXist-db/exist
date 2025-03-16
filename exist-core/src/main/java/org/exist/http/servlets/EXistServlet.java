@@ -581,7 +581,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         final String method = req.getMethod();
-        if ("PATCH".equals(method)) {
+        if ("PATCH".equalsIgnoreCase(method)) {
             this.doPatch(req, resp);
             return;
         }

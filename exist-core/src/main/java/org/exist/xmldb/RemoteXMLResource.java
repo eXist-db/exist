@@ -156,7 +156,8 @@ public class RemoteXMLResource
 
     @Override
     public String getId() throws XMLDBException {
-        return id.map(x -> "1".equals(x) ? getDocumentId() : getDocumentId() + '_' + id).orElse(getDocumentId());
+        final String documentId = getDocumentId();
+        return id.map(x -> "1".equals(x) ? documentId : documentId + '_' + id).orElse(documentId);
     }
 
     @Override
