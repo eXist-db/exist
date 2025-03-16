@@ -202,7 +202,7 @@ public class FunctionSignature {
     }
 
     public String getDeprecated() {
-        if (deprecated != null && deprecated.length() > 0) {
+        if (deprecated != null && !deprecated.isEmpty()) {
             return deprecated + DEPRECATION_REMOVAL_MESSAGE;
         } else {
             return null;

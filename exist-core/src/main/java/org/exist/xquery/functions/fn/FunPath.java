@@ -221,7 +221,7 @@ public class FunPath extends BasicFunction {
             getPathValues(parent, values);
         }
 
-        if (value.toString().length() > 0) {
+        if (!value.toString().isEmpty()) {
             values.add(value.toString());
         }
     }

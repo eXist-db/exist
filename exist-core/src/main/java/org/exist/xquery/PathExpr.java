@@ -208,7 +208,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         }
 
         Sequence result = null;
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             //we will filter out nodes from the contextSequence
@@ -438,7 +438,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public String toString() {
         final StringBuilder result = new StringBuilder();
         Expression next = null;
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             result.append("()");
         } else {
             int count = 0;
@@ -467,7 +467,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public int returnsType() {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             //Not so simple. ITEM should be re-tuned in some circumstances that have to be determined
             return Type.NODE;
         }
@@ -476,7 +476,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public Cardinality getCardinality() {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return Cardinality.EMPTY_SEQUENCE;
         }
         return (steps.getLast()).getCardinality();
@@ -492,14 +492,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     public void replaceLastExpression(final Expression s) {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return;
         }
         steps.set(steps.size() - 1, s);
     }
 
     public String getLiteralValue() {
-        if (steps.size() == 0) {
+        if (steps.isEmpty()) {
             return "";
         }
         final Expression next = steps.getFirst();
@@ -534,14 +534,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     @Override
     public void setPrimaryAxis(final int axis) {
-        if (steps.size() > 0) {
+        if (!steps.isEmpty()) {
             steps.getFirst().setPrimaryAxis(axis);
         }
     }
 
     @Override
     public int getPrimaryAxis() {
-        if (steps.size() > 0) {
+        if (!steps.isEmpty()) {
             return steps.getFirst().getPrimaryAxis();
         }
         return Constants.UNKNOWN_AXIS;

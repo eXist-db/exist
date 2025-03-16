@@ -509,7 +509,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
     @Override
     public XMLString getXMLText() {
         if(state == CHARACTERS || state == COMMENT || state == CDATA) {
-            if(text.length() == 0) {
+            if(text.isEmpty()) {
                 AbstractCharacterData.readData(nodeId, current, text);
             }
             return text;
@@ -540,7 +540,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
     @Override
     public int getTextLength() {
         if(state == CHARACTERS || state == COMMENT || state == CDATA) {
-            if(text.length() == 0) {
+            if(text.isEmpty()) {
                 return AbstractCharacterData.getStringLength(nodeId, current);
             }
             return text.length();

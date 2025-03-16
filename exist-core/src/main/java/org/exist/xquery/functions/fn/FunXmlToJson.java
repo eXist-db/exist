@@ -173,7 +173,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeEndObject();
                                 break;
                             case "null":
-                                if (tempStringBuilder.length() != 0) {
+                                if (!tempStringBuilder.isEmpty()) {
                                     throw new XPathException(this, ErrorCodes.FOJS0006, "Invalid XML representation of JSON. Found non-empty XML null element.");
                                 }
                                 jsonGenerator.writeNull();

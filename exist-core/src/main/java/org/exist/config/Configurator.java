@@ -1019,7 +1019,7 @@ public class Configurator {
                         }
                     }
                     
-                    if (value != null && value.length() > 0) {
+                    if (value != null && !value.isEmpty()) {
                         if (simple) {
                             final QName qnSimple = new QName(element.getAnnotation().value(), Configuration.NS);
                             serializer.startElement(qnSimple, null);
@@ -1280,7 +1280,7 @@ public class Configurator {
         }
         
         final String data = writer.toString();
-        if (data == null || data.length() == 0) {
+        if (data == null || data.isEmpty()) {
             return null;
         }
         

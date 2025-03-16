@@ -111,11 +111,11 @@ public class DynamicPIConstructor extends NodeConstructor {
                 for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
                     final Item next = i.nextItem();
-                    if(buf.length() > 0)
+                    if(!buf.isEmpty())
                         {buf.append(' ');}
                     buf.append(next.getStringValue());
                 }
-                while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
+                while (!buf.isEmpty() && Character.isWhitespace(buf.charAt(0)))
                     buf.deleteCharAt(0);
                 contentString = buf.toString();
             }

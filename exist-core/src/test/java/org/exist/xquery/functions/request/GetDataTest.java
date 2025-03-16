@@ -59,7 +59,7 @@ public class GetDataTest extends RESTTest {
     private static Collection root;
 
     private static String wrapInElement(String value) {
-        return value == null || value.length() == 0 ? "<" + CONTAINER_ELEMENT_NAME + "/>" : "<" + CONTAINER_ELEMENT_NAME + ">" + value + "</" + CONTAINER_ELEMENT_NAME + ">";
+        return value == null || value.isEmpty() ? "<" + CONTAINER_ELEMENT_NAME + "/>" : "<" + CONTAINER_ELEMENT_NAME + ">" + value + "</" + CONTAINER_ELEMENT_NAME + ">";
     }
 
     @BeforeClass

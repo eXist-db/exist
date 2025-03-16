@@ -197,7 +197,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getSymbol(final String name) {
-        if(name.length() == 0) {
+        if(name.isEmpty()) {
             throw new IllegalArgumentException("name is empty");
         }
         return (short) localNameSymbols.getId(name);
@@ -211,7 +211,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
      */
     //TODO the (short) cast is nasty - should consider using either short or int end to end
     public synchronized short getNSSymbol(final String ns) {
-        if(ns == null || ns.length() == 0) {
+        if(ns == null || ns.isEmpty()) {
             return 0;
         }
         return (short) namespaceSymbols.getId(ns);

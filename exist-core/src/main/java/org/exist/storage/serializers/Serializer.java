@@ -1274,7 +1274,7 @@ public abstract class Serializer implements XMLReader {
                 final String baseUri = ((Document) item).getBaseURI();
 
                 attrs = new AttrList();
-                if (baseUri != null && baseUri.length() > 0) {
+                if (baseUri != null && !baseUri.isEmpty()) {
                     attrs.addAttribute(ATTR_URI_QNAME, baseUri);
                 }
                 if (((Document) item).getDocumentElement() == null) {
@@ -1288,13 +1288,13 @@ public abstract class Serializer implements XMLReader {
                 attrs = new AttrList();
 
                 String attributeValue;
-                if ((attributeValue = item.getNode().getLocalName()) != null && attributeValue.length() > 0) {
+                if ((attributeValue = item.getNode().getLocalName()) != null && !attributeValue.isEmpty()) {
                     attrs.addAttribute(ATTR_LOCAL_QNAME, attributeValue);
                 }
-                if ((attributeValue = item.getNode().getNamespaceURI()) != null && attributeValue.length() > 0) {
+                if ((attributeValue = item.getNode().getNamespaceURI()) != null && !attributeValue.isEmpty()) {
                     attrs.addAttribute(ATTR_TNS_QNAME, attributeValue);
                 }
-                if ((attributeValue = item.getNode().getPrefix()) != null && attributeValue.length() > 0) {
+                if ((attributeValue = item.getNode().getPrefix()) != null && !attributeValue.isEmpty()) {
                     attrs.addAttribute(ATTR_PREFIX_QNAME, attributeValue);
                 }
 

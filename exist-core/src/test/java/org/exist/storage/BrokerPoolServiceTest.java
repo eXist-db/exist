@@ -94,7 +94,7 @@ public class BrokerPoolServiceTest {
                 final List<BackgroundJobsBrokerPoolService.TimestampAndId> backgroundJobResult = future.get();
 
                 // should contain at least 1 result
-                assertTrue(backgroundJobResult.size() >= 1);
+                assertTrue(!backgroundJobResult.isEmpty());
 
                 totalBackgroundJobResults += backgroundJobResult.size();
 

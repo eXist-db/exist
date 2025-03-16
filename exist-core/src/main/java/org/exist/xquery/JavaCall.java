@@ -131,7 +131,7 @@ public class JavaCall extends Function {
                     }
                 }
             }
-			if (candidateMethods.size() == 0) {
+			if (candidateMethods.isEmpty()) {
 				final String message = "no constructor found with " + argCount + " arguments"; 
 				throw new XPathException(this,
 					message,
@@ -156,7 +156,7 @@ public class JavaCall extends Function {
                     }
                 }
             }
-			if (candidateMethods.size() == 0) {
+			if (candidateMethods.isEmpty()) {
 				final String message = "no method matches " + name + " with " + argCount + " arguments"; 
 				throw new XPathException(this,
 					message,

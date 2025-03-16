@@ -91,7 +91,7 @@ public class BinaryDoc extends BasicFunction {
     private static String supportedAlgorithms() {
         final StringBuilder builder = new StringBuilder();
         for (final DigestType digestType : DigestType.values()) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(", ");
             }
             builder.append(digestType.getCommonNames()[0]);

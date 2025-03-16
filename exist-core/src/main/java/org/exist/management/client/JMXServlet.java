@@ -141,7 +141,7 @@ public class JMXServlet extends HttpServlet {
             } else {
                 root = client.generateXMLReport(null, new String[]{"sanity"});
             }
-        } else if (operation != null && operation.length() > 0) {
+        } else if (operation != null && !operation.isEmpty()) {
             final String mbean = request.getParameter("mbean");
             if (mbean == null) {
                 throw new ServletException("to call an operation, you also need to specify parameter 'mbean'");

@@ -141,14 +141,14 @@ public class LockToken {
         final LockScope scope = LockScope.valueOf(istream.readByte());
 
         String owner = istream.readUTF();
-        if(owner.length() == 0) {
+        if(owner.isEmpty()) {
             owner = null;
         }
 
         final long timeout = istream.readLong();
 
         String token = istream.readUTF();
-        if(token.length() == 0) {
+        if(token.isEmpty()) {
             token = null;
         }
 

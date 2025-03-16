@@ -107,7 +107,7 @@ public class XMLNames {
      * @return true if the string is a valid XML NCName
      */
     public static  boolean isNCName(final CharSequence s) {
-        if (s == null || s.length() == 0) {
+        if (s == null || s.isEmpty()) {
             return false;
         }
         int firstCodePoint = Character.codePointAt(s, 0);
@@ -125,7 +125,7 @@ public class XMLNames {
     }
 
     public static boolean isName(final CharSequence s) {
-        if (s == null || s.length() == 0) {
+        if (s == null || s.isEmpty()) {
             return false;
         }
         int firstCodePoint = Character.codePointAt(s, 0);
@@ -143,7 +143,7 @@ public class XMLNames {
     }
 
     public static boolean isNmToken(final CharSequence s) {
-        if (s == null || s.length() == 0) {
+        if (s == null || s.isEmpty()) {
             return false;
         }
         for(int i = 0; i < s.length(); ) {

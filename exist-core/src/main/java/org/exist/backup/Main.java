@@ -346,7 +346,7 @@ public class Main {
         }
 
         public boolean hasProblems() {
-            return allProblems != null && allProblems.length() > 0;
+            return allProblems != null && !allProblems.isEmpty();
         }
 
         public String getAllProblems() {

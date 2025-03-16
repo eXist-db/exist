@@ -231,7 +231,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
 
             // Get a RequestDispatcher, either from the servlet context or the request
             RequestDispatcher dispatcher;
-            if (servletName != null && servletName.length() > 0) {
+            if (servletName != null && !servletName.isEmpty()) {
                 dispatcher = getServletContext().getNamedDispatcher(servletName);
             } else {
                 LOG.debug("Dispatching to {}", path);

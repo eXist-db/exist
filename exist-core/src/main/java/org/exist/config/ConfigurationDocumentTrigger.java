@@ -432,7 +432,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             }
         }
 
-        if(name.length() > 0) {
+        if(!name.isEmpty()) {
             return name.toString().trim();
         } else {
             return null;

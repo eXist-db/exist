@@ -945,7 +945,7 @@ public class XQueryURLRewrite extends HttpServlet {
         context.declareVariable("exist:prefix", prefix == null ? "" : prefix);
         request.setAttribute("$exist:prefix", prefix == null ? "" : prefix);
         String path;
-        if (sourceInfo.controllerPath.length() > 0 && !"/".equals(sourceInfo.controllerPath)) {
+        if (!sourceInfo.controllerPath.isEmpty() && !"/".equals(sourceInfo.controllerPath)) {
             path = request.getInContextPath().substring(sourceInfo.controllerPath.length());
         } else {
             path = request.getInContextPath();
@@ -1008,11 +1008,11 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         public boolean hasViews() {
-            return views.size() > 0;
+            return !views.isEmpty();
         }
 
         public boolean hasErrorHandlers() {
-            return errorHandlers != null && errorHandlers.size() > 0;
+            return errorHandlers != null && !errorHandlers.isEmpty();
         }
 
         public boolean useCache() {
@@ -1197,7 +1197,7 @@ public class XQueryURLRewrite extends HttpServlet {
         @Override
         public String getParameter(final String name) {
             final List<String> paramValues = addedParams.get(name);
-            if (paramValues != null && paramValues.size() > 0) {
+            if (paramValues != null && !paramValues.isEmpty()) {
                 return paramValues.getFirst();
             }
             return null;

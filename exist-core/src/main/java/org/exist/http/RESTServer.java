@@ -827,7 +827,7 @@ public class RESTServer {
                         }
 
                         if ((option = root.getAttribute(Session.xmlKey())) != null
-                                && option.length() > 0) {
+                                && !option.isEmpty()) {
                             outputProperties.setProperty(
                                     Serializer.PROPERTY_SESSION_ID, option);
                         }

@@ -1139,7 +1139,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     {
         if( Type.subTypeOf( lv.getType(), Type.STRING ) || ( lv.getType() == Type.ANY_ATOMIC_TYPE) ) {
 
-            if( lv.getStringValue().length() == 0 ) {
+            if(lv.getStringValue().isEmpty()) {
                 return( true );
             }
         }

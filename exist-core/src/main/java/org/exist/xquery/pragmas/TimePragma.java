@@ -269,7 +269,7 @@ public class TimePragma extends AbstractPragma {
         }
 
         if (minutes > 0) {
-            if (humane.length() > 0) {
+            if (!humane.isEmpty()) {
                 humane.append(", ");
                 if (seconds == 0 && milliseconds == 0 && nanoseconds == 0) {
                     humane.append("and ");
@@ -283,7 +283,7 @@ public class TimePragma extends AbstractPragma {
         }
 
         if (seconds > 0) {
-            if (humane.length() > 0) {
+            if (!humane.isEmpty()) {
                 humane.append(", ");
                 if (milliseconds == 0 && nanoseconds == 0) {
                     humane.append("and ");
@@ -297,7 +297,7 @@ public class TimePragma extends AbstractPragma {
         }
 
         if (milliseconds > 0) {
-            if (humane.length() > 0) {
+            if (!humane.isEmpty()) {
                 humane.append(", ");
                 if (nanoseconds == 0) {
                     humane.append("and ");
@@ -308,7 +308,7 @@ public class TimePragma extends AbstractPragma {
         }
 
         if (nanoseconds > 0) {
-            if (humane.length() > 0) {
+            if (!humane.isEmpty()) {
                 humane.append(", and ");
             }
 

@@ -679,7 +679,7 @@ public class Type {
 
     public static boolean unionMembersHaveSuperType(final int unionType, final int supertype) {
         final IntArraySet members = unionTypes.get(unionType);
-        if (members == null || members.size() == 0) {
+        if (members == null || members.isEmpty()) {
             return false;
         }
 

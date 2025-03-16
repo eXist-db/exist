@@ -283,7 +283,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		Attributes atts)
 		throws SAXException {
 		// save accumulated character content
-		if (inModification && charBuf.length() > 0) {
+		if (inModification && !charBuf.isEmpty()) {
 //            String normalized = charBuf.toString();
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 					charBuf.toString().trim();
@@ -581,7 +581,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	@Override
 	public void endElement(String namespaceURI, String localName, String qName)
 		throws SAXException {
-		if (inModification && charBuf.length() > 0) {
+		if (inModification && !charBuf.isEmpty()) {
 			final String normalized = preserveWhitespace ? charBuf.toString() :
 					charBuf.toString().trim();
 			if (!normalized.isEmpty()) {
@@ -692,7 +692,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	@Override
 	public void processingInstruction(String target, String data)
 		throws SAXException {
-		if (inModification && charBuf.length() > 0) {
+		if (inModification && !charBuf.isEmpty()) {
 			final String normalized =
 					charBuf.toString().trim();
 			if (!normalized.isEmpty()) {
@@ -795,7 +795,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
-		if (inModification && charBuf.length() > 0) {
+		if (inModification && !charBuf.isEmpty()) {
 			final String normalized =
 					charBuf.toString().trim();
 			if (!normalized.isEmpty()) {

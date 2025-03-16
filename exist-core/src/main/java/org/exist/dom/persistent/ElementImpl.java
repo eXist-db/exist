@@ -174,7 +174,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
         if(namespaceMappings == null) {
             return false;
         }
-        return namespaceMappings.size() > 0;
+        return !namespaceMappings.isEmpty();
     }
 
     /**
@@ -257,7 +257,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
             byte signature = (byte) ((Signatures.Elem << 0x5) | idSizeType);
             int prefixLen = 0;
             if(hasNamespace) {
-                if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+                if(nodeName.getPrefix() != null && !nodeName.getPrefix().isEmpty()) {
                     //TODO(AR) could store the prefix from the symbol table
                     prefixLen = UTF8.encoded(nodeName.getPrefix());
                 }
@@ -294,7 +294,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                 next += LENGTH_NS_ID;
                 ByteConversion.shortToByte((short) prefixLen, data, next);
                 next += LENGTH_PREFIX_LENGTH;
-                if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0) {
+                if(nodeName.getPrefix() != null && !nodeName.getPrefix().isEmpty()) {
                     UTF8.encode(nodeName.getPrefix(), data, next);
                 }
                 next += prefixLen;
@@ -1409,7 +1409,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                 namespaces.add(namespace);
             }
         }
-        if(nodeName.getNamespaceURI().length() > 0
+        if(!nodeName.getNamespaceURI().isEmpty()
             && (!namespaces.contains(nodeName.getNamespaceURI()))) {
             buf.append(' ')
                 .append(XMLConstants.XMLNS_ATTRIBUTE)

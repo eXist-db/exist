@@ -195,7 +195,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     private void hostNameToPackageName(String host, final StringBuilder buffer) {
         while (host != null && !host.isEmpty()) {
-            if (buffer.length() > 0) {
+            if (!buffer.isEmpty()) {
                 buffer.append('.');
             }
 

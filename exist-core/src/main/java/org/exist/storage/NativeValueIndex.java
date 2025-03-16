@@ -496,7 +496,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     }
 
                     //append the data from the new list
-                    if (newGIDList.size() > 0) {
+                    if (!newGIDList.isEmpty()) {
                         final int gidsCount = newGIDList.size();
 
                         //Don't forget this one
@@ -812,7 +812,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
             }
 
-            if (term.length() > 0) {
+            if (!term.isEmpty()) {
                 startTerm = new StringValue(term.toString());
                 LOG.debug("Match will begin index scan at '{}'", startTerm);
             } else {

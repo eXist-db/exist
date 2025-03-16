@@ -39,7 +39,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     private NodePath path;
     
     public GeneralRangeIndexSpec(Map<String, String> namespaces, String pathStr, String typeStr) throws DatabaseConfigurationException {
-        if(pathStr.length() == 0)
+        if(pathStr.isEmpty())
             {throw new DatabaseConfigurationException("The path attribute is required in index.create");}
         path = new NodePath(namespaces, pathStr, false);
         try {

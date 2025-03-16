@@ -318,7 +318,7 @@ public class Optimizer extends DefaultExpressionVisitor {
     @Override
     public void visitVariableReference(final VariableReference ref) {
         final String ns = ref.getName().getNamespaceURI();
-        if (ns != null && ns.length() > 0) {
+        if (ns != null && !ns.isEmpty()) {
 
             final Module[] modules = context.getModules(ns);
             if (isNotEmpty(modules)) {

@@ -858,7 +858,7 @@ public class InteractiveClient {
                     final StringTokenizer tok = new StringTokenizer(groups, " ,");
                     while (tok.hasMoreTokens()) {
                         final String group = tok.nextToken();
-                        if (group.length() > 0) {
+                        if (!group.isEmpty()) {
                             user.addGroup(group);
                         }
                     }
@@ -1034,7 +1034,7 @@ public class InteractiveClient {
                 try {
                     while (true) {
                         final String lastLine = console.readLine("| ");
-                        if (lastLine == null || lastLine.length() == 0) {
+                        if (lastLine == null || lastLine.isEmpty()) {
                             break;
                         }
                         command.append(lastLine);

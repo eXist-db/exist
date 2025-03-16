@@ -92,7 +92,7 @@ public class XQDocHelper {
         final String components[] = comment.trim().split("\\s+", 2);
         if(components != null && components.length == 2) {
             String var = components[0];
-            if (var.length() > 0 && var.charAt(0) == '$') {
+            if (!var.isEmpty() && var.charAt(0) == '$') {
                 var = var.substring(1);
             }
             parameters.put(var, components[1].trim());
