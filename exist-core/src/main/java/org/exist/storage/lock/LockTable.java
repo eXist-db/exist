@@ -726,7 +726,7 @@ public class LockTable {
         if (lockEventType == Acquired || lockEventType == Released) {
             builder
                     .append(". count=")
-                    .append(Integer.toString(count));
+                    .append(count);
         }
 
         return builder.toString();

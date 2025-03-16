@@ -54,7 +54,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
 
     public FileSystemBackupDescriptor(final Path root, final Path descriptor) throws FileNotFoundException {
         if (!FileUtils.fileName(descriptor).equals(BackupDescriptor.COLLECTION_DESCRIPTOR) || Files.isDirectory(descriptor) || !Files.isReadable(descriptor)) {
-            throw new FileNotFoundException(descriptor.toAbsolutePath().toString() + " is not a valid collection descriptor");
+            throw new FileNotFoundException(descriptor.toAbsolutePath() + " is not a valid collection descriptor");
         }
         this.descriptor = descriptor;
         this.root = root;

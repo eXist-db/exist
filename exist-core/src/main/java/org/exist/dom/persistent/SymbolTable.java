@@ -364,10 +364,10 @@ public class SymbolTable implements BrokerPoolService, Closeable {
             writeAll(os);
             fos.write(os.toByteArray());
         } catch(final FileNotFoundException e) {
-            throw new EXistException("File not found: " + this.getFile().toAbsolutePath().toString(), e);
+            throw new EXistException("File not found: " + this.getFile().toAbsolutePath(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while creating "
-                + this.getFile().toAbsolutePath().toString(), e);
+                + this.getFile().toAbsolutePath(), e);
         }
     }
 
@@ -394,10 +394,10 @@ public class SymbolTable implements BrokerPoolService, Closeable {
                 read(is);
             }
         } catch(final FileNotFoundException e) {
-            throw new EXistException("Could not read " + this.getFile().toAbsolutePath().toString(), e);
+            throw new EXistException("Could not read " + this.getFile().toAbsolutePath(), e);
         } catch(final IOException e) {
             throw new EXistException("IO error occurred while reading "
-                + this.getFile().toAbsolutePath().toString() + ": " + e.getMessage(), e);
+                + this.getFile().toAbsolutePath() + ": " + e.getMessage(), e);
         }
     }
 

@@ -78,7 +78,7 @@ public class Counters implements RawBackupSupport {
                         try {
                             counters.put(tokens[0], Long.parseLong(tokens[1]));
                         } catch (final NumberFormatException e) {
-                            throw new EXistException("Corrupt counter store file: " + store.toAbsolutePath().toString());
+                            throw new EXistException("Corrupt counter store file: " + store.toAbsolutePath());
                         }
                     }
                 }

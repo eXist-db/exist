@@ -1123,7 +1123,7 @@ public class RESTServer {
         } catch (final SAXParseException e) {
             throw new BadRequestException("Parsing exception at "
                     + e.getLineNumber() + "/" + e.getColumnNumber() + ": "
-                    + e.toString());
+                    + e);
         } catch (final TriggerException | LockException e) {
             throw new PermissionDeniedException(e.getMessage());
         } catch (final SAXException e) {
@@ -2186,11 +2186,11 @@ public class RESTServer {
         } catch (final SAXException e) {
             LOG.warn(e);
             throw new BadRequestException("Error while serializing xml: "
-                    + e.toString(), e);
+                    + e, e);
         } catch (final Exception e) {
             LOG.warn(e.getMessage(), e);
             throw new BadRequestException("Error while serializing xml: "
-                    + e.toString(), e);
+                    + e, e);
         }
     }
 
@@ -2258,7 +2258,7 @@ public class RESTServer {
                 writer.flush();
             }
         } catch (final IOException | XPathException | SAXException e) {
-            throw new BadRequestException("Error while serializing xml: " + e.toString(), e);
+            throw new BadRequestException("Error while serializing xml: " + e, e);
         } finally {
             broker.returnSerializer(serializer);
         }

@@ -293,7 +293,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                                                 .write(
                                                         bImage,
                                                         "jpg",
-                                                        Paths.get(thumbPath.toString()
+                                                        Paths.get(thumbPath
                                                                 + "/" + prefix
                                                                 + docImage.getFileURI()).toFile());
                                     } catch (Exception e) {

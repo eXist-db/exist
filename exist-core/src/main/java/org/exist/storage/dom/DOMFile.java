@@ -1119,7 +1119,7 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(").append(nodeId.toString()).append(")");
+                                buf.append("(").append(nodeId).append(")");
                                 final short attributes = ByteConversion.byteToShort(page.data, readOffset);
                                 buf.append(" children: ").append(children);
                                 buf.append(" attributes: ").append(attributes);
@@ -1153,7 +1153,7 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(").append(nodeId.toString()).append(")");
+                                buf.append("(").append(nodeId).append(")");
                                 String value = new String(page.data, readOffset, valueLength - (readOffset - pos), UTF_8);
                                 if (value.length() > 15) {
                                     value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
@@ -1185,7 +1185,7 @@ public class DOMFile extends BTree implements Lockable {
                                 final NodeId nodeId = ((NativeBroker)owner).getBrokerPool()
                                     .getNodeFactory().createFromData(dlnLen, page.data, readOffset);
                                 readOffset += nodeId.size();
-                                buf.append("(").append(nodeId.toString()).append(")");
+                                buf.append("(").append(nodeId).append(")");
                                 readOffset += Signatures.getLength(idSizeType);
                                 if (hasNamespace) {
                                     //Untested

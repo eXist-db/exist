@@ -554,7 +554,7 @@ public class LDAPRealm extends AbstractRealm {
 
         // get version
         final int revision = sid[0];
-        strSid.append(Integer.toString(revision));
+        strSid.append(revision);
 
         //next byte is the count of sub-authorities
         final int countSubAuths = sid[1] & 0xFF;

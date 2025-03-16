@@ -391,7 +391,7 @@ public class BlobStoreImpl implements BlobStore {
                 if (forRecovery) {
                     // we are trying to recover, but there is no existing Blob Store!
                     throw new FileNotFoundException("No Blob Store found at '"
-                            + persistentFile.toAbsolutePath().toString() + "' to recover!");
+                            + persistentFile.toAbsolutePath() + "' to recover!");
                 }
 
                 references = new ConcurrentHashMap<>();
@@ -663,7 +663,7 @@ public class BlobStoreImpl implements BlobStore {
 
         if (!validMagic) {
             throw new IOException("File was not recognised as a valid eXist-db Blob Store: "
-                    + file.toAbsolutePath().toString());
+                    + file.toAbsolutePath());
         }
 
         // check the version of the blob store format
@@ -673,7 +673,7 @@ public class BlobStoreImpl implements BlobStore {
 
         if (!validVersion) {
             throw new IOException("Blob Store file was version " + storedVersion + ", but required version "
-                    + BLOB_STORE_VERSION + ": " + file.toAbsolutePath().toString());
+                    + BLOB_STORE_VERSION + ": " + file.toAbsolutePath());
         }
     }
 

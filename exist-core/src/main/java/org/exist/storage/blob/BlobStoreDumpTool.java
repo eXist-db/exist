@@ -171,7 +171,7 @@ public class BlobStoreDumpTool {
 
         if (!validMagic) {
             throw new IOException("File was not recognised as a valid eXist-db Blob Store: "
-                    + persistentFile.toAbsolutePath().toString());
+                    + persistentFile.toAbsolutePath());
         }
 
         // check the version of the blob store format

@@ -90,8 +90,8 @@ public class DigestAuthenticator implements Authenticator {
 
 	private String createNonce(HttpServletRequest request) {
 		return MessageDigester.md5(request.getRemoteAddr() + ':'
-				+ Long.toString(System.currentTimeMillis()) + ':'
-				+ Integer.toString(hashCode()), false);
+				+ System.currentTimeMillis() + ':'
+				+ hashCode(), false);
 	}
 
 	private static void parseCredentials(Digest digest, String credentials) {

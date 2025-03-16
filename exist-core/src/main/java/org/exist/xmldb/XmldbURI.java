@@ -799,7 +799,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     //TODO: add unit test for this
     public XmldbURI prepend(final XmldbURI xmldbUri) {
         if (xmldbUri == null) {
-            throw new NullPointerException(toString() + " cannot start with null!");
+            throw new NullPointerException(this + " cannot start with null!");
         }
 
         //TODO : resolve URIs !!! xmldbUri.resolve(this)
@@ -809,11 +809,11 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     //TODO: add unit test for this
     public XmldbURI trimFromBeginning(final XmldbURI xmldbUri) {
         if (xmldbUri == null) {
-            throw new NullPointerException(toString() + " cannot start with null!");
+            throw new NullPointerException(this + " cannot start with null!");
         }
 
         if (!startsWith(xmldbUri)) {
-            throw new IllegalArgumentException(toString() + " does not start with " + xmldbUri.toString());
+            throw new IllegalArgumentException(this + " does not start with " + xmldbUri);
         }
         return XmldbURI.create(toString().substring(xmldbUri.toString().length()));
     }

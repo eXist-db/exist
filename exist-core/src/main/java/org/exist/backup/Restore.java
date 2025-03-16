@@ -145,7 +145,7 @@ public class Restore {
                     contents = bd.getParentDir().resolve(previous);
 
                     if(!Files.isReadable(contents)) {
-                        throw new IOException("Required part of incremental backup not found: " + contents.toAbsolutePath().toString());
+                        throw new IOException("Required part of incremental backup not found: " + contents.toAbsolutePath());
                     }
                 }
             }

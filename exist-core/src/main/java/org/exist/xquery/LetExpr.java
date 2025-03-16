@@ -162,7 +162,7 @@ public class LetExpr extends BindingExpression {
                             throw new XPathException(
                                     this,
                                     ErrorCodes.XPTY0004,
-                                    String.format("Invalid type for variable $%s. Expected %s, got %s", varName, sequenceType.toString(), valueType.toString()), in);
+                                    String.format("Invalid type for variable $%s. Expected %s, got %s", varName, sequenceType.toString(), valueType), in);
                         }
                     }
                 }

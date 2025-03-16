@@ -267,7 +267,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
                 if (status.getReason() != null) {
                     this.errors = (List<ErrorReport>) status.getReason();
                 }
-                lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status.toString() + "]";
+                lastActionInfo = taskstatus.toString() + " to [" + output + "] ended with status [" + status + "]";
                 break;
             default:
                 break;

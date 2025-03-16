@@ -493,7 +493,7 @@ public class ConfigurationDialog extends JDialog {
                     return false;
                 }
             } catch (final IOException e) {
-                JOptionPane.showMessageDialog(this, "Failed to enumerate data files from directory: " + dir.toAbsolutePath().toString(),
+                JOptionPane.showMessageDialog(this, "Failed to enumerate data files from directory: " + dir.toAbsolutePath(),
                     "Failed to enumerate data files", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
@@ -504,7 +504,7 @@ public class ConfigurationDialog extends JDialog {
                 try {
                     Files.createDirectories(dir);
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(this, "Failed to create data directory: " + dir.toAbsolutePath().toString(),
+                    JOptionPane.showMessageDialog(this, "Failed to create data directory: " + dir.toAbsolutePath(),
                             "Failed to create directory", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }

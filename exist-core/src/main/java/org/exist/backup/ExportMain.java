@@ -196,7 +196,7 @@ public class ExportMain {
                 if (!Files.exists(exportTarget)) {
                     Files.createDirectories(exportTarget);
                 } else if(!Files.isDirectory(exportTarget)) {
-                    System.err.println("Output dir already exists and is a file: " + exportTarget.toAbsolutePath().toString());
+                    System.err.println("Output dir already exists and is a file: " + exportTarget.toAbsolutePath());
                     System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
                 }
                 final SystemExport sysexport = new SystemExport(broker, transaction, new Callback(verbose), null, direct);

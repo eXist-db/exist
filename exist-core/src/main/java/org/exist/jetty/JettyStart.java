@@ -529,7 +529,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     private List<Path> getEnabledConfigFiles(final Path enabledJettyConfigs) throws IOException {
         if(Files.notExists(enabledJettyConfigs)) {
-            throw new IOException("Cannot find config enabler: "  + enabledJettyConfigs.toString());
+            throw new IOException("Cannot find config enabler: "  + enabledJettyConfigs);
         } else {
             final List<Path> configFiles = new ArrayList<>();
             try (final LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(enabledJettyConfigs))) {
@@ -541,7 +541,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     } else {
                         final Path configFile = enabledJettyConfigs.getParent().resolve(tl);
                         if (Files.notExists(configFile)) {
-                            throw new IOException("Cannot find enabled config: " + configFile.toString());
+                            throw new IOException("Cannot find enabled config: " + configFile);
                         } else {
                             configFiles.add(configFile);
                         }

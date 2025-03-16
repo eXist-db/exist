@@ -1490,7 +1490,7 @@ public class RpcConnection implements RpcAPI {
                         // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                         collection.close();
 
-                        throw new EXistException("unable to read file " + path.toAbsolutePath().toString());
+                        throw new EXistException("unable to read file " + path.toAbsolutePath());
                     }
 
                     sourceSupplier = () -> new FileInputSource(path);

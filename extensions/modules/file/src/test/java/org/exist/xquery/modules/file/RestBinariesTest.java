@@ -82,7 +82,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
         final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
-                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
+                "let $bin := file:read-binary('" + tmpInFile.toAbsolutePath() + "')\n" +
                 "return response:stream($bin, 'media-type=application/octet-stream')";
 
         final HttpResponse response = postXquery(query);
@@ -107,7 +107,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
         final String query = "import module namespace file = \"http://exist-db.org/xquery/file\";\n" +
                 "import module namespace response = \"http://exist-db.org/xquery/response\";\n" +
-                "let $bin := file:read-binary('" +  tmpInFile.toAbsolutePath().toString() + "')\n" +
+                "let $bin := file:read-binary('" + tmpInFile.toAbsolutePath() + "')\n" +
                 "return response:stream-binary($bin, 'media-type=application/octet-stream', ())";
 
         final HttpResponse response = postXquery(query);

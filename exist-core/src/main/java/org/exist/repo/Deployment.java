@@ -229,7 +229,7 @@ public class Deployment {
                                     } else {
                                         LOG.debug("Package {} needs to be upgraded", pkgName);
                                         if (enforceDeps) {
-                                            throw new PackageException("Package requires version " + version.toString() +
+                                            throw new PackageException("Package requires version " + version +
                                                 " of package " + pkgName +
                                                 ". Installed version is " + latest.getVersion() + ". Please upgrade!");
                                         }
@@ -287,7 +287,7 @@ public class Deployment {
 
         final DependencyVersion depVersion = version.getDependencyVersion();
         if (!depVersion.isCompatible(procVersion)) {
-            throw new PackageException("Package requires eXist-db version " + version.toString() + ". " +
+            throw new PackageException("Package requires eXist-db version " + version + ". " +
                 "Installed version is " + procVersion);
         }
     }

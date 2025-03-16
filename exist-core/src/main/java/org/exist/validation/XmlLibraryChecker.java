@@ -171,7 +171,7 @@ public class XmlLibraryChecker {
             logger.info( message.toString() );
         } else {
             logger.warn( message.toString() );
-            System.err.println( message.toString() );
+            System.err.println(message);
 			invalidVersionFound	= true;
         }
 

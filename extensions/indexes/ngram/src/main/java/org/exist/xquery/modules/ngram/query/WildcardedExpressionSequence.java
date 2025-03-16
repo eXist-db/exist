@@ -155,7 +155,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
             expressions.addFirst(triple);
         } else {
             throw new IllegalArgumentException("Could not form evaluatable triples at the beginning of "
-                + toString());
+                + this);
         }
     }
 

@@ -449,7 +449,7 @@ public class WindowExpr extends BindingExpression {
         result.append(" ");
         result.append("start ").append(windowStartCondition.toString());
         if (windowEndCondition != null) {
-            result.append(" end ").append(windowEndCondition.toString());
+            result.append(" end ").append(windowEndCondition);
         }
         if (returnExpr instanceof LetExpr) {
             result.append(" ");

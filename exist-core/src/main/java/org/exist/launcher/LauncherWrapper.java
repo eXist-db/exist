@@ -144,7 +144,7 @@ public class LauncherWrapper {
             }
         }
         buf.append(']');
-        System.out.println(buf.toString());
+        System.out.println(buf);
 
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();

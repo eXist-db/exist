@@ -399,7 +399,7 @@ public class Sync extends BasicFunction {
         } catch (final XPathException e) {
             reportError(output, e.getMessage());
         } catch (final IOException e) {
-            reportError(output, "IO error while saving file: " + targetFile.toAbsolutePath().toString());
+            reportError(output, "IO error while saving file: " + targetFile.toAbsolutePath());
         }
     }
 
@@ -423,7 +423,7 @@ public class Sync extends BasicFunction {
                 }
             }
         } catch (final SAXException e) {
-            reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+            reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath() + ": " + e.getMessage());
         } finally {
             SerializerPool.getInstance().returnObject(sax);
         }
@@ -460,13 +460,13 @@ public class Sync extends BasicFunction {
                 context.getBroker().returnSerializer(serializer);
             }
         } catch (final ParserConfigurationException e) {
-            reportError(output, "Parser exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+            reportError(output, "Parser exception while saving file " + targetFile.toAbsolutePath() + ": " + e.getMessage());
         } catch (final SAXException e) {
-            reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+            reportError(output, "SAX exception while saving file " + targetFile.toAbsolutePath() + ": " + e.getMessage());
         } catch (final IOException e) {
-            reportError(output, "IO exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+            reportError(output, "IO exception while saving file " + targetFile.toAbsolutePath() + ": " + e.getMessage());
         } catch (final TransformerException e) {
-            reportError(output, "Transformation exception while saving file " + targetFile.toAbsolutePath().toString() + ": " + e.getMessage());
+            reportError(output, "Transformation exception while saving file " + targetFile.toAbsolutePath() + ": " + e.getMessage());
         }
     }
 

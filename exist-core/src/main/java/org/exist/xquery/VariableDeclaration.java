@@ -205,11 +205,11 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
         final StringBuilder result = new StringBuilder();
         result.append("declare variable $").append(qname);
         if (sequenceType != null) {
-            result.append(" as ").append(sequenceType.toString());
+            result.append(" as ").append(sequenceType);
         }
         if (expression.isPresent()) {
             result.append("{");
-            result.append(expression.toString());
+            result.append(expression);
             result.append("}");
         }
         return result.toString();

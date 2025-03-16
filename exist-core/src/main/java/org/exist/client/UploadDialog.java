@@ -213,7 +213,7 @@ class UploadDialog extends JFrame {
 
 	public void setCurrentSize(long size) {
 		if (size >= 1024)
-			{currentSize.setText(String.valueOf(size / 1024) + Messages.getString("UploadDialog.12"));} //$NON-NLS-1$
+			{currentSize.setText(size / 1024 + Messages.getString("UploadDialog.12"));} //$NON-NLS-1$
 		else
 			{currentSize.setText(String.valueOf(size));}
 	}

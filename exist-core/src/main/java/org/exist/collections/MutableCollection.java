@@ -659,7 +659,7 @@ public class MutableCollection implements Collection {
 
                 if (doc != null) {
                     if (!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
-                        throw new PermissionDeniedException("Permission denied to read document: " + name.toString());
+                        throw new PermissionDeniedException("Permission denied to read document: " + name);
                     }
                 } else {
                     if(LOG.isDebugEnabled()) {
@@ -714,7 +714,7 @@ public class MutableCollection implements Collection {
             } else {
                 if(!doc.getPermissions().validate(broker.getCurrentSubject(), Permission.READ)) {
                     unlockFn.run();
-                    throw new PermissionDeniedException("Permission denied to read + document: " + name.toString());
+                    throw new PermissionDeniedException("Permission denied to read + document: " + name);
                 }
 
                 return new LockedDocument(documentLock, doc);

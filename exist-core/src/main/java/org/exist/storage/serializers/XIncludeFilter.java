@@ -327,7 +327,7 @@ public class XIncludeFilter implements Receiver {
             // Patch 1520454 start
             if (!docUri.isAbsolute() && document != null) {
                 final String base = document.getCollection().getURI() + "/";
-                final String child = "./" + docUri.toString();
+                final String child = "./" + docUri;
 
                 final URI baseUri = URI.create(base);
                 final URI childUri = URI.create(child);
@@ -519,7 +519,7 @@ public class XIncludeFilter implements Receiver {
             final URLConnection con = externalUri.toURL().openConnection();
             if (con instanceof HttpURLConnection httpConnection) {
                 if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri.toString() + ", server returned response code: " + httpConnection.getResponseCode()));
+                    return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri + ", server returned response code: " + httpConnection.getResponseCode()));
                 }
             }
 
@@ -543,7 +543,7 @@ public class XIncludeFilter implements Receiver {
                 }
             }
         } catch (final IOException e) {
-            return Either.Left(new ResourceError("XInclude: unable to retrieve and parse document from URI: " + externalUri.toString(), e));
+            return Either.Left(new ResourceError("XInclude: unable to retrieve and parse document from URI: " + externalUri, e));
         }
     }
 

@@ -158,7 +158,7 @@ public class ConcurrentBrokerPoolTest {
 
         @Override
         public Tuple2<Path, UUID> call() throws Exception {
-            final ExistEmbeddedServer server = new ExistEmbeddedServer("store-" + uuid.toString(), getConfigFile(getClass()), null, true, true);
+            final ExistEmbeddedServer server = new ExistEmbeddedServer("store-" + uuid, getConfigFile(getClass()), null, true, true);
 
             server.startDb();
             try {

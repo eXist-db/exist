@@ -501,7 +501,7 @@ public class FnFormatDates extends BasicFunction {
                 while(name.length() < min) {
                     ws.append(" ");
                 }
-                name = name + ws.toString();
+                name = name + ws;
 
                 if(name.length() > max) {
                     name = name.substring(0, max);
