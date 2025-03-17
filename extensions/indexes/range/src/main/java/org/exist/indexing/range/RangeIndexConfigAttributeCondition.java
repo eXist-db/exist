@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -94,10 +95,9 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             operator = Operator.EQ;
         }
 
+        // As default the range index shall be case-sensitive, unless explicitly set to 'no'.
         final String caseString = elem.getAttribute("case");
-
-        // Todo: discuss and agree
-        caseSensitive = (caseString != null && !"no".equalsIgnoreCase(caseString));
+        caseSensitive = !StringUtils.equalsIgnoreCase(caseString, "no");
 
         final String numericString = elem.getAttribute("numeric");
         numericComparison = "yes".equalsIgnoreCase(numericString);
