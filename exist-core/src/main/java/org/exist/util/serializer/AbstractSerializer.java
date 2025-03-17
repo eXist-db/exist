@@ -29,6 +29,7 @@ import org.exist.xquery.util.SerializerUtils;
 import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.Writer;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -78,11 +79,7 @@ public abstract class AbstractSerializer {
     }
 
     public void setOutput(Writer writer, Properties properties) {
-        if (properties == null) {
-            outputProperties = new Properties(defaultProperties);
-        } else {
-            outputProperties = properties;
-        }
+        outputProperties = Objects.requireNonNullElseGet(properties, () -> new Properties(defaultProperties));
         final String method = outputProperties.getProperty(OutputKeys.METHOD, "xml");
         final String htmlVersionProp = outputProperties.getProperty(EXistOutputKeys.HTML_VERSION, "1.0");
 

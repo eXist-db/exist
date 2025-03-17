@@ -23,6 +23,7 @@ package org.exist.scheduler;
 
 import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
@@ -85,11 +86,7 @@ public class UserXQueryJob extends UserJob {
         this.xqueryResource = xqueryResource;
         this.subject = subject;
 
-        if(jobName == null) {
-            this.name = DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource;
-        } else {
-            this.name = jobName;
-        }
+        this.name = Objects.requireNonNullElseGet(jobName, () -> DEFAULT_JOB_NAME_PREFIX + ": " + xqueryResource);
     }
 
     @Override

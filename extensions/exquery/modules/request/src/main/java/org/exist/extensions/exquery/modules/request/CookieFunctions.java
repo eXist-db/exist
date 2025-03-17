@@ -39,6 +39,8 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exquery.http.HttpRequest;
 
+import java.util.Objects;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -97,11 +99,7 @@ public class CookieFunctions extends AbstractRequestModuleFunction {
         final Sequence result;
         final String cookieValue = request.getCookieValue(cookieName);
         if(cookieValue == null) {
-            if(defaultValues != null) {
-                result = defaultValues;
-            } else {
-                result = Sequence.EMPTY_SEQUENCE;
-            }
+            result = Objects.requireNonNullElse(defaultValues, Sequence.EMPTY_SEQUENCE);
         } else {
             result = new StringValue(this, cookieValue);
         }

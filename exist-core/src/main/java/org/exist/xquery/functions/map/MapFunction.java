@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.map.MapModule.functionSignatures;
@@ -220,11 +221,7 @@ public class MapFunction extends BasicFunction {
     private Sequence get(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final Sequence value = map.get((AtomicValue) args[1].itemAt(0));
-        if (value != null) {
-            return value;
-        } else {
-            return Sequence.EMPTY_SEQUENCE;
-        }
+        return Objects.requireNonNullElse(value, Sequence.EMPTY_SEQUENCE);
     }
 
     private Sequence put(final Sequence[] args) throws XPathException {

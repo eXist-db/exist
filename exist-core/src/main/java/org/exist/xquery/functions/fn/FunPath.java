@@ -32,6 +32,7 @@ import org.w3c.dom.*;
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.functionSignature;
 
@@ -62,11 +63,7 @@ public class FunPath extends BasicFunction {
         // The behavior of the function if the argument is omitted is exactly
         // the same as if the context item (.) had been passed as the argument.
         if (getArgumentCount() == 0) {
-            if (contextSequence != null) {
-                sequence = contextSequence;
-            } else {
-                sequence = Sequence.EMPTY_SEQUENCE;
-            }
+            sequence = Objects.requireNonNullElse(contextSequence, Sequence.EMPTY_SEQUENCE);
         } else {
             sequence = args[0];
         }

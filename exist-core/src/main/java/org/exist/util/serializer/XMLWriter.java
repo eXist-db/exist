@@ -130,11 +130,7 @@ public class XMLWriter implements SerializerWriter {
      * @param properties outputProperties
      */
     public void setOutputProperties(final Properties properties) {
-        if(properties == null) {
-            outputProperties = new Properties(defaultProperties);
-        } else {
-            outputProperties = properties;
-        }
+        outputProperties = Objects.requireNonNullElseGet(properties, () -> new Properties(defaultProperties));
 
         final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
         this.charSet = CharacterSet.getCharacterSet(encoding);

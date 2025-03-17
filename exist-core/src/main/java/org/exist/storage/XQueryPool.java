@@ -35,6 +35,7 @@ package org.exist.storage;
 import java.text.NumberFormat;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -89,17 +90,9 @@ public class XQueryPool implements BrokerPoolService {
         final Integer maxPoolSz = (Integer) configuration.getProperty(PROPERTY_POOL_SIZE);
         final NumberFormat nf = NumberFormat.getNumberInstance();
 
-        if (maxPoolSz != null) {
-            this.maxPoolSize = maxPoolSz;
-        } else {
-            this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-        }
+        this.maxPoolSize = Objects.requireNonNullElse(maxPoolSz, DEFAULT_MAX_POOL_SIZE);
 
-        if (maxStSz != null) {
-            this.maxQueryStackSize = maxStSz;
-        } else {
-            this.maxQueryStackSize = DEFAULT_MAX_QUERY_STACK_SIZE;
-        }
+        this.maxQueryStackSize = Objects.requireNonNullElse(maxStSz, DEFAULT_MAX_QUERY_STACK_SIZE);
 
         this.cache = Caffeine.newBuilder()
                 .maximumSize(maxPoolSize)
@@ -120,15 +113,8 @@ public class XQueryPool implements BrokerPoolService {
         }
 
         cache.asMap().compute(source, (key, value) -> {
-            final Deque<CompiledXQuery> deque;
-            if (value != null) {
-                deque = value;
-            } else {
-                deque = new ArrayDeque<>(maxQueryStackSize);
-            }
-
+            final Deque<CompiledXQuery> deque = Objects.requireNonNullElseGet(value, () -> new ArrayDeque<>(maxQueryStackSize));
             deque.offerFirst(compiledXQuery);
-
             return deque;
         });
     }

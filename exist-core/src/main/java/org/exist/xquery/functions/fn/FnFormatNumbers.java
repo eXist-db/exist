@@ -91,6 +91,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -876,11 +877,7 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         public void appendPrefix(final int c) {
-            if (prefix == null) {
-                prefix = new StringBuilder().appendCodePoint(c);
-            } else {
-                prefix = prefix.appendCodePoint(c);
-            }
+            prefix = Objects.requireNonNullElseGet(prefix, StringBuilder::new).appendCodePoint(c);
         }
 
         public String getPrefixString() {
@@ -930,11 +927,7 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         public void appendSuffix(final int c) {
-            if (suffix == null) {
-                suffix = new StringBuilder().appendCodePoint(c);
-            } else {
-                suffix = suffix.appendCodePoint(c);
-            }
+            suffix = Objects.requireNonNullElseGet(suffix, StringBuilder::new).appendCodePoint(c);
         }
 
         public void clearSuffix() {
