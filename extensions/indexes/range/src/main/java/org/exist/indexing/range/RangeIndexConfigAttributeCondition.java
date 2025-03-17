@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
@@ -95,12 +94,11 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             operator = Operator.EQ;
         }
 
-        // As default the range index shall be case-sensitive, unless explicitly set to 'no'.
         final String caseString = elem.getAttribute("case");
-        caseSensitive = !StringUtils.equalsIgnoreCase(caseString, "no");
+        caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
 
         final String numericString = elem.getAttribute("numeric");
-        numericComparison = "yes".equalsIgnoreCase(numericString);
+        numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
 
         // try to create a pattern matcher for a 'matches' condition
         if (operator == Operator.MATCH) {
