@@ -64,7 +64,14 @@ public class TreeUtils {
     static List<Integer> treeIndex(final Node node) {
         final Node parent = node.getParentNode();
         if (parent == null) {
-            return new ArrayList<>();
+          final List<Integer> index = new ArrayList<>();
+          // The root element always index 0 within the document node.
+          // Some node implementations (e.g., org.exist.dom.memtree.NodeImpl) do not always have an associated document.
+          // In this case, the nodeIndex must get an extra 0 index to be valid for xdmDocument.
+          if (! (node instanceof Document)) {
+            index.add(0);
+          }
+          return index;
         }
         final List<Integer> index = treeIndex(parent);
         Node sibling = node.getPreviousSibling();
