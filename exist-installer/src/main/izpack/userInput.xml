@@ -22,7 +22,10 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<izpack:userinput xmlns:izpack="http://izpack.org/schema/userinput" version="5.0">
+<izpack:userinput version="5.0"
+                  xmlns:izpack="http://izpack.org/schema/userinput"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://izpack.org/schema/userinput http://izpack.org/schema/5.0/izpack-userinput-5.0.xsd">
     <panel id="DataDirPanel">
         <field size="1.33" bold="false" txt="Set Data Directory" align="left"
             type="title"/>
@@ -37,11 +40,9 @@
     <panel id="AdminPasswordPanel">
         <!-- field size="1.33" bold="false" txt="Set Admin Password and Configure Memory" align="left"
             type="title"/ -->
-        <field size="1.33" bold="false" txt="Set Admin Password" align="left"
-            type="title"/>
-        <field align="left" variable="adminPasswd" type="password" omitFromAuto="false">
-            <description txt="Please enter a password for user 'admin', the database administrator:"
-                align="left"/>
+        <field size="1.33" bold="false" txt="Set Admin Password" align="left" type="title"/>
+        <field align="left" variable="adminPasswd" type="password">
+            <description txt="Please enter a password for user 'admin', the database administrator:"/>
             <spec>
                 <pwd set="" size="20" txt="Enter password: "/>
                 <pwd set="" size="20" txt="Retype password: "/>
@@ -51,12 +52,12 @@
         </field>
         <!-- field align="bottom" type="divider"/>
         <field type="space"/>
-        <field type="text" variable="MAX_MEMORY">
-          <description align="left" txt="Configure the maximum amount of memory to be used by eXist-db. The recommended minimum memory setting is 1024m. If your machine has enough memory, using 2048m should be sufficient for most data sets. Note: 1200m is usually the limit on 32-bit systems."/>
+        <field align="left" type="text" variable="MAX_MEMORY">
+          <description txt="Configure the maximum amount of memory to be used by eXist-db. The recommended minimum memory setting is 1024m. If your machine has enough memory, using 2048m should be sufficient for most data sets. Note: 1200m is usually the limit on 32-bit systems."/>
           <spec txt="Maximum memory in MB:" size="5" set="2048"/>
         </field>
-        <field type="text" variable="cacheSize">
-            <description align="left" txt="Configure the amount of memory to be reserved for internal caches. If the maximum memory is set above to 1024m, 128m is a good value; for 2048m, use 256m; for 512m, not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
+        <field align="left" type="text" variable="cacheSize">
+            <description txt="Configure the amount of memory to be reserved for internal caches. If the maximum memory is set above to 1024m, 128m is a good value; for 2048m, use 256m; for 512m, not more than 64mb. Too small settings may lead to bad upload/indexing performance."/>
           <spec txt="Cache memory in MB:" size="5" set="256"/>
         </field -->
     </panel>
