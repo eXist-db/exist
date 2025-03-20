@@ -85,7 +85,7 @@ public class FieldType {
         
         String storeAttr = config.getAttribute(STORE_ATTRIB);
         if (storeAttr != null && !storeAttr.isEmpty()) {
-        	store = storeAttr.equalsIgnoreCase("yes") ? Field.Store.YES : Field.Store.NO;
+        	store = "yes".equalsIgnoreCase(storeAttr) ? Field.Store.YES : Field.Store.NO;
         }
     }
     

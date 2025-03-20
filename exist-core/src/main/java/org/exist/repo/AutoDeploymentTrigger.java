@@ -65,7 +65,7 @@ public class AutoDeploymentTrigger implements StartupTrigger {
         if (!ignoreAutodeploySystemProperty) {
             // do not execute if the system property exist.autodeploy=off
             final String property = System.getProperty(AUTODEPLOY_PROPERTY, "on");
-            if (property.equalsIgnoreCase("off")) {
+            if ("off".equalsIgnoreCase(property)) {
                 return;
             }
         }

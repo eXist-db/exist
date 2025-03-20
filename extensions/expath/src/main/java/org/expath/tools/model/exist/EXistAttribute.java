@@ -53,7 +53,7 @@ public class EXistAttribute implements Attribute {
 
     @Override
     public boolean getBoolean() throws ToolsException {
-        return attribute.getValue().equalsIgnoreCase("true");
+        return "true".equalsIgnoreCase(attribute.getValue());
     }
 
     @Override

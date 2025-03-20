@@ -448,19 +448,14 @@ public class JMXtoXML {
     }
 
     private Object mapParameter(final String type, final String value) {
-        if (type.equals("int") || type.equals(Integer.class.getName())) {
-            return Integer.parseInt(value);
-        } else if (type.equals("long") || type.equals(Long.class.getName())) {
-            return Long.parseLong(value);
-        } else if (type.equals("float") || type.equals(Float.class.getName())) {
-            return Float.parseFloat(value);
-        } else if (type.equals("double") || type.equals(Double.class.getName())) {
-            return Double.parseDouble(value);
-        } else if (type.equals("boolean") || type.equals(Boolean.class.getName())) {
-            return Boolean.parseBoolean(value);
-        } else {
-            return value;
-        }
+        return switch (type) {
+            case "int", "java.lang.Integer" -> Integer.parseInt(value);
+            case "long", "java.lang.Long" -> Long.parseLong(value);
+            case "float", "java.lang.Float" -> Float.parseFloat(value);
+            case "double", "java.lang.Double" -> Double.parseDouble(value);
+            case "boolean", "java.lang.Boolean" -> Boolean.parseBoolean(value);
+            default -> value;
+        };
     }
 
     /**

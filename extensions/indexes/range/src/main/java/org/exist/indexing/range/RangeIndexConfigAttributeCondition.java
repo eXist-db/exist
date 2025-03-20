@@ -94,11 +94,12 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             operator = Operator.EQ;
         }
 
+        // As default the range index shall be case-sensitive, unless explicitly set to 'no'.
         final String caseString = elem.getAttribute("case");
-        caseSensitive = (caseString != null && !caseString.equalsIgnoreCase("no"));
+        caseSensitive = !"no".equalsIgnoreCase(caseString);
 
         final String numericString = elem.getAttribute("numeric");
-        numericComparison = (numericString != null && numericString.equalsIgnoreCase("yes"));
+        numericComparison = "yes".equalsIgnoreCase(numericString);
 
         // try to create a pattern matcher for a 'matches' condition
         if (operator == Operator.MATCH) {

@@ -365,7 +365,7 @@ public class ApacheFopProcessorAdapter implements ProcessorAdapter {
                 // font related warnings are very likely to repeat and we try to filter them out here;
                 // the same may happen with missing images (but not implemented yet).
                 final String eventGroupID = event.getEventGroupID();
-                if (eventGroupID.equals("org.apache.fop.fonts.FontEventProducer")) {
+                if ("org.apache.fop.fonts.FontEventProducer".equals(eventGroupID)) {
                     if (!loggedMessages.contains(msg)) {
                         loggedMessages.add(msg);
                         log.warn(msg);

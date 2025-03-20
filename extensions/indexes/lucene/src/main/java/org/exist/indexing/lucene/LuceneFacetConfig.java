@@ -64,7 +64,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         }
         final String hierarchicalOpt = configElement.getAttribute(HIERARCHICAL);
         isHierarchical = hierarchicalOpt != null &&
-                (hierarchicalOpt.equalsIgnoreCase("true") || hierarchicalOpt.equalsIgnoreCase("yes"));
+                ("true".equalsIgnoreCase(hierarchicalOpt) || "yes".equalsIgnoreCase(hierarchicalOpt));
 
         config.facetsConfig.setHierarchical(dimension, isHierarchical);
         config.facetsConfig.setMultiValued(dimension, true);

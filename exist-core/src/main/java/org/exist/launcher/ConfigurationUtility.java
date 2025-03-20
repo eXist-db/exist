@@ -93,7 +93,7 @@ public class ConfigurationUtility {
                     final int status = reader.next();
                     if (status == XMLStreamReader.START_ELEMENT && "SystemProperty".equals(reader.getLocalName())) {
                         final String name = reader.getAttributeValue(null, "name");
-                        if (name != null && (name.equals("jetty.http.port") || name.equals("jetty.ssl.port"))) {
+                        if (name != null && ("jetty.http.port".equals(name) || "jetty.ssl.port".equals(name))) {
                             final String defaultValue = reader.getAttributeValue(null, "default");
                             if (defaultValue != null) {
                                 try {

@@ -361,7 +361,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
     private Optional<Class<? extends Node>> getW3cNodeInterface(final Class<? extends Node> nodeClazz) {
         return Stream.of(nodeClazz.getInterfaces())
-                .filter(iface -> iface.getPackage().getName().equals("org.w3c.dom"))
+                .filter(iface -> "org.w3c.dom".equals(iface.getPackage().getName()))
                 .findFirst()
                 .map(c -> (Class<? extends Node>)c);
     }
@@ -396,7 +396,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 reference equality which will fail against the proxied objects.
              */
             Object domResult = null;
-            if(method.getName().equals("equals")
+            if("equals".equals(method.getName())
                     && proxy instanceof StoredNodeIdentity ni1
                     && args.length == 1 && args[0] instanceof StoredNodeIdentity ni2) {
 
@@ -404,7 +404,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 if (niEquals.isPresent()) {
                     domResult = niEquals.get();
                 }
-            } else if(method.getName().equals("equals")
+            } else if("equals".equals(method.getName())
                         && proxy instanceof MemtreeNodeIdentity ni1
                         && args.length == 1 && args[0] instanceof MemtreeNodeIdentity ni2) {
 
@@ -412,7 +412,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                     if (niEquals.isPresent()) {
                         domResult = niEquals.get();
                     }
-            } else if(method.getName().equals("getNodeId")) {
+            } else if("getNodeId".equals(method.getName())) {
                 if (proxy instanceof StoredNodeIdentity
                         && (args == null || args.length == 0)
                         && node instanceof StoredNode) {
@@ -481,7 +481,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 try {
                     streamer.setContentHandler(handler);
                     streamer.setLexicalHandler(lexicalHandler);
-                    streamer.serialize(root, option.equalsIgnoreCase("true"));
+                    streamer.serialize(root, "true".equalsIgnoreCase(option));
                 } finally {
                     SerializerPool.getInstance().returnObject(streamer);
                 }

@@ -131,8 +131,8 @@ public class UnZipFunction extends AbstractExtractFunction {
         } catch (final IllegalArgumentException e) {
             final StackTraceElement trace[] = e.getStackTrace();
             if (trace.length >= 1) {
-                if (trace[0].getClassName().equals("java.lang.StringCoding")
-                        && trace[0].getMethodName().equals("throwMalformed")) {
+                if ("java.lang.StringCoding".equals(trace[0].getClassName())
+                        && "throwMalformed".equals(trace[0].getMethodName())) {
                     // handle errors from invalid encoding in the zip file (JDK 10)
                     LOG.error(e.getMessage(), e);
                     throw new XPathException(this, e.getMessage(), e);

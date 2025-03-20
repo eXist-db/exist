@@ -293,7 +293,7 @@ public class JNDIModule extends AbstractInternalModule
 						if( existingAttr != null ) {
 							existingAttr.add( value );
 						} else {
-							attributes.put( new BasicAttribute( name, value, ordered != null && ordered.equalsIgnoreCase( "true" ) ) );
+							attributes.put( new BasicAttribute( name, value, ordered != null && "true".equalsIgnoreCase(ordered) ) );
 						}
 					} else {
 						LOG.warn( "Name or value attribute missing for attribute" );

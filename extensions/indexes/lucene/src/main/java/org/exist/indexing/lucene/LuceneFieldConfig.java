@@ -92,7 +92,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
         final String storeStr = configElement.getAttribute(ATTR_STORE);
         if (StringUtils.isNotEmpty(storeStr)) {
-            this.store = storeStr.equalsIgnoreCase("yes") || storeStr.equalsIgnoreCase("true");
+            this.store = "yes".equalsIgnoreCase(storeStr) || "true".equalsIgnoreCase(storeStr);
         }
 
         final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);

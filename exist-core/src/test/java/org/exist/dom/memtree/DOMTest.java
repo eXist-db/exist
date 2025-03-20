@@ -156,23 +156,23 @@ public class DOMTest {
 
         Node nXQuery = doc.getFirstChild();
         assertTrue(nXQuery.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue(nXQuery.getLocalName().equals("xquery"));
+        assertTrue("xquery".equals(nXQuery.getLocalName()));
 
         Node nBuiltinModules = nXQuery.getFirstChild();
         assertTrue(nBuiltinModules.getNodeType() == Node.ELEMENT_NODE);
-        assertTrue(nBuiltinModules.getLocalName().equals("builtin-modules"));
+        assertTrue("builtin-modules".equals(nBuiltinModules.getLocalName()));
 
         NodeList nlModules = nBuiltinModules.getChildNodes();
         for (int i = 0; i < nlModules.getLength(); i++) {
             Node nModule = nlModules.item(i);
 
             assertTrue(nModule.getNodeType() == Node.ELEMENT_NODE);
-            assertTrue(nModule.getLocalName().equals("module"));
+            assertTrue("module".equals(nModule.getLocalName()));
 
             Element eModule = (Element) nModule;
             NodeList nlParameter = eModule.getElementsByTagName("parameter");
 
-            if (eModule.getAttribute("class").equals("org.exist.xquery.functions.request.RequestModule")) {
+            if ("org.exist.xquery.functions.request.RequestModule".equals(eModule.getAttribute("class"))) {
                 assertEquals(1, nlParameter.getLength());
             } else {
                 assertEquals(0, nlParameter.getLength());

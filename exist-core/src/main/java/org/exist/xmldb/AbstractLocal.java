@@ -238,8 +238,8 @@ public abstract class AbstractLocal {
      */
     @Deprecated
     private static Function<DBBroker, Txn> transaction() {
-        final boolean joinTransactionIfPresent = System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true")
-                .equalsIgnoreCase("true");
+        final boolean joinTransactionIfPresent = "true"
+                .equalsIgnoreCase(System.getProperty(PROP_JOIN_TRANSACTION_IF_PRESENT, "true"));
         if(joinTransactionIfPresent) {
             return DBBroker::continueOrBeginTransaction;
         } else {

@@ -156,7 +156,8 @@ public class RemoteXMLResource
 
     @Override
     public String getId() throws XMLDBException {
-        return id.map(x -> x.equals("1") ? getDocumentId() : getDocumentId() + '_' + id).orElse(getDocumentId());
+        final String documentId = getDocumentId();
+        return id.map(x -> "1".equals(x) ? documentId : documentId + '_' + id).orElse(documentId);
     }
 
     @Override
@@ -210,7 +211,7 @@ public class RemoteXMLResource
             final DocumentBuilder builder = factory.newDocumentBuilder();
             final Document doc = builder.parse(is);
 
-            final boolean isDocumentNode = type.map(t -> t.equals("document-node()")).orElse(true);
+            final boolean isDocumentNode = type.map(t -> "document-node()".equals(t)).orElse(true);
             if (isDocumentNode) {
                 return doc;
             } else {

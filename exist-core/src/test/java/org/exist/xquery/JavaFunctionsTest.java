@@ -81,7 +81,7 @@ public class JavaFunctionsTest {
         Configuration config = new Configuration();
         String javabinding = (String) config.getProperty(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING);
         if (javabinding != null) {
-            if (javabinding.equals("yes")) {
+            if ("yes".equals(javabinding)) {
                 javabindingenabled = true;
             }
         }

@@ -129,7 +129,7 @@ public class TestUtils {
 
         try(final Stream<Path> dataFiles  = Files.list(data)) {
             dataFiles
-                    .filter(path -> !(FileUtils.fileName(path).equals("RECOVERY") || FileUtils.fileName(path).equals("README") || FileUtils.fileName(path).equals(".DO_NOT_DELETE")))
+                    .filter(path -> !("RECOVERY".equals(FileUtils.fileName(path)) || "README".equals(FileUtils.fileName(path)) || ".DO_NOT_DELETE".equals(FileUtils.fileName(path))))
                     .forEach(FileUtils::deleteQuietly);
         }
     }

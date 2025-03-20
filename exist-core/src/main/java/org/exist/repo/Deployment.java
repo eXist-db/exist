@@ -493,9 +493,9 @@ public class Deployment {
                     }
                     final String name = FileUtils.fileName(path);
                     if (attrs.isDirectory()) {
-                        return !(name.equals(abbrev) || name.equals("content"));
+                        return !(name.equals(abbrev) || "content".equals(name));
                     } else {
-                        return !(name.equals("expath-pkg.xml") || name.equals("repo.xml") ||
+                        return !("expath-pkg.xml".equals(name) || "repo.xml".equals(name) ||
                                 "exist.xml".equals(name) || name.startsWith("icon"));
                     }
             })) {
@@ -783,7 +783,7 @@ public class Deployment {
         final MimeTable mimeTab = MimeTable.getInstance();
 
         for (final Path file : files) {
-            if (inRootDir && FileUtils.fileName(file).equals("repo.xml")) {
+            if (inRootDir && "repo.xml".equals(FileUtils.fileName(file))) {
                 continue;
             }
             if (!Files.isDirectory(file)) {

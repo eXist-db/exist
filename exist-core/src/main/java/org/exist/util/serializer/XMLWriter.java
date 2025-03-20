@@ -138,7 +138,7 @@ public class XMLWriter implements SerializerWriter {
             throw EX_CHARSET_NULL;
         }
 
-        this.xdmSerialization = outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no").equals("yes");
+        this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
     }
 
     private Set<QName> parseCdataSectionElementNames() {

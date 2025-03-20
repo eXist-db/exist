@@ -137,7 +137,7 @@ public class XMLToQuery {
             slop = 0;
         boolean inOrder = true;
         if (node.hasAttribute("ordered"))
-            inOrder = node.getAttribute("ordered").equals("yes");
+            inOrder = "yes".equals(node.getAttribute("ordered"));
 
         if (!hasElementContent(node)) {
             String qstr = getText(node);
@@ -207,7 +207,7 @@ public class XMLToQuery {
             slop = 0;
         boolean inOrder = true;
         if (node.hasAttribute("ordered"))
-            inOrder = node.getAttribute("ordered").equals("yes");
+            inOrder = "yes".equals(node.getAttribute("ordered"));
         SpanQuery query = null;
         if (hasElementContent(node)) {
             SpanQuery[] children = parseSpanChildren(field, node, analyzer);
@@ -352,7 +352,7 @@ public class XMLToQuery {
         boolean doFilterRewrite = options.filterRewrite();
         String option = node.getAttribute("filter-rewrite");
         if (option != null) {
-            doFilterRewrite = option.equalsIgnoreCase("yes");
+            doFilterRewrite = "yes".equalsIgnoreCase(option);
         }
         if (doFilterRewrite) {
             query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);

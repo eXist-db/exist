@@ -84,8 +84,8 @@ public class EXistServlet extends AbstractExistHttpServlet {
         final FeatureEnabled xupdateSubmission = parseFeatureEnabled(config, "xupdate-submission", FeatureEnabled.TRUE);
 
         // Instantiate REST Server
-        srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), useDynamicContentType.equalsIgnoreCase("yes")
-                || useDynamicContentType.equalsIgnoreCase("true"), isInternalOnly(), xquerySubmission, xupdateSubmission);
+        srvREST = new RESTServer(getPool(), getFormEncoding(), getContainerEncoding(), "yes".equalsIgnoreCase(useDynamicContentType)
+                || "true".equalsIgnoreCase(useDynamicContentType), isInternalOnly(), xquerySubmission, xupdateSubmission);
 
         // XML lib checks....
         XmlLibraryChecker.check();
@@ -581,7 +581,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         final String method = req.getMethod();
-        if (method.equals("PATCH")) {
+        if ("PATCH".equalsIgnoreCase(method)) {
             this.doPatch(req, resp);
             return;
         }
