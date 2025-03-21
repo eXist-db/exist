@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn.transform;
 
 import net.sf.saxon.s9api.XdmNode;
 import org.exist.xquery.value.NodeValue;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -74,15 +75,29 @@ public class TreeUtils {
           return index;
         }
         final List<Integer> index = treeIndex(parent);
-        Node sibling = node.getPreviousSibling();
+        Node sibling = previousSiblingNotAttribute(node);
         int position = 0;
         while (sibling != null) {
             position += 1;
-            sibling = sibling.getPreviousSibling();
+            sibling = previousSiblingNotAttribute(sibling);
         }
         index.add(position);
 
         return index;
+    }
+
+    /**
+     * A org.exist.dom.persistent.StoredNode returns attributes of an element as previous siblings of the element's children.
+     * This is not compatible with the way xdmNodeAtIndex works, so we need to compensate for this.
+     * @param node
+     * @return the previous sibling of `node` that is not an attribute.
+     */
+    private static Node previousSiblingNotAttribute(Node node) {
+      Node sibling = node.getPreviousSibling();
+      if (sibling instanceof Attr) {
+        return null;
+      }
+      return sibling;
     }
 
     static XdmNode xdmNodeAtIndex(final XdmNode xdmNode, final List<Integer> index) {
