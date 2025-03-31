@@ -1113,7 +1113,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
             <plugin>
                 <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14</version>
+                <version>1.14.1</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.aspectj</groupId>
