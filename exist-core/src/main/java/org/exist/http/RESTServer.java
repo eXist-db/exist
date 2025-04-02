@@ -1808,14 +1808,19 @@ public class RESTServer {
                     outputProperties.setProperty("omit-xml-declaration", "no");
                 }
 
-                final OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), encoding);
-                sax.setOutput(writer, outputProperties);
-                serializer.setSAXHandlers(sax, sax);
+                try {
+                  final OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), encoding);
+                  sax.setOutput(writer, outputProperties);
+                  serializer.setSAXHandlers(sax, sax);
 
-                serializer.toSAX(resource);
+                  serializer.toSAX(resource);
 
-                writer.flush();
-                writer.close(); // DO NOT use in try-write-resources, otherwise ther response stream is always closed, and we can't report the errors
+                  // writer.flush(); // Not needed, because close() will flush the stream.
+                  writer.close(); // DO NOT use in try-with-resources, otherwise the response stream is always closed, and we can't report the errors
+                } catch (org.eclipse.jetty.io.EofException connectionInterrupted) {
+                  // Don't throw the EofException, which is caused by the client hanging up.
+                  LOG.info("Ignored EofException while writing response to ReST client: {}", connectionInterrupted.getMessage());
+                }
             } catch (final SAXException saxe) {
                 LOG.warn(saxe);
                 throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
