@@ -1126,6 +1126,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>exist-db-maven-central-mirror</id>
+            <name>exist-db.org - eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>evolvedbinary-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
             <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
