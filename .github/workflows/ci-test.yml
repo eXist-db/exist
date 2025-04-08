@@ -58,7 +58,7 @@ jobs:
           file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
-        timeout-minutes: 10
+        timeout-minutes: 30
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
