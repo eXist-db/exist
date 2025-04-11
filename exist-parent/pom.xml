@@ -993,8 +993,8 @@
                                     <message>eXist-db requires (at least) OpenJDK ${maven.compiler.target} to build and run.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <message>Modern plugins require atleast maven 3.6.3.</message>
-                                    <version>3.6.3</version>
+                                    <message>Modern plugins require atleast maven 3.9.9.</message>
+                                    <version>3.9.9</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
