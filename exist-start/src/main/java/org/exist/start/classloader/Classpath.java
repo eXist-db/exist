@@ -55,7 +55,7 @@ import java.util.function.Supplier;
  */
 public class Classpath implements Iterable<Path> {
 
-    final List<Path> _elements = new ArrayList<>();
+    private final List<Path> classPathElements = new ArrayList<>();
 
     public Classpath() {
     }
@@ -92,8 +92,8 @@ public class Classpath implements Iterable<Path> {
     public boolean addComponent(final Path path) throws InvalidPathException {
         if (path != null & Files.exists(path)) {
             final Path key = path.toAbsolutePath();
-            if (!_elements.contains(key)) {
-                _elements.add(key);
+            if (!classPathElements.contains(key)) {
+                classPathElements.add(key);
                 return true;
             }
         }
@@ -112,19 +112,19 @@ public class Classpath implements Iterable<Path> {
     @Override
     public String toString() {
         final StringBuilder cp = new StringBuilder(1024);
-        final int cnt = _elements.size();
-        if (cnt >= 1) {
-            cp.append(_elements.getFirst());
+        final int size = classPathElements.size();
+        if (size >= 1) {
+            cp.append(classPathElements.getFirst());
         }
-        for (int i = 1; i < cnt; i++) {
+        for (int i = 1; i < size; i++) {
             cp.append(File.pathSeparatorChar);
-            cp.append(_elements.get(i));
+            cp.append(classPathElements.get(i));
         }
         return cp.toString();
     }
 
     public EXistClassLoader getClassLoader(ClassLoader parent) {
-        final URL[] urls = _elements.stream().map(Path::toUri).map(u -> {
+        final URL[] urls = classPathElements.stream().map(Path::toUri).map(u -> {
             try {
                 return Optional.of(u.toURL());
             } catch (final MalformedURLException e) {
@@ -136,7 +136,8 @@ public class Classpath implements Iterable<Path> {
         parent = or(
                     or(
                             or(
-                                    Optional.ofNullable(parent), () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())
+                                    Optional.ofNullable(parent),
+                                    () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())
                             ),
                             () -> Optional.ofNullable(Classpath.class.getClassLoader())
                     ),
@@ -148,6 +149,6 @@ public class Classpath implements Iterable<Path> {
 
     @Override
     public Iterator<Path> iterator() {
-        return _elements.iterator();
+        return classPathElements.iterator();
     }
 }
