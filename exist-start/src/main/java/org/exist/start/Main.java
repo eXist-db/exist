@@ -38,14 +38,15 @@
  */
 package org.exist.start;
 
-import java.io.*;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,29 +68,30 @@ public class Main {
     public static final String STANDALONE_ENABLED_JETTY_CONFIGS = "standalone.enabled-jetty-configs";
     public static final String PROP_LOG4J_DISABLEJMX = "log4j2.disableJmx";
     public static final String PROP_XML_CATALOG_ALWAYS_RESOLVE = "xml.catalog.alwaysResolve";
-
-    private static final int ERROR_CODE_GENERAL = 1;
-    private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
-    static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
-
     public static final String CONFIG_DIR_NAME = "etc";
-
-    private static final String PROP_EXIST_START_DEBUG = "exist.start.debug";
     public static final String PROP_EXIST_JETTY_CONFIG = "exist.jetty.config";
     public static final String PROP_EXIST_HOME = "exist.home";
     public static final String PROP_JETTY_HOME = "jetty.home";
-    private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
-    private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
-    private static final String PROP_JAVA_TEMP_DIR = "java.io.tmpdir";
-
     public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
     public static final String ENV_EXIST_HOME = "EXIST_HOME";
     public static final String ENV_JETTY_HOME = "JETTY_HOME";
-
+    static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
+    private static final int ERROR_CODE_GENERAL = 1;
+    private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
+    private static final String PROP_EXIST_START_DEBUG = "exist.start.debug";
+    private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
+    private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
+    private static final String PROP_JAVA_TEMP_DIR = "java.io.tmpdir";
     private static Main exist;
-
+    private final boolean _debug = Boolean.getBoolean(PROP_EXIST_START_DEBUG);
     private String _mode = "jetty";
-    private boolean _debug = Boolean.getBoolean(PROP_EXIST_START_DEBUG);
+
+    private Main() {
+    }
+
+    public Main(final String mode) {
+        this._mode = mode;
+    }
 
     public static void main(final String[] args) {
         try {
@@ -113,17 +115,6 @@ public class Main {
         return exist;
     }
 
-    public String getMode() {
-        return this._mode;
-    }
-
-    private Main() {
-    }
-
-    public Main(final String mode) {
-        this._mode = mode;
-    }
-
     private static Path getDirectory(final String name) {
         try {
             if (name != null) {
@@ -138,9 +129,7 @@ public class Main {
         return null;
     }
 
-    private static void invokeMain(final ClassLoader classloader, final String classname, final String[] args)
-            throws IllegalAccessException, InvocationTargetException,
-            NoSuchMethodException, ClassNotFoundException {
+    private static void invokeMain(final ClassLoader classloader, final String classname, final String[] args) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
 
         final Class<?> invoked_class = classloader.loadClass(classname);
 
@@ -154,6 +143,30 @@ public class Main {
         main.invoke(null, method_params);
     }
 
+    /**
+     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
+        try (final Stream<Path> entries = Files.list(directory).filter(filter)) {
+            return entries.collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static String fileName(final Path path) {
+        return path.getFileName().toString();
+    }
+
+    public String getMode() {
+        return this._mode;
+    }
+
     public void run(final String[] args) {
         try {
             runEx(args);
@@ -164,8 +177,6 @@ public class Main {
             System.exit(e.getErrorCode());
         }
     }
-
-
 
     public void runEx(String[] args) throws StartException {
 
@@ -270,14 +281,15 @@ public class Main {
 
         if (log4jConfigurationFile.isPresent()) {
             //redirect JUL to log4j2 unless otherwise specified
-            System.setProperty(PROP_JUL_MANAGER, Optional.ofNullable(System.getProperty(PROP_JUL_MANAGER)).orElse("org.apache.logging.log4j.jul.LogManager"));
+            System.setProperty(PROP_JUL_MANAGER,
+                    Optional.ofNullable(System.getProperty(PROP_JUL_MANAGER)).orElse("org.apache.logging.log4j.jul.LogManager"));
         }
 
         // Enable JXM support log4j since v2.24.0 [2024]
         System.setProperty(PROP_LOG4J_DISABLEJMX, "false");
 
         // Modify behavior XML resolver for > 5.x [2024]
-        System.setProperty(PROP_XML_CATALOG_ALWAYS_RESOLVE,"false");
+        System.setProperty(PROP_XML_CATALOG_ALWAYS_RESOLVE, "false");
 
         // clean up tempdir for Jetty...
         try {
@@ -339,28 +351,9 @@ public class Main {
             final Method stopAll = brokerPool.getDeclaredMethod("stopAll", boolean.class);
             stopAll.setAccessible(true);
             stopAll.invoke(null, false);
-        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (final ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+                       InvocationTargetException e) {
             throw new StopException(e.getMessage(), e);
         }
-    }
-
-    /**
-     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
-        try(final Stream<Path> entries = Files.list(directory).filter(filter)) {
-            return entries.collect(Collectors.toList());
-        }
-    }
-
-    /**
-     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static String fileName(final Path path) {
-        return path.getFileName().toString();
     }
 }

@@ -32,12 +32,11 @@ import java.util.regex.Pattern;
 
 /**
  * This class uses regex pattern matching to find the latest version of a
- * particular jar file. 
- * 
- * @see LatestFileResolver#getResolvedFileName(String)
- * 
+ * particular jar file.
+ *
  * @author Ben Schmaus (exist@benschmaus.com)
  * @version $Revision$
+ * @see LatestFileResolver#getResolvedFileName(String)
  */
 public class LatestFileResolver {
 
@@ -45,21 +44,19 @@ public class LatestFileResolver {
     // latest version of a particular file should be added to the classpath.
     // E.g., commons-fileupload-%latest%.jar would resolve to something like
     // commons-fileupload-1.1.jar.
-    private final static Pattern latestVersionPattern = Pattern.compile(
-        "(%latest%)"
-    );
+    private final static Pattern latestVersionPattern = Pattern.compile("(%latest%)");
 
     // Set debug mode for each file resolver instance based on whether or
     // not the system was started with debugging turned on.
-    private static boolean _debug = Boolean.getBoolean("exist.start.debug");
-            
+    private static final boolean _debug = Boolean.getBoolean("exist.start.debug");
+
     /**
      * If the passed file name contains a %latest% token,
      * find the latest version of that file. Otherwise, return
      * the passed file name unmodified.
-     * 
+     *
      * @param filename Path relative to exist home dir of
-     * a jar file that should be added to the classpath.
+     *                 a jar file that should be added to the classpath.
      * @return Resolved filename.
      */
     public String getResolvedFileName(final String filename) {
@@ -72,9 +69,7 @@ public class LatestFileResolver {
         final String uptoToken = fileinfo[0];
 
         // Dir that should contain our jar.
-        final String containerDirName = uptoToken.substring(
-            0, uptoToken.lastIndexOf(File.separatorChar)
-        );
+        final String containerDirName = uptoToken.substring(0, uptoToken.lastIndexOf(File.separatorChar));
 
         final Path containerDir = Paths.get(containerDirName);
 
@@ -86,7 +81,7 @@ public class LatestFileResolver {
 
         List<Path> jars;
         try {
-             jars = Main.list(containerDir, p -> {
+            jars = Main.list(containerDir, p -> {
                 matcher.reset(Main.fileName(p));
                 return matcher.find();
             });
@@ -99,20 +94,14 @@ public class LatestFileResolver {
         if (!jars.isEmpty()) {
             final String actualFileName = jars.getFirst().toAbsolutePath().toString();
             if (_debug) {
-                System.err.println(
-                    "Found match: " + actualFileName
-                    + " for jar file pattern: " + filename
-                );
+                System.err.println("Found match: " + actualFileName + " for jar file pattern: " + filename);
             }
             return actualFileName;
         } else {
             if (_debug) {
-                System.err.println(
-                    "WARN: No latest version found for JAR file: '"
-                    + filename + "'"
-                );
+                System.err.println("WARN: No latest version found for JAR file: '" + filename + "'");
             }
         }
         return filename;
-    }    
+    }
 }
