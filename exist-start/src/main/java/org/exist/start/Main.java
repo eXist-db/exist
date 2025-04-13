@@ -62,24 +62,26 @@ import java.util.Optional;
  *          - include entries from lib _when needed_
  */
 public class Main {
-    public static final String STANDARD_ENABLED_JETTY_CONFIGS = "standard.enabled-jetty-configs";
-    public static final String STANDALONE_ENABLED_JETTY_CONFIGS = "standalone.enabled-jetty-configs";
+
+    public static final String CONFIG_DIR_NAME = "etc";
+    public static final String ENV_EXIST_HOME = "EXIST_HOME";
+    public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
+    public static final String ENV_JETTY_HOME = "JETTY_HOME";
+    public static final String PROP_EXIST_HOME = "exist.home";
+    public static final String PROP_EXIST_JETTY_CONFIG = "exist.jetty.config";
+    public static final String PROP_JETTY_HOME = "jetty.home";
     public static final String PROP_LOG4J_DISABLEJMX = "log4j2.disableJmx";
     public static final String PROP_XML_CATALOG_ALWAYS_RESOLVE = "xml.catalog.alwaysResolve";
-    public static final String CONFIG_DIR_NAME = "etc";
-    public static final String PROP_EXIST_JETTY_CONFIG = "exist.jetty.config";
-    public static final String PROP_EXIST_HOME = "exist.home";
-    public static final String PROP_JETTY_HOME = "jetty.home";
-    public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
-    public static final String ENV_EXIST_HOME = "EXIST_HOME";
-    public static final String ENV_JETTY_HOME = "JETTY_HOME";
+    public static final String STANDALONE_ENABLED_JETTY_CONFIGS = "standalone.enabled-jetty-configs";
+    public static final String STANDARD_ENABLED_JETTY_CONFIGS = "standard.enabled-jetty-configs";
     static final int ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED = 13;
     private static final int ERROR_CODE_GENERAL = 1;
     private static final int ERROR_CODE_NO_JETTY_CONFIG = 7;
     private static final String PROP_EXIST_START_DEBUG = "exist.start.debug";
-    private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
-    private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
     private static final String PROP_JAVA_TEMP_DIR = "java.io.tmpdir";
+    private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
+    private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
+
     private static Main exist;
     private final boolean _debug = Boolean.getBoolean(PROP_EXIST_START_DEBUG);
     private String _mode = "jetty";
