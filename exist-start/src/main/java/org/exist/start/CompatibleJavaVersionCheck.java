@@ -83,7 +83,7 @@ public class CompatibleJavaVersionCheck {
     static void checkForCompatibleJavaVersion(final Optional<String> checkJavaVersion) throws StartException {
         final Optional<int[]> maybeJavaVersionComponents = extractJavaVersionComponents(checkJavaVersion);
 
-        if (!maybeJavaVersionComponents.isPresent()) {
+        if (maybeJavaVersionComponents.isEmpty()) {
             // Could not determine major java version, so best to let the user proceed...
             return;
         }

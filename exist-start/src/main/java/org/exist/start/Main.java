@@ -217,7 +217,7 @@ public class Main {
             final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(PROP_JETTY_HOME, ENV_JETTY_HOME).map(Paths::get);
 
             Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(PROP_EXIST_JETTY_CONFIG, ENV_EXIST_JETTY_CONFIG).map(Paths::get);
-            if (!existJettyConfigFile.isPresent()) {
+            if (existJettyConfigFile.isEmpty()) {
                 final String config;
                 if ("jetty".equals(_mode)) {
                     config = STANDARD_ENABLED_JETTY_CONFIGS;
@@ -233,7 +233,7 @@ public class Main {
                     existJettyConfigFile = existHomeDir.map(f -> f.resolve(CONFIG_DIR_NAME).resolve(config));
                 }
 
-                if (!existJettyConfigFile.isPresent()) {
+                if (existJettyConfigFile.isEmpty()) {
                     System.err.println("ERROR: jetty config file could not be found! Make sure to set exist.jetty.config or EXIST_JETTY_CONFIG.");
                     System.err.flush();
                     throw new StartException(ERROR_CODE_NO_JETTY_CONFIG);
@@ -247,7 +247,7 @@ public class Main {
 
         // find log4j2.xml
         Optional<Path> log4jConfigurationFile = Optional.ofNullable(System.getProperty(PROP_LOG4J_CONFIGURATION_FILE)).map(Paths::get);
-        if (!log4jConfigurationFile.isPresent()) {
+        if (log4jConfigurationFile.isEmpty()) {
             if (existHomeDir.isPresent() && Files.exists(existHomeDir.get().resolve(CONFIG_DIR_NAME))) {
                 log4jConfigurationFile = existHomeDir.map(f -> f.resolve(CONFIG_DIR_NAME).resolve("log4j2.xml"));
             }
@@ -300,7 +300,7 @@ public class Main {
 
     private Optional<String> getFromSysPropOrEnv(final String sysPropName, final String envVarName) {
         Optional<String> value = Optional.ofNullable(System.getProperty(sysPropName));
-        if (!value.isPresent()) {
+        if (value.isEmpty()) {
             value = Optional.ofNullable(System.getenv().get(envVarName));
             // if we managed to detect from environment, store it in a system property
             value.ifPresent(s -> System.setProperty(sysPropName, s));

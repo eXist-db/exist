@@ -80,14 +80,8 @@ public class Classpath implements Iterable<Path> {
     public boolean addComponent(final String component) {
         if (component != null && !component.isEmpty()) {
             try {
-                final Path p = Paths.get(component);
-                if (Files.exists(p)) {
-                    final Path key = p.toAbsolutePath();
-                    if (!_elements.contains(key)) {
-                        _elements.add(key);
-                        return true;
-                    }
-                }
+                final Path path = Paths.get(component);
+                return addComponent(path);
             } catch (final InvalidPathException e) {
                 e.printStackTrace();
             }
@@ -95,18 +89,12 @@ public class Classpath implements Iterable<Path> {
         return false;
     }
 
-    public boolean addComponent(final Path component) {
-        if (component != null) {
-            try {
-                if (Files.exists(component)) {
-                    final Path key = component.toAbsolutePath();
-                    if (!_elements.contains(key)) {
-                        _elements.add(key);
-                        return true;
-                    }
-                }
-            } catch (final InvalidPathException e) {
-                e.printStackTrace();
+    public boolean addComponent(final Path path) throws InvalidPathException {
+        if (path != null & Files.exists(path)) {
+            final Path key = path.toAbsolutePath();
+            if (!_elements.contains(key)) {
+                _elements.add(key);
+                return true;
             }
         }
         return false;
