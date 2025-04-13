@@ -143,26 +143,6 @@ public class Main {
         main.invoke(null, method_params);
     }
 
-    /**
-     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
-        try (final Stream<Path> entries = Files.list(directory).filter(filter)) {
-            return entries.collect(Collectors.toList());
-        }
-    }
-
-    /**
-     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static String fileName(final Path path) {
-        return path.getFileName().toString();
-    }
-
     public String getMode() {
         return this._mode;
     }

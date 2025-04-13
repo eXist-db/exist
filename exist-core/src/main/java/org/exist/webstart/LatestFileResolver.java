@@ -19,16 +19,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.start;
+package org.exist.webstart;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class uses regex pattern matching to find the latest version of a
@@ -81,8 +85,8 @@ public class LatestFileResolver {
 
         List<Path> jars;
         try {
-            jars = Main.list(containerDir, p -> {
-                matcher.reset(Main.fileName(p));
+            jars = list(containerDir, p -> {
+                matcher.reset(fileName(p));
                 return matcher.find();
             });
         } catch (final IOException e) {
@@ -103,5 +107,25 @@ public class LatestFileResolver {
             }
         }
         return filename;
+    }
+
+    /**
+     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
+        try (final Stream<Path> entries = Files.list(directory).filter(filter)) {
+            return entries.collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static String fileName(final Path path) {
+        return path.getFileName().toString();
     }
 }
