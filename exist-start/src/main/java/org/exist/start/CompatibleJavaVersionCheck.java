@@ -29,22 +29,22 @@ import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
 
 /**
  * Helper class for checking OpenJDK compatibility.
- *
+ * <p>
  * eXist-db has been compiled with Java21 (state of 2025Q2).
- *
+ * <p>
  * Older versions of Java contained a number of serious compiler bugs that caused database corruptions.
  * These problematic versions are deprecated and therefore this class is not relevant anymore.
- *
+ * <p>
  * The code is kept for archival purposes and potential future re-usage.
- *
+ * <p>
  * ----------------------------
- *
+ * <p>
  * OpenJDK versions 12 through 15.0.1 suffer from a critical bug in the JIT C2 compiler that will
  * cause data loss in eXist-db. The problem has been reported to the OpenJDK community.
- *
- * For more information, see:
- * - https://bugs.openjdk.java.net/browse/JDK-8253191
- * - https://github.com/eXist-db/exist/issues/3375
+ * <p>
+ * For more<a href=" information, see:
+ * - https://bugs.openjdk.jav">...</a>a.net/<a href="browse/JDK-8253191
+ ">* - https://github.com/eX</a>ist-db/exist/issues/3375
  *
  *
  */
