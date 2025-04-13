@@ -50,28 +50,40 @@ import java.util.function.Supplier;
 
 /**
  * Class to handle CLASSPATH construction
+ *
  * @author Jan Hlavaty
  */
 public class Classpath implements Iterable<Path> {
 
     final List<Path> _elements = new ArrayList<>();
 
-    public Classpath() {}
+    public Classpath() {
+    }
 
-    public Classpath(final String initial)
-    {
+    public Classpath(final String initial) {
         addClasspath(initial);
     }
-        
+
+    /**
+     * Copied from {@link com.evolvedbinary.j8fu.OptionalUtil#or(Optional, Supplier)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    private static <T> Optional<T> or(final Optional<T> left, final Supplier<Optional<T>> right) {
+        if (left.isPresent()) {
+            return left;
+        } else {
+            return right.get();
+        }
+    }
+
     public boolean addComponent(final String component) {
         if (component != null && !component.isEmpty()) {
             try {
                 final Path p = Paths.get(component);
-                if (Files.exists(p))
-                {
+                if (Files.exists(p)) {
                     final Path key = p.toAbsolutePath();
-                    if (!_elements.contains(key))
-                    {
+                    if (!_elements.contains(key)) {
                         _elements.add(key);
                         return true;
                     }
@@ -82,7 +94,7 @@ public class Classpath implements Iterable<Path> {
         }
         return false;
     }
-    
+
     public boolean addComponent(final Path component) {
         if (component != null) {
             try {
@@ -103,12 +115,11 @@ public class Classpath implements Iterable<Path> {
     public void addClasspath(final String s) {
         if (s != null) {
             final StringTokenizer t = new StringTokenizer(s, File.pathSeparator);
-            while (t.hasMoreTokens())
-            {
+            while (t.hasMoreTokens()) {
                 addComponent(t.nextToken());
             }
         }
-    }    
+    }
 
     @Override
     public String toString() {
@@ -117,7 +128,7 @@ public class Classpath implements Iterable<Path> {
         if (cnt >= 1) {
             cp.append(_elements.getFirst());
         }
-        for (int i=1; i < cnt; i++) {
+        for (int i = 1; i < cnt; i++) {
             cp.append(File.pathSeparatorChar);
             cp.append(_elements.get(i));
         }
@@ -125,27 +136,24 @@ public class Classpath implements Iterable<Path> {
     }
 
     public EXistClassLoader getClassLoader(ClassLoader parent) {
-        final URL urls[] = _elements
-                .stream()
-                .map(Path::toUri)
-                .map(u -> {
-                    try {
-                        return Optional.of(u.toURL());
-                    } catch(final MalformedURLException e) {
-                        return Optional.<URL>empty();
-                    }
-                }).filter(Optional::isPresent)
-                .map(Optional::get)
-                .toArray(URL[]::new);
+        final URL[] urls = _elements.stream().map(Path::toUri).map(u -> {
+            try {
+                return Optional.of(u.toURL());
+            } catch (final MalformedURLException e) {
+                return Optional.<URL>empty();
+            }
+        }).filter(Optional::isPresent).map(Optional::get).toArray(URL[]::new);
 
         // try and ensure we have a classloader
         parent = or(
-            or(
-                or(Optional.ofNullable(parent), () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())),
-                () -> Optional.ofNullable(Classpath.class.getClassLoader())
-            ),
-            () -> Optional.ofNullable(ClassLoader.getSystemClassLoader())
-        ).orElse(null);
+                    or(
+                            or(
+                                    Optional.ofNullable(parent), () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())
+                            ),
+                            () -> Optional.ofNullable(Classpath.class.getClassLoader())
+                    ),
+                    () -> Optional.ofNullable(ClassLoader.getSystemClassLoader())
+                ).orElse(null);
 
         return new EXistClassLoader(urls, parent);
     }
@@ -153,18 +161,5 @@ public class Classpath implements Iterable<Path> {
     @Override
     public Iterator<Path> iterator() {
         return _elements.iterator();
-    }
-
-    /**
-     * Copied from {@link com.evolvedbinary.j8fu.OptionalUtil#or(Optional, Supplier)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    private static <T> Optional<T> or(final Optional<T> left, final Supplier<Optional<T>> right) {
-        if(left.isPresent()) {
-            return left;
-        } else {
-            return right.get();
-        }
     }
 }
