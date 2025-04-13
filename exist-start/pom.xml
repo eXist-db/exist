@@ -76,9 +76,8 @@
                             -->
                             <excludes>
                                 <exclude>Mortbay-APACHE-2-license.template.txt</exclude>
-                                <exclude>src/main/java/org/exist/start/Classpath.java</exclude>
+                                <exclude>src/main/java/org/exist/start/classloader/Classpath.java</exclude>
                                 <exclude>src/main/java/org/exist/start/Main.java</exclude>
-                                <exclude>src/main/java/org/exist/start/Version.java</exclude>
                             </excludes>
 
                         </licenseSet>
