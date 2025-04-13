@@ -211,4 +211,14 @@ public class CompatibleJavaVersionCheckTest {
     public void checkJava15_0_3() throws StartException {
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("15.0.3"));
     }
+
+    @Test
+    public void checkJava21() throws StartException {
+        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("21.0.6"));
+    }
+
+    @Test
+    public void checkJava25() throws StartException {
+        CompatibleJavaVersionCheck.checkForCompatibleJavaVersion(Optional.of("25.0.1"));
+    }
 }
