@@ -38,18 +38,16 @@
  */
 package org.exist.start;
 
-import java.io.IOException;
+import org.exist.start.classloader.Classpath;
+import org.exist.start.classloader.EXistClassLoader;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This is an adopted version of the corresponding classes shipped
