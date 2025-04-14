@@ -1,7 +1,4 @@
 /*
- * NOTE: This file is in part based on code from Mort Bay Consulting.
- * The original license statement is also included below.
- *
  * eXist-db Open Source Native XML Database
  * Copyright (C) 2001 The eXist-db Authors
  *
@@ -21,20 +18,6 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * ---------------------------------------------------------------------
- *
- * Copyright 2002-2005 Mort Bay Consulting Pty. Ltd.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 package org.exist.start;
 
@@ -50,16 +33,15 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
- * This is an adopted version of the corresponding classes shipped
- * with Jetty. Modified for eXist-db!
- *
- * @author Jan Hlavaty (hlavac@code.cz)
- * @author Wolfgang Meier (meier@ifs.tu-darmstadt.de)
- * @version $Revision$
- *          TODO:
- *          - finish possible jetty.home locations
- *          - better handling of errors (i.e. when jetty.home cannot be autodetected...)
- *          - include entries from lib _when needed_
+ * eXist-db bootstrap start helper.
+ * <p/>
+ * The purpose of the class is to setup and configure the (java) environment
+ * before the database is actually started, by invoking other classes.
+ * <p/>
+ * The class is designed to have only dependencies with java.* packages.
+ * <p/>
+ * The original class was based on Jetty startup code (Mort Bay Consulting, Apache licenced)
+ * but has completely revised and reimplemented over time.
  */
 public class Main {
 
