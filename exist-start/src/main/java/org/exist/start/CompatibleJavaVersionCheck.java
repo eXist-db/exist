@@ -42,7 +42,7 @@ import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
  * OpenJDK versions 12 through 15.0.1 suffer from a critical bug in the JIT C2 compiler that will
  * cause data loss in eXist-db. The problem has been reported to the OpenJDK community.
  * <p>
- * For more<a href=" information, see:
+ * For more information, see:
  * - <a href="https://bugs.openjdk.java.net/browse/JDK-8253191">C2: Masked byte comparisons with large masks produce wrong result on x86</a>
  * - <a href="https://github.com/eXist-db/exist/issues/3375">eXist-db does not run correctly on JDKs 12, 13, 14 and 15 #3375</a>
  *
