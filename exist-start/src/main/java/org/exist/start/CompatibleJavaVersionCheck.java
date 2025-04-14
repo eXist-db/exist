@@ -24,7 +24,7 @@ package org.exist.start;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.exist.start.CompatibleJavaVersionCheck.IncompatibleJavaVersion.IncompatibleJavaVersion;
+import static org.exist.start.CompatibleJavaVersionCheck.IncompatibleJavaVersion.create;
 import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
 
 /**
@@ -51,10 +51,10 @@ import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
 public class CompatibleJavaVersionCheck {
 
     private static final IncompatibleJavaVersion[] INCOMPATIBLE_JAVA_VERSIONS = {
-            IncompatibleJavaVersion(12),
-            IncompatibleJavaVersion(13),
-            IncompatibleJavaVersion(14),
-            IncompatibleJavaVersion(15, 0, 2),
+            create(12),
+            create(13),
+            create(14),
+            IncompatibleJavaVersion.create(15, 0, 2),
     };
 
     private static final String INCOMPATIBLE_JAVA_VERSION_NOTICE =
@@ -152,16 +152,16 @@ public class CompatibleJavaVersionCheck {
             this.lessThanPatch = lessThanPatch;
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ final Integer lessThanMinor, /* @Nullable */ final Integer lessThanPatch) {
+        public static IncompatibleJavaVersion create(final int major, /* @Nullable */ final Integer lessThanMinor, /* @Nullable */ final Integer lessThanPatch) {
             return new IncompatibleJavaVersion(major, lessThanMinor, lessThanPatch);
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ final Integer lessThanMinor) {
-            return IncompatibleJavaVersion(major, lessThanMinor, null);
+        public static IncompatibleJavaVersion create(final int major, /* @Nullable */ final Integer lessThanMinor) {
+            return new IncompatibleJavaVersion(major, lessThanMinor, null);
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major) {
-            return IncompatibleJavaVersion(major, null, null);
+        public static IncompatibleJavaVersion create(final int major) {
+            return new IncompatibleJavaVersion(major, null, null);
         }
     }
 }
