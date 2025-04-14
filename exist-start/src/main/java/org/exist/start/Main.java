@@ -276,7 +276,7 @@ public class Main {
         Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(PROP_EXIST_JETTY_CONFIG, ENV_EXIST_JETTY_CONFIG).map(Paths::get);
         if (existJettyConfigFile.isEmpty()) {
             final String config;
-            if (MODE_JETTY.equals(_mode)) {
+            if (MODE_JETTY.equals(getMode())) {
                 config = STANDARD_ENABLED_JETTY_CONFIGS;
             } else {
                 config = STANDALONE_ENABLED_JETTY_CONFIGS;

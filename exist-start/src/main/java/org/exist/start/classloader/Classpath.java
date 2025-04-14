@@ -124,25 +124,31 @@ public class Classpath implements Iterable<Path> {
     }
 
     public EXistClassLoader getClassLoader(ClassLoader parent) {
-        final URL[] urls = classPathElements.stream().map(Path::toUri).map(u -> {
-            try {
-                return Optional.of(u.toURL());
-            } catch (final MalformedURLException e) {
-                return Optional.<URL>empty();
-            }
-        }).filter(Optional::isPresent).map(Optional::get).toArray(URL[]::new);
+        final URL[] urls = classPathElements.stream()
+                .map(Path::toUri).map(u ->
+                    {
+                        try {
+                            return Optional.of(u.toURL());
+                        } catch (final MalformedURLException e) {
+                            return Optional.<URL>empty();
+                        }
+                    })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toArray(URL[]::new);
 
         // try and ensure we have a classloader
         parent = or(
                     or(
-                            or(
-                                    Optional.ofNullable(parent),
-                                    () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())
-                            ),
-                            () -> Optional.ofNullable(Classpath.class.getClassLoader())
+                        or(
+                            Optional.ofNullable(parent),
+                            () -> Optional.ofNullable(Thread.currentThread().getContextClassLoader())
+                        ),
+                        () -> Optional.ofNullable(Classpath.class.getClassLoader())
                     ),
                     () -> Optional.ofNullable(ClassLoader.getSystemClassLoader())
-                ).orElse(null);
+                )
+                .orElse(null);
 
         return new EXistClassLoader(urls, parent);
     }
