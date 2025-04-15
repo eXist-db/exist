@@ -34,12 +34,12 @@ import java.util.Optional;
 
 /**
  * eXist-db bootstrap start helper.
- * <p/>
+ * <p>
  * The purpose of the class is to setup and configure the (java) environment
  * before the database is actually started, by invoking other classes.
- * <p/>
+ * <p>
  * The class is designed to have only dependencies with java.* packages.
- * <p/>
+ * <p>
  * The original class was based on Jetty startup code (Mort Bay Consulting, Apache licenced)
  * but has completely revised and reimplemented over time.
  */
