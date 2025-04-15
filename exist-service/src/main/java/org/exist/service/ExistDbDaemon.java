@@ -36,7 +36,7 @@ public class ExistDbDaemon implements Daemon {
     private String[] args = null;
 
     private void init(final String args[]) {
-        this.main = new Main("jetty");
+        this.main = new Main(Main.MODE_JETTY);
         this.args = args;
     }
 
