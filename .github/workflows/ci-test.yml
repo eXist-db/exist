@@ -58,8 +58,8 @@ jobs:
           file-version-suffix: ''
           cache: 'true'
       - name: Maven Build
-        timeout-minutes: 10
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+        timeout-minutes: 30
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -U -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
