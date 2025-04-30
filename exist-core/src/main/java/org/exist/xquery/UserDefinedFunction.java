@@ -166,40 +166,47 @@ public class UserDefinedFunction extends Function implements Cloneable {
             context.stackLeave(this);
 //            context.expressionEnd(this);
         }
-	}
-	
-	/* (non-Javadoc)
-     * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)
-     */
+    }
+
+    @Override
     public void dump(ExpressionDumper dumper) {
         final FunctionSignature signature = getSignature();
-        if (signature.getName() != null)
-        	{dumper.display(signature.getName());}
+        if (signature.getName() != null) {
+            dumper.display(signature.getName());
+        }
         dumper.display('(');
-        for(int i = 0; i < signature.getArgumentTypes().length; i++) {
-			if(i > 0)
-				{dumper.display(", ");}
-			dumper.display(signature.getArgumentTypes()[i]);
-		}
-		dumper.display(") ");
+        for (int i = 0; i < signature.getArgumentTypes().length; i++) {
+            if (i > 0) {
+                dumper.display(", ");
+            }
+            dumper.display('$');
+            dumper.display(getParameters().get(i));
+            dumper.display(" as ");
+            dumper.display(signature.getArgumentTypes()[i]);
+        }
+        dumper.display(") as ");
         dumper.display(signature.getReturnType().toString());
     }
-    
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+
+    @Override
     public String toString() {
         final FunctionSignature signature = getSignature();
         final StringBuilder buf = new StringBuilder();
-        if (signature.getName() != null)
-        	{buf.append(signature.getName());}
+        if (signature.getName() != null) {
+            buf.append(signature.getName());
+        }
         buf.append('(');
-        for(int i = 0; i < signature.getArgumentTypes().length; i++) {
-			if(i > 0)
-				{buf.append(", ");}
-			buf.append(signature.getArgumentTypes()[i]);
-		}
-        buf.append(')');
+        for (int i = 0; i < signature.getArgumentTypes().length; i++) {
+            if (i > 0) {
+                buf.append(", ");
+            }
+            buf.append('$');
+            buf.append(getParameters().get(i));
+            buf.append(" as ");
+            buf.append(signature.getArgumentTypes()[i]);
+        }
+        buf.append(") as ");
+        buf.append(signature.getReturnType());
         return buf.toString();
     }
     
