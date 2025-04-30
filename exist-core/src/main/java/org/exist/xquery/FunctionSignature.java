@@ -262,15 +262,19 @@ public class FunctionSignature {
         if(obj == null || !(obj instanceof FunctionSignature other)) {
             return false;
         }
+        // quick comparison by object identity
+        if (this == other) { return true; }
 
-        if(name == null) {
-            if(other.name != null) {
-                return false;
-            }    
-            return getArgumentCount() == other.getArgumentCount();
+        // anonymous functions cannot be compared by name and argument count
+        if (
+                name == null || other.name == null ||
+                name.getLocalPart().equals("") ||
+                other.name.getLocalPart().equals("")
+        ) {
+            return false;
         }
-        
-        if(name.equals(other.name)) {
+
+        if (name.equals(other.name)) {
             return getArgumentCount() == other.getArgumentCount();
         }
         
