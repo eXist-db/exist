@@ -170,16 +170,14 @@ public class FunctionSignature {
         this.description = description;
     }
 
-    public void addMetadata(final String key, String value) {
+    public void addMetadata(final String key, final String value) {
         if(metadata == null) {
             metadata = new HashMap<>(5);
         }
         final String old = metadata.get(key);
-        if (old != null) {
-            // if the key exists, simply append the new value
-            value = old + ", " + value;
-        }
-        metadata.put(key, value);
+        // if the key exists, append the new value
+        final String newValue = old == null ? value : old + ", " + value;
+        metadata.put(key, newValue);
     }
 
     public String getMetadata(final String key) {
@@ -232,7 +230,7 @@ public class FunctionSignature {
         buf.append(name.getStringValue());
         buf.append('(');
         if(arguments != null) {
-            final char var = 'a';
+            final char ANON_VAR = 'a';
             for(int i = 0; i < arguments.length; i++) {
                 if(i > 0) {
                     buf.append(", ");
@@ -241,7 +239,7 @@ public class FunctionSignature {
                 if(arguments[i] instanceof FunctionParameterSequenceType) {
                     buf.append(((FunctionParameterSequenceType)arguments[i]).getAttributeName());
                 } else {
-                    buf.append((char)(var + i));
+                    buf.append((char)(ANON_VAR + i));
                 }
                 buf.append(" as ");
                 buf.append(arguments[i].toString());
@@ -251,7 +249,7 @@ public class FunctionSignature {
                 buf.append(", ...");
             }
         }
-        buf.append(") ");
+        buf.append(") as ");
         buf.append(returnType.toString());
         
         return buf.toString();
@@ -259,7 +257,7 @@ public class FunctionSignature {
 
     @Override
     public boolean equals(final Object obj) {
-        if(obj == null || !(obj instanceof FunctionSignature)) {
+        if (!(obj instanceof FunctionSignature)) {
             return false;
         }
         // quick comparison by object identity
@@ -275,11 +273,8 @@ public class FunctionSignature {
             return false;
         }
 
-        if (name.equals(other.name)) {
-            return getArgumentCount() == other.getArgumentCount();
-        }
-        
-        return false;
+        // compare by QName and arity
+        return (name.equals(other.name) && getArgumentCount() == other.getArgumentCount());
     }
 
     /**
