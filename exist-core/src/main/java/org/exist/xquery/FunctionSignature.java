@@ -24,6 +24,7 @@ package org.exist.xquery;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -33,7 +34,7 @@ import org.exist.xquery.value.Type;
 /**
  * Describes the signature of a built-in or user-defined function, i.e.
  * its name, the type and cardinality of its arguments and its return type.
- *  
+ *
  * @author wolf
  * @author lcahlander
  * @version 1.3
@@ -43,25 +44,20 @@ public class FunctionSignature {
     /**
      * Default sequence type for function parameters.
      */
-    public final static SequenceType DEFAULT_TYPE = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+    public static final SequenceType DEFAULT_TYPE = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
 
     /**
      * Empty array to specify if a function doesn't take any arguments.
      */
-    public final static SequenceType[] NO_ARGS = new SequenceType[0];
+    public static final SequenceType[] NO_ARGS = new SequenceType[0];
 
     private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major release version.";
-
-    public static SequenceType[] singleArgument(final SequenceType arg) {
-        return new SequenceType[] { arg };
-    }
-	
-    private Annotation[] annotations;
     private final QName name;
+    private Annotation[] annotations;
     private SequenceType[] arguments;
     private SequenceType returnType;
-    private boolean isVariadic = false;
-    private String description = null;
+    private boolean isVariadic;
+    private String description;
     private String deprecated = null;
     private Map<String, String> metadata = null;
 
@@ -89,17 +85,13 @@ public class FunctionSignature {
     }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType) {
-        this(name, description, arguments, returnType, false);	
+        this(name, description, arguments, returnType, false);
     }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final String deprecated) {
         this(name, description, arguments, returnType, false);
         setDeprecated(deprecated);
     }
-        
-//    public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final FunctionSignature deprecatedBy) {
-//        this(name, description, arguments, returnType, false, "Moved to the module: " + deprecatedBy.getName().getNamespaceURI() + ", you should now use '" + deprecatedBy.getName().getPrefix() + ":" + deprecatedBy.getName().getLocalPart() + "' instead!");
-//    }
 
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean variadic, final String deprecated) {
         this(name, description, arguments, returnType, variadic);
@@ -108,13 +100,13 @@ public class FunctionSignature {
 	
     /**
      * Create a new function signature.
-     * 
-     * @param name the QName of the function.
+     *
+     * @param name        the QName of the function.
      * @param description documentation string describing the function
-     * @param arguments the sequence types of all expected arguments
-     * @param returnType the sequence type returned by the function
-     * @param variadic set to true if the function may expect additional parameters
-     */		
+     * @param arguments   the sequence types of all expected arguments
+     * @param returnType  the sequence type returned by the function
+     * @param variadic    set to true if the function may expect additional parameters
+     */
     public FunctionSignature(final QName name, final String description, final SequenceType[] arguments, final SequenceType returnType, final boolean variadic) {
         this.name = name;
         this.arguments = arguments;
@@ -126,22 +118,26 @@ public class FunctionSignature {
     public Annotation[] getAnnotations() {
         return annotations;
     }
-        
+
+    public void setAnnotations(final Annotation[] annotations) {
+        this.annotations = annotations;
+    }
+
     public QName getName() {
         return name;
     }
 
     public int getArgumentCount() {
-        if(isVariadic) {
+        if (isVariadic) {
             return -1;
         }
         return arguments != null ? arguments.length : 0;
     }
-	
+
     public FunctionId getFunctionId() {
         return new FunctionId(name, getArgumentCount());
     }
-	
+
     public SequenceType getReturnType() {
         return returnType;
     }
@@ -157,13 +153,9 @@ public class FunctionSignature {
     public void setArgumentTypes(final SequenceType[] types) {
         this.arguments = types;
     }
-        
-    public void setAnnotations(final Annotation[] annotations) {
-        this.annotations = annotations;
-    }
-	
+
     public String getDescription() {
-            return description;
+        return description;
     }
 
     public void setDescription(final String description) {
@@ -171,7 +163,7 @@ public class FunctionSignature {
     }
 
     public void addMetadata(final String key, final String value) {
-        if(metadata == null) {
+        if (metadata == null) {
             metadata = new HashMap<>(5);
         }
         final String old = metadata.get(key);
@@ -206,17 +198,17 @@ public class FunctionSignature {
             return null;
         }
     }
-	
+
     public final void setDeprecated(final String message) {
         deprecated = message;
     }
 
     public boolean isPrivate() {
         final Annotation[] annotations = getAnnotations();
-        if(annotations != null) {
-            for(final Annotation annot : annotations) {
+        if (annotations != null) {
+            for (final Annotation annot : annotations) {
                 final QName qn = annot.getName();
-                if(qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalPart())) {
+                if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalPart())) {
                     return true;
                 }
             }
@@ -229,29 +221,29 @@ public class FunctionSignature {
         final StringBuilder buf = new StringBuilder();
         buf.append(name.getStringValue());
         buf.append('(');
-        if(arguments != null) {
+        if (arguments != null) {
             final char ANON_VAR = 'a';
-            for(int i = 0; i < arguments.length; i++) {
-                if(i > 0) {
+            for (int i = 0; i < arguments.length; i++) {
+                if (i > 0) {
                     buf.append(", ");
                 }
                 buf.append('$');
-                if(arguments[i] instanceof FunctionParameterSequenceType) {
-                    buf.append(((FunctionParameterSequenceType)arguments[i]).getAttributeName());
+                if (arguments[i] instanceof FunctionParameterSequenceType) {
+                    buf.append(((FunctionParameterSequenceType) arguments[i]).getAttributeName());
                 } else {
-                    buf.append((char)(ANON_VAR + i));
+                    buf.append((char) (ANON_VAR + i));
                 }
                 buf.append(" as ");
                 buf.append(arguments[i].toString());
             }
-            
-            if(isVariadic) {
+
+            if (isVariadic) {
                 buf.append(", ...");
             }
         }
         buf.append(") as ");
         buf.append(returnType.toString());
-        
+
         return buf.toString();
     }
 
@@ -261,13 +253,15 @@ public class FunctionSignature {
             return false;
         }
         // quick comparison by object identity
-        if (this == other) { return true; }
+        if (this == other) {
+            return true;
+        }
 
         // anonymous functions cannot be compared by name and argument count
         if (
                 name == null || other.name == null ||
-                name.getLocalPart().equals("") ||
-                other.name.getLocalPart().equals("")
+                        name.getLocalPart().equals("") ||
+                        other.name.getLocalPart().equals("")
         ) {
             return false;
         }
