@@ -49,6 +49,16 @@ declare variable $mt:integerKeys := map {
     7 : "Saturday"
 };
 
+declare variable $mt:places := map {
+    "Scotland": map {
+        "Highlands": map {
+            "Inverness": 1,
+            "Fort William": 1
+        },
+        "Lowlands": map { "Glasgow": 1 }
+    }
+};
+
 declare variable $mt:mapOfSequences := map {0: (), 1 : ("One", "Two") };
 
 declare
@@ -714,7 +724,7 @@ function mt:single-entry-map() {
         map:for-each($map, function($k, $v) { $k })
 };
 
-declare 
+declare
     %test:assertEquals(5)
 function mt:qname() {
     let $a := 1
@@ -975,4 +985,30 @@ function mt:map-merge-2-empty-options-map() {
     let $expected := map:merge($maps)
     let $actual := map:merge($maps, map {})
     return $expected?Su eq $actual?Su
+};
+
+(: test for issue https://github.com/eXist-db/exist/issues/5685 :)
+declare
+    %test:assertEquals("<ul><li>Scotland<ul><li>Highlands<ul><li>Fort William</li><li>Inverness</li></ul></li><li>Lowlands<ul><li>Glasgow</li></ul></li></ul></li></ul>")
+function mt:nested-map-for-each() {
+    <ul>{
+        map:for-each($mt:places, function($country-key, $region-map) {
+            <li>{
+                $country-key,
+                <ul>{
+                    map:for-each($region-map, function($region-key, $town-map) {
+                        <li>{
+                            $region-key,
+                            <ul>{
+                                map:for-each($town-map, function($town-key, $town-value) {
+                                    <li>{ $town-key }</li>
+                                })
+                            }</ul>
+                        }</li>
+                    })
+                }</ul>
+            }</li>
+        })
+    }</ul>
+    => serialize(map{'indent':false()})
 };
