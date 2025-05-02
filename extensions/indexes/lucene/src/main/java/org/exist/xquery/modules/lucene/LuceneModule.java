@@ -27,7 +27,11 @@ import java.util.Map;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 /**
  * Module function definitions for Lucene-based full text indexed searching.
@@ -68,9 +72,10 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Facets.signatures[0], Facets.class),
         new FunctionDef(Facets.signatures[1], Facets.class),
         new FunctionDef(Facets.signatures[2], Facets.class),
-        new FunctionDef(Field.signatures[0], Field.class),
-        new FunctionDef(Field.signatures[1], Field.class),
-        new FunctionDef(Field.signatures[2], Field.class),
+        new FunctionDef(Field.FS_FIELD[0], Field.class),
+        new FunctionDef(Field.FS_FIELD[1], Field.class),
+        new FunctionDef(Field.FS_BINARY_FIELD, Field.class),
+        new FunctionDef(Field.FS_HIGHLIGHT_FIELD_MATCHES, Field.class),
         new FunctionDef(LuceneIndexKeys.signatures[0], LuceneIndexKeys.class)
     };
 
@@ -96,6 +101,14 @@ public class LuceneModule extends AbstractInternalModule {
     @Override
     public String getReleaseVersion() {
         return RELEASED_IN_VERSION;
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 
     protected final static class LuceneErrorCode extends ErrorCode {

@@ -22,18 +22,16 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.facet.Facets;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.exist.dom.persistent.Match;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.modules.lucene.LuceneModule;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.ValueSequence;
 
 import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Match class containing the score of a match and a reference to
@@ -41,6 +39,7 @@ import java.util.*;
  */
 public class LuceneMatch extends Match {
 
+    private int luceneDocId = -1;
     private float score = 0.0f;
     private final Query query;
 
@@ -48,12 +47,9 @@ public class LuceneMatch extends Match {
 
     private Map<String, FieldValue[]> fields = null;
 
-    private LuceneMatch(int contextId, NodeId nodeId, Query query) {
-        this(contextId, nodeId, query, null);
-    }
-
-    LuceneMatch(int contextId, NodeId nodeId, Query query, LuceneIndexWorker.LuceneFacets facets) {
+    LuceneMatch(final int contextId, final int luceneDocId, final NodeId nodeId, final Query query, final LuceneIndexWorker.LuceneFacets facets) {
         super(contextId, nodeId, null);
+        this.luceneDocId = luceneDocId;
         this.query = query;
         this.facets = facets;
     }
@@ -61,6 +57,7 @@ public class LuceneMatch extends Match {
     private LuceneMatch(LuceneMatch copy) {
         super(copy);
         this.score = copy.score;
+        this.luceneDocId = copy.luceneDocId;
         this.query = copy.query;
         this.facets = copy.facets;
         this.fields = copy.fields;
@@ -71,8 +68,8 @@ public class LuceneMatch extends Match {
         return null;
     }
 
-    public Match createInstance(int contextId, NodeId nodeId, Query query) {
-        return new LuceneMatch(contextId, nodeId, query);
+    public int getLuceneDocId() {
+        return luceneDocId;
     }
 
     @Override
@@ -99,22 +96,6 @@ public class LuceneMatch extends Match {
 
     public Facets getFacets() {
         return this.facets.getFacets();
-    }
-
-    protected void addField(String name, IndexableField[] values) {
-        if (fields == null) {
-            fields = new HashMap<>();
-        }
-        final FieldValue[] v = new FieldValue[values.length];
-        int i = 0;
-        for (IndexableField value : values) {
-            if (value.numericValue() != null) {
-                v[i++] = new NumericField(value.numericValue());
-            } else {
-                v[i++] = new StringField(value.stringValue());
-            }
-        }
-        fields.put(name, v);
     }
 
     public @Nullable
@@ -154,85 +135,4 @@ public class LuceneMatch extends Match {
         AtomicValue getValue(int type) throws XPathException;
     }
 
-    private static class StringField implements FieldValue {
-
-        private final String value;
-
-        StringField(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public AtomicValue getValue(int type) throws XPathException {
-            switch(type) {
-                case Type.TIME:
-                    return new TimeValue(value);
-                case Type.DATE_TIME:
-                    return new DateTimeValue(value);
-                case Type.DATE:
-                    return new DateValue(value);
-                case Type.FLOAT:
-                    return new FloatValue(value);
-                case Type.DOUBLE:
-                    return new DoubleValue(value);
-                case Type.DECIMAL:
-                    return new DecimalValue(value);
-                case Type.INTEGER:
-                case Type.INT:
-                case Type.UNSIGNED_INT:
-                case Type.LONG:
-                case Type.UNSIGNED_LONG:
-                    return new IntegerValue(value);
-                default:
-                    return new StringValue(value);
-            }
-        }
-    }
-
-    private static class NumericField implements FieldValue {
-
-        private final Number value;
-
-        NumericField(Number value) {
-            this.value = value;
-        }
-
-        @Override
-        public AtomicValue getValue(int type) throws XPathException {
-            switch(type) {
-                case Type.TIME:
-                    final Date time = new Date(value.longValue());
-                    final GregorianCalendar gregorianCalendar = new GregorianCalendar();
-                    gregorianCalendar.setTime(time);
-                    final XMLGregorianCalendar calendar = TimeUtils.getInstance().newXMLGregorianCalendar(gregorianCalendar);
-                    return new TimeValue(calendar);
-                case Type.DATE_TIME:
-                    throw new XPathException((Expression) null, LuceneModule.EXXQDYFT0004, "Cannot convert numeric field to xs:dateTime");
-                case Type.DATE:
-                    final long dl = value.longValue();
-                    final int year = (int)(dl >> 16) & 0xFFFF;
-                    final int month = (int)(dl >> 8) & 0xFF;
-                    final int day = (int)(dl & 0xFF);
-                    final DateValue date = new DateValue();
-                    date.calendar.setYear(year);
-                    date.calendar.setMonth(month);
-                    date.calendar.setDay(day);
-                    return date;
-                case Type.FLOAT:
-                    return new FloatValue(value.floatValue());
-                case Type.DOUBLE:
-                    return new DoubleValue(value.floatValue());
-                case Type.DECIMAL:
-                    return new DecimalValue(value.doubleValue());
-                case Type.INTEGER:
-                case Type.INT:
-                case Type.UNSIGNED_INT:
-                case Type.LONG:
-                case Type.UNSIGNED_LONG:
-                    return new IntegerValue(value.longValue());
-                default:
-                    return new StringValue(value.toString());
-            }
-        }
-    }
 }
