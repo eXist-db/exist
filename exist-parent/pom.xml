@@ -573,7 +573,7 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <version>10.0.3</version>
                     <configuration>
-                        <nvdApiKey>cb452226-8de1-4d27-9032-7c9b8741c880</nvdApiKey>
+                        <nvdApiKey>${nvdApiKey}</nvdApiKey>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
                         <ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
 
