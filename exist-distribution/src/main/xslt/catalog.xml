@@ -23,6 +23,7 @@
 -->
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
     <system systemId="https://www.eclipse.org/jetty/configure_10_0.dtd" uri="configure_10_0.dtd"/>
+    <public publicId="-//Jetty//Configure//EN" uri="configure_10_0.dtd"/>
     <uri name="https://jakarta.ee/xml/ns/jakartae" uri="web-app_5_0.xsd"/>
     <uri name="http://www.w3.org/XML/1998/namespace" uri="xml.xsd"/>
 </catalog>
