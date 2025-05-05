@@ -22,8 +22,8 @@
 
 -->
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-    <system systemId="http://www.eclipse.org/jetty/configure_9_3.dtd"
-            uri="configure_9_3.dtd"/>
-    <uri name="http://xmlns.jcp.org/xml/ns/javaee" uri="web-app_3_1.xsd"/>
-    <uri name="http://www.w3.org/XML/1998/namespace" uri="xml.xsd"/>
+    <public publicId="-//Jetty//Configure//EN" uri="./configure_9_3.dtd"/>
+    <system systemId="https://www.eclipse.org/jetty/configure_9_3.dtd" uri="./configure_9_3.dtd"/>
+    <uri name="http://xmlns.jcp.org/xml/ns/javaee" uri="./web-app_3_1.xsd"/>
+    <uri name="http://www.w3.org/XML/1998/namespace" uri="./xml.xsd"/>
 </catalog>
