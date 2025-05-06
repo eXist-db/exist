@@ -192,8 +192,10 @@ public class Transform {
                 final Transform.TemplateInvocation invocation = new Transform.TemplateInvocation(
                         options, sourceNode, delivery, xslt30Transformer, resultDocuments);
                 return invocation.invoke();
-            } catch (final SaxonApiException | UncheckedXPathException e) {
-                throw originalXPathException("Could not transform input: ", e, ErrorCodes.FOXT0003);
+            } catch (final SaxonApiException e) {
+              throw originalXPathException("Could not transform with "+options.xsltSource._1+" line "+e.getLineNumber()+": ", e, ErrorCodes.FOXT0003);
+            } catch (final UncheckedXPathException e) {
+              throw originalXPathException("Could not transform with "+options.xsltSource._1+" line "+e.getXPathException().getLocationAsString()+": ", e, ErrorCodes.FOXT0003);
             }
 
         } else {
