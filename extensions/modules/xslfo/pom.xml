@@ -47,7 +47,7 @@
 
     <properties>
         <avalon.framework.version>4.3.1</avalon.framework.version>
-        <xmlgraphics.version>2.10</xmlgraphics.version>
+        <xmlgraphics.version>2.11</xmlgraphics.version>
     </properties>
 
     <dependencies>
