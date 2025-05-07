@@ -24,34 +24,30 @@ package org.exist.xquery.functions.system;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-public class GetModuleLoadPath extends BasicFunction {
+public class GetMainModuleLoadPath extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetModuleLoadPath.class);
+    protected final static Logger logger = LogManager.getLogger(GetMainModuleLoadPath.class);
 
     public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-module-load-path", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Returns the module load path from the current query context. The module load path " +
-            "corresponds to the source location from where this module is loaded." +
-            "The module load path is also used to resolve relative XInclude paths.",
+			new QName("get-main-module-load-path", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
+			"Returns the module load path from the root query context. The module load path " +
+            "corresponds to the location on the file system or the collection in the database " +
+            "of the main module that was compiled.",
 			FunctionSignature.NO_ARGS,
-			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the module load path"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the main module load path"));
 
-    public GetModuleLoadPath(XQueryContext context) {
+    public GetMainModuleLoadPath(XQueryContext context) {
         super(context, signature);
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue(this, context.getModuleLoadPath());
+        return new StringValue(this, context.getRootContext().getModuleLoadPath());
     }
 }
