@@ -46,6 +46,81 @@ The notes of past Community Calls are located [here](https://drive.google.com/dr
 
 New developers may find the notes in [BUILD.md](https://github.com/eXist-db/exist/blob/develop/BUILD.md) and [CONTRIBUTING.md](https://github.com/eXist-db/exist/blob/develop/CONTRIBUTING.md) helpful to start using and sharing your work with the eXist community.
 
+## Installation
+### Prerequisites
+Ensure you have the following installed on your system:
+- **Java 11+** (e.g., OpenJDK or Oracle JDK)
+- **Git** (optional, for cloning the repository)
+
+### Installing eXist-db
+#### Option 1: Download Binary Release
+1. Go to the [eXist-db Releases](https://github.com/eXist-db/exist/releases) page.
+2. Download the latest stable release.
+3. Extract the archive and navigate to the installation folder.
+4. Run the following command to start the server:
+   ```sh
+   ./bin/startup.sh # For macOS/Linux
+   bin\startup.bat  # For Windows
+   ```
+5. Access the web-based interface at [http://localhost:8080/exist](http://localhost:8080/exist).
+
+#### Option 2: Build from Source
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/eXist-db/exist.git
+   cd exist
+   ```
+2. Build using Gradle:
+   ```sh
+   ./gradlew clean assemble
+   ```
+3. Run the server:
+   ```sh
+   ./build/install/exist/bin/startup.sh
+   ```
+
+## Usage
+Once eXist-db is running, you can:
+- Use the **Dashboard** to manage collections and run XQueries.
+- Access the **REST API** at `http://localhost:8080/exist/rest/db`.
+- Connect programmatically via **Java, Python, or HTTP requests**.
+
+## User Guide
+### Accessing the Dashboard
+1. Open your web browser and go to [http://localhost:8080/exist](http://localhost:8080/exist).
+2. Log in using the default credentials (admin:admin) or your configured user.
+3. Navigate through the **Dashboard** to explore collections, run queries, and manage resources.
+
+### Managing Collections
+- Collections are directories that store XML documents.
+- To create a new collection:
+  1. Go to the **Dashboard**.
+  2. Click on **Collections**.
+  3. Click **New Collection**, enter a name, and save.
+- To upload an XML file:
+  1. Open a collection.
+  2. Click **Upload File** and select your XML file.
+
+### Running XQuery Queries
+1. Open the **Query Editor** from the Dashboard.
+2. Enter your XQuery, for example:
+   ```xquery
+   for $x in collection("/db/mycollection")/book
+   where $x/author = "John Doe"
+   return $x/title
+   ```
+3. Click **Run Query** to execute and view the results.
+
+### Using the REST API
+- Retrieve an XML document:
+  ```sh
+  curl -X GET http://localhost:8080/exist/rest/db/mycollection/myfile.xml
+  ```
+- Store a new XML document:
+  ```sh
+  curl -X PUT --data-binary @file.xml -H "Content-Type: application/xml" http://localhost:8080/exist/rest/db/mycollection/newfile.xml
+  ```
+
 ## Credits
 
 The eXist-db developers use the YourKit Java Profiler.
