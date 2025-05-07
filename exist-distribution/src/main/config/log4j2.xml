@@ -154,7 +154,17 @@
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="exist.core"/>
         </Logger>
-        
+
+        <!--
+            the requestlog was previously written into separate files
+            if you want to retain that you need to add a new appender
+            and change the AppenderRef to reference it here
+        -->
+        <Logger name="org.eclipse.jetty.server.RequestLog" additivity="false" level="info">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="exist.core"/><!-- request log is now written to exist.log -->
+        </Logger>
+
         <Logger name="org.exist.jetty.StandaloneServer" additivity="false" level="trace">
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="exist.core"/>
