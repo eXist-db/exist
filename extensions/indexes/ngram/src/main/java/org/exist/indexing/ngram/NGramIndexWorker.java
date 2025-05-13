@@ -150,7 +150,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) {
                 final String qname = ((Element) node).getAttribute(QNAME_ATTR);
-                if (qname == null || qname.isEmpty()) {
+                if (qname.isEmpty()) {
                     throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
                             " must have an attribute " + QNAME_ATTR);
                 }

@@ -22,7 +22,6 @@
 package org.exist.xquery.modules.mail;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Version;
@@ -832,19 +831,18 @@ public class SendEmailFunction extends BasicFunction {
                                     // Now, time to store it
                                     if (content != null && contentType != null && !contentType.isEmpty()) {
                                         String charset = elementBodyPart.getAttribute("charset");
+                                        if (charset.isEmpty()) {
+                                            charset = "UTF-8";
+                                        }
+
                                         String encoding = elementBodyPart.getAttribute("encoding");
+                                        if (encoding.isEmpty()) {
+                                            encoding = "quoted-printable";
+                                        }
 
                                         if (body != null && multibody == null) {
                                             multibody = new MimeMultipart("alternative");
                                             multibody.addBodyPart(body);
-                                        }
-
-                                        if (StringUtils.isEmpty(charset)) {
-                                            charset = "UTF-8";
-                                        }
-
-                                        if (StringUtils.isEmpty(encoding)) {
-                                            encoding = "quoted-printable";
                                         }
 
                                         if (body == null) {
@@ -855,9 +853,7 @@ public class SendEmailFunction extends BasicFunction {
                                         }
                                         body = new MimeBodyPart();
                                         body.setText(content, charset, contentType);
-                                        if (encoding != null) {
-                                            body.setHeader("Content-Transfer-Encoding", encoding);
-                                        }
+                                        body.setHeader("Content-Transfer-Encoding", encoding);
                                         if (multibody != null) {
                                             multibody.addBodyPart(body);
                                         }

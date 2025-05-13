@@ -439,7 +439,7 @@ public class Transform extends BasicFunction {
                     final Element elem = (Element) child;
                     final String name = elem.getAttribute("name");
                     final String value = elem.getAttribute("value");
-                    if (name == null || value == null) {
+                    if (name.isEmpty() || value.isEmpty()) {
                         throw new XPathException(this, "Name or value attribute missing");
                     }
 

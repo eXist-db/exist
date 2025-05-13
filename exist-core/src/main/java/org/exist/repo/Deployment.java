@@ -203,17 +203,17 @@ public class Deployment {
                     final String semVerMin = dependency.getAttribute("semver-min");
                     final String semVerMax = dependency.getAttribute("semver-max");
                     PackageLoader.Version version = null;
-                    if (semVer != null) {
+                    if (!semVer.isEmpty()) {
                         version = new PackageLoader.Version(semVer, true);
-                    } else if (semVerMax != null || semVerMin != null) {
-                        version = new PackageLoader.Version(semVerMin, semVerMax);
-                    } else if (pkgVersion != null) {
+                    } else if (!semVerMax.isEmpty() || !semVerMin.isEmpty()) {
+                        version = new PackageLoader.Version(semVerMin.isEmpty() ? null: semVerMin, semVerMax.isEmpty() ? null: semVerMax);
+                    } else if (!pkgVersion.isEmpty()) {
                         version = new PackageLoader.Version(versionStr, false);
                     }
 
-                    if (processor != null && processor.equals(PROCESSOR_NAME) && version != null) {
+                    if (processor.equals(PROCESSOR_NAME) && version != null) {
                         checkProcessorVersion(version);
-                    } else if (pkgName != null) {
+                    } else if (!pkgName.isEmpty()) {
                         LOG.info("Package {} depends on {}", name, pkgName);
                         boolean isInstalled = false;
                         if (repo.get().getParentRepo().getPackages(pkgName) != null) {
@@ -392,11 +392,11 @@ public class Deployment {
                 // extract the permissions (if any)
                 final Optional<ElementImpl> permissions = findElement(repoXML, PERMISSIONS_ELEMENT);
                 final Optional<RequestedPerms> requestedPerms = permissions.flatMap(elem -> {
-                    final Optional<Either<Integer, String>> perms = Optional.ofNullable(elem.getAttribute("mode")).flatMap(mode -> {
+                    final Optional<Either<Integer, String>> perms = Optional.of(elem.getAttribute("mode")).flatMap(mode -> {
                         try {
                             return Optional.of(Either.Left(Integer.parseInt(mode, 8)));
                         } catch(final NumberFormatException e) {
-                            if(mode.matches("^[rwx-]{9}")) {
+                            if (mode.matches("^[rwx-]{9}")) {
                                 return Optional.of(Either.Right(mode));
                             } else {
                                 return Optional.empty();
@@ -407,13 +407,13 @@ public class Deployment {
                     return perms.map(p -> new RequestedPerms(
                         elem.getAttribute("user"),
                         elem.getAttribute("password"),
-                        Optional.ofNullable(elem.getAttribute("group")),
+                        Optional.of(elem.getAttribute("group")),
                         p
                     ));
                 });
 
                 //check that if there were permissions then we were able to parse them, a failure would be related to the mode string
-                if(permissions.isPresent() && !requestedPerms.isPresent()) {
+                if (permissions.isPresent() && requestedPerms.isEmpty()) {
                     final String mode = permissions.map(elem -> elem.getAttribute("mode")).orElse(null);
                     throw new PackageException("Bad format for mode attribute in <permissions>: " + mode);
                 }
@@ -480,7 +480,7 @@ public class Deployment {
         if (repo.isPresent()) {
             final Optional<Package> pkg = getPackage(pkgName, repo);
             final Optional<Path> maybePackageDir = pkg.map(this::getPackageDir);
-            if (!maybePackageDir.isPresent()) {
+            if (maybePackageDir.isEmpty()) {
                 throw new PackageException("Cleanup: package dir for package " + pkgName + " not found");
             }
 

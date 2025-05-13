@@ -144,7 +144,7 @@ public abstract class TestCase {
 		}
 		
 		String compare = outputFile.getAttribute("compare");
-		if (compare == null) compare = "Fragment";
+		if (compare.isEmpty()) compare = "Fragment";
 		compare = compare.toUpperCase();
 
 		try(final Reader reader = Files.newBufferedReader(expectedResult)) {

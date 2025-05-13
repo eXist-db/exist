@@ -103,30 +103,28 @@ public class MailSessionFunctions extends BasicFunction
 		
 		Authenticator auth = null;
 		
-		if( args.length > 1 ) {
-		  // get the authentication parameters
-		  Element authElement = (Element) ((NodeValue) args[1].itemAt(0)).getNode();
-		  if( authElement != null ) {
-		    String username = authElement.getAttribute("username");
-				String password = authElement.getAttribute("password");
-		    if( username != null && password != null ) {
-		      auth = new Authenticator() {
-							@Override
-						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(username, password);
-						}
-					};
-		    } else {
-		      throw new IllegalArgumentException("'username' and 'password' attributes are mandatory in the 'authentication' element");
+		if (args.length > 1) {
+			// get the authentication parameters
+		  	Element authElement = (Element) ((NodeValue) args[1].itemAt(0)).getNode();
+		  	if (authElement == null) {
+				throw new IllegalArgumentException("'authentication' element missing");
 		    }
-		  } else {
-		    throw new IllegalArgumentException("'authentication' element missing");
-		  }
+			String username = authElement.getAttribute("username");
+			String password = authElement.getAttribute("password");
+		    if (username.isEmpty() || password.isEmpty()) {
+				throw new IllegalArgumentException("'username' and 'password' attributes are mandatory in the 'authentication' element");
+		    }
+			auth = new Authenticator() {
+				@Override
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(username, password);
+				}
+			};
 		}
 		
 		Session session = Session.getInstance( props, auth );
 		
 		// store the session and return the handle of the session
-    return new IntegerValue( this, MailModule.storeSession( context, session ), Type.LONG );
+    	return new IntegerValue(this, MailModule.storeSession( context, session ), Type.LONG );
 	}
 }

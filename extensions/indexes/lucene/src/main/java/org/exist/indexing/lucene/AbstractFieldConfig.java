@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -65,7 +64,7 @@ public abstract class AbstractFieldConfig {
 
     public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
-        if (StringUtils.isNotEmpty(xpath)) {
+        if (xpath.isEmpty()) {
 
             final StringBuilder sb = new StringBuilder();
             namespaces.forEach((prefix, uri) -> {

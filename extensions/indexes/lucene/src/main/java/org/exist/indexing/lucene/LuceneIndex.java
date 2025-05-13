@@ -88,7 +88,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             LOG.debug("Configuring Lucene index");
 
         String bufferSizeParam = config.getAttribute("buffer");
-        if (bufferSizeParam != null)
+        if (!bufferSizeParam.isEmpty())
             try {
                 bufferSize = Double.parseDouble(bufferSizeParam);
             } catch (NumberFormatException e) {

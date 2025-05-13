@@ -61,7 +61,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String param = config.getAttribute("connectionTimeout");
-        if (param != null) {
+        if (!param.isEmpty()) {
             try {
                 connectionTimeout = Long.parseLong(param);
             } catch (NumberFormatException e) {
@@ -70,7 +70,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         }
 
         param = config.getAttribute("max_docs_in_context_to_refine_query");
-        if (param != null) {
+        if (!param.isEmpty()) {
             try {
                 max_docs_in_context_to_refine_query = Integer.parseInt(param);
             } catch (NumberFormatException e) {
