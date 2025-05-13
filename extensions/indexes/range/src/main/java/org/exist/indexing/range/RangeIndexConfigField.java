@@ -52,11 +52,11 @@ public class RangeIndexConfigField {
     public RangeIndexConfigField(NodePath parentPath, Element elem, Map<String, String> namespaces) throws DatabaseConfigurationException {
         name = elem.getAttribute("name");
         path = parentPath;
-        if (name == null || name.isEmpty()) {
+        if (name.isEmpty()) {
             throw new DatabaseConfigurationException("Range index module: field element requires a name attribute");
         }
         String match = elem.getAttribute("match");
-        if (match != null && !match.isEmpty()) {
+        if (!match.isEmpty()) {
             try {
                 relPath = new NodePath(namespaces, match);
                 if (relPath.length() == 0)
@@ -70,7 +70,7 @@ public class RangeIndexConfigField {
             path = parentPath;
         }
         String typeStr = elem.getAttribute("type");
-        if (typeStr != null && !typeStr.isEmpty()) {
+        if (!typeStr.isEmpty()) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -78,7 +78,7 @@ public class RangeIndexConfigField {
             }
         }
         String custom = elem.getAttribute("converter");
-        if (custom != null && !custom.isEmpty()) {
+        if (!custom.isEmpty()) {
             try {
                 Class customClass = Class.forName(custom);
                 typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
@@ -89,12 +89,12 @@ public class RangeIndexConfigField {
             }
         }
         String nested = elem.getAttribute("nested");
-        includeNested = (nested == null || "yes".equalsIgnoreCase(nested));
+        includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
         path.setIncludeDescendants(includeNested);
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = elem.getAttribute("whitespace");
-        if (whitespace != null) {
+        if (!whitespace.isEmpty()) {
             if ("trim".equalsIgnoreCase(whitespace)) {
                 wsTreatment = XMLString.SUPPRESS_BOTH;
             } else if ("normalize".equalsIgnoreCase(whitespace)) {
@@ -103,7 +103,7 @@ public class RangeIndexConfigField {
         }
 
         String caseStr = elem.getAttribute("case");
-        if (caseStr != null && !caseStr.isEmpty()) {
+        if (!caseStr.isEmpty()) {
             caseSensitive = "yes".equalsIgnoreCase(caseStr);
         }
     }

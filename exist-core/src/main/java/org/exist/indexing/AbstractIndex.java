@@ -49,8 +49,9 @@ public abstract class AbstractIndex implements Index {
             throws DatabaseConfigurationException {
         this.pool = pool;
         this.dataDir = dataDir; 
-        if (config != null && config.hasAttribute("id"))
-            {name = config.getAttribute("id");}
+        if (config != null && config.hasAttribute("id")) {
+            name = config.getAttribute("id");
+        }
     }
 
     @Override

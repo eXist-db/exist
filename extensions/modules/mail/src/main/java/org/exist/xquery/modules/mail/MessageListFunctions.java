@@ -476,68 +476,56 @@ public class MessageListFunctions extends BasicFunction
 	{
 		SearchTerm	st = null;
 		
-		if( terms.getNodeType() == Node.ELEMENT_NODE && "searchTerm".equalsIgnoreCase(terms.getLocalName()) ) {
+		if (terms.getNodeType() == Node.ELEMENT_NODE && "searchTerm".equalsIgnoreCase(terms.getLocalName()) ) {
 			String type  = ((Element)terms).getAttribute( "type" );
 			
-			if( type != null ) {
-				if( "not".equalsIgnoreCase(type) ) {
-					st = new NotTerm( parseChildSearchTerm( terms ) );
-				} else if( "and".equalsIgnoreCase(type) ) {
-					st = new AndTerm( parseChildSearchTerms( terms ) );
-				} else if( "or".equalsIgnoreCase(type) ) {
-					st = new OrTerm( parseChildSearchTerms( terms ) );
-				} else if( "from".equalsIgnoreCase(type) ) {
-					st = parseFromTerm( terms );
-				} else if( "subject".equalsIgnoreCase(type) ) {
-					st = parseSubjectTerm( terms );
-				} else if( "body".equalsIgnoreCase(type) ) {
-					st = parseBodyTerm( terms );
-				} else if( "to".equalsIgnoreCase(type) || "recipient".equalsIgnoreCase(type) ) {
-					st = parseRecipientTerm( terms );
-				} else if( "header".equalsIgnoreCase(type) ) {
-					st = parseHeaderTerm( terms );
-				} else if( "flag".equalsIgnoreCase(type) ) {
-					st = parseFlagTerm( terms );
-				} else if( "sent".equalsIgnoreCase(type) ) {
-					st = parseSentDateTerm( terms );
-				} else if( "received".equalsIgnoreCase(type) ) {
-					st = parseReceivedDateTerm( terms );
-				} else {
-					throw( new XPathException(this, "Invalid Search Term type specified: " + type ) );
-				}
-			} else {
+			if (type.isEmpty()) {
 				throw( new XPathException(this, "Invalid Search Term type specified: null" ) );
 			}
-		} 
-		
-		if( st == null ) {
-			throw( new XPathException(this, "Invalid Search Terms specified" ) );
+			if ("not".equalsIgnoreCase(type) ) {
+				st = new NotTerm( parseChildSearchTerm( terms ) );
+			} else if ("and".equalsIgnoreCase(type) ) {
+				st = new AndTerm( parseChildSearchTerms( terms ) );
+			} else if ("or".equalsIgnoreCase(type) ) {
+				st = new OrTerm( parseChildSearchTerms( terms ) );
+			} else if ("from".equalsIgnoreCase(type) ) {
+				st = parseFromTerm( terms );
+			} else if ("subject".equalsIgnoreCase(type) ) {
+				st = parseSubjectTerm( terms );
+			} else if ("body".equalsIgnoreCase(type) ) {
+				st = parseBodyTerm( terms );
+			} else if( "to".equalsIgnoreCase(type) || "recipient".equalsIgnoreCase(type) ) {
+				st = parseRecipientTerm( terms );
+			} else if( "header".equalsIgnoreCase(type) ) {
+				st = parseHeaderTerm( terms );
+			} else if( "flag".equalsIgnoreCase(type) ) {
+				st = parseFlagTerm( terms );
+			} else if( "sent".equalsIgnoreCase(type) ) {
+				st = parseSentDateTerm( terms );
+			} else if( "received".equalsIgnoreCase(type) ) {
+				st = parseReceivedDateTerm( terms );
+			} else {
+				throw new XPathException(this, "Invalid Search Term type specified: " + type );
+			}
 		}
 		
-		return( st );
+		if (st == null) {
+			throw new XPathException(this, "Invalid Search Terms specified" );
+		}
+		
+		return st;
 	}
 
-	private SearchTerm parseChildSearchTerm( Node terms ) throws XPathException
-	{
+	private SearchTerm parseChildSearchTerm(Node terms) throws XPathException {
+		final NodeList children = terms.getChildNodes();
 		// Parent only allows a single child search term
-		
-		SearchTerm	st = null;
-		
-		NodeList children = terms.getChildNodes();
-		
-		if( children.getLength() == 1 ) {
-			Node child = children.item( 0 );
-			
-			st = parseSearchTerms( child );
-		} else {
-			throw( new XPathException(this, "Only one child term is allowed for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		if (children.getLength() != 1) {
+			throw new XPathException(this, "Only one child term is allowed for term with type: " + ((Element) terms).getAttribute("type"));
 		}
-		
-		return( st );
+		return parseSearchTerms(children.item(0));
 	}
 
-	private SearchTerm[] parseChildSearchTerms( Node terms ) throws XPathException
-	{
+	private SearchTerm[] parseChildSearchTerms( Node terms ) throws XPathException {
 		// Parent allows multiple child search terms
 		
 		ArrayList<SearchTerm> st = new ArrayList<>();
@@ -557,227 +545,166 @@ public class MessageListFunctions extends BasicFunction
 		return st.toArray(new SearchTerm[0]);
 	}
 
-	private SearchTerm parseFromTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
-		
-		String pattern  = ((Element)terms).getAttribute( "pattern" );
-		
-		if( pattern != null && !pattern.isEmpty()) {
-			st = new FromStringTerm( pattern );
-		} else {
-			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+	private SearchTerm parseFromTerm( Node terms ) throws XPathException {
+		final String pattern  = ((Element)terms).getAttribute("pattern");
+		if (pattern.isEmpty()) {
+			throw new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ));
 		}
-		
-		return( st );
+		return new FromStringTerm( pattern );
 	}
 
-	private SearchTerm parseSubjectTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
-		
-		String pattern  = ((Element)terms).getAttribute( "pattern" );
-		
-		if( pattern != null && !pattern.isEmpty()) {
-			st = new SubjectTerm( pattern );
-		} else {
-			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+	private SearchTerm parseSubjectTerm( Node terms ) throws XPathException {
+		final String pattern  = ((Element)terms).getAttribute("pattern");
+		if (pattern.isEmpty()) {
+			throw new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) );
 		}
-		
-		return( st );
+		return new SubjectTerm( pattern );
 	}
 
-	private SearchTerm parseBodyTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
+	private SearchTerm parseBodyTerm( Node terms ) throws XPathException {
+		final String pattern = ((Element)terms).getAttribute("pattern");
 		
-		String pattern  = ((Element)terms).getAttribute( "pattern" );
-		
-		if( pattern != null && !pattern.isEmpty()) {
-			st = new BodyTerm( pattern );
-		} else {
-			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		if (pattern.isEmpty()) {
+			throw new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ));
 		}
-		
-		return( st );
+		return new BodyTerm(pattern);
 	}
 
-	private SearchTerm parseRecipientTerm( Node terms ) throws XPathException
-	{
+	private SearchTerm parseRecipientTerm( Node terms ) throws XPathException {
 		SearchTerm	st = null;
 		
 		String pattern  = ((Element)terms).getAttribute( "pattern" );
 		String type     = ((Element)terms).getAttribute( "recipientType" );
-		
-		if( StringUtils.isEmpty(type) ) {
-			throw( new XPathException(this, "recipientType not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		String _type     = ((Element)terms).getAttribute( "type" );
+
+		if (type.isEmpty()) {
+			throw new XPathException(this, "recipientType not specified for term with type: " + _type);
 		}
 		
-		if( pattern != null && !pattern.isEmpty()) {
-			Message.RecipientType rtype = null;
-			
-			if( "to".equalsIgnoreCase(type) ) {
-				rtype = Message.RecipientType.TO;
-			} else if( "cc".equalsIgnoreCase(type) ) {
-				rtype = Message.RecipientType.CC;
-			} else if( "bcc".equalsIgnoreCase(type) ) {
-				rtype = Message.RecipientType.BCC;
-			} else {
-				throw( new XPathException(this, "Invalid recipientType: " + type + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
-			}
-			
-			st = new RecipientStringTerm( rtype, pattern );
+		if (pattern.isEmpty()) {
+			throw new XPathException(this, "Pattern attribute must be specified for term with type: " + _type);
+		}
+
+		Message.RecipientType rtype = null;
+		if ("to".equalsIgnoreCase(type) ) {
+			rtype = Message.RecipientType.TO;
+		} else if( "cc".equalsIgnoreCase(type) ) {
+			rtype = Message.RecipientType.CC;
+		} else if( "bcc".equalsIgnoreCase(type) ) {
+			rtype = Message.RecipientType.BCC;
 		} else {
-			throw( new XPathException(this, "Pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw new XPathException(this, "Invalid recipientType: " + type + ", for term with type: " + ((Element)terms).getAttribute("type"));
 		}
-		
-		return( st );
+		return new RecipientStringTerm( rtype, pattern );
 	}
 
-	private SearchTerm parseHeaderTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
-		
-		String pattern  = ((Element)terms).getAttribute( "pattern" );
-		String name     = ((Element)terms).getAttribute( "name" );
-		
-		if( StringUtils.isEmpty(name) ) {
-			throw( new XPathException(this, "name not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+	private SearchTerm parseHeaderTerm( Node terms ) throws XPathException {
+		final String name = ((Element)terms).getAttribute( "name" );
+		if (name.isEmpty() ) {
+			throw new XPathException(this, "name not specified for term with type: " + ((Element)terms).getAttribute("type"));
 		}
-		
-		if( pattern != null && !pattern.isEmpty()) {
-			st = new HeaderTerm( name, pattern );
-		} else {
-			throw( new XPathException(this, "pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		final String pattern = ((Element)terms).getAttribute( "pattern" );
+		if (pattern.isEmpty()) {
+			throw new XPathException(this, "pattern attribute must be specified for term with type: " + ((Element)terms).getAttribute("type"));
 		}
-		
-		return( st );
+		return new HeaderTerm( name, pattern );
 	}
 
 	private SearchTerm parseFlagTerm( Node terms ) throws XPathException
 	{
-		SearchTerm	st = null;
-		
-		String flag  = ((Element)terms).getAttribute( "flag" );
-		String value = ((Element)terms).getAttribute( "value" );
-		
-		if( StringUtils.isEmpty(value) ) {
-			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		final String value = ((Element)terms).getAttribute("value");
+		if (value.isEmpty() ) {
+			throw new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute("type"));
 		}
-		
-		if( flag != null && !flag.isEmpty()) {
-			Flags flags = null;
-			
-			if( "answered".equalsIgnoreCase(flag) ) {
-				flags = new Flags( Flags.Flag.ANSWERED );
-			} else if( "deleted".equalsIgnoreCase(flag) ) {
-				flags = new Flags( Flags.Flag.DELETED );
-			} else if( "draft".equalsIgnoreCase(flag) ) {
-				flags = new Flags( Flags.Flag.DRAFT );
-			} else if( "recent".equalsIgnoreCase(flag) ) {
-				flags = new Flags( Flags.Flag.RECENT );
-			} else if( "seen".equalsIgnoreCase(flag) ) {
-				flags = new Flags( Flags.Flag.SEEN );
-			} else {
-				throw( new XPathException(this, "Invalid flag: " + flag + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
-			}
-				
-			st = new FlagTerm( flags, "true".equalsIgnoreCase(value) );
+
+		final String flag  = ((Element)terms).getAttribute("flag");
+		if (flag.isEmpty()) {
+			throw new XPathException(this, "flag attribute must be specified for term with type: " + ((Element)terms).getAttribute("type"));
+		}
+		final Flags flags;
+
+		if ("answered".equalsIgnoreCase(flag) ) {
+			flags = new Flags( Flags.Flag.ANSWERED );
+		} else if( "deleted".equalsIgnoreCase(flag) ) {
+			flags = new Flags( Flags.Flag.DELETED );
+		} else if( "draft".equalsIgnoreCase(flag) ) {
+			flags = new Flags( Flags.Flag.DRAFT );
+		} else if( "recent".equalsIgnoreCase(flag) ) {
+			flags = new Flags( Flags.Flag.RECENT );
+		} else if( "seen".equalsIgnoreCase(flag) ) {
+			flags = new Flags( Flags.Flag.SEEN );
 		} else {
-			throw( new XPathException(this, "flag attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+			throw new XPathException(this, "Invalid flag: " + flag + ", for term with type: " + ((Element)terms).getAttribute("type"));
 		}
-		
-		return( st );
+
+		return new FlagTerm(flags, "true".equalsIgnoreCase(value) );
 	}
 
-	private SearchTerm parseSentDateTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
-		
-		String value = ((Element)terms).getAttribute( "date" );
-		String format = ((Element)terms).getAttribute( "format" );
-		
-		if( StringUtils.isEmpty(value) ) {
+	private SearchTerm parseSentDateTerm( Node terms ) throws XPathException {
+		final String value = ((Element)terms).getAttribute( "date" );
+		if (value.isEmpty() ) {
 			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
-		
-		if( StringUtils.isEmpty(format) ) {
+		final String format = ((Element)terms).getAttribute( "format" );
+		if (format.isEmpty() ) {
 			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
 		
 		int  cp = parseComparisonAttribute( terms );
-		
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat( format );
-			
 			Date date = sdf.parse( value );
-			
-			st = new SentDateTerm( cp, date );
+			return new SentDateTerm( cp, date );
 		}
-		catch( ParseException pe ) {
-			throw( new XPathException(this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		catch (ParseException pe) {
+			throw new XPathException(this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ));
 		}
-		
-		return( st );
 	}
 
-	private SearchTerm parseReceivedDateTerm( Node terms ) throws XPathException
-	{
-		SearchTerm	st = null;
-		
+	private SearchTerm parseReceivedDateTerm( Node terms ) throws XPathException {
 		String value = ((Element)terms).getAttribute( "date" );
-		String format = ((Element)terms).getAttribute( "format" );
-		
-		if( StringUtils.isEmpty(value) ) {
-			throw( new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		if ( value.isEmpty() ) {
+			throw new XPathException(this, "value not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) ;
 		}
-		
-		if( StringUtils.isEmpty(format) ) {
-			throw( new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+
+		String format = ((Element)terms).getAttribute( "format" );
+		if ( format.isEmpty() ) {
+			throw new XPathException(this, "format not specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) ;
 		}
 		
 		int  cp = parseComparisonAttribute( terms );
-		
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat( format );
-			
 			Date date = sdf.parse( value );
-			
-			st = new ReceivedDateTerm( cp, date );
+			return new ReceivedDateTerm( cp, date );
 		}
 		catch( ParseException pe ) {
 			throw( new XPathException(this, "Cannot parse date value: " + value + ", using format: " + format + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
 		}
-		
-		return( st );
 	}
 
 	private int parseComparisonAttribute( Node terms ) throws XPathException
 	{
-		int  cp = ComparisonTerm.EQ;
-		
 		String comp  = ((Element)terms).getAttribute( "comparison" );
-		
-		if( comp != null && !comp.isEmpty()) {
-			if( "eq".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.EQ;
-			} else if( "ge".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.GE;
-			} else if( "gt".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.GT;
-			} else if( "le".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.LE;
-			} else if( "lt".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.LT;
-			} else if( "ne".equalsIgnoreCase(comp) ) {
-				cp = ComparisonTerm.NE;
-			} else {
-				throw( new XPathException(this, "Invalid comparison: " + comp + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
-			}
-		} else {
-			throw( new XPathException(this, "comparison attribute must be specified for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		if (comp.isEmpty()) {
+			throw new XPathException(this, "comparison attribute must be specified for term with type: " + ((Element) terms).getAttribute("type"));
 		}
-		
-		return( cp );
+		int  cp = ComparisonTerm.EQ;
+		if ("eq".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.EQ;
+		} else if( "ge".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.GE;
+		} else if( "gt".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.GT;
+		} else if( "le".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.LE;
+		} else if( "lt".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.LT;
+		} else if( "ne".equalsIgnoreCase(comp) ) {
+			cp = ComparisonTerm.NE;
+		} else {
+			throw( new XPathException(this, "Invalid comparison: " + comp + ", for term with type: " + ((Element)terms).getAttribute( "type" ) ) );
+		}
+		return cp;
 	}
 }

@@ -568,26 +568,19 @@ public class Configuration implements ErrorHandler {
                 final String uri = elem.getAttribute(BUILT_IN_MODULE_URI_ATTRIBUTE);
 
                 // uri attribute is the identifier and is always required
-                if (uri == null) {
+                if (uri.isEmpty()) {
                     throw (new DatabaseConfigurationException("element 'module' requires an attribute 'uri'"));
                 }
 
                 final String clazz = elem.getAttribute(BUILT_IN_MODULE_CLASS_ATTRIBUTE);
                 final String source = elem.getAttribute(BUILT_IN_MODULE_SOURCE_ATTRIBUTE);
                 // either class or source attribute must be present
-                if (clazz == null && source == null) {
+                if (clazz.isEmpty() && source.isEmpty()) {
                     throw (new DatabaseConfigurationException("element 'module' requires either an attribute " + "'class' or 'src'"));
                 }
 
-                if (source != null) {
-                    // Store src attribute info
-
-                    modulesSourceMap.put(uri, source);
-
-                    LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
-                } else {
+                if (source.isEmpty()) {
                     // source class attribute info
-
                     // Get class of module
                     final Class<?> moduleClass = lookupModuleClass(uri, clazz);
 
@@ -597,6 +590,10 @@ public class Configuration implements ErrorHandler {
                     }
 
                     LOG.debug("Configured module '{}' implemented in '{}'", uri, clazz);
+                } else {
+                    // Store src attribute info
+                    modulesSourceMap.put(uri, source);
+                    LOG.debug("Registered mapping for module '{}' to '{}'", uri, source);
                 }
 
                 //parse any module parameters
@@ -670,9 +667,9 @@ public class Configuration implements ErrorHandler {
                 final String value = attr.getAttribute("value");
                 final String type = attr.getAttribute("type");
 
-                if (name == null || name.isEmpty()) {
+                if (name.isEmpty()) {
                     LOG.warn("Discarded invalid attribute for TransformerFactory: '{}', name not specified", className);
-                } else if (type == null || type.isEmpty() || "string".equalsIgnoreCase(type)) {
+                } else if (type.isEmpty() || "string".equalsIgnoreCase(type)) {
                     attributes.put(name, value);
                 } else if ("boolean".equalsIgnoreCase(type)) {
                     attributes.put(name, Boolean.valueOf(value));
@@ -761,11 +758,11 @@ public class Configuration implements ErrorHandler {
                 final Element filterElem = (Element) nlFilters.item(i);
                 final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-                if (filterClass != null) {
+                if (filterClass.isEmpty()) {
+                    LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                } else {
                     filters.add(filterClass);
                     LOG.debug(PRP_DETAILS, CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filterClass);
-                } else {
-                    LOG.warn("Configuration element " + CustomMatchListenerFactory.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
                 }
             }
             setProperty(CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filters);
@@ -779,15 +776,15 @@ public class Configuration implements ErrorHandler {
                 final Element filterElem = (Element) backupFilters.item(i);
                 final String filterClass = filterElem.getAttribute(CustomMatchListenerFactory.CONFIGURATION_ATTR_CLASS);
 
-                if (filterClass != null) {
+                if (filterClass.isEmpty()) {
+                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
+                } else {
                     filters.add(filterClass);
                     LOG.debug(PRP_DETAILS, CustomMatchListenerFactory.CONFIG_MATCH_LISTENERS, filterClass);
-                } else {
-                    LOG.warn("Configuration element " + SystemExport.CONFIGURATION_ELEMENT + " needs an attribute 'class'");
                 }
-                if (!filters.isEmpty()) {
-                    setProperty(SystemExport.CONFIG_FILTERS, filters);
-                }
+            }
+            if (!filters.isEmpty()) {
+                setProperty(SystemExport.CONFIG_FILTERS, filters);
             }
         }
     }
@@ -1182,11 +1179,11 @@ public class Configuration implements ErrorHandler {
             final String className = elem.getAttribute(IndexManager.INDEXER_MODULES_CLASS_ATTRIBUTE);
             final String id = elem.getAttribute(IndexManager.INDEXER_MODULES_ID_ATTRIBUTE);
 
-            if (className == null || className.isEmpty()) {
+            if (className.isEmpty()) {
                 throw (new DatabaseConfigurationException("Required attribute class is missing for module"));
             }
 
-            if (id == null || id.isEmpty()) {
+            if (id.isEmpty()) {
                 throw (new DatabaseConfigurationException("Required attribute id is missing for module"));
             }
 
@@ -1297,7 +1294,8 @@ public class Configuration implements ErrorHandler {
             return value;
         }
         // If the value has not been overridden in a system property, then get it from the configuration
-        return element.getAttribute(attributeName);
+        final String uuuu = element.getAttribute(attributeName);
+        return uuuu.isEmpty() ? null : element.getAttribute(attributeName);
     }
 
     private <T> void configureProperty(final Element element, final String attributeName, final String propertyName,

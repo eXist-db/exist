@@ -116,7 +116,7 @@ public class AnalyzerConfig {
      */
     public void addAnalyzer(Element config) throws DatabaseConfigurationException {
 
-        // Configure lucene analuzer with configuration
+        // Configure lucene analyzer with configuration
         final Analyzer analyzer = configureAnalyzer(config);
         if (analyzer == null) {
             return;
@@ -127,7 +127,7 @@ public class AnalyzerConfig {
 
         // If no ID is provided, register as default analyzer
         // else register analyzer
-        if (StringUtils.isBlank(id)) {
+        if (id.isBlank()) {
             setDefaultAnalyzer(analyzer);
         } else {
             analyzers.put(id, analyzer);
@@ -159,7 +159,7 @@ public class AnalyzerConfig {
 
         Analyzer newAnalyzer = null;
 
-        if (StringUtils.isBlank(className)) {
+        if (className.isBlank()) {
             // No classname is defined.
             LOG.error("Missing class attribute or attribute is empty.");
             // DW: throw exception?
