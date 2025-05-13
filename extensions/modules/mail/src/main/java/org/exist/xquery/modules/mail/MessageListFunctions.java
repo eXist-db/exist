@@ -47,7 +47,6 @@ import jakarta.mail.search.RecipientStringTerm;
 import jakarta.mail.search.SearchTerm;
 import jakarta.mail.search.SentDateTerm;
 import jakarta.mail.search.SubjectTerm;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
