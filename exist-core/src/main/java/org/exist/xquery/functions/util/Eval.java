@@ -78,7 +78,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
