@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,8 +43,6 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.util.DatabaseConfigurationException;
 
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static java.lang.invoke.MethodType.methodType;
@@ -150,90 +146,81 @@ public class AnalyzerConfig {
      * @param config The analyzer element
      * @return Initialized Analyzer object
      *
-     * @throws DatabaseConfigurationException Something unexpected happened.
      */
-    protected static Analyzer configureAnalyzer(Element config) throws DatabaseConfigurationException {
+    protected static Analyzer configureAnalyzer(Element config) {
 
         // Get classname from attribute
         final String className = config.getAttribute(CLASS_ATTRIBUTE);
-
-        Analyzer newAnalyzer = null;
-
         if (className.isBlank()) {
             // No classname is defined.
             LOG.error("Missing class attribute or attribute is empty.");
             // DW: throw exception?
+            return null;
+        }
 
+        // Classname is defined.
+        // Probe class
+        final Class<?> untypedClazz;
+        try {
+            untypedClazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            LOG.error(String.format("Lucene index: analyzer class %s not found. (%s)", className, e.getMessage()));
+            return null;
+        }
+
+        // Check if class is an Analyzer
+        if (!Analyzer.class.isAssignableFrom(untypedClazz)) {
+            LOG.error(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
+            return null;
+        }
+
+        final Class<? extends Analyzer> clazz = (Class<? extends Analyzer>) untypedClazz;
+
+        // Get list of parameters
+        List<KeyTypedValue<?>> cParams;
+        try {
+            cParams = getAllConstructorParameters(config);
+        } catch (ParameterException pe) {
+            // Unable to parse parameters.
+            LOG.error(String.format("Unable to get parameters for %s: %s", className, pe.getMessage()), pe);
+            cParams = new ArrayList<>();
+        }
+
+        // Iterate over all parameters, convert data to two arrays
+        // that can be used in the reflection code
+        final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
+        final Object cParamValues[] = new Object[cParams.size()];
+        for (int i = 0; i < cParams.size(); i++) {
+            KeyTypedValue<?> ktv = cParams.get(i);
+            cParamClasses[i] = ktv.valueClass();
+            cParamValues[i] = ktv.value();
+        }
+
+        // Create new analyzer
+        Analyzer newAnalyzer;
+        if (cParamClasses.length > 0 && cParamClasses[0] == Version.class) {
+            if (LOG.isDebugEnabled()) {
+                Version version = (Version) cParamValues[0];
+                LOG.debug(String.format("An explicit Version %s of lucene has been specified.", version.toString()));
+            }
+
+            // A lucene Version object has been provided, so it shall be used
+            newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
         } else {
-            // Classname is defined.
+            // Either no parameters have been provided, or more than one parameter
 
-            // Probe class
-            final Class<?> untypedClazz;
-            try {
-                untypedClazz = Class.forName(className);
+            // Extend arrays with (default) Version object info, add to front.
+            Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
+            Object[] vcParamValues = addVersionValueToValues(cParamValues);
 
-            } catch (ClassNotFoundException e) {
-                LOG.error(String.format("Lucene index: analyzer class %s not found. (%s)", className, e.getMessage()));
-                return null;
-            }
+            // Finally create Analyzer
+            newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues, true);
 
-            // CHeck if class is an Analyzer
-            if (!Analyzer.class.isAssignableFrom(untypedClazz)) {
-                LOG.error(String.format("Lucene index: analyzer class has to be a subclass of %s", Analyzer.class.getName()));
-                return null;
-            }
-
-            final Class<? extends Analyzer> clazz = (Class<? extends Analyzer>) untypedClazz;
-
-            // Get list of parameters
-            List<KeyTypedValue<?>> cParams;
-            try {
-                cParams = getAllConstructorParameters(config);
-
-            } catch (ParameterException pe) {
-                // Unable to parse parameters.
-                LOG.error(String.format("Unable to get parameters for %s: %s", className, pe.getMessage()), pe);
-                cParams = new ArrayList<>();
-            }
-
-            // Iterate over all parameters, convert data to two arrays
-            // that can be used in the reflection code
-            final Class<?> cParamClasses[] = new Class<?>[cParams.size()];
-            final Object cParamValues[] = new Object[cParams.size()];
-            for (int i = 0; i < cParams.size(); i++) {
-                KeyTypedValue<?> ktv = cParams.get(i);
-                cParamClasses[i] = ktv.valueClass();
-                cParamValues[i] = ktv.value();
-            }
-
-            // Create new analyzer
-            if (cParamClasses.length > 0 && cParamClasses[0] == Version.class) {
-
-                if (LOG.isDebugEnabled()) {
-                    Version version = (Version) cParamValues[0];
-                    LOG.debug(String.format("An explicit Version %s of lucene has been specified.", version.toString()));
-                }
-
-                // A lucene Version object has been provided, so it shall be used
+            // Fallback scenario: a special (not standard type of) Analyzer has been specified without
+            // a 'Version' argument on purpose. For this (try) to create the Analyzer with
+            // the original parameters.
+            if (newAnalyzer == null) {
                 newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
-
-            } else {
-                // Either no parameters have been provided, or more than one parameter
-
-                // Extend arrays with (default) Version object info, add to front.
-                Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
-                Object[] vcParamValues = addVersionValueToValues(cParamValues);
-
-                // Finally create Analyzer
-                newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues, true);
-
-                // Fallback scenario: a special (not standard type of) Analyzer has been specified without 
-                // a 'Version' argument on purpose. For this (try) to create the Analyzer with 
-                // the original parameters.
-                if (newAnalyzer == null) {
-                    newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
-                }
-
             }
 
         }
@@ -341,186 +328,149 @@ public class AnalyzerConfig {
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException
      */
     static KeyTypedValue<?> getConstructorParameter(final Element param) throws ParameterException {
-
-        // Get attributes
-        final NamedNodeMap attrs = param.getAttributes();
-
         // Get name of parameter, NULL when no value is present
-        Node namedItem = attrs.getNamedItem(NAME_ATTRIBUTE);
-        final String name = (namedItem == null) ? null : namedItem.getNodeValue();
+        final String name = param.getAttribute(NAME_ATTRIBUTE);
 
         // Get value type information of parameter, NULL when not available
-        namedItem = attrs.getNamedItem(TYPE_ATTRIBUTE);
-        final String type = (namedItem == null) ? null : namedItem.getNodeValue();
+        final String type = param.getAttribute(TYPE_ATTRIBUTE);
 
         // Get actual value from attribute, or NULL when not available.
-        namedItem = attrs.getNamedItem(PARAM_VALUE_ENTRY);
-        final String value = (namedItem == null) ? null : namedItem.getNodeValue();
+        final String value = param.getAttribute(PARAM_VALUE_ENTRY);
 
-        // Place holder return value
-        KeyTypedValue<?> parameter = null;
-
-        if (StringUtils.isBlank(type) || "java.lang.String".equals(type)) {
-            // String or no type is provided, assume string.
-
-            if (value == null) {
+        // String or no type is provided, assume string.
+        if (type.isBlank() || "java.lang.String".equals(type)) {
+            if (value.isEmpty()) {
                 throw new ParameterException("The 'value' attribute must exist and must contain String value.");
             }
-
-            parameter = new KeyTypedValue<>(name, value, String.class);
-
-        } else {
-            switch (type) {
-                case "java.lang.reflect.Field":
-
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a full classname.");
-                    }
-
-                    // Use reflection
-                    // - retrieve classname from the value field
-                    // - retrieve fieldname from the value field
-                    final String clazzName = value.substring(0, value.lastIndexOf('.'));
-                    final String fieldName = value.substring(value.lastIndexOf('.') + 1);
-                    try {
-                        // Retrieve value from Field
-                        final Class<?> fieldClazz = Class.forName(clazzName);
-                        final Field field = fieldClazz.getField(fieldName);
-                        field.setAccessible(true);
-                        final Object fValue = field.get(fieldClazz.newInstance());
-                        parameter = new KeyTypedValue<>(name, fValue, Object.class);
-
-                    } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException | IllegalAccessException nsfe) {
-                        throw new ParameterException(nsfe.getMessage(), nsfe);
-                    }
-                    break;
-
-                case "java.io.File": {
-
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a file name.");
-                    }
-
-                    LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
-                            + "please use 'java.io.FileReader' (short 'file') instead.", type));
-
-                    parameter = new KeyTypedValue<>(name, new java.io.File(value), java.io.File.class);
-                    break;
-                }
-
-                case "java.io.FileReader":
-                case "file": {
-
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a file name.");
-                    }
-
-                    try {
-                        // ToDo: check where to close reade to prevent resource leakage
-                        Reader fileReader = new java.io.FileReader(value);
-                        parameter = new KeyTypedValue<>(name, fileReader, Reader.class);
-
-                    } catch (java.io.FileNotFoundException ex) {
-                        LOG.error(String.format("File '%s' could not be found.", value), ex);
-                    }
-                    break;
-                }
-
-                case "java.util.Set": {
-
-                    LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
-                            + "please use 'org.apache.lucene.analysis.util.CharArraySet' (short 'set') instead.", type));
-
-                    final Set s = getConstructorParameterSetValues(param);
-                    parameter = new KeyTypedValue<>(name, s, Set.class);
-                    break;
-                }
-
-                case "java.lang.String[]": {
-                    final String[] ary = getConstructorParameterStringArrayValues(param);
-                    parameter = new KeyTypedValue<>(name, ary, String[].class);
-                    break;
-                }
-
-                case "char[]": {
-                    final char[] ary = getConstructorParameterCharArrayValues(param);
-                    parameter = new KeyTypedValue<>(name, ary, char[].class);
-                    break;
-                }
-
-                case "org.apache.lucene.analysis.util.CharArraySet":
-                case "set": {
-                    // This is mandatory to use iso a normal Set since Lucene 4
-                    final CharArraySet s = getConstructorParameterCharArraySetValues(param);
-                    parameter = new KeyTypedValue<>(name, s, CharArraySet.class);
-                    break;
-                }
-
-                case "java.lang.Integer":
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain an integer value.");
-                    }
-                    try {
-                        final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue<>(name, n, Integer.class);
-                    } catch (final NumberFormatException ex) {
-                        LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
-                    }
-                    break;
-
-                case "int":
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain an int value.");
-                    }
-                    try {
-                        final Integer n = Integer.parseInt(value);
-                        parameter = new KeyTypedValue<>(name, n, int.class);
-                    } catch (final NumberFormatException ex) {
-                        LOG.error(String.format("Value %s could not be converted to an int. %s", value, ex.getMessage()));
-                    }
-                    break;
-
-                case "java.lang.Boolean":
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a Boolean value.");
-                    }
-                    final Boolean b1 = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue<>(name, b1, Boolean.class);
-                    break;
-
-                case "boolean":
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a boolean value.");
-                    }
-                    final Boolean b2 = Boolean.parseBoolean(value);
-                    parameter = new KeyTypedValue<>(name, b2, boolean.class);
-                    break;
-
-                default:
-                    // FallBack there was no match
-
-                    if (value == null) {
-                        throw new ParameterException("The 'value' attribute must exist and must contain a value.");
-                    }
-
-                    try {
-                        //if the type is an Enum then use valueOf()
-                        final Class clazz = Class.forName(type);
-                        if (clazz.isEnum()) {
-                            parameter = new KeyTypedValue<>(name, Enum.valueOf(clazz, value), clazz);
-                        } else {
-                            //default, assume java.lang.String
-                            parameter = new KeyTypedValue<>(name, value, String.class);
-                        }
-
-                    } catch (ClassNotFoundException cnfe) {
-                        throw new ParameterException(String.format("Class for type: %s not found. %s", type, cnfe.getMessage()), cnfe);
-                    }
-                    break;
-            }
+            return new KeyTypedValue<>(name, value, String.class);
         }
 
-        return parameter;
+        return switch (type) {
+            case "java.lang.reflect.Field" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a full classname.");
+                }
+
+                // Use reflection
+                // - retrieve classname from the value field
+                // - retrieve fieldname from the value field
+                final String clazzName = value.substring(0, value.lastIndexOf('.'));
+                final String fieldName = value.substring(value.lastIndexOf('.') + 1);
+                try {
+                    // Retrieve value from Field
+                    final Class<?> fieldClazz = Class.forName(clazzName);
+                    final Field field = fieldClazz.getField(fieldName);
+                    field.setAccessible(true);
+                    final Object fValue = field.get(fieldClazz.newInstance());
+                    yield new KeyTypedValue<>(name, fValue, Object.class);
+
+                } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException |
+                               IllegalAccessException reflectiveOperationException) {
+                    throw new ParameterException(reflectiveOperationException.getMessage(), reflectiveOperationException);
+                }
+            }
+            case "java.io.File" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a file name.");
+                }
+
+                LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
+                        + "please use 'java.io.FileReader' (short 'file') instead.", type));
+
+                yield new KeyTypedValue<>(name, new java.io.File(value), java.io.File.class);
+            }
+            case "java.io.FileReader", "file" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a file name.");
+                }
+
+                try {
+                    // ToDo: check where to close reade to prevent resource leakage
+                    Reader fileReader = new java.io.FileReader(value);
+                    yield new KeyTypedValue<>(name, fileReader, Reader.class);
+
+                } catch (java.io.FileNotFoundException ex) {
+                    LOG.error(String.format("File '%s' could not be found.", value), ex);
+                    yield null;
+                }
+            }
+            case "java.util.Set" -> {
+                LOG.info(String.format("Type '%s' has been deprecated in recent Lucene versions, "
+                        + "please use 'org.apache.lucene.analysis.util.CharArraySet' (short 'set') instead.", type));
+
+                final Set s = getConstructorParameterSetValues(param);
+                yield new KeyTypedValue<>(name, s, Set.class);
+            }
+            case "java.lang.String[]" -> {
+                final String[] ary = getConstructorParameterStringArrayValues(param);
+                yield new KeyTypedValue<>(name, ary, String[].class);
+            }
+            case "char[]" -> {
+                final char[] ary = getConstructorParameterCharArrayValues(param);
+                yield new KeyTypedValue<>(name, ary, char[].class);
+            }
+            case "org.apache.lucene.analysis.util.CharArraySet", "set" -> {
+                // This is mandatory to use iso a normal Set since Lucene 4
+                final CharArraySet s = getConstructorParameterCharArraySetValues(param);
+                yield new KeyTypedValue<>(name, s, CharArraySet.class);
+            }
+            case "java.lang.Integer" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain an integer value.");
+                }
+                try {
+                    final Integer n = Integer.parseInt(value);
+                    yield new KeyTypedValue<>(name, n, Integer.class);
+                } catch (final NumberFormatException ex) {
+                    LOG.error(String.format("Value %s could not be converted to an integer. %s", value, ex.getMessage()));
+                    yield null;
+                }
+            }
+            case "int" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain an int value.");
+                }
+                try {
+                    final Integer n = Integer.parseInt(value);
+                    yield new KeyTypedValue<>(name, n, int.class);
+                } catch (final NumberFormatException ex) {
+                    LOG.error(String.format("Value %s could not be converted to an int. %s", value, ex.getMessage()));
+                    yield null;
+                }
+            }
+            case "java.lang.Boolean" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a Boolean value.");
+                }
+                final Boolean b1 = Boolean.parseBoolean(value);
+                yield new KeyTypedValue<>(name, b1, Boolean.class);
+            }
+            case "boolean" -> {
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a boolean value.");
+                }
+                final Boolean b2 = Boolean.parseBoolean(value);
+                yield new KeyTypedValue<>(name, b2, boolean.class);
+            }
+            default -> {
+                // FallBack there was no match
+                if (value.isEmpty()) {
+                    throw new ParameterException("The 'value' attribute must exist and must contain a value.");
+                }
+
+                try {
+                    //if the type is an Enum then use valueOf()
+                    final Class clazz = Class.forName(type);
+                    if (clazz.isEnum()) {
+                        yield new KeyTypedValue<>(name, Enum.valueOf(clazz, value), clazz);
+                    }
+                    //default, assume java.lang.String
+                    yield new KeyTypedValue<>(name, value, String.class);
+                } catch (ClassNotFoundException cnfe) {
+                    throw new ParameterException(String.format("Class for type: %s not found. %s", type, cnfe.getMessage()), cnfe);
+                }
+            }
+        };
     }
 
     /**
