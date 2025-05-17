@@ -163,7 +163,7 @@ public class CollectionConfiguration {
                     case VALIDATION_ELEMENT -> {
                         final Element elem = (Element) node;
                         final String mode = elem.getAttribute(VALIDATION_MODE_ATTR);
-                        if (mode == null) {
+                        if (mode.isEmpty()) {
                             LOG.debug("Unable to determine validation mode in {}", srcCollectionURI);
                             validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
                         } else {

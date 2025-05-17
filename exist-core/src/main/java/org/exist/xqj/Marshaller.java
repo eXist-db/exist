@@ -212,7 +212,7 @@ public class Marshaller {
 
     public static Sequence demarshall(NodeImpl node) throws XMLStreamException, XPathException {
         final String ns = node.getNamespaceURI();
-        if (ns == null || !NAMESPACE.equals(ns)) {
+        if (!NAMESPACE.equals(ns)) {
             throw new XMLStreamException("Root element is not in the correct namespace. Expected: " + NAMESPACE);
         }
         if (!SEQ_ELEMENT.equals(node.getLocalName()))
@@ -223,37 +223,39 @@ public class Marshaller {
         for (final SequenceIterator i = values.iterate(); i.hasNext();) {
             final ElementImpl child = (ElementImpl) i.nextItem();
             final String typeName = child.getAttribute(ATTR_TYPE);
-            if (typeName != null) {
-                final int type = Type.getType(typeName);
-                Item item;
-                if (Type.subTypeOf(type, Type.NODE)) {
-                    item = (Item) child.getFirstChild();
-                    if (type == Type.DOCUMENT) {
-                        final DocumentImpl n = (DocumentImpl) item;
-                        final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(n.getExpression());
-                        try {
-                            receiver.startDocument();
-                            n.copyTo(n, receiver);
-                            receiver.endDocument();
-                        } catch (final SAXException e) {
-                            throw new XPathException(item != null ? item.getExpression() : null, "Error while demarshalling node: " + e.getMessage(), e);
-                        }
-                        item = (Item) receiver.getDocument();
-                    }
-                } else {
-                    final StringBuilder data = new StringBuilder();
-                    Node txt = child.getFirstChild();
-                    while (txt != null) {
-                        if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE)) {
-                            throw new XMLStreamException("sx:value should only contain text if type is " + typeName);
-                        }
-                        data.append(txt.getNodeValue());
-                        txt = txt.getNextSibling();
-                    }
-                    item = new StringValue(data.toString()).convertTo(type);
-                }
-                result.add(item);
+            if (typeName.isEmpty()) {
+                continue;
             }
+
+            final int type = Type.getType(typeName);
+            Item item;
+            if (Type.subTypeOf(type, Type.NODE)) {
+                item = (Item) child.getFirstChild();
+                if (type == Type.DOCUMENT) {
+                    final DocumentImpl n = (DocumentImpl) item;
+                    final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(n.getExpression());
+                    try {
+                        receiver.startDocument();
+                        n.copyTo(n, receiver);
+                        receiver.endDocument();
+                    } catch (final SAXException e) {
+                        throw new XPathException(item != null ? item.getExpression() : null, "Error while demarshalling node: " + e.getMessage(), e);
+                    }
+                    item = (Item) receiver.getDocument();
+                }
+            } else {
+                final StringBuilder data = new StringBuilder();
+                Node txt = child.getFirstChild();
+                while (txt != null) {
+                    if (!(txt.getNodeType() == Node.TEXT_NODE || txt.getNodeType() == Node.CDATA_SECTION_NODE)) {
+                        throw new XMLStreamException("sx:value should only contain text if type is " + typeName);
+                    }
+                    data.append(txt.getNodeValue());
+                    txt = txt.getNextSibling();
+                }
+                item = new StringValue(data.toString()).convertTo(type);
+            }
+            result.add(item);
         }
         return result;
     }

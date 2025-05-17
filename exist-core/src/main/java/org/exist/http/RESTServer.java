@@ -774,7 +774,7 @@ public class RESTServer {
                     if (Query.xmlKey().equals(root.getLocalName())) {
                         // process <query>xpathQuery</query>
                         String option = root.getAttribute(Start.xmlKey());
-                        if (option != null) {
+                        if (option.isEmpty()) {
                             try {
                                 start = Integer.parseInt(option);
                             } catch (final NumberFormatException e) {
@@ -783,7 +783,7 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Max.xmlKey());
-                        if (option != null) {
+                        if (option.isEmpty()) {
                             try {
                                 howmany = Integer.parseInt(option);
                             } catch (final NumberFormatException e) {
@@ -792,13 +792,13 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Enclose.xmlKey());
-                        if (option != null) {
+                        if (!option.isEmpty()) {
                             if ("no".equals(option)) {
                                 enclose = false;
                             }
                         } else {
                             option = root.getAttribute(Wrap.xmlKey());
-                            if (option != null) {
+                            if (!option.isEmpty()) {
                                 if ("no".equals(option)) {
                                     enclose = false;
                                 }
@@ -806,28 +806,27 @@ public class RESTServer {
                         }
 
                         option = root.getAttribute(Method.xmlKey());
-                        if ((option != null) && (!option.isEmpty())) {
+                        if (!option.isEmpty()) {
                             outputProperties.setProperty(SERIALIZATION_METHOD_PROPERTY, option);
                         }
 
                         option = root.getAttribute(Typed.xmlKey());
-                        if (option != null) {
+                        if (!option.isEmpty()) {
                             if ("yes".equals(option)) {
                                 typed = true;
                             }
                         }
 
                         option = root.getAttribute(Mime.xmlKey());
-                        if ((option != null) && (!option.isEmpty())) {
+                        if (!option.isEmpty()) {
                             mimeType = option;
                         }
 
-                        if ((option = root.getAttribute(Cache.xmlKey())) != null) {
+                        if (!(option = root.getAttribute(Cache.xmlKey())).isEmpty()) {
                             cache = "yes".equals(option);
                         }
 
-                        if ((option = root.getAttribute(Session.xmlKey())) != null
-                                && !option.isEmpty()) {
+                        if (!(option = root.getAttribute(Session.xmlKey())).isEmpty()) {
                             outputProperties.setProperty(
                                     Serializer.PROPERTY_SESSION_ID, option);
                         }
@@ -866,7 +865,7 @@ public class RESTServer {
                                             final String value = property.getAttribute("value");
                                             LOG.debug("{} = {}", key, value);
 
-                                            if (key != null && value != null) {
+                                            if (!key.isEmpty() && !value.isEmpty()) {
                                                 outputProperties.setProperty(key, value);
                                             }
                                         }
