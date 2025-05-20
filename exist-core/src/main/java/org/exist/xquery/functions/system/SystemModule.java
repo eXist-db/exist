@@ -65,6 +65,7 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(Shutdown.signatures[0], Shutdown.class),
             new FunctionDef(Shutdown.signatures[1], Shutdown.class),
             new FunctionDef(GetModuleLoadPath.signature, GetModuleLoadPath.class),
+			new FunctionDef(GetMainModuleLoadPath.signature, GetMainModuleLoadPath.class),
             new FunctionDef(TriggerSystemTask.signature, TriggerSystemTask.class),
             new FunctionDef(AsUser.FS_AS_USER, AsUser.class),
 			new FunctionDef(AsUser.FS_FUNCTION_AS_USER, AsUser.class),

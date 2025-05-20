@@ -22,8 +22,10 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<izpack:installation xmlns:izpack="http://izpack.org/schema/installation"
-        version="5.0">
+<izpack:installation version="5.0"
+                     xmlns:izpack="http://izpack.org/schema/installation"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://izpack.org/schema/installation http://izpack.org/schema/5.0/izpack-installation-5.0.xsd">
 
     <logging>
         <log-file mkdirs="true" pattern="$INSTALL_PATH/logs/izpack-install-%u.log"/>

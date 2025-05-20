@@ -24,17 +24,23 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 import net.sf.saxon.tree.util.FastStringBuffer;
 import net.sf.saxon.value.FloatingPointConverter;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.DatatypeConstants;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
 import java.util.function.IntSupplier;
 
 public class DoubleValue extends NumericValue {
+
+    public static final int SERIALIZED_SIZE = 8;
+
     // m × 2^e, where m is an integer whose absolute value is less than 2^53,
     // and e is an integer between -1075 and 970, inclusive.
     // In addition also -INF, +INF and NaN.
@@ -486,6 +492,14 @@ public class DoubleValue extends NumericValue {
         } else if (target == Byte.class || target == byte.class) {
             final IntegerValue v = (IntegerValue) convertTo(Type.BYTE);
             return (T) Byte.valueOf((byte) v.getValue());
+        } else if (target == byte[].class) {
+            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            serialize(buf);
+            return (T) buf.array();
+        } else if (target == ByteBuffer.class) {
+            final ByteBuffer buf = ByteBuffer.allocate(SERIALIZED_SIZE);
+            serialize(buf);
+            return (T) buf;
         } else if (target == String.class) {
             return (T) getStringValue();
         } else if (target == Boolean.class) {
@@ -497,15 +511,6 @@ public class DoubleValue extends NumericValue {
                         + Type.getTypeName(getType())
                         + " to Java object of type "
                         + target.getName());
-    }
-
-    /**
-     * size writen by {link #serialize(short, boolean)}
-     *
-     * @return the size in number of bytes
-     */
-    public int getSerializedSize() {
-        return 1 + 8;
     }
 
     @Override
@@ -521,5 +526,23 @@ public class DoubleValue extends NumericValue {
     @Override
     public int hashCode() {
         return Double.valueOf(value).hashCode();
+    }
+
+    /**
+     * Serializes to a ByteBuffer.
+     *
+     * 8 bytes.
+     *
+     * @param buf the ByteBuffer to serialize to.
+     */
+    public void serialize(final ByteBuffer buf) {
+        final long dBits = Double.doubleToLongBits(value) ^ 0x8000000000000000L;
+        ByteConversion.longToByte(dBits, buf);
+    }
+
+    public static AtomicValue deserialize(final ByteBuffer buf) {
+        final long bits = ByteConversion.byteToLong(buf) ^ 0x8000000000000000L;
+        final double d = Double.longBitsToDouble(bits);
+        return new DoubleValue(d);
     }
 }

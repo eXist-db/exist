@@ -22,11 +22,13 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<izpack:shortcuts xmlns:izpack="http://izpack.org/schema/shortcuts" version="5.0">
+<izpack:shortcuts version="5.0"
+                  xmlns:izpack="http://izpack.org/schema/shortcuts"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://izpack.org/schema/shortcuts http://izpack.org/schema/5.0/izpack-shortcuts-5.0.xsd">
     <programGroup defaultName="eXist-db XML Database" location="applications"/>
     <shortcut
             name="eXist-db Database"
-            genericName="eXist-db"
             description="eXist-db XML Database Launcher"
             type="Application"
             encoding="UTF-8"

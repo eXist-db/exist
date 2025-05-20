@@ -22,15 +22,17 @@
 package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
-import org.exist.xquery.Constants;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
 import java.util.function.IntSupplier;
 
 /**
@@ -543,6 +545,10 @@ public class IntegerValue extends NumericValue {
             return (T) Float.valueOf(v.value);
         } else if (target == Boolean.class || target == boolean.class) {
             return (T) new BooleanValue(getExpression(), effectiveBooleanValue());
+        } else if (target == byte[].class) {
+            return (T) serialize();
+        } else if (target == ByteBuffer.class) {
+            return (T) ByteBuffer.wrap(serialize());
         } else if (target == String.class) {
             return (T) value.toString();
         } else if (target == BigInteger.class) {
@@ -568,5 +574,39 @@ public class IntegerValue extends NumericValue {
     @Override
     public int hashCode() {
         return value.hashCode();
+    }
+
+    //TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
+    /**
+     * Serializes to a byte array.
+     *
+     * 8 bytes.
+     *
+     * @return the serialized data.
+     */
+    public byte[] serialize() {
+        final byte[] buf = new byte[8];
+        final long l = value.longValue() - Long.MIN_VALUE;
+        ByteConversion.longToByte(l, buf, 0);
+        return buf;
+    }
+
+    //TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
+    /**
+     * Serializes to a ByteBuffer.
+     *
+     * 8 bytes.
+     *
+     * @param buf the ByteBuffer to serialize to.
+     */
+    public void serialize(final ByteBuffer buf) throws IOException {
+        final long l = value.longValue() - Long.MIN_VALUE;
+        ByteConversion.longToByte(l, buf);
+    }
+
+    //TODO(AR) this is not a very good deserialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
+    public static IntegerValue deserialize(final ByteBuffer buf) {
+        final long l = ByteConversion.byteToLong(buf) ^ 0x8000000000000000L;
+        return new IntegerValue(l);
     }
 }
