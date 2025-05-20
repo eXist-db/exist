@@ -33,6 +33,7 @@
 package org.exist.xquery.modules.sql;
 
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -173,18 +174,27 @@ public class GetConnectionFunction extends BasicFunction {
             throw new XPathException(this, "There is no configured connection pool named: " + poolName);
         }
 
+        Connection connection = null;
         try {
             if (args.length == 3) {
                 final String username = args[1].getStringValue();
                 final String password = args[2].getStringValue();
-                return pool.getConnection(username, password);
+                connection =  pool.getConnection(username, password);
             } else {
-                return pool.getConnection();
+                connection = pool.getConnection();
             }
         } catch (final SQLException sqle) {
             LOGGER.error("sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
             throw new XPathException(this, "sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
         }
+
+        HikariPoolMXBean poolBean = pool.getHikariPoolMXBean();
+        
+        if (poolBean.getThreadsAwaitingConnection() > 0) {
+          LOGGER.info("getConnectionFromPool("+poolName+"), "+poolBean.getActiveConnections()+" active, "+poolBean.getIdleConnections()+" available, "+poolBean.getThreadsAwaitingConnection()+" waiting, "+poolBean.getTotalConnections()+" total connections.");
+        }
+
+        return connection;
     }
 
     private static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
