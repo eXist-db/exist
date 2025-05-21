@@ -19,25 +19,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.start;
+package org.exist.webstart;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class uses regex pattern matching to find the latest version of a
- * particular jar file. 
- * 
- * @see LatestFileResolver#getResolvedFileName(String)
- * 
+ * particular jar file.
+ *
  * @author Ben Schmaus (exist@benschmaus.com)
  * @version $Revision$
+ * @see LatestFileResolver#getResolvedFileName(String)
  */
 public class LatestFileResolver {
 
@@ -45,21 +48,19 @@ public class LatestFileResolver {
     // latest version of a particular file should be added to the classpath.
     // E.g., commons-fileupload-%latest%.jar would resolve to something like
     // commons-fileupload-1.1.jar.
-    private final static Pattern latestVersionPattern = Pattern.compile(
-        "(%latest%)"
-    );
+    private final static Pattern latestVersionPattern = Pattern.compile("(%latest%)");
 
     // Set debug mode for each file resolver instance based on whether or
     // not the system was started with debugging turned on.
-    private static boolean _debug = Boolean.getBoolean("exist.start.debug");
-            
+    private static final boolean _debug = Boolean.getBoolean("exist.start.debug");
+
     /**
      * If the passed file name contains a %latest% token,
      * find the latest version of that file. Otherwise, return
      * the passed file name unmodified.
-     * 
+     *
      * @param filename Path relative to exist home dir of
-     * a jar file that should be added to the classpath.
+     *                 a jar file that should be added to the classpath.
      * @return Resolved filename.
      */
     public String getResolvedFileName(final String filename) {
@@ -72,9 +73,7 @@ public class LatestFileResolver {
         final String uptoToken = fileinfo[0];
 
         // Dir that should contain our jar.
-        final String containerDirName = uptoToken.substring(
-            0, uptoToken.lastIndexOf(File.separatorChar)
-        );
+        final String containerDirName = uptoToken.substring(0, uptoToken.lastIndexOf(File.separatorChar));
 
         final Path containerDir = Paths.get(containerDirName);
 
@@ -86,8 +85,8 @@ public class LatestFileResolver {
 
         List<Path> jars;
         try {
-             jars = Main.list(containerDir, p -> {
-                matcher.reset(Main.fileName(p));
+            jars = list(containerDir, p -> {
+                matcher.reset(fileName(p));
                 return matcher.find();
             });
         } catch (final IOException e) {
@@ -99,20 +98,34 @@ public class LatestFileResolver {
         if (!jars.isEmpty()) {
             final String actualFileName = jars.getFirst().toAbsolutePath().toString();
             if (_debug) {
-                System.err.println(
-                    "Found match: " + actualFileName
-                    + " for jar file pattern: " + filename
-                );
+                System.err.println("Found match: " + actualFileName + " for jar file pattern: " + filename);
             }
             return actualFileName;
         } else {
             if (_debug) {
-                System.err.println(
-                    "WARN: No latest version found for JAR file: '"
-                    + filename + "'"
-                );
+                System.err.println("WARN: No latest version found for JAR file: '" + filename + "'");
             }
         }
         return filename;
-    }    
+    }
+
+    /**
+     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
+        try (final Stream<Path> entries = Files.list(directory).filter(filter)) {
+            return entries.collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
+     * as org.exist.start is compiled into a separate Jar and doesn't have
+     * the rest of eXist available on the classpath
+     */
+    static String fileName(final Path path) {
+        return path.getFileName().toString();
+    }
 }
