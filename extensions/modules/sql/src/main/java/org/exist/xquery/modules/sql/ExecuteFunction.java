@@ -285,7 +285,7 @@ public class ExecuteFunction extends BasicFunction {
 
                 final int sqlType;
                 final String type = param.getAttributeNS(NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
-                if (type != null) {
+                if (!type.isEmpty()) {
                     sqlType = SQLUtils.sqlTypeFromString(type);
                 } else {
                     throw new XPathException(this, ErrorCodes.ERROR, "<sql:param> must contain attribute sql:type");

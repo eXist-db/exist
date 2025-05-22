@@ -38,11 +38,11 @@ public class PathForward extends Forward {
         this.filterConfig = filterConfig;
         final String url = config.getAttribute("url");
         servletName = config.getAttribute("servlet");
-        if (servletName != null && servletName.isEmpty()) {
+        if (servletName.isEmpty()) {
             servletName = null;
         }
         if (servletName == null) {
-            if (url == null || url.isEmpty()) {
+            if (url.isEmpty()) {
                 throw new ServletException("<exist:forward> needs either an attribute 'url' or 'servlet'.");
             }
             setTarget(URLRewrite.normalizePath(url));

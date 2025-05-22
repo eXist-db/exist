@@ -287,16 +287,16 @@ public class JNDIModule extends AbstractInternalModule
 					String value 	= attr.getAttribute( "value" );
 					String ordered 	= attr.getAttribute( "ordered" );
 	
-					if( name != null && value != null ) {
+					if (name.isEmpty() || value.isEmpty()) {
+						LOG.warn( "Name or value attribute missing for attribute" );
+					} else {
 						Attribute existingAttr = attributes.get( name );
-						
-						if( existingAttr != null ) {
+
+						if (existingAttr != null) {
 							existingAttr.add( value );
 						} else {
-							attributes.put( new BasicAttribute( name, value, ordered != null && "true".equalsIgnoreCase(ordered) ) );
+							attributes.put( new BasicAttribute( name, value, !ordered.isEmpty() && "true".equalsIgnoreCase(ordered) ) );
 						}
-					} else {
-						LOG.warn( "Name or value attribute missing for attribute" );
 					}
 				}
 			}
