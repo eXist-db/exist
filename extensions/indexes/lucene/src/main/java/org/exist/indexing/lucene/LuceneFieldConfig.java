@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.util.BytesRef;
@@ -77,12 +76,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         super(config, configElement, namespaces);
 
         fieldName = configElement.getAttribute(ATTR_FIELD_NAME);
-        if (StringUtils.isEmpty(fieldName)) {
+        if (fieldName.isEmpty()) {
             throw new DatabaseConfigurationException("Invalid config: attribute 'name' must be given");
         }
 
         final String typeStr = configElement.getAttribute(ATTR_TYPE);
-        if (StringUtils.isNotEmpty(typeStr)) {
+        if (!typeStr.isEmpty()) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -91,12 +90,12 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
 
         final String storeStr = configElement.getAttribute(ATTR_STORE);
-        if (StringUtils.isNotEmpty(storeStr)) {
+        if (!storeStr.isEmpty()) {
             this.store = "yes".equalsIgnoreCase(storeStr) || "true".equalsIgnoreCase(storeStr);
         }
 
         final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);
-        if (StringUtils.isNotEmpty(analyzerOpt)) {
+        if (!analyzerOpt.isEmpty()) {
             analyzer = analyzers.getAnalyzerById(analyzerOpt);
             if (analyzer == null) {
                 throw new DatabaseConfigurationException("Analyzer for field " + fieldName + " not found");
@@ -104,13 +103,13 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
         }
 
         final String cond = configElement.getAttribute(ATTR_IF);
-        if (StringUtils.isNotEmpty(cond)) {
+        if (!cond.isEmpty()) {
             this.condition = Optional.of(cond);
         }
 
         final String binaryStr = configElement.getAttribute(ATTR_BINARY);
-        if (StringUtils.isNotEmpty(binaryStr)) {
-            this.binary = StringUtils.equalsAnyIgnoreCase(binaryStr, "true", "yes");
+        if (!binaryStr.isEmpty()) {
+            this.binary = "yes".equalsIgnoreCase(binaryStr) || "true".equalsIgnoreCase(binaryStr);
         }
     }
 

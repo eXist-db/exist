@@ -141,14 +141,8 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     private static @Nullable String getIdValue(final Node test) {
-        String id = ((Element)test).getAttribute("id");
-        if (id != null) {
-            id = id.trim();
-            if (!id.isEmpty()) {
-                return id;
-            }
-        }
-        return null;
+        final String id = ((Element)test).getAttribute("id");
+        return id.isEmpty() ? null : id;
     }
 
     private static @Nullable String getTaskText(final Node test) {

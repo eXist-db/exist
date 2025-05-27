@@ -29,7 +29,6 @@ import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.Configurable;
@@ -101,7 +100,7 @@ public class LdapContextFactory implements Configurable {
             throw new IllegalStateException("An LDAP URL must be specified of the form ldap://<hostname>:<port>");
         }
 
-        if (StringUtils.isBlank(password)) {
+        if (password == null || password.isBlank()) {
             throw new IllegalStateException("Password for LDAP authentication may not be empty.");
         }
 

@@ -39,7 +39,7 @@ public class GMLIndexConfig {
 
     public GMLIndexConfig(Map<String, String> namespaces, Element node) {
         String param = node.getAttribute(FLUSH_AFTER);
-        if (param != null && !param.isEmpty()) {
+        if (!param.isEmpty()) {
             try {
                 flushAfter = Integer.parseInt(param);
             } catch (NumberFormatException e) {

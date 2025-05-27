@@ -61,7 +61,7 @@ public class RangeIndexConfigElement {
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute(MATCH_ATTR);
-        if (match != null && !match.isEmpty()) {
+        if (!match.isEmpty()) {
             try {
                 path = new NodePath(namespaces, match);
                 if (path.length() == 0)
@@ -76,7 +76,7 @@ public class RangeIndexConfigElement {
             isQNameIndex = true;
         }
         String typeStr = node.getAttribute(TYPE_ATTR);
-        if (typeStr != null && !typeStr.isEmpty()) {
+        if (!typeStr.isEmpty()) {
             try {
                 this.type = Type.getType(typeStr);
             } catch (XPathException e) {
@@ -87,16 +87,16 @@ public class RangeIndexConfigElement {
         parseChildren(node);
 
         String collation = node.getAttribute("collation");
-        if (collation != null && !collation.isEmpty()) {
+        if (!collation.isEmpty()) {
             analyzer.addCollation(collation);
             usesCollation = true;
         }
         String nested = node.getAttribute("nested");
-        includeNested = (nested == null || nested.isEmpty() || "yes".equalsIgnoreCase(nested));
+        includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
-        if (whitespace != null) {
+        if (!whitespace.isEmpty()) {
             if ("trim".equalsIgnoreCase(whitespace)) {
                 wsTreatment = XMLString.SUPPRESS_BOTH;
             } else if ("normalize".equalsIgnoreCase(whitespace)) {
@@ -105,11 +105,11 @@ public class RangeIndexConfigElement {
         }
 
         String caseStr = node.getAttribute("case");
-        if (caseStr != null && !caseStr.isEmpty()) {
+        if (!caseStr.isEmpty()) {
             caseSensitive = "yes".equalsIgnoreCase(caseStr);
         }
         String custom = node.getAttribute("converter");
-        if (custom != null && !custom.isEmpty()) {
+        if (!custom.isEmpty()) {
             try {
                 Class customClass = Class.forName(custom);
                 typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
