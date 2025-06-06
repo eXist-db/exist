@@ -70,7 +70,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         }
 
         attributeName = elem.getAttribute("attribute");
-        if (attributeName == null || attributeName.isEmpty()) {
+        if (attributeName.isEmpty()) {
             throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
         }
 

@@ -57,7 +57,7 @@ public class RangeIndexAnalyzer extends Analyzer {
 
         FilterConfig(final Element config) throws DatabaseConfigurationException {
             final String className = config.getAttribute("class");
-            if (className == null) {
+            if (className.isEmpty()) {
                 throw new DatabaseConfigurationException("No class specified for filter");
             }
             try {
