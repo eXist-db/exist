@@ -125,7 +125,7 @@
         <xmlunit.version>2.10.2</xmlunit.version>
         <junit.version>4.13.2</junit.version>
         <junit.platform.version>1.13.0</junit.platform.version>
-        <junit.jupiter.version>5.13.0</junit.jupiter.version>
+        <junit.jupiter.version>5.13.1</junit.jupiter.version>
         <easymock.version>5.6.0</easymock.version>
         <objenesis.version>3.4</objenesis.version>
         <assertj.version>3.27.3</assertj.version>
