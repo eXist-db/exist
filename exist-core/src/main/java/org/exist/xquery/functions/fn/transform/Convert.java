@@ -31,13 +31,18 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.fn.FnTransform;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import io.lacuna.bifurcan.IEntry;
+
 import javax.xml.transform.dom.DOMSource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Type conversion to and from Saxon
@@ -128,6 +133,10 @@ class Convert {
                 return ofAtomic((AtomicValue) item);
             } else if (Type.subTypeOf(itemType, Type.NODE)) {
                 return ofNode((Node) item);
+            } else if (Type.subTypeOf(itemType, Type.MAP)) {
+                return ofMap((AbstractMapType) item);
+            } else if (Type.subTypeOf(itemType,  Type.ARRAY)) {
+                return ofArray((ArrayType) item);
             }
             throw new XPathException(ErrorCodes.XPTY0004,
                     "Item " + item + " of type " + Type.getTypeName(itemType) + COULD_NOT_BE_CONVERTED + "XdmValue");
@@ -144,14 +153,12 @@ class Convert {
             } else if (Type.subTypeOf(itemType, Type.STRING)) {
                 return XdmValue.makeValue(((StringValue) atomicValue).getStringValue());
             }
-
             throw new XPathException(ErrorCodes.XPTY0004,
                     "Atomic value " + atomicValue + " of type " + Type.getTypeName(itemType) +
                             COULD_NOT_BE_CONVERTED + "XdmValue");
         }
 
         private XdmValue ofNode(final Node node) throws XPathException {
-
             final DocumentBuilder sourceBuilder = newDocumentBuilder();
             try {
                 if (node instanceof DocumentImpl) {
@@ -169,6 +176,25 @@ class Convert {
             } catch (final SaxonApiException e) {
                 throw new XPathException(ErrorCodes.XPTY0004, "Node " + node + COULD_NOT_BE_CONVERTED + "XdmValue", e);
             }
+        }
+
+        private XdmValue ofMap(final AbstractMapType map) throws XPathException {
+            Map<XdmAtomicValue, XdmValue> xdmMap = new HashMap<XdmAtomicValue, XdmValue>();
+            for (IEntry<AtomicValue, Sequence> entry : map) {
+                XdmAtomicValue key = (XdmAtomicValue) ofAtomic(entry.key());
+                XdmValue value = of(entry.value());
+                xdmMap.put(key, value);
+            }
+            return new XdmMap(xdmMap);
+        }
+
+        private XdmValue ofArray(final ArrayType array) throws XPathException {
+          int size = array.getSize();
+          XdmValue[] members = new XdmValue[size];
+          for (int i = 0; i < size; ++i) {
+            members[i] = of(array.get(i));
+          }
+          return new XdmArray(members);
         }
 
         XdmValue[] of(final ArrayType values) throws XPathException {
