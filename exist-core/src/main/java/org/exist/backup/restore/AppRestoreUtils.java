@@ -21,7 +21,6 @@
  */
 package org.exist.backup.restore;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -141,7 +140,7 @@ public class AppRestoreUtils {
                             if (PKG_NAMESPACE.equals(uri) && "package".equals(localName)) {
                                 final String version = attributes.getValue("version");
                                 final String name = attributes.getValue("name");
-                                if (StringUtils.isEmpty(version) || StringUtils.isEmpty(name)) {
+                                if (version.isEmpty() || name.isEmpty()) {
                                     LOG.warn("Invalid package descriptor for {}", app.getSymbolicPath());
                                     return;
                                 }

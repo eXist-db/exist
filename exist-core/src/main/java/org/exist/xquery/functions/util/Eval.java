@@ -78,7 +78,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
 
@@ -583,7 +582,7 @@ public class Eval extends BasicFunction {
                 final String qname = elem.getAttribute("name");
                 final String source = elem.getAttribute("source");
                 NodeValue value;
-                if (isNotEmpty(source)) {
+                if (!source.isEmpty()) {
                     // load variable contents from URI
                     value = loadVarFromURI(source);
                 } else {
@@ -593,7 +592,7 @@ public class Eval extends BasicFunction {
                     }
                 }
                 final String type = elem.getAttribute("type");
-                if (type != null && Type.subTypeOf(Type.getType(type), Type.ANY_ATOMIC_TYPE)) {
+                if (!type.isEmpty() && Type.subTypeOf(Type.getType(type), Type.ANY_ATOMIC_TYPE)) {
                     innerContext.declareVariable(qname, value.atomize().convertTo(Type.getType(type)));
                 } else {
                     innerContext.declareVariable(qname, value);
@@ -619,7 +618,7 @@ public class Eval extends BasicFunction {
             } else if (child.getNodeType() == Node.ELEMENT_NODE && "unbind-namespace".equals(child.getLocalName())) {
                 final Element elem = (Element) child;
                 //TODO : error check
-                if (elem.getAttribute("uri") != null) {
+                if (elem.hasAttribute("uri")) {
                     innerContext.removeNamespace(elem.getAttribute("uri"));
                 }
             } else if (child.getNodeType() == Node.ELEMENT_NODE && "staticallyKnownDocuments".equals(child.getLocalName())) {

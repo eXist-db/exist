@@ -151,55 +151,57 @@ public class ModifyFunction extends BasicFunction
 					String op 	 	= attr.getAttribute( "operation" );
 					String ordered 	= attr.getAttribute( "ordered" );
 	
-					if( name != null && value != null && op != null ) {
+					if (name.isEmpty() || value.isEmpty() || op.isEmpty()) {
+						logger.warn( "Name, value or operation attribute missing for attribute" );
+					} else {
 						int opCode = 0;
-						
-						if(  "add".equalsIgnoreCase(op) ) {
+
+						if ("add".equalsIgnoreCase(op) ) {
 							opCode = 1;
-						} else if(  "replace".equalsIgnoreCase(op) ) {
+						} else if ("replace".equalsIgnoreCase(op) ) {
 							opCode = 2;
-						} else if(  "remove".equalsIgnoreCase(op) ) {
+						} else if ("remove".equalsIgnoreCase(op) ) {
 							opCode = 3;
 						}
-						
-						if( opCode == 0 ) {
+
+						if (opCode == 0) {
 							logger.error("jndi:modify() - Invalid operation code: [{}]", op);
 							throw( new XPathException( this, "jndi:modify() - Invalid operation code: [" + op + "]" ) );
 						}
-						
+
 						Attribute existingAttr = null;
-						
+
 						// Scan the existing list of ModificationItems backwards for one that matches the name we're trying to add.
 						// If the last such entry matches the opCode, then just add the value to the existing attribute (ModItem),
 						// Otherwise create a new ModificationItem.
 						//
 						// This basically collapses nearby identically named attributes that have the same opCode into one, except for removes
-						
-						for( int j = items.size() - 1; j >= 0; j-- ) {
+
+						for (int j = items.size() - 1; j >= 0; j-- ) {
 							ModificationItem item  = items.get( j );
-							
-							if( name.equals( item.getAttribute().getID() ) ) {
-								if( item.getModificationOp() == opCode && opCode != 3 ) {
+
+							if (name.equals( item.getAttribute().getID())) {
+								if (item.getModificationOp() == opCode && opCode != 3) {
 									existingAttr = item.getAttribute();
-								} 
-								
+								}
+
 								break;
-							} 
+							}
 						}
-			
-						if( existingAttr != null ) {
-							existingAttr.add( value );
+
+						if (existingAttr != null) {
+							existingAttr.add(value);
 						} else {
-							items.add( new ModificationItem( opCode, new BasicAttribute( name, value, ordered != null && "true".equalsIgnoreCase(ordered) ) ) );
+							items.add(new ModificationItem(opCode,
+									new BasicAttribute(name, value,
+											!ordered.isEmpty() && "true".equalsIgnoreCase(ordered))));
 						}
-					} else {
-						logger.warn( "Name, value or operation attribute missing for attribute" );
 					}
 				}
 			}
 		}
 		
-		return( items.toArray( mi ) );
+		return items.toArray(mi);
 	}
 
 }

@@ -54,6 +54,7 @@ import org.w3c.dom.*;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.annotation.Nonnull;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -795,22 +796,17 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     }
 
     @Override
+    @Nonnull
     public String getAttribute(final String name) {
         final Attr attr = findAttribute(name);
         return attr != null ? attr.getValue() : "";
     }
 
     @Override
+    @Nonnull
     public String getAttributeNS(final String namespaceURI, final String localName) {
         final Attr attr = findAttribute(new QName(localName, namespaceURI));
-        return attr != null ? attr.getValue() : XMLConstants.NULL_NS_URI;
-        //XXX: if not present must return null
-    }
-
-    @Deprecated //move as soon as getAttributeNS null issue resolved 
-    public String _getAttributeNS(final String namespaceURI, final String localName) {
-        final Attr attr = findAttribute(new QName(localName, namespaceURI));
-        return attr != null ? attr.getValue() : null;
+        return attr != null ? attr.getValue() : "";
     }
 
     @Override
@@ -951,6 +947,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     }
 
     @Override
+    @Nonnull
     public NodeList getChildNodes() {
         final int childNodesLen = children - attributes;
         final org.exist.dom.NodeListImpl childList = new org.exist.dom.NodeListImpl(childNodesLen);
@@ -1008,6 +1005,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     }
 
     @Override
+    @Nonnull
     public NodeList getElementsByTagName(final String name) {
         if(name != null && name.equals(QName.WILDCARD)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
@@ -1021,6 +1019,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     }
 
     @Override
+    @Nonnull
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
         final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
         final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
@@ -1977,9 +1976,9 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     private XmldbURI calculateBaseURI() {
         XmldbURI baseURI = null;
 
-        final String nodeBaseURI = _getAttributeNS(Namespaces.XML_NS, "base");
+        final Node nodeBaseURI = getAttributeNodeNS(Namespaces.XML_NS, "base");
         if(nodeBaseURI != null) {
-            baseURI = XmldbURI.create(nodeBaseURI, false);
+            baseURI = XmldbURI.create(nodeBaseURI.getNodeValue(), false);
             if(baseURI.isAbsolute()) {
                 return baseURI;
             }
@@ -1991,7 +1990,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                 baseURI = ((ElementImpl) parent).calculateBaseURI();
             } else {
                 XmldbURI parentsBaseURI = ((ElementImpl) parent).calculateBaseURI();
-                if(nodeBaseURI.isEmpty()) {
+                if(nodeBaseURI.getNodeValue().isEmpty()) {
                     baseURI = parentsBaseURI;
                 } else {
                     if(parentsBaseURI.toString().endsWith("/") || !parentsBaseURI.toString().contains("/")){
