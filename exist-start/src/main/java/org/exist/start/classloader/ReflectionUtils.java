@@ -25,6 +25,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class ReflectionUtils {
+
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private ReflectionUtils() {
+        // No instantiation allowed
+    }
+    
     /**
      * Invokes the main method of a specified class using the provided class loader and arguments.
      * <p>
@@ -43,16 +51,16 @@ public class ReflectionUtils {
     public static void invokeMain(final ClassLoader classloader, final String classname, final String[] args)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
 
-        final Class<?> invoked_class = classloader.loadClass(classname);
+        final Class<?> invokedClass = classloader.loadClass(classname);
 
-        final Class<?>[] method_param_types = new Class[1];
-        method_param_types[0] = args.getClass();
+        final Class<?>[] methodParamTypes = new Class[1];
+        methodParamTypes[0] = args.getClass();
 
-        final Method main = invoked_class.getDeclaredMethod("main", method_param_types);
+        final Method main = invokedClass.getDeclaredMethod("main", methodParamTypes);
 
-        final Object[] method_params = new Object[1];
-        method_params[0] = args;
-        main.invoke(null, method_params);
+        final Object[] methodParams = new Object[1];
+        methodParams[0] = args;
+        main.invoke(null, methodParams);
     }
 
     /**
@@ -67,8 +75,8 @@ public class ReflectionUtils {
      * class loader of the current thread
      */
     public static EXistClassLoader getEXistClassLoader() {
-        final Classpath _classpath = new Classpath();
-        final EXistClassLoader eXistClassLoader = _classpath.getClassLoader(null);
+        final Classpath classpath = new Classpath();
+        final EXistClassLoader eXistClassLoader = classpath.getClassLoader(null);
         Thread.currentThread().setContextClassLoader(eXistClassLoader);
         return eXistClassLoader;
     }

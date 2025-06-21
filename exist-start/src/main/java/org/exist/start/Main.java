@@ -70,13 +70,13 @@ public class Main {
     private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
     private static Main exist;
     private final boolean inDebugMode = Boolean.getBoolean(PROP_EXIST_START_DEBUG);
-    private String _mode = MODE_OTHER;
+    private String mode = MODE_OTHER;
 
     private Main() {
     }
 
     public Main(final String mode) {
-        this._mode = mode;
+        this.mode = mode;
     }
 
     public static void main(final String[] args) {
@@ -145,11 +145,11 @@ public class Main {
     }
 
     private String getMode() {
-        return _mode;
+        return mode;
     }
 
     private void setMode(final String mode) {
-        _mode = mode;
+        this.mode = mode;
     }
 
     public void run(final String[] args) {
