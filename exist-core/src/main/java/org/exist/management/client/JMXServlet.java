@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -230,7 +231,15 @@ public class JMXServlet extends HttpServlet {
                 localhostAddresses.add(address.getHostAddress());
             }
         } catch (UnknownHostException ex) {
-            LOG.warn("Unable to retrieve ipaddresses for localhost: {}", ex.getMessage());
+            LOG.warn("Unable to retrieve ipaddresses (v4) for localhost: {}", ex.getMessage());
+        }
+
+        try {
+            for (InetAddress address : Inet6Address.getAllByName("localhost") ){
+                localhostAddresses.add(address.getHostAddress());
+            }
+        } catch (UnknownHostException ex) {
+            LOG.warn("Unable to retrieve ipaddresses (v6) for localhost: {}", ex.getMessage());
         }
 
         if (localhostAddresses.isEmpty()) {
@@ -245,7 +254,9 @@ public class JMXServlet extends HttpServlet {
      * @return TRUE if request is from LOCALHOST otherwise FALSE
      */
     boolean isFromLocalHost(HttpServletRequest request) {
-        return localhostAddresses.contains(request.getRemoteAddr());
+        String remoteAddr = request.getRemoteAddr();
+        remoteAddr = remoteAddr.startsWith("[") ? remoteAddr.substring(1, remoteAddr.length() - 1) : remoteAddr;
+        return localhostAddresses.contains(remoteAddr);
     }
 
     /**
