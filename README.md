@@ -14,11 +14,9 @@
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 [![Download](https://img.shields.io/github/v/release/eXist-db/exist.svg)](https://github.com/eXist-db/exist/releases/)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.exist-db/exist/badge.svg)](https://search.maven.org/search?q=g:org.exist-db)
+[![javadoc](https://javadoc.io/badge2/org.exist-db/exist-core/javadoc.svg)](https://javadoc.io/doc/org.exist-db/exist-core)
 [![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
-<a href="https://opencollective.com/existdb#backer">
-		<img src="https://opencollective.com/existdb/backers/badge.svg">
-	</a>
-
+[![OpenCollective](https://opencollective.com/existdb/backers/badge.svg)](https://opencollective.com/existdb#backer)
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](https://contributor-covenant.org/version/1/4/)
 
 eXist-db is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist-db can be found at [exist-db.org](https://exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist-db, below.
