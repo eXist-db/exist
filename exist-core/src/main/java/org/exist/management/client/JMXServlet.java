@@ -54,22 +54,22 @@ import org.w3c.dom.Element;
  * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
  * simplicity, the JMX beans provided by eXist are organized into categories. One calls the servlet with one or more
  * categories in parameter "c", e.g.:
- *
+ * <p>
  * /exist/jmx?c=instances&amp;c=memory
- *
+ * <p>
  * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
  * "system", "caches", "locking", "processes", "sanity", "all".
- *
+ * <p>
  * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
  * (t=timeout-in-milliseconds). For example, the following call
- *
+ * <p>
  * /exist/jmx?operation=ping&amp;t=1000
- *
+ * <p>
  * will wait for a response within 1000ms. If the ping returns within the specified timeout, the servlet returns the
  * attributes of the SanityReport JMX bean, which will include an element &lt;jmx:Status&gt;PING_OK&lt;/jmx:Status&gt;.
  * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In
  * this case, additional information on running queries, memory consumption and database locks will be provided.
- *
+ * <p>
  * @author wolf
  */
 public class JMXServlet extends HttpServlet {
@@ -92,10 +92,9 @@ public class JMXServlet extends HttpServlet {
 
     private Path dataDir;
     private Path tokenFile;
-
-
+    
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 
         // Verify if request is from localhost or if user has specific servlet/container managed role.
         if (isFromLocalHost(request)) {
@@ -116,8 +115,8 @@ public class JMXServlet extends HttpServlet {
         writeXmlData(request, response);
     }
 
-    private void writeXmlData(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Element root = null;
+    private void writeXmlData(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        Element root;
 
         final String operation = request.getParameter("operation");
         if ("ping".equals(operation)) {
@@ -143,15 +142,15 @@ public class JMXServlet extends HttpServlet {
             if (mbean == null) {
                 throw new ServletException("to call an operation, you also need to specify parameter 'mbean'");
             }
-            String[] args = request.getParameterValues("args");
+            final String[] args = request.getParameterValues("args");
             try {
                 root = client.invoke(mbean, operation, args);
                 if (root == null) {
                     throw new ServletException("operation " + operation + " not found on " + mbean);
                 }
-            } catch (InstanceNotFoundException e) {
+            } catch (final InstanceNotFoundException e) {
                 throw new ServletException("mbean " + mbean + " not found: " + e.getMessage(), e);
-            } catch (MalformedObjectNameException | IntrospectionException | ReflectionException | MBeanException e) {
+            } catch (final MalformedObjectNameException | IntrospectionException | ReflectionException | MBeanException e) {
                 throw new ServletException(e.getMessage(), e);
             }
         } else {
@@ -182,7 +181,7 @@ public class JMXServlet extends HttpServlet {
     }
 
     @Override
-    public void init(ServletConfig config) throws ServletException {
+    public void init(final ServletConfig config) throws ServletException {
         super.init(config);
 
         // Setup JMS client
@@ -228,10 +227,10 @@ public class JMXServlet extends HttpServlet {
                             } else {
                                 localhostAddresses.add(hostAddress);
                             }
-            }
-        }
+                        }
+                    }
 
-            }
+                }
             }
 
         } catch (final SocketException e) {
@@ -251,7 +250,7 @@ public class JMXServlet extends HttpServlet {
      * @param request The HTTP request
      * @return TRUE if request is from LOCALHOST otherwise FALSE
      */
-    boolean isFromLocalHost(HttpServletRequest request) {
+    boolean isFromLocalHost(final HttpServletRequest request) {
         String remoteAddr = request.getRemoteAddr();
         remoteAddr = remoteAddr.startsWith("[") ? remoteAddr.substring(1, remoteAddr.length() - 1) : remoteAddr;
         return localhostAddresses.contains(remoteAddr);
@@ -263,8 +262,8 @@ public class JMXServlet extends HttpServlet {
      * @param request The HTTP request
      * @return TRUE if request contains correct value for token, else FALSE
      */
-    boolean hasSecretToken(HttpServletRequest request, String token) {
-        String[] tokenValue = request.getParameterValues(TOKEN_KEY);
+    boolean hasSecretToken(final HttpServletRequest request, final String token) {
+        final String[] tokenValue = request.getParameterValues(TOKEN_KEY);
         return ArrayUtils.contains(tokenValue, token);
     }
 
@@ -286,7 +285,7 @@ public class JMXServlet extends HttpServlet {
      */
     private String getToken() {
 
-        Properties props = new Properties();
+        final Properties props = new Properties();
         String token = null;
 
         // Read if possible
@@ -295,7 +294,7 @@ public class JMXServlet extends HttpServlet {
             try (final InputStream is = Files.newInputStream(tokenFile)) {
                 props.load(is);
                 token = props.getProperty(TOKEN_KEY);
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 LOG.error(ex.getMessage());
             }
 
@@ -313,7 +312,7 @@ public class JMXServlet extends HttpServlet {
             // Write data to file
             try (final OutputStream os = Files.newOutputStream(tokenFile)) {
                 props.store(os, "JMXservlet token: http://localhost:8080/exist/status?token=......");
-            } catch (IOException ex) {
+            } catch (final IOException ex) {
                 LOG.error(ex.getMessage());
             }
 
