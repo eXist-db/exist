@@ -26,16 +26,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import javax.management.*;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -218,32 +214,34 @@ public class JMXServlet extends HttpServlet {
      * Register all known IP-addresses for localhost.
      */
     void registerLocalHostAddresses() {
-        // The external IP address of the server
-        try {
-            localhostAddresses.add(InetAddress.getLocalHost().getHostAddress());
-        } catch (UnknownHostException ex) {
-            LOG.warn("Unable to get HostAddress for localhost: {}", ex.getMessage());
-        }
-
-        // The configured Localhost addresses
-        try {
-            for (InetAddress address : InetAddress.getAllByName("localhost")) {
-                localhostAddresses.add(address.getHostAddress());
-            }
-        } catch (UnknownHostException ex) {
-            LOG.warn("Unable to retrieve ipaddresses (v4) for localhost: {}", ex.getMessage());
-        }
 
         try {
-            for (InetAddress address : Inet6Address.getAllByName("localhost") ){
-                localhostAddresses.add(address.getHostAddress());
+            for (final NetworkInterface networkInterface : NetworkInterface.networkInterfaces().toList()) {
+                if (networkInterface.isLoopback()) {
+                    final Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
+                    while (inetAddresses.hasMoreElements()) {
+                        final String hostAddress = inetAddresses.nextElement().getHostAddress();
+                        if (hostAddress != null) {
+                            if (hostAddress.contains("%")) {
+                                final int position = hostAddress.indexOf("%");
+                                localhostAddresses.add(hostAddress.substring(0, position));
+                            } else {
+                                localhostAddresses.add(hostAddress);
+                            }
             }
-        } catch (UnknownHostException ex) {
-            LOG.warn("Unable to retrieve ipaddresses (v6) for localhost: {}", ex.getMessage());
+        }
+
+            }
+            }
+
+        } catch (final SocketException e) {
+            LOG.error("Unable to determine localhost loopback addresses: {}  ", e.getMessage(), e);
         }
 
         if (localhostAddresses.isEmpty()) {
-            LOG.error("Unable to determine addresses for localhost, jmx servlet might be disfunctional.");
+            LOG.error("Unable to determine addresses for localhost, jmx servlet might be dysfunctional.");
+        } else {
+            LOG.info("Detected loopback addresses: {}", localhostAddresses);
         }
     }
 
