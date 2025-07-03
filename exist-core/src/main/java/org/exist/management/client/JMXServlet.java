@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
 import javax.management.*;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -92,7 +93,7 @@ public class JMXServlet extends HttpServlet {
 
     private Path dataDir;
     private Path tokenFile;
-    
+
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 
@@ -116,7 +117,7 @@ public class JMXServlet extends HttpServlet {
     }
 
     private void writeXmlData(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        Element root;
+        final Element root;
 
         final String operation = request.getParameter("operation");
         if ("ping".equals(operation)) {
@@ -215,23 +216,21 @@ public class JMXServlet extends HttpServlet {
     void registerLocalHostAddresses() {
 
         try {
-            for (final NetworkInterface networkInterface : NetworkInterface.networkInterfaces().toList()) {
-                if (networkInterface.isLoopback()) {
-                    final Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
-                    while (inetAddresses.hasMoreElements()) {
-                        final String hostAddress = inetAddresses.nextElement().getHostAddress();
-                        if (hostAddress != null) {
-                            if (hostAddress.contains("%")) {
-                                final int position = hostAddress.indexOf("%");
-                                localhostAddresses.add(hostAddress.substring(0, position));
-                            } else {
-                                localhostAddresses.add(hostAddress);
-                            }
-                        }
-                    }
-
+            final Predicate<NetworkInterface> isLoopback = networkInterface -> {
+                try {
+                    return networkInterface.isLoopback();
+                } catch (final SocketException e) {
+                    LOG.error("Unable to determine if {} is a loopback interface", e.getMessage(), e);
+                    return false;
                 }
-            }
+            };
+
+            NetworkInterface.networkInterfaces()
+                    .filter(isLoopback)
+                    .flatMap(NetworkInterface::inetAddresses)
+                    .map(InetAddress::getHostAddress)
+                    .map(a -> a.replaceFirst("%.+", ""))
+                    .forEach(localhostAddresses::add);
 
         } catch (final SocketException e) {
             LOG.error("Unable to determine localhost loopback addresses: {}  ", e.getMessage(), e);
