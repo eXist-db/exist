@@ -95,6 +95,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
+        <maven.minimum.version>3.9.9</maven.minimum.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
@@ -990,11 +991,11 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>${maven.compiler.target}</version>
-                                    <message>eXist-db requires (at least) OpenJDK ${maven.compiler.target} to build and run.</message>
+                                    <message>eXist-db requires (at least) OpenJDK ${maven.compiler.target} to build and run. Detected ${java.vendor} OpenJDK ${java.version}. Please upgrade.</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <message>Modern plugins require atleast maven 3.9.9.</message>
-                                    <version>3.9.9</version>
+                                    <version>${maven.minimum.version}</version>
+                                    <message>Building eXist requires (at least) Apache Maven ${maven.minimum.version}. Detected Apache Maven ${maven.version}. Please upgrade.</message>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
