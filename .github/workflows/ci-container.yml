@@ -1,11 +1,16 @@
 name: Publish Container
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+      - cron: "0 6 * * *"
+  workflow_dispatch:
+
 jobs:
   build:
     name: Test and Publish Container Images
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
-    # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.base_ref ==  'develop' || github.base_ref ==  'master'
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +24,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64 
+          platforms: linux/amd64,linux/arm64
       - name: Make buildkit default
         uses: docker/setup-buildx-action@v3
         id: buildx
@@ -36,20 +41,38 @@ jobs:
         # Hack around #5450
       - name: pull base image
         run: |
-          docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java21-debian12:latest      
+          docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java21-debian12:latest
       - name: Build images
         run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
       - name: Check local images
         run: docker image ls
       - name: Check license headers
         run: mvn license:check
-        working-directory: exist-docker      
+        working-directory: exist-docker
       - name: Start exist-ci container
         run: |
           docker run -dit -p 8080:8080 --name exist-ci --rm existdb/existdb:latest
           sleep 35s
       - name: Run tests
         run: bats --tap exist-docker/src/test/bats/*.bats
+
+      - name: debug logs
+        if: failure()
+        run: docker logs exist-ci | grep 'ERROR'
+
+      - name: Copy logs on failure
+        if: failure()
+        run: |
+          echo "Copying logs..."
+          docker cp exist-ci:/exist/logs/exist.log ./exist.log
+
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exist-core-failed-log
+          path: exist.log
+
       # NOTE (DP): When on master push release, when on develop push latest: Version is included automatically
       # TODO (DP): Confirm that releases triggered from maven publish images with the non SNAPSHOT version
       - name: Publish latest images
@@ -76,5 +99,4 @@ jobs:
       #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       #   run: mvn -q -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
-      #   working-directory: ./exist-docker  
-
+      #   working-directory: ./exist-docker
