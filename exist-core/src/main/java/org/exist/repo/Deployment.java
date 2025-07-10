@@ -207,7 +207,7 @@ public class Deployment {
                         version = new PackageLoader.Version(semVer, true);
                     } else if (!semVerMax.isEmpty() || !semVerMin.isEmpty()) {
                         version = new PackageLoader.Version(semVerMin.isEmpty() ? null: semVerMin, semVerMax.isEmpty() ? null: semVerMax);
-                    } else if (!pkgVersion.isEmpty()) {
+                    } else if (!versionStr.isEmpty()) {
                         version = new PackageLoader.Version(versionStr, false);
                     }
 
