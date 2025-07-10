@@ -73,11 +73,8 @@ import java.util.stream.Stream;
 public class Deployment {
 
     public final static String PROPERTY_APP_ROOT = "repo.root-collection";
-
-    private final static Logger LOG = LogManager.getLogger(Deployment.class);
-
     public final static String PROCESSOR_NAME = "http://exist-db.org";
-
+    private final static Logger LOG = LogManager.getLogger(Deployment.class);
     private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
     private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";
 
@@ -92,23 +89,7 @@ public class Deployment {
     private static final QName RESOURCES_ELEMENT = new QName("resources", REPO_NAMESPACE);
     private static final String RESOURCES_PATH_ATTRIBUTE = "path";
 
-    private static class RequestedPerms {
-        final String user;
-        final String password;
-        final Optional<String> group;
-        final Either<Integer, String> permissions;
-
-        private RequestedPerms(final String user, final String password, final Optional<String> group, final Either<Integer, String> permissions) {
-            this.user = user;
-            this.password = password;
-            this.group = group;
-            this.permissions = permissions;
-        }
-    }
-
-//    private Optional<RequestedPerms> requestedPerms = Optional.empty();
-
-    protected Optional<Path> getPackageDir(final String pkgName, final Optional<ExistRepository> repo) throws PackageException {
+    protected Optional<Path> getPackageDir(final String pkgName, final Optional<ExistRepository> repo) {
         Optional<Path> packageDir = Optional.empty();
 
         if (repo.isPresent()) {
@@ -145,7 +126,7 @@ public class Deployment {
         if (!Files.isReadable(repoFile)) {
             return null;
         }
-        try(final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
+        try (final InputStream is = new BufferedInputStream(Files.newInputStream(repoFile))) {
             return DocUtils.parse(broker.getBrokerPool(), null, is, null);
         } catch (final XPathException | IOException e) {
             throw new PackageException("Failed to parse repo.xml: " + e.getMessage(), e);
@@ -160,19 +141,19 @@ public class Deployment {
      * Install and deploy a give xar archive. Dependencies are installed from
      * the PackageLoader.
      *
-     * @param broker the broker to use
+     * @param broker      the broker to use
      * @param transaction the transaction for this deployment task
-     * @param xar the .xar file to install
-     * @param loader package loader to use
+     * @param xar         the .xar file to install
+     * @param loader      package loader to use
      * @param enforceDeps when set to true, the method will throw an exception if a dependency could not be resolved
      *                    or an older version of the required dependency is installed and needs to be replaced.
      * @return the collection path to which the package was deployed or Optional.empty if not deployed
      * @throws PackageException if package installation failed
-     * @throws IOException in case of an IO error
+     * @throws IOException      in case of an IO error
      */
     public Optional<String> installAndDeploy(final DBBroker broker, final Txn transaction, final XarSource xar, final PackageLoader loader, boolean enforceDeps) throws PackageException, IOException {
         final Optional<DocumentImpl> descriptor = getDescriptor(broker, xar);
-        if(!descriptor.isPresent()) {
+        if (descriptor.isEmpty()) {
             throw new PackageException("Missing descriptor from package: " + xar.getURI());
         }
         final DocumentImpl document = descriptor.get();
@@ -182,7 +163,7 @@ public class Deployment {
         final String pkgVersion = root.getAttribute("version");
 
         final Optional<ExistRepository> repo = broker.getBrokerPool().getExpathRepo();
-	    if (repo.isPresent()) {
+        if (repo.isPresent()) {
             final Packages packages = repo.get().getParentRepo().getPackages(name);
 
             if (packages != null && (!enforceDeps || pkgVersion.equals(packages.latest().getVersion()))) {
@@ -206,7 +187,7 @@ public class Deployment {
                     if (!semVer.isEmpty()) {
                         version = new PackageLoader.Version(semVer, true);
                     } else if (!semVerMax.isEmpty() || !semVerMin.isEmpty()) {
-                        version = new PackageLoader.Version(semVerMin.isEmpty() ? null: semVerMin, semVerMax.isEmpty() ? null: semVerMax);
+                        version = new PackageLoader.Version(semVerMin.isEmpty() ? null : semVerMin, semVerMax.isEmpty() ? null : semVerMax);
                     } else if (!versionStr.isEmpty()) {
                         version = new PackageLoader.Version(versionStr, false);
                     }
@@ -230,8 +211,8 @@ public class Deployment {
                                         LOG.debug("Package {} needs to be upgraded", pkgName);
                                         if (enforceDeps) {
                                             throw new PackageException("Package requires version " + version +
-                                                " of package " + pkgName +
-                                                ". Installed version is " + latest.getVersion() + ". Please upgrade!");
+                                                    " of package " + pkgName + ". Installed version is " +
+                                                    latest.getVersion() + ". Please upgrade!");
                                         }
                                     }
                                 } else {
@@ -278,8 +259,8 @@ public class Deployment {
             return deploy(broker, transaction, pkgName, repo, null);
         }
 
-	    // Totally unnecessary to do the above if repo is unavailable.
-	    return Optional.empty();
+        // Totally unnecessary to do the above if repo is unavailable.
+        return Optional.empty();
     }
 
     private void checkProcessorVersion(final PackageLoader.Version version) throws PackageException {
@@ -288,7 +269,7 @@ public class Deployment {
         final DependencyVersion depVersion = version.getDependencyVersion();
         if (!depVersion.isCompatible(procVersion)) {
             throw new PackageException("Package requires eXist-db version " + version + ". " +
-                "Installed version is " + procVersion);
+                    "Installed version is " + procVersion);
         }
     }
 
@@ -314,7 +295,7 @@ public class Deployment {
         if (repoXML != null) {
             try {
                 final Optional<ElementImpl> cleanup = findElement(repoXML, CLEANUP_ELEMENT);
-                if(cleanup.isPresent()) {
+                if (cleanup.isPresent()) {
                     runQuery(broker, null, packageDir, cleanup.get().getStringValue(), pkgName, QueryPurpose.UNDEPLOY);
                 }
 
@@ -330,8 +311,8 @@ public class Deployment {
         } else {
             // we still may need to remove the copy of the package from /db/system/repo
             if (pkg.isPresent()) {
-		        uninstall(broker, transaction, pkg.get(), Optional.empty());
-	        }
+                uninstall(broker, transaction, pkg.get(), Optional.empty());
+            }
         }
         return Optional.empty();
     }
@@ -384,7 +365,7 @@ public class Deployment {
                     // no target means: package does not need to be deployed into database
                     // however, we need to preserve a copy for backup purposes
                     final Optional<Package> pkg = getPackage(pkgName, repo);
-		            pkg.orElseThrow(() -> new XPathException((Expression) null, "expath repository is not available so the package was not stored."));
+                    pkg.orElseThrow(() -> new XPathException((Expression) null, "expath repository is not available so the package was not stored."));
                     final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
@@ -395,7 +376,7 @@ public class Deployment {
                     final Optional<Either<Integer, String>> perms = Optional.of(elem.getAttribute("mode")).flatMap(mode -> {
                         try {
                             return Optional.of(Either.Left(Integer.parseInt(mode, 8)));
-                        } catch(final NumberFormatException e) {
+                        } catch (final NumberFormatException e) {
                             if (mode.matches("^[rwx-]{9}")) {
                                 return Optional.of(Either.Right(mode));
                             } else {
@@ -405,10 +386,10 @@ public class Deployment {
                     });
 
                     return perms.map(p -> new RequestedPerms(
-                        elem.getAttribute("user"),
-                        elem.getAttribute("password"),
-                        Optional.of(elem.getAttribute("group")),
-                        p
+                            elem.getAttribute("user"),
+                            elem.getAttribute("password"),
+                            Optional.of(elem.getAttribute("group")),
+                            p
                     ));
                 });
 
@@ -422,25 +403,25 @@ public class Deployment {
                 final Optional<ElementImpl> preSetup = findElement(repoXML, PRE_SETUP_ELEMENT);
                 final Optional<String> preSetupPath = preSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
-                if(preSetupPath.isPresent()) {
+                if (preSetupPath.isPresent()) {
                     runQuery(broker, targetCollection, packageDir, preSetupPath.get(), pkgName, QueryPurpose.PREINSTALL);
                 }
 
                 // create the group specified in the permissions element if needed
                 // create the user specified in the permissions element if needed; assign it to the specified group
                 // TODO: if the user already exists, check and ensure the user is assigned to the specified group
-                if(requestedPerms.isPresent()) {
+                if (requestedPerms.isPresent()) {
                     checkUserSettings(broker, requestedPerms.get());
                 }
 
-                final InMemoryNodeSet resources = findElements(repoXML,RESOURCES_ELEMENT);
+                final InMemoryNodeSet resources = findElements(repoXML, RESOURCES_ELEMENT);
 
                 // store all package contents into database, using the user/group/mode in the permissions element. however:
                 // 1. repo.xml is excluded for now, since it may contain the default user's password in the clear
                 // 2. contents of directories identified in the path attribute of any <resource path=""/> element are stored as binary
                 final List<String> errors = scanDirectory(broker, transaction, packageDir, targetCollection, resources, true, false,
                         requestedPerms);
-                
+
                 // store repo.xml, filtering out the default user's password
                 storeRepoXML(broker, transaction, repoXML, targetCollection, requestedPerms);
 
@@ -448,7 +429,7 @@ public class Deployment {
                 final Optional<ElementImpl> postSetup = findElement(repoXML, POST_SETUP_ELEMENT);
                 final Optional<String> postSetupPath = postSetup.map(ElementImpl::getStringValue).filter(s -> !s.isEmpty());
 
-                if(postSetupPath.isPresent()) {
+                if (postSetupPath.isPresent()) {
                     runQuery(broker, targetCollection, packageDir, postSetupPath.get(), pkgName, QueryPurpose.POSTINSTALL);
                 }
 
@@ -487,23 +468,23 @@ public class Deployment {
             final Path packageDir = maybePackageDir.get();
             final String abbrev = pkg.get().getAbbrev();
 
-            try(final Stream<Path> filesToDelete = Files.find(packageDir, 1, (path, attrs) -> {
-                    if(path.equals(packageDir)) {
-                        return false;
-                    }
-                    final String name = FileUtils.fileName(path);
-                    if (attrs.isDirectory()) {
-                        return !(name.equals(abbrev) || "content".equals(name));
-                    } else {
-                        return !("expath-pkg.xml".equals(name) || "repo.xml".equals(name) ||
-                                "exist.xml".equals(name) || name.startsWith("icon"));
-                    }
+            try (final Stream<Path> filesToDelete = Files.find(packageDir, 1, (path, attrs) -> {
+                if (path.equals(packageDir)) {
+                    return false;
+                }
+                final String name = FileUtils.fileName(path);
+                if (attrs.isDirectory()) {
+                    return !(name.equals(abbrev) || "content".equals(name));
+                } else {
+                    return !("expath-pkg.xml".equals(name) || "repo.xml".equals(name) ||
+                            "exist.xml".equals(name) || name.startsWith("icon"));
+                }
             })) {
 
                 filesToDelete.forEach(path -> {
                     try {
                         Files.deleteIfExists(path);
-                    } catch(final IOException ioe) {
+                    } catch (final IOException ioe) {
                         LOG.warn("Cleanup: failed to delete file {} in package {}", path.toAbsolutePath().toString(), pkgName);
                     }
                 });
@@ -644,25 +625,8 @@ public class Deployment {
         }
     }
 
-    private enum QueryPurpose {
-        SETUP("<setup> element"),
-        PREINSTALL("<prepare> element"),
-        POSTINSTALL("<finish> element"),
-        UNDEPLOY("undeploy");
-
-        private final String purpose;
-
-        QueryPurpose(final String purpose) {
-            this.purpose = purpose;
-        }
-
-        public String getPurposeString() {
-            return purpose;
-        }
-    }
-
     private Sequence runQuery(final DBBroker broker, final XmldbURI targetCollection, final Path tempDir,
-            final String fileName, final String pkgName, final QueryPurpose purpose)
+                              final String fileName, final String pkgName, final QueryPurpose purpose)
             throws PackageException, IOException, XPathException {
         final Path xquery = tempDir.resolve(fileName);
         if (!Files.isReadable(xquery)) {
@@ -673,15 +637,16 @@ public class Deployment {
         final XQueryContext ctx = new XQueryContext(broker.getBrokerPool());
         ctx.declareVariable("dir", tempDir.toAbsolutePath().toString());
         final Optional<Path> home = broker.getConfiguration().getExistHome();
-        if(home.isPresent()) {
+        if (home.isPresent()) {
             ctx.declareVariable("home", home.get().toAbsolutePath().toString());
         }
 
         if (targetCollection != null) {
             ctx.declareVariable("target", targetCollection.toString());
             ctx.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI + targetCollection.toString());
-        } else
-            {ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);}
+        } else {
+            ctx.declareVariable("target", Sequence.EMPTY_SEQUENCE);
+        }
         if (QueryPurpose.PREINSTALL == purpose) {
             // when running pre-setup scripts, base path should point to directory
             // because the target collection does not yet exist
@@ -709,7 +674,7 @@ public class Deployment {
      * @param target
      */
     private List<String> scanDirectory(final DBBroker broker, final Txn transaction, final Path directory, final XmldbURI target, final InMemoryNodeSet resources,
-                               final boolean inRootDir, final boolean isResourcesDir, final Optional<RequestedPerms> requestedPerms) {
+                                       final boolean inRootDir, final boolean isResourcesDir, final Optional<RequestedPerms> requestedPerms) {
         return scanDirectory(broker, transaction, directory, target, resources, inRootDir, isResourcesDir, requestedPerms, new ArrayList<>());
     }
 
@@ -733,17 +698,17 @@ public class Deployment {
             try {
                 storeBinaryResources(broker, transaction, directory, collection, requestedPerms, errors);
             } catch (Exception e) {
-                LOG.error(e.getMessage(), e); 
+                LOG.error(e.getMessage(), e);
             }
         } else {
             storeFiles(broker, transaction, directory, collection, inRootDir, requestedPerms, errors);
         }
 
         // scan sub directories
-        try(final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
+        try (final Stream<Path> subDirs = Files.find(directory, 1, (path, attrs) -> (!path.equals(directory)) && attrs.isDirectory())) {
             subDirs.forEach(path -> scanDirectory(broker, transaction, path, target.append(FileUtils.fileName(path)), resources, false,
                     isResources, requestedPerms, errors));
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             LOG.warn("Unable to scan sub-directories", ioe);
         }
         return errors;
@@ -770,11 +735,11 @@ public class Deployment {
      * @param targetCollection
      */
     private void storeFiles(final DBBroker broker, final Txn transaction, final Path directory, final Collection targetCollection, final boolean inRootDir,
-            final Optional<RequestedPerms> requestedPerms, final List<String> errors) {
+                            final Optional<RequestedPerms> requestedPerms, final List<String> errors) {
         List<Path> files;
         try {
             files = FileUtils.list(directory);
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             LOG.error(ioe);
             errors.add(FileUtils.fileName(directory) + ": " + ioe.getMessage());
             files = Collections.EMPTY_LIST;
@@ -801,7 +766,8 @@ public class Deployment {
 
                         broker.storeDocument(transaction, name, is, mime, null, null, permission, null, null, targetCollection);
 
-                    } catch (final EXistException | PermissionDeniedException | LockException | SAXException | IOException e) {
+                    } catch (final EXistException | PermissionDeniedException | LockException | SAXException |
+                                   IOException e) {
                         //check for .html ending
                         if (mime.getName().equals(MimeType.HTML_TYPE.getName())) {
                             //store it as binary resource
@@ -811,7 +777,8 @@ public class Deployment {
                             throw new EXistException(FileUtils.fileName(file) + " cannot be stored");
                         }
                     }
-                } catch (final SAXException | EXistException | PermissionDeniedException | LockException | IOException e) {
+                } catch (final SAXException | EXistException | PermissionDeniedException | LockException |
+                               IOException e) {
                     LOG.error(e.getMessage(), e);
                     errors.add(FileUtils.fileName(file) + ": " + e.getMessage());
                 }
@@ -827,10 +794,9 @@ public class Deployment {
     }
 
     private void storeBinaryResources(final DBBroker broker, final Txn transaction, final Path directory, final Collection targetCollection,
-            final Optional<RequestedPerms> requestedPerms, final List<String> errors) throws IOException, EXistException,
-            PermissionDeniedException, LockException, TriggerException {
+                                      final Optional<RequestedPerms> requestedPerms, final List<String> errors) throws IOException {
         try (final DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-            for (final Path entry: stream) {
+            for (final Path entry : stream) {
                 if (!Files.isDirectory(entry)) {
                     final XmldbURI name = XmldbURI.create(FileUtils.fileName(entry));
                     try {
@@ -842,13 +808,14 @@ public class Deployment {
                         LOG.error(e.getMessage(), e);
                         errors.add(e.getMessage());
                     }
-                }  
+                }
             }
         }
     }
 
     /**
      * Set owner, group and permissions. For XQuery resources, always set the executable flag.
+     *
      * @param mime
      * @param permission
      */
@@ -899,7 +866,7 @@ public class Deployment {
     }
 
     public Optional<DocumentImpl> getDescriptor(final DBBroker broker, final XarSource xar) throws IOException, PackageException {
-        try(final JarInputStream jis = new JarInputStream(xar.newInputStream())) {
+        try (final JarInputStream jis = new JarInputStream(xar.newInputStream())) {
             JarEntry entry;
             while ((entry = jis.getNextJarEntry()) != null) {
                 if (!entry.isDirectory() && "expath-pkg.xml".equals(entry.getName())) {
@@ -912,6 +879,37 @@ public class Deployment {
             }
         }
         return Optional.empty();
+    }
+
+    private enum QueryPurpose {
+        SETUP("<setup> element"),
+        PREINSTALL("<prepare> element"),
+        POSTINSTALL("<finish> element"),
+        UNDEPLOY("undeploy");
+
+        private final String purpose;
+
+        QueryPurpose(final String purpose) {
+            this.purpose = purpose;
+        }
+
+        public String getPurposeString() {
+            return purpose;
+        }
+    }
+
+    private static class RequestedPerms {
+        final String user;
+        final String password;
+        final Optional<String> group;
+        final Either<Integer, String> permissions;
+
+        private RequestedPerms(final String user, final String password, final Optional<String> group, final Either<Integer, String> permissions) {
+            this.user = user;
+            this.password = password;
+            this.group = group;
+            this.permissions = permissions;
+        }
     }
 
     /**
@@ -938,7 +936,7 @@ public class Deployment {
             if (attribs != null && "permissions".equals(qname.getLocalPart())) {
                 newAttrs = new AttrList();
                 for (int i = 0; i < attribs.getLength(); i++) {
-                    if (!"password". equals(attribs.getQName(i).getLocalPart())) {
+                    if (!"password".equals(attribs.getQName(i).getLocalPart())) {
                         newAttrs.addAttribute(attribs.getQName(i), attribs.getValue(i), attribs.getType(i));
                     }
                 }
