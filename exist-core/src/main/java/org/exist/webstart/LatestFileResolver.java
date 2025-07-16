@@ -21,18 +21,19 @@
  */
 package org.exist.webstart;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static org.exist.util.FileUtils.fileName;
 
 /**
  * This class uses regex pattern matching to find the latest version of a
@@ -40,19 +41,17 @@ import java.util.stream.Stream;
  *
  * @author Ben Schmaus (exist@benschmaus.com)
  * @version $Revision$
- * @see LatestFileResolver#getResolvedFileName(String)
+ * @see org.exist.webstart.LatestFileResolver#getResolvedFileName(String)
  */
 public class LatestFileResolver {
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     // Pattern that can be used to indicate that the
     // latest version of a particular file should be added to the classpath.
     // E.g., commons-fileupload-%latest%.jar would resolve to something like
     // commons-fileupload-1.1.jar.
-    private final static Pattern latestVersionPattern = Pattern.compile("(%latest%)");
-
-    // Set debug mode for each file resolver instance based on whether or
-    // not the system was started with debugging turned on.
-    private static final boolean _debug = Boolean.getBoolean("exist.start.debug");
+    private static final Pattern LATEST_VERSION_PATTERN = Pattern.compile("(%latest%)");
 
     /**
      * If the passed file name contains a %latest% token,
@@ -64,15 +63,16 @@ public class LatestFileResolver {
      * @return Resolved filename.
      */
     public String getResolvedFileName(final String filename) {
-        final Matcher matches = latestVersionPattern.matcher(filename);
+        final Matcher matches = LATEST_VERSION_PATTERN.matcher(filename);
         if (!matches.find()) {
             return filename;
         }
+
         final String[] fileinfo = filename.split("%latest%");
         // Path of file up to the beginning of the %latest% token.
         final String uptoToken = fileinfo[0];
 
-        // Dir that should contain our jar.
+        // Directory that should contain our jar.
         final String containerDirName = uptoToken.substring(0, uptoToken.lastIndexOf(File.separatorChar));
 
         final Path containerDir = Paths.get(containerDirName);
@@ -83,49 +83,25 @@ public class LatestFileResolver {
         final Pattern pattern = Pattern.compile(patternString);
         final Matcher matcher = pattern.matcher("");
 
-        List<Path> jars;
         try {
-            jars = list(containerDir, p -> {
+            final List<Path> jars = FileUtils.list(containerDir, p -> {
                 matcher.reset(fileName(p));
                 return matcher.find();
             });
+
+            if (jars.isEmpty()) {
+                LOGGER.warn("WARN: No latest version found for JAR file: '{}'", filename);
+
+            } else {
+                final String actualFileName = jars.getFirst().toAbsolutePath().toString();
+                LOGGER.debug("Found match: {} for jar file pattern: {}", actualFileName, filename);
+                return actualFileName;
+            }
+
         } catch (final IOException e) {
-            System.err.println("ERROR: No jars found in " + containerDir.toAbsolutePath());
-            e.printStackTrace();
-            jars = Collections.emptyList();
+            LOGGER.error("No jars found in {}. Reason: {}", containerDir.toAbsolutePath(), e.getMessage(), e);
         }
 
-        if (!jars.isEmpty()) {
-            final String actualFileName = jars.getFirst().toAbsolutePath().toString();
-            if (_debug) {
-                System.err.println("Found match: " + actualFileName + " for jar file pattern: " + filename);
-            }
-            return actualFileName;
-        } else {
-            if (_debug) {
-                System.err.println("WARN: No latest version found for JAR file: '" + filename + "'");
-            }
-        }
         return filename;
-    }
-
-    /**
-     * Copied from {@link org.exist.util.FileUtils#list(Path, Predicate)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static List<Path> list(final Path directory, final Predicate<Path> filter) throws IOException {
-        try (final Stream<Path> entries = Files.list(directory).filter(filter)) {
-            return entries.collect(Collectors.toList());
-        }
-    }
-
-    /**
-     * Copied from {@link org.exist.util.FileUtils#fileName(Path)}
-     * as org.exist.start is compiled into a separate Jar and doesn't have
-     * the rest of eXist available on the classpath
-     */
-    static String fileName(final Path path) {
-        return path.getFileName().toString();
     }
 }
