@@ -445,15 +445,16 @@ public class LuceneConfig {
 
         ModuleImport(Element config) throws DatabaseConfigurationException {
             this.uri = config.getAttribute(ATTR_MODULE_URI);
-            this.prefix = config.getAttribute(ATTR_MODULE_PREFIX);
-            this.at = config.getAttribute(ATTR_MODULE_AT);
-
-            if (this.prefix == null || this.prefix.isEmpty()) {
-                throw new DatabaseConfigurationException("Attribute prefix for <module> required");
-            }
-            if (this.uri == null || this.uri.isEmpty()) {
+            if (this.uri.isEmpty()) {
                 throw new DatabaseConfigurationException("Attribute uri for <module> required");
             }
+
+            this.prefix = config.getAttribute(ATTR_MODULE_PREFIX);
+            if (this.prefix.isEmpty()) {
+                throw new DatabaseConfigurationException("Attribute prefix for <module> required");
+            }
+
+            this.at = config.getAttribute(ATTR_MODULE_AT);
         }
     }
 }

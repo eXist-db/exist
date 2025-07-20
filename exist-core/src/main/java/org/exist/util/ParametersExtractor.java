@@ -104,16 +104,16 @@ public class ParametersExtractor {
             List values = parameters.get(name);
 
             final String value = param.getAttribute(PARAMETER_VALUE_ATTRIBUTE);
-            if(value != null && !value.isEmpty()) {
-                if(values == null) {
+            if (!value.isEmpty()) {
+                if (values == null) {
                     values = new ArrayList<String>();
                 }
                 values.add(value);
             } else {
                 //are there child nodes?
-                if(param.getChildNodes().getLength() > 0) {
+                if (param.getChildNodes().getLength() > 0) {
 
-                    if(values == null) {
+                    if (values == null) {
                         values = new ArrayList<Map<String, List>>();
                     }
 
@@ -250,23 +250,20 @@ public class ParametersExtractor {
     private static Properties parseProperties(final Node container, final String elementName) throws IllegalArgumentException {
         final Properties properties = new Properties();
 
-        if(container != null && container.getNodeType() == Node.ELEMENT_NODE) {
+        if (container != null && container.getNodeType() == Node.ELEMENT_NODE) {
             final NodeList params = ((Element) container).getElementsByTagName(elementName);
-            for(int i = 0; i < params.getLength(); i++) {
+            for (int i = 0; i < params.getLength(); i++) {
                 final Element param = ((Element) params.item(i));
 
                 final String name = param.getAttribute("name");
                 final String value = param.getAttribute("value");
 
-                if(name != null && value != null) {
-                    properties.setProperty(name, value);
-                } else {
-                    if(name == null) {
-                        throw new IllegalArgumentException("'name' attribute missing for " + elementName);
-                    } else {
-                        throw new IllegalArgumentException("'value' attribute missing for " + elementName);
-                    }
+                if (name.isEmpty()) {
+                    throw new IllegalArgumentException("'name' attribute missing for " + elementName);
+                } else if (value.isEmpty()) {
+                    throw new IllegalArgumentException("'value' attribute missing for " + elementName);
                 }
+                properties.setProperty(name, value);
             }
         }
 

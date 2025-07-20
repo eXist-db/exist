@@ -72,7 +72,7 @@ public class RangeIndexConfigTest {
         expect(mockCreate.getChildNodes()).andReturn(mockEmptyNodeList);
         expect(mockEmptyNodeList.getLength()).andReturn(0);
 
-        expect(mockCreate.getAttribute(MATCH_ATTR)).andReturn(null);
+        expect(mockCreate.getAttribute(MATCH_ATTR)).andReturn("");
         expect(mockCreate.hasAttribute(QNAME_ATTR)).andReturn(true);
         expect(mockCreate.getAttribute(QNAME_ATTR)).andReturn(badCreateQName);
 

@@ -342,17 +342,17 @@ public class ConfigurationImpl implements Configuration {
 
     public Integer getPropertyMegabytes(String name, Integer defaultValue) {
         String cacheMem = element.getAttribute(name);
-        if (cacheMem != null) {
-            if (cacheMem.endsWith("M") || cacheMem.endsWith("m")) {
-                cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
-            }
-            final Integer result = Integer.valueOf(cacheMem);
-            if (result < 0) {
-                return defaultValue;
-            }
-            return result;
+        if (cacheMem.isEmpty()) {
+            return defaultValue;
         }
-        return defaultValue;
+        if (cacheMem.endsWith("M") || cacheMem.endsWith("m")) {
+            cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
+        }
+        final int result = Integer.parseInt(cacheMem);
+        if (result < 0) {
+            return defaultValue;
+        }
+        return result;
     }
 
     public String getConfigFilePath() {

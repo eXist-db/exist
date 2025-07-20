@@ -144,8 +144,9 @@ public class Descriptor implements ErrorHandler {
                 final Path logFile = Paths.get("request-replay-log.txt");
                 bufWriteReplayLog = Files.newBufferedWriter(logFile);
                 final String attr = doc.getDocumentElement().getAttribute("filtered");
-                if (attr != null)
+                if (!attr.isEmpty()) {
                     requestsFiltered = "true".equals(attr);
+                }
             }
 
             //load <allow-source> settings
@@ -206,7 +207,7 @@ public class Descriptor implements ErrorHandler {
             String path = elem.getAttribute("path");        //@path
 
             //must be a path to allow source for
-            if (path == null) {
+            if (path.isEmpty()) {
                 LOG.warn("Error element 'xquery' requires an attribute 'path'");
                 return;
             }
@@ -242,7 +243,7 @@ public class Descriptor implements ErrorHandler {
             String view = elem.getAttribute("view");        //@view
 
             //must be a path or a pattern to map from
-            if (path == null /*&& pattern == null*/) {
+            if (path.isEmpty() /*&& pattern == null*/) {
                 LOG.warn("Error element 'map' requires an attribute 'path' or an attribute 'pattern'");
                 return;
             }
@@ -250,7 +251,7 @@ public class Descriptor implements ErrorHandler {
                     SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\', '/'));
 
             //must be a view to map to
-            if (view == null) {
+            if (view.isEmpty()) {
                 LOG.warn("Error element 'map' requires an attribute 'view'");
                 return;
             }

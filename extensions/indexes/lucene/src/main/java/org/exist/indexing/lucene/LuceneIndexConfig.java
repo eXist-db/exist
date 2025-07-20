@@ -23,7 +23,6 @@ package org.exist.indexing.lucene;
 
 import org.apache.commons.collections4.MultiMap;
 import org.apache.commons.collections4.map.MultiValueMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -100,17 +99,21 @@ public class LuceneIndexConfig {
         }
 
         String name = config.getAttribute(FIELD_ATTR);
-        if (name != null && !name.isEmpty())
-        	setName(name);
+        if (!name.isEmpty()) {
+            setName(name);
+        }
 
         String fieldType = config.getAttribute(TYPE_ATTR);
-        if (fieldType != null && !fieldType.isEmpty())
-        	type = fieldTypes.get(fieldType);
-        if (type == null)
-        	type = new FieldType(config, analyzers);
+        if (!fieldType.isEmpty()) {
+            type = fieldTypes.get(fieldType);
+        }
+
+        if (type == null) {
+            type = new FieldType(config, analyzers);
+        }
 
         String indexParam = config.getAttribute(INDEX_ATTR);
-        if (indexParam != null && !indexParam.isEmpty()) {
+        if (!indexParam.isEmpty()) {
             doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
         }
 
@@ -124,7 +127,7 @@ public class LuceneIndexConfig {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 final String localName = child.getLocalName();
                 if (null != localName) {
-		    Element configElement = (Element) child;
+        		    Element configElement = (Element) child;
                     switch (localName) {
                         case FACET_ELEMENT: {
                             facetsAndFields.add(new LuceneFacetConfig(parent, configElement, namespaces));
@@ -139,8 +142,8 @@ public class LuceneIndexConfig {
                             break;
                         }
                         case IGNORE_ELEMENT: {
-			    String qnameAttr = configElement.getAttribute(QNAME_ATTR);
-                            if (StringUtils.isEmpty(qnameAttr)) {
+            			    String qnameAttr = configElement.getAttribute(QNAME_ATTR);
+                            if (qnameAttr.isEmpty()) {
                                 throw new DatabaseConfigurationException("Lucene configuration element 'ignore' needs an attribute 'qname'");
                             }
                             if (ignoreNodes == null) {
@@ -151,7 +154,7 @@ public class LuceneIndexConfig {
                         }
                         case INLINE_ELEMENT: {
                             String qnameAttr = configElement.getAttribute(QNAME_ATTR);
-                            if (StringUtils.isEmpty(qnameAttr)) {
+                            if (qnameAttr.isEmpty()) {
                                 throw new DatabaseConfigurationException("Lucene configuration element 'inline' needs an attribute 'qname'");
                             }
                             if (inlineNodes == null) {
@@ -175,8 +178,8 @@ public class LuceneIndexConfig {
                                         "Lucene module: " + localName + " can not be used on attribute");
                             }
 
-                            final String qname = configElement.getAttribute("qname");
-                            if (StringUtils.isEmpty(qname)) {
+                            final String qname = configElement.getAttribute(QNAME_ATTR);
+                            if (qname.isEmpty()) {
                                 throw new DatabaseConfigurationException("Lucene configuration element '" + localName + " needs an attribute 'qname'");
                             }
 
@@ -193,7 +196,7 @@ public class LuceneIndexConfig {
                             String value = null;
                             if (doMatch) {
                                 value = configElement.getAttribute("value");
-                                if (StringUtils.isEmpty(value)) {
+                                if (value.isEmpty()) {
                                     throw new DatabaseConfigurationException("Lucene configuration element '" + localName + " needs an attribute 'value'");
                                 }
                             }
@@ -325,9 +328,10 @@ public class LuceneIndexConfig {
 
     public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
-        if (StringUtils.isEmpty(name))
+        if (name.isEmpty()) {
             throw new DatabaseConfigurationException("Lucene index configuration error: element " + config.getNodeName() +
                     " must have an attribute " + QNAME_ATTR);
+        }
 
         return parseQName(name, namespaces);
     }

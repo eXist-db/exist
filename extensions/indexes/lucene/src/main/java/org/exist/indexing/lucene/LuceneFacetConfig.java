@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetField;
 import org.exist.dom.persistent.DocumentImpl;
@@ -59,12 +58,11 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
     public LuceneFacetConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);
         dimension = configElement.getAttribute(DIMENSION);
-        if (StringUtils.isEmpty(dimension)) {
+        if (dimension.isEmpty()) {
             throw new DatabaseConfigurationException("Attribute 'dimension' on facet configuration should not be empty");
         }
         final String hierarchicalOpt = configElement.getAttribute(HIERARCHICAL);
-        isHierarchical = hierarchicalOpt != null &&
-                ("true".equalsIgnoreCase(hierarchicalOpt) || "yes".equalsIgnoreCase(hierarchicalOpt));
+        isHierarchical = !hierarchicalOpt.isEmpty() && ("true".equalsIgnoreCase(hierarchicalOpt) || "yes".equalsIgnoreCase(hierarchicalOpt));
 
         config.facetsConfig.setHierarchical(dimension, isHierarchical);
         config.facetsConfig.setMultiValued(dimension, true);

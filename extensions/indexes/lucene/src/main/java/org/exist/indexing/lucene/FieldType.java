@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
@@ -57,24 +56,26 @@ public class FieldType {
         
     	if (LuceneConfig.FIELD_TYPE_ELEMENT.equals(config.getLocalName())) {
     		id = config.getAttribute(ID_ATTR);
-            if (StringUtils.isEmpty(id))
-    			throw new DatabaseConfigurationException("fieldType needs an attribute 'id'");
+            if (id.isEmpty()) {
+				throw new DatabaseConfigurationException("fieldType needs an attribute 'id'");
+			}
     	}
-    	
-    	String aId = config.getAttribute(ANALYZER_ID_ATTR);
+
+		final String aId = config.getAttribute(ANALYZER_ID_ATTR);
     	// save Analyzer for later use in LuceneMatchListener
-        if (aId != null && !aId.isEmpty()) {
-        	final Analyzer configuredAnalyzer = analyzers.getAnalyzerById(aId);
-            if (configuredAnalyzer == null)
-                throw new DatabaseConfigurationException("No analyzer configured for id " + aId);
-            analyzerId = aId;
-            analyzer = new MetaAnalyzer(configuredAnalyzer);
+        if (aId.isEmpty()) {
+			analyzer = new MetaAnalyzer(analyzers.getDefaultAnalyzer());
         } else {
-        	analyzer = new MetaAnalyzer(analyzers.getDefaultAnalyzer());
+			final Analyzer configuredAnalyzer = analyzers.getAnalyzerById(aId);
+			if (configuredAnalyzer == null) {
+				throw new DatabaseConfigurationException("No analyzer configured for id " + aId);
+			}
+			analyzerId = aId;
+			analyzer = new MetaAnalyzer(configuredAnalyzer);
         }
         
-        String boostAttr = config.getAttribute(BOOST_ATTRIB);
-        if (boostAttr != null && !boostAttr.isEmpty()) {
+        final String boostAttr = config.getAttribute(BOOST_ATTRIB);
+        if (!boostAttr.isEmpty()) {
             try {
                 boost = Float.parseFloat(boostAttr);
             } catch (NumberFormatException e) {
@@ -82,9 +83,9 @@ public class FieldType {
                         "got: " + boostAttr);
             }
         }
-        
-        String storeAttr = config.getAttribute(STORE_ATTRIB);
-        if (storeAttr != null && !storeAttr.isEmpty()) {
+
+		final String storeAttr = config.getAttribute(STORE_ATTRIB);
+        if (!storeAttr.isEmpty()) {
         	store = "yes".equalsIgnoreCase(storeAttr) ? Field.Store.YES : Field.Store.NO;
         }
     }

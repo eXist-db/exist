@@ -116,8 +116,10 @@ public class TriggerSystemTask extends BasicFunction {
 					final String name = elem.getAttribute("name");
 					final String value = elem.getAttribute("value");
                     logger.trace("parseParameters: name[{}] value[{}]", name, value);
-					if(name == null || value == null)
-						{throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");}
+					if (name.isEmpty() || value.isEmpty()) {
+                        // TODO: add error code
+                        throw new XPathException(this, "Name or value attribute missing for stylesheet parameter");
+                    }
 					properties.setProperty(name, value);
 				}
 				child = child.getNextSibling();

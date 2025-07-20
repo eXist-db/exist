@@ -206,7 +206,7 @@ public class RewriteConfig {
             if (child.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
                 final Element elem = (Element) child;
                 final String pattern = elem.getAttribute(PATTERN_ATTRIBUTE);
-                if (pattern == null) {
+                if (pattern.isEmpty()) {
                     throw new ServletException("Action in controller-config.xml has no pattern: " + elem.toString());
                 }
                 final URLRewrite urw = parseAction(urlRewrite.getConfig(), pattern, elem);
@@ -232,7 +232,7 @@ public class RewriteConfig {
                  * as an attribute on the ControllerForward object.
                  */
                 final String serverName = action.getAttribute(SERVER_NAME_ATTRIBUTE);
-                if (serverName != null && !serverName.isEmpty()) {
+                if (!serverName.isEmpty()) {
                     cf.setServerName(serverName);
                 }
                 rewrite = cf;

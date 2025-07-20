@@ -81,8 +81,9 @@ public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = "stats.dbx";
-        if (config.hasAttribute("file"))
-            {fileName = config.getAttribute("file");}
+        if (config.hasAttribute("file")) {
+            fileName = config.getAttribute("file");
+        }
         dataFile = dataDir.resolve(fileName);
     }
 

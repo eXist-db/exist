@@ -56,30 +56,35 @@ public abstract class URLRewrite {
 
     protected URLRewrite(final Element config, final String uri) {
         this.uri = uri;
-        if (config != null && config.hasAttribute("absolute"))
+        if (config == null) {
+            return;
+        }
+        if (config.hasAttribute("absolute")) {
             absolute = "yes".equals(config.getAttribute("absolute"));
-        if (config != null && config.hasAttribute("method")) {
+        }
+        if (config.hasAttribute("method")) {
             method = config.getAttribute("method").toUpperCase();
         }
         // Check for add-parameter elements etc.
-        if (config != null && config.hasChildNodes()) {
-            Node node = config.getFirstChild();
-            while (node != null) {
-                final String ns = node.getNamespaceURI();
-                if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
-                    final Element elem = (Element) node;
-                    if ("add-parameter".equals(elem.getLocalName())) {
-                        addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
-                    } else if ("set-attribute".equals(elem.getLocalName())) {
-                        setAttribute(elem.getAttribute("name"), elem.getAttribute("value"));
-                    } else if ("clear-attribute".equals(elem.getLocalName())) {
-                        unsetAttribute(elem.getAttribute("name"));
-                    } else if ("set-header".equals(elem.getLocalName())) {
-                        setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
-                    }
+        if (!config.hasChildNodes()) {
+            return;
+        }
+        Node node = config.getFirstChild();
+        while (node != null) {
+            final String ns = node.getNamespaceURI();
+            if (node.getNodeType() == Node.ELEMENT_NODE && Namespaces.EXIST_NS.equals(ns)) {
+                final Element elem = (Element) node;
+                if ("add-parameter".equals(elem.getLocalName())) {
+                    addParameter(elem.getAttribute("name"), elem.getAttribute("value"));
+                } else if ("set-attribute".equals(elem.getLocalName())) {
+                    setAttribute(elem.getAttribute("name"), elem.getAttribute("value"));
+                } else if ("clear-attribute".equals(elem.getLocalName())) {
+                    unsetAttribute(elem.getAttribute("name"));
+                } else if ("set-header".equals(elem.getLocalName())) {
+                    setHeader(elem.getAttribute("name"), elem.getAttribute("value"));
                 }
-                node = node.getNextSibling();
             }
+            node = node.getNextSibling();
         }
     }
 
