@@ -32,8 +32,8 @@ import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
  * <p>
  * eXist-db has been compiled with Java21 (state of 2025Q2).
  * <p>
- * Older versions of Java contained a number of serious compiler bugs that caused database corruptions.
- * These problematic versions are deprecated and therefore this class is not relevant anymore.
+ * Older versions of Java contained a number of (runtime) HotSpot compiler bugs that caused database corruptions.
+ * These problematic versions are deprecated, and therefore, this class is not relevant anymore.
  * <p>
  * The code is kept for archival purposes and potential future re-usage.
  * <p>
