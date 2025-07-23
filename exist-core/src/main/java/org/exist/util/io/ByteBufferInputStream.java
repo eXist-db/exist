@@ -136,7 +136,7 @@ public class ByteBufferInputStream extends InputStream {
 
         isClosed();
 
-        bufAccessor.getBuffer().clear();
+        ((java.nio.Buffer) bufAccessor.getBuffer()).clear();
         closed = true;
     }
 

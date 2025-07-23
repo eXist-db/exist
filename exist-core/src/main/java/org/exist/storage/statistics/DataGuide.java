@@ -136,14 +136,14 @@ public class DataGuide {
         final int nodeCount = root.getSize();
         final ByteBuffer buffer = ByteBuffer.allocate(nodeCount * BYTES_PER_NODE + 4);
         root.write(buffer, symbols);
-        buffer.flip();
+        ((java.nio.Buffer) buffer).flip();
         chan.write(buffer);
     }
 
     public void read(SeekableByteChannel chan, SymbolTable symbols) throws IOException {
         final ByteBuffer buffer = ByteBuffer.allocate((int) chan.size());
         chan.read(buffer);
-        buffer.flip();
+        ((java.nio.Buffer) buffer).flip();
         root.read(buffer, symbols);
     }
 

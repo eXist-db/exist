@@ -92,8 +92,10 @@
     </mailingLists>
 
     <properties>
-        <project.build.source>1.8</project.build.source>
-        <project.build.target>1.8</project.build.target>
+        <project.build.source>8</project.build.source>
+        <project.build.target>8</project.build.target>
+        <maven.compiler.release>8</maven.compiler.release>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
@@ -630,10 +632,11 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.13.0</version>
+                    <version>3.14.0</version>
                     <configuration>
                         <source>${project.build.source}</source>
                         <target>${project.build.target}</target>
+                        <release>${maven.compiler.release}</release>
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin>
@@ -1236,32 +1239,32 @@
     </distributionManagement>
 
     <profiles>
-        <profile>
-            <id>java8-runtime-compatibility</id>
-            <!--
-                By default, this sets the `-release 8` flag to javac
-                on JDK 9+, so that the produced class files
-                are runtime compatible with Java 8.
+<!--        <profile>-->
+<!--            <id>java8-runtime-compatibility</id>-->
+<!--            &lt;!&ndash;-->
+<!--                By default, this sets the `-release 8` flag to javac-->
+<!--                on JDK 9+, so that the produced class files-->
+<!--                are runtime compatible with Java 8.-->
 
-                See - https://github.com/eclipse/jetty.project/issues/3244
+<!--                See - https://github.com/eclipse/jetty.project/issues/3244-->
 
-                You can disable at build time, by using the mvn
-                args: `-P !java8-runtime-compatibility`
-            -->
-            <activation>
-                <jdk>[1.9,)</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <release>8</release>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+<!--                You can disable at build time, by using the mvn-->
+<!--                args: `-P !java8-runtime-compatibility`-->
+<!--            &ndash;&gt;-->
+<!--            <activation>-->
+<!--                <jdk>[1.9,)</jdk>-->
+<!--            </activation>-->
+<!--            <build>-->
+<!--                <plugins>-->
+<!--                    <plugin>-->
+<!--                        <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                        <configuration>-->
+<!--                            <release>8</release>-->
+<!--                        </configuration>-->
+<!--                    </plugin>-->
+<!--                </plugins>-->
+<!--            </build>-->
+<!--        </profile>-->
 
         <profile>
             <!-- NOTE: this is used from the maven-release-plugin -->
