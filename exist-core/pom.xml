@@ -1004,6 +1004,10 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     <execution>
                         <id>default-compile</id>
                         <configuration>
+                            <source>${project.build.source}</source>
+                            <target>${project.build.target}</target>
+                            <release>${maven.compiler.release}</release>
+                            <encoding>${project.build.sourceEncoding}</encoding>
                             <excludes>
                                 <!-- compiled by the Aspectj plugin below -->
                                 <exclude>org/exist/storage/lock/EnsureLockingAspect.java</exclude>

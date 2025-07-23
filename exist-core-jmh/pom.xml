@@ -125,6 +125,7 @@
                     <compilerVersion>${project.build.target}</compilerVersion>
                     <source>${project.build.source}</source>
                     <target>${project.build.target}</target>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
             <plugin>

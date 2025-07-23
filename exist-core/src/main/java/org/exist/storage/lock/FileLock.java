@@ -237,10 +237,10 @@ public class FileLock {
             }
             
             long now = System.currentTimeMillis();
-            buf.clear();
+            ((java.nio.Buffer) buf).clear();
             buf.put(MAGIC);
             buf.putLong(now);
-            buf.flip();
+            ((java.nio.Buffer) buf).flip();
             channel.position(0);
             channel.write(buf);
             //channel.force(true); //handled by SYNC on open option
@@ -261,9 +261,9 @@ public class FileLock {
         }
         
         channel.read(buf);
-        buf.flip();
+        ((java.nio.Buffer) buf).flip();
         if (buf.limit() < 16) {
-            buf.clear();
+            ((java.nio.Buffer) buf).clear();
             throw new IOException(message("Could not read file lock.", null));
         }
         
@@ -274,7 +274,7 @@ public class FileLock {
         }
         
         lastHeartbeat = buf.getLong();
-        buf.clear();
+        ((java.nio.Buffer) buf).clear();
         
         final DateFormat df = DateFormat.getDateInstance();
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);

@@ -113,7 +113,7 @@ public class ValueIndexFactoryTest {
     private ByteBuffer encode(final double number) {
         final ByteBuffer buf = ByteBuffer.allocate(8);
         buf.putDouble(number);
-        buf.flip();
+        ((java.nio.Buffer) buf).flip();
         return buf;
     }
 }

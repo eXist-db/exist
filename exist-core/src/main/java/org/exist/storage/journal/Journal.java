@@ -449,7 +449,7 @@ public final class Journal implements Closeable {
 
         try {
             if (currentBuffer.position() > 0) {
-                currentBuffer.flip();
+                ((java.nio.Buffer) currentBuffer).flip();
                 final int size = currentBuffer.remaining();
                 while (currentBuffer.hasRemaining()) {
                     channel.write(currentBuffer);
@@ -460,7 +460,7 @@ public final class Journal implements Closeable {
         } catch (final IOException e) {
             LOG.warn("Flushing log file failed!", e);
         } finally {
-            currentBuffer.clear();
+            ((java.nio.Buffer) currentBuffer).clear();
         }
     }
 
@@ -598,7 +598,7 @@ public final class Journal implements Closeable {
         ByteConversion.shortToByteH(JOURNAL_VERSION, journalVersion, 0);
         buf.put(journalVersion);
 
-        buf.flip();
+        ((java.nio.Buffer) buf).flip();
         channel.write(buf);
     }
 

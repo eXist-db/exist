@@ -127,19 +127,19 @@ public class BlobStoreDumpTool {
             // write a CSV table header
             printStream.println("blobId,referenceCount");
 
-            buffer.clear();
+            ((java.nio.Buffer) buffer).clear();
 
             final byte[] id = new byte[digestBytesLen];
 
             while (channel.read(buffer) > -1) {
-                buffer.flip();
+                ((java.nio.Buffer) buffer).flip();
                 buffer.get(id);
                 final BlobId blobId = new BlobId(id);
                 final int count = buffer.getInt();
 
                 printStream.println(blobId + "," + count);
 
-                buffer.clear();
+                ((java.nio.Buffer) buffer).clear();
             }
         }
     }
@@ -156,12 +156,12 @@ public class BlobStoreDumpTool {
      */
     private static void dumpFileHeader(final PrintStream printStream, final ByteBuffer buffer, final Path persistentFile,
             final SeekableByteChannel channel) throws IOException {
-        buffer.clear();
-        buffer.limit(BLOB_STORE_HEADER_LEN);
+        ((java.nio.Buffer) buffer).clear();
+        ((java.nio.Buffer) buffer).limit(BLOB_STORE_HEADER_LEN);
 
         channel.read(buffer);
 
-        buffer.flip();
+        ((java.nio.Buffer) buffer).flip();
 
         final boolean validMagic =
                 buffer.get() == BLOB_STORE_MAGIC_NUMBER[0]
