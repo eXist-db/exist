@@ -27,7 +27,7 @@
 
     <groupId>org.exist-db</groupId>
     <artifactId>exist-parent</artifactId>
-    <version>6.3.0-SNAPSHOT</version>
+    <version>6.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>eXist-db Parent</name>
@@ -100,7 +100,7 @@
 
         <contact.email>info@exist-db.org</contact.email>
 
-        <ant.version>1.10.14</ant.version>
+        <ant.version>1.10.15</ant.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>4.0.0</apache.xmlrpc.version>
@@ -113,8 +113,8 @@
         <jaxb.api.version>3.0.1</jaxb.api.version>
         <jaxb.impl.version>3.0.2</jaxb.impl.version>
         <jdom1.version>1.1.3</jdom1.version>
-        <jetty.version>9.4.54.v20240208</jetty.version>
         <log4j.version>2.22.1</log4j.version>
+        <jetty.version>9.4.57.v20241219</jetty.version>
         <lucene.version>4.10.4</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <saxon.version>9.9.1-8</saxon.version>
@@ -182,7 +182,7 @@
             <dependency>
                 <groupId>org.jctools</groupId>
                 <artifactId>jctools-core</artifactId>
-                <version>4.0.2</version>
+                <version>4.0.5</version>
             </dependency>
 
             <dependency>
@@ -194,7 +194,7 @@
             <dependency>
                 <groupId>com.evolvedbinary.j8fu</groupId>
                 <artifactId>j8fu</artifactId>
-                <version>1.23.0</version>
+                <version>1.24.0</version>
             </dependency>
             <dependency>
                 <groupId>com.evolvedbinary.multilock</groupId>
@@ -217,13 +217,13 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.16.0</version>
+                <version>1.18.0</version>
             </dependency>
 
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
-                <version>2.15.1</version>
+                <version>2.18.0</version>
             </dependency>
 
             <dependency>
@@ -372,7 +372,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.14.0</version>
+                <version>3.17.0</version>
             </dependency>
 
             <dependency>
@@ -438,13 +438,13 @@
             <dependency>
                 <groupId>it.unimi.dsi</groupId>
                 <artifactId>fastutil</artifactId>
-                <version>8.5.12</version>
+                <version>8.5.15</version>
             </dependency>
 
             <dependency>
                 <groupId>io.lacuna</groupId>
                 <artifactId>bifurcan</artifactId>
-                <version>0.2.0-alpha7</version>
+                <version>0.2.0-rc1</version>
             </dependency>
 
             <dependency>
@@ -573,7 +573,7 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <version>10.0.3</version>
                     <configuration>
-                        <nvdApiKey>cb452226-8de1-4d27-9032-7c9b8741c880</nvdApiKey>
+                        <nvdApiKey>${nvdApiKey}</nvdApiKey>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
                         <ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
 
@@ -1105,6 +1105,39 @@
     <repositories>
         <repository>
             <id>exist-db-snapshots</id>
+            <name>exist-db.org - eXist-db Snapshots</name>
+            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db</id>
+            <name>exist-db.org - eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db-maven-central-mirror</id>
+            <name>exist-db.org - eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>evolvedbinary-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
             <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
             <releases>
@@ -1115,7 +1148,7 @@
             </snapshots>
         </repository>
         <repository>
-            <id>exist-db</id>
+            <id>evolvedbinary-releases</id>
             <name>Evolved Binary - eXist-db Releases</name>
             <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
             <releases>
@@ -1134,6 +1167,39 @@
         </pluginRepository>
         <pluginRepository>
             <id>exist-db</id>
+            <name>exist-db.org - eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-maven-central-mirror</id>
+            <name>exist-db.org - eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-snapshots</id>
+            <name>exist-db.org - eXist-db Snapshots</name>
+            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>evolvedbinary-releases</id>
             <name>Evolved Binary - eXist-db Releases</name>
             <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
             <releases>
@@ -1144,7 +1210,7 @@
             </snapshots>
         </pluginRepository>
         <pluginRepository>
-            <id>exist-db-snapshots</id>
+            <id>evolvedbinary-snapshots</id>
             <name>Evolved Binary - eXist-db Snapshots</name>
             <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
             <releases>
@@ -1159,13 +1225,13 @@
     <distributionManagement>
         <snapshotRepository>
             <id>exist-db-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <name>exist-db.org - eXist-db Snapshots</name>
+            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>sonatype-nexus-staging</id>
             <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 

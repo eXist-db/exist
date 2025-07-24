@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>6.3.0-SNAPSHOT</version>
+        <version>6.4.1-SNAPSHOT</version>
         <relativePath>../exist-parent</relativePath>
     </parent>
 
@@ -1039,7 +1039,7 @@
             <plugin>
                 <groupId>com.evolvedbinary.appbundler</groupId>
                 <artifactId>appbundler-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>exist-db-mac-app</id>
