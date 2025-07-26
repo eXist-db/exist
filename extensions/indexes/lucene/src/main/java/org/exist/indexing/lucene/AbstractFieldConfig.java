@@ -58,34 +58,36 @@ public abstract class AbstractFieldConfig {
 
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
-    protected Optional<String> expression = Optional.empty();
+    protected Optional<String> expression;
     protected boolean isValid = true;
     private CompiledXQuery compiled = null;
 
     public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath.isEmpty()) {
-
-            final StringBuilder sb = new StringBuilder();
-            namespaces.forEach((prefix, uri) -> {
-                if (!"xml".equals(prefix)) {
-                    sb.append("declare namespace ").append(prefix);
-                    sb.append("=\"").append(uri).append("\";\n");
-                }
-            });
-            config.getImports().ifPresent(moduleImports -> moduleImports.forEach((moduleImport -> {
-                sb.append("import module namespace ");
-                sb.append(moduleImport.prefix);
-                sb.append("=\"");
-                sb.append(moduleImport.uri);
-                sb.append("\" at \"");
-                sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
-                sb.append("\";\n");
-            })));
-            sb.append(xpath);
-
-            this.expression = Optional.of(sb.toString());
+            expression = Optional.empty();
+            return;
         }
+
+        final StringBuilder sb = new StringBuilder();
+        namespaces.forEach((prefix, uri) -> {
+            if (!"xml".equals(prefix)) {
+                sb.append("declare namespace ").append(prefix);
+                sb.append("=\"").append(uri).append("\";\n");
+            }
+        });
+        config.getImports().ifPresent(moduleImports -> moduleImports.forEach((moduleImport -> {
+            sb.append("import module namespace ");
+            sb.append(moduleImport.prefix);
+            sb.append("=\"");
+            sb.append(moduleImport.uri);
+            sb.append("\" at \"");
+            sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
+            sb.append("\";\n");
+        })));
+        sb.append(xpath);
+
+        expression = Optional.of(sb.toString());
     }
 
     @Nullable
@@ -101,7 +103,7 @@ public abstract class AbstractFieldConfig {
 
     protected void doBuild(DBBroker broker, DocumentImpl document, NodeId nodeId, Document luceneDoc, CharSequence text)
             throws PermissionDeniedException, XPathException {
-        if (!expression.isPresent()) {
+        if (expression.isEmpty()) {
             processText(text, luceneDoc);
             return;
         }
