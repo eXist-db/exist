@@ -154,7 +154,8 @@ public class MetadataFunctions extends BasicFunction {
     private Sequence exifToolExtract(final Path binaryFile) throws XPathException {
         final ExiftoolModule module = (ExiftoolModule) getParentModule();
         try {
-            final Process p = Runtime.getRuntime().exec(module.getPerlPath() + " " + module.getExiftoolPath() + " -X -struct " + binaryFile.toAbsolutePath());
+            final String[] command = new String[]{module.getPerlPath(), module.getExiftoolPath(), "-X", "-struct", binaryFile.toAbsolutePath().toString()};
+            final Process p = Runtime.getRuntime().exec(command);
             try(final InputStream stdIn = p.getInputStream();
                     final UnsynchronizedByteArrayOutputStream baos =  UnsynchronizedByteArrayOutputStream.builder().get()) {
 
@@ -176,7 +177,8 @@ public class MetadataFunctions extends BasicFunction {
     private Sequence exifToolWebExtract(final URI uri) throws XPathException {
         final ExiftoolModule module = (ExiftoolModule) getParentModule();
         try {
-            final Process p = Runtime.getRuntime().exec(module.getExiftoolPath()+" -fast -X -");
+            final String[] command = new String[]{module.getExiftoolPath(), "-fast", "-X", "-"};
+            final Process p = Runtime.getRuntime().exec(command);
 
             try(final InputStream stdIn = p.getInputStream();
                     final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
