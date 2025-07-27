@@ -19,62 +19,61 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.start;
+package org.exist.webstart;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.exist.util.FileUtils.fileName;
+
 /**
  * This class uses regex pattern matching to find the latest version of a
- * particular jar file. 
- * 
- * @see LatestFileResolver#getResolvedFileName(String)
- * 
+ * particular jar file.
+ *
  * @author Ben Schmaus (exist@benschmaus.com)
  * @version $Revision$
+ * @see org.exist.webstart.LatestFileResolver#getResolvedFileName(String)
  */
 public class LatestFileResolver {
+
+    private static final Logger LOGGER = LogManager.getLogger();
 
     // Pattern that can be used to indicate that the
     // latest version of a particular file should be added to the classpath.
     // E.g., commons-fileupload-%latest%.jar would resolve to something like
     // commons-fileupload-1.1.jar.
-    private final static Pattern latestVersionPattern = Pattern.compile(
-        "(%latest%)"
-    );
+    private static final Pattern LATEST_VERSION_PATTERN = Pattern.compile("(%latest%)");
 
-    // Set debug mode for each file resolver instance based on whether or
-    // not the system was started with debugging turned on.
-    private static boolean _debug = Boolean.getBoolean("exist.start.debug");
-            
     /**
      * If the passed file name contains a %latest% token,
      * find the latest version of that file. Otherwise, return
      * the passed file name unmodified.
-     * 
+     *
      * @param filename Path relative to exist home dir of
-     * a jar file that should be added to the classpath.
+     *                 a jar file that should be added to the classpath.
      * @return Resolved filename.
      */
     public String getResolvedFileName(final String filename) {
-        final Matcher matches = latestVersionPattern.matcher(filename);
+        final Matcher matches = LATEST_VERSION_PATTERN.matcher(filename);
         if (!matches.find()) {
             return filename;
         }
+
         final String[] fileinfo = filename.split("%latest%");
         // Path of file up to the beginning of the %latest% token.
         final String uptoToken = fileinfo[0];
 
-        // Dir that should contain our jar.
-        final String containerDirName = uptoToken.substring(
-            0, uptoToken.lastIndexOf(File.separatorChar)
-        );
+        // Directory that should contain our jar.
+        final String containerDirName = uptoToken.substring(0, uptoToken.lastIndexOf(File.separatorChar));
 
         final Path containerDir = Paths.get(containerDirName);
 
@@ -84,35 +83,25 @@ public class LatestFileResolver {
         final Pattern pattern = Pattern.compile(patternString);
         final Matcher matcher = pattern.matcher("");
 
-        List<Path> jars;
         try {
-             jars = Main.list(containerDir, p -> {
-                matcher.reset(Main.fileName(p));
+            final List<Path> jars = FileUtils.list(containerDir, p -> {
+                matcher.reset(fileName(p));
                 return matcher.find();
             });
+
+            if (jars.isEmpty()) {
+                LOGGER.warn("WARN: No latest version found for JAR file: '{}'", filename);
+
+            } else {
+                final String actualFileName = jars.getFirst().toAbsolutePath().toString();
+                LOGGER.debug("Found match: {} for jar file pattern: {}", actualFileName, filename);
+                return actualFileName;
+            }
+
         } catch (final IOException e) {
-            System.err.println("ERROR: No jars found in " + containerDir.toAbsolutePath());
-            e.printStackTrace();
-            jars = Collections.emptyList();
+            LOGGER.error("No jars found in {}. Reason: {}", containerDir.toAbsolutePath(), e.getMessage(), e);
         }
 
-        if (!jars.isEmpty()) {
-            final String actualFileName = jars.getFirst().toAbsolutePath().toString();
-            if (_debug) {
-                System.err.println(
-                    "Found match: " + actualFileName
-                    + " for jar file pattern: " + filename
-                );
-            }
-            return actualFileName;
-        } else {
-            if (_debug) {
-                System.err.println(
-                    "WARN: No latest version found for JAR file: '"
-                    + filename + "'"
-                );
-            }
-        }
         return filename;
-    }    
+    }
 }

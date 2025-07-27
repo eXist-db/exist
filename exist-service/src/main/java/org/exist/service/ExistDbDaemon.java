@@ -36,7 +36,7 @@ public class ExistDbDaemon implements Daemon {
     private String[] args = null;
 
     private void init(final String args[]) {
-        this.main = new Main("jetty");
+        this.main = new Main(Main.MODE_JETTY);
         this.args = args;
     }
 
@@ -65,12 +65,12 @@ public class ExistDbDaemon implements Daemon {
         runArgs[0] = MODE_JETTY;
         System.arraycopy(args, 0, runArgs, 1, args.length);
 
-        this.main.runEx(runArgs);
+        this.main.startExistdb(runArgs);
     }
 
     @Override
     public void stop() throws Exception {
-        this.main.shutdownEx();
+        this.main.shutdownExistdb();
     }
 
     @Override

@@ -24,37 +24,49 @@ package org.exist.start;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.exist.start.CompatibleJavaVersionCheck.IncompatibleJavaVersion.IncompatibleJavaVersion;
+import static org.exist.start.CompatibleJavaVersionCheck.IncompatibleJavaVersion.create;
 import static org.exist.start.Main.ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED;
 
+/**
+ * Helper class for checking OpenJDK compatibility.
+ * <p>
+ * eXist-db has been compiled with Java21 (state of 2025Q2).
+ * <p>
+ * Older versions of Java contained a number of (runtime) HotSpot compiler bugs that caused database corruptions.
+ * These problematic versions are deprecated, and therefore, this class is not relevant anymore.
+ * <p>
+ * The code is kept for archival purposes and potential future re-usage.
+ * <p>
+ * ----------------------------
+ * <p>
+ * OpenJDK versions 12 through 15.0.1 suffer from a critical bug in the JIT C2 compiler that will
+ * cause data loss in eXist-db. The problem has been reported to the OpenJDK community.
+ * <p>
+ * For more information, see:
+ * - <a href="https://bugs.openjdk.java.net/browse/JDK-8253191">C2: Masked byte comparisons with large masks produce wrong result on x86</a>
+ * - <a href="https://github.com/eXist-db/exist/issues/3375">eXist-db does not run correctly on JDKs 12, 13, 14 and 15 #3375</a>
+ *
+ *
+ */
 public class CompatibleJavaVersionCheck {
 
     private static final IncompatibleJavaVersion[] INCOMPATIBLE_JAVA_VERSIONS = {
-            IncompatibleJavaVersion(12),
-            IncompatibleJavaVersion(13),
-            IncompatibleJavaVersion(14),
-            IncompatibleJavaVersion(15, 0, 2)
+            create(12),
+            create(13),
+            create(14),
+            IncompatibleJavaVersion.create(15, 0, 2),
     };
 
     private static final String INCOMPATIBLE_JAVA_VERSION_NOTICE =
-            "*****************************************************%n" +
-            "Warning: Unreliable Java version has been detected!%n" +
-            "%n" +
-            "OpenJDK versions 12 through 15.0.1 suffer from a critical%n" +
-            " bug in the JIT C2 compiler that will cause data loss in%n" +
-            "eXist-db.%n" +
-            "%n" +
-            "The problem has been reported to the OpenJDK community.%n" +
-            "%n" +
-            "For more information, see:%n" +
-            "\t* https://bugs.openjdk.java.net/browse/JDK-8253191%n" +
-            "\t* https://github.com/eXist-db/exist/issues/3375%n" +
-            "%n" +
-            "The detected version of Java on your system is: %s.%n" +
-            "%n" +
-            "To prevent potential data loss, eXist-db will not be started.%n" +
-            "To start eXist-db, we recommend using Java 8 or 11.%n" +
-            "*****************************************************";
+            "*****************************************************%n"
+            + "Incorrect version of Java detected!%n"
+            + "%n"
+            + "The detected version of Java on your system is: %s.%n"
+            + "%n"
+            + "eXist-db has been developed and qualified using Java 21.%n"
+            + "%n"
+            + "Newer versions of Java might or might not work correctly.%n"
+            + "*****************************************************";
 
     private static final Optional<String> RUNTIME_JAVA_VERSION = Optional.ofNullable(System.getProperty("java.version"));
 
@@ -71,7 +83,7 @@ public class CompatibleJavaVersionCheck {
     static void checkForCompatibleJavaVersion(final Optional<String> checkJavaVersion) throws StartException {
         final Optional<int[]> maybeJavaVersionComponents = extractJavaVersionComponents(checkJavaVersion);
 
-        if (!maybeJavaVersionComponents.isPresent()) {
+        if (maybeJavaVersionComponents.isEmpty()) {
             // Could not determine major java version, so best to let the user proceed...
             return;
         }
@@ -79,8 +91,10 @@ public class CompatibleJavaVersionCheck {
         // check for incompatible java version
         final int[] javaVersionComponents = maybeJavaVersionComponents.get();
         final int majorJavaVersion = javaVersionComponents[0];
-        /* @Nullable */ final Integer minorJavaVersion = javaVersionComponents.length > 1 ? javaVersionComponents[1] : null;
-        /* @Nullable */ final Integer patchJavaVersion = javaVersionComponents.length > 2 ? javaVersionComponents[2] : null;
+        /* @Nullable */
+        final Integer minorJavaVersion = javaVersionComponents.length > 1 ? javaVersionComponents[1] : null;
+        /* @Nullable */
+        final Integer patchJavaVersion = javaVersionComponents.length > 2 ? javaVersionComponents[2] : null;
 
         for (final IncompatibleJavaVersion incompatibleJavaVersion : INCOMPATIBLE_JAVA_VERSIONS) {
             // compare major versions
@@ -104,7 +118,8 @@ public class CompatibleJavaVersionCheck {
                 }
 
                 // version is NOT compatible!
-                throw new StartException(ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED, String.format(INCOMPATIBLE_JAVA_VERSION_NOTICE, RUNTIME_JAVA_VERSION));
+                throw new StartException(ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED,
+                        String.format(INCOMPATIBLE_JAVA_VERSION_NOTICE, RUNTIME_JAVA_VERSION.orElse("UKNOWN")));
             }
 
             // version is compatible
@@ -131,22 +146,22 @@ public class CompatibleJavaVersionCheck {
         /* @Nullable */  final Integer lessThanMinor;
         /* @Nullable */ final Integer lessThanPatch;
 
-        private IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor, /* @Nullable */ Integer lessThanPatch) {
+        private IncompatibleJavaVersion(final int major, /* @Nullable */ final Integer lessThanMinor, /* @Nullable */ final Integer lessThanPatch) {
             this.major = major;
             this.lessThanMinor = lessThanMinor;
             this.lessThanPatch = lessThanPatch;
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor, /* @Nullable */ Integer lessThanPatch) {
+        public static IncompatibleJavaVersion create(final int major, /* @Nullable */ final Integer lessThanMinor, /* @Nullable */ final Integer lessThanPatch) {
             return new IncompatibleJavaVersion(major, lessThanMinor, lessThanPatch);
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major, /* @Nullable */ Integer lessThanMinor) {
-            return IncompatibleJavaVersion(major, lessThanMinor, null);
+        public static IncompatibleJavaVersion create(final int major, /* @Nullable */ final Integer lessThanMinor) {
+            return new IncompatibleJavaVersion(major, lessThanMinor, null);
         }
 
-        public static IncompatibleJavaVersion IncompatibleJavaVersion(final int major) {
-            return IncompatibleJavaVersion(major, null, null);
+        public static IncompatibleJavaVersion create(final int major) {
+            return new IncompatibleJavaVersion(major, null, null);
         }
     }
 }
