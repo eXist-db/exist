@@ -418,7 +418,7 @@ public class ExecuteFunction extends BasicFunction {
                                         } else {
                                             try (final Reader charStream = sqlXml.getCharacterStream()) {
                                                 final InputSource src = new InputSource(charStream);
-                                                final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+                                                final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getXmlReaderPool();
                                                 XMLReader reader = null;
                                                 try {
                                                     reader = parserPool.borrowXMLReader();
