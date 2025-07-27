@@ -468,7 +468,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // store the node id
                 int nodeIdLen = pending.getNodeId().size();
                 byte[] data = new byte[nodeIdLen + 2];
-                ByteConversion.shortToByte((short) pending.getNodeId().units(), data, 0);
+                ByteConversion.shortToByteH((short) pending.getNodeId().units(), data, 0);
                 pending.getNodeId().serialize(data, 2);
                 fNodeId.setBytesValue(data);
                 doc.add(fNodeId);
@@ -633,8 +633,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             final BytesRef ref = this.nodeIdValues.get(doc);
 
-            int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
-            NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+            final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
+            final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 
             // if a context set is specified, we can directly check if the
             // matching node is a descendant of one of the nodes
@@ -1019,7 +1019,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         NodeId nodeId = null;
                         if (nodes != null) {
                             final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
-                            int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
+                            final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
                             nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
                         if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
