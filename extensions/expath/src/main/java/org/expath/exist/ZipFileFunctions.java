@@ -137,7 +137,7 @@ public class ZipFileFunctions extends BasicFunction {
             binariesTable.put(paths[i], binaries[i]);
         }
 
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream())
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get())
         {
             zis = zipFileSource.getStream();
             ZipOutputStream zos = new ZipOutputStream(baos); // zos is the output - the result

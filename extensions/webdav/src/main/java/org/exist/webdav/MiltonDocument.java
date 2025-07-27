@@ -277,7 +277,7 @@ public class MiltonDocument extends MiltonResource
                 }
 
                 // Stream document to '/dev/null' and count bytes
-                try (final CountingOutputStream counter = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+                try (final CountingOutputStream counter = new CountingOutputStream(OutputStream.nullOutputStream())) {
                     existDocument.stream(counter);
                     size = counter.getByteCount();
                 } catch (Exception ex) {

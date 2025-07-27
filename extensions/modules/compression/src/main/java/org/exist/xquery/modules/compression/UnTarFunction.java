@@ -126,7 +126,7 @@ public class UnTarFunction extends AbstractExtractFunction {
 
             final Sequence results = new ValueSequence();
 
-            while((entry = tis.getNextTarEntry()) != null) {
+            while((entry = tis.getNextEntry()) != null) {
                 final Sequence processCompressedEntryResults = processCompressedEntry(entry.getName(), entry.isDirectory(), tis, filterParam, storeParam);
                 results.addAll(processCompressedEntryResults);
             }

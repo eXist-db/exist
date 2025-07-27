@@ -512,7 +512,7 @@ public class ExecuteFunction extends BasicFunction {
             builder.endElement();
 
             builder.startElement(new QName("stack-trace", NAMESPACE_URI, PREFIX), null);
-            try (final UnsynchronizedByteArrayOutputStream bufStackTrace = new UnsynchronizedByteArrayOutputStream();
+            try (final UnsynchronizedByteArrayOutputStream bufStackTrace = UnsynchronizedByteArrayOutputStream.builder().get();
                  final PrintStream ps = new PrintStream(bufStackTrace)) {
                 sqle.printStackTrace(ps);
                 builder.characters(bufStackTrace.toString(UTF_8));

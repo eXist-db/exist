@@ -82,7 +82,7 @@ public class EXistSequence implements Sequence {
         props.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 
         final String encoding = props.getProperty(OutputKeys.ENCODING, StandardCharsets.UTF_8.name());
-        try(final Writer writer = new OutputStreamWriter(new CloseShieldOutputStream(out), encoding)) {
+        try(final Writer writer = new OutputStreamWriter(CloseShieldOutputStream.wrap(out), encoding)) {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), props, writer);
             xqSerializer.serialize(sequence);
         } catch(final SAXException | IOException | XPathException e) {
