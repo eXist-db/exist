@@ -103,7 +103,7 @@ public class GetReleaseBrokerDeadlocks {
 		boolean debug = false;
 		try { 
 	        Configuration config = new Configuration();
-	        config.setProperty(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, new Boolean(false));
+	        config.setProperty(FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS, Boolean.FALSE);
 	        BrokerPool.configure(1, 5, config);
 	        
 	        Database db = BrokerPool.getInstance();
