@@ -142,7 +142,7 @@ public class XMLTestRunner extends AbstractTestRunner {
 
     private static @Nullable String getIdValue(final Node test) {
         final String id = ((Element)test).getAttribute("id");
-        return id.isEmpty() ? null : id;
+        return id.isBlank() ? null : id;
     }
 
     private static @Nullable String getTaskText(final Node test) {
