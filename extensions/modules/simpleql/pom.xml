@@ -81,6 +81,25 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>software.xdev</groupId>
+                <artifactId>find-and-replace-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>replace-underscore-with-hyphen</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>file-contents</goal>
+                        </goals>
+                        <configuration>
+                            <baseDir>target/generated-sources/antlr/org/exist/xquery/modules/simpleql</baseDir>
+                            <fileMask>SimpleQLLexer.java</fileMask>
+                            <findRegex>new Integer</findRegex>
+                            <replaceValue>Integer.valueOf</replaceValue>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
