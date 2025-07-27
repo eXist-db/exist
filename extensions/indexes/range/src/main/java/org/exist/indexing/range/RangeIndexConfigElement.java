@@ -38,6 +38,7 @@ import org.w3c.dom.Node;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
@@ -108,20 +109,20 @@ public class RangeIndexConfigElement {
         if (!caseStr.isEmpty()) {
             caseSensitive = "yes".equalsIgnoreCase(caseStr);
         }
-        String custom = node.getAttribute("converter");
+        final String custom = node.getAttribute("converter");
         if (!custom.isEmpty()) {
             try {
-                Class customClass = Class.forName(custom);
-                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
+                final Class<?> customClass = Class.forName(custom);
+                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.getDeclaredConstructor().newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: {}", custom);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: {}", custom, e);
             }
         }
     }
 
-    private void parseChildren(Node root) throws DatabaseConfigurationException {
+    private void parseChildren(final Node root) throws DatabaseConfigurationException {
         Node child = root.getFirstChild();
         while (child != null) {
             if (child.getNodeType() == Node.ELEMENT_NODE) {

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.xslfo;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 
@@ -88,8 +89,9 @@ public class XSLFOModule extends AbstractInternalModule {
 
                 try {
                     final Class<ProcessorAdapter> clazzAdapter = (Class<ProcessorAdapter>) Class.forName(processorAdapter);
-                    adapter = clazzAdapter.newInstance();
-                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException cnfe) {
+                    adapter = clazzAdapter.getDeclaredConstructor().newInstance();
+                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException |
+                         NoSuchMethodException | InvocationTargetException cnfe) {
                     logger.error("Unable to instantiate FO Processor Adapter:{}", cnfe.getMessage(), cnfe);
                 }
             }
