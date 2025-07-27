@@ -28,6 +28,7 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.NumericUtils;
 import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
+import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -58,7 +59,7 @@ public class RangeIndexConfigElement {
     protected boolean caseSensitive = true;
     protected boolean usesCollation = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
-    private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
+    private TypeConverter typeConverter = null;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute(MATCH_ATTR);
@@ -113,7 +114,7 @@ public class RangeIndexConfigElement {
         if (!custom.isEmpty()) {
             try {
                 final Class<?> customClass = Class.forName(custom);
-                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.getDeclaredConstructor().newInstance();
+                typeConverter = (TypeConverter) customClass.getDeclaredConstructor().newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: {}", custom);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
@@ -136,7 +137,7 @@ public class RangeIndexConfigElement {
 
     public Field convertToField(String fieldName, String content) throws IOException {
         // check if a converter is defined for this index to handle on-the-fly conversions
-        final org.exist.indexing.range.conversion.TypeConverter custom = getTypeConverter(fieldName);
+        final TypeConverter custom = getTypeConverter(fieldName);
         if (custom != null) {
             return custom.toField(fieldName, content);
         }
@@ -309,7 +310,7 @@ public class RangeIndexConfigElement {
         return type;
     }
 
-    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter(String fieldName) {
+    public TypeConverter getTypeConverter(String fieldName) {
         return typeConverter;
     }
 

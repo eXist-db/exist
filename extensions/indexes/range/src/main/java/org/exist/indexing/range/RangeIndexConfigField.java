@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -45,7 +46,7 @@ public class RangeIndexConfigField {
     private NodePath path = null;
     private NodePath relPath = null;
     private int type = Type.STRING;
-    private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
+    private TypeConverter typeConverter = null;
     protected boolean includeNested = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     protected boolean caseSensitive = true;
@@ -82,7 +83,7 @@ public class RangeIndexConfigField {
         if (!custom.isEmpty()) {
             try {
                 final Class<?> customClass = Class.forName(custom);
-                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.getDeclaredConstructor().newInstance();
+                typeConverter = (TypeConverter) customClass.getDeclaredConstructor().newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: {}", custom);
             } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -121,7 +122,7 @@ public class RangeIndexConfigField {
         return type;
     }
 
-    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter() {
+    public TypeConverter getTypeConverter() {
         return typeConverter;
     }
 
