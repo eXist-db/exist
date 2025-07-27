@@ -144,13 +144,13 @@ public class EmbeddedBinariesTest extends AbstractBinariesTest<Sequence, Item, I
     @Override
     protected byte[] getBytes(final Item item) throws IOException {
         if (item instanceof Base64BinaryDocument doc) {
-            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
                 doc.streamBinaryTo(baos);
                 return baos.toByteArray();
             }
         } else {
             final BinaryValueFromFile file = (BinaryValueFromFile) item;
-            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
                 file.streamBinaryTo(baos);
                 return baos.toByteArray();
             }

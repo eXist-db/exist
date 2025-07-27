@@ -168,7 +168,7 @@ public class CropFunction extends BasicFunction {
                 g.dispose();
             }
 
-            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream os = UnsynchronizedByteArrayOutputStream.builder().get()) {
                 ImageIO.write(bImage, formatName, os);
 
                 //return the new croped image data

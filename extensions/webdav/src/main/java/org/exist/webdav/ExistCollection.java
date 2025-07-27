@@ -287,7 +287,7 @@ public class ExistCollection extends ExistResource {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Creating dummy XML file for null resource lock '{}'", newNameUri);
             }
-            is = new UnsynchronizedByteArrayInputStream("<null_resource/>".getBytes(StandardCharsets.UTF_8));
+            is = UnsynchronizedByteArrayInputStream.builder().setByteArray("<null_resource/>".getBytes(StandardCharsets.UTF_8)).get();
         }
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();

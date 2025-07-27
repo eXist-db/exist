@@ -122,7 +122,7 @@ public class RenderFunction extends BasicFunction {
         }
 
         ProcessorAdapter adapter = null;
-        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             adapter = ((XSLFOModule) getParentModule()).getProcessorAdapter();
 
             final NodeValue processorConfig = args.length == 4 ? (NodeValue) args[3].itemAt(0) : null;

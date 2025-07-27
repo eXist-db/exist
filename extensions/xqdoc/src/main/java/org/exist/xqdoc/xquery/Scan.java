@@ -89,7 +89,7 @@ public class Scan extends BasicFunction {
 
     //TODO ideally should be replaced by changing BinarySource to a streaming approach
     private byte[] binaryValueToByteArray(BinaryValue binaryValue) throws IOException {
-        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             binaryValue.streamBinaryTo(baos);
             return baos.toByteArray();
         }

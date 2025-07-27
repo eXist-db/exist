@@ -135,7 +135,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
         try {
 
             //first, get the content of the request
-            is = new CloseShieldInputStream(request.getInputStream());
+            is = CloseShieldInputStream.wrap(request.getInputStream());
 
             //if marking is not supported, we have to cache the input stream, so we can reread it, as we may use it twice (once for xml attempt and once for string attempt)
             if (!is.markSupported()) {
@@ -261,7 +261,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
             //try and construct xml document from input stream, we use eXist's in-memory DOM implementation
 
             //we have to use CloseShieldInputStream otherwise the parser closes the stream and we cant later reread
-            final InputSource src = new InputSource(new CloseShieldInputStream(is));
+            final InputSource src = new InputSource(CloseShieldInputStream.wrap(is));
 
             reader = getBrokerPool().getParserPool().borrowXMLReader();
             final MemTreeBuilder builder = new MemTreeBuilder();
@@ -287,7 +287,7 @@ class RestXqServiceImpl extends AbstractRestXqService {
 
     private static StringValue parseAsString(final InputStream is, final String encoding) throws IOException {
         final String s;
-        try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream(4096)) {
+        try (final UnsynchronizedByteArrayOutputStream bos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(4096).get()) {
             bos.write(is);
             s = new String(bos.toByteArray(), encoding);
         }
