@@ -37,6 +37,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -115,7 +116,7 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
                         final Resource resource = base.getResource(queryUri);
                         source = new BinarySource((byte[]) resource.getContent(), true);
                     } else {
-                        source = new URLSource(new URL(queryUri));
+                        source = new URLSource(URI.create(queryUri).toURL());
                     }
                 } else if (queryFile != null) {
                     log("XQuery file " + queryFile.getAbsolutePath(), Project.MSG_DEBUG);

@@ -291,7 +291,7 @@ public class Deploy extends BasicFunction {
                     }
                 }
                 LOG.info("Retrieving package from {}", pkgURL);
-                final HttpURLConnection connection = (HttpURLConnection) new URL(pkgURL).openConnection();
+                final HttpURLConnection connection = (HttpURLConnection) URI.create(pkgURL).toURL().openConnection();
                 connection.setConnectTimeout(15 * 1000);
                 connection.setReadTimeout(15 * 1000);
                 connection.setRequestMethod("GET");

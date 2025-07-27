@@ -24,6 +24,7 @@ package org.exist.xquery.modules.exi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 import com.evolvedbinary.j8fu.function.ConsumerE;
@@ -55,7 +56,7 @@ public class EXIUtils {
                     url = "xmldb:exist://" + url;
                 }
 
-                return new URL(url).openStream();
+                return URI.create(url).toURL().openStream();
             case Type.ELEMENT:
             case Type.DOCUMENT:
                 LOG.debug("Streaming element or document node");
