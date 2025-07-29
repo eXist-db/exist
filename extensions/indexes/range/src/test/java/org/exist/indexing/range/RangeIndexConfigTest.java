@@ -45,7 +45,7 @@ public class RangeIndexConfigTest {
      * {@see https://github.com/eXist-db/exist/issues/1339}
      */
     @Test
-    public void errorsHaveSourceContext() throws NoSuchFieldException, IllegalAccessException {
+    public void errorsHaveSourceContext() {
         final String badCreateQName = "tei:persName "; // Note the trailing
         final String mockCollectionXConfUri = "/db/system/conf/db/mock/" + DEFAULT_COLLECTION_CONFIG_FILE;
 
@@ -89,15 +89,16 @@ public class RangeIndexConfigTest {
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("tei", "http://www.tei-c.org/ns/1.0");
 
-        LogCaptor logCaptor = LogCaptor.forClass(RangeIndexConfig.class);
+        try (LogCaptor logCaptor = LogCaptor.forClass(RangeIndexConfig.class)) {
 
-        final RangeIndexConfig config = new RangeIndexConfig(mockConfigNodes, namespaces);
+            final RangeIndexConfig config = new RangeIndexConfig(mockConfigNodes, namespaces);
 
-        assertTrue(logCaptor.getLogs().getFirst()
-                .contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
+            assertTrue(logCaptor.getLogs().getFirst()
+                    .contains("Illegal QName: '" + badCreateQName + "'.. QName is invalid: INVALID_LOCAL_PART"));
 
-        assertTrue(logCaptor.getLogs().getFirst()
-                .contains("(" + mockCollectionXConfUri + ")"));
+            assertTrue(logCaptor.getLogs().getFirst()
+                    .contains("(" + mockCollectionXConfUri + ")"));
+        }
 
         verify(mockConfigNodes, mockConfigNode, mockCreates, mockCreateDocument, mockCreate, mockEmptyNodeList);
     }
