@@ -47,7 +47,7 @@ import java.util.Optional;
 
 /**
  * Abstract configuration corresponding to either a field or facet element nested inside
- * a index definition 'text' element. Adds the possibility to create index content based
+ * an index definition 'text' element. Adds the possibility to create index content based
  * on an arbitrary XQuery expression.
  *
  * @author Wolfgang Meier
@@ -58,11 +58,11 @@ public abstract class AbstractFieldConfig {
 
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
-    protected Optional<String> expression;
+    protected final Optional<String> expression;
     protected boolean isValid = true;
     private CompiledXQuery compiled = null;
 
-    public AbstractFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces) {
+    public AbstractFieldConfig(final LuceneConfig config, final Element configElement, final Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath.isEmpty()) {
             expression = Optional.empty();
@@ -95,7 +95,7 @@ public abstract class AbstractFieldConfig {
         return null;
     }
 
-    protected abstract void processResult(Sequence result, Document luceneDoc) throws XPathException;
+    protected abstract void processResult(final Sequence result, final Document luceneDoc) throws XPathException;
 
     protected abstract void processText(CharSequence text, Document luceneDoc);
 
@@ -131,13 +131,13 @@ public abstract class AbstractFieldConfig {
         }
     }
 
-    private void compile(DBBroker broker) {
+    private void compile(final DBBroker broker) {
         if (compiled == null && isValid) {
             expression.ifPresent((code) -> compiled = compile(broker, code));
         }
     }
 
-    protected CompiledXQuery compile(DBBroker broker, String code) {
+    protected CompiledXQuery compile(final DBBroker broker, final String code) {
         final XQuery xquery = broker.getBrokerPool().getXQueryService();
         final XQueryContext context = new XQueryContext(broker.getBrokerPool());
         try {
@@ -149,7 +149,7 @@ public abstract class AbstractFieldConfig {
         }
     }
 
-    private String resolveURI(String baseURI, String location) {
+    private String resolveURI(final String baseURI, final String location) {
         try {
             final URI uri = new URI(location);
             if (!uri.isAbsolute() && baseURI != null && baseURI.startsWith(CollectionConfigurationManager.CONFIG_COLLECTION)) {
