@@ -263,7 +263,7 @@ public class AnalyzerConfig {
      * @return List of triples key-value-valueType
      * @throws org.exist.indexing.lucene.AnalyzerConfig.ParameterException an invalid param element was found
      */
-    static List<KeyTypedValue<?>> getAllConstructorParameters(Element config) throws ParameterException {
+    static List<KeyTypedValue<?>> getAllConstructorParameters(final Element config) throws ParameterException {
         final List<KeyTypedValue<?>> parameters = new ArrayList<>();
         final NodeList params = config.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_ELEMENT_NAME);
 
@@ -435,7 +435,7 @@ public class AnalyzerConfig {
      * @param param The parameter-configuration element.
      * @return Set of parameter values
      */
-    private static Set<String> getConstructorParameterSetValues(Element param) {
+    private static Set<String> getConstructorParameterSetValues(final Element param) {
         final Set<String> set = new HashSet<>();
         final NodeList values = param.getElementsByTagNameNS(CollectionConfiguration.NAMESPACE, PARAM_VALUE_ENTRY);
         for (int i = 0; i < values.getLength(); i++) {
@@ -488,12 +488,12 @@ public class AnalyzerConfig {
      * @param param The parameter-configuration element.
      * @return Parameter data as Lucene CharArraySet
      */
-    private static CharArraySet getConstructorParameterCharArraySetValues(Element param) {
+    private static CharArraySet getConstructorParameterCharArraySetValues(final Element param) {
         final Set<String> set = getConstructorParameterSetValues(param);
         return CharArraySet.copy(set);
     }
 
-    public Analyzer getAnalyzerById(String id) {
+    public Analyzer getAnalyzerById(final String id) {
         return analyzers.get(id);
     }
 
@@ -506,7 +506,7 @@ public class AnalyzerConfig {
      *
      * @param analyzer Lucene analyzer
      */
-    public void setDefaultAnalyzer(Analyzer analyzer) {
+    public void setDefaultAnalyzer(final Analyzer analyzer) {
         defaultAnalyzer = analyzer;
     }
 
@@ -516,7 +516,7 @@ public class AnalyzerConfig {
      * @param config The analyzer element from .xconf file.
      * @throws DatabaseConfigurationException Something unexpected happened.
      */
-    public void addAnalyzer(Element config) throws DatabaseConfigurationException {
+    public void addAnalyzer(final Element config) throws DatabaseConfigurationException {
 
         // Configure lucene analyzer with configuration
         final Analyzer analyzer = configureAnalyzer(config);
