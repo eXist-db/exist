@@ -120,7 +120,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                 encoding = StandardCharsets.UTF_8;
             }
 
-            try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
+            try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
                     OutputStream os = stream(baos, encoding)) {
 
                 // iterate through the argument sequence
@@ -140,7 +140,7 @@ public abstract class AbstractCompressFunction extends BasicFunction
                     ((DeflaterOutputStream)os).finish();
                 }
 
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(baos.toByteArray()), this);
+                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(baos.toByteArray()).get(), this);
             }
 		} catch (final UnsupportedCharsetException | IOException e) {
 			throw new XPathException(this, e.getMessage(), e);
@@ -412,7 +412,8 @@ public abstract class AbstractCompressFunction extends BasicFunction
         } else if (doc.getResourceType() == DocumentImpl.BINARY_FILE && doc.getContentLength() > 0) {
             // binary file
             try (final InputStream is = context.getBroker().getBinaryResource((BinaryDocument) doc);
-                 final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(doc.getContentLength() == -1 ? 1024 : (int) doc.getContentLength())) {
+
+                 final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().setBufferSize(doc.getContentLength() == -1 ? 1024 : (int) doc.getContentLength()).get()) {
                 baos.write(is);
                 value = baos.toByteArray();
             }

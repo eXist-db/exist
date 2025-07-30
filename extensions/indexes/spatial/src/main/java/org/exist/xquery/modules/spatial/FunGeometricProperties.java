@@ -51,6 +51,8 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTWriter;
 
+import java.io.IOException;
+
 /**
   * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
   * @author ljo
@@ -341,7 +343,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                             result = new StringValue(this, wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
                             byte data[] = wkbWriter.write(geometry);
-                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data), this);
+                            return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(data).get(), this);
                         } else if (isCalledAs("getEPSG4326MinX")) {
                             result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
                         } else if (isCalledAs("getEPSG4326MaxX")) {
@@ -361,7 +363,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         result = new StringValue(this, wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
                         byte data[] = wkbWriter.write(geometry);
-                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(data), this);
+                        return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(data).get(), this);
                     } else if (isCalledAs("getMinX")) {
                         result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
                     } else if (isCalledAs("getMaxX")) {
@@ -391,7 +393,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         throw new XPathException(this, "Unknown spatial property: " + getName().getLocalPart());
                     }
                 }
-            } catch (SpatialIndexException e) {
+            } catch (SpatialIndexException | IOException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, e);
             }

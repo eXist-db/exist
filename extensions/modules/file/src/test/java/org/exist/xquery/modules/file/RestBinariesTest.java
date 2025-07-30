@@ -88,7 +88,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             entity.writeTo(baos);
 
             assertArrayEquals(Files.readAllBytes(tmpInFile), Base64.decodeBase64(baos.toByteArray()));
@@ -113,7 +113,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final HttpResponse response = postXquery(query);
 
         final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             entity.writeTo(baos);
 
             assertArrayEquals(Files.readAllBytes(tmpInFile), baos.toByteArray());
@@ -168,7 +168,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
         final HttpResponse response;
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             marshaller.marshal(query, baos);
             response = executor.execute(Request.Post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)

@@ -167,7 +167,7 @@ public abstract class AbstractXMLDBTask extends Task
             }
 
             final Class<?> clazz    = Class.forName( driver );
-            final Database database = (Database)clazz.newInstance();
+            final Database database = (Database)clazz.getDeclaredConstructor().newInstance();
             database.setProperty( "create-database", createDatabase ? "true" : "false" );
             database.setProperty( "ssl-enable", ssl ? "true" : "false" );
 

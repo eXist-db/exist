@@ -188,12 +188,12 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                     //copy the input data
                     final byte[] entryData;
-                    try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+                    try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
                         baos.write(is);
                         entryData = baos.toByteArray();
                     }
 
-                    try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
+                    try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                         NodeValue content = ModuleUtils.streamToXML(context, bis, this);
                         try (Resource  resource = target.createResource(name, XMLResource.class)) {
                             ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
@@ -214,17 +214,17 @@ public abstract class AbstractExtractFunction extends BasicFunction
 
                 //copy the input data
                 final byte[] entryData;
-                try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+                try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
                     baos.write(is);
                     entryData = baos.toByteArray();
                 }
 
                 //try and parse as xml, fall back to binary
-                try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
+                try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                     uncompressedData = ModuleUtils.streamToXML(context, bis, this);
                 } catch (SAXException saxe) {
                     if (entryData.length > 0) {
-                        try (final InputStream bis = new UnsynchronizedByteArrayInputStream(entryData)) {
+                        try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                             uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis, this);
                         }
                     }

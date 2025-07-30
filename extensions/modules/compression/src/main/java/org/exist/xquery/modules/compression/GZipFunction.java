@@ -76,7 +76,7 @@ public class GZipFunction extends BasicFunction
         BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         // gzip the data
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
                 final GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
             bin.streamBinaryTo(gzos);
             

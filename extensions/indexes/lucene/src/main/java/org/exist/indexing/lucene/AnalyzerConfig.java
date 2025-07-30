@@ -25,6 +25,7 @@ import java.io.Reader;
 import java.io.Serial;
 import java.lang.invoke.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -317,11 +318,11 @@ public class AnalyzerConfig {
                     final Class<?> fieldClazz = Class.forName(clazzName);
                     final Field field = fieldClazz.getField(fieldName);
                     field.setAccessible(true);
-                    final Object fValue = field.get(fieldClazz.newInstance());
+                    final Object fValue = field.get(fieldClazz.getDeclaredConstructor().newInstance());
                     yield new KeyTypedValue<>(name, fValue, Object.class);
 
                 } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException |
-                               IllegalAccessException reflectiveOperationException) {
+                               IllegalAccessException | NoSuchMethodException | InvocationTargetException reflectiveOperationException) {
                     throw new ParameterException(reflectiveOperationException.getMessage(), reflectiveOperationException);
                 }
             }

@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.range;
 
+import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
@@ -28,6 +29,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -44,7 +46,7 @@ public class RangeIndexConfigField {
     private NodePath path = null;
     private NodePath relPath = null;
     private int type = Type.STRING;
-    private org.exist.indexing.range.conversion.TypeConverter typeConverter = null;
+    private TypeConverter typeConverter = null;
     protected boolean includeNested = false;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     protected boolean caseSensitive = true;
@@ -77,23 +79,23 @@ public class RangeIndexConfigField {
                 throw new DatabaseConfigurationException("Invalid type declared for range index on " + match + ": " + typeStr);
             }
         }
-        String custom = elem.getAttribute("converter");
+        final String custom = elem.getAttribute("converter");
         if (!custom.isEmpty()) {
             try {
-                Class customClass = Class.forName(custom);
-                typeConverter = (org.exist.indexing.range.conversion.TypeConverter) customClass.newInstance();
+                final Class<?> customClass = Class.forName(custom);
+                typeConverter = (TypeConverter) customClass.getDeclaredConstructor().newInstance();
             } catch (ClassNotFoundException e) {
                 RangeIndex.LOG.warn("Class for custom-type not found: {}", custom);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: {}", custom, e);
             }
         }
-        String nested = elem.getAttribute("nested");
+        final String nested = elem.getAttribute("nested");
         includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
         path.setIncludeDescendants(includeNested);
 
         // normalize whitespace if whitespace="normalize"
-        String whitespace = elem.getAttribute("whitespace");
+        final String whitespace = elem.getAttribute("whitespace");
         if (!whitespace.isEmpty()) {
             if ("trim".equalsIgnoreCase(whitespace)) {
                 wsTreatment = XMLString.SUPPRESS_BOTH;
@@ -120,7 +122,7 @@ public class RangeIndexConfigField {
         return type;
     }
 
-    public org.exist.indexing.range.conversion.TypeConverter getTypeConverter() {
+    public TypeConverter getTypeConverter() {
         return typeConverter;
     }
 

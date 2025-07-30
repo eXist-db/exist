@@ -187,7 +187,7 @@ public class ScaleFunction extends BasicFunction {
             final BufferedImage bImage = ImageModule.createThumb(image, maxHeight, maxWidth, renderingHints);
 
             //get the new scaled image
-            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+            try (final UnsynchronizedByteArrayOutputStream os = UnsynchronizedByteArrayOutputStream.builder().get()) {
                 ImageIO.write(bImage, formatName, os);
 
                 //return the new scaled image data

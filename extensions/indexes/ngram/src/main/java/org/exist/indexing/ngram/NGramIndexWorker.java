@@ -912,7 +912,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             len = Collection.LENGTH_COLLECTION_ID + 1;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
+            ByteConversion.intToByteH(collectionId, data, COLLECTION_ID_OFFSET);
         }
 
         /*
@@ -933,12 +933,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             len = UTF8.encoded(ngram) + NGRAM_OFFSET;
             data = new byte[len];
             data[0] = IDX_QNAME;
-            ByteConversion.intToByte(collectionId, data, COLLECTION_ID_OFFSET);
+            ByteConversion.intToByteH(collectionId, data, COLLECTION_ID_OFFSET);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalPart());
             data[NAMETYPE_OFFSET] = qname.getNameType();
-            ByteConversion.shortToByte(namespaceId, data, NAMESPACE_OFFSET);
-            ByteConversion.shortToByte(localNameId, data, LOCALNAME_OFFSET);
+            ByteConversion.shortToByteH(namespaceId, data, NAMESPACE_OFFSET);
+            ByteConversion.shortToByteH(localNameId, data, LOCALNAME_OFFSET);
             UTF8.encode(ngram, data, NGRAM_OFFSET);
         }
     }

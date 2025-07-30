@@ -87,7 +87,7 @@ public class EncodeExiFunction extends BasicFunction {
 		if(args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-		try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+		try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
 			EXISerializer exiSerializer;
 			if(args.length > 1) {
 				if(!args[1].isEmpty()) {

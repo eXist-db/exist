@@ -95,7 +95,7 @@ public class DeflateFunction extends BasicFunction
 	Deflater defl = new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, rawflag);
 
         // deflate the data
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
+        try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
 	    DeflaterOutputStream dos = new DeflaterOutputStream(baos, defl)) {
             bin.streamBinaryTo(dos);
             dos.flush();

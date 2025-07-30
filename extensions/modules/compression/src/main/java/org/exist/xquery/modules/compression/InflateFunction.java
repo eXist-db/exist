@@ -92,7 +92,7 @@ public class InflateFunction extends BasicFunction
 
         // uncompress the data
         try(final InflaterInputStream iis = new InflaterInputStream(bin.getInputStream(), infl);
-                final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+                final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             int read = -1;
             final byte[] b = new byte[4096];
             while ((read = iis.read(b)) != -1) {

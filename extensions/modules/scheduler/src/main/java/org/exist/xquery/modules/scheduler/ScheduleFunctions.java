@@ -37,6 +37,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
 
@@ -312,7 +313,7 @@ public class ScheduleFunctions extends BasicFunction
 
                 //Check if the Class is a UserJob
                 Class<?> jobClass = Class.forName( resource );
-                job = jobClass.newInstance();
+                job = jobClass.getDeclaredConstructor().newInstance();
 
                 if( !( job instanceof UserJavaJob ) ) {
                     LOG.error("Cannot Schedule job. Class {} is not an instance of org.exist.scheduler.UserJavaJob", resource);
@@ -320,7 +321,8 @@ public class ScheduleFunctions extends BasicFunction
                 }
                 ( ( UserJavaJob )job ).setName( jobName );
             }
-            catch( ClassNotFoundException | InstantiationException | IllegalAccessException cnfe ) {
+            catch(ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException |
+                  InvocationTargetException cnfe ) {
                 LOG.error( cnfe );
                 return( BooleanValue.FALSE );
             }

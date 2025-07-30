@@ -270,7 +270,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                                 }
 
                                 if (isSaveToDataBase) {
-                                    os = new UnsynchronizedByteArrayOutputStream();
+                                    os = UnsynchronizedByteArrayOutputStream.builder().get();
                                     try {
                                         ImageIO.write(bImage, "jpg", os);
                                     } catch (Exception e) {
