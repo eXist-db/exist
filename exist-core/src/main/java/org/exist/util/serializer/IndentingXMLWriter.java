@@ -151,7 +151,7 @@ public class IndentingXMLWriter extends XMLWriter {
     @Override
     public void endDocumentType() throws TransformerException {
         super.endDocumentType();
-        super.characters("\n");
+        indent();
         sameline = false;
     }
 
@@ -197,11 +197,7 @@ public class IndentingXMLWriter extends XMLWriter {
     protected void popWhitespacePreserve() {
         if (!whitespacePreserveStack.isEmpty() && Math.abs(whitespacePreserveStack.peek()) > level) {
             whitespacePreserveStack.pop();
-            if (whitespacePreserveStack.isEmpty() || whitespacePreserveStack.peek() >= 0) {
-                whitespacePreserve = false;
-            } else {
-                whitespacePreserve = true;
-            }
+            whitespacePreserve = !whitespacePreserveStack.isEmpty() && whitespacePreserveStack.peek() < 0;
         }
     }
 
