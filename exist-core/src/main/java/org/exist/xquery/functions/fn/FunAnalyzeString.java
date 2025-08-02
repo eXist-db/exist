@@ -103,18 +103,15 @@ public class FunAnalyzeString extends BasicFunction {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.startDocument();
             builder.startElement(new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS), null);
-            String input = "";
-            if (!args[0].isEmpty()) {
-                input = args[0].itemAt(0).getStringValue();
+
+            final String input = args[0].isEmpty() ? "" : args[0].itemAt(0).getStringValue();
+            final String pattern = args[1].itemAt(0).getStringValue();
+
+            String flags = "";
+            if (args.length == 3) {
+                flags = args[2].itemAt(0).getStringValue();
             }
-            if (input != null && !input.isEmpty()) {
-                final String pattern = args[1].itemAt(0).getStringValue();
-                String flags = "";
-                if (args.length == 3) {
-                    flags = args[2].itemAt(0).getStringValue();
-                }
-                analyzeString(builder, input, pattern, flags);
-            }
+            analyzeString(builder, input, pattern, flags);
             builder.endElement();
             builder.endDocument();
             return (NodeValue) builder.getDocument().getDocumentElement();
