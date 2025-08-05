@@ -48,6 +48,13 @@ import java.util.Set;
  */
 @NotThreadSafe
 public class PerformanceStatsImpl implements PerformanceStats {
+    public static final String CDATA = "CDATA";
+    public static final String SOURCE = "source";
+    public static final String ELAPSED = "elapsed";
+    public static final String CALLS = "calls";
+    public static final String QUERY = "query";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
 
     private static class IndexStats {
 
@@ -363,48 +370,50 @@ public class PerformanceStatsImpl implements PerformanceStats {
 
     @Override
     public void serialize(final MemTreeBuilder builder) {
-        builder.startElement(new QName(XML_ELEMENT_CALLS, XML_NAMESPACE, XML_PREFIX), null);
-        if (isEnabled()) {
-            final AttributesImpl attrs = new AttributesImpl();
-            for (final QueryStats stats : queries.values()) {
-                attrs.clear();
-                attrs.addAttribute("", "source", "source", "CDATA", stats.source);
-                attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
-                attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
-                builder.startElement(new QName("query", XML_NAMESPACE, XML_PREFIX), attrs);
-                builder.endElement();
+        final AttributesImpl attrs = new AttributesImpl();
+
+        builder.startElement(new QName(XML_ELEMENT_CALLS, XML_NAMESPACE, XML_PREFIX), attrs);
+        // query statistics
+        for (final QueryStats stats : queries.values()) {
+            attrs.clear();
+            attrs.addAttribute("", SOURCE, SOURCE, CDATA, stats.source);
+            attrs.addAttribute("", ELAPSED, ELAPSED, CDATA, Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", CALLS, CALLS, CDATA, Integer.toString(stats.callCount));
+            builder.startElement(new QName(QUERY, XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
+        // function statistics
+        for (final FunctionStats stats : functions.values()) {
+            attrs.clear();
+            attrs.addAttribute("", NAME, NAME, CDATA, stats.qname.getStringValue());
+            attrs.addAttribute("", ELAPSED, ELAPSED, CDATA, Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", CALLS, CALLS, CDATA, Integer.toString(stats.callCount));
+            if (stats.source != null) {
+                attrs.addAttribute("", SOURCE, SOURCE, CDATA, stats.source);
             }
-            for (final FunctionStats stats : functions.values()) {
-                attrs.clear();
-                attrs.addAttribute("", "name", "name", "CDATA", stats.qname.getStringValue());
-                attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
-                attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.callCount));
-                if (stats.source != null) {
-                    attrs.addAttribute("", "source", "source", "CDATA", stats.source);
-                }
-                builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
-                builder.endElement();
+            builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
+        // index statistics
+        for (final IndexStats stats : indexStats.values()) {
+            attrs.clear();
+            attrs.addAttribute("", TYPE, TYPE, CDATA, stats.indexType);
+            attrs.addAttribute("", SOURCE, SOURCE, CDATA, "%s [%s:%s]".formatted(stats.source, stats.line, stats.column));
+            attrs.addAttribute("", ELAPSED, ELAPSED, CDATA, Double.toString(stats.executionTime / 1000.0));
+            attrs.addAttribute("", CALLS, CALLS, CDATA, Integer.toString(stats.usageCount));
+            attrs.addAttribute("", "optimization-level", "optimization", CDATA, stats.indexOptimizationLevel.name());
+            builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
+        }
+        // optimization statistics
+        for (final OptimizationStats stats : optimizations) {
+            attrs.clear();
+            attrs.addAttribute("", TYPE, TYPE, CDATA, stats.type.toString());
+            if (stats.source != null) {
+                attrs.addAttribute("", SOURCE, SOURCE, CDATA, "%s [%s:%s]".formatted(stats.source, stats.line, stats.column));
             }
-            for (final IndexStats stats : indexStats.values()) {
-                attrs.clear();
-                attrs.addAttribute("", "type", "type", "CDATA", stats.indexType);
-                attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" +
-                        stats.column + "]");
-                attrs.addAttribute("", "elapsed", "elapsed", "CDATA", Double.toString(stats.executionTime / 1000.0));
-                attrs.addAttribute("", "calls", "calls", "CDATA", Integer.toString(stats.usageCount));
-                attrs.addAttribute("", "optimization-level", "optimization", "CDATA", stats.indexOptimizationLevel.name());
-                builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
-                builder.endElement();
-            }
-            for (final OptimizationStats stats : optimizations) {
-                attrs.clear();
-                attrs.addAttribute("", "type", "type", "CDATA", stats.type.toString());
-                if (stats.source != null) {
-                    attrs.addAttribute("", "source", "source", "CDATA", stats.source + " [" + stats.line + ":" + stats.column + "]");
-                }
-                builder.startElement(new QName("optimization", XML_NAMESPACE, XML_PREFIX), attrs);
-                builder.endElement();
-            }
+            builder.startElement(new QName("optimization", XML_NAMESPACE, XML_PREFIX), attrs);
+            builder.endElement();
         }
         builder.endElement();
     }
