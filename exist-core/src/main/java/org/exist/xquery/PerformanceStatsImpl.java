@@ -48,21 +48,39 @@ import java.util.Set;
  */
 @NotThreadSafe
 public class PerformanceStatsImpl implements PerformanceStats {
-    public static final String CDATA = "CDATA";
-    public static final String SOURCE = "source";
-    public static final String ELAPSED = "elapsed";
-    public static final String CALLS = "calls";
-    public static final String QUERY = "query";
-    public static final String NAME = "name";
-    public static final String TYPE = "type";
+    private static final String CALLS = "calls";
+    private static final String CDATA = "CDATA";
+    private static final String ELAPSED = "elapsed";
+    private static final String NAME = "name";
+    private static final String OPTIMIZATION_LEVEL = "optimization-level";
+    private static final String QUERY = "query";
+    private static final String SOURCE = "source";
+    private static final String TYPE = "type";
+
+    private final Map<String, QueryStats> queries = new HashMap<>();
+    private final Map<FunctionStats, FunctionStats> functions = new HashMap<>();
+    private final Map<IndexStats, IndexStats> indexStats = new HashMap<>();
+    private final Set<OptimizationStats> optimizations = new HashSet<>();
+    private final Enabler enabler;
+
+    private boolean enabled;
+
+    public PerformanceStatsImpl(final boolean enabled) {
+        this(enabled, x -> x);
+    }
+
+    public PerformanceStatsImpl(final boolean enabled, final Enabler enabler) {
+        this.enabled = enabled;
+        this.enabler = enabler;
+    }
 
     private static class IndexStats {
-
         final String source;
         final String indexType;
         final int line;
         final int column;
         final IndexOptimizationLevel indexOptimizationLevel;
+
         int usageCount = 1;
         long executionTime = 0;
 
@@ -102,13 +120,13 @@ public class PerformanceStatsImpl implements PerformanceStats {
     }
 
     private static class QueryStats {
-
         final String source;
+
         long executionTime = 0;
         int callCount = 1;
 
         QueryStats(final String source) {
-            this.source = (source != null ? source : "");
+            this.source = source == null ? "" : source;
         }
 
         public static QueryStats copy(final QueryStats other) {
@@ -169,36 +187,16 @@ public class PerformanceStatsImpl implements PerformanceStats {
     }
 
     @ThreadSafe
-    private static class OptimizationStats {
-        final String source;
-        final OptimizationType type;
-        final int line;
-        final int column;
-
+    private record OptimizationStats(String source, OptimizationType type, int line, int column) {
         OptimizationStats(final String source, final OptimizationType type, final int line, final int column) {
-            this.source = source != null ? source : "";
+            this.source = source == null ? "" : source;
             this.type = type;
             this.line = line;
             this.column = column;
         }
-
-        @Override
-        public int hashCode() {
-            return 32 * type.hashCode() + source.hashCode() + line + column;
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            if (obj instanceof OptimizationStats other) {
-                return source.equals(other.source) && type == other.type &&
-                        line == other.line && column == other.column;
-            }
-            return false;
-        }
     }
 
     private static class CompareByTime implements Comparator<FunctionStats> {
-
         @Override
         public int compare(final FunctionStats o1, final FunctionStats o2) {
             return Long.compare(o1.executionTime, o2.executionTime);
@@ -208,24 +206,6 @@ public class PerformanceStatsImpl implements PerformanceStats {
     @FunctionalInterface
     public interface Enabler {
         boolean enabled(final boolean enabled);
-    }
-
-    private final Map<String, QueryStats> queries = new HashMap<>();
-    private final Map<FunctionStats, FunctionStats> functions = new HashMap<>();
-    private final Map<IndexStats, IndexStats> indexStats = new HashMap<>();
-    private final Set<OptimizationStats> optimizations = new HashSet<>();
-
-    private final Enabler enabler;
-
-    private boolean enabled = false;
-
-    public PerformanceStatsImpl(final boolean enabled) {
-        this(enabled, x -> x);
-    }
-
-    public PerformanceStatsImpl(final boolean enabled, final Enabler enabler) {
-        this.enabled = enabled;
-        this.enabler = enabler;
     }
 
     @Override
@@ -388,7 +368,7 @@ public class PerformanceStatsImpl implements PerformanceStats {
             attrs.addAttribute("", NAME, NAME, CDATA, stats.qname.getStringValue());
             attrs.addAttribute("", ELAPSED, ELAPSED, CDATA, Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", CALLS, CALLS, CDATA, Integer.toString(stats.callCount));
-            if (stats.source != null) {
+            if (!stats.source.isEmpty()) {
                 attrs.addAttribute("", SOURCE, SOURCE, CDATA, stats.source);
             }
             builder.startElement(new QName("function", XML_NAMESPACE, XML_PREFIX), attrs);
@@ -401,7 +381,7 @@ public class PerformanceStatsImpl implements PerformanceStats {
             attrs.addAttribute("", SOURCE, SOURCE, CDATA, "%s [%s:%s]".formatted(stats.source, stats.line, stats.column));
             attrs.addAttribute("", ELAPSED, ELAPSED, CDATA, Double.toString(stats.executionTime / 1000.0));
             attrs.addAttribute("", CALLS, CALLS, CDATA, Integer.toString(stats.usageCount));
-            attrs.addAttribute("", "optimization-level", "optimization", CDATA, stats.indexOptimizationLevel.name());
+            attrs.addAttribute("", OPTIMIZATION_LEVEL, OPTIMIZATION_LEVEL, CDATA, stats.indexOptimizationLevel.name());
             builder.startElement(new QName("index", XML_NAMESPACE, XML_PREFIX), attrs);
             builder.endElement();
         }
