@@ -36,16 +36,77 @@
     directory pointed by property "home.exist", 
     and then as a classpath resource in org/exist/util .
     ======================================================= 
-
-    $Id$
 -->
-
 <mime-types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/mime-types.xsd">
 
-    <!-- Mime types stored as XML -->
+    <!-- - - Mime types stored as XML - - - - - - - - -  -->
+
     <mime-type name="application/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform,.gml,.fo,.nvdl,.sch,.imdi,.cmdi,.odd,.jcmconnect,.ditaval</extensions>
+        <extensions>.xml,.xmp,.xmi,.xmap,.xsp,.wsdl,.x3d,.owl,.dbx,.xces,.ead,.imdi,.cmdi,.jcmconnect</extensions>
+    </mime-type>
+    <!-- exist-db specific -->
+    <mime-type name="application/xml" type="xml">
+        <description>Collection configuration file</description>
+        <extensions>.xconf</extensions>
+    </mime-type>
+    <!-- intermediate formats -->
+    <mime-type name="application/xml" type="xml">
+        <description>XQuery X</description>
+        <extensions>.xqx</extensions>
+    </mime-type>
+    <mime-type name="application/xml" type="xml">
+        <description>XSL-FO Document</description>
+        <extensions>.fo</extensions>
+    </mime-type>
+    <mime-type name="application/xml" type="xml">
+        <description>NVDL file</description>
+        <extensions>.nvdl</extensions>
+    </mime-type>
+    <!--  SCHEMAS  -->
+    <mime-type name="application/xml" type="xml">
+        <description>Schema</description>
+        <extensions>.sch</extensions>
+    </mime-type>
+    <mime-type name="application/xml" type="xml">
+        <description>Relax NG schema</description>
+        <extensions>.rng</extensions>
+    </mime-type>
+    <mime-type name="application/xml" type="xml">
+        <description>XDM schema definition</description>
+        <extensions>.xsd</extensions>
+    </mime-type>
+    <!-- xforms -->
+    <mime-type name="application/xml" type="xml">
+        <description>XForm definition</description>
+        <extensions>.xform</extensions>
+    </mime-type>
+    <!-- GEO -->
+    <mime-type name="application/gml+xml" type="xml">
+        <description>Geography Markup Language</description>
+        <extensions>.gml</extensions>
+    </mime-type>
+    <!--  MARC, MODS, METS ...  -->
+    <mime-type name="application/mods+xml" type="xml">
+        <description>Metadata Object Description Schema</description>
+        <extensions>.mods</extensions>
+    </mime-type>
+    <mime-type name="application/mads+xml" type="xml">
+        <description>Metadata Authority Description Schema</description>
+        <extensions>.mads</extensions>
+    </mime-type>
+    <mime-type name="application/mets+xml" type="xml">
+        <description>Metadata Encoding and Transmission Standard</description>
+        <extensions>.mets</extensions>
+    </mime-type>
+    <mime-type name="application/marcxml+xml" type="xml">
+        <description>MARC21 XML Schema</description>
+        <extensions>.mrcx</extensions>
+    </mime-type>
+    <!--  TEI  -->
+    <mime-type name="application/tei+xml" type="xml">
+        <description>TEI Document</description>
+        <extensions>.tei,.teiCorpus,.odd</extensions>
     </mime-type>
     <!-- default is 'application/xml' for .xml This required to resolve 'text/xml' -->
     <mime-type name="text/xml" type="xml">
@@ -96,26 +157,34 @@
         <description>Schema Component Model</description>
         <extensions>.scm</extensions>
     </mime-type>
-    
-    <!-- Binary mime types -->
+    <mime-type name="application/xml-patch+xml" type="xml">
+        <description>XML Patch</description>
+        <extensions>.xml</extensions>
+    </mime-type>
+    <mime-type name="application/vnd.google-earth.kml+xml" type="xml">
+        <description>Google Earch KML file</description>
+        <extensions>.kml</extensions>
+    </mime-type>
+    <!-- DITA
+         the mimetype application/dita+xml is not formally registered with IANA
+         see https://dita.fluidtopics.com/r/Darwin-Information-Typing-Architecture-DITA-Version-1.2/DITA-MIME-type
+    -->
+    <mime-type name="application/dita+xml" type="xml">
+        <description>DITA document</description>
+        <extensions>.dita,.ditamap,.ditaval</extensions>
+    </mime-type>
+
+    <!-- - - Mime types stored as binary - - - - - - - - -  -->
+
     <mime-type name="application/exi" type="binary">
         <description>Efficient XML Interchange</description>
         <extensions>.exi</extensions>
     </mime-type>
-    <mime-type name="application/xquery" type="binary">
-        <description>XQuery script</description>
-        <extensions>.xq,.xql,.xqm,.xquery,.xqy,.xqws</extensions>
-    </mime-type>
     <mime-type name="application/octet-stream" type="binary">
         <description>Generic binary stream</description>
-        <extensions>.jar,.exe,.dll,.o</extensions>
+        <extensions>.jar,.exe,.dll,.o,.bin</extensions>
     </mime-type>
-    <mime-type name="application/json" type="binary">
-        <description>JSON</description>
-        <extensions>.json</extensions>
-    </mime-type>
-    
-    
+
     <!-- TODO : for OpenOffice.org and other Zip files: add a new type="archive",
          that will unzip and store as a collection -->
          
@@ -291,86 +360,127 @@
         <extensions>.xltx</extensions>
     </mime-type>
 
+    <!-- Miscellaneous formats -->
+
     <mime-type name="application/xml-dtd" type="binary">
         <description>External DTD subsets</description>
         <extensions>.dtd,.mod</extensions>
     </mime-type>
-
     <mime-type name="application/xml-external-parsed-entity" type="binary">
         <description>External parsed entities</description>
         <extensions>.ent</extensions>
     </mime-type>
-    
+    <mime-type name="application/pdf" type="binary">
+        <description>PDF (Adobe)</description>
+        <extensions>.pdf</extensions>
+    </mime-type>
+    <mime-type name="application/java-byte-code" type="binary">
+        <description>Java byte code</description>
+        <extensions>.class</extensions>
+    </mime-type>
+    <mime-type name="application/relax-ng-compact-syntax" type="binary">
+        <description>RelaxNG compact syntax</description>
+        <extensions>.rnc</extensions>
+    </mime-type>
+    <mime-type name="application/prs.aff-dictionary" type="binary">
+        <description>Affix File Format</description>
+        <extensions>.aff</extensions>
+    </mime-type>
+    <mime-type name="application/prs.dictionary" type="binary">
+        <description>Dictionary File Format</description>
+        <extensions>.dic</extensions>
+    </mime-type>
     <mime-type name="application/vnd.adobe.flash-movie" type="binary">
         <description>Adobe Flash Movie</description>
         <extensions>.swf</extensions>
     </mime-type>
-
-    <mime-type name="video/vnd.avi" type="binary">
-        <description>Audio Video Interleaved</description>
-        <extensions>.avi</extensions>
+    <mime-type name="application/jwt" type="binary">
+        <description>JSON Web Token</description>
+        <extensions>.jwt</extensions>
     </mime-type>
 
-    <mime-type name="video/webm" type="binary">
-        <description>WebM</description>
-        <extensions>.webm</extensions>
-    </mime-type>
+    <!-- source code -->
 
+    <mime-type name="application/xquery" type="binary">
+        <description>XQuery script</description>
+        <extensions>.xq,.xql,.xqm,.xquery,.xqy,.xqws</extensions>
+    </mime-type>
+    <mime-type name="text/javascript" type="binary"><!-- this is text now; see RFC 9239 -->
+        <description>JavaScript source</description>
+        <extensions>.js,.mjs</extensions>
+    </mime-type>
+    <mime-type name="application/javascript" type="binary"><!-- kept for legacy mime type resolution -->
+        <description>JavaScript source</description>
+        <extensions>.js,.mjs</extensions>
+    </mime-type>
+    <mime-type name="application/postscript" type="binary">
+        <description>PostScript Document</description>
+        <extensions>.eps,.ps</extensions>
+    </mime-type>
+    <mime-type name="text/x-less" type="binary"><!-- application/less is not registered with IANA -->
+        <description>Less source file</description>
+        <extensions>.less</extensions>
+    </mime-type>
     <mime-type name="text/x-java-source" type="binary">
         <description>Java source code</description>
         <extensions>.java</extensions>
     </mime-type>
 
-    <mime-type name="application/java-byte-code" type="binary">
-        <description>Java byte code</description>
-        <extensions>.class</extensions>
+    <!-- JSON -->
+
+    <mime-type name="application/json" type="binary">
+        <description>JSON</description>
+        <extensions>.json</extensions>
+    </mime-type>
+    <mime-type name="application/json-patch+json" type="binary">
+        <description>JSON Patch</description>
+        <extensions>.json-patch</extensions>
+    </mime-type>
+    <mime-type name="application/ld+json" type="binary">
+        <description>JSON-LD format</description>
+        <extensions>.jsonld</extensions>
+    </mime-type>
+    <mime-type name="application/manifest+json" type="binary">
+        <description>Web application manifest</description>
+        <extensions>.webmanifest</extensions>
+    </mime-type>
+    <mime-type name="application/spdx+json" type="binary">
+        <description>SPDX license information</description>
+        <extensions>.spdx.json</extensions>
     </mime-type>
 
-    <mime-type name="application/relax-ng-compact-syntax" type="binary">
-        <description>RelaxNG compact syntax</description>
-        <extensions>.rnc</extensions>
-    </mime-type>
-
-    <mime-type name="application/prs.aff-dictionary" type="binary">
-        <description>Affix File Format</description>
-        <extensions>.aff</extensions>
-    </mime-type>
-    
-    <mime-type name="application/prs.dictionary" type="binary">
-        <description>Dictionary File Format</description>
-        <extensions>.dic</extensions>
-    </mime-type>
+    <!-- other text formats -->
 
     <mime-type name="text/csv" type="binary">
         <description>Comma Seperated Values</description>
         <extensions>.csv</extensions>
     </mime-type>
-    
     <mime-type name="text/plain" type="binary">
         <description>Plain text</description>
         <extensions>.txt,.text,.properties,.sh</extensions>
     </mime-type>
-
     <mime-type name="text/markdown" type="binary">
         <description>Markdown</description>
         <extensions>.md</extensions>
     </mime-type>
-
     <mime-type name="text/css" type="binary">
         <description>CSS stylesheet</description>
         <extensions>.css</extensions>
     </mime-type>
-
-	<!-- DITA -->
-    <mime-type name="application/dita+xml" type="xml">
-        <description>DITA document</description>
-        <extensions>.dita,.ditamap</extensions>
+    <mime-type name="application/yaml" type="binary">
+        <description>Yet Another Markup Language file</description>
+        <extensions>.yaml</extensions>
     </mime-type>
 
-    <!-- Bitmaps -->
+    <!-- Image Formats -->
+
     <mime-type name="image/png" type="binary">
         <description>PNG image</description>
         <extensions>.png</extensions>
+    </mime-type>
+    <mime-type name="image/apng" type="binary">
+        <description>Animated Portable Network Graphics (APNG) image</description>
+        <extensions>.apng</extensions>
     </mime-type>
     <mime-type name="image/gif" type="binary">
         <description>GIF image</description>
@@ -390,39 +500,49 @@
     </mime-type>
     <mime-type name="image/tiff" type="binary">
         <description>Tag Image File Format</description>
-        <extensions>.tif</extensions>
+        <extensions>.tif,.tiff</extensions>
     </mime-type>
     <mime-type name="image/x-xbitmap" type="binary">
         <description>X Bitmap Graphic</description>
         <extensions>.xbm</extensions>
     </mime-type>
-	<mime-type name="image/vnd.microsoft.icon" type="binary">
-		<description>Icon image</description>
-		<extensions>.ico</extensions>
-	</mime-type>
+    <mime-type name="image/vnd.microsoft.icon" type="binary">
+        <description>Icon image</description>
+        <extensions>.ico</extensions>
+    </mime-type>
+    <mime-type name="image/avif" type="binary">
+        <description>AVIF image</description>
+        <extensions>.avif</extensions>
+    </mime-type>
+    <mime-type name="image/webp" type="binary">
+        <description>WEBP image</description>
+        <extensions>.webp</extensions>
+    </mime-type>
 
-    <!-- Misc -->
-    <mime-type name="application/pdf" type="binary">
-        <description>PDF (Adobe)</description>
-        <extensions>.pdf</extensions>
-    </mime-type>
-    <mime-type name="application/postscript" type="binary">
-        <description>PostScript Document</description>
-        <extensions>.eps,.ps</extensions>
-    </mime-type>
-    <mime-type name="application/javascript" type="binary">
-        <description>JavaScript</description>
-        <extensions>.js</extensions>
-    </mime-type>
-    <mime-type name="application/less" type="binary">
-        <description>Less</description>
-        <extensions>.less</extensions>
-    </mime-type>
-    
-    <!-- Media types -->
+    <!-- Audio Formats -->
+
     <mime-type name="audio/mpeg" type="binary">
         <description>MPEG Audio</description>
         <extensions>.mp2,.mp3,.mpga</extensions>
+    </mime-type>
+    <mime-type name="audio/webm" type="binary">
+        <description>WEBM audio</description>
+        <extensions>.weba</extensions>
+    </mime-type>
+    <mime-type name="audio/ogg" type="binary">
+        <description>Opus audio in Ogg container</description>
+        <extensions>.opus</extensions>
+    </mime-type>
+    <mime-type name="audio/aac" type="binary">
+        <description>AAC audio</description>
+        <extensions>.aac</extensions>
+    </mime-type>
+
+    <!-- Video Formats -->
+
+    <mime-type name="video/webm" type="binary">
+        <description>WEBM video</description>
+        <extensions>.webm</extensions>
     </mime-type>
     <mime-type name="video/mpeg" type="binary">
         <description>MPEG Video</description>
@@ -432,11 +552,28 @@
         <description>MP4 Video</description>
         <extensions>.mp4</extensions>
     </mime-type>
-    
+    <mime-type name="video/vnd.avi" type="binary">
+        <description>Audio Video Interleaved</description>
+        <extensions>.avi</extensions>
+    </mime-type>
+
     <!-- Font types -->
-    <mime-type name="application/font-woff" type="binary">
+
+    <mime-type name="font/woff" type="binary">
         <description>WOFF File Format</description>
         <extensions>.woff</extensions>
     </mime-type>
-    
+    <mime-type name="font/woff2" type="binary">
+        <description>WOFF2 File Format</description>
+        <extensions>.woff2</extensions>
+    </mime-type>
+    <mime-type name="font/otf" type="binary">
+        <description>OpenType Font</description>
+        <extensions>.otf</extensions>
+    </mime-type>
+    <mime-type name="font/ttf" type="binary">
+        <description>TrueType Font</description>
+        <extensions>.ttf</extensions>
+    </mime-type>
+
 </mime-types>
