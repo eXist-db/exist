@@ -88,7 +88,7 @@ function ca:map-assertion-missing-key() as item()* {
 };
 
 declare
-    %test:assertEquals("Value mismatch for key 'b'", "{""a"":1,""b"":3}", "map-assertion-failure")
+    %test:assertEquals("Value mismatch for key 'b'", "{""b"":3,""a"":1}", "map-assertion-failure")
 function ca:map-assertion-wrong-value() as item()* {
     try {
         ca:map-assertion($ca:var, map {"a": 1, "b": 3})
@@ -101,7 +101,7 @@ function ca:map-assertion-wrong-value() as item()* {
 };
 
 declare
-    %test:assertEquals("Additional keys found: (23, o)", "{""a"":1,""23"":3,""o"":""o""}", "map-assertion-failure")
+    %test:assertEquals("Additional keys found: (o, 23)", "{""a"":1,""o"":""o"",""23"":3}", "map-assertion-failure")
 function ca:map-assertion-additional-key() as item()* {
     try {
         ca:map-assertion($ca:var, map {"a": 1, 23: 3, "o": "o"})
