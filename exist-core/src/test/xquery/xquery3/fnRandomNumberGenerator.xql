@@ -29,6 +29,51 @@ declare variable $fn-rng:long-seed := 123456789;
 declare variable $fn-rng:text-seed := 'sample seed';
 declare variable $fn-rng:date-seed := xs:date('1970-01-01');
 declare variable $fn-rng:dateTime-seed := xs:dateTime('1970-01-01T00:00:00.000Z');
+declare variable $fn-rng:number-as-string-seed := "1234567890";
+declare variable $fn-rng:long-string-seed := "When life hands you dirt plant seeds.";
+declare variable $fn-rng:big-number-seed := 9223372036854775808;
+declare variable $fn-rng:zero-seed := 0;
+
+(: special seeds  :)
+declare
+    %test:assertTrue
+function fn-rng:seed-number-equals-number-in-string-seed () {
+    fn:random-number-generator($fn-rng:long-seed)?number eq
+    fn:random-number-generator($fn-rng:number-as-string-seed)?number
+};
+
+(:~
+ : the probability of the first one hundred consecutive zeros in a sequence of random
+ : decimals between 0 and 1 is very low
+ :)
+declare
+    %test:assertNotEquals(0)
+function fn-rng:seed-zero-yields-random-values () {
+    let $random := fn:random-number-generator($fn-rng:zero-seed)
+    return
+        fold-left(1 to 100,
+            map {"sequence": (), "generator": $random},
+            function ($result, $ignore) {
+                map {
+                    "sequence": ($result?sequence, $result?generator?number),
+                    "generator": $result?generator?next()
+                }
+            })
+        => map:get("sequence")
+        => sum()
+};
+
+(:~
+ : This test documents an implementation detail.
+ : It is an interesting fact to know that 123456789 and "123456789" are treated as the same seed.
+ : It is also important to know, if the behaviour of the implementation changes in this regard.
+ :)
+declare
+    %test:assertTrue
+function fn-rng:seed-number () {
+    fn:random-number-generator($fn-rng:long-seed)?number eq
+    fn:random-number-generator($fn-rng:number-as-string-seed)?number
+};
 
 declare 
     %test:assertExists
@@ -72,6 +117,53 @@ declare
 function fn-rng:deterministic-next () {
     fn:random-number-generator($fn-rng:long-seed)?next()?number eq 
     fn:random-number-generator($fn-rng:long-seed)?next()?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:deterministic-long-string-seed () {
+    fn:random-number-generator($fn-rng:long-string-seed)?number eq
+    fn:random-number-generator($fn-rng:long-string-seed)?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:deterministic-big-number-seed () {
+    fn:random-number-generator($fn-rng:big-number-seed)?number eq
+    fn:random-number-generator($fn-rng:big-number-seed)?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:deterministic-big-number-seed () {
+    fn:random-number-generator($fn-rng:big-number-seed)?number eq
+    fn:random-number-generator($fn-rng:big-number-seed)?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:deterministic-big-number-seed-minus-one () {
+    fn:random-number-generator($fn-rng:big-number-seed -1)?number eq
+    fn:random-number-generator($fn-rng:big-number-seed -1)?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:deterministic-decimal-seed () {
+    fn:random-number-generator(1.1)?number eq
+    fn:random-number-generator(1.1)?number
+};
+
+declare
+    %test:assertTrue
+function fn-rng:decimal-seeds-yield-other-results () {
+    (
+        fn:random-number-generator(1.1)?number,
+        fn:random-number-generator(1.11)?number,
+        fn:random-number-generator(1.111)?number,
+        fn:random-number-generator(1.1111)?number
+    )
+    != fn:random-number-generator(1)?number
 };
 
 declare
