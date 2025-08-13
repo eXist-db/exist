@@ -33,6 +33,7 @@ declare variable $ftt:COLLECTION_CONFIG :=
                 <text qname="div">
                     <ignore qname="div"/>
                     <ignore qname="hi"/>
+                    <field name="pub-year" expression="date"/>
                 </text>
             </lucene>
         </index>
@@ -47,6 +48,20 @@ declare variable $ftt:DATA :=
             </div>
         </div>
     </body>;
+
+declare variable $ftt:FIELD_SAMPLE :=
+<group>
+    <div>
+        <date>1972</date>
+        <title>Study 1</title>
+        <p>Forwarded to President Nixon Nov. 9, 1970</p>
+    </div>
+    <div>
+        <date>1976</date>
+        <title>Study 2</title>
+        <p>Early in January 1971, President Nixon, during a radio-TV...</p>
+    </div>
+</group>;
     
 declare variable $ftt:COLLECTION_NAME := "matchestest";
 declare variable $ftt:COLLECTION := "/db/" || $ftt:COLLECTION_NAME;
@@ -57,7 +72,8 @@ function ftt:setup() {
     xmldb:create-collection("/db/system/config/db", $ftt:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ftt:COLLECTION_NAME, "collection.xconf", $ftt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ftt:COLLECTION_NAME),
-    xmldb:store($ftt:COLLECTION, "test.xml", $ftt:DATA)
+    xmldb:store($ftt:COLLECTION, "test.xml", $ftt:DATA),
+    xmldb:store($ftt:COLLECTION, "testFields.xml", $ftt:FIELD_SAMPLE)
 };
 
 declare
@@ -65,6 +81,23 @@ declare
 function ftt:cleanup() {
     xmldb:remove($ftt:COLLECTION),
     xmldb:remove("/db/system/config/db/" || $ftt:COLLECTION_NAME)
+};
+
+(:~
+ : Check match highlighting: matches for the criteria specified for a field should *not*
+ : be highlighted elsewhere with util:expand.
+ : Currently:
+ : * the first case returns 2 matches for 'Nixon' (correct)
+ : * 2nd returns 2 matches for 'Nixon' (correct) and 4 additional for '1972', '1976', '1970' and '1971' in date and p (incorrect)
+ : * 3rd returns only the 4 number matches in date and p (incorrect)
+ :)
+declare
+    %test:assertEquals(2, 2, 0, 0)
+function ftt:field-highlight() {
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'Nixon')])//exist:match),
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'Nixon AND pub-year:[1970 TO 1980]')])//exist:match),
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'pub-year:[1970 TO 1980]')])//exist:match),
+    count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., 'pub-year:[1970 TO 1973]')])//exist:match)
 };
 
 (:~
