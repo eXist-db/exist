@@ -29,9 +29,13 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.GregorianCalendar;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -155,12 +159,28 @@ abstract class OrderedDurationValue extends DurationValue {
             case Type.DATE:
                 final AbstractDateTimeValue date = (AbstractDateTimeValue) other;
                 final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
-                gc.add(duration);
-                //Shift one year
-                if (gc.getYear() < 0) {
-                    gc.setYear(gc.getYear() - 1);
+                LocalDate localDate = gc.toGregorianCalendar().toZonedDateTime().toLocalDate();
+                LocalDate updatedDate = null;
+
+                long days = duration.getField(DatatypeConstants.DAYS).longValue();
+                if (days > Integer.MAX_VALUE) {
+                    while (days > Integer.MAX_VALUE) {
+                        updatedDate = localDate.plusDays(Integer.MAX_VALUE);
+                        days -= Integer.MAX_VALUE;
+                    }
+                } else {
+                    updatedDate = localDate.plusDays(duration.getDays());
                 }
-                return date.createSameKind(gc);
+
+                GregorianCalendar gregorianCalendar = GregorianCalendar.from(updatedDate.atStartOfDay(ZoneId.systemDefault()));
+                XMLGregorianCalendar updatedGc = null;
+                try {
+                    updatedGc = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
+                } catch (final Exception E) {
+                    return null;
+                }
+
+                return date.createSameKind(updatedGc);
             default:
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot add " +
                         Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " +
