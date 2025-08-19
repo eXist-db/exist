@@ -29,6 +29,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,6 +46,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
 
     private final static Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
 
+//    private final Charset encoding;
     private final String value;
     private boolean closed = false;
 
@@ -55,40 +57,26 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     public BinaryValueFromBinaryString(final Expression expression, BinaryValueType binaryValueType, String value) throws XPathException {
         super(expression, null, binaryValueType);
         this.value = binaryValueType.verifyAndFormatString(value);
+        //this.encoding = Charset.defaultCharset();
+    }
+
+    public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value, Charset encoding) throws XPathException {
+        super(null, null, binaryValueType);
+        this.value = binaryValueType.verifyAndFormatString(value);
+//        this.encoding = encoding;
     }
 
     @Override
-    public BinaryValue convertTo(BinaryValueType binaryValueType) throws XPathException {
+    public BinaryValue convertTo(final BinaryValueType binaryValueType) throws XPathException {
         //TODO temporary approach, consider implementing a TranscodingBinaryValueFromBinaryString(BinaryValueFromBinaryString) class
-        //that only does the transncoding lazily
-
-        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
-        FilterOutputStream fos = null;
-        try {
-
+        //that only does the transcoding lazily
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(); final FilterOutputStream fos = binaryValueType.getEncoder(baos)) {
             //transcode
-            fos = binaryValueType.getEncoder(baos);
             streamBinaryTo(fos);
-
+            return new BinaryValueFromBinaryString(getExpression(), binaryValueType, baos.toString(UTF_8));
         } catch (final IOException ioe) {
             throw new XPathException(getExpression(), ioe);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (final IOException ioe) {
-                    LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
-                }
-            }
-
-            try {
-                baos.close();
-            } catch (final IOException ioe) {
-                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
-            }
         }
-
-        return new BinaryValueFromBinaryString(getExpression(), binaryValueType, baos.toString(UTF_8));
     }
 
     @Override
@@ -101,7 +89,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         final FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);
 
         //write with the decoder
-        final byte data[] = value.getBytes();
+        final byte[] data = value.getBytes();
         fos.write(data);
 
         //we do have to close the decoders output stream though
@@ -117,13 +105,13 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public void streamTo(OutputStream os) throws IOException {
         //write
-        final byte data[] = value.getBytes(); //TODO consider a more efficient approach for writing large strings
+        final byte[] data = value.getBytes(); //TODO consider a more efficient approach for writing large strings
         os.write(data);
     }
 
     @Override
     public InputStream getInputStream() {
-        //TODO consider a more efficient approach for writting large strings
+        //TODO consider a more efficient approach for writing large strings
         final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
         try {
             streamBinaryTo(baos);

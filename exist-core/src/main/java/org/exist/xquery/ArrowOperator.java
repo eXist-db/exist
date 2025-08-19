@@ -95,23 +95,7 @@ public class ArrowOperator extends AbstractExpression {
         }
         contextSequence = leftExpr.eval(contextSequence, null);
 
-        final FunctionReference fref;
-        if (fcall != null) {
-            fref = new FunctionReference(this, fcall);
-        } else {
-            final Sequence funcSeq = funcSpec.eval(contextSequence, contextItem);
-            if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
-            {throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
-                            ". Expression: " + ExpressionDumper.dump(funcSpec));}
-            final Item item0 = funcSeq.itemAt(0);
-            if (!Type.subTypeOf(item0.getType(), Type.FUNCTION_REFERENCE)) {
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Type error: expected function, got " + Type.getTypeName(item0.getType()));
-            }
-            fref = (FunctionReference)item0;
-        }
-        try {
+        try (final FunctionReference fref = getFunctionReference(contextSequence, contextItem)) {
             final List<Expression> fparams = new ArrayList<>(parameters.size() + 1);
             fparams.add(new ContextParam(context, contextSequence));
             fparams.addAll(parameters);
@@ -122,9 +106,27 @@ public class ArrowOperator extends AbstractExpression {
             fref.analyze(new AnalyzeContextInfo(cachedContextInfo));
             // Evaluate the function
             return fref.eval(null);
-        } finally {
-            fref.close();
         }
+    }
+
+    private FunctionReference getFunctionReference(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        if (fcall != null) {
+            return new FunctionReference(this, fcall);
+        }
+
+        final Sequence funcSeq = funcSpec.eval(contextSequence, contextItem);
+        if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
+                        ". Expression: " + ExpressionDumper.dump(funcSpec));
+        }
+
+        final Item item = funcSeq.itemAt(0);
+        if (!Type.subTypeOf(item.getType(), Type.FUNCTION_REFERENCE)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Type error: expected function, got " + Type.getTypeName(item.getType()));
+        }
+        return (FunctionReference) item;
     }
 
     @Override
