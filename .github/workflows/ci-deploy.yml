@@ -1,11 +1,15 @@
 name: Deploy
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+      - cron: "0 6 * * *"
+  workflow_dispatch:
 jobs:
   build:
     name: Build and Test Images
     runs-on: ubuntu-latest
     # NOTE (DP): Publish on develop and master, test on PRs against these
-    # TODO(DP) Reinstate CRONed release builds to update stock apps regularly
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/develop-6.x.x' || github.ref == 'refs/heads/master'|| github.base_ref ==  'develop' || github.base_ref ==  'develop-6.x.x' || github.base_ref ==  'master'
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +50,23 @@ jobs:
           sleep 35s
       - name: Run tests
         run: bats --tap exist-docker/src/test/bats/*.bats
+
+      - name: debug logs
+        if: failure()
+        run: docker logs exist-ci | grep 'ERROR'
+
+      - name: Copy logs on failure
+        if: failure()
+        run: |
+          echo "Copying logs..."
+          docker cp exist-ci:/exist/logs/exist.log ./exist.log
+
+      - name: Upload logs artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exist-core-failed-log
+          path: exist.log
       # NOTE (DP): When on master push release, when on develop push latest: Version is included automatically
       # TODO (DP): Confirm that releases triggered from maven publish images with the non SNAPSHOT version
       - name: Publish latest images
