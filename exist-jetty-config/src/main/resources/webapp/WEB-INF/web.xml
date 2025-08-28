@@ -176,6 +176,7 @@
     <servlet>
         <servlet-name>JMXServlet</servlet-name>
         <servlet-class>org.exist.management.client.JMXServlet</servlet-class>
+        <load-on-startup>4</load-on-startup>
     </servlet>
 
     <!--

@@ -4,7 +4,7 @@ inputs:
   version:
     description: 'The version of the Maven Daemon to install'
     required: true
-    default: '0.9.0'
+    default: '1.0.2'
   file-version-suffix:
     description: 'A suffix to append to the version of the download file of Maven Daemon to install'
     required: false
@@ -61,11 +61,14 @@ runs:
       run: |
         curl -fsSL -o ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip https://archive.apache.org/dist/maven/mvnd/${{ inputs.version }}/${{ env.MVND_NAME }}.zip
         curl -fsSL -o ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip.sha256 https://archive.apache.org/dist/maven/mvnd/${{ inputs.version }}/${{ env.MVND_NAME }}.zip.sha256
-    - name: Install sha256sum (macOS)
-      if: ${{ runner.os == 'macOS' }}
-      shell: bash
-      run: brew install coreutils
+    # see #5842
+    # brew install mvndaemon/homebrew-mvnd/mvnd@1
+    # - name: Install coreutils (macOS)
+    #   if: ${{ runner.os == 'macOS' }}
+    #   shell: bash
+    #   run: brew install coreutils
     - name: Verify mvnd sha256 checksum
+      if: ${{ runner.os != 'macOS' }}
       shell: bash
       run: echo "$(cat ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip.sha256) ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip" | sha256sum --check
     - name: Unzip mvnd
