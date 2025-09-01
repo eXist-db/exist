@@ -22,9 +22,6 @@
 
 package org.exist.validation.resolver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
@@ -35,11 +32,15 @@ import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- *  Resolve a resource specified by xs:anyURI. First time the
- * resource is resolved by the URL as specified in the constructor, 
+ * Resolve a resource specified by xs:anyURI. First time the
+ * resource is resolved by the URL as specified in the constructor,
  * the second the URL of the ExpandedSystemId is used.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
@@ -47,36 +48,34 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class AnyUriResolver implements XMLEntityResolver {
     private static final Logger LOG = LogManager.getLogger(AnyUriResolver.class);
     private static final ThreadGroup threadGroup = new ThreadGroup("exist.xml-entity-resolver");
-    
-    private String docPath;
     private final String parentURI;
-    
-    private boolean firstTime=true;
+    private String docPath;
+    private boolean firstTime = true;
 
     /**
      * Creates a new instance of AnyUriResolver.
      *
      * @param path Original path of resource.
      */
-    public AnyUriResolver(String path) {
-        docPath=path;
-        if(docPath.startsWith("/")){
-            docPath="xmldb:exist://"+docPath;
+    public AnyUriResolver(final String path) {
+        docPath = path;
+        if (docPath.startsWith("/")) {
+            docPath = "xmldb:exist://" + docPath;
         }
         LOG.debug("Specified path={}", path);
-        
-        if(path.lastIndexOf('/')!=-1){
-            parentURI=path.substring(0, path.lastIndexOf('/'));
+
+        if (path.lastIndexOf('/') != -1) {
+            parentURI = path.substring(0, path.lastIndexOf('/'));
             LOG.debug("parentURI={}", parentURI);
         } else {
-            parentURI="";
+            parentURI = "";
         }
     }
-    
+
 
     @Override
-    public XMLInputSource resolveEntity(XMLResourceIdentifier xri) throws XNIException, IOException {
-        
+    public XMLInputSource resolveEntity(final XMLResourceIdentifier xri) throws XNIException, IOException {
+
         if (xri.getExpandedSystemId() == null && xri.getLiteralSystemId() == null
                 && xri.getNamespace() == null && xri.getPublicId() == null) {
 
@@ -134,13 +133,13 @@ public class AnyUriResolver implements XMLEntityResolver {
         return xis;
 
     }
-    
-    private String getXriDetails(XMLResourceIdentifier xrid){
+
+    private String getXriDetails(final XMLResourceIdentifier xrid) {
         return "PublicId='" + xrid.getPublicId() + "' " + "BaseSystemId='" + xrid.getBaseSystemId() + "' " + "ExpandedSystemId='" + xrid.getExpandedSystemId() + "' " + "LiteralSystemId='" + xrid.getLiteralSystemId() + "' " + "Namespace='" + xrid.getNamespace() + "' ";
     }
 
-    private String getXisDetails(XMLInputSource xis){
+    private String getXisDetails(final XMLInputSource xis) {
         return "PublicId='" + xis.getPublicId() + "' " + "SystemId='" + xis.getSystemId() + "' " + "BaseSystemId='" + xis.getBaseSystemId() + "' " + "Encoding='" + xis.getEncoding() + "' ";
     }
-    
+
 }

@@ -21,14 +21,6 @@
  */
 package org.exist.validation.resolver.unstable;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
@@ -38,6 +30,15 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
 /**
  *
  * @author dizzzz@exist-db.org
@@ -45,20 +46,18 @@ import org.xml.sax.ext.EntityResolver2;
 public class ExistResolver implements EntityResolver2, URIResolver {
 
     private final static Logger LOG = LogManager.getLogger(ExistResolver.class);
-    
-    private BrokerPool brokerPool = null;
-    
     private final static String LOCALURI = "xmldb:exist:///";
     private final static String SHORTLOCALURI = "xmldb:///";
+    private BrokerPool brokerPool = null;
 
-    public ExistResolver(BrokerPool brokerPool) {
+    public ExistResolver(final BrokerPool brokerPool) {
         this.brokerPool = brokerPool;
     }
 
     /* ========================================== */
     /* SAX1: interface org.xml.sax.EntityResolver */
     /* ========================================== */
-    public InputSource resolveEntity(String publicId, String systemId)
+    public InputSource resolveEntity(final String publicId, final String systemId)
             throws SAXException, IOException {
 
         LOG.debug("publicId={} systemId={}", publicId, systemId);
@@ -69,7 +68,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /*  =============================================== */
     /*  SAX2: interface org.xml.sax.ext.EntityResolver2 */
     /*  =============================================== */
-    public InputSource getExternalSubset(String name, String baseURI)
+    public InputSource getExternalSubset(final String name, final String baseURI)
             throws SAXException, IOException {
 
         LOG.debug("name={} baseURI={}", name, baseURI);
@@ -77,8 +76,8 @@ public class ExistResolver implements EntityResolver2, URIResolver {
         return resolveInputSource(brokerPool, baseURI);
     }
 
-    public InputSource resolveEntity(String name, String publicId,
-            String baseURI, String systemId) throws SAXException, IOException {
+    public InputSource resolveEntity(final String name, final String publicId,
+                                     final String baseURI, final String systemId) throws SAXException, IOException {
 
         LOG.debug("name={} publicId={} baseURI={} systemId={}", name, publicId, baseURI, systemId);
 
@@ -92,15 +91,15 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
         LOG.debug("href={} base={}", href, base);
 
-        if(base!=null){
-        	String sep = "/"; 
-        	if (base.startsWith("file:")) {
-        		sep = File.separator;
-        	}
+        if (base != null) {
+            String sep = "/";
+            if (base.startsWith("file:")) {
+                sep = File.separator;
+            }
             final int pos = base.lastIndexOf(sep);
-            if(pos!=-1){
-                base=base.substring(0, pos);
-                href=base + sep + href;
+            if (pos != -1) {
+                base = base.substring(0, pos);
+                href = base + sep + href;
             }
         }
 
@@ -110,7 +109,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /* ============== */
     /* Helper methods */
     /* ============== */
-    private InputSource resolveInputSource(BrokerPool bPool, String path) throws IOException {
+    private InputSource resolveInputSource(final BrokerPool bPool, final String path) throws IOException {
 
         LOG.debug("Resolving {}", path);
 
@@ -133,10 +132,10 @@ public class ExistResolver implements EntityResolver2, URIResolver {
         return inputsource;
     }
 
-    private StreamSource resolveStreamSource(BrokerPool bPool, String path) throws TransformerException {
+    private StreamSource resolveStreamSource(final BrokerPool bPool, final String path) throws TransformerException {
 
         LOG.debug("Resolving {}", path);
-        
+
         final StreamSource streamsource = new StreamSource();
 
         try {
@@ -153,11 +152,11 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                     streamsource.setSystemId(path);
                 }
             }
-            
+
         } catch (final IOException ex) {
             throw new TransformerException(ex);
         }
-        
+
         return streamsource;
     }
 }

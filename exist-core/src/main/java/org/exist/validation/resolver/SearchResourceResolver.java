@@ -22,16 +22,6 @@
 
 package org.exist.validation.resolver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.XMLResourceIdentifier;
@@ -59,6 +49,16 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xmlresolver.Resolver;
 
 import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -143,7 +143,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
                         maybeInputSource.get().setSystemId(catalogPath);
                     }
 
-                    final Resolver resolver = ResolverFactory.newResolver(Arrays.asList(Tuple(catalogPath, maybeInputSource)));
+                    final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(catalogPath, maybeInputSource)));
                     final InputSource source = resolver.resolveEntity(xri.getPublicId(), "");
                     if (source != null) {
                         resourcePath = source.getSystemId();
@@ -171,7 +171,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
         if (LOG.isDebugEnabled()) {
             LOG.debug("resourcePath='" + resourcePath + "'");
         }
-        
+
         final InputStream is = new URL(resourcePath).openStream();
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), xri.getExpandedSystemId(), xri.getBaseSystemId(), is, UTF_8.name());

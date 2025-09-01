@@ -26,15 +26,6 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.parser.XMLEntityResolver;
@@ -48,18 +39,25 @@ import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.resolver.AnyUriResolver;
 import org.exist.validation.resolver.SearchResourceResolver;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xmlresolver.Resolver;
+
+import javax.annotation.Nullable;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
 /**
- *  Validate XML documents with their grammars (DTD's and Schemas).
+ * Validate XML documents with their grammars (DTD's and Schemas).
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
@@ -74,9 +72,9 @@ public class Validator {
 
     /**
      * Setup Validator object with Broker Pool as db connection.
-     * 
+     *
      * @param brokerPool brokerPool the broker pool
-     * @param subject the subject to use when accessing resources from the database
+     * @param subject    the subject to use when accessing resources from the database
      */
     public Validator(final BrokerPool brokerPool, final Subject subject) {
         logger.info("Initializing Validator.");
@@ -99,22 +97,22 @@ public class Validator {
         this.systemCatalogResolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
 
     }
-    
+
     /**
-     *  Validate XML data using system catalog. XSD and DTD only. 
+     * Validate XML data using system catalog. XSD and DTD only.
      *
      * @param stream XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validate(InputStream stream) {
+    public ValidationReport validate(final InputStream stream) {
         return validate(stream, null);
     }
-    
+
     /**
-     *  Validate XML data from reader using specified grammar.
+     * Validate XML data from reader using specified grammar.
      *
-     * @param grammarUrl   User supplied path to grammar, or null.
-     * @param stream       XML input.
+     * @param grammarUrl User supplied path to grammar, or null.
+     * @param stream     XML input.
      * @return Validation report containing all validation info.
      */
     public ValidationReport validate(final InputStream stream, @Nullable String grammarUrl) {
@@ -126,10 +124,10 @@ public class Validator {
 
         if (grammarUrl != null &&
                 (grammarUrl.endsWith(".rng") || grammarUrl.endsWith(".rnc") ||
-                grammarUrl.endsWith(".nvdl") || grammarUrl.endsWith(".sch"))) {
+                        grammarUrl.endsWith(".nvdl") || grammarUrl.endsWith(".sch"))) {
             // Validate with Jing
             return validateJing(stream, grammarUrl);
-            
+
         } else {
             // Validate with Xerces
             return validateParse(stream, grammarUrl);
@@ -138,13 +136,13 @@ public class Validator {
     }
 
     /**
-     *  Validate XML data from reader using specified grammar with Jing.
+     * Validate XML data from reader using specified grammar with Jing.
      *
-     * @param stream       XML input document.
-     * @param grammarUrl   User supplied path to grammar.
+     * @param stream     XML input document.
+     * @param grammarUrl User supplied path to grammar.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateJing(InputStream stream, String grammarUrl) {
+    public ValidationReport validateJing(final InputStream stream, final String grammarUrl) {
 
         final ValidationReport report = new ValidationReport();
         try {
@@ -167,11 +165,11 @@ public class Validator {
             // Validate XML instance
             driver.validate(new InputSource(stream));
 
-        } catch(final IOException ex) {
+        } catch (final IOException ex) {
             logger.error(ex);
             report.setThrowable(ex);
 
-        } catch(final SAXException ex) {
+        } catch (final SAXException ex) {
             logger.debug(ex);
             report.setThrowable(ex);
 
@@ -182,23 +180,23 @@ public class Validator {
     }
 
     /**
-     *  Validate XML data using system catalog. XSD and DTD only.
+     * Validate XML data using system catalog. XSD and DTD only.
      *
      * @param stream XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateParse(InputStream stream) {
+    public ValidationReport validateParse(final InputStream stream) {
         return validateParse(stream, null);
     }
 
     /**
-     *  Validate XML data from reader using specified grammar.
+     * Validate XML data from reader using specified grammar.
      *
-     * @param grammarUrl   User supplied path to grammar.
-     * @param stream XML input.
+     * @param grammarUrl User supplied path to grammar.
+     * @param stream     XML input.
      * @return Validation report containing all validation info.
      */
-    public ValidationReport validateParse(InputStream stream, String grammarUrl) {
+    public ValidationReport validateParse(final InputStream stream, String grammarUrl) {
 
         logger.debug("Start validation.");
 
@@ -223,7 +221,7 @@ public class Validator {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Validation using user specified catalog '{}'.", grammarUrl);
                 }
-                final Resolver resolver = ResolverFactory.newResolver(Arrays.asList(Tuple(grammarUrl, Optional.empty())));
+                final Resolver resolver = ResolverFactory.newResolver(List.of(Tuple(grammarUrl, Optional.empty())));
                 XercesXmlResolverAdapter.setXmlReaderEntityResolver(xmlReader, resolver);
 
             } else if (grammarUrl.endsWith("/")) {
@@ -265,7 +263,7 @@ public class Validator {
                 logger.debug("Document is not valid.");
             }
 
-        } catch(final ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
+        } catch (final ParserConfigurationException | SAXException | IOException | URISyntaxException ex) {
             logger.error(ex);
             report.setThrowable(ex);
 
@@ -279,8 +277,8 @@ public class Validator {
         return report;
     }
 
-    private XMLReader getXMLReader(ContentHandler contentHandler,
-            ErrorHandler errorHandler) throws ParserConfigurationException, SAXException {
+    private XMLReader getXMLReader(final ContentHandler contentHandler,
+                                   final ErrorHandler errorHandler) throws ParserConfigurationException, SAXException {
 
         // setup sax factory ; be sure just one instance!
         final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();

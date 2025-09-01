@@ -21,15 +21,15 @@
  */
 package org.exist.validation;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -37,23 +37,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Report containing all validation info (errors, warnings).
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
- *
  * @see org.xml.sax.ErrorHandler
  */
 public class ValidationReport implements ErrorHandler {
-    
+
     private final List<ValidationReportItem> validationReport = new ArrayList<>();
-    
+
     private ValidationReportItem lastItem;
-    
+
     private long duration = -1L;
     private long start = -1L;
 
     private Throwable throwed = null;
     private String namespaceUri = null;
-        
-    private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
-        
+
+    private ValidationReportItem createValidationReportItem(final int type, final SAXParseException exception) {
+
         final ValidationReportItem vri = new ValidationReportItem();
         vri.setType(type);
         vri.setLineNumber(exception.getLineNumber());
@@ -63,17 +62,17 @@ public class ValidationReport implements ErrorHandler {
         vri.setSystemId(exception.getSystemId());
         return vri;
     }
-    
-    private void addItem(ValidationReportItem newItem) {
+
+    private void addItem(final ValidationReportItem newItem) {
         if (lastItem == null) {
             // First reported item
             validationReport.add(newItem);
             lastItem = newItem;
-            
+
         } else if (lastItem.getMessage().equals(newItem.getMessage())) {
             // Message is repeated
             lastItem.increaseRepeat();
-            
+
         } else {
             // Received new message
             validationReport.add(newItem);
@@ -82,134 +81,135 @@ public class ValidationReport implements ErrorHandler {
             lastItem = newItem;
         }
     }
-    
+
     /**
-     *  Receive notification of a recoverable error.
-     * @param exception The warning information encapsulated in a
-     *                      SAX parse exception.
-     * @throws SAXException Any SAX exception, possibly wrapping another
-     *                      exception.
-     */
-    public void error(SAXParseException exception) throws SAXException {
-        addItem( createValidationReportItem(ValidationReportItem.ERROR, exception) );
-    }
-    
-    /**
-     *  Receive notification of a non-recoverable error.
+     * Receive notification of a recoverable error.
      *
-     * @param exception     The warning information encapsulated in a
-     *                      SAX parse exception.
+     * @param exception The warning information encapsulated in a
+     *                  SAX parse exception.
      * @throws SAXException Any SAX exception, possibly wrapping another
      *                      exception.
      */
-    public void fatalError(SAXParseException exception) throws SAXException {
-        addItem( createValidationReportItem(ValidationReportItem.FATAL, exception) );
+    public void error(final SAXParseException exception) throws SAXException {
+        addItem(createValidationReportItem(ValidationReportItem.ERROR, exception));
     }
-    
+
+    /**
+     * Receive notification of a non-recoverable error.
+     *
+     * @param exception The warning information encapsulated in a
+     *                  SAX parse exception.
+     * @throws SAXException Any SAX exception, possibly wrapping another
+     *                      exception.
+     */
+    public void fatalError(final SAXParseException exception) throws SAXException {
+        addItem(createValidationReportItem(ValidationReportItem.FATAL, exception));
+    }
+
     /**
      * Receive notification of a warning.
      *
-     * @param exception     The warning information encapsulated in a
-     *                      SAX parse exception.
+     * @param exception The warning information encapsulated in a
+     *                  SAX parse exception.
      * @throws SAXException Any SAX exception, possibly wrapping another
      *                      exception.
      */
-    public void warning(SAXParseException exception) throws SAXException {
-        addItem( createValidationReportItem(ValidationReportItem.WARNING, exception) );
+    public void warning(final SAXParseException exception) throws SAXException {
+        addItem(createValidationReportItem(ValidationReportItem.WARNING, exception));
     }
-    
-    
-    public void setException(Throwable ex){
-        this.throwed=ex;
+
+
+    public void setException(final Throwable ex) {
+        this.throwed = ex;
     }
-    
+
     /**
-     *  Give validation information of the XML document.
+     * Give validation information of the XML document.
      *
      * @return FALSE if no errors and warnings occurred.
      */
-    public boolean isValid(){
+    public boolean isValid() {
         return (validationReport.isEmpty() && (throwed == null));
     }
-    
-    public List<ValidationReportItem> getValidationReportItemList(){
+
+    public List<ValidationReportItem> getValidationReportItemList() {
         return validationReport;
     }
-    
-    public List<String> getTextValidationReport(){
-        
+
+    public List<String> getTextValidationReport() {
+
         final List<String> textReport = new ArrayList<>();
-        
-        if( isValid() ){
+
+        if (isValid()) {
             textReport.add("Document is valid.");
         } else {
             textReport.add("Document is not valid.");
         }
-        
-        if(throwed!=null){
-            textReport.add( "Exception: " + throwed.getMessage() );
+
+        if (throwed != null) {
+            textReport.add("Exception: " + throwed.getMessage());
         }
 
         textReport.addAll(validationReport.stream().map(ValidationReportItem::toString).collect(Collectors.toList()));
 
-        textReport.add("Validated in "+duration+" millisec.");
+        textReport.add("Validated in " + duration + " millisec.");
         return textReport;
     }
-    
-    public String[] getValidationReportArray(){
-        
+
+    public String[] getValidationReportArray() {
+
         final List<String> vr = getTextValidationReport();
-        final String report[] = new String[ vr.size() ];
-        
+        final String[] report = new String[vr.size()];
+
         return vr.toArray(report);
     }
-    
-    public void setValidationDuration(long time) {
-        duration=time;
-    }
-    
+
     public long getValidationDuration() {
         return duration;
     }
-    
-    @Override
-    public String toString(){
-        
-        final StringBuilder sb = new  StringBuilder();
 
-        for(final String line : getTextValidationReport()){
+    public void setValidationDuration(final long time) {
+        duration = time;
+    }
+
+    @Override
+    public String toString() {
+
+        final StringBuilder sb = new StringBuilder();
+
+        for (final String line : getTextValidationReport()) {
             sb.append(line);
             sb.append("\n");
         }
-        
+
         return sb.toString();
     }
 
     public void start() {
-        start=System.currentTimeMillis();
+        start = System.currentTimeMillis();
     }
 
     public void stop() {
-        if(getValidationDuration() == -1L){ // not already stopped
-            long stop = System.currentTimeMillis();
-            setValidationDuration(stop -start);
+        if (getValidationDuration() == -1L) { // not already stopped
+            final long stop = System.currentTimeMillis();
+            setValidationDuration(stop - start);
         }
     }
 
-    public void setThrowable(Throwable throwable) {
-        throwed=throwable;
-    }
-    
     public Throwable getThrowable() {
         return throwed;
     }
-    
-    public void setNamespaceUri(String namespace){
-        namespaceUri=namespace;
+
+    public void setThrowable(final Throwable throwable) {
+        throwed = throwable;
     }
-    
-    public String getNamespaceUri(){
+
+    public String getNamespaceUri() {
         return namespaceUri;
+    }
+
+    public void setNamespaceUri(final String namespace) {
+        namespaceUri = namespace;
     }
 
     public String getStackTrace() {

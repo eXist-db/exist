@@ -30,108 +30,107 @@ import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.exist.Namespaces;
 
 /**
- *  Wrapper around the Xerces XMLGrammarPoolImpl, so debugging of
+ * Wrapper around the Xerces XMLGrammarPoolImpl, so debugging of
  * actions can be monitored. Javadoc copied from xml.apache.org.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
- *
  * @see org.apache.xerces.xni.grammars.XMLGrammarPool
  * @see org.apache.xerces.util.XMLGrammarPoolImpl
  * @see org.apache.xerces.xni.grammars.Grammar
  * @see org.apache.xerces.xni.grammars.XMLGrammarDescription
  */
 public class GrammarPool implements XMLGrammarPool {
-    
+
     private final static Logger logger = LogManager.getLogger(GrammarPool.class);
-    
+
     private final XMLGrammarPool pool;
-    
+
     /**
-     * Constructs a grammar pool with a default number of buckets. 
+     * Constructs a grammar pool with a default number of buckets.
      */
     public GrammarPool() {
-        if (logger.isInfoEnabled())
-            {logger.info("Initializing GrammarPool.");}
+        if (logger.isInfoEnabled()) {
+            logger.info("Initializing GrammarPool.");
+        }
         pool = new XMLGrammarPoolImpl();
     }
-    
-    /**  
+
+    /**
      * Constructs a grammar pool with a default number of buckets using pool.
-     * 
+     *
      * @param pool The supplied grammar pool is reused.
      */
-    public GrammarPool(XMLGrammarPool pool) {
-        if (logger.isInfoEnabled())
-            {logger.info("Initializing GrammarPool using supplied pool.");}
-        this.pool=pool;
+    public GrammarPool(final XMLGrammarPool pool) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Initializing GrammarPool using supplied pool.");
+        }
+        this.pool = pool;
     }
-    
+
     /**
-     *   Retrieve the initial known set of grammars. this method is called
-     * by a validator before the validation starts. the application can provide 
+     * Retrieve the initial known set of grammars. this method is called
+     * by a validator before the validation starts. the application can provide
      * an initial set of grammars available to the current validation attempt.
      *
+     * @param type The type of the grammar, from the
+     *             org.apache.xerces.xni.grammars.Grammar interface.
+     * @return The set of grammars the validator may put in its "bucket"
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveInitialGrammarSet(String)
-     * 
-     * @param   type  The type of the grammar, from the 
-     *          org.apache.xerces.xni.grammars.Grammar interface.
-     * @return  The set of grammars the validator may put in its "bucket"
      */
-    public Grammar[] retrieveInitialGrammarSet(String type) {
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Retrieve initial grammarset ({}).", type);}
-        
+    public Grammar[] retrieveInitialGrammarSet(final String type) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Retrieve initial grammarset ({}).", type);
+        }
+
         final Grammar[] grammars = pool.retrieveInitialGrammarSet(type);
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Found {} grammars.", grammars.length);}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found {} grammars.", grammars.length);
+        }
         return grammars;
     }
-    
+
     /**
-     *  Return the final set of grammars that the validator ended up with.
+     * Return the final set of grammars that the validator ended up with.
      *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#cacheGrammars(String,Grammar[])
-     * 
-     * @param type      The type of the grammars being returned
-     * @param grammar   an array containing the set of grammars being 
-     *                  returned; order is not significant.
+     * @param type    The type of the grammars being returned
+     * @param grammar an array containing the set of grammars being
+     *                returned; order is not significant.
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#cacheGrammars(String, Grammar[])
      */
-    public void cacheGrammars(String type, Grammar[] grammar) {
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Cache {} grammars ({}).", grammar.length, type);}
+    public void cacheGrammars(final String type, final Grammar[] grammar) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cache {} grammars ({}).", grammar.length, type);
+        }
         pool.cacheGrammars(type, grammar);
     }
-        
+
     /**
-     *  Allows the XMLGrammarPool to store grammars when its 
-     * cacheGrammars(String, Grammar[]) method is called. This is the default 
+     * Allows the XMLGrammarPool to store grammars when its
+     * cacheGrammars(String, Grammar[]) method is called. This is the default
      * state of the object.
      *
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#unlockPool
      */
     public void unlockPool() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Unlock grammarpool.");}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Unlock grammarpool.");
+        }
         pool.unlockPool();
     }
-    
+
     /**
-     *   This method requests that the application retrieve a grammar 
-     * corresponding to the given GrammarIdentifier from its cache. If it 
-     * cannot do so it must return null; the parser will then call the 
-     * EntityResolver. An application must not call its EntityResolver itself 
+     * This method requests that the application retrieve a grammar
+     * corresponding to the given GrammarIdentifier from its cache. If it
+     * cannot do so it must return null; the parser will then call the
+     * EntityResolver. An application must not call its EntityResolver itself
      * from this method; this may result in infinite recursions.
      *
+     * @param xgd The description of the Grammar being requested.
+     * @return the Grammar corresponding to this description or null
+     * if no such Grammar is known.
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveGrammar(XMLGrammarDescription)
-     *
-     * @param xgd    The description of the Grammar being requested.
-     * @return       the Grammar corresponding to this description or null 
-     *               if no such Grammar is known.
      */
-    public Grammar retrieveGrammar(XMLGrammarDescription xgd) {
+    public Grammar retrieveGrammar(final XMLGrammarDescription xgd) {
 
         if (xgd == null) {
             if (logger.isDebugEnabled()) {
@@ -154,32 +153,34 @@ public class GrammarPool implements XMLGrammarPool {
 
         return pool.retrieveGrammar(xgd);
     }
-    
+
     /**
-     *  Causes the XMLGrammarPool not to store any grammars when the 
+     * Causes the XMLGrammarPool not to store any grammars when the
      * cacheGrammars(String, Grammar[[]) method is called.
      *
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#lockPool
      */
     public void lockPool() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Lock grammarpool.");}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Lock grammarpool.");
+        }
         pool.lockPool();
     }
-    
+
     /**
-     *  Removes all grammars from the pool.
+     * Removes all grammars from the pool.
      *
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
      */
     public void clear() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Clear grammarpool.");}
+        if (logger.isDebugEnabled()) {
+            logger.debug("Clear grammarpool.");
+        }
         pool.clear();
     }
-    
+
     /**
-     *  Removes all DTD grammars from the pool. Workaround for Xerces bug.
+     * Removes all DTD grammars from the pool. Workaround for Xerces bug.
      *
      * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
      */
@@ -187,20 +188,20 @@ public class GrammarPool implements XMLGrammarPool {
         //if (logger.isDebugEnabled())
         //    logger.debug("Removing DTD's from grammarpool.");
 
-        final Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
+        final Grammar[] dtds = retrieveInitialGrammarSet(Namespaces.DTD_NS);
         if (dtds.length > 0) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Removing {} DTDs.", dtds.length);
             }
-            final Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
+            final Grammar[] schemas = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
             clear();
             cacheGrammars(Namespaces.SCHEMA_NS, schemas);
-            
+
         } else {
             //if (logger.isDebugEnabled())
             //    logger.debug("No DTDs to be removed.");
         }
     }
-    
-    
+
+
 }

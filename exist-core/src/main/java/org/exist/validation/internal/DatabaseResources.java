@@ -22,9 +22,6 @@
 
 package org.exist.validation.internal;
 
-import java.io.IOException;
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -40,175 +37,176 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 
+import java.io.IOException;
+import java.util.*;
+
 /**
- *  Helper class for accessing grammars.
+ * Helper class for accessing grammars.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class DatabaseResources {
-    
+
     public final static String QUERY_LOCATION = "org/exist/validation/internal/query/";
-    
+
     public final static String FIND_XSD = QUERY_LOCATION + "find_schema_by_targetNamespace.xq";
-    
+
     public final static String FIND_CATALOGS_WITH_DTD = QUERY_LOCATION + "find_catalogs_with_dtd.xq";
-    
+
     public final static String PUBLICID = "publicId";
-    
+
     public final static String TARGETNAMESPACE = "targetNamespace";
-    
-    public final static String CATALOG    = "catalog";
-    
+
+    public final static String CATALOG = "catalog";
+
     public final static String COLLECTION = "collection";
-    
-    /** Local reference to database  */
-    private BrokerPool brokerPool = null;
-    
-    /** Local logger */
+    /**
+     * Local logger
+     */
     private final static Logger logger = LogManager.getLogger(DatabaseResources.class);
-    
-    
     /**
-     *  Convert sequence into list of strings.
-     *
-     * @param   sequence  Result of query.
-     * @return  List containing String objects.
+     * Local reference to database
      */
-    public List<String> getAllResults(Sequence sequence){
-        List<String> result = new ArrayList<>();
-        
-        try {
-            final SequenceIterator i = sequence.iterate();         
-            while(i.hasNext()){
-                final String path =  i.nextItem().getStringValue();
-                result.add(path);
-            }
-            
-        } catch (final XPathException ex) {
-            logger.error("xQuery issue.", ex);
-            result=null;
-        }
-        
-        return result;
+    private BrokerPool brokerPool = null;
+
+
+    /**
+     * Creates a new instance of DatabaseResources.
+     *
+     * @param pool Instance shared broker pool.
+     */
+    public DatabaseResources(final BrokerPool pool) {
+
+        logger.info("Initializing DatabaseResources");
+        this.brokerPool = pool;
+
     }
-    
+
     /**
-     *  Get first entry of sequence as String.
+     * Convert sequence into list of strings.
      *
-     * @param   sequence  Result of query.
-     * @return  String containing representation of 1st entry of sequence.
+     * @param sequence Result of query.
+     * @return List containing String objects.
      */
-    public String getFirstResult(Sequence sequence){
-        String result = null;
-        
+    public List<String> getAllResults(final Sequence sequence) {
+        List<String> result = new ArrayList<>();
+
         try {
             final SequenceIterator i = sequence.iterate();
-            if(i.hasNext()){
-                result= i.nextItem().getStringValue();
+            while (i.hasNext()) {
+                final String path = i.nextItem().getStringValue();
+                result.add(path);
+            }
+
+        } catch (final XPathException ex) {
+            logger.error("xQuery issue.", ex);
+            result = null;
+        }
+
+        return result;
+    }
+
+    /**
+     * Get first entry of sequence as String.
+     *
+     * @param sequence Result of query.
+     * @return String containing representation of 1st entry of sequence.
+     */
+    public String getFirstResult(final Sequence sequence) {
+        String result = null;
+
+        try {
+            final SequenceIterator i = sequence.iterate();
+            if (i.hasNext()) {
+                result = i.nextItem().getStringValue();
 
                 logger.debug("Single query result: '{}'.", result);
-                
+
             } else {
                 logger.debug("No query result.");
             }
-            
+
         } catch (final XPathException ex) {
             logger.error("xQuery issue ", ex);
         }
-        
+
         return result;
     }
-    
-    
-    public Sequence executeQuery(String queryPath, Map<String,String> params, Subject user){
-        
+
+    public Sequence executeQuery(final String queryPath, final Map<String, String> params, final Subject user) {
+
         final String namespace = params.get(TARGETNAMESPACE);
         final String publicId = params.get(PUBLICID);
         final String catalogPath = params.get(CATALOG);
         final String collection = params.get(COLLECTION);
-        
-        if(logger.isDebugEnabled()) {
+
+        if (logger.isDebugEnabled()) {
             logger.debug("collection={} namespace={} publicId={} catalogPath={}", collection, namespace, publicId, catalogPath);
         }
 
-        Sequence result= null;
+        Sequence result = null;
         final XQueryContext context = new XQueryContext(brokerPool);
-        try(final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
+        try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
 
             final XQuery xquery = brokerPool.getXQueryService();
-            
-            if(collection!=null){
+
+            if (collection != null) {
                 context.declareVariable(COLLECTION, collection);
             }
-            
-            if(namespace!=null){
+
+            if (namespace != null) {
                 context.declareVariable(TARGETNAMESPACE, namespace);
             }
-            
-            if(publicId!=null){
+
+            if (publicId != null) {
                 context.declareVariable(PUBLICID, publicId);
             }
-            
-            if(catalogPath!=null){
+
+            if (catalogPath != null) {
                 context.declareVariable(CATALOG, catalogPath);
             }
-            
-            CompiledXQuery compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
-            
+
+            final CompiledXQuery compiled = xquery.compile(context, new ClassLoaderSource(queryPath));
+
             result = xquery.execute(broker, compiled, null);
-            
+
         } catch (final EXistException | XPathException | IOException | PermissionDeniedException ex) {
             logger.error("Problem executing xquery", ex);
-            result= null;
+            result = null;
             context.runCleanupTasks();
-            
+
         }
         return result;
     }
-    
-    
-    /**
-     * Creates a new instance of DatabaseResources.
-     * 
-     * 
-     * 
-     * @param pool  Instance shared broker pool.
-     */
-    public DatabaseResources(BrokerPool pool) {
-        
-        logger.info("Initializing DatabaseResources");
-        this.brokerPool = pool;
-        
-    }
-    
-    public String findXSD(String collection, String targetNamespace, Subject user){
-        
-        if(logger.isDebugEnabled()) {
+
+    public String findXSD(final String collection, final String targetNamespace, final Subject user) {
+
+        if (logger.isDebugEnabled()) {
             logger.debug("Find schema with namespace '{}' in '{}'.", targetNamespace, collection);
         }
-        
-        final Map<String,String> params = new HashMap<>();
+
+        final Map<String, String> params = new HashMap<>();
         params.put(COLLECTION, collection);
         params.put(TARGETNAMESPACE, targetNamespace);
-        
-        final Sequence result = executeQuery(FIND_XSD, params, user );
-        
+
+        final Sequence result = executeQuery(FIND_XSD, params, user);
+
         return getFirstResult(result);
     }
-    
-    public String findCatalogWithDTD(String collection, String publicId, Subject user){
-        
-        if(logger.isDebugEnabled()) {
+
+    public String findCatalogWithDTD(final String collection, final String publicId, final Subject user) {
+
+        if (logger.isDebugEnabled()) {
             logger.debug("Find DTD with public '{}' in '{}'.", publicId, collection);
         }
-        
-        final Map<String,String> params = new HashMap<>();
+
+        final Map<String, String> params = new HashMap<>();
         params.put(COLLECTION, collection);
         params.put(PUBLICID, publicId);
-        
-        final Sequence result = executeQuery(FIND_CATALOGS_WITH_DTD, params, user );
-        
+
+        final Sequence result = executeQuery(FIND_CATALOGS_WITH_DTD, params, user);
+
         return getFirstResult(result);
     }
-    
+
 }
