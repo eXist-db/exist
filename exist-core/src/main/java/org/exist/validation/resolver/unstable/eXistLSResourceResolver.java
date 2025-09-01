@@ -31,8 +31,7 @@ import org.w3c.dom.ls.LSResourceResolver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 
 /**
  * eXistLSResourceResolver provides a way for applications to redirect
@@ -82,7 +81,7 @@ public class eXistLSResourceResolver implements LSResourceResolver {
             }
 
         } else {
-            is = new URL(resourcePath).openStream();
+            is = URI.create(resourcePath).toURL().openStream();
         }
         return is;
     }

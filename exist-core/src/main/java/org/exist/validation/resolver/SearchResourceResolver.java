@@ -53,8 +53,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -172,7 +172,7 @@ public class SearchResourceResolver implements XMLEntityResolver {
             LOG.debug("resourcePath='" + resourcePath + "'");
         }
 
-        final InputStream is = new URL(resourcePath).openStream();
+        final InputStream is = URI.create(resourcePath).toURL().openStream();
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), xri.getExpandedSystemId(), xri.getBaseSystemId(), is, UTF_8.name());
 

@@ -34,7 +34,7 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -120,7 +120,8 @@ public class AnyUriResolver implements XMLEntityResolver {
             }
 
         } else {
-            is = new URL(resourcePath).openStream();
+
+            is = URI.create(resourcePath).toURL().openStream();
         }
 
         final XMLInputSource xis = new XMLInputSource(xri.getPublicId(), resourcePath,

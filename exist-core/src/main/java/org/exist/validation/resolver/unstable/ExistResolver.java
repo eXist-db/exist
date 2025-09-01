@@ -37,7 +37,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
 
 /**
  *
@@ -124,7 +124,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                 inputsource.setSystemId(path);
 
             } else {
-                final InputStream is = new URL(path).openStream();
+                final InputStream is = URI.create(path).toURL().openStream();
                 inputsource.setByteStream(is);
                 inputsource.setSystemId(path);
             }
@@ -147,7 +147,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
                     streamsource.setSystemId(path);
 
                 } else {
-                    final InputStream is = new URL(path).openStream();
+                    final InputStream is = URI.create(path).toURL().openStream();
                     streamsource.setInputStream(is);
                     streamsource.setSystemId(path);
                 }
