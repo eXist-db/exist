@@ -37,7 +37,8 @@ import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_C
 import static org.junit.Assert.*;
 
 /**
- *  Switch validation mode yes/no/auto per collection and validate.
+ * Switch validation mode yes/no/auto per collection and validate.
+ *
  * @author wessels
  */
 public class CollectionConfigurationValidationModeTest {
@@ -204,8 +205,8 @@ public class CollectionConfigurationValidationModeTest {
         try {
             storeDocument("/db/true", "invalid.xml", INVALID_XSD);
             fail("should have failed");
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
+        } catch (final XMLDBException ex) {
+            final String msg = ex.getMessage();
             assertTrue(msg.contains("cvc-complex-type.2.4.a: Invalid content was found"));
         }
 
@@ -213,8 +214,8 @@ public class CollectionConfigurationValidationModeTest {
         try {
             storeDocument("/db/true", "anonymous.xml", ANONYMOUS_XSD);
             fail("should have failed");
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
+        } catch (final XMLDBException ex) {
+            final String msg = ex.getMessage();
             assertTrue(msg.contains("cvc-elt.1.a: Cannot find the declaration of element 'schema'."));
         }
 
@@ -222,8 +223,8 @@ public class CollectionConfigurationValidationModeTest {
         try {
             storeDocument("/db/true", "different.xml", DIFFERENT_XSD);
             fail("should have failed");
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
+        } catch (final XMLDBException ex) {
+            final String msg = ex.getMessage();
             assertTrue(msg.contains("cvc-elt.1.a: Cannot find the declaration of element 'xsd:schema'"));
         }
     }
@@ -240,8 +241,8 @@ public class CollectionConfigurationValidationModeTest {
         try {
             storeDocument("/db/auto", "invalid.xml", INVALID_XSD);
             fail("should have failed");
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
+        } catch (final XMLDBException ex) {
+            final String msg = ex.getMessage();
             assertTrue(msg.contains("cvc-complex-type.2.4.a: Invalid content was found"));
         }
 
@@ -251,8 +252,8 @@ public class CollectionConfigurationValidationModeTest {
         // non resolvable namespace provided, should fail
         try {
             storeDocument("/db/auto", "different.xml", DIFFERENT_XSD);
-        } catch (XMLDBException ex) {
-            String msg = ex.getMessage();
+        } catch (final XMLDBException ex) {
+            final String msg = ex.getMessage();
             assertTrue(msg.contains("schema_reference.4: Failed to read schema document"));
         }
     }

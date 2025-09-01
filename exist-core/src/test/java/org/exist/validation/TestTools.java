@@ -38,7 +38,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- *  A set of helper methods for the validation tests.
+ * A set of helper methods for the validation tests.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
@@ -48,12 +48,12 @@ public class TestTools {
     public final static String VALIDATION_DTD_COLLECTION = "dtd";
     public final static String VALIDATION_XSD_COLLECTION = "xsd";
     public final static String VALIDATION_TMP_COLLECTION = "tmp";
-    
+
     /**
      *
-     * @param document     File to be uploaded
-     * @param target  Target URL (e.g. xmldb:exist:///db/collection/document.xml)
-     * @throws java.lang.Exception  Oops.....
+     * @param document File to be uploaded
+     * @param target   Target URL (e.g. xmldb:exist:///db/collection/document.xml)
+     * @throws java.lang.Exception Oops.....
      */
     public static void insertDocumentToURL(final InputStream document, final String target) throws IOException {
         final URL url = new URL(target);
@@ -65,7 +65,7 @@ public class TestTools {
 
     public static Sequence executeQuery(final BrokerPool pool, final String query) throws EXistException, PermissionDeniedException, XPathException {
         final XQuery xquery = pool.getXQueryService();
-        try(final DBBroker broker = pool.getBroker()) {
+        try (final DBBroker broker = pool.getBroker()) {
             return xquery.execute(broker, query, null);
         }
     }

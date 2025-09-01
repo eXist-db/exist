@@ -23,19 +23,19 @@ package org.exist.validation;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 import org.junit.Test;
-
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
- *  Some tests regarding invalid collection.xconf documents.
- * 
+ * Some tests regarding invalid collection.xconf documents.
+ *
  * @author wessels
  */
 public class CollectionConfigurationTest {
@@ -45,7 +45,7 @@ public class CollectionConfigurationTest {
 
     private static final String invalidConfig = "<invalid/>";
 
-    private void createCollection(String collection) throws XMLDBException {
+    private void createCollection(final String collection) throws XMLDBException {
         final CollectionManagementService cmservice = existEmbeddedServer.getRoot().getService(CollectionManagementService.class);
         Collection testCollection = cmservice.createCollection(collection);
         assertNotNull(testCollection);
@@ -54,9 +54,9 @@ public class CollectionConfigurationTest {
         assertNotNull(testCollection);
     }
 
-    private void storeCollectionXconf(String collection, String document) throws XMLDBException {
+    private void storeCollectionXconf(final String collection, final String document) throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery("xmldb:store(\"" + collection + "\", \"" + DEFAULT_COLLECTION_CONFIG_FILE + "\", " + document + ")");
-        String r = (String) result.getResource(0).getContent();
+        final String r = (String) result.getResource(0).getContent();
         assertEquals("Store xconf", collection + "/" + DEFAULT_COLLECTION_CONFIG_FILE, r);
     }
 
