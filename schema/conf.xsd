@@ -1126,6 +1126,35 @@
                                     </xs:sequence>
                                 </xs:complexType>
                             </xs:element>
+                            <xs:element name="grammar-cache">
+                                <xs:complexType>
+                                    <xs:attribute name="size">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                Specifies the maximum number of entries the cache may contain.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:integer">
+                                                <xs:minInclusive value="-1"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="expire">
+                                        <xs:annotation>
+                                            <xs:documentation>
+                                                The time (in seconds) after which an unused grammar should
+                                                expire and be removed from the grammar pool.
+                                            </xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:integer">
+                                                <xs:minInclusive value="-1"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
                         </xs:sequence>
                         <xs:attribute name="mode" default="auto">
                             <xs:annotation>
@@ -1149,6 +1178,8 @@
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+
+
                 <xs:element name="xquery">
                     <xs:complexType>
                         <xs:sequence>

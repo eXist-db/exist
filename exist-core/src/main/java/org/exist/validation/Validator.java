@@ -90,7 +90,7 @@ public class Validator {
         final Configuration config = brokerPool.getConfiguration();
 
         // setup grammar brokerPool
-        this.grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
+        this.grammarPool = (GrammarPool) config.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
 
         // setup system wide catalog resolver
         this.systemCatalogResolver = (Resolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);

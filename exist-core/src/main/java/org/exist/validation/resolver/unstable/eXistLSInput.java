@@ -36,9 +36,6 @@ import java.io.Reader;
  */
 public class eXistLSInput implements LSInput {
 
-    @SuppressWarnings("unused")
-    private final static Logger LOG = LogManager.getLogger(eXistLSInput.class);
-
     private Reader characterStream;
     private InputStream byteStream;
     private String stringData;
@@ -111,6 +108,4 @@ public class eXistLSInput implements LSInput {
     public void setCertifiedText(final boolean certifiedText) {
         this.certifiedText = certifiedText;
     }
-
-
 }

@@ -283,7 +283,7 @@ public class Jaxp extends BasicFunction {
             if (useCache) {
                 LOG.debug("Grammar caching enabled.");
                 final Configuration config = brokerPool.getConfiguration();
-                final GrammarPool grammarPool = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
+                final GrammarPool grammarPool = (GrammarPool) config.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
                 xmlReader.setProperty(XMLReaderObjectFactory.APACHE_PROPERTIES_INTERNAL_GRAMMARPOOL, grammarPool);
             }
 
