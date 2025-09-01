@@ -111,7 +111,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
     /* ============== */
     private InputSource resolveInputSource(final BrokerPool bPool, final String path) throws IOException {
 
-        LOG.debug("Resolving {}", path);
+        LOG.debug("Resolving inputSource {}", path);
 
         final InputSource inputsource = new InputSource();
 
@@ -134,7 +134,7 @@ public class ExistResolver implements EntityResolver2, URIResolver {
 
     private StreamSource resolveStreamSource(final BrokerPool bPool, final String path) throws TransformerException {
 
-        LOG.debug("Resolving {}", path);
+        LOG.debug("Resolving streamSource {}", path);
 
         final StreamSource streamsource = new StreamSource();
 

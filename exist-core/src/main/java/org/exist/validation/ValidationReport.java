@@ -29,7 +29,6 @@ import org.xml.sax.SAXParseException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -150,7 +149,7 @@ public class ValidationReport implements ErrorHandler {
             textReport.add("Exception: " + throwed.getMessage());
         }
 
-        textReport.addAll(validationReport.stream().map(ValidationReportItem::toString).collect(Collectors.toList()));
+        textReport.addAll(validationReport.stream().map(ValidationReportItem::toString).toList());
 
         textReport.add("Validated in " + duration + " millisec.");
         return textReport;
@@ -218,7 +217,7 @@ public class ValidationReport implements ErrorHandler {
             return null;
         }
 
-        final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
+        final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
         final PrintStream ps = new PrintStream(baos);
         throwed.printStackTrace(ps);
         return baos.toString(UTF_8);

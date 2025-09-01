@@ -88,14 +88,12 @@ public class ValidationReportItem {
 
     public String getTypeText() {
 
-        final String reportType = switch (type) {
+        return switch (type) {
             case WARNING -> "Warning";
             case ERROR -> "Error";
             case FATAL -> "Fatal";
             default -> "Unknown Error type";
         };
-
-        return reportType;
     }
 
     public String toString() {
