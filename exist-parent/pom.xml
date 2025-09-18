@@ -112,7 +112,7 @@
         <icu.version>59.1</icu.version>
         <izpack.version>5.2.4</izpack.version>
         <jansi.version>2.4.2</jansi.version>
-        <jaxb.api.version>4.0.2</jaxb.api.version>
+        <jaxb.api.version>4.0.4</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
         <jetty.version>11.0.25</jetty.version>
