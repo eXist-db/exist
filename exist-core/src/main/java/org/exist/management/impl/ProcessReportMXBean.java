@@ -123,7 +123,9 @@ ProcessReportMXBean extends PerInstanceMBean {
             if (other == null) {
                 return 1;
             }
-
+            if (id != other.id) {
+              return Integer.compare(id,  other.id);
+            }
             return key.compareTo(other.key);
         }
     }
