@@ -333,7 +333,7 @@ project.version.numeric = 3.0.4
 Our goal is to prevent such a divergence in versioning from creeping back into eXist and to ensure a clean versioning system to serve eXist through its future development and release cycles.
 
 ### The New Way
-eXist now has a single version number, forumlated according to the precise principles of Semantic Versioning, captured in a single property:
+eXist now has a single version number, formulated according to the precise principles of Semantic Versioning, captured in a single property:
 
 ```
 project.version = 3.0.0
