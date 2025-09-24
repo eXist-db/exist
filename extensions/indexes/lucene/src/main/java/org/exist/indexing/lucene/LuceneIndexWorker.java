@@ -57,10 +57,7 @@ import org.exist.storage.*;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteConversion;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
+import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Expression;
@@ -72,6 +69,8 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.*;
 import org.xml.sax.helpers.AttributesImpl;
+
+//import org.apache.lucene.search.FieldValueQuery;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
@@ -90,7 +89,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
     static {
-        TYPE_NODE_ID.setIndexed(true);
+        TYPE_NODE_ID.setTokenized(true);
         TYPE_NODE_ID.setStored(false);
         TYPE_NODE_ID.setOmitNorms(true);
         TYPE_NODE_ID.setStoreTermVectors(false);
@@ -315,7 +314,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
             final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToPrefixCoded(docId, 0, bytes);
+            NumericUtils.intToSortableBytes(docId, bytes.bytes(), 0);
             Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             writer.deleteDocuments(dt);
         } catch (IOException e) {
@@ -351,7 +350,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
                 final BytesRefBuilder bytes = new BytesRefBuilder();
-                NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
+                NumericUtils.intToSortableBytes(doc.getDocId(), bytes.bytes(), 0);
                 Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
                 writer.deleteDocuments(dt);
             }
@@ -385,22 +384,23 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
 
             final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToPrefixCoded(currentDoc.getDocId(), 0, bytes);
+            NumericUtils.intToSortableBytes(currentDoc.getDocId(), bytes.bytes(), 0);
             Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
             TermQuery tq = new TermQuery(dt);
             for (NodeId nodeId : nodesToRemove) {
                 // store the node id
                 int nodeIdLen = nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
-                ByteConversion.shortToByte((short) nodeId.units(), data, 0);
+                ByteConversion.shortToByteH((short) nodeId.units(), data, 0);
                 nodeId.serialize(data, 2);
 
                 Term it = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
 
                 TermQuery iq = new TermQuery(it);
-                BooleanQuery q = new BooleanQuery();
-                q.add(tq, BooleanClause.Occur.MUST);
-                q.add(iq, BooleanClause.Occur.MUST);
+                BooleanQuery q = new BooleanQuery.Builder()
+                    .add(tq, BooleanClause.Occur.MUST)
+                    .add(iq, BooleanClause.Occur.MUST)
+                    .build();
                 writer.deleteDocuments(q);
             }
         } catch (IOException e) {
@@ -539,10 +539,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final LuceneFacets facets = new LuceneFacets();
         final FacetsCollector facetsCollector = new FacetsCollector();
         final LuceneHitCollector collector = new LuceneHitCollector(qname, query, docs, contextSet, resultSet, returnAncestor, contextId, facets, facetsCollector);
-        searcher.searcher.search(query, collector);
+        searcher.searcher().search(query, collector);
 
         // compute facets
-        facets.compute(searcher.taxonomyReader, config.facetsConfig, facetsCollector);
+        facets.compute(searcher.taxonomyReader(), config.facetsConfig, facetsCollector);
     }
 
     /**
@@ -619,7 +619,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * 
      * @param descriptor SOLR styled data 
      */
-    public void indexNonXML(NodeValue descriptor) {
+    public void indexNonXML(NodeValue descriptor) throws DatabaseConfigurationException {
         // Verify input
         if (!descriptor.getNode().getLocalName().contentEquals("doc")) {
             // throw exception
@@ -632,21 +632,21 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         solrconfParser.parse(descriptor);
         
         if (pendingDoc == null) {
-	    // create Lucene document
-	    pendingDoc = new Document();
-        	
-	    // Set DocId
-	    NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId());
+            // create Lucene document
+            pendingDoc = new Document();
+
+            // Set DocId
+            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId());
 
             pendingDoc.add(fDocId);
 
-            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
+            final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
 
             // For binary documents the doc path needs to be stored
-            String uri = currentDoc.getURI().toString();
+            final String uri = currentDoc.getURI().toString();
 
-            Field fDocUri = new Field(FIELD_DOC_URI, uri, Field.Store.YES, Field.Index.NOT_ANALYZED);
+            Field fDocUri = new StringField(FIELD_DOC_URI, uri, Field.Store.YES);
             pendingDoc.add(fDocUri);
         }
         
@@ -666,7 +666,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             String contentFieldName = field.getName();
 
             // Actual field content ; Store flag can be set in solrField
-            Field contentField = new Field(contentFieldName, field.getData().toString(),  store, Field.Index.ANALYZED, Field.TermVector.YES);
+            Field contentField = new Field(contentFieldName, field.getData().toString(), store, Field.Index.ANALYZED, Field.TermVector.YES);
 
             // Extract (document) Boost factor
             if (field.getBoost() > 0) {

@@ -22,14 +22,15 @@
 package org.exist.indexing.lucene.analyzers;
 
 import org.apache.lucene.analysis.*;
+import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.icu.*;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.analysis.util.CharArraySet;
-import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.StopwordAnalyzerBase;
 import org.apache.lucene.analysis.util.WordlistLoader;
 import org.apache.lucene.util.Version;
 import org.exist.indexing.lucene.LuceneIndex;
@@ -60,8 +61,7 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
      * An unmodifiable set containing some common English words that are usually not
      * useful for searching.
      */
-    public static final CharArraySet STOP_WORDS_SET = StopAnalyzer.ENGLISH_STOP_WORDS_SET;
-
+    public static final CharArraySet STOP_WORDS_SET = EnglishAnalyzer.ENGLISH_STOP_WORDS_SET;
     /**
      * Builds an analyzer with the given stop words.
      *
@@ -72,37 +72,16 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         replaceInvalidAcronym = true;
     }
 
-    /**
-     * Builds an analyzer with the given stop words.
-     *
-     * @param matchVersion Lucene version to match, see {@link StopwordAnalyzerBase#version}
-     * @param stopWords stop words
-     *
-     * @deprecated Use {@link #NoDiacriticsStandardAnalyzer(CharArraySet)}
-     */
-    @Deprecated
-    public NoDiacriticsStandardAnalyzer(final Version matchVersion, final CharArraySet stopWords) {
-        super(matchVersion, stopWords);
-        replaceInvalidAcronym = matchVersion.onOrAfter(LuceneIndex.LUCENE_VERSION_IN_USE);
-    }
-
-     /**
-      * Builds an analyzer with the default stop words. ({@link #STOP_WORDS_SET}).
-      */
-    protected NoDiacriticsStandardAnalyzer() {
-        this((CharArraySet)null);
+    @Override
+    protected TokenStreamComponents createComponents(String fieldName) {
+        return null;
     }
 
     /**
      * Builds an analyzer with the default stop words ({@link #STOP_WORDS_SET}).
-     *
-     * @param matchVersion Lucene version to match See {@link StopwordAnalyzerBase#version}.
-     *
-     * @deprecated Use {@link #NoDiacriticsStandardAnalyzer()}
      */
-    @Deprecated
-    public NoDiacriticsStandardAnalyzer(final Version matchVersion) {
-        this(matchVersion, STOP_WORDS_SET);
+    public NoDiacriticsStandardAnalyzer() {
+        this(STOP_WORDS_SET);
     }
 
     /**
@@ -140,22 +119,14 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         return maxTokenLength;
     }
 
-    @Override
     protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-        final StandardTokenizer src = new StandardTokenizer(getVersion(), reader);
+        final StandardTokenizer src = new StandardTokenizer(reader);
         src.setMaxTokenLength(maxTokenLength);
-//        src.setReplaceInvalidAcronym(replaceInvalidAcronym);
-        TokenStream tok = new StandardFilter(getVersion(), src);
+
+        TokenStream tok = new StandardFilter(src);
         tok = new ICUFoldingFilter(tok);
-        tok = new LowerCaseFilter(getVersion(), tok);
-        tok = new StopFilter(getVersion(), tok, stopwords);
+        tok = new LowerCaseFilter(tok);
+        tok = new StopFilter(tok, stopwords);
         return new TokenStreamComponents(src, tok);
-//        {
-//            @Override
-//            protected boolean reset(final Reader reader) throws IOException {
-//                src.setMaxTokenLength(NoDiacriticsStandardAnalyzer.this.maxTokenLength);
-//                return super.reset(reader);
-//            }
-//        };
     }
 }

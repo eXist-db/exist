@@ -470,9 +470,13 @@ public class AnalyzerConfigTest {
             this.arg2 = arg2;
         }
 
-        @Override
         protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
             throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        }
+
+        @Override
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 
@@ -485,9 +489,13 @@ public class AnalyzerConfigTest {
             this.arg2 = arg2;
         }
 
-        @Override
         protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
             throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        }
+
+        @Override
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 
@@ -502,8 +510,8 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-            throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 
@@ -516,9 +524,13 @@ public class AnalyzerConfigTest {
             this.arg2 = arg2;
         }
 
-        @Override
         protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
             throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        }
+
+        @Override
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 
@@ -531,8 +543,8 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-            throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 
@@ -545,8 +557,8 @@ public class AnalyzerConfigTest {
         }
 
         @Override
-        protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
-            throw new UnsupportedOperationException("This analyzer is a mock for testing");
+        protected TokenStreamComponents createComponents(String fieldName) {
+            return null;
         }
     }
 }
