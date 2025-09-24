@@ -15,7 +15,7 @@ $ git checkout master
 $ mvn -DskipTests package
 ```
 
-From here, you now have a compiled version of eXist-db in the `exist-distribution/target` folder that you may use just as you would an installed version of eXist-db. An installer is also build and present uin `exist-installer/target` for easy installation elsewhere.
+From here, you now have a compiled version of eXist-db in the `exist-distribution/target` folder that you may use just as you would an installed version of eXist-db. An installer is also build and present in `exist-installer/target` for easy installation elsewhere.
 
 Useful build switches:
 - `-Ddocker=true` : builds the docker image

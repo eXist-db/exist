@@ -11,24 +11,6 @@ updates:
     time: "03:00"
   open-pull-requests-limit: 10
   ignore:
-  - dependency-name: org.apache.lucene:lucene-analyzers-common
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-analyzers-icu
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-core
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-facet
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-queries
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-queryparser
-    versions:
-    - ">= 8.a, < 9"
   - dependency-name: com.ibm.icu:icu4j
     versions:
     - "69.1"
