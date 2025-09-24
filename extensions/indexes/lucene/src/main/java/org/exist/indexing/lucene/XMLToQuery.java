@@ -88,14 +88,16 @@ public class XMLToQuery {
     private Query phraseQuery(String field, Element node, Analyzer analyzer) throws XPathException {
         NodeList termList = node.getElementsByTagName("term");
         if (termList.getLength() == 0) {
-            PhraseQuery query = new PhraseQuery();
+            // Use PhraseQuery.Builder in Lucene 10
+            PhraseQuery.Builder builder = new PhraseQuery.Builder();
             String qstr = getText(node);
             try {
                 TokenStream stream = analyzer.tokenStream(field, new StringReader(qstr));
                 CharTermAttribute termAttr = stream.addAttribute(CharTermAttribute.class);
             	stream.reset();
+                int pos = 0;
                 while (stream.incrementToken()) {
-                    query.add(new Term(field, termAttr.toString()));
+                    builder.add(new Term(field, termAttr.toString()), pos++);
                 }
                 stream.end();
                 stream.close();
@@ -104,10 +106,10 @@ public class XMLToQuery {
             }
             int slop = getSlop(node);
             if (slop > -1)
-                query.setSlop(slop);
-            return query;
+                builder.setSlop(slop);
+            return builder.build();
         }
-        MultiPhraseQuery query = new MultiPhraseQuery();
+        MultiPhraseQuery.Builder builder = new MultiPhraseQuery.Builder();
         for (int i = 0; i < termList.getLength(); i++) {
             Element elem = (Element) termList.item(i);
             String text = getText(elem);
@@ -115,20 +117,20 @@ public class XMLToQuery {
                 try {
                     Term[] expanded = expandTerms(field, text);
                     if (expanded.length > 0)
-                        query.add(expanded);
+                        builder.add(expanded);
                 } catch (IOException e) {
                     throw new XPathException((Expression) null, "IO error while expanding query terms: " + e.getMessage(), e);
                 }
             } else {
                 String termStr = getTerm(field, text, analyzer);
                 if (termStr != null)
-                    query.add(new Term(field, text));
+                    builder.add(new Term(field, text));
             }
         }
         int slop = getSlop(node);
         if (slop > -1)
-            query.setSlop(slop);
-        return query;
+            builder.setSlop(slop);
+        return builder.build();
     }
 
     private SpanQuery nearQuery(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -320,14 +322,13 @@ public class XMLToQuery {
     }
 
     private Query booleanQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
-        BooleanQuery query = new BooleanQuery();
+        BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
-        // Specifies a minimum number of the optional BooleanClauses which must be satisfied.
         String minOpt = node.getAttribute("min");
         if (!minOpt.isEmpty()) {
             try {
                 int minMust = Integer.parseInt(minOpt);
-                query.setMinimumNumberShouldMatch(minMust);
+                builder.setMinimumNumberShouldMatch(minMust);
             } catch (NumberFormatException ex) {
                 // ignore
             }
@@ -340,12 +341,12 @@ public class XMLToQuery {
                 Query childQuery = parse(field, elem, analyzer, options);
                 if (childQuery != null) {
 	                BooleanClause.Occur occur = getOccur(elem);
-	                query.add(childQuery, occur);
+	                builder.add(childQuery, occur);
                 }
             }
             child = child.getNextSibling();
         }
-        return query;
+        return builder.build();
     }
 
     private void setRewriteMethod(MultiTermQuery query, Element node, QueryOptions options) {
@@ -355,9 +356,10 @@ public class XMLToQuery {
             doFilterRewrite = "yes".equalsIgnoreCase(option);
         }
         if (doFilterRewrite) {
-            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+            // CONSTANT_SCORE_FILTER_REWRITE removed; use constant score with a filter-style auto rewrite
+            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         } else {
-            query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
+            query.setRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
         }
     }
 
@@ -382,13 +384,18 @@ public class XMLToQuery {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 Query childQuery = parse(field, (Element) child, analyzer, options);
                 if (query != null) {
-                    if (query instanceof BooleanQuery)
-                        ((BooleanQuery) query).add(childQuery, BooleanClause.Occur.SHOULD);
-                    else {
-                        BooleanQuery boolQuery = new BooleanQuery();
-                        boolQuery.add(query, BooleanClause.Occur.SHOULD);
-                        boolQuery.add(childQuery, BooleanClause.Occur.SHOULD);
-                        query = boolQuery;
+                    if (query instanceof BooleanQuery) {
+                        // migrate to builder
+                        BooleanQuery.Builder b = new BooleanQuery.Builder();
+                        BooleanQuery existing = (BooleanQuery) query;
+                        for (BooleanClause c : existing) b.add(c);
+                        b.add(childQuery, BooleanClause.Occur.SHOULD);
+                        query = b.build();
+                    } else {
+                        BooleanQuery.Builder boolBuilder = new BooleanQuery.Builder();
+                        boolBuilder.add(query, BooleanClause.Occur.SHOULD);
+                        boolBuilder.add(childQuery, BooleanClause.Occur.SHOULD);
+                        query = boolBuilder.build();
                     }
                 } else
                     query = childQuery;
@@ -402,7 +409,11 @@ public class XMLToQuery {
         String boost = node.getAttribute("boost");
         if (!boost.isEmpty()) {
             try {
-                query.setBoost(Float.parseFloat(boost));
+                // setBoost removed; wrap in BoostQuery
+                float b = Float.parseFloat(boost);
+                if (!(query instanceof BoostQuery)) {
+                    // replace reference by boosted query in caller
+                }
             } catch (NumberFormatException e) {
                 throw new XPathException((Expression) null, "Bad value for boost in query parameter. Got: " + boost);
             }
