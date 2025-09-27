@@ -57,12 +57,8 @@ public final class BinaryTokenStream extends TokenStream {
         public void setBytesRef(BytesRef bytes);
     }
 
-    public static class ByteTermAttributeImpl extends AttributeImpl implements ByteTermAttribute,TermToBytesRefAttribute {
+    public static abstract class ByteTermAttributeImpl extends org.exist.indexing.lucene.ByteTermAttributeImpl implements ByteTermAttribute,TermToBytesRefAttribute {
         private BytesRef bytes;
-
-        @Override
-        public void fillBytesRef() {
-        }
 
         @Override
         public BytesRef getBytesRef() {
