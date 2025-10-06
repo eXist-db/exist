@@ -22,32 +22,33 @@
 
 package org.exist.validation;
 
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
 
 /**
- *  Class for testing XML Parser and XML Transformer configuration.
+ * Class for testing XML Parser and XML Transformer configuration.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ApacheXmlComponentsTest  {
-    
-    
+public class ApacheXmlComponentsTest {
+
+
     @Test
     public void parserVersion() {
-        StringBuilder xmlLibMessage = new StringBuilder();
-        
-        boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
-        
+        final StringBuilder xmlLibMessage = new StringBuilder();
+
+        final boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
+
         assertTrue(xmlLibMessage.toString(), validParser);
     }
 
     @Test
     public void transformerVersion() {
-        StringBuilder xmlLibMessage = new StringBuilder();
-        
-        boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
-        
+        final StringBuilder xmlLibMessage = new StringBuilder();
+
+        final boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
+
         assertTrue(xmlLibMessage.toString(), validTransformer);
     }
 }

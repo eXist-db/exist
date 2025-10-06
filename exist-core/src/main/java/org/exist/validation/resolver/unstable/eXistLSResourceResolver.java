@@ -21,10 +21,6 @@
  */
 package org.exist.validation.resolver.unstable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
@@ -33,20 +29,24 @@ import org.exist.protocolhandler.xmlrpc.XmlrpcInputStream;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+
 /**
  * eXistLSResourceResolver provides a way for applications to redirect
  * references to external resource.
- *
+ * <p>
  * To be used by @see javax.xml.validation.Validator
- * 
+ *
  * @author Dizzzz (dizzzz@exist-db.org)
  */
 public class eXistLSResourceResolver implements LSResourceResolver {
     private static final Logger LOG = LogManager.getLogger(eXistLSResourceResolver.class);
     private static final ThreadGroup threadGroup = new ThreadGroup("exist.ls-resolver");
 
-    public LSInput resolveResource(String type, String namespaceURI,
-            String publicId, String systemId, String baseURI) {
+    public LSInput resolveResource(final String type, final String namespaceURI,
+                                   final String publicId, final String systemId, final String baseURI) {
 
         LOG.debug("type={} namespaceURI={} publicId={} systemId={} baseURI={}", type, namespaceURI, publicId, systemId, baseURI);
 
@@ -58,16 +58,16 @@ public class eXistLSResourceResolver implements LSResourceResolver {
 
         } catch (final Exception ex) {
             LOG.error(ex.getMessage());
-            lsInput=null;            
-        } 
+            lsInput = null;
+        }
 
         return lsInput;
     }
 
-    private InputStream getInputStream(String resourcePath) throws MalformedURLException, IOException{
+    private InputStream getInputStream(String resourcePath) throws IOException {
 
-        if(resourcePath.startsWith("/db")){
-            resourcePath="xmldb:exist://"+resourcePath;
+        if (resourcePath.startsWith("/db")) {
+            resourcePath = "xmldb:exist://" + resourcePath;
         }
 
         InputStream is = null;
@@ -81,7 +81,7 @@ public class eXistLSResourceResolver implements LSResourceResolver {
             }
 
         } else {
-            is = new URL(resourcePath).openStream();
+            is = URI.create(resourcePath).toURL().openStream();
         }
         return is;
     }

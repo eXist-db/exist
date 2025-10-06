@@ -60,7 +60,6 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
     public static final String PROPERTY_VALIDATION_MODE = "validation.mode";
     public static final String CATALOG_RESOLVER = "validation.resolver";
     public static final String CATALOG_URIS = "validation.catalog_uris";
-    public static final String GRAMMAR_POOL = "validation.grammar_pool";
 
     // Xerces feature and property names
     public static final String APACHE_FEATURES_VALIDATION_SCHEMA
@@ -83,7 +82,7 @@ public class XMLReaderObjectFactory extends BasePooledObjectFactory<XMLReader> i
 
     @Override
     public void configure(final Configuration configuration) {
-        this.grammarPool = (GrammarPool) configuration.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
+        this.grammarPool = (GrammarPool) configuration.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
         this.resolver = (Resolver) configuration.getProperty(CATALOG_RESOLVER);
         final String option = (String) configuration.getProperty(PROPERTY_VALIDATION_MODE);
         this.validation = VALIDATION_SETTING.fromOption(option);

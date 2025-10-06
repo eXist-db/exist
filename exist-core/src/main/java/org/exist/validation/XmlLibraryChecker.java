@@ -21,22 +21,23 @@
  */
 package org.exist.validation;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ServiceLoader;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.ExistSAXParserFactory;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ServiceLoader;
+
 /**
- *  Class for checking dependencies with XML libraries.
+ * Class for checking dependencies with XML libraries.
  *
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  */
@@ -46,33 +47,33 @@ public class XmlLibraryChecker {
      * Possible XML Parsers, at least one must be valid
      */
     private final static ClassVersion[] validParsers = {
-        new ClassVersion("Xerces", "Xerces-J 2.10.0", "org.apache.xerces.impl.Version.getVersion()")
+            new ClassVersion("Xerces", "Xerces-J 2.10.0", "org.apache.xerces.impl.Version.getVersion()")
     };
-    
+
     /**
      * Possible XML Transformers, at least one must be valid
      */
     private final static ClassVersion[] validTransformers = {
-        new ClassVersion("Saxon", "8.9.0", "net.sf.saxon.Version.getProductVersion()"),
-        new ClassVersion("Xalan", "Xalan Java 2.7.1", "org.apache.xalan.Version.getVersion()"),
+            new ClassVersion("Saxon", "8.9.0", "net.sf.saxon.Version.getProductVersion()"),
+            new ClassVersion("Xalan", "Xalan Java 2.7.1", "org.apache.xalan.Version.getVersion()"),
     };
-    
+
     /**
      * Possible XML resolvers, at least one must be valid
      */
     private final static ClassVersion[] validResolvers = {
-        new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
+            new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
     };
-	
-	
-	private final static Logger logger = LogManager.getLogger( XmlLibraryChecker.class );
+
+
+    private final static Logger logger = LogManager.getLogger(XmlLibraryChecker.class);
 
 
     /**
-     *  Remove "@" from string.
+     * Remove "@" from string.
      */
-    private static String getClassName(String classid) {
-        String className;
+    private static String getClassName(final String classid) {
+        final String className;
 
         final int lastChar = classid.lastIndexOf('@');
         if (lastChar == -1) {
@@ -84,8 +85,8 @@ public class XmlLibraryChecker {
     }
 
     /**
-     *  Determine the class that is actually used as XML parser. 
-     * 
+     * Determine the class that is actually used as XML parser.
+     *
      * @return Full classname of parser.
      */
     private static String determineActualParserClass() {
@@ -96,20 +97,20 @@ public class XmlLibraryChecker {
             final XMLReader xmlReader = factory.newSAXParser().getXMLReader();
             final String classId = xmlReader.toString();
             parserClass = getClassName(classId);
-            
+
         } catch (final ParserConfigurationException | SAXException ex) {
             logger.error(ex.getMessage());
         }
         return parserClass;
     }
 
-    
+
     /**
-     *  Determine the class that is actually used as XML transformer. 
-     * 
+     * Determine the class that is actually used as XML transformer.
+     *
      * @return Full classname of transformer.
      */
-    private static String determineActualTransformerClass(){
+    private static String determineActualTransformerClass() {
         String transformerClass = "Unable to determine transformer class";
         try {
             final TransformerFactory factory = TransformerFactory.newInstance();
@@ -120,11 +121,11 @@ public class XmlLibraryChecker {
         } catch (final TransformerConfigurationException ex) {
             logger.error(ex.getMessage());
         }
-        return transformerClass;    
+        return transformerClass;
     }
 
     /**
-     *  Perform checks on parsers, transformers and resolvers.
+     * Perform checks on parsers, transformers and resolvers.
      */
     public static void check() {
 
@@ -134,22 +135,22 @@ public class XmlLibraryChecker {
          * Parser
          */
         final ServiceLoader<SAXParserFactory> allSax = ServiceLoader.load(SAXParserFactory.class);
-        for(final SAXParserFactory sax : allSax){
+        for (final SAXParserFactory sax : allSax) {
             message.append(getClassName(sax.toString()));
             message.append(" ");
         }
         logger.debug("Detected SAXParserFactory classes: {}", message.toString());
 
-        
+
         message = new StringBuilder();
 
-		boolean	invalidVersionFound	= false;
+        boolean invalidVersionFound = false;
 
-        if( hasValidClassVersion( "Parser", validParsers, message ) ) {
-			logger.info( message.toString() );
+        if (hasValidClassVersion("Parser", validParsers, message)) {
+            logger.info(message.toString());
         } else {
-			logger.warn(message.toString());
-			invalidVersionFound	= true;
+            logger.warn(message.toString());
+            invalidVersionFound = true;
         }
 
         /*
@@ -158,56 +159,56 @@ public class XmlLibraryChecker {
         message = new StringBuilder();
 
         final ServiceLoader<TransformerFactory> allXsl = ServiceLoader.load(TransformerFactory.class);
-        for(final TransformerFactory xsl : allXsl){
+        for (final TransformerFactory xsl : allXsl) {
             message.append(getClassName(xsl.toString()));
             message.append(" ");
         }
         logger.debug("Detected TransformerFactory classes: {}", message.toString());
 
-        
+
         message = new StringBuilder();
 
-        if( hasValidClassVersion( "Transformer", validTransformers, message ) ) {
-            logger.info( message.toString() );
+        if (hasValidClassVersion("Transformer", validTransformers, message)) {
+            logger.info(message.toString());
         } else {
-            logger.warn( message.toString() );
+            logger.warn(message.toString());
             System.err.println(message);
-			invalidVersionFound	= true;
+            invalidVersionFound = true;
         }
 
         /*
          * Resolver
          */
         message = new StringBuilder();
-        if( hasValidClassVersion( "Resolver", validResolvers, message ) ) {
+        if (hasValidClassVersion("Resolver", validResolvers, message)) {
             logger.info(message.toString());
         } else {
             logger.warn(message.toString());
-			invalidVersionFound	= true;
+            invalidVersionFound = true;
         }
 
         logger.info("Using parser {}", determineActualParserClass());
         logger.info("Using transformer {}", determineActualTransformerClass());
-		
-		if(invalidVersionFound) {
+
+        if (invalidVersionFound) {
             logger.warn("Using parser {}", determineActualParserClass());
             logger.warn("Using transformer {}", determineActualTransformerClass());
-		}
+        }
     }
 
     /**
-     *  Check if for the specified service object one of the required
+     * Check if for the specified service object one of the required
      * classes is available.
-     * 
-     * @param type  Parser, Transformer or Resolver, used for reporting only.
-     * @param validClasses Array of valid classes. 
-     * @param message  Output message of detecting classes.
+     *
+     * @param type         Parser, Transformer or Resolver, used for reporting only.
+     * @param validClasses Array of valid classes.
+     * @param message      Output message of detecting classes.
      * @return TRUE if valid class has been found, otherwise FALSE.
      */
-    public static boolean hasValidClassVersion(String type, 
-                        ClassVersion[] validClasses, StringBuilder message) {
+    public static boolean hasValidClassVersion(final String type,
+                                               final ClassVersion[] validClasses, final StringBuilder message) {
 
-        final String sep = System.getProperty("line.separator");
+        final String sep = System.lineSeparator();
 
         message.append("Looking for a valid ").append(type).append("...").append(sep);
 
@@ -220,13 +221,13 @@ public class XmlLibraryChecker {
                 message.append(", found version ").append(actualVersion);
 
                 if (actualVersion.compareToIgnoreCase(
-                                validClass.getRequiredVersion()) >= 0) {
+                        validClass.getRequiredVersion()) >= 0) {
                     message.append(sep).append("OK!").append(sep);
                     return true;
                 } else {
                     message.append(" needed version ").append(validClass.getRequiredVersion()).append(sep);
                 }
-                
+
             } else {
                 message.append(", not found!").append(sep);
             }
@@ -234,8 +235,8 @@ public class XmlLibraryChecker {
 
         message.append("Warning: Failed find a valid ").append(type).append("!").append(sep);
         message.append(sep).append("Please add an appropriate ").append(type)
-               .append(" to the " + "class-path, e.g. in the 'endorsed' folder of "
-                + "the servlet container or in the 'endorsed' folder of the JRE.")
+                .append(" to the " + "class-path, e.g. in the 'endorsed' folder of "
+                        + "the servlet container or in the 'endorsed' folder of the JRE.")
                 .append(sep);
 
         return false;
@@ -243,7 +244,7 @@ public class XmlLibraryChecker {
 
     /**
      * Checks to see if a valid XML Parser exists
-     * 
+     *
      * @return boolean true indicates a valid Parser was found, false otherwise
      */
     public static boolean hasValidParser() {
@@ -252,21 +253,20 @@ public class XmlLibraryChecker {
 
     /**
      * Checks to see if a valid XML Parser exists
-     * 
-     * @param message	Messages about the status of available Parser's will 
-     *                  be appended to this buffer
-     * 
+     *
+     * @param message Messages about the status of available Parser's will
+     *                be appended to this buffer
      * @return boolean true indicates a valid Parser was found, false otherwise
      */
-    public static boolean hasValidParser(StringBuilder message) {
+    public static boolean hasValidParser(final StringBuilder message) {
         return hasValidClassVersion("Parser", validParsers, message);
     }
 
     /**
      * Checks to see if a valid XML Transformer exists
-     * 
-     * @return boolean true indicates a valid Transformer was found, 
-     *         false otherwise
+     *
+     * @return boolean true indicates a valid Transformer was found,
+     * false otherwise
      */
     public static boolean hasValidTransformer() {
         return hasValidTransformer(new StringBuilder());
@@ -274,20 +274,19 @@ public class XmlLibraryChecker {
 
     /**
      * Checks to see if a valid XML Transformer exists
-     * 
-     * @param message	Messages about the status of available Transformer's 
-     *                  will be appended to this buffer
-     * 
-     * @return boolean true indicates a valid Transformer was found, 
-     *         false otherwise
+     *
+     * @param message Messages about the status of available Transformer's
+     *                will be appended to this buffer
+     * @return boolean true indicates a valid Transformer was found,
+     * false otherwise
      */
-    public static boolean hasValidTransformer(StringBuilder message) {
+    public static boolean hasValidTransformer(final StringBuilder message) {
         return hasValidClassVersion("Transformer", validTransformers, message);
     }
 
     /**
-     * Simple class to describe a class, its required version and how to 
-     * obtain the actual version 
+     * Simple class to describe a class, its required version and how to
+     * obtain the actual version
      */
     public static class ClassVersion {
 
@@ -297,39 +296,39 @@ public class XmlLibraryChecker {
 
         /**
          * Default Constructor
-         * 
-         * @param simpleName		The simple name for the class (just a 
-         *                          descriptor really)
-         * @param requiredVersion	The required version of the class
-         * @param versionFunction	The function to be invoked to obtain the 
-         *                          actual version of the class, must be fully 
-         *                          qualified (i.e. includes the package name)
+         *
+         * @param simpleName      The simple name for the class (just a
+         *                        descriptor really)
+         * @param requiredVersion The required version of the class
+         * @param versionFunction The function to be invoked to obtain the
+         *                        actual version of the class, must be fully
+         *                        qualified (i.e. includes the package name)
          */
-        ClassVersion(String simpleName, String requiredVersion, String versionFunction) {
+        ClassVersion(final String simpleName, final String requiredVersion, final String versionFunction) {
             this.simpleName = simpleName;
             this.requiredVersion = requiredVersion;
             this.versionFunction = versionFunction;
         }
 
         /**
-         *  @return the simple name of the class
+         * @return the simple name of the class
          */
         public String getSimpleName() {
             return simpleName;
         }
 
         /**
-         *  @return the required version of the class
+         * @return the required version of the class
          */
         public String getRequiredVersion() {
             return requiredVersion;
         }
 
         /**
-         * Invokes the specified versionFunction using reflection to get the 
+         * Invokes the specified versionFunction using reflection to get the
          * actual version of the class
-         * 
-         *  @return the actual version of the class
+         *
+         * @return the actual version of the class
          */
         public String getActualVersion() {
             String actualVersion = null;
@@ -351,8 +350,9 @@ public class XmlLibraryChecker {
 
                 //invoke the method on the class
                 actualVersion = (String) getVersionMethod.invoke(versionClass, (Object[]) null);
-                
-            } catch (final ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+
+            } catch (final ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException |
+                           IllegalArgumentException | InvocationTargetException ex) {
                 logger.debug(ex.getMessage());
             }
 

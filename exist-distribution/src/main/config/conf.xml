@@ -25,6 +25,8 @@
             serializer
             transformer
             validation
+                entity-resolver
+                grammar-cache
             xquery
                 builtin-modules
                     module
@@ -902,6 +904,22 @@
         <entity-resolver>
             <catalog uri="${WEBAPP_HOME}/WEB-INF/catalog.xml"/>
         </entity-resolver>
+
+        <!--
+            Configure XML parser grammar cache. The grammar cache contains
+            compiled versions of XSD and DTD files.
+
+            - size
+                Specifies the maximum number of entries the cache may contain.
+                Value  0: grammars will be evicted immediately after being loaded into the cache.
+                Value -1: no maximum for the number of cached grammars.
+
+            - expire
+                The time (in seconds) after which an unused grammar should expire and be removed
+                from the grammar pool.
+                Value -1: grammars will not be removed over time.
+        -->
+        <grammar-cache size="500" expire="3600"/>
     </validation>
 
     <!-- 

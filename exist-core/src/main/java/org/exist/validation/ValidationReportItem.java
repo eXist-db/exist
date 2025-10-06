@@ -25,92 +25,90 @@ package org.exist.validation;
  * Helper class for validation (error) messages.
  */
 public class ValidationReportItem {
-    
+
     public static final int WARNING = 1;
     public static final int ERROR = 2;
     public static final int FATAL = 4;
-    
+
     private int type = -1;
     private int lineNumber = -1;
     private int columnNumber = -1;
     private String publicId = null;
-    private String systemId = null; 
-    private String message ="";
-    private int repeat=1;
-    
-    public void setType(int type){
-        this.type=type;
-    }
-    
-    public int getType(){
+    private String systemId = null;
+    private String message = "";
+    private int repeat = 1;
+
+    public int getType() {
         return type;
     }
-    
-    public void setLineNumber(int nr){
-        this.lineNumber=nr;
+
+    public void setType(final int type) {
+        this.type = type;
     }
-    
-    public int getLineNumber(){
+
+    public int getLineNumber() {
         return this.lineNumber;
     }
-    
-    public void setColumnNumber(int nr){
-        this.columnNumber=nr;
+
+    public void setLineNumber(final int nr) {
+        this.lineNumber = nr;
     }
-    
-    public int getColumnNumber(){
+
+    public int getColumnNumber() {
         return this.columnNumber;
     }
-    
-    public void setMessage(String message){
-        this.message=message;
+
+    public void setColumnNumber(final int nr) {
+        this.columnNumber = nr;
     }
-    
-    public String getMessage(){
+
+    public String getMessage() {
         return this.message;
     }
-    
-    public void setPublicId(String publicId){
-        this.publicId=publicId;
+
+    public void setMessage(final String message) {
+        this.message = message;
     }
-    
-    public String getPublicId(){
+
+    public String getPublicId() {
         return this.publicId;
     }
-    
-    public void setSystemId(String systemId){
-        this.systemId=systemId;
+
+    public void setPublicId(final String publicId) {
+        this.publicId = publicId;
     }
-    
-    public String getSystemId(){
+
+    public String getSystemId() {
         return this.systemId;
     }
-    
+
+    public void setSystemId(final String systemId) {
+        this.systemId = systemId;
+    }
+
     public String getTypeText() {
 
-        String reportType = switch (type) {
+        return switch (type) {
             case WARNING -> "Warning";
             case ERROR -> "Error";
             case FATAL -> "Fatal";
             default -> "Unknown Error type";
         };
+    }
 
-        return reportType;
-    }
-    
-    public String toString(){
-        
-        final String reportType=getTypeText();
-        
+    public String toString() {
+
+        final String reportType = getTypeText();
+
         return (reportType
-                + " (" + lineNumber +","+ columnNumber + ") : " + message);
+                + " (" + lineNumber + "," + columnNumber + ") : " + message);
     }
-    
-    public void increaseRepeat(){
+
+    public void increaseRepeat() {
         repeat++;
     }
-    
-    public int getRepeat(){
+
+    public int getRepeat() {
         return repeat;
     }
 }

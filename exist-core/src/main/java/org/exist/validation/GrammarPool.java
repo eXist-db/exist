@@ -21,186 +21,147 @@
  */
 package org.exist.validation;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.xerces.util.XMLGrammarPoolImpl;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
-import org.exist.Namespaces;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
- *  Wrapper around the Xerces XMLGrammarPoolImpl, so debugging of
- * actions can be monitored. Javadoc copied from xml.apache.org.
- *
- * @author Dannes Wessels (dizzzz@exist-db.org)
- *
- * @see org.apache.xerces.xni.grammars.XMLGrammarPool
- * @see org.apache.xerces.util.XMLGrammarPoolImpl
- * @see org.apache.xerces.xni.grammars.Grammar
- * @see org.apache.xerces.xni.grammars.XMLGrammarDescription
+ * Smart grammar-cache for xerces based on the Caffeine library.
  */
 public class GrammarPool implements XMLGrammarPool {
-    
-    private final static Logger logger = LogManager.getLogger(GrammarPool.class);
-    
-    private final XMLGrammarPool pool;
-    
+
+    private static final Logger LOGGER = LogManager.getLogger(GrammarPool.class);
+
+    public static final String GRAMMAR_POOL_ELEMENT = "grammar-cache";
+
+    public static final String ATTRIBUTE_MAXIMUM_SIZE = "size";
+    public static final String PROPERTY_MAXIMUM_SIZE = "validation.grammar-cache.size";
+
+    public static final String ATTRIBUTE_EXPIRE_AFTER_ACCESS = "expire";
+    public static final String PROPERTY_EXPIRE_AFTER_ACCESS = "validation.grammar-cache.expire";
+
+    private final Cache<GrammarKey, Grammar> grammarCache;
+    private boolean isLocked = false;
+
     /**
-     * Constructs a grammar pool with a default number of buckets. 
+     * Constructor. Default 128 entries, lifetime after last access is 60 minutes.
      */
     public GrammarPool() {
-        if (logger.isInfoEnabled())
-            {logger.info("Initializing GrammarPool.");}
-        pool = new XMLGrammarPoolImpl();
+        this(-1, -1L);
     }
-    
-    /**  
-     * Constructs a grammar pool with a default number of buckets using pool.
-     * 
-     * @param pool The supplied grammar pool is reused.
-     */
-    public GrammarPool(XMLGrammarPool pool) {
-        if (logger.isInfoEnabled())
-            {logger.info("Initializing GrammarPool using supplied pool.");}
-        this.pool=pool;
-    }
-    
-    /**
-     *   Retrieve the initial known set of grammars. this method is called
-     * by a validator before the validation starts. the application can provide 
-     * an initial set of grammars available to the current validation attempt.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveInitialGrammarSet(String)
-     * 
-     * @param   type  The type of the grammar, from the 
-     *          org.apache.xerces.xni.grammars.Grammar interface.
-     * @return  The set of grammars the validator may put in its "bucket"
-     */
-    public Grammar[] retrieveInitialGrammarSet(String type) {
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Retrieve initial grammarset ({}).", type);}
-        
-        final Grammar[] grammars = pool.retrieveInitialGrammarSet(type);
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Found {} grammars.", grammars.length);}
-        return grammars;
-    }
-    
-    /**
-     *  Return the final set of grammars that the validator ended up with.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#cacheGrammars(String,Grammar[])
-     * 
-     * @param type      The type of the grammars being returned
-     * @param grammar   an array containing the set of grammars being 
-     *                  returned; order is not significant.
-     */
-    public void cacheGrammars(String type, Grammar[] grammar) {
-        if (logger.isDebugEnabled())
-            {
-                logger.debug("Cache {} grammars ({}).", grammar.length, type);}
-        pool.cacheGrammars(type, grammar);
-    }
-        
-    /**
-     *  Allows the XMLGrammarPool to store grammars when its 
-     * cacheGrammars(String, Grammar[]) method is called. This is the default 
-     * state of the object.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#unlockPool
-     */
-    public void unlockPool() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Unlock grammarpool.");}
-        pool.unlockPool();
-    }
-    
-    /**
-     *   This method requests that the application retrieve a grammar 
-     * corresponding to the given GrammarIdentifier from its cache. If it 
-     * cannot do so it must return null; the parser will then call the 
-     * EntityResolver. An application must not call its EntityResolver itself 
-     * from this method; this may result in infinite recursions.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveGrammar(XMLGrammarDescription)
-     *
-     * @param xgd    The description of the Grammar being requested.
-     * @return       the Grammar corresponding to this description or null 
-     *               if no such Grammar is known.
-     */
-    public Grammar retrieveGrammar(XMLGrammarDescription xgd) {
 
-        if (xgd == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("XMLGrammarDescription is null");
-            }
-            return null;
+    /**
+     * Constructor.
+     *
+     * @param maxSize Maximum nr of cached elements.
+     * @param seconds Maximum expiration time in seconds after last access.
+     */
+    public GrammarPool(final long maxSize, final long seconds) {
+
+        Caffeine<Object, Object> cafeineBuilder = Caffeine.newBuilder();
+
+        if (maxSize > 0) {
+            cafeineBuilder = cafeineBuilder.maximumSize(maxSize);
         }
 
-        if (xgd.getNamespace() != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieve grammar for namespace '{}'.", xgd.getNamespace());
-            }
+        if (seconds > 0L) {
+            cafeineBuilder.expireAfterAccess(seconds, TimeUnit.SECONDS);
         }
 
-        if (xgd.getPublicId() != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Retrieve grammar for publicId '{}'.", xgd.getPublicId());
-            }
-        }
+        final String sizeTxt =maxSize > 0 ? String.valueOf(maxSize) : "unlimited";
+        final String expireTxt = seconds > 0L ? seconds + " seconds" : "infinite";
 
-        return pool.retrieveGrammar(xgd);
+        final  Level level = seconds > 0L && maxSize > 0 ? Level.INFO : Level.WARN;
+        LOGGER.log(level, "Grammar cache: size={}, lifetime={}", sizeTxt, expireTxt);
+
+        grammarCache = cafeineBuilder.build();
     }
-    
-    /**
-     *  Causes the XMLGrammarPool not to store any grammars when the 
-     * cacheGrammars(String, Grammar[[]) method is called.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#lockPool
-     */
+
+    @Override
+    public Grammar[] retrieveInitialGrammarSet(final String grammarType) {
+        final List<Grammar> grammars = new ArrayList<>();
+        grammarCache.asMap().forEach((key, value) -> {
+            if (key.grammarType.equals(grammarType)) {
+                grammars.add(value);
+            }
+        });
+        return grammars.toArray(new Grammar[0]);
+    }
+
+    @Override
+    public void cacheGrammars(final String grammarType, final Grammar[] grammars) {
+        if (isLocked || grammars == null) return;
+
+        Arrays.stream(grammars).forEach(grammar -> {
+            final XMLGrammarDescription desc = grammar.getGrammarDescription();
+            grammarCache.put(new GrammarKey(desc), grammar);
+        });
+    }
+
+    @Override
+    public Grammar retrieveGrammar(final XMLGrammarDescription desc) {
+        return grammarCache.getIfPresent(new GrammarKey(desc));
+    }
+
+    @Override
     public void lockPool() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Lock grammarpool.");}
-        pool.lockPool();
+        isLocked = true;
     }
-    
-    /**
-     *  Removes all grammars from the pool.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
-     */
-    public void clear() {
-        if (logger.isDebugEnabled())
-            {logger.debug("Clear grammarpool.");}
-        pool.clear();
-    }
-    
-    /**
-     *  Removes all DTD grammars from the pool. Workaround for Xerces bug.
-     *
-     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
-     */
-    public void clearDTDs() {
-        //if (logger.isDebugEnabled())
-        //    logger.debug("Removing DTD's from grammarpool.");
 
-        final Grammar dtds[] = retrieveInitialGrammarSet(Namespaces.DTD_NS);
-        if (dtds.length > 0) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Removing {} DTDs.", dtds.length);
-            }
-            final Grammar schemas[] = retrieveInitialGrammarSet(Namespaces.SCHEMA_NS);
-            clear();
-            cacheGrammars(Namespaces.SCHEMA_NS, schemas);
-            
-        } else {
-            //if (logger.isDebugEnabled())
-            //    logger.debug("No DTDs to be removed.");
+    @Override
+    public void unlockPool() {
+        isLocked = false;
+    }
+
+    @Override
+    public void clear() {
+        if (isLocked) return;
+
+        grammarCache.invalidateAll();
+    }
+
+    @Override
+    public String toString() {
+        return grammarCache.stats().toString();
+    }
+
+    // Helper class for cache keys
+    private static class GrammarKey {
+        private final String grammarType;
+        private final String targetNamespace;
+
+        public GrammarKey(final XMLGrammarDescription desc) {
+            this.grammarType = desc.getGrammarType();
+            this.targetNamespace = desc.getNamespace();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(grammarType, targetNamespace);
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof final GrammarKey other)) return false;
+            return Objects.equals(grammarType, other.grammarType) &&
+                    Objects.equals(targetNamespace, other.targetNamespace);
+        }
+
+        @Override
+        public String toString() {
+            return "grammarType='%s', targetNamespace='%s'".formatted(grammarType, targetNamespace);
         }
     }
-    
-    
 }

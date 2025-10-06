@@ -27,36 +27,36 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- *  Simple contenthandler to determine the NamespaceUri of
+ * Simple contenthandler to determine the NamespaceUri of
  * the document root node.
- * 
+ *
  * @author Dannes Wessels
  */
 public class ValidationContentHandler extends DefaultHandler {
 
     private boolean isFirstElement = true;
     private String namespaceUri = null;
-    
-    
+
+
     /**
-     * @see org.xml.sax.helpers.DefaultHandler#startElement(String,String,String,Attributes)
+     * @see org.xml.sax.helpers.DefaultHandler#startElement(String, String, String, Attributes)
      */
     @Override
-    public void startElement(String uri, String localName, String qName, 
-                             Attributes attributes) throws SAXException {
-        
-        if(isFirstElement){
-            namespaceUri=uri;
-            isFirstElement=false;
+    public void startElement(final String uri, final String localName, final String qName,
+                             final Attributes attributes) throws SAXException {
+
+        if (isFirstElement) {
+            namespaceUri = uri;
+            isFirstElement = false;
         }
     }
-    
+
     /**
-     *  Get namespace of root element. To be used for reporting.
-     * 
+     * Get namespace of root element. To be used for reporting.
+     *
      * @return Namespace of root element.
      */
-    public String getNamespaceUri(){
+    public String getNamespaceUri() {
         return namespaceUri;
     }
 }

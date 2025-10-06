@@ -1196,22 +1196,64 @@ public class Configuration implements ErrorHandler {
         // Determine validation mode
         configureProperty(validation, XMLReaderObjectFactory.VALIDATION_MODE_ATTRIBUTE, PROPERTY_VALIDATION_MODE);
 
-        // cache
-        setProperty(XMLReaderObjectFactory.GRAMMAR_POOL, new GrammarPool());
-
         // Configure the Entity Resolver
-        final NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
-        if (entityResolver.getLength() == 0) {
-            return;
+        final NodeList entityResolverElements = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
+        if (entityResolverElements.getLength() != 0) {
+            final Element elemEntityResolver = (Element) entityResolverElements.item(0);
+            configureEntityResolver(dbHome, elemEntityResolver);
         }
+
+        // Configure the grammar pool
+        final NodeList grammarPoolElements = validation.getElementsByTagName(GrammarPool.GRAMMAR_POOL_ELEMENT);
+        configureGrammarCache(grammarPoolElements);
+
+    }
+
+    private void configureGrammarCache(final NodeList grammarCacheElements) {
+        if (grammarCacheElements.getLength() == 0) {
+            setProperty(GrammarPool.GRAMMAR_POOL_ELEMENT, new GrammarPool());
+
+        } else {
+            final Element grammarPoolElem = (Element) grammarCacheElements.item(0);
+            configureProperty(grammarPoolElem, GrammarPool.ATTRIBUTE_MAXIMUM_SIZE,
+                    GrammarPool.PROPERTY_MAXIMUM_SIZE, Configuration::asInteger, null);
+            configureProperty(grammarPoolElem, GrammarPool.ATTRIBUTE_EXPIRE_AFTER_ACCESS,
+                    GrammarPool.PROPERTY_EXPIRE_AFTER_ACCESS, Configuration::asInteger, null);
+            setProperty(GrammarPool.GRAMMAR_POOL_ELEMENT,
+                    new GrammarPool(getInteger(GrammarPool.PROPERTY_MAXIMUM_SIZE), getInteger(GrammarPool.PROPERTY_EXPIRE_AFTER_ACCESS)));
+        }
+    }
+
+    private void configureEntityResolver(final Optional<Path> dbHome, final Element entityResolverElement) {
         LOG.info("Creating xmlresolver.org OASIS Catalog resolver");
 
-        final Element elemEntityResolver = (Element) entityResolver.item(0);
-        final NodeList nlCatalogs = elemEntityResolver.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
+        final NodeList catalogElements = entityResolverElement
+                .getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
+        final Path webappHome = getWebappHome(dbHome, catalogElements);
 
-        // Determine webapps directory. SingleInstanceConfiguration cannot
-        // be used at this phase. Trick is to check whether dbHOME is
-        // pointing to a WEB-INF directory, meaning inside the war file.
+        // Store all configured URIs
+        final List<String> catalogUris = getCatalogUris(dbHome, catalogElements, webappHome);
+        setProperty(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
+
+        // Create and Store the resolver
+        try {
+            final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
+                    .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
+                    .toList();
+            final Resolver resolver = ResolverFactory.newResolver(catalogs);
+            setProperty(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
+        } catch (final URISyntaxException e) {
+            LOG.error("Unable to parse catalog uri: {}", e.getMessage(), e);
+        }
+    }
+
+    /*
+        Determine webapps directory. SingleInstanceConfiguration cannot
+        be used at this phase. Trick is to check whether dbHOME is
+        pointing to a WEB-INF directory, meaning inside the war file.
+     */
+    private static Path getWebappHome(final Optional<Path> dbHome, final NodeList catalogElements) {
+
         final Path webappHome = dbHome.map(h -> {
             if (FileUtils.fileName(h).endsWith("WEB-INF")) {
                 return h.getParent().toAbsolutePath();
@@ -1220,15 +1262,18 @@ public class Configuration implements ErrorHandler {
         }).orElse(Paths.get("webapp").toAbsolutePath());
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Found {} catalog uri entries.", nlCatalogs.getLength());
+            LOG.debug("Found {} catalog uri entries.", catalogElements.getLength());
             LOG.debug("Using dbHome={}", dbHome);
             LOG.debug("using webappHome={}", webappHome);
         }
+        return webappHome;
+    }
 
+    private static List<String> getCatalogUris(final Optional<Path> dbHome, final NodeList catalogElements, final Path webappHome) {
         // Get the Catalog URIs
         final List<String> catalogUris = new ArrayList<>();
-        for (int i = 0; i < nlCatalogs.getLength(); i++) {
-            final String uriAttributeValue = ((Element) nlCatalogs.item(i)).getAttribute("uri");
+        for (int i = 0; i < catalogElements.getLength(); i++) {
+            final String uriAttributeValue = ((Element) catalogElements.item(i)).getAttribute("uri");
 
             if (!uriAttributeValue.isEmpty()) {
                 final String uri;
@@ -1246,20 +1291,7 @@ public class Configuration implements ErrorHandler {
                 catalogUris.add(uri);
             }
         }
-
-        // Store all configured URIs
-        setProperty(XMLReaderObjectFactory.CATALOG_URIS, catalogUris);
-
-        // Create and Store the resolver
-        try {
-            final List<Tuple2<String, Optional<InputSource>>> catalogs = catalogUris.stream()
-                    .map(catalogUri -> Tuple(catalogUri, Optional.<InputSource>empty()))
-                    .toList();
-            final Resolver resolver = ResolverFactory.newResolver(catalogs);
-            setProperty(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
-        } catch (final URISyntaxException e) {
-            LOG.error("Unable to parse catalog uri: {}", e.getMessage(), e);
-        }
+        return catalogUris;
     }
 
     private void configureRpcServer(final Element validation) throws DatabaseConfigurationException {

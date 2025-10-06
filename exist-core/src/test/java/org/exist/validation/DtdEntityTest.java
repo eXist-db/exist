@@ -21,17 +21,20 @@
  */
 package org.exist.validation;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Small test to show than entities are required to be resolved.
- * 
+ *
  * @author wessels
  */
 public class DtdEntityTest {
@@ -43,7 +46,7 @@ public class DtdEntityTest {
     public void loadWithEntities() throws XMLDBException {
         final String input = "<a>first empty: &empty; then trade: &trade; </a>";
 
-        try (Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity")) {
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity")) {
             ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes());
 
             // should throw XMLDBException
@@ -57,13 +60,14 @@ public class DtdEntityTest {
         fail("Should have thrown XMLDBException");
     }
 
-    @Test @Ignore("Entity resolve bug")
+    @Test
+    @Ignore("Entity resolve bug")
     public void bugloadWithEntities() throws XMLDBException {
         final String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                 + "<!DOCTYPE procedure PUBLIC \"-//AAAA//DTD Procedure 0.4//EN\" \"aaaa.dtd\" >"
                 + "<a>first empty: &empty; then trade: &trade; </a>";
 
-        try (Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity")) {
+        try (final Collection col = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "entity")) {
             ExistXmldbEmbeddedServer.storeResource(col, "docname.xml", input.getBytes(UTF_8));
 
             // should throw XMLDBException

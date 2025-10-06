@@ -37,7 +37,6 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -139,7 +138,7 @@ public class GrammarTooling extends BasicFunction  {
     throws XPathException {
         
         final GrammarPool grammarpool
-            = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMAR_POOL);
+            = (GrammarPool) config.getProperty(GrammarPool.GRAMMAR_POOL_ELEMENT);
         
         if (isCalledAs("clear-grammar-cache")){
             

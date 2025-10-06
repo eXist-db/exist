@@ -22,15 +22,15 @@
 
 package org.exist.validation.internal.node;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.Database;
 import org.exist.storage.io.BlockingInputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.value.NodeValue;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
@@ -40,16 +40,15 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class NodeInputStream extends InputStream {
-    private final BlockingInputStream bis;
-
     private static final AtomicLong nodeSerializerThreadId = new AtomicLong();
+    private final BlockingInputStream bis;
 
     /**
      * Creates a new instance of NodeInputStream.
      *
-     * @param database      The database.
+     * @param database         The database.
      * @param withSerializerFn The serializer closure.
-     * @param node          The node that is serialized.
+     * @param node             The node that is serialized.
      */
     public NodeInputStream(final Database database, final ConsumerE<ConsumerE<Serializer, IOException>, IOException> withSerializerFn, final NodeValue node) {
         this.bis = new BlockingInputStream();
@@ -58,17 +57,17 @@ public class NodeInputStream extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
         return bis.read(b, off, len);
     }
 
     @Override
-    public int read(byte[] b) throws IOException {
+    public int read(final byte[] b) throws IOException {
         return bis.read(b, 0, b.length);
     }
 
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(final long n) throws IOException {
         return bis.skip(n);
     }
 

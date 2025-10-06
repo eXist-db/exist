@@ -25,10 +25,8 @@ import org.exist.TestUtils;
 import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.test.ExistXmldbEmbeddedServer;
-
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -41,7 +39,7 @@ import org.xmldb.api.modules.CollectionManagementService;
 import static org.junit.Assert.assertNotNull;
 
 /**
- *  Created collections needed for validation tests.
+ * Created collections needed for validation tests.
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
@@ -71,7 +69,7 @@ public class DatabaseCollectionTest {
         final CollectionManagementService cms = existServer.getRoot().getService(CollectionManagementService.class);
         cms.removeCollection(TEST_COLLECTION);
     }
-    
+
     @Test
     public void createCollections() throws XMLDBException {
         final Collection testCollection = DatabaseManager.getCollection(ROOT_URI + "/" + TEST_COLLECTION);
