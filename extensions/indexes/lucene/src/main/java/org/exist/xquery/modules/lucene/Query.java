@@ -55,7 +55,7 @@ public class Query extends Function implements Optimizable {
                     used. The context of the Lucene query is determined by the given input
                     node set. The query is specified either as a query string based on
                     Lucene's default query syntax or as an XML fragment.
-                    See http://exist-db.org/lucene.html#N1029E for complete documentation.""",
+                    See https://exist-db.org/exist/apps/doc/lucene.xml#query for complete documentation.""",
             returnsOptMany(Type.NODE, """
                     all nodes from the input node set matching the query. match highlighting information
                     will be available for all returned nodes. Lucene's match score can be retrieved via
