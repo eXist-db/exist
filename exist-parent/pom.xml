@@ -132,6 +132,7 @@
         <awaitility.version>4.3.0</awaitility.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
+        <surefire.version>3.5.4</surefire.version>
 
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
@@ -794,7 +795,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.5.4</version>
+                    <version>${surefire.version}</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.junit.platform</groupId>
@@ -849,12 +850,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-report-plugin</artifactId>
-                    <version>3.5.4</version>
+                    <version>${surefire.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.5.4</version>
+                    <version>${surefire.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1168,6 +1169,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${surefire.version}</version>
                 <configuration>
                     <aggregate>true</aggregate>
                 </configuration>
