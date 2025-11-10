@@ -624,7 +624,8 @@
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                         <!-- The OSS Index Server (https://ossindex.sonatype.org) can sometimes be flaky -->
                         <ossIndexWarnOnlyOnRemoteErrors>true</ossIndexWarnOnlyOnRemoteErrors>
-
+                        <ossIndexUsername>${env.OSSINDEX_USERNAME}</ossIndexUsername>
+                        <ossIndexPassword>${env.OSSINDEX_TOKEN}</ossIndexPassword>
                         <archiveAnalyzerEnabled>false</archiveAnalyzerEnabled>
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <autoconfAnalyzerEnabled>false</autoconfAnalyzerEnabled>
@@ -793,8 +794,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <!-- NOTE: version 3.5.3 fails to run XSuite tests -->
-                    <version>3.5.2</version>
+                    <version>3.5.4</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.junit.platform</groupId>
@@ -976,6 +976,13 @@
                         </goals>
                         <configuration>
                             <rules>
+                                <requireSameVersions>
+                                    <plugins>
+                                        <plugin>org.apache.maven.plugins:maven-failsafe-plugin</plugin>
+                                        <plugin>org.apache.maven.plugins:maven-surefire-plugin</plugin>
+                                        <plugin>org.apache.maven.plugins:maven-surefire-report-plugin</plugin>
+                                    </plugins>
+                                </requireSameVersions>
                                 <requireJavaVersion>
                                     <version>${maven.compiler.target}</version>
                                     <message>eXist-db requires (at least) OpenJDK ${maven.compiler.target} to build and run. Detected ${java.vendor} OpenJDK ${java.version}. Please upgrade.</message>
