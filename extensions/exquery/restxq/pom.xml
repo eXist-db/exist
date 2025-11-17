@@ -155,12 +155,6 @@
             <artifactId>jctools-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-        </dependency>
-
-
         <!-- test dependencies -->
 
         <dependency>

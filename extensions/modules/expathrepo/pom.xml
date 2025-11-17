@@ -63,11 +63,6 @@
             <artifactId>log4j-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>xml-apis</groupId>
-            <artifactId>xml-apis</artifactId>
-        </dependency>
-
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>
