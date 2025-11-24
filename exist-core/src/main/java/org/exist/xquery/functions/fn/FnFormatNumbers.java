@@ -713,9 +713,6 @@ public class FnFormatNumbers extends BasicFunction {
         final int minimumExponentSize = subPicture.getMinimumExponentSize();
         if (minimumExponentSize > 0) {
             formatted.append(decimalFormat.exponentSeparator);
-            if (exp < 0) {
-                formatted.append(decimalFormat.minusSign);
-            }
 
             final CodePointString expStr = new CodePointString(String.valueOf(exp));
 
