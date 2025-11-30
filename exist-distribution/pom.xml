@@ -22,7 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -42,8 +43,8 @@
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
@@ -624,6 +625,32 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <ignoreNonCompile>true</ignoreNonCompile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${assemble.dir}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
                     <execution>
@@ -746,7 +773,7 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory />  <!-- NOTE: this must be empty -->
+                            <outputDirectory/>  <!-- NOTE: this must be empty -->
                             <resources>
                                 <resource>
                                     <workOnFullPath>true</workOnFullPath>
@@ -765,255 +792,89 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>appassembler-maven-plugin</artifactId>
-                <version>${appassembler.version}</version>
-                <configuration>
-                    <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>lib</repositoryName>
-                    <binFileExtensions>
-                        <unix>.sh</unix>
-                    </binFileExtensions>
-                    <defaultJvmSettings>
-                        <initialMemorySize>128m</initialMemorySize>
-                        <extraArguments>
-                            <extraArgument>-XX:+UseNUMA</extraArgument>
-                            <extraArgument>-XX:+UseZGC</extraArgument>
-                            <extraArgument>-XX:+UseStringDeduplication</extraArgument>
-
-                            <!-- Option to generate JDWP debuggable app -->
-                            <!-- extraArgument>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</extraArgument -->
-
-                        </extraArguments>
-                        <systemProperties>
-                            <systemProperty>file.encoding=UTF-8</systemProperty>
-                            <systemProperty>log4j.configurationFile=@BASEDIR@/etc/log4j2.xml</systemProperty>
-                            <systemProperty>exist.home=@BASEDIR@</systemProperty>
-                            <systemProperty>exist.configurationFile=@BASEDIR@/etc/conf.xml</systemProperty>
-                            <systemProperty>jetty.home=@BASEDIR@</systemProperty>
-                            <systemProperty>exist.jetty.config=@BASEDIR@/etc/jetty/standard.enabled-jetty-configs</systemProperty>
-                        </systemProperties>
-                    </defaultJvmSettings>
-                    <licenseHeaderFile>LGPL-21-license.txt</licenseHeaderFile>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
-                        <id>appassembler-base</id>
+                        <id>copy files</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>assemble</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <assembleDirectory>${assemble.dir}</assembleDirectory>
-                            <programs />
-                            <configurationDirectory>etc</configurationDirectory>
-                            <copyConfigurationDirectory>true</copyConfigurationDirectory>
-                            <logsDirectory>logs</logsDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>appassembler-booter</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate-daemons</goal>
-                        </goals>
-                        <configuration>
-                            <generateRepository>false</generateRepository>
-                            <target>${assemble.dir}</target>
-                            <separateTargetPlatforms>false</separateTargetPlatforms>
-                            <daemons>
-                                <daemon>
-                                    <id>client</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>client</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>startup</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>jetty</commandLineArgument>
-                                        <commandLineArgument>@BASEDIR@/etc/conf.xml</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>shutdown</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>shutdown</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>launcher</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>launcher</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>backup</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>backup</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>export</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
-                                        <commandLineArgument>--export</commandLineArgument>
-                                        <commandLineArgument>--zip</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>export-gui</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.backup.ExportGUI</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>jmxclient</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.management.client.JMXClient</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                        <platform>booter-windows</platform>
-                                    </platforms>
-                                </daemon>
-                            </daemons>
-                        </configuration>
+                            <target>
+                                <!-- create required directories-->
+                                <mkdir dir="${assemble.dir}/etc"/> d
+                                <mkdir dir="${assemble.dir}/bin"/>
 
-                    </execution>
+                                <!-- copy configuration files -->
+                                <copy todir="${assemble.dir}/etc">
+                                    <fileset dir="${project.basedir}/src/main/config"/>
+                                </copy>
 
-                    <execution>
-                        <id>appassembler-booter-for-mac</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate-daemons</goal>
-                        </goals>
-                        <configuration>
-                            <repositoryName>../Java</repositoryName>
-                            <generateRepository>false</generateRepository>
-                            <target>${mac.bundle.resources.dir}</target>
-                            <separateTargetPlatforms>false</separateTargetPlatforms>
-                            <daemons>
-                                <daemon>
-                                    <id>client</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>client</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>startup</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>jetty</commandLineArgument>
-                                        <commandLineArgument>@BASEDIR@/etc/conf.xml</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>shutdown</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>shutdown</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>launcher</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <!-- No arguments needed! Default is to start the launcher -->
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>backup</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>backup</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>export</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.backup.ExportMain</commandLineArgument>
-                                        <commandLineArgument>--export</commandLineArgument>
-                                        <commandLineArgument>--zip</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>export-gui</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.backup.ExportGUI</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                                <daemon>
-                                    <id>jmxclient</id>
-                                    <mainClass>org.exist.start.Main</mainClass>
-                                    <commandLineArguments>
-                                        <commandLineArgument>org.exist.management.client.JMXClient</commandLineArgument>
-                                    </commandLineArguments>
-                                    <platforms>
-                                        <platform>booter-unix</platform>
-                                    </platforms>
-                                </daemon>
-                            </daemons>
+                                <macrodef name="copy-script">
+                                    <attribute name="src"/>
+                                    <attribute name="dest"/>
+                                    <attribute name="cmd"/>
+                                    <sequential>
+                                        <copy file="@{src}" tofile="@{dest}">
+                                            <filterset>
+                                                <filter token="PLACEHOLDER" value="@{cmd}"/>
+                                            </filterset>
+                                        </copy>
+                                    </sequential>
+                                </macrodef>
+
+                                <!-- windows -->
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/backup.bat"
+                                             cmd="org.exist.start.Main backup"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/client.bat"
+                                             cmd="org.exist.start.Main client"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export-gui.bat"
+                                             cmd="org.exist.backup.ExportGUI"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export.bat"
+                                             cmd="org.exist.backup.ExportMain --export --zip"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/jmxclient.bat"
+                                             cmd="org.exist.management.client.JMXClient"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/launcher.bat"
+                                             cmd="org.exist.start.Main launcher"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/shutdown.bat"
+                                             cmd="org.exist.start.Main shutdown"/>
+                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/startup.bat"
+                                             cmd="org.exist.start.Main jetty"/>
+
+                                <!-- unix -->
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/backup.sh"
+                                             cmd="org.exist.start.Main backup"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/client.sh"
+                                             cmd="org.exist.start.Main client"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export-gui.sh"
+                                             cmd="org.exist.backup.ExportGUI"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export.sh"
+                                             cmd="org.exist.backup.ExportMain --export --zip"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/jmxclient.sh"
+                                             cmd="org.exist.management.client.JMXClient"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/launcher.sh"
+                                             cmd="org.exist.start.Main launcher"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/shutdown.sh"
+                                             cmd="org.exist.start.Main shutdown"/>
+                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/startup.sh"
+                                             cmd="org.exist.start.Main jetty"/>
+
+                                <!-- copy apache daemon files -->
+                                <copy todir="${assemble.dir}/bin/">
+                                    <fileset dir="src/main/templates">
+                                        <include name="prunsrv*"/>
+                                        <include name="jsvc*"/>
+                                    </fileset>
+                                </copy>
+
+                                <!-- set permissions -->
+                                <chmod dir="${assemble.dir}/bin" perm="755" includes="*.sh,jsvc*"/>
+
+                            </target>
                         </configuration>
-
                     </execution>
                 </executions>
             </plugin>

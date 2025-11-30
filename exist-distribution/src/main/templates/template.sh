@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+#
 # eXist-db Open Source Native XML Database
 # Copyright (C) 2001 The eXist-db Authors
 #
@@ -18,6 +19,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+#
 
 
 # resolve links - $0 may be a softlink
@@ -98,12 +100,7 @@ then
   REPO="$BASEDIR"/lib
 fi
 
-CLASSPATH="$BASEDIR"/etc:"$REPO"/appassembler-booter-2.1.0.jar:"$REPO"/appassembler-model-2.1.0.jar:"$REPO"/plexus-utils-3.2.0.jar:"$REPO"/stax-api-1.0.1.jar:"$REPO"/stax-1.1.1-dev.jar
-
-ENDORSED_DIR=
-if [ -n "$ENDORSED_DIR" ] ; then
-  CLASSPATH=$BASEDIR/$ENDORSED_DIR/*:$CLASSPATH
-fi
+CLASSPATH="$BASEDIR"/etc:"$REPO"/*
 
 if [ -n "$CLASSPATH_PREFIX" ] ; then
   CLASSPATH=$CLASSPATH_PREFIX:$CLASSPATH
@@ -118,12 +115,10 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
 fi
 
-exec "$JAVACMD" $JAVA_OPTS -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="$BASEDIR"/etc/log4j2.xml -Dexist.home="$BASEDIR" -Dexist.configurationFile="$BASEDIR"/etc/conf.xml -Djetty.home="$BASEDIR" -Dexist.jetty.config="$BASEDIR"/etc/jetty/standard.enabled-jetty-configs \
+exec "$JAVACMD" $JAVA_OPTS -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication \
+  -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="$BASEDIR"/etc/log4j2.xml \
+  -Dexist.home="$BASEDIR" -Dexist.configurationFile="$BASEDIR"/etc/conf.xml \
+  -Djetty.home="$BASEDIR" -Dexist.jetty.config="$BASEDIR"/etc/jetty/standard.enabled-jetty-configs \
   -classpath "$CLASSPATH" \
-  -Dapp.name="backup" \
-  -Dapp.pid="$$" \
-  -Dapp.repo="$REPO" \
-  -Dapp.home="$BASEDIR" \
-  -Dbasedir="$BASEDIR" \
-  org.codehaus.mojo.appassembler.booter.AppassemblerBooter \
+  org.exist.start.Main @PLACEHOLDER@ \
   "$@"

@@ -1,3 +1,4 @@
+@REM
 @REM eXist-db Open Source Native XML Database
 @REM Copyright (C) 2001 The eXist-db Authors
 @REM
@@ -17,6 +18,7 @@
 @REM You should have received a copy of the GNU Lesser General Public
 @REM License along with this library; if not, write to the Free Software
 @REM Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+@REM
 
 @echo off
 
@@ -73,17 +75,18 @@ if "%JAVACMD%"=="" set JAVACMD=java
 
 if "%REPO%"=="" set REPO=%BASEDIR%\lib
 
-set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\appassembler-booter-2.1.0.jar;"%REPO%"\appassembler-model-2.1.0.jar;"%REPO%"\plexus-utils-3.2.0.jar;"%REPO%"\stax-api-1.0.1.jar;"%REPO%"\stax-1.1.1-dev.jar
-
-set ENDORSED_DIR=
-if NOT "%ENDORSED_DIR%" == "" set CLASSPATH="%BASEDIR%"\%ENDORSED_DIR%\*;%CLASSPATH%
+set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\*
 
 if NOT "%CLASSPATH_PREFIX%" == "" set CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%
 
 @REM Reaching here means variables are defined and arguments have been captured
 :endInit
 
-%JAVACMD% %JAVA_OPTS% -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="%BASEDIR%"/etc/log4j2.xml -Dexist.home="%BASEDIR%" -Dexist.configurationFile="%BASEDIR%"/etc/conf.xml -Djetty.home="%BASEDIR%" -Dexist.jetty.config="%BASEDIR%"/etc/jetty/standard.enabled-jetty-configs -classpath %CLASSPATH% -Dapp.name="backup" -Dapp.repo="%REPO%" -Dapp.home="%BASEDIR%" -Dbasedir="%BASEDIR%" org.codehaus.mojo.appassembler.booter.AppassemblerBooter %CMD_LINE_ARGS%
+%JAVACMD% %JAVA_OPTS% -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication ^
+    -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="%BASEDIR%"/etc/log4j2.xml ^
+    -Dexist.home="%BASEDIR%" -Dexist.configurationFile="%BASEDIR%"/etc/conf.xml ^
+    -Djetty.home="%BASEDIR%" -Dexist.jetty.config="%BASEDIR%"/etc/jetty/standard.enabled-jetty-configs ^
+    -classpath %CLASSPATH% org.exist.start.Main @PLACEHOLDER@ %CMD_LINE_ARGS%
 if %ERRORLEVEL% NEQ 0 goto error
 goto end
 
