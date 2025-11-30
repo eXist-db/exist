@@ -89,7 +89,7 @@ if [ -z "$JAVACMD" ] ; then
     if command -v java >/dev/null 2>&1; then
       JAVACMD=$(command -v java)
     else
-      JAVACMD=`which java`
+      JAVACMD=$(which java)
     fi
   fi
 fi
