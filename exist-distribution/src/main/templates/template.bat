@@ -82,11 +82,18 @@ if NOT "%CLASSPATH_PREFIX%" == "" set CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%
 @REM Reaching here means variables are defined and arguments have been captured
 :endInit
 
+@REM Normalize classpath and property path quoting for Windows
+set "CLASSPATH=%BASEDIR%\etc;%REPO%\*"
+if NOT "%CLASSPATH_PREFIX%" == "" set "CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%"
+
 %JAVACMD% %JAVA_OPTS% -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication ^
-    -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="%BASEDIR%"/etc/log4j2.xml ^
-    -Dexist.home="%BASEDIR%" -Dexist.configurationFile="%BASEDIR%"/etc/conf.xml ^
-    -Djetty.home="%BASEDIR%" -Dexist.jetty.config="%BASEDIR%"/etc/jetty/standard.enabled-jetty-configs ^
-    -classpath %CLASSPATH% org.exist.start.Main @PLACEHOLDER@ %CMD_LINE_ARGS%
+    -Dfile.encoding=UTF-8 ^
+    -Dlog4j.configurationFile="%BASEDIR%\etc\log4j2.xml" ^
+    -Dexist.home="%BASEDIR%" ^
+    -Dexist.configurationFile="%BASEDIR%\etc\conf.xml" ^
+    -Djetty.home="%BASEDIR%" ^
+    -Dexist.jetty.config="%BASEDIR%\etc\jetty\standard.enabled-jetty-configs" ^
+    -classpath "%CLASSPATH%" org.exist.start.Main @PLACEHOLDER@ %CMD_LINE_ARGS%
 if %ERRORLEVEL% NEQ 0 goto error
 goto end
 
