@@ -828,9 +828,9 @@
 
                                 <!-- windows -->
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/backup.bat"
-                                             cmd="org.exist.start.Main backup"/>
+                                             cmd="backup"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/client.bat"
-                                             cmd="org.exist.start.Main client"/>
+                                             cmd="client"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export-gui.bat"
                                              cmd="org.exist.backup.ExportGUI"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export.bat"
@@ -838,17 +838,17 @@
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/jmxclient.bat"
                                              cmd="org.exist.management.client.JMXClient"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/launcher.bat"
-                                             cmd="org.exist.start.Main launcher"/>
+                                             cmd="launcher"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/shutdown.bat"
-                                             cmd="org.exist.start.Main shutdown"/>
+                                             cmd="shutdown"/>
                                 <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/startup.bat"
-                                             cmd="org.exist.start.Main jetty"/>
+                                             cmd="jetty"/>
 
                                 <!-- unix -->
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/backup.sh"
-                                             cmd="org.exist.start.Main backup"/>
+                                             cmd="backup"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/client.sh"
-                                             cmd="org.exist.start.Main client"/>
+                                             cmd="client"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export-gui.sh"
                                              cmd="org.exist.backup.ExportGUI"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export.sh"
@@ -856,11 +856,11 @@
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/jmxclient.sh"
                                              cmd="org.exist.management.client.JMXClient"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/launcher.sh"
-                                             cmd="org.exist.start.Main launcher"/>
+                                             cmd="launcher"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/shutdown.sh"
-                                             cmd="org.exist.start.Main shutdown"/>
+                                             cmd="shutdown"/>
                                 <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/startup.sh"
-                                             cmd="org.exist.start.Main jetty"/>
+                                             cmd="jetty"/>
 
                                 <!-- copy apache daemon files -->
                                 <copy todir="${assemble.dir}/bin/">
