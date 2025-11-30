@@ -26,17 +26,17 @@
 PRG="$0"
 
 while [ -h "$PRG" ]; do
-  ls=`ls -ld "$PRG"`
-  link=`expr "$ls" : '.*-> \(.*\)$'`
+  ls_out=$(ls -ld "$PRG")
+  link=$(expr "$ls_out" : '.*-> \(.*\)$')
   if expr "$link" : '/.*' > /dev/null; then
     PRG="$link"
   else
-    PRG=`dirname "$PRG"`/"$link"
+    PRG=$(dirname "$PRG")/"$link"
   fi
 done
 
-PRGDIR=`dirname "$PRG"`
-BASEDIR=`cd "$PRGDIR/.." >/dev/null; pwd`
+PRGDIR=$(dirname "$PRG")
+BASEDIR=$(cd "$PRGDIR/.." >/dev/null; pwd)
 
 # Reset the REPO variable. If you need to influence this use the environment setup file.
 REPO=
@@ -45,7 +45,7 @@ REPO=
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false;
 darwin=false;
-case "`uname`" in
+case "$(uname)" in
   CYGWIN*) cygwin=true ;;
   Darwin*) darwin=true
            if [ -z "$JAVA_VERSION" ] ; then
@@ -53,26 +53,26 @@ case "`uname`" in
            else
              echo "Using Java version: $JAVA_VERSION"
            fi
-		   if [ -z "$JAVA_HOME" ]; then
-		      if [ -x "/usr/libexec/java_home" ]; then
-			      JAVA_HOME=`/usr/libexec/java_home`
-			  else
-			      JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/${JAVA_VERSION}/Home
-			  fi
-           fi       
+           if [ -z "$JAVA_HOME" ]; then
+              if [ -x "/usr/libexec/java_home" ]; then
+                  JAVA_HOME=$(/usr/libexec/java_home)
+              else
+                  JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/${JAVA_VERSION}/Home
+              fi
+           fi
            ;;
 esac
 
 if [ -z "$JAVA_HOME" ] ; then
   if [ -r /etc/gentoo-release ] ; then
-    JAVA_HOME=`java-config --jre-home`
+    JAVA_HOME=$(java-config --jre-home)
   fi
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
 if $cygwin ; then
-  [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
-  [ -n "$CLASSPATH" ] && CLASSPATH=`cygpath --path --unix "$CLASSPATH"`
+  [ -n "$JAVA_HOME" ] && JAVA_HOME=$(cygpath --unix "$JAVA_HOME")
+  [ -n "$CLASSPATH" ] && CLASSPATH=$(cygpath --path --unix "$CLASSPATH")
 fi
 
 # If a specific java binary isn't specified search for the standard 'java' binary
@@ -85,7 +85,12 @@ if [ -z "$JAVACMD" ] ; then
       JAVACMD="$JAVA_HOME/bin/java"
     fi
   else
-    JAVACMD=`which java`
+    # Prefer POSIX-compliant lookup for 'java' over 'which'
+    if command -v java >/dev/null 2>&1; then
+      JAVACMD=$(command -v java)
+    else
+      JAVACMD=`which java`
+    fi
   fi
 fi
 
@@ -108,11 +113,11 @@ fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
-  [ -n "$CLASSPATH" ] && CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
-  [ -n "$JAVA_HOME" ] && JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
-  [ -n "$HOME" ] && HOME=`cygpath --path --windows "$HOME"`
-  [ -n "$BASEDIR" ] && BASEDIR=`cygpath --path --windows "$BASEDIR"`
-  [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
+  [ -n "$CLASSPATH" ] && CLASSPATH=$(cygpath --path --windows "$CLASSPATH")
+  [ -n "$JAVA_HOME" ] && JAVA_HOME=$(cygpath --path --windows "$JAVA_HOME")
+  [ -n "$HOME" ] && HOME=$(cygpath --path --windows "$HOME")
+  [ -n "$BASEDIR" ] && BASEDIR=$(cygpath --path --windows "$BASEDIR")
+  [ -n "$REPO" ] && REPO=$(cygpath --path --windows "$REPO")
 fi
 
 exec "$JAVACMD" $JAVA_OPTS -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication \
