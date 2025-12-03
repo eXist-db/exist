@@ -38,10 +38,6 @@ done
 PRGDIR=$(dirname "$PRG")
 BASEDIR=$(cd "$PRGDIR/.." >/dev/null; pwd)
 
-# Reset the REPO variable. If you need to influence this use the environment setup file.
-REPO=
-
-
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false;
 darwin=false;
@@ -100,16 +96,8 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-if [ -z "$REPO" ]
-then
-  REPO="$BASEDIR"/lib
-fi
-
+REPO="$BASEDIR"/lib
 CLASSPATH="$BASEDIR"/etc:"$REPO"/*
-
-if [ -n "$CLASSPATH_PREFIX" ] ; then
-  CLASSPATH=$CLASSPATH_PREFIX:$CLASSPATH
-fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
