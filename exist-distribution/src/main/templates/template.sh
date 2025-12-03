@@ -108,10 +108,21 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=$(cygpath --path --windows "$REPO")
 fi
 
-exec "$JAVACMD" $JAVA_OPTS -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication \
-  -Dfile.encoding=UTF-8 -Dlog4j.configurationFile="$BASEDIR"/etc/log4j2.xml \
-  -Dexist.home="$BASEDIR" -Dexist.configurationFile="$BASEDIR"/etc/conf.xml \
-  -Djetty.home="$BASEDIR" -Dexist.jetty.config="$BASEDIR"/etc/jetty/standard.enabled-jetty-configs \
+_JAVA_OPTS='-Xms256m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile.encoding=UTF-8'
+if [ -n "$JAVA_OPTS" ] ; then
+  _JAVA_OPTS="$_JAVA_OPTS $JAVA_OPTS"
+fi
+echo $_JAVA_OPTS
+
+_EXIST_OPTS="-Dlog4j.configurationFile=$BASEDIR/etc/log4j2.xml -Dexist.home=$BASEDIR \
+             -Dexist.configurationFile=$BASEDIR/etc/conf.xml    -Djetty.home=$BASEDIR \
+             -Dexist.jetty.config=$BASEDIR/etc/jetty/standard.enabled-jetty-configs"
+if [ -n "$EXIST_OPTS" ] ; then
+  _EXIST_OPTS="$_EXIST_OPTS $EXIST_OPTS"
+fi
+echo $_EXIST_OPTS
+
+exec "$JAVACMD" $_JAVA_OPTS $_EXIST_OPTS \
   -classpath "$CLASSPATH" \
   org.exist.start.Main @PLACEHOLDER@ \
   "$@"
