@@ -304,3 +304,16 @@ declare
 function fd:decimal-zeros($picture as xs:string) {
     format-number(0, $picture)
 };
+
+declare
+    %test:args(1.234567E10,"0.000e0")
+    %test:assertEquals("1.235e10")
+    %test:args(1.234567E-10,"0.000e0")
+    %test:assertEquals("1.235e-10")
+    %test:args(0.000000000123456,"0.000e0")
+    %test:assertEquals("1.235e-10")
+    %test:args(1.234567e-10,"0.000e0")
+    %test:assertEquals("1.235e-10")
+function fd:exponent-fails($number as xs:double, $picture as xs:string) {
+    format-number($number, $picture)
+};
