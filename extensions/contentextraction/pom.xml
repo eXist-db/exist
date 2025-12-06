@@ -147,15 +147,6 @@
                     </licenseSets>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <configuration>
-                    <!-- clashes with com.sun:tools from transient dependency of tika-parsers, see https://github.com/jeremylong/DependencyCheck/issues/1914 -->
-                    <skipSystemScope>true</skipSystemScope>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
