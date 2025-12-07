@@ -1004,17 +1004,6 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     </licenseSets>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <configuration>
-                    <suppressionFiles>
-                        <suppressionFile>${basedir}/project-suppression.xml</suppressionFile>
-                    </suppressionFiles>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
