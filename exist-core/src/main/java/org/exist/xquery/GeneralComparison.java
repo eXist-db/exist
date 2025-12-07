@@ -445,7 +445,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             // if we were optimizing and the preselect did not return anything,
             // we won't have any matches and can return
             if( ( preselectResult != null ) && preselectResult.isEmpty() ) {
-                result = Sequence.EMPTY_SEQUENCE;
+                result = new BooleanValue(false);
             } else {
 
                 if( ( contextStep == null ) || ( preselectResult == null ) ) {
