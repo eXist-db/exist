@@ -176,7 +176,7 @@ public class SubSequence extends AbstractSequence {
         }
 
         if (subseqAvailable > 1 && length > 1) {
-            return Cardinality._MANY;
+            return Cardinality.MANY;
         }
 
         throw new IllegalStateException("Unknown Cardinality of: " + this);

@@ -1231,8 +1231,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             switchOperands();
         }
         //Prefer fewer items at the left hand
-        else if (Cardinality._MANY.isSuperCardinalityOrEqualOf(getLeft().getCardinality())
-                && !Cardinality._MANY.isSuperCardinalityOrEqualOf(getRight().getCardinality())) {
+        else if (Cardinality.MANY.isSuperCardinalityOrEqualOf(getLeft().getCardinality())
+                && !Cardinality.MANY.isSuperCardinalityOrEqualOf(getRight().getCardinality())) {
             switchOperands();
         }
     }

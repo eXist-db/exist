@@ -116,7 +116,7 @@ public class VariableImpl implements Variable {
             if (getSequenceType() != null) {
                 Cardinality actualCardinality;
                 if (getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
-                else if (getValue().hasMany()) {actualCardinality = Cardinality._MANY;}
+                else if (getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
                 else {actualCardinality = Cardinality.EXACTLY_ONE;}
             	//Type.EMPTY is *not* a subtype of other types ; checking cardinality first
         		if (!getSequenceType().getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))

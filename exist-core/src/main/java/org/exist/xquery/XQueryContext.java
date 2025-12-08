@@ -1949,7 +1949,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (val.isEmpty()) {
             actualCardinality = Cardinality.EMPTY_SEQUENCE;
         } else if (val.hasMany()) {
-            actualCardinality = Cardinality._MANY;
+            actualCardinality = Cardinality.MANY;
         } else {
             actualCardinality = Cardinality.EXACTLY_ONE;
         }

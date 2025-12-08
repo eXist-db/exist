@@ -558,7 +558,7 @@ public class SerializerUtils {
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.QNAME:
-                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
+                if (Cardinality.MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
                         final String existingValue = properties.getProperty(localParameterName);

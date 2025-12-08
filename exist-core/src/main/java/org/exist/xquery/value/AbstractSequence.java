@@ -65,7 +65,7 @@ public abstract class AbstractSequence implements Sequence {
             return Cardinality.EXACTLY_ONE;
         }
         if (hasMany()) {
-            return Cardinality._MANY;
+            return Cardinality.MANY;
         }
         throw new IllegalArgumentException("Illegal argument");
     }

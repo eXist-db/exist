@@ -183,7 +183,7 @@ public class RangeSequence extends AbstractSequence {
         if (itemCount == 1) {
             return Cardinality.EXACTLY_ONE;
         }
-        return Cardinality._MANY;
+        return Cardinality.MANY;
     }
 
     @Override

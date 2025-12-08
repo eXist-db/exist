@@ -141,7 +141,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
                 if (currentArguments[j].isEmpty()) {
                     actualCardinality = Cardinality.EMPTY_SEQUENCE;
                 } else if (currentArguments[j].hasMany()) {
-                    actualCardinality = Cardinality._MANY;
+                    actualCardinality = Cardinality.MANY;
                 } else {
                     actualCardinality = Cardinality.EXACTLY_ONE;
                 }

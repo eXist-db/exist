@@ -133,7 +133,7 @@ public class SubSequenceRangeTest {
         } else if (expectedSubsequenceLength == 1) {
             expectedCardinality = Cardinality.EXACTLY_ONE;
         } else {
-            expectedCardinality = Cardinality._MANY;
+            expectedCardinality = Cardinality.MANY;
         }
         assertEquals(expectedCardinality, getSubsequence().getCardinality());
     }

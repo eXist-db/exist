@@ -113,7 +113,7 @@ public class LetExpr extends BindingExpression {
                 if (sequenceType != null) {
                     Cardinality actualCardinality;
                     if (var.getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
-                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality._MANY;}
+                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality.MANY;}
                     else {actualCardinality = Cardinality.EXACTLY_ONE;}
                     //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
                     if (!sequenceType.getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))

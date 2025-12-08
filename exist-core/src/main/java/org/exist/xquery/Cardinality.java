@@ -48,7 +48,7 @@ public enum Cardinality {
     EXACTLY_ONE(ONE),
 
     //TODO(AR) eliminate this in favour of probably ONE_OR_MORE
-    _MANY(MANY),
+    MANY(MORE),
 
     /**
      * indicator '?'
@@ -58,12 +58,12 @@ public enum Cardinality {
     /**
      * indicator '+'
      */
-    ONE_OR_MORE((byte)(ONE | MANY)),
+    ONE_OR_MORE((byte)(ONE | MORE)),
 
     /**
      * indicator '*'
      */
-    ZERO_OR_MORE((byte)(ZERO | ONE | MANY));
+    ZERO_OR_MORE((byte)(ZERO | ONE | MORE));
 
 
     private final byte val;
@@ -87,7 +87,7 @@ public enum Cardinality {
      * @return true if the cardinality represents a sequence of at most one value, or false otherwise.
      */
     public boolean atMostOne() {
-        return (val & MANY) == 0;
+        return (val & MORE) == 0;
     }
 
     /**
@@ -145,9 +145,8 @@ public enum Cardinality {
             case EMPTY_SEQUENCE -> "empty-sequence()";
             case EXACTLY_ONE -> "";
             case ZERO_OR_ONE -> "?";
-            case _MANY, ONE_OR_MORE -> "+";
+            case MANY, ONE_OR_MORE -> "+";
             case ZERO_OR_MORE -> "*";
-            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
         };
     }
 
@@ -162,9 +161,8 @@ public enum Cardinality {
             case EMPTY_SEQUENCE -> "empty";
             case EXACTLY_ONE -> "exactly one";
             case ZERO_OR_ONE -> "zero or one";
-            case _MANY, ONE_OR_MORE -> "one or more";
+            case MANY, ONE_OR_MORE -> "one or more";
             case ZERO_OR_MORE -> "zero or more";
-            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
         };
     }
 
@@ -191,6 +189,6 @@ public enum Cardinality {
     static class InternalValue {
         static final byte ZERO = 1;
         static final byte ONE = 2;
-        static final byte MANY = 4;
+        static final byte MORE = 4;
     }
 }

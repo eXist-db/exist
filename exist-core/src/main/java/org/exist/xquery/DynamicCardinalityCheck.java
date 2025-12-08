@@ -75,7 +75,7 @@ public class DynamicCardinalityCheck extends AbstractExpression {
         if (seq.isEmpty())
             {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
         else if (seq.hasMany())
-            {actualCardinality = Cardinality._MANY;}
+            {actualCardinality = Cardinality.MANY;}
         else
             {actualCardinality = Cardinality.EXACTLY_ONE;}
         if (!requiredCardinality.isSuperCardinalityOrEqualOf(actualCardinality)) {

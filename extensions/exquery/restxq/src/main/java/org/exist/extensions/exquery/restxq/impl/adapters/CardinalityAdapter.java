@@ -38,7 +38,7 @@ class CardinalityAdapter {
         return switch (cardinality) {
             case EMPTY_SEQUENCE -> Cardinality.ZERO;
             case EXACTLY_ONE -> Cardinality.ONE;
-            case _MANY -> Cardinality.MANY;
+            case MANY -> Cardinality.MANY;
             case ZERO_OR_ONE -> Cardinality.ZERO_OR_ONE;
             case ONE_OR_MORE -> Cardinality.ONE_OR_MORE;
             case ZERO_OR_MORE -> Cardinality.ZERO_OR_MORE;

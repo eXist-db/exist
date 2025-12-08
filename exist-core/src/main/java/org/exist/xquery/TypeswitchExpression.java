@@ -134,7 +134,7 @@ public class TypeswitchExpression extends AbstractExpression {
         final Cardinality requiredCardinality = type.getCardinality();
         Cardinality actualCardinality;
         if (seq.isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
-        else if (seq.hasMany()) {actualCardinality = Cardinality._MANY;}
+        else if (seq.hasMany()) {actualCardinality = Cardinality.MANY;}
         else {actualCardinality = Cardinality.EXACTLY_ONE;}
         
         if (!requiredCardinality.isSuperCardinalityOrEqualOf(actualCardinality))
