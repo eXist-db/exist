@@ -21,6 +21,8 @@ jobs:
           key: xqts-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: xqts-${{ runner.os }}-maven
       - name: Maven XQTS Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -V -B clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
       - name: Run XQTS
         timeout-minutes: 60

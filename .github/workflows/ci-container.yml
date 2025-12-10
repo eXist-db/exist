@@ -43,6 +43,8 @@ jobs:
         run: |
           docker pull --platform linux/amd64 --platform linux/arm64 gcr.io/distroless/java21-debian12:latest
       - name: Build images
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: mvn -V -B -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
       - name: Check local images
         run: docker image ls
