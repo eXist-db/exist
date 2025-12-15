@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload logs artifact
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: exist-core-failed-log
           path: exist.log
