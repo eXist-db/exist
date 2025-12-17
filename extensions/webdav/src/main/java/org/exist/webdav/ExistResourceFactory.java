@@ -49,7 +49,7 @@ import java.util.Properties;
  */
 public class ExistResourceFactory implements ResourceFactory {
 
-    private final static Logger LOG = LogManager.getLogger(ExistResourceFactory.class);
+    private static final Logger LOG = LogManager.getLogger(ExistResourceFactory.class);
     private BrokerPool brokerPool = null;
 
     /**
@@ -67,6 +67,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
         } catch (EXistException e) {
             LOG.error("Unable to initialize WebDAV interface.", e);
+            return;
         }
 
         // load specific options
@@ -91,7 +92,7 @@ public class ExistResourceFactory implements ResourceFactory {
 
             // Read from file if existent
             if (Files.isReadable(config)) {
-                LOG.info("Read WebDAV configuration from {}", config.toAbsolutePath().toString());
+                LOG.info("Read WebDAV configuration from {}", config.toAbsolutePath());
                 try (final InputStream is = Files.newInputStream(config)) {
                     webDavOptions.load(is);
                 }
