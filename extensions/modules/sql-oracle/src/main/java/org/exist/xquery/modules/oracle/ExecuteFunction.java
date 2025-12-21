@@ -175,7 +175,7 @@ public class ExecuteFunction extends BasicFunction {
                 if (haveReturnCode) {
                     final int returnCode = statement.getInt(1);
                     if (returnCode != plSqlSuccess) {
-                        LOG.error(plSql + " failed [" + returnCode + "]");
+                        LOG.error("{} failed [{}]", plSql, returnCode);
                         return (Sequence.EMPTY_SEQUENCE);
                     }
                 }
@@ -204,12 +204,11 @@ public class ExecuteFunction extends BasicFunction {
 
                                 String colElement = "field";
 
-                                if (((BooleanValue) args[4].itemAt(0)).effectiveBooleanValue() && columnName.length() > 0) {
+                                if (((BooleanValue) args[4].itemAt(0)).effectiveBooleanValue() && !columnName.isEmpty()) {
                                     // use column names as the XML node
 
-                                    /**
-                                     * Spaces in column names are replaced with
-                                     * underscore's
+                                    /*
+                                     * Spaces in column names are replaced with  underscore's
                                      */
 
                                     colElement = SQLUtils.escapeXmlAttr(columnName.replace(' ', '_'));
@@ -220,7 +219,7 @@ public class ExecuteFunction extends BasicFunction {
                                 if (!((BooleanValue) args[4].itemAt(0)).effectiveBooleanValue() || columnName.length() <= 0) {
                                     final String name;
 
-                                    if (columnName.length() > 0) {
+                                    if (!columnName.isEmpty()) {
                                         name = SQLUtils.escapeXmlAttr(columnName);
                                     } else {
                                         name = "Column: " + (i + 1);
@@ -270,7 +269,7 @@ public class ExecuteFunction extends BasicFunction {
                 }
             } catch (final SQLException sqle) {
 
-                LOG.error("oracle:execute() Caught SQLException \"" + sqle.getMessage() + "\" for PL/SQL: \"" + plSql + "\"", sqle);
+                LOG.error("oracle:execute() Caught SQLException \"{}\" for PL/SQL: \"{}\"", sqle.getMessage(), plSql, sqle);
 
                 //return details about the SQLException
                 final MemTreeBuilder builder = context.getDocumentBuilder();
@@ -278,7 +277,7 @@ public class ExecuteFunction extends BasicFunction {
                 builder.startDocument();
                 builder.startElement(new QName("exception", OracleModule.NAMESPACE_URI, OracleModule.PREFIX), null);
 
-                boolean recoverable = sqle instanceof SQLRecoverableException;
+                final boolean recoverable = sqle instanceof SQLRecoverableException;
                 builder.addAttribute(new QName("recoverable", null, null), String.valueOf(recoverable));
 
                 builder.startElement(new QName("state", OracleModule.NAMESPACE_URI, OracleModule.PREFIX), null);
@@ -328,9 +327,6 @@ public class ExecuteFunction extends BasicFunction {
     /**
      * Release DB resources
      *
-     * @param connection
-     * @param statement
-     * @param rs
      */
     protected void release(final Connection connection, final Statement statement, final ResultSet rs) {
         if (rs != null) {

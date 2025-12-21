@@ -41,7 +41,7 @@ import java.util.Map;
  * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @version 1.0
  * @serial 2010-03-23
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
 public class OracleModule extends AbstractInternalModule {
 
@@ -56,7 +56,7 @@ public class OracleModule extends AbstractInternalModule {
             new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class)
     };
 
-    public OracleModule(final Map<String, List<? extends Object>> parameters) {
+    public OracleModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 
