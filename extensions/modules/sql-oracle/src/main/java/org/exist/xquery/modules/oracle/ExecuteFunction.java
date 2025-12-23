@@ -105,7 +105,8 @@ public class ExecuteFunction extends BasicFunction {
     /**
      * ExecuteFunction Constructor
      *
-     * @param context The Context of the calling XQuery
+     * @param context   The Context of the calling XQuery.
+     * @param signature The actual signature of the function.
      */
     public ExecuteFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -327,6 +328,9 @@ public class ExecuteFunction extends BasicFunction {
     /**
      * Release DB resources
      *
+     * @param connection The database connection to release.
+     * @param statement  The statement to release.
+     * @param rs         The result set to release.
      */
     protected void release(final Connection connection, final Statement statement, final ResultSet rs) {
         if (rs != null) {
