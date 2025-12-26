@@ -153,13 +153,13 @@ public class ExistDocument extends ExistResource {
      * @throws IOException IO exception
      * @throws PermissionDeniedException permission is denied.
      */
-    public void stream(OutputStream os) throws IOException, PermissionDeniedException {
+    public void stream(final OutputStream os) throws IOException, PermissionDeniedException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Stream started");
         }
 
-        long startTime = System.currentTimeMillis();
+        final long startTime = System.currentTimeMillis();
 
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(subject))) {
 
@@ -176,7 +176,7 @@ public class ExistDocument extends ExistResource {
 
                         serialize(broker, properties, document, os);
                         os.flush();
-                    } catch (SAXException e) {
+                    } catch (final SAXException e) {
                         LOG.error(e);
                         throw new IOException("Error while serializing XML document: %s".formatted(e.getMessage()), e);
                     }
@@ -187,11 +187,11 @@ public class ExistDocument extends ExistResource {
                     os.flush();
                 }
             }
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error(e);
             throw new IOException(e.getMessage());
 
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             LOG.error(e);
             throw e;
 
@@ -314,7 +314,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // TODO consider. A Webdav lock can be set without subject lock.
-            Account lock = document.getUserLock();
+            final Account lock = document.getUserLock();
             if (lock == null) {
 
                 if (LOG.isDebugEnabled()) {
@@ -324,7 +324,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Retrieve Locktoken from document metadata
-            org.exist.dom.persistent.LockToken token = document.getLockToken();
+            final org.exist.dom.persistent.LockToken token = document.getLockToken();
             if (token == null) {
 
                 if (LOG.isDebugEnabled()) {
@@ -341,7 +341,7 @@ public class ExistDocument extends ExistResource {
             return token;
 
 
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             return null;
 
@@ -361,7 +361,7 @@ public class ExistDocument extends ExistResource {
      * @throws DocumentAlreadyLockedException Document is already locked
      * @throws EXistException Generic existdb exception
      */
-    public LockToken lock(LockToken inputToken) throws PermissionDeniedException,
+    public LockToken lock(final LockToken inputToken) throws PermissionDeniedException,
             DocumentAlreadyLockedException, EXistException {
 
         if (LOG.isDebugEnabled()) {
@@ -383,7 +383,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account userLock = document.getUserLock();
+            final Account userLock = document.getUserLock();
 
             // Check if Resource is already locked. @@ToDo
             if (userLock != null) {
@@ -433,11 +433,11 @@ public class ExistDocument extends ExistResource {
             return inputToken;
 
 
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             throw e;
 
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
             LOG.error(e);
             throw new EXistException(e);
         } finally {
@@ -471,7 +471,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account lock = document.getUserLock();
+            final Account lock = document.getUserLock();
 
             // Check if Resource is already locked.
             if (lock == null) {
@@ -493,11 +493,11 @@ public class ExistDocument extends ExistResource {
             broker.storeMetadata(txn, document);
             txnManager.commit(txn);
 
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             throw e;
 
-        } catch (TriggerException e) {
+        } catch (final TriggerException e) {
             LOG.error(e);
             throw new EXistException(e);
         } finally {
@@ -510,7 +510,7 @@ public class ExistDocument extends ExistResource {
     /**
      * Copy document or collection in database.
      */
-    void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
+    void resourceCopyMove(final XmldbURI destCollectionUri, final String newName, final Mode mode) throws EXistException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("{} {} to {} named {}", String.valueOf(mode), xmldbUri, destCollectionUri, newName);
@@ -519,7 +519,7 @@ public class ExistDocument extends ExistResource {
         XmldbURI newNameUri = null;
         try {
             newNameUri = XmldbURI.xmldbUriFor(newName);
-        } catch (URISyntaxException ex) {
+        } catch (final URISyntaxException ex) {
             LOG.error(ex);
             throw new EXistException(ex.getMessage());
         }
@@ -578,15 +578,15 @@ public class ExistDocument extends ExistResource {
                     LOG.debug("Document {}d successfully", mode);
                 }
             }
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.error("Resource is locked.", e);
             throw new EXistException(e.getMessage());
 
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error(e);
             throw e;
 
-        } catch (IOException | PermissionDeniedException | TriggerException e) {
+        } catch (final IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
             throw new EXistException(e.getMessage());
 
@@ -597,7 +597,7 @@ public class ExistDocument extends ExistResource {
         }
     }
 
-    public LockToken refreshLock(String token) throws PermissionDeniedException,
+    public LockToken refreshLock(final String token) throws PermissionDeniedException,
             DocumentAlreadyLockedException, EXistException, DocumentNotLockedException {
 
         if (LOG.isDebugEnabled()) {
@@ -625,7 +625,7 @@ public class ExistDocument extends ExistResource {
             }
 
             // Get current userlock
-            Account userLock = document.getUserLock();
+            final Account userLock = document.getUserLock();
 
             // Check if Resource is already locked. 
             if (userLock == null) {
@@ -644,7 +644,7 @@ public class ExistDocument extends ExistResource {
                 throw new PermissionDeniedException(userLock.getName());
             }
 
-            LockToken lockToken = document.getLockToken();
+            final LockToken lockToken = document.getLockToken();
 
             if (!token.equals(lockToken.getOpaqueLockToken())) {
                 if (LOG.isDebugEnabled()) {
@@ -668,7 +668,7 @@ public class ExistDocument extends ExistResource {
             return lockToken;
 
 
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             throw e;
         } finally {

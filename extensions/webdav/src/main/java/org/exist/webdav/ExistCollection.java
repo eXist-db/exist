@@ -201,7 +201,7 @@ public class ExistCollection extends ExistResource {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document deleted sucessfully");
             }
-        } catch (EXistException | IOException | PermissionDeniedException | TriggerException e) {
+        } catch (final EXistException | IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
         } finally {
 
@@ -211,13 +211,13 @@ public class ExistCollection extends ExistResource {
         }
     }
 
-    public XmldbURI createCollection(String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
+    public XmldbURI createCollection(final String name) throws PermissionDeniedException, CollectionExistsException, EXistException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Create  '{}' in '{}'", name, xmldbUri);
         }
 
-        XmldbURI newCollection = xmldbUri.append(name);
+        final XmldbURI newCollection = xmldbUri.append(name);
 
         final TransactionManager txnManager = brokerPool.getTransactionManager();
 
@@ -250,11 +250,11 @@ public class ExistCollection extends ExistResource {
                     LOG.debug("Collection created sucessfully");
                 }
             }
-        } catch (EXistException | PermissionDeniedException e) {
+        } catch (final EXistException | PermissionDeniedException e) {
             LOG.error(e);
             throw e;
 
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             LOG.error(e);
             throw new EXistException(e);
 
@@ -267,13 +267,13 @@ public class ExistCollection extends ExistResource {
         return newCollection;
     }
 
-    public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
+    public XmldbURI createFile(final String newName, InputStream is, final Long length, final String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
 
         if (LOG.isDebugEnabled())
             LOG.debug("Create '{}' in '{}'", newName, xmldbUri);
 
-        XmldbURI newNameUri = XmldbURI.create(newName);
+        final XmldbURI newNameUri = XmldbURI.create(newName);
 
         // Get mime, or NULL when not available
         MimeType mime = MimeTable.getInstance().getContentTypeFor(newName);
@@ -327,15 +327,15 @@ public class ExistCollection extends ExistResource {
                 LOG.debug("Document created successfully");
             }
 
-        } catch (EXistException | SAXException e) {
+        } catch (final EXistException | SAXException e) {
             LOG.error(e);
             throw new IOException(e);
 
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.error(e);
             throw new PermissionDeniedException(xmldbUri + "");
 
-        } catch (IOException | PermissionDeniedException e) {
+        } catch (final IOException | PermissionDeniedException e) {
             LOG.error(e);
             throw e;
 
@@ -346,12 +346,12 @@ public class ExistCollection extends ExistResource {
         }
 
         // Send the result back to the client
-        XmldbURI newResource = xmldbUri.append(newName);
+        final XmldbURI newResource = xmldbUri.append(newName);
 
         return newResource;
     }
 
-    void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {
+    void resourceCopyMove(final XmldbURI destCollectionUri, final String newName, final Mode mode) throws EXistException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("{} '{}' to '{}' named '{}'", String.valueOf(mode), xmldbUri, destCollectionUri, newName);
@@ -361,13 +361,13 @@ public class ExistCollection extends ExistResource {
         try {
             newNameUri = XmldbURI.xmldbUriFor(newName);
 
-        } catch (URISyntaxException ex) {
+        } catch (final URISyntaxException ex) {
             LOG.error(ex);
             throw new EXistException(ex.getMessage());
         }
 
         // This class contains already the URI of the resource that shall be moved/copied
-	    XmldbURI srcCollectionUri = xmldbUri;
+	    final XmldbURI srcCollectionUri = xmldbUri;
         // use WRITE_LOCK if moving or if src and dest collection are the same
         final LockMode srcCollectionLockMode = mode == Mode.MOVE
                 || destCollectionUri.equals(srcCollectionUri) ? LockMode.WRITE_LOCK : LockMode.READ_LOCK;
@@ -408,13 +408,13 @@ public class ExistCollection extends ExistResource {
                 }
             }
 
-        } catch (LockException e) {
+        } catch (final LockException e) {
             LOG.error("Resource is locked.", e);
             throw new EXistException(e.getMessage());
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error(e);
             throw e;
-        } catch (IOException | PermissionDeniedException | TriggerException e) {
+        } catch (final IOException | PermissionDeniedException | TriggerException e) {
             LOG.error(e);
             throw new EXistException(e.getMessage());
         } finally {

@@ -78,7 +78,7 @@ public abstract class ExistResource {
         return subject;
     }
 
-    protected void setUser(Subject user) {
+    protected void setUser(final Subject user) {
         this.subject = user;
     }
 
@@ -110,17 +110,17 @@ public abstract class ExistResource {
      * @param password Password
      * @return Authenticated subject, or NULL when authentication failed.
      */
-    protected Subject authenticate(String username, String password) {
+    protected Subject authenticate(final String username, final String password) {
 
         if (username == null) {
             return null;
         }
 
-        SecurityManager securityManager = brokerPool.getSecurityManager();
+        final SecurityManager securityManager = brokerPool.getSecurityManager();
         try {
             subject = securityManager.authenticate(username, password);
 
-        } catch (AuthenticationException e) {
+        } catch (final AuthenticationException e) {
             LOG.info("User {} could not be authenticated. {}", username, e.getMessage());
         }
         return subject;

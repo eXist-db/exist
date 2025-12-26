@@ -65,7 +65,7 @@ public class ExistResourceFactory implements ResourceFactory {
         try {
             brokerPool = BrokerPool.getInstance();
 
-        } catch (EXistException e) {
+        } catch (final EXistException e) {
             LOG.error("Unable to initialize WebDAV interface.", e);
             return;
         }
@@ -108,7 +108,7 @@ public class ExistResourceFactory implements ResourceFactory {
      * could not be detected.
      */
     @Override
-    public Resource getResource(String host, String path) {
+    public Resource getResource(final String host, String path) {
 
         // DWES: work around if no /db is available return nothing.
         if (!path.contains("/db")) {
@@ -134,7 +134,7 @@ public class ExistResourceFactory implements ResourceFactory {
             // Create uri inside database
             xmldbUri = XmldbURI.xmldbUriFor(path);
 
-        } catch (URISyntaxException e) {
+        } catch (final URISyntaxException e) {
             LOG.error("Unable to convert path '{}}' into an XmldbURI representation.", path);
             return null;
         }
@@ -142,7 +142,7 @@ public class ExistResourceFactory implements ResourceFactory {
         // Return appropriate resource
         return switch (getResourceType(brokerPool, xmldbUri)) {
             case DOCUMENT -> {
-                MiltonDocument doc = new MiltonDocument(webDavOptions, host, xmldbUri, brokerPool);
+                final MiltonDocument doc = new MiltonDocument(webDavOptions, host, xmldbUri, brokerPool);
                 yield doc;
             }
             case COLLECTION -> new MiltonCollection(webDavOptions, host, xmldbUri, brokerPool);
@@ -168,12 +168,12 @@ public class ExistResourceFactory implements ResourceFactory {
     /*
      * Returns the resource type indicated by the path: either COLLECTION, DOCUMENT or NOT_EXISTING.
      */
-    private ResourceType getResourceType(BrokerPool brokerPool, XmldbURI xmldbUri) {
+    private ResourceType getResourceType(final BrokerPool brokerPool, final XmldbURI xmldbUri) {
 
         ResourceType type = ResourceType.NOT_EXISTING;
 
         // MacOsX finder specific files
-        String documentSeqment = xmldbUri.lastSegment().toString();
+        final String documentSeqment = xmldbUri.lastSegment().toString();
         if (documentSeqment.startsWith("._") || ".DS_Store".equals(documentSeqment)) {
             //LOG.debug(String.format("Ignoring MacOSX file '%s'", xmldbUri.lastSegment().toString()));
             //return ResourceType.IGNORABLE;

@@ -27,7 +27,6 @@ import com.bradmcevoy.http.webdav.DefaultUserAgentHelper;
 import com.bradmcevoy.http.webdav.UserAgentHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -75,7 +74,7 @@ public class MiltonDocument extends MiltonResource
      * @param uri        Path on server indicating path of resource
      * @param brokerPool Handle to Exist database.
      */
-    public MiltonDocument(final Properties configuration, String host, XmldbURI uri, BrokerPool brokerPool) {
+    public MiltonDocument(final Properties configuration, final String host, final XmldbURI uri, final BrokerPool brokerPool) {
         this(configuration, host, uri, brokerPool, null);
     }
 
@@ -89,7 +88,7 @@ public class MiltonDocument extends MiltonResource
      * @param subject An Exist operation is performed with  User. Can be NULL.
      * @param pool    Handle to Exist database.
      */
-    public MiltonDocument(final Properties configuration, String host, XmldbURI uri, BrokerPool pool, Subject subject) {
+    public MiltonDocument(final Properties configuration, final String host, final XmldbURI uri, final BrokerPool pool, final Subject subject) {
         super(configuration);
 
         if (userAgentHelper == null) {
@@ -117,13 +116,13 @@ public class MiltonDocument extends MiltonResource
         // PROPFIND method
         if (propfindSizeMethod == null) {
             LOG.info("Try to obtain {} from System Property", PROPFIND_METHOD_XML_SIZE);
-            String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
+            final String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
             propfindSizeMethod = getSizeMethod(systemProp);
         }
 
         if (propfindSizeMethod == null) {
             LOG.info("Alternatively try to obtain {} from properties file", PROPFIND_METHOD_XML_SIZE);
-            String fileProp = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
+            final String fileProp = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
             propfindSizeMethod = getSizeMethod(fileProp);
         }
 
@@ -135,13 +134,13 @@ public class MiltonDocument extends MiltonResource
         // GET method
         if (getSizeMethod == null) {
             LOG.info("Try to obtain {} from System Property", GET_METHOD_XML_SIZE);
-            String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
+            final String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
             getSizeMethod = getSizeMethod(systemProp);
         }
 
         if (getSizeMethod == null) {
             LOG.info("Alternatively try to obtain {} from properties file", GET_METHOD_XML_SIZE);
-            String fileProp = configuration.getProperty(GET_METHOD_XML_SIZE);
+            final String fileProp = configuration.getProperty(GET_METHOD_XML_SIZE);
             getSizeMethod = getSizeMethod(fileProp);
         }
 
@@ -158,8 +157,8 @@ public class MiltonDocument extends MiltonResource
      * @param value Properties value
      * @return Corresponding SIZE_METHOD, or else NULL.
      */
-    SIZE_METHOD getSizeMethod(String value) {
-        if (value == null || value.strip().isEmpty()) {
+    SIZE_METHOD getSizeMethod(final String value) {
+        if (value == null || value.isBlank()) {
             return null;
         }
 
@@ -167,7 +166,7 @@ public class MiltonDocument extends MiltonResource
             final SIZE_METHOD sizeMethod = SIZE_METHOD.valueOf(value.toUpperCase());
             LOG.info("Found value {}", sizeMethod);
             return sizeMethod;
-        } catch (IllegalArgumentException ex) {
+        } catch (final IllegalArgumentException ex) {
             LOG.debug(ex.getMessage());
             return null;
         }
@@ -178,12 +177,12 @@ public class MiltonDocument extends MiltonResource
      *
      * @param isPropFind Set to TRUE if request is PropFind request.
      */
-    public void setIsPropFind(boolean isPropFind) {
+    public void setIsPropFind(final boolean isPropFind) {
         this.isPropFind = isPropFind;
     }
 
     @Override
-    public void sendContent(OutputStream out, Range range, Map<String, String> params, String contentType)
+    public void sendContent(final OutputStream out, final Range range, final Map<String, String> params, final String contentType)
             throws IOException, NotAuthorizedException {
         try {
             if (LOG.isDebugEnabled()) {
@@ -191,7 +190,7 @@ public class MiltonDocument extends MiltonResource
             }
             existDocument.stream(out);
 
-        } catch (PermissionDeniedException e) {
+        } catch (final PermissionDeniedException e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(e.getMessage());
             }
@@ -206,12 +205,12 @@ public class MiltonDocument extends MiltonResource
      * ================ */
 
     @Override
-    public Long getMaxAgeSeconds(Auth auth) {
+    public Long getMaxAgeSeconds(final Auth auth) {
         return null;
     }
 
     @Override
-    public String getContentType(String accepts) {
+    public String getContentType(final String accepts) {
         return existDocument.getMimeType();
     }
 
@@ -263,7 +262,7 @@ public class MiltonDocument extends MiltonResource
         Long size = null;
 
         // MacOsX has a bad reputation
-        boolean isMacFinder = userAgentHelper.isMacFinder(HttpManager.request().getUserAgentHeader());
+        final boolean isMacFinder = userAgentHelper.isMacFinder(HttpManager.request().getUserAgentHeader());
 
         if (existDocument.isXmlDocument()) {
             // XML document, exact size is not (directly) known)
@@ -280,7 +279,7 @@ public class MiltonDocument extends MiltonResource
                 try (final CountingOutputStream counter = new CountingOutputStream(OutputStream.nullOutputStream())) {
                     existDocument.stream(counter);
                     size = counter.getByteCount();
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     LOG.error(ex);
                 }
 
@@ -312,7 +311,7 @@ public class MiltonDocument extends MiltonResource
     public Date getCreateDate() {
         Date createDate = null;
 
-        Long time = existDocument.getCreationTime();
+        final Long time = existDocument.getCreationTime();
         if (time != null) {
             createDate = new Date(time);
         }
@@ -334,10 +333,10 @@ public class MiltonDocument extends MiltonResource
      * ================= */
 
     @Override
-    public LockResult lock(LockTimeout timeout, LockInfo lockInfo)
+    public LockResult lock(final LockTimeout timeout, final LockInfo lockInfo)
             throws NotAuthorizedException, PreConditionFailedException, LockedException {
 
-        org.exist.dom.persistent.LockToken inputToken = convertToken(timeout, lockInfo);
+        final org.exist.dom.persistent.LockToken inputToken = convertToken(timeout, lockInfo);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Lock: {}", resourceXmldbUri);
@@ -345,22 +344,22 @@ public class MiltonDocument extends MiltonResource
 
         LockResult lr = null;
         try {
-            org.exist.dom.persistent.LockToken existLT = existDocument.lock(inputToken);
+            final org.exist.dom.persistent.LockToken existLT = existDocument.lock(inputToken);
 
             // Process result
-            LockToken mltonLT = convertToken(existLT);
+            final LockToken mltonLT = convertToken(existLT);
             lr = LockResult.success(mltonLT);
 
-        } catch (PermissionDeniedException ex) {
+        } catch (final PermissionDeniedException ex) {
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (DocumentAlreadyLockedException ex) {
+        } catch (final DocumentAlreadyLockedException ex) {
             // set result iso throw new LockedException(this);
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.ALREADY_LOCKED);
 
-        } catch (EXistException ex) {
+        } catch (final EXistException ex) {
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.PRECONDITION_FAILED);
 
@@ -374,7 +373,7 @@ public class MiltonDocument extends MiltonResource
      * ================ */
 
     @Override
-    public LockResult refreshLock(String token) throws NotAuthorizedException, PreConditionFailedException {
+    public LockResult refreshLock(final String token) throws NotAuthorizedException, PreConditionFailedException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Refresh: {} token={}", resourceXmldbUri, token);
@@ -382,21 +381,21 @@ public class MiltonDocument extends MiltonResource
 
         LockResult lr = null;
         try {
-            org.exist.dom.persistent.LockToken existLT = existDocument.refreshLock(token);
+            final org.exist.dom.persistent.LockToken existLT = existDocument.refreshLock(token);
 
             // Process result
-            LockToken mltonLT = convertToken(existLT);
+            final LockToken mltonLT = convertToken(existLT);
             lr = LockResult.success(mltonLT);
 
-        } catch (PermissionDeniedException ex) {
+        } catch (final PermissionDeniedException ex) {
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (DocumentNotLockedException | EXistException ex) {
+        } catch (final DocumentNotLockedException | EXistException ex) {
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.PRECONDITION_FAILED);
 
-        } catch (DocumentAlreadyLockedException ex) {
+        } catch (final DocumentAlreadyLockedException ex) {
             //throw new LockedException(this);
             LOG.debug(ex.getMessage());
             lr = LockResult.failed(LockResult.FailureReason.ALREADY_LOCKED);
@@ -406,7 +405,7 @@ public class MiltonDocument extends MiltonResource
     }
 
     @Override
-    public void unlock(String tokenId) throws NotAuthorizedException, PreConditionFailedException {
+    public void unlock(final String tokenId) throws NotAuthorizedException, PreConditionFailedException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Unlock: {}", resourceXmldbUri);
@@ -414,11 +413,11 @@ public class MiltonDocument extends MiltonResource
 
         try {
             existDocument.unlock();
-        } catch (PermissionDeniedException ex) {
+        } catch (final PermissionDeniedException ex) {
             LOG.debug(ex.getMessage());
             throw new NotAuthorizedException(this);
 
-        } catch (DocumentNotLockedException | EXistException ex) {
+        } catch (final DocumentNotLockedException | EXistException ex) {
             LOG.debug(ex.getMessage());
             throw new PreConditionFailedException(this);
 
@@ -432,7 +431,7 @@ public class MiltonDocument extends MiltonResource
             LOG.debug("getCurrentLock: {}", resourceXmldbUri);
         }
 
-        org.exist.dom.persistent.LockToken existLT = existDocument.getCurrentLock();
+        final org.exist.dom.persistent.LockToken existLT = existDocument.getCurrentLock();
 
         if (existLT == null) {
             LOG.debug("No database lock token.");
@@ -440,24 +439,24 @@ public class MiltonDocument extends MiltonResource
         }
 
         // Construct Lock Info
-        LockToken miltonLT = convertToken(existLT);
+        final LockToken miltonLT = convertToken(existLT);
 
         // Return values in Milton object
         return miltonLT;
     }
 
     @Override
-    public void moveTo(CollectionResource rDest, String newName) throws ConflictException {
+    public void moveTo(final CollectionResource rDest, final String newName) throws ConflictException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("moveTo: {} newName={}", resourceXmldbUri, newName);
         }
 
-        XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
+        final XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.MOVE);
 
-        } catch (EXistException ex) {
+        } catch (final EXistException ex) {
             throw new ConflictException(this, "Move '" + getXmldbUri() + "' to '" + destCollection.append(newName) + "' failed: " + ex.getMessage());
         }
     }
@@ -468,17 +467,17 @@ public class MiltonDocument extends MiltonResource
      * ================ */
 
     @Override
-    public void copyTo(CollectionResource rDest, String newName) {
+    public void copyTo(final CollectionResource rDest, final String newName) {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("copyTo: {} newName={}", resourceXmldbUri, newName);
         }
 
-        XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
+        final XmldbURI destCollection = ((MiltonCollection) rDest).getXmldbUri();
         try {
             existDocument.resourceCopyMove(destCollection, newName, Mode.COPY);
 
-        } catch (EXistException ex) {
+        } catch (final EXistException ex) {
             // unable to throw new ConflictException(this);
             LOG.error(ex.getMessage());
         }
@@ -495,14 +494,14 @@ public class MiltonDocument extends MiltonResource
      * @param writer STAX writer
      * @throws XMLStreamException Thrown when writing data failed
      */
-    public void writeXML(XMLStreamWriter writer) throws XMLStreamException {
+    public void writeXML(final XMLStreamWriter writer) throws XMLStreamException {
         writer.writeStartElement("exist", "document", "http://exist.sourceforge.net/NS/exist");
         writer.writeAttribute("name", resourceXmldbUri.lastSegment().toString());
         writer.writeAttribute("created", getXmlDateTime(existDocument.getCreationTime()));
         writer.writeAttribute("last-modified", getXmlDateTime(existDocument.getLastModified()));
         writer.writeAttribute("owner", existDocument.getOwnerUser());
         writer.writeAttribute("group", existDocument.getOwnerGroup());
-        writer.writeAttribute("permissions", "" + existDocument.getPermissions().toString());
+        writer.writeAttribute("permissions", existDocument.getPermissions().toString());
         writer.writeAttribute("size", "" + existDocument.getContentLength());
         writer.writeEndElement();
     }

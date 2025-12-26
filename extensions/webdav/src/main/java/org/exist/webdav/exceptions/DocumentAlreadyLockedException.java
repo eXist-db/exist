@@ -38,15 +38,15 @@ public class DocumentAlreadyLockedException extends Exception {
         super();
     }
 
-    public DocumentAlreadyLockedException(Throwable inner) {
+    public DocumentAlreadyLockedException(final Throwable inner) {
         super(inner);
     }
 
-    public DocumentAlreadyLockedException(String message) {
+    public DocumentAlreadyLockedException(final String message) {
         super(message);
     }
 
-    public DocumentAlreadyLockedException(String message, Throwable cause) {
+    public DocumentAlreadyLockedException(final String message, final Throwable cause) {
         super(message, cause);
     }
 

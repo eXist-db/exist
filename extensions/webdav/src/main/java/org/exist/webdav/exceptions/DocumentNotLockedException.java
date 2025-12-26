@@ -38,15 +38,15 @@ public class DocumentNotLockedException extends Exception {
         super();
     }
 
-    public DocumentNotLockedException(Throwable inner) {
+    public DocumentNotLockedException(final Throwable inner) {
         super(inner);
     }
 
-    public DocumentNotLockedException(String message) {
+    public DocumentNotLockedException(final String message) {
         super(message);
     }
 
-    public DocumentNotLockedException(String message, Throwable cause) {
+    public DocumentNotLockedException(final String message, final Throwable cause) {
         super(message, cause);
     }
 

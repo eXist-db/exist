@@ -38,15 +38,15 @@ public class EXistWebdavException extends Exception {
         super();
     }
 
-    public EXistWebdavException(Throwable inner) {
+    public EXistWebdavException(final Throwable inner) {
         super(inner);
     }
 
-    public EXistWebdavException(String message) {
+    public EXistWebdavException(final String message) {
         super(message);
     }
 
-    public EXistWebdavException(String message, Throwable cause) {
+    public EXistWebdavException(final String message, final Throwable cause) {
         super(message, cause);
     }
 

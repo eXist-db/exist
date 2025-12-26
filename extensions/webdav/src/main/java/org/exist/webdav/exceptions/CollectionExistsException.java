@@ -38,15 +38,15 @@ public class CollectionExistsException extends EXistWebdavException {
         super();
     }
 
-    public CollectionExistsException(Throwable inner) {
+    public CollectionExistsException(final Throwable inner) {
         super(inner);
     }
 
-    public CollectionExistsException(String message) {
+    public CollectionExistsException(final String message) {
         super(message);
     }
 
-    public CollectionExistsException(String message, Throwable cause) {
+    public CollectionExistsException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
