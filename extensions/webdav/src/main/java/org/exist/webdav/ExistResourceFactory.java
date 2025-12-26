@@ -32,13 +32,9 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
 
-import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -55,7 +51,7 @@ public class ExistResourceFactory implements ResourceFactory {
     /**
      * XML serialization options
      */
-    private final Properties webDavOptions = new Properties();
+    private Properties webDavOptions = new Properties();
 
     /**
      * Default constructor. Get access to instance of exist-db broker pool.
@@ -70,37 +66,7 @@ public class ExistResourceFactory implements ResourceFactory {
             return;
         }
 
-        // load specific options
-        try {
-            // 1) try and read default config from classpath
-            try (final InputStream is = getClass().getResourceAsStream("webdav.properties")) {
-                if (is != null) {
-                    LOG.info("Read default WebDAV configuration from classpath");
-                    webDavOptions.load(is);
-                } else {
-                    LOG.warn("Unable to read default WebDAV configuration from the classpath.");
-                }
-            }
-        } catch (final Throwable ex) {
-            LOG.error(ex.getMessage());
-        }
-
-        try {
-            // 2) try and find overridden config relative to EXIST_HOME/etc
-            final Optional<Path> eXistHome = brokerPool.getConfiguration().getExistHome();
-            final Path config = FileUtils.resolve(eXistHome, "etc").resolve("webdav.properties");
-
-            // Read from file if existent
-            if (Files.isReadable(config)) {
-                LOG.info("Read WebDAV configuration from {}", config.toAbsolutePath());
-                try (final InputStream is = Files.newInputStream(config)) {
-                    webDavOptions.load(is);
-                }
-            }
-        } catch (final Throwable ex) {
-            LOG.error(ex.getMessage());
-        }
-
+        webDavOptions = WebDavConfigurator.getConfiguration(brokerPool);
     }
 
     /*

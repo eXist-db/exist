@@ -27,6 +27,7 @@ import com.bradmcevoy.http.webdav.DefaultUserAgentHelper;
 import com.bradmcevoy.http.webdav.UserAgentHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -96,7 +97,7 @@ public class MiltonDocument extends MiltonResource
         }
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace("DOCUMENT:{}", uri.toString());
+            LOG.trace("DOCUMENT:{}", uri);
         }
 
         resourceXmldbUri = uri;
@@ -114,61 +115,35 @@ public class MiltonDocument extends MiltonResource
         }
 
         // PROPFIND method
-        if (propfindSizeMethod == null) {
-            LOG.info("Try to obtain {} from System Property", PROPFIND_METHOD_XML_SIZE);
-            final String systemProp = System.getProperty(PROPFIND_METHOD_XML_SIZE);
-            propfindSizeMethod = getSizeMethod(systemProp);
-        }
-
-        if (propfindSizeMethod == null) {
-            LOG.info("Alternatively try to obtain {} from properties file", PROPFIND_METHOD_XML_SIZE);
-            final String fileProp = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
-            propfindSizeMethod = getSizeMethod(fileProp);
-        }
-
-        if (propfindSizeMethod == null) {
-            LOG.info("Use default value {}", SIZE_METHOD.APPROXIMATE);
-            propfindSizeMethod = SIZE_METHOD.APPROXIMATE;
+        if(propfindSizeMethod==null) {
+            final String propfindMethod = configuration.getProperty(PROPFIND_METHOD_XML_SIZE);
+            propfindSizeMethod = getSizeMethod(propfindMethod);
         }
 
         // GET method
-        if (getSizeMethod == null) {
-            LOG.info("Try to obtain {} from System Property", GET_METHOD_XML_SIZE);
-            final String systemProp = System.getProperty(GET_METHOD_XML_SIZE);
-            getSizeMethod = getSizeMethod(systemProp);
+        if(getSizeMethod==null) {
+            final String getMethod = configuration.getProperty(GET_METHOD_XML_SIZE);
+            getSizeMethod = getSizeMethod(getMethod);
         }
-
-        if (getSizeMethod == null) {
-            LOG.info("Alternatively try to obtain {} from properties file", GET_METHOD_XML_SIZE);
-            final String fileProp = configuration.getProperty(GET_METHOD_XML_SIZE);
-            getSizeMethod = getSizeMethod(fileProp);
-        }
-
-        if (getSizeMethod == null) {
-            LOG.info("Use default value {}", SIZE_METHOD.NULL);
-            getSizeMethod = SIZE_METHOD.NULL;
-        }
-
     }
 
     /**
      * Determine what size methodology shall be applied.
      *
      * @param value Properties value
-     * @return Corresponding SIZE_METHOD, or else NULL.
+     * @return Corresponding SIZE_METHOD, or else SIZE_METHOD.EXACT
      */
     SIZE_METHOD getSizeMethod(final String value) {
-        if (value == null || value.isBlank()) {
-            return null;
+        if (StringUtils.isBlank(value)) {
+            return SIZE_METHOD.EXACT;
         }
 
         try {
-            final SIZE_METHOD sizeMethod = SIZE_METHOD.valueOf(value.toUpperCase());
-            LOG.info("Found value {}", sizeMethod);
-            return sizeMethod;
+            return SIZE_METHOD.valueOf(value.toUpperCase());
+
         } catch (final IllegalArgumentException ex) {
             LOG.debug(ex.getMessage());
-            return null;
+            return SIZE_METHOD.EXACT;
         }
     }
 
