@@ -315,7 +315,7 @@ public class MiltonResource implements Resource {
     @Override
     public boolean authorise(final Request request, final Method method, final Auth auth) {
 
-        LOG.info("{} {} (write={})", method.toString(), resourceXmldbUri, method.isWrite);
+        LOG.debug("{} {} (isWrite={})", method, resourceXmldbUri, method.isWrite);
 
         /*
          * First perform checks on Milton authentication
