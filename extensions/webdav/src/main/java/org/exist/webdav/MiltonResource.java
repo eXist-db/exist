@@ -21,8 +21,13 @@
  */
 package org.exist.webdav;
 
-import com.bradmcevoy.http.*;
+import com.bradmcevoy.http.Auth;
+import com.bradmcevoy.http.LockInfo;
+import com.bradmcevoy.http.LockTimeout;
+import com.bradmcevoy.http.LockToken;
+import com.bradmcevoy.http.Request;
 import com.bradmcevoy.http.Request.Method;
+import com.bradmcevoy.http.Resource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.Subject;

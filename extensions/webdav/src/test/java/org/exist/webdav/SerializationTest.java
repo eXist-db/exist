@@ -26,7 +26,12 @@ import com.bradmcevoy.http.exceptions.BadRequestException;
 import com.bradmcevoy.http.exceptions.ConflictException;
 import com.bradmcevoy.http.exceptions.NotAuthorizedException;
 import com.bradmcevoy.http.exceptions.NotFoundException;
-import com.ettrema.httpclient.*;
+import com.ettrema.httpclient.File;
+import com.ettrema.httpclient.Folder;
+import com.ettrema.httpclient.Host;
+import com.ettrema.httpclient.HostBuilder;
+import com.ettrema.httpclient.HttpException;
+import com.ettrema.httpclient.Resource;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
@@ -39,9 +44,9 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SerializationTest {
 

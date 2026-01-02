@@ -23,11 +23,11 @@ package org.exist.webdav;
 
 import com.bradmcevoy.http.MiltonServlet;
 import com.bradmcevoy.http.http11.DefaultHttp11ResponseHandler;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
