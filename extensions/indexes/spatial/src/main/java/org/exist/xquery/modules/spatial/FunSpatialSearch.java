@@ -107,14 +107,14 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
         )
     };
 
-    public FunSpatialSearch(XQueryContext context, FunctionSignature signature) {
+    public FunSpatialSearch(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         Sequence result = null;
-        Sequence nodes = args[0];
+        final Sequence nodes = args[0];
 
         if (nodes.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -123,20 +123,20 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
             result = nodes;
         } else {
             try {
-                AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+                final AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
                     context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
                 if (indexWorker == null) {
                     logger.error("Unable to find a spatial index worker");
                     throw new XPathException(this, "Unable to find a spatial index worker");
                 }
                 Geometry EPSG4326_geometry = null;
-                NodeValue geometryNode = (NodeValue) args[1].itemAt(0);
+                final NodeValue geometryNode = (NodeValue) args[1].itemAt(0);
                 if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
                     //Get the geometry from the index if available
                     EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
                 if (EPSG4326_geometry == null) {
-                    String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
-                    Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
+                    final String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+                    final Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
                     EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
                 }
                 if (EPSG4326_geometry == null) {
@@ -163,7 +163,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                 //Search the EPSG:4326 in the index
                 result = indexWorker.search(context.getBroker(), nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
                 hasUsedIndex = true;
-            } catch (SpatialIndexException e) {
+            } catch (final SpatialIndexException e) {
                 logger.error(e.getMessage(), e);
                 throw new XPathException(this, e);
             }

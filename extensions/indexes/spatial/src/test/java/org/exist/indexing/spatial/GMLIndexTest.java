@@ -79,11 +79,11 @@ public class GMLIndexTest {
     @ClassRule
     public static final ExistEmbeddedServer server = new ExistEmbeddedServer(true, true);
 
-    private static final String FILES[] = { "15385-SS7886-5i1.gml" };
+    private static final String[] FILES = { "15385-SS7886-5i1.gml" };
 
     private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/test-spatial-index");
 
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "        <gml/>" +
@@ -91,7 +91,7 @@ public class GMLIndexTest {
         "   <validation mode=\"no\"/> " +
     	"</collection>";
 
-    String IN_MEMORY_GML = "<gml:Polygon xmlns:gml = 'http://www.opengis.net/gml' srsName='osgb:BNG'>" +
+    final String IN_MEMORY_GML = "<gml:Polygon xmlns:gml = 'http://www.opengis.net/gml' srsName='osgb:BNG'>" +
     "  <gml:outerBoundaryIs><gml:LinearRing><gml:coordinates>" +
     "278515.400,187060.450 278515.150,187057.950 278516.350,187057.150 " +
     "278546.700,187054.000 278580.550,187050.900 278609.500,187048.100 " +
@@ -119,7 +119,7 @@ public class GMLIndexTest {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, testCollection, COLLECTION_CONFIG);
 
-            for (String file : FILES) {
+            for (final String file : FILES) {
                 final URL url = GMLIndexTest.class.getResource("/" + file);
                 broker.storeDocument(transaction, XmldbURI.create(file), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE, testCollection);
             }
@@ -169,25 +169,25 @@ public class GMLIndexTest {
 //                }
 //            }
 
-            GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+            final GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (indexWorker != null) {
                 Connection conn = null;
                 try {
                     conn = indexWorker.acquireConnection();
-                    for (String file : FILES) {
+                    for (final String file : FILES) {
                         try (final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append(file), Lock.LockMode.READ_LOCK)) {
                             final DocumentImpl doc = lockedDoc.getDocument();
 
-                            PreparedStatement ps = conn.prepareStatement(
+                            final PreparedStatement ps = conn.prepareStatement(
                                     "SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
                             );
                             ps.setString(1, testCollection.getURI().append(doc.getURI()).getRawCollectionPath());
-                            ResultSet rs = ps.executeQuery();
+                            final ResultSet rs = ps.executeQuery();
                             while (rs.next()) {
                                 //Let be sure we have the right count
                             }
-                            int count = rs.getRow();
+                            final int count = rs.getRow();
                             ps.close();
                             assertEquals(0, count);
                         }
@@ -205,7 +205,7 @@ public class GMLIndexTest {
     public void checkIndex() throws EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex) pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
+            final AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex) pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (index != null) {
                 assertTrue(index.checkIndex(broker));
@@ -217,8 +217,8 @@ public class GMLIndexTest {
     public void scanIndex() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = pool.getXQueryService();
-            Sequence seq = xquery.execute(
+            final XQuery xquery = pool.getXQueryService();
+            final Sequence seq = xquery.execute(
                     broker,
                     "declare namespace gml = 'http://www.opengis.net/gml'; " +
                             "declare function local:key-callback($term as xs:string, $data as xs:int+) as element() { " +
@@ -239,26 +239,26 @@ public class GMLIndexTest {
 
     @Test
     public void lowLevelSearch() throws EXistException, SAXException, ParserConfigurationException, SpatialIndexException, IOException {
-    	GMLHandlerJTS geometryHandler = new GeometryHandler();
-        GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler);
-        GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);
+    	final GMLHandlerJTS geometryHandler = new GeometryHandler();
+        final GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler);
+        final GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);
 
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
+            final AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker) broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             //Unplugged
             if (indexWorker != null) {
-                SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
+                final SAXParserFactory factory = ExistSAXParserFactory.getSAXParserFactory();
                 factory.setNamespaceAware(true);
-                InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
-                SAXParser parser = factory.newSAXParser();
-                XMLReader reader = parser.getXMLReader();
-                SAXAdapter adapter = new SAXAdapter();
+                final InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
+                final SAXParser parser = factory.newSAXParser();
+                final XMLReader reader = parser.getXMLReader();
+                final SAXAdapter adapter = new SAXAdapter();
                 reader.setContentHandler(handler);
                 reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
                 reader.parse(src);
 
-                Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
+                final Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
                 assertNotNull(EPSG4326_geometry);
 
                 NodeSet ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.EQUALS);
@@ -285,7 +285,7 @@ public class GMLIndexTest {
     public void highLevelSearch() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = pool.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
@@ -375,7 +375,7 @@ public class GMLIndexTest {
     public void geometricProperties() throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = pool.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
@@ -723,7 +723,7 @@ public class GMLIndexTest {
     public void gmlProducers() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = pool.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
@@ -866,14 +866,14 @@ public class GMLIndexTest {
                     "spatial:union((//gml:Polygon)[1], ())";
             seq = xquery.execute(broker, query, null);
             assertNotNull(seq);
-            assertTrue(seq.getItemCount() == 1);
+            assertEquals(1, seq.getItemCount());
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
                     "declare namespace gml = 'http://www.opengis.net/gml'; " +
                     "spatial:union((), (//gml:Polygon)[1])";
             seq = xquery.execute(broker, query, null);
             assertNotNull(seq);
-            assertTrue(seq.getItemCount() == 1);
+            assertEquals(1, seq.getItemCount());
 
             //In-memory tests
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -982,7 +982,7 @@ public class GMLIndexTest {
     public void update() throws PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = server.getBrokerPool();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            XQuery xquery = pool.getXQueryService();
+            final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
@@ -992,7 +992,7 @@ public class GMLIndexTest {
                     "}";
             Sequence seq = xquery.execute(broker, query, null);
             assertNotNull(seq);
-            assertTrue(seq.getItemCount() == 1);
+            assertEquals(1, seq.getItemCount());
             final String area1 = seq.toString();
 
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
@@ -1013,14 +1013,14 @@ public class GMLIndexTest {
                     "}";
             seq = xquery.execute(broker, query, null);
             assertNotNull(seq);
-            assertTrue(seq.getItemCount() == 1);
+            assertEquals(1, seq.getItemCount());
             final String area2 = seq.toString();
             assertNotEquals(area1, area2);
         }
     }
 
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
-        public void geometry(Geometry geometry) {
+        public void geometry(final Geometry geometry) {
             currentGeometry = geometry;
         }
     }

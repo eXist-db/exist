@@ -51,20 +51,20 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
 
     private final static Logger LOG = LogManager.getLogger(GMLHSQLIndex.class);
 
-    public static String db_file_name_prefix = "spatial_index";
+    public static final String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)
-    public static String TABLE_NAME = "SPATIAL_INDEX_V1";
+    public static final String TABLE_NAME = "SPATIAL_INDEX_V1";
     private DBBroker connectionOwner = null;
     private long connectionTimeout = 100000L;
     
     @Override
-    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(final BrokerPool pool, final Path dataDir, final Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String param = config.getAttribute("connectionTimeout");
         if (!param.isEmpty()) {
             try {
                 connectionTimeout = Long.parseLong(param);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 LOG.error("Invalid value for 'connectionTimeout'", e);
             }
         }
@@ -73,7 +73,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         if (!param.isEmpty()) {
             try {
                 max_docs_in_context_to_refine_query = Integer.parseInt(param);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 LOG.error("Invalid value for 'max_docs_in_context_to_refine_query', using default:{}", max_docs_in_context_to_refine_query, e);
             }
         }
@@ -83,7 +83,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     }
 
     @Override
-    public IndexWorker getWorker(DBBroker broker) {
+    public IndexWorker getWorker(final DBBroker broker) {
         AbstractGMLJDBCIndexWorker worker = workers.get(broker);
         if (worker == null) {
             worker = new GMLHSQLIndexWorker(this, broker);
@@ -103,14 +103,14 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         try {
             //No need to shutdown if we have opened something
             if (conn != null) {
-                Statement stmt = conn.createStatement();
+                final Statement stmt = conn.createStatement();
                 stmt.executeQuery("SHUTDOWN");
                 stmt.close();
                 conn.close();
                 if (LOG.isDebugEnabled())
                     LOG.debug("GML index: {}/{} closed", getDataDir(), db_file_name_prefix);
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new DBException(e.getMessage());
         } finally {
             conn = null;
@@ -139,19 +139,19 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
             //Let's be lazy here : we only delete the index content if we have a connection
             //deleteDatabase() should be far more efficient ;-)
             if (conn != null) {
-                Statement stmt = conn.createStatement(); 
-                int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");
+                final Statement stmt = conn.createStatement();
+                final int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");
                 stmt.close();
                 if (LOG.isDebugEnabled())
                     LOG.debug("GML index: {}/{}. {} nodes removed", getDataDir(), db_file_name_prefix, nodeCount);
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new DBException(e.getMessage());
         }
     }
 
     @Override
-    protected Connection acquireConnection(DBBroker broker) throws SQLException {
+    protected Connection acquireConnection(final DBBroker broker) throws SQLException {
         //Horrible "locking" mechanism
         synchronized (this) {
             if (connectionOwner == null) {
@@ -160,9 +160,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                     initializeConnection();
                 return conn;
             }
-            long timeOut_ = connectionTimeout;
+            final long timeOut_ = connectionTimeout;
             long waitTime = timeOut_;
-            long start = System.currentTimeMillis();
+            final long start = System.currentTimeMillis();
             try {
                 for (;;) {
                     wait(waitTime);
@@ -180,7 +180,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                         return null;
                     }
                 }
-            } catch (InterruptedException ex) {
+            } catch (final InterruptedException ex) {
                 notify();
                 throw new RuntimeException("interrupted while waiting for lock");
             }
@@ -188,7 +188,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     }
 
     @Override
-    protected synchronized void releaseConnection(DBBroker broker) throws SQLException {   
+    protected synchronized void releaseConnection(final DBBroker broker) throws SQLException {
         if (connectionOwner == null)
             throw new SQLException("Attempted to release a connection that wasn't acquired");
         connectionOwner = null;
@@ -202,14 +202,14 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix + ";sql.enforce_size=false" /* + ";shutdown=true" */, "sa", "");
         if (LOG.isDebugEnabled())
             LOG.debug("Connected to GML index: {}/{}", getDataDir(), db_file_name_prefix);
-        try (ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[]{"TABLE"})) {
+        try (final ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[]{"TABLE"})) {
             rs.last();
             if (rs.getRow() == 1) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Opened GML index: {}/{}", getDataDir(), db_file_name_prefix);
                 //Create the data structure if it doesn't exist
             } else if (rs.getRow() == 0) {
-                Statement stmt = conn.createStatement();
+                final Statement stmt = conn.createStatement();
                 stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
                         /*1*/ "DOCUMENT_URI VARCHAR, " +
                         /*2*/ "NODE_ID_UNITS INTEGER, " +
@@ -267,7 +267,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
     }
 
 	@Override
-	public void backupToArchive(RawDataBackup backup) throws IOException {
+	public void backupToArchive(final RawDataBackup backup) throws IOException {
         final Path directory = getDataDir();
         final List<Path> files = FileUtils.list(directory, path -> FileUtils.fileName(path).startsWith(db_file_name_prefix));
         for (final Path file : files) {

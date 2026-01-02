@@ -175,15 +175,15 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
         )
     };
 
-    public FunGMLProducers(XQueryContext context, FunctionSignature signature) {
+    public FunGMLProducers(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         Sequence result = null; 
         try {
-            AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+            final AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
                 context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
             if (indexWorker == null) {
                 logger.error("Unable to find a spatial index worker");
@@ -195,7 +195,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     String sourceSRS = null;
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
@@ -219,11 +219,11 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    String wkt = args[0].itemAt(0).getStringValue();
-                    WKTReader wktReader = new WKTReader();
+                    final String wkt = args[0].itemAt(0).getStringValue();
+                    final WKTReader wktReader = new WKTReader();
                     try {
                         geometry = wktReader.read(wkt);
-                    } catch (ParseException e) {
+                    } catch (final ParseException e) {
                         logger.error(e.getMessage());
                         throw new XPathException(this, e);
                     }
@@ -237,7 +237,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -254,7 +254,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         throw new XPathException(this, "Unable to get a geometry from the node");
                     }
 
-                    double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
+                    final double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
                     int quadrantSegments = 8;
                     int endCapStyle = BufferOp.CAP_ROUND;
                     if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
@@ -279,7 +279,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -301,7 +301,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -323,7 +323,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 if (args[0].isEmpty())
                     result = Sequence.EMPTY_SEQUENCE;
                 else {
-                    NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -351,8 +351,8 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                 else if (args[0].isEmpty() && !args[1].isEmpty())
                     result = args[1].itemAt(0).toSequence();
                 else {
-                    NodeValue geometryNode1 = (NodeValue) args[0].itemAt(0);
-                    NodeValue geometryNode2 = (NodeValue) args[1].itemAt(0);
+                    final NodeValue geometryNode1 = (NodeValue) args[0].itemAt(0);
+                    final NodeValue geometryNode2 = (NodeValue) args[1].itemAt(0);
                     String srsName1 = null;
                     String srsName2 = null;
                     //Try to get the geometries from the index
@@ -408,7 +408,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             }
 
             if (result == null) {
-                String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
+                final String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
                 if (gmlPrefix == null) {
                     logger.error("namespace is not defined:" + SpatialModule.PREFIX);
                     throw new XPathException(this, "'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");
@@ -416,14 +416,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 
                 context.pushDocumentContext();
                 try {
-                    MemTreeBuilder builder = context.getDocumentBuilder();
-                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
+                    final MemTreeBuilder builder = context.getDocumentBuilder();
+                    final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(this, builder);
                     result = (NodeValue)indexWorker.streamGeometryToElement(geometry, targetSRS, receiver);
                 } finally {
                     context.popDocumentContext();
                 }
             }
-        } catch (SpatialIndexException e) {
+        } catch (final SpatialIndexException e) {
             logger.error(e.getMessage());
             throw new XPathException(this, e);
         }

@@ -28,11 +28,11 @@ public class SpatialIndexException extends Exception {
 
     private static final long serialVersionUID = 7991787594779565819L;
 
-    SpatialIndexException(String message) {
+    SpatialIndexException(final String message) {
         super(message);
     }
 	
-    SpatialIndexException(Exception e) {
+    SpatialIndexException(final Exception e) {
         super(e);
     }
 }
