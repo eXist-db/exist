@@ -47,7 +47,10 @@ public enum Cardinality {
     //TODO(AR) can we eliminate this?
     EXACTLY_ONE(ONE),
 
-    //TODO(AR) eliminate this in favour of probably ONE_OR_MORE
+    /**
+     * @deprecated for removal. Use #EMPTY_SEQUENCE and #EXACTLY_ONE to determine many records instead.
+     */
+    @Deprecated
     _MANY(MANY),
 
     /**
