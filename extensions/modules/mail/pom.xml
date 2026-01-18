@@ -46,9 +46,9 @@
   </scm>
 
     <properties>
-        <jakarta.activation.version>2.0.1</jakarta.activation.version>
-        <jakarta.mail.version>2.0.1</jakarta.mail.version>
-        <greenmail.version>2.0.0-alpha-3</greenmail.version>
+        <jakarta.activation.version>2.1.3</jakarta.activation.version>
+        <jakarta.mail.version>2.0.2</jakarta.mail.version>
+        <greenmail.version>2.1.8</greenmail.version>
     </properties>
 
     <dependencies>
