@@ -77,13 +77,13 @@ public class Main {
     public static final String PROP_EXIST_HOME = "exist.home";
     public static final String PROP_JETTY_HOME = "jetty.home";
     private static final String PROP_LOG4J_CONFIGURATION_FILE = "log4j.configurationFile";
+    private static final String PROP_LOG4J_DISABLEJMX = "log4j2.disableJmx";
     private static final String PROP_JUL_MANAGER = "java.util.logging.manager";
     private static final String PROP_JAVA_TEMP_DIR = "java.io.tmpdir";
 
     public static final String ENV_EXIST_JETTY_CONFIG = "EXIST_JETTY_CONFIG";
     public static final String ENV_EXIST_HOME = "EXIST_HOME";
     public static final String ENV_JETTY_HOME = "JETTY_HOME";
-
 
     private static Main exist;
 
@@ -170,6 +170,9 @@ public class Main {
 
         // Check if the OpenJDK version can corrupt eXist-db
         CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
+        // Enable JMX support log4j since v2.24.0 [2024]
+        System.setProperty(PROP_LOG4J_DISABLEJMX, "false");
 
         final String _classname;
         if (args.length > 0) {
