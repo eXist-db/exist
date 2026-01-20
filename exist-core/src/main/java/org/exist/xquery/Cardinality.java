@@ -47,7 +47,10 @@ public enum Cardinality {
     //TODO(AR) can we eliminate this?
     EXACTLY_ONE(ONE),
 
-    //TODO(AR) eliminate this in favour of probably ONE_OR_MORE
+    /**
+     * @deprecated for removal. Use #EMPTY_SEQUENCE and #EXACTLY_ONE to determine many records instead.
+     */
+    @Deprecated(forRemoval = true, since = "6.0.0")
     _MANY(MANY),
 
     /**
@@ -140,14 +143,12 @@ public enum Cardinality {
      * @return the XQuery notation
      */
     public String toXQueryCardinalityString() {
-        // impossible
         return switch (this) {
             case EMPTY_SEQUENCE -> "empty-sequence()";
             case EXACTLY_ONE -> "";
             case ZERO_OR_ONE -> "?";
             case _MANY, ONE_OR_MORE -> "+";
             case ZERO_OR_MORE -> "*";
-            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
         };
     }
 
@@ -157,14 +158,12 @@ public enum Cardinality {
      * @return a pronounceable description
      */
     public String getHumanDescription() {
-        // impossible
         return switch (this) {
             case EMPTY_SEQUENCE -> "empty";
             case EXACTLY_ONE -> "exactly one";
             case ZERO_OR_ONE -> "zero or one";
             case _MANY, ONE_OR_MORE -> "one or more";
             case ZERO_OR_MORE -> "zero or more";
-            default -> throw new IllegalArgumentException("Unknown cardinality: " + name());
         };
     }
 
