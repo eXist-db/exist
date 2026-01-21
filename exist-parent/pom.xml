@@ -604,7 +604,7 @@
                 <plugin>
                     <groupId>software.xdev</groupId>
                     <artifactId>find-and-replace-maven-plugin</artifactId>
-                    <version>1.0.4</version>
+                    <version>1.0.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
