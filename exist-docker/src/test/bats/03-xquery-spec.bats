@@ -24,6 +24,8 @@
 }
 
 @test "PUT xq should succeed and trigger auto-register" {
+  run curl -i -X PUT -H "Content-Type: application/xml" -d $'<collection xmlns="http://exist-db.org/collection-config/1.0">\n<triggers>\n<trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>\n</triggers>\n</collection>' http://admin:nimda@127.0.0.1:8080/exist/rest/db/system/config/db/collection.xconf
+  [ "$status" -eq 0 ]
   run curl -i -X PUT -H "Content-Type: application/xquery" -d $'xquery version "3.0";\nmodule namespace host = "http://host/service";\nimport module namespace rest = "http://exquery.org/ns/restxq";\ndeclare\n %rest:POST\n	%rest:path("/forgot")\n %rest:query-param("email", "{$email}")\n	%rest:consumes("application/x-www-form-urlencoded")\n %rest:produces("text/html")\nfunction host:function1($email) {\n let $doc := \n<Customer>\n <Metadata>\n <Created>{current-dateTime()}</Created>\n </Metadata>\n <Contact>\n <Email>{$email}</Email>\n </Contact>\n </Customer>\n return\n let $new-file-path := xmldb:store("/db/forgot", concat($email, ".xml"), $doc)\n return\n <html xmlns="http://www.w3.org/1999/xhtml">\n <body>SUCCESS</body>\n </html>\n};' http://admin:nimda@127.0.0.1:8080/exist/rest/db/forgot.xqm
   [ "$status" -eq 0 ]
   result=$(docker exec exist-ci java org.exist.start.Main client -q -u admin -P 'nimda' -x 'rest:resource-functions()' | grep -o 'http://host/service')
