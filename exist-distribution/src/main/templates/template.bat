@@ -67,6 +67,23 @@ goto repoSetup
 :WinNTGetScriptDir
 for %%i in ("%~dp0..") do set "BASEDIR=%%~fi"
 
+@REM Get the script name and determine the command to run
+set SCRIPT_NAME=%~n0
+set EXIST_COMMAND=
+
+@REM Check script name and set appropriate command
+if /i "%SCRIPT_NAME%"=="client" set EXIST_COMMAND=client
+if /i "%SCRIPT_NAME%"=="backup" set EXIST_COMMAND=backup
+if /i "%SCRIPT_NAME%"=="export-gui" set EXIST_COMMAND=export-gui
+if /i "%SCRIPT_NAME%"=="jmx-client" set EXIST_COMMAND=jmx-client
+if /i "%SCRIPT_NAME%"=="launcher" set EXIST_COMMAND=launcher
+if /i "%SCRIPT_NAME%"=="shutdown" set EXIST_COMMAND=shutdown
+if /i "%SCRIPT_NAME%"=="startup" set EXIST_COMMAND=jetty
+if /i "%SCRIPT_NAME%"=="export" set EXIST_COMMAND=export --export --zip
+
+@REM Default command if no match
+if "%EXIST_COMMAND%"=="" set EXIST_COMMAND=launch
+
 :repoSetup
 set REPO=
 
@@ -93,7 +110,7 @@ if NOT "%CLASSPATH_PREFIX%" == "" set "CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%"
     -Dexist.configurationFile="%BASEDIR%\etc\conf.xml" ^
     -Djetty.home="%BASEDIR%" ^
     -Dexist.jetty.config="%BASEDIR%\etc\jetty\standard.enabled-jetty-configs" ^
-    -classpath "%CLASSPATH%" org.exist.start.Main @PLACEHOLDER@ %CMD_LINE_ARGS%
+    -classpath "%CLASSPATH%" org.exist.start.Main %EXIST_COMMAND% %CMD_LINE_ARGS%
 if %ERRORLEVEL% NEQ 0 goto error
 goto end
 

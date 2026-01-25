@@ -828,22 +828,14 @@
                                 </macrodef>
 
                                 <!-- windows -->
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/backup.bat"
-                                             cmd="backup"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/client.bat"
-                                             cmd="client"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export-gui.bat"
-                                             cmd="org.exist.backup.ExportGUI"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/export.bat"
-                                             cmd="org.exist.backup.ExportMain --export --zip"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/jmxclient.bat"
-                                             cmd="org.exist.management.client.JMXClient"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/launcher.bat"
-                                             cmd="launcher"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/shutdown.bat"
-                                             cmd="shutdown"/>
-                                <copy-script src="src/main/templates/template.bat" dest="${assemble.dir}/bin/startup.bat"
-                                             cmd="jetty"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"/>
 
                                 <!-- unix -->
                                 <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
