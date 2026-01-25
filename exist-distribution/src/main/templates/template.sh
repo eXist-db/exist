@@ -35,8 +35,27 @@ while [ -h "$PRG" ]; do
   fi
 done
 
+# Get the script name (basename of $0, which could be a symlink)
+SCRIPT_NAME=$(basename "$0")
+SHORT_NAME="${SCRIPT_NAME%.sh}"
 PRGDIR=$(dirname "$PRG")
 BASEDIR=$(cd "$PRGDIR/.." >/dev/null; pwd)
+
+# Set variables based on the symbolic link name
+case "$SHORT_NAME" in
+  client|backup|export-gui|jmx-client,launcher,shutdown)
+      EXIST_COMMAND=$SHORT_NAME
+      ;;
+  startup)
+      EXIST_COMMAND="jetty"
+      ;;
+  export)
+      EXIST_COMMAND="export --export --zip"
+      ;;
+  *)
+      EXIST_COMMAND="launch"
+      ;;
+esac
 
 # OS specific support.  $var _must_ be set to either true or false.
 cygwin=false;
@@ -112,7 +131,6 @@ _JAVA_OPTS='-Xms256m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication -Dfile
 if [ -n "$JAVA_OPTS" ] ; then
   _JAVA_OPTS="$_JAVA_OPTS $JAVA_OPTS"
 fi
-echo $_JAVA_OPTS
 
 _EXIST_OPTS="-Dlog4j.configurationFile=$BASEDIR/etc/log4j2.xml -Dexist.home=$BASEDIR \
              -Dexist.configurationFile=$BASEDIR/etc/conf.xml    -Djetty.home=$BASEDIR \
@@ -120,9 +138,18 @@ _EXIST_OPTS="-Dlog4j.configurationFile=$BASEDIR/etc/log4j2.xml -Dexist.home=$BAS
 if [ -n "$EXIST_OPTS" ] ; then
   _EXIST_OPTS="$_EXIST_OPTS $EXIST_OPTS"
 fi
-echo $_EXIST_OPTS
+
+if [ -n "$DEBUG" ] ; then
+  echo "################"
+  echo JAVA_OPTS=$_JAVA_OPTS
+  echo "################"
+  echo EXIST_OPTS=$_EXIST_OPTS
+  echo "################"
+  echo EXIST_COMMAND./bin =$EXIST_COMMAND
+  echo "################"
+fi
 
 exec "$JAVACMD" $_JAVA_OPTS $_EXIST_OPTS \
   -classpath "$CLASSPATH" \
-  org.exist.start.Main @PLACEHOLDER@ \
+  org.exist.start.Main $EXIST_COMMAND \
   "$@"

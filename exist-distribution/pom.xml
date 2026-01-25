@@ -807,6 +807,7 @@
                                 <!-- create required directories-->
                                 <mkdir dir="${assemble.dir}/etc"/> d
                                 <mkdir dir="${assemble.dir}/bin"/>
+                                <mkdir dir="${assemble.dir}/logs"/>
 
                                 <!-- copy configuration files -->
                                 <copy todir="${assemble.dir}/etc">
@@ -845,22 +846,18 @@
                                              cmd="jetty"/>
 
                                 <!-- unix -->
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/backup.sh"
-                                             cmd="backup"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/client.sh"
-                                             cmd="client"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export-gui.sh"
-                                             cmd="org.exist.backup.ExportGUI"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/export.sh"
-                                             cmd="org.exist.backup.ExportMain --export --zip"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/jmxclient.sh"
-                                             cmd="org.exist.management.client.JMXClient"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/launcher.sh"
-                                             cmd="launcher"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/shutdown.sh"
-                                             cmd="shutdown"/>
-                                <copy-script src="src/main/templates/template.sh" dest="${assemble.dir}/bin/startup.sh"
-                                             cmd="jetty"/>
+                                <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
+                                <setpermissions mode="555">
+                                    <file file="${assemble.dir}/bin/launcher.sh"/>
+                                </setpermissions>
+
+                                <symlink link="${assemble.dir}/bin/backup.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/client.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/export.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/export-gui.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/jmxclient.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/shutdown.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/startup.sh" resource="launcher.sh"/>
 
                                 <!-- copy apache daemon files -->
                                 <copy todir="${assemble.dir}/bin/">
