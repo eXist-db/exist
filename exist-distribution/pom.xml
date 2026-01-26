@@ -839,9 +839,6 @@
 
                                 <!-- unix -->
                                 <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
-                                <setpermissions mode="555">
-                                    <file file="${assemble.dir}/bin/launcher.sh"/>
-                                </setpermissions>
 
                                 <symlink link="${assemble.dir}/bin/backup.sh" resource="launcher.sh"/>
                                 <symlink link="${assemble.dir}/bin/client.sh" resource="launcher.sh"/>
