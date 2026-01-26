@@ -128,7 +128,7 @@
         <junit.jupiter.version>6.0.2</junit.jupiter.version>
         <easymock.version>5.6.0</easymock.version>
         <objenesis.version>3.4</objenesis.version>
-        <assertj.version>3.27.6</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <awaitility.version>4.3.0</awaitility.version>
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
