@@ -37,12 +37,12 @@ public class GMLIndexConfig {
     private final static String FLUSH_AFTER = "flushAfter";	
     private int flushAfter = -1;
 
-    public GMLIndexConfig(Map<String, String> namespaces, Element node) {
-        String param = node.getAttribute(FLUSH_AFTER);
+    public GMLIndexConfig(final Map<String, String> namespaces, final Element node) {
+        final String param = node.getAttribute(FLUSH_AFTER);
         if (!param.isEmpty()) {
             try {
                 flushAfter = Integer.parseInt(param);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 LOG.info("Invalid value for '" + FLUSH_AFTER + "'", e);
             }
         }

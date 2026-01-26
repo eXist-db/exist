@@ -84,7 +84,7 @@ public class SpatialModule extends AbstractInternalModule {
         new FunctionDef(FunGMLProducers.signatures[11], FunGMLProducers.class)
     };
 
-    public SpatialModule(Map<String, List<? extends Object>> parameters) {
+    public SpatialModule(final Map<String, List<?>> parameters) {
         super(functions, parameters);
     }
 

@@ -61,8 +61,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
     protected static final Logger logger = LogManager.getLogger(FunGeometricProperties.class);
     boolean hasUsedIndex = false;
 
-    protected WKTWriter wktWriter = new WKTWriter();
-    protected WKBWriter wkbWriter = new WKBWriter();
+    protected final WKTWriter wktWriter = new WKTWriter();
+    protected final WKBWriter wkbWriter = new WKBWriter();
 
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
@@ -251,14 +251,14 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         )
    	};
 
-    public FunGeometricProperties(XQueryContext context, FunctionSignature signature) {
+    public FunGeometricProperties(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         Sequence result = null;
-        Sequence nodes = args[0];
+        final Sequence nodes = args[0];
 
         if (nodes.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -266,7 +266,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             try {
                 Geometry geometry = null;
                 String sourceCRS = null;
-                AbstractGMLJDBCIndexWorker indexWorker = 
+                final AbstractGMLJDBCIndexWorker indexWorker =
                     (AbstractGMLJDBCIndexWorker)context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
                 if (indexWorker == null) {
                     logger.error("Unable to find a spatial index worker");
@@ -323,7 +323,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     logger.error("Unknown spatial property: {}", getName().getLocalPart());
                     throw new XPathException(this, "Unknown spatial property: " + getName().getLocalPart());
                 }
-                NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
+                final NodeValue geometryNode = (NodeValue)nodes.itemAt(0);
                 if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     //The node should be indexed : get its property
                     result = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, propertyName);
@@ -342,7 +342,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         if (isCalledAs("getEPSG4326WKT")) {
                             result = new StringValue(this, wktWriter.write(geometry));
                         } else if (isCalledAs("getEPSG4326WKB")) {
-                            byte data[] = wkbWriter.write(geometry);
+                            final byte[] data = wkbWriter.write(geometry);
                             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(data).get(), this);
                         } else if (isCalledAs("getEPSG4326MinX")) {
                             result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
@@ -362,7 +362,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                     } else if (isCalledAs("getWKT")) {
                         result = new StringValue(this, wktWriter.write(geometry));
                     } else if (isCalledAs("getWKB")) {
-                        byte data[] = wkbWriter.write(geometry);
+                        final byte[] data = wkbWriter.write(geometry);
                         return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(data).get(), this);
                     } else if (isCalledAs("getMinX")) {
                         result = new DoubleValue(this, geometry.getEnvelopeInternal().getMinX());
@@ -393,7 +393,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
                         throw new XPathException(this, "Unknown spatial property: " + getName().getLocalPart());
                     }
                 }
-            } catch (SpatialIndexException | IOException e) {
+            } catch (final SpatialIndexException | IOException e) {
                 logger.error(e.getMessage());
                 throw new XPathException(this, e);
             }

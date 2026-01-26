@@ -55,7 +55,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     /**
      * An IndexWorker "pool"
      */
-    protected HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<>();
+    protected final HashMap<DBBroker, AbstractGMLJDBCIndexWorker> workers = new HashMap<>();
 
     /**
      * The connection to the DB that will be needed for global operations 
@@ -67,21 +67,21 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * See http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf (chapter 11).
      */
     public interface SpatialOperator { 
-        public static int UNKNOWN = -1;
-        public static int EQUALS = 1;
-        public static int DISJOINT = 2;
-        public static int INTERSECTS = 3;
-        public static int TOUCHES = 4;
-        public static int CROSSES = 5;
-        public static int WITHIN = 6;
-        public static int CONTAINS = 7;
-        public static int OVERLAPS = 8;
+        int UNKNOWN = -1;
+        int EQUALS = 1;
+        int DISJOINT = 2;
+        int INTERSECTS = 3;
+        int TOUCHES = 4;
+        int CROSSES = 5;
+        int WITHIN = 6;
+        int CONTAINS = 7;
+        int OVERLAPS = 8;
     }
 
     protected int max_docs_in_context_to_refine_query = 10;
 
     @Override
-    public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
+    public void configure(final BrokerPool pool, final Path dataDir, final Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         try {
             checkDatabase();
@@ -101,7 +101,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     @Override
     public void close() throws DBException {
-        for (AbstractGMLJDBCIndexWorker worker : workers.values()) {
+        for (final AbstractGMLJDBCIndexWorker worker : workers.values()) {
             //Flush any pending stuff 
             worker.flush();
             //Reset state
@@ -126,7 +126,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 
     @Override
     public void remove() throws DBException {
-        for (AbstractGMLJDBCIndexWorker worker : workers.values()) {
+        for (final AbstractGMLJDBCIndexWorker worker : workers.values()) {
             //Flush any pending stuff
             worker.flush();
             //Reset state
@@ -138,7 +138,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     }
 
     @Override
-    public boolean checkIndex(DBBroker broker) {
+    public boolean checkIndex(final DBBroker broker) {
         return getWorker(broker).checkIndex(broker);
     }
 

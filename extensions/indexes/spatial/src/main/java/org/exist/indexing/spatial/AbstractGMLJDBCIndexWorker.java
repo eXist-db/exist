@@ -95,30 +95,30 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     private static final Logger LOG = LogManager.getLogger(AbstractGMLJDBCIndexWorker.class);
 
     protected IndexController controller;
-    protected AbstractGMLJDBCIndex index;
-    protected DBBroker broker;
+    protected final AbstractGMLJDBCIndex index;
+    protected final DBBroker broker;
     protected ReindexMode currentMode = ReindexMode.UNKNOWN;
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
-    protected Map<NodeId, SRSGeometry> geometries = new TreeMap<>();
+    protected final Map<NodeId, SRSGeometry> geometries = new TreeMap<>();
     NodeId currentNodeId = null;
     Geometry streamedGeometry = null;
     boolean documentDeleted = false;
     int flushAfter = -1;
-    protected GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-    protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-    protected GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);
-    protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
-    protected TreeMap<String, MathTransform> transformations = new TreeMap<>();
+    protected final GMLHandlerJTS geometryHandler = new GeometryHandler();
+    protected final GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler);
+    protected final GMLFilterDocument geometryDocument = new GMLFilterDocument(geometryFilter);
+    protected final GMLStreamListener gmlStreamListener = new GMLStreamListener();
+    protected final TreeMap<String, MathTransform> transformations = new TreeMap<>();
     protected boolean useLenientMode = false;
-    protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
+    protected final GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
     protected final GeometryTransformer gmlTransformer;
-    protected WKBWriter wkbWriter = new WKBWriter();
-    protected WKBReader wkbReader = new WKBReader();
-    protected WKTWriter wktWriter = new WKTWriter();
-    protected WKTReader wktReader = new WKTReader();
+    protected final WKBWriter wkbWriter = new WKBWriter();
+    protected final WKBReader wkbReader = new WKBReader();
+    protected final WKTWriter wktWriter = new WKTWriter();
+    protected final WKTReader wktReader = new WKTReader();
 
-    public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
+    public AbstractGMLJDBCIndexWorker(final AbstractGMLJDBCIndex index, final DBBroker broker) {
         this.index = index;
         this.broker = broker;
         this.gmlTransformer = new GeometryTransformer();
@@ -147,7 +147,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     @Override
-    public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    public Object configure(final IndexController controller, final NodeList configNodes, final Map<String, String> namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         Map<String, GMLIndexConfig> map = null;
         for(int i = 0; i < configNodes.getLength(); i++) {
@@ -155,7 +155,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap<>();
-                GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
+                final GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
                 map.put(AbstractGMLJDBCIndex.ID, config);
             }
         }
@@ -163,11 +163,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     @Override
-    public void setDocument(DocumentImpl document) {
+    public void setDocument(final DocumentImpl document) {
         isDocumentGMLAware = false;
         documentDeleted= false;
         if (document != null) {
-            IndexSpec idxConf = document.getCollection().getIndexConfiguration(getBroker());
+            final IndexSpec idxConf = document.getCollection().getIndexConfiguration(getBroker());
             if (idxConf != null) {
                 final Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
                 if (collectionConfig != null) {
@@ -191,7 +191,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     @Override
-    public void setDocument(DocumentImpl doc, ReindexMode mode) {
+    public void setDocument(final DocumentImpl doc, final ReindexMode mode) {
         setDocument(doc);
         setMode(mode);
     }
@@ -225,11 +225,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
 
     @Override
-    public MatchListener getMatchListener(DBBroker broker, NodeProxy proxy) {
+    public MatchListener getMatchListener(final DBBroker broker, final NodeProxy proxy) {
         return null;
     }
 
-    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean insert, boolean includeSelf) {
+    public StoredNode getReindexRoot(final StoredNode node, final NodePath path, final boolean insert, final boolean includeSelf) {
         if (!isDocumentGMLAware)
             //Not concerned
             return null;
@@ -274,12 +274,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     break;
             }
             conn.commit();
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             LOG.error("Document: {} NodeID: {}", currentDoc, currentNodeId, e);
             try {
                 if (conn != null)
                     conn.rollback();
-            } catch (SQLException ee) {
+            } catch (final SQLException ee) {
                 LOG.error(ee);
             }
         } finally {
@@ -289,13 +289,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     releaseConnection(conn);
                     //geometries.clear();
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
             }
         }
     }
 
-    private void saveDocumentNodes(Connection conn) throws SQLException {
+    private void saveDocumentNodes(final Connection conn) throws SQLException {
         if (geometries.isEmpty())
             return;
 
@@ -341,7 +341,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {
             NodeId nodeId = null;
             SRSGeometry srsGeometry = null;
-        	for (Map.Entry<NodeId, SRSGeometry> entry : geometries.entrySet()) {
+        	for (final Map.Entry<NodeId, SRSGeometry> entry : geometries.entrySet()) {
                 nodeId = entry.getKey();
                 srsGeometry = entry.getValue();
                 
@@ -364,11 +364,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    private void dropDocumentNode(Connection conn) throws SQLException {
+    private void dropDocumentNode(final Connection conn) throws SQLException {
         if (currentNodeId == null)
             return;
         try {
-            boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
+            final boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
             if (!removed) {
                 LOG.error("No data dropped for node {} from GML index", currentNodeId.toString());
             } else {
@@ -380,20 +380,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    private void removeDocument(Connection conn) throws SQLException {
+    private void removeDocument(final Connection conn) throws SQLException {
         if (LOG.isDebugEnabled())
             LOG.debug("Dropping GML index for document {}", currentDoc.getURI());
-        int nodeCount = removeDocument(currentDoc, conn);
+        final int nodeCount = removeDocument(currentDoc, conn);
         if (LOG.isDebugEnabled())
             LOG.debug("Dropped {} nodes from GML index", nodeCount);
     }
 
     @Override
-    public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
+    public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex) {
         boolean isCollectionGMLAware = false;
-        IndexSpec idxConf = collection.getIndexConfiguration(broker);
+        final IndexSpec idxConf = collection.getIndexConfiguration(broker);
         if (idxConf != null) {
-            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
+            final Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
             isCollectionGMLAware = (collectionConfig != null);
         }
         if (!isCollectionGMLAware)
@@ -404,117 +404,117 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             conn = acquireConnection();
             if (LOG.isDebugEnabled())
                 LOG.debug("Dropping GML index for collection {}", collection.getURI());
-            int nodeCount = removeCollection(collection, conn);
+            final int nodeCount = removeCollection(collection, conn);
             if (LOG.isDebugEnabled())
                 LOG.debug("Dropped {} nodes from GML index", nodeCount);
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             LOG.error(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
             }
         }
     }
 
-    public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp)
+    public NodeSet search(final DBBroker broker, final NodeSet contextSet, final Geometry EPSG4326_geometry, final int spatialOp)
             throws SpatialIndexException {
         Connection conn = null;
         try { 
             conn = acquireConnection();
             return search(broker, contextSet, EPSG4326_geometry, spatialOp, conn);
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
     }
 
-    public Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326) 
+    public Geometry getGeometryForNode(final DBBroker broker, final NodeProxy p, final boolean getEPSG4326)
             throws  SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
             return getGeometryForNode(broker, p, getEPSG4326, conn);
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
     }
 
-    protected Geometry[] getGeometriesForNodes(DBBroker broker, NodeSet contextSet, boolean getEPSG4326)
+    protected Geometry[] getGeometriesForNodes(final DBBroker broker, final NodeSet contextSet, final boolean getEPSG4326)
             throws SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
             return getGeometriesForNodes(broker, contextSet, getEPSG4326, conn);
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
     }
 
-    public AtomicValue getGeometricPropertyForNode(XQueryContext context, NodeProxy p, String propertyName)
+    public AtomicValue getGeometricPropertyForNode(final XQueryContext context, final NodeProxy p, final String propertyName)
             throws  SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
             return getGeometricPropertyForNode(context, p, conn, propertyName);
-        } catch (SQLException | XPathException e) {
+        } catch (final SQLException | XPathException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
     }
 
-    public ValueSequence getGeometricPropertyForNodes(XQueryContext context, NodeSet contextSet, String propertyName) 
+    public ValueSequence getGeometricPropertyForNodes(final XQueryContext context, final NodeSet contextSet, final String propertyName)
             throws  SpatialIndexException {
         Connection conn = null;
         try {
             conn = acquireConnection();
             return getGeometricPropertyForNodes(context, contextSet, conn, propertyName);
-        } catch (SQLException | XPathException e) {
+        } catch (final SQLException | XPathException e) {
             throw new SpatialIndexException(e);
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
     }
 
-    public boolean checkIndex(DBBroker broker) {
+    public boolean checkIndex(final DBBroker broker) {
         Connection conn = null;
         try {
             conn = acquireConnection();
@@ -526,7 +526,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return false;
             }
@@ -559,20 +559,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     protected abstract void releaseConnection(Connection conn) throws SQLException;
 
-    public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet contextSet, Map hints) {
+    public Occurrences[] scanIndex(final XQueryContext context, final DocumentSet docs, final NodeSet contextSet, final Map hints) {
         //TODO : try to use contextSet
-        Map<Geometry, Occurrences> occurences = new TreeMap<>();
+        final Map<Geometry, Occurrences> occurences = new TreeMap<>();
         Connection conn = null;
         try {
             conn = acquireConnection();
             //Collect the (normalized) geometries for each document
-            for (Iterator<DocumentImpl> iDoc = docs.getDocumentIterator(); iDoc.hasNext();) {
-                DocumentImpl doc = iDoc.next();
+            for (final Iterator<DocumentImpl> iDoc = docs.getDocumentIterator(); iDoc.hasNext();) {
+                final DocumentImpl doc = iDoc.next();
                 //TODO : check if document is GML-aware ?
                 //Aggregate the occurences between different documents
-                for (Map.Entry<Geometry, String> entry : getGeometriesForDocument(doc, conn).entrySet()) {
+                for (final Map.Entry<Geometry, String> entry : getGeometriesForDocument(doc, conn).entrySet()) {
                     ///TODO : use the IndexWorker.VALUE_COUNT hint, if present, to limit the number of returned entries
-                    Geometry key = entry.getKey();
+                    final Geometry key = entry.getKey();
                     //Do we already have an occurence for this geometry ?
                     Occurrences oc = occurences.get(key);
                     if (oc != null) {
@@ -591,24 +591,24 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             LOG.error(e);
             return null;
         } finally {
             try {
                 if (conn != null)
                     releaseConnection(conn);
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 LOG.error(e);
                 return null;
             }
         }
-        Occurrences[] result = new Occurrences[occurences.size()];
+        final Occurrences[] result = new Occurrences[occurences.size()];
         occurences.values().toArray(result);
         return result;
     }
 
-    public Geometry streamNodeToGeometry(XQueryContext context, NodeValue node) throws SpatialIndexException {
+    public Geometry streamNodeToGeometry(final XQueryContext context, final NodeValue node) throws SpatialIndexException {
         try {
             context.pushDocumentContext();
             try {
@@ -617,13 +617,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             } finally {
                 context.popDocumentContext();
             }
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             throw new SpatialIndexException(e);
         }
         return streamedGeometry;
     }
 
-    public Element streamGeometryToElement(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
+    public Element streamGeometryToElement(final Geometry geometry, final String srsName, final Receiver receiver) throws SpatialIndexException {
         //YES !!!
         String gmlString = null;
         try {
@@ -633,18 +633,18 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             //3) other stuff...
             //This will possibly require some changes in GeometryTransformer
             gmlString = gmlTransformer.transform(geometry);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new SpatialIndexException(e);
         }
 
         final XMLReaderPool parserPool = broker.getBrokerPool().getParserPool();
         XMLReader reader = null;
         try {
-            InputSource src = new InputSource(new StringReader(gmlString));
+            final InputSource src = new InputSource(new StringReader(gmlString));
             reader = parserPool.borrowXMLReader();
             reader.setContentHandler((ContentHandler)receiver);
             reader.parse(src);
-            Document doc = receiver.getDocument();
+            final Document doc = receiver.getDocument();
             return doc.getDocumentElement();
         } catch (final SAXException | IOException e) {
             throw new SpatialIndexException(e);
@@ -655,7 +655,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {
+    public Geometry transformGeometry(final Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {
         //provisional workarounds
         if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
             sourceCRS = "EPSG:27700";
@@ -677,7 +677,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                 }
                 transformations.put(sourceCRS + "_" + targetCRS, transform);
                 LOG.debug("Instantiated transformation from '{}' to '{}'", sourceCRS, targetCRS);
-            } catch (FactoryException e) {
+            } catch (final FactoryException e) {
                 LOG.error(e);
             }
         }
@@ -687,7 +687,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         coordinateTransformer.setMathTransform(transform);
         try {
         	return coordinateTransformer.transform(geometry);
-        } catch (TransformException e) {
+        } catch (final TransformException e) {
         	throw new SpatialIndexException(e);
         }
     }
@@ -703,7 +703,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
         
         @Override
-        public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
+        public void startElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             if (isDocumentGMLAware) {
                 //Release the deferred element if any
                 if (deferredElement != null)
@@ -716,20 +716,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
         
         @Override
-        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) { 
+        public void attribute(final Txn transaction, final AttrImpl attrib, final NodePath path) {
             //Forward the event to the next listener 
             super.attribute(transaction, attrib, path);
         }
 
         @Override
-        public void characters(Txn transaction, AbstractCharacterData text, NodePath path) {
+        public void characters(final Txn transaction, final AbstractCharacterData text, final NodePath path) {
             if (isDocumentGMLAware) {
                 //Release the deferred element if any
                 if (deferredElement != null)
                     processDeferredElement();
                 try {
                     geometryDocument.characters(text.getData().toCharArray(), 0, text.getLength());
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     LOG.error(e);
                 }
             }
@@ -738,7 +738,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
 
         @Override
-        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+        public void endElement(final Txn transaction, final ElementImpl element, final NodePath path) {
             if (isDocumentGMLAware) {
                 //Release the deferred element if any
                 if (deferredElement != null)
@@ -752,13 +752,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         
         private void processDeferredElement() {
             //We need to collect the deferred element's attributes in order to feed the SAX handler
-            AttributesImpl attList = new AttributesImpl();
-            NamedNodeMap attrs = deferredElement.getAttributes();
+            final AttributesImpl attList = new AttributesImpl();
+            final NamedNodeMap attrs = deferredElement.getAttributes();
 
             String whatToPush = null;
 
             for (int i = 0; i < attrs.getLength() ; i++) {
-                AttrImpl attrib = (AttrImpl)attrs.item(i);
+                final AttrImpl attrib = (AttrImpl)attrs.item(i);
 
                 //Store the srs
                 if (GML_NS.equals(deferredElement.getNamespaceURI())) {
@@ -779,7 +779,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
             try {
                 geometryDocument.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 LOG.error(e);
             } finally {
@@ -787,9 +787,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             }
         }
 
-        private void processCurrentElement(ElementImpl element) {
+        private void processCurrentElement(final ElementImpl element) {
             currentNodeId = element.getNodeId();
-            String currentSrsName = srsNamesStack.pop();
+            final String currentSrsName = srsNamesStack.pop();
             try {
                 geometryDocument.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
                 //Some invalid/(yet) incomplete geometries don't have a SRS
@@ -802,7 +802,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                         ((AbstractGMLJDBCIndexWorker)getWorker()).getBroker().flush();
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 LOG.error("Unable to collect geometry for node: {}. Indexing will be skipped", currentNodeId);
             } finally {
                 streamedGeometry = null;
@@ -812,7 +812,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
         @Override
-        public void geometry(Geometry geometry) {
+        public void geometry(final Geometry geometry) {
             streamedGeometry = geometry;
             //TODO : null geometries can be returned for many reasons, including a (too) strict
             //topology check done by the Geotools SAX parser.
@@ -825,10 +825,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     private class SRSGeometry {
 
-        private String SRSName;
-        private Geometry geometry;
+        private final String SRSName;
+        private final Geometry geometry;
 
-        public SRSGeometry(String SRSName, Geometry geometry) {
+        public SRSGeometry(final String SRSName, final Geometry geometry) {
             //TODO : implement a default, eventually configurable, SRS ?
             if (SRSName == null)
                 throw new IllegalArgumentException("Got null SRS");
