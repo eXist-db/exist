@@ -828,12 +828,12 @@
                                 </macrodef>
 
                                 <!-- windows -->
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"/>
                                 <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"/>
 
