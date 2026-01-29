@@ -125,43 +125,36 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 case EQ:
                     return new TermQuery(new Term(field, key));
                 case NE:
-                    final BooleanQuery qnot = new BooleanQuery();
+                    final BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     query = new WildcardQuery(new Term(field, new BytesRef("*")));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    qnot.add(query, BooleanClause.Occur.MUST);
-                    qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
-                    return qnot;
+                    builder.add(query, BooleanClause.Occur.MUST);
+                    builder.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
+                    return builder.build();
                 case STARTS_WITH:
                     return new PrefixQuery(new Term(field, key));
                 case ENDS_WITH:
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 case CONTAINS:
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
                     bytes.append((byte)'*');
-                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
+                    return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 case MATCH:
-                    RegexpQuery regexQuery = new RegexpQuery(new Term(field, content.getStringValue()));
-                    regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return regexQuery;
+                    return new RegexpQuery(new Term(field, content.getStringValue()));
             }
         }
         if (operator == RangeIndex.Operator.EQ) {
             return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
         }
         if (operator == RangeIndex.Operator.NE) {
-            final BooleanQuery nq = new BooleanQuery();
-            nq.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
-            nq.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
-            return nq;
+            final BooleanQuery.Builder nqb = new BooleanQuery.Builder();
+            nqb.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
+            nqb.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
+            return nqb.build();
         }
         final boolean includeUpper = operator == RangeIndex.Operator.LE;
         final boolean includeLower = operator == RangeIndex.Operator.GE;
@@ -170,45 +163,45 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             case Type.LONG:
             case Type.UNSIGNED_LONG:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, ((NumericValue)content).getLong());
                 } else {
-                    return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, ((NumericValue)content).getLong(), Long.MAX_VALUE);
                 }
             case Type.INT:
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
+                    return IntField.newRangeQuery(field, Integer.MIN_VALUE, ((NumericValue) content).getInt());
                 } else {
-                    return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
+                    return IntField.newRangeQuery(field, ((NumericValue) content).getInt(), Integer.MAX_VALUE);
                 }
             case Type.DECIMAL:
             case Type.DOUBLE:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                    return DoubleField.newRangeQuery(field, Double.NEGATIVE_INFINITY, ((NumericValue) content).getDouble());
                 } else {
-                    return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                    return DoubleField.newRangeQuery(field, ((NumericValue) content).getDouble(), Double.POSITIVE_INFINITY);
                 }
             case Type.FLOAT:
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                    return FloatField.newRangeQuery(field, Float.NEGATIVE_INFINITY, (float) ((NumericValue) content).getDouble());
                 } else {
-                    return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                    return FloatField.newRangeQuery(field, (float) ((NumericValue) content).getDouble(), Float.POSITIVE_INFINITY);
                 }
             case Type.DATE:
                 long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, dl);
                 } else {
-                    return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, dl, Long.MAX_VALUE);
                 }
             case Type.TIME:
                 long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
                 if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, tl);
                 } else {
-                    return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, tl, Long.MAX_VALUE);
                 }
             case Type.DATE_TIME:
             default:
@@ -363,9 +356,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                final BytesRefBuilder bytes = new BytesRefBuilder();
-                NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
+                final byte[] data = new byte[Integer.BYTES];
+                NumericUtils.intToSortableBytes(doc.getDocId(), data, 0);
+                Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
                 writer.deleteDocuments(dt);
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
@@ -389,9 +382,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
+            final byte[] data = new byte[Integer.BYTES];
+            NumericUtils.intToSortableBytes(docId, data, 0);
+            Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
@@ -417,7 +410,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // build id from nodeId and docId
                 int nodeIdLen = nodeId.size();
                 byte[] data = new byte[nodeIdLen + 4];
-                ByteConversion.intToByteH(currentDoc.getDocId(), data, 0);
+                final byte[] docIdData = new byte[Integer.BYTES];
+                NumericUtils.intToSortableBytes(currentDoc.getDocId(), docIdData, 0);
+                System.arraycopy(docIdData, 0, data, 0, Integer.BYTES);
                 nodeId.serialize(data, 4);
 
                 Term it = new Term(FIELD_ID, new BytesRef(data));
@@ -454,15 +449,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
 
             // docId and nodeId are stored as doc value
-            IntDocValuesField fDocId = new IntDocValuesField(FIELD_DOC_ID, 0);
+            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(FIELD_NODE_ID, new BytesRef(8));
             BinaryDocValuesField fAddress = new BinaryDocValuesField(FIELD_ADDRESS, new BytesRef(8));
             // docId also needs to be indexed
-            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
+            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
             for (RangeIndexDoc pending : nodesToWrite) {
                 Document doc = new Document();
 
-                fDocId.setIntValue(currentDoc.getDocId());
+                fDocId.setLongValue(currentDoc.getDocId());
                 doc.add(fDocId);
 
                 // store the node id
@@ -504,7 +499,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (analyzer == null) {
                     analyzer = config.getDefaultAnalyzer();
                 }
-                writer.addDocument(doc, analyzer);
+                writer.addDocument(doc);
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
@@ -523,18 +518,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Query query;
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
-                    BooleanQuery bool = new BooleanQuery();
+                    BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     for (AtomicValue key : keys) {
-                        bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
+                        builder.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
                     }
-                    query = bool;
+                    query = builder.build();
                 } else {
                     query = toQuery(field, qname, keys[0], operator, docs);
                 }
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;
 
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, nodeType, query, null));
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher(), nodeType, query));
             }
             return resultSet;
         });
@@ -542,31 +537,31 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator[] operators, int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
-            BooleanQuery query = new BooleanQuery();
+            BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
             int j = 0;
             for (SequenceIterator i = fields.iterate(); i.hasNext(); j++) {
                 String field = i.nextItem().getStringValue();
                 if (keys[j].getItemCount() > 1) {
-                    BooleanQuery bool = new BooleanQuery();
-                    bool.setMinimumNumberShouldMatch(1);
+                    BooleanQuery.Builder boolBuilder = new BooleanQuery.Builder();
+                    boolBuilder.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
                         Query q = toQuery(field, null, key.atomize(), operators[j], docs);
-                        bool.add(q, BooleanClause.Occur.SHOULD);
+                        boolBuilder.add(q, BooleanClause.Occur.SHOULD);
                     }
-                    query.add(bool, BooleanClause.Occur.MUST);
+                    queryBuilder.add(boolBuilder.build(), BooleanClause.Occur.MUST);
                 } else {
                     Query q = toQuery(field, null, keys[j].itemAt(0).atomize(), operators[j], docs);
-                    query.add(q, BooleanClause.Occur.MUST);
+                    queryBuilder.add(q, BooleanClause.Occur.MUST);
                 }
             }
+            BooleanQuery query = queryBuilder.build();
             Query qu = query;
-            BooleanClause[] clauses = query.getClauses();
-            if (clauses.length == 1) {
-                qu = clauses[0].getQuery();
+            if (query.clauses().size() == 1) {
+                qu = query.clauses().get(0).query();
             }
             final NodeSet resultSet = new NewArrayNodeSet();
-            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, Node.ELEMENT_NODE, qu, null));
+            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher(), Node.ELEMENT_NODE, qu));
             return resultSet;
         });
     }
@@ -586,25 +581,20 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //    }
 
     private NodeSet doQuery(final int contextId, final DocumentSet docs, final NodeSet contextSet, final int axis,
-                            IndexSearcher searcher, final short nodeType, Query query, Filter filter) throws
+                            IndexSearcher searcher, final short nodeType, Query query) throws
             IOException {
         SearchCollector collector = new SearchCollector(docs, contextSet, nodeType, axis, contextId);
-        searcher.search(query, filter, collector);
+        searcher.search(query, collector);
         return collector.getResultSet();
     }
 
-    private class SearchCollector extends Collector {
+    private class SearchCollector implements Collector {
         private final NodeSet resultSet;
         private final NodeSet contextSet;
         private final short nodeType;
         private final int axis;
         private final int contextId;
         private final DocumentSet docs;
-        private AtomicReader reader;
-        private NumericDocValues docIdValues;
-        private BinaryDocValues nodeIdValues;
-        private BinaryDocValues addressValues;
-        private final byte[] buf = new byte[1024];
 
         public SearchCollector(DocumentSet docs, NodeSet contextSet, short nodeType, int axis, int contextId) {
             this.resultSet = new NewArrayNodeSet();
@@ -620,71 +610,88 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void setScorer(Scorer scorer) throws IOException {
-            // ignore
+        public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException {
+            return new SearchLeafCollector(context);
         }
 
         @Override
-        public void collect(int doc) throws IOException {
-            int docId = (int) this.docIdValues.get(doc);
-            DocumentImpl storedDocument = docs.getDoc(docId);
-            if (storedDocument == null) {
-                return;
+        public ScoreMode scoreMode() {
+            return ScoreMode.COMPLETE_NO_SCORES;
+        }
+
+        private class SearchLeafCollector implements LeafCollector {
+            private final NumericDocValues docIdValues;
+            private final BinaryDocValues nodeIdValues;
+            private final BinaryDocValues addressValues;
+
+            public SearchLeafCollector(LeafReaderContext context) throws IOException {
+                LeafReader reader = context.reader();
+                this.docIdValues = reader.getNumericDocValues(FIELD_DOC_ID);
+                this.nodeIdValues = reader.getBinaryDocValues(FIELD_NODE_ID);
+                this.addressValues = reader.getBinaryDocValues(FIELD_ADDRESS);
             }
-            final BytesRef ref = this.nodeIdValues.get(doc);
 
-            final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
-            final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+            @Override
+            public void setScorer(Scorable scorer) throws IOException {
+                // ignore
+            }
 
-            // if a context set is specified, we can directly check if the
-            // matching node is a descendant of one of the nodes
-            // in the context set.
-            if (contextSet != null) {
-                int sizeHint = contextSet.getSizeHint(storedDocument);
-                NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                if (parentNode != null) {
-                    NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
+            @Override
+            public void collect(int doc) throws IOException {
+                if (docIdValues == null || !docIdValues.advanceExact(doc)) {
+                    return;
+                }
+                int docId = (int) docIdValues.longValue();
+                DocumentImpl storedDocument = docs.getDoc(docId);
+                if (storedDocument == null) {
+                    return;
+                }
+
+                if (nodeIdValues == null || !nodeIdValues.advanceExact(doc)) {
+                    return;
+                }
+                final BytesRef ref = nodeIdValues.binaryValue();
+
+                final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
+                final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+
+                // if a context set is specified, we can directly check if the
+                // matching node is a descendant of one of the nodes
+                // in the context set.
+                if (contextSet != null) {
+                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                    NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                    if (parentNode != null) {
+                        NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
+                        storedNode.setNodeType(nodeType);
+                        getAddress(doc, storedNode);
+                        if (axis == NodeSet.ANCESTOR) {
+                            resultSet.add(parentNode, sizeHint);
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parentNode.deepCopyContext(storedNode, contextId);
+                            } else
+                                parentNode.copyContext(storedNode);
+                        } else {
+                            resultSet.add(storedNode, sizeHint);
+                        }
+                    }
+                } else {
+                    NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
                     storedNode.setNodeType(nodeType);
                     getAddress(doc, storedNode);
-                    if (axis == NodeSet.ANCESTOR) {
-                        resultSet.add(parentNode, sizeHint);
-                        if (Expression.NO_CONTEXT_ID != contextId) {
-                            parentNode.deepCopyContext(storedNode, contextId);
-                        } else
-                            parentNode.copyContext(storedNode);
-                    } else {
-                        resultSet.add(storedNode, sizeHint);
+                    resultSet.add(storedNode);
+                }
+            }
+
+            private void getAddress(int doc, NodeHandle storedNode) throws IOException {
+                if (addressValues != null && addressValues.advanceExact(doc)) {
+                    final BytesRef ref = addressValues.binaryValue();
+                    if (ref.offset < ref.bytes.length) {
+                        final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
+                        storedNode.setInternalAddress(address);
                     }
                 }
-            } else {
-                NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
-                storedNode.setNodeType(nodeType);
-                getAddress(doc, storedNode);
-                resultSet.add(storedNode);
             }
-        }
-
-        private void getAddress(int doc, NodeHandle storedNode) {
-            if (addressValues != null) {
-                final BytesRef ref = addressValues.get(doc);
-                if (ref.offset < ref.bytes.length) {
-                    final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
-                    storedNode.setInternalAddress(address);
-                }
-            }
-        }
-
-        @Override
-        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
-            this.reader = atomicReaderContext.reader();
-            this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
-            this.nodeIdValues = this.reader.getBinaryDocValues(FIELD_NODE_ID);
-            this.addressValues = this.reader.getBinaryDocValues(FIELD_ADDRESS);
-        }
-
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
-            return true;
         }
     }
 
@@ -710,11 +717,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private List<QName> getDefinedIndexesFor(QName qname, final List<QName> indexes) throws IOException {
         return index.withReader(reader -> {
-            for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
-                if (!FIELD_DOC_ID.equals(info.name)) {
-                    QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                    if (name != null && (qname == null || matchQName(qname, name)))
-                        indexes.add(name);
+            for (LeafReaderContext context : reader.leaves()) {
+                for (FieldInfo info : context.reader().getFieldInfos()) {
+                    if (!FIELD_DOC_ID.equals(info.name) && !FIELD_NODE_ID.equals(info.name) && !FIELD_ADDRESS.equals(info.name) && !FIELD_ID.equals(info.name)) {
+                        QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                        if (name != null && (qname == null || matchQName(qname, name))) {
+                            if (!indexes.contains(name))
+                                indexes.add(name);
+                        }
+                    }
                 }
             }
             return indexes;
@@ -736,7 +747,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             try {
                 stream.reset();
                 if (stream.incrementToken()) {
-                    termAttr.fillBytesRef();
                     token = BytesRef.deepCopyOf(termAttr.getBytesRef());
                 }
                 stream.end();
@@ -982,15 +992,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void scan(DocumentSet docs, NodeSet nodes, String start, String end, long max, TreeMap<String, Occurrences> map, IndexReader reader, String field) throws IOException {
-        List<AtomicReaderContext> leaves = reader.leaves();
-        for (AtomicReaderContext context : leaves) {
-            NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
-            BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(FIELD_NODE_ID);
-            Bits liveDocs = context.reader().getLiveDocs();
-            Terms terms = context.reader().terms(field);
+        List<LeafReaderContext> leaves = reader.leaves();
+        for (LeafReaderContext context : leaves) {
+            LeafReader leafReader = context.reader();
+            NumericDocValues docIdValues = leafReader.getNumericDocValues(FIELD_DOC_ID);
+            BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(FIELD_NODE_ID);
+            Bits liveDocs = leafReader.getLiveDocs();
+            Terms terms = leafReader.terms(field);
             if (terms == null)
                 continue;
-            TermsEnum termsIter = terms.iterator(null);
+            TermsEnum termsIter = terms.iterator();
             if (termsIter.next() == null) {
                 continue;
             }
@@ -1007,29 +1018,33 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else if (start != null && !term.startsWith(start))
                     include = false;
                 if (include) {
-                    DocsEnum docsEnum = termsIter.docs(null, null);
-                    while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-                        if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
+                    PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
+                    while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
+                        if (liveDocs != null && !liveDocs.get(postings.docID())) {
                             continue;
                         }
-                        int docId = (int) docIdValues.get(docsEnum.docID());
-                        DocumentImpl storedDocument = docs.getDoc(docId);
-                        if (storedDocument == null)
-                            continue;
-                        NodeId nodeId = null;
-                        if (nodes != null) {
-                            final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
-                            final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
-                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                        }
-                        if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
-                            Occurrences oc = map.get(term);
-                            if (oc == null) {
-                                oc = new Occurrences(term);
-                                map.put(term, oc);
+                        if (docIdValues != null && docIdValues.advanceExact(postings.docID())) {
+                            int docId = (int) docIdValues.longValue();
+                            DocumentImpl storedDocument = docs.getDoc(docId);
+                            if (storedDocument == null)
+                                continue;
+                            NodeId nodeId = null;
+                            if (nodes != null) {
+                                if (nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
+                                    final BytesRef nodeIdRef = nodeIdValues.binaryValue();
+                                    final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
+                                    nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                                }
                             }
-                            oc.addDocument(storedDocument);
-                            oc.addOccurrences(docsEnum.freq());
+                            if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
+                                Occurrences oc = map.get(term);
+                                if (oc == null) {
+                                    oc = new Occurrences(term);
+                                    map.put(term, oc);
+                                }
+                                oc.addDocument(storedDocument);
+                                oc.addOccurrences(postings.freq());
+                            }
                         }
                     }
                 }
