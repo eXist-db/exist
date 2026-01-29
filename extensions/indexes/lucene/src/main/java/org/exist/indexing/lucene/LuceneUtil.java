@@ -250,7 +250,7 @@ public class LuceneUtil {
                     continue;
                 }
 
-                final TermsEnum termsEnum = getTermsEnum(query, terms, new AttributeSource());
+                final TermsEnum termsEnum = query.getTermsEnum(terms);
                 assert termsEnum != null;
 
                 if (termsEnum == TermsEnum.EMPTY) {

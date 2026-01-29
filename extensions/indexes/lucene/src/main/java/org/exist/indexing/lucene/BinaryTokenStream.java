@@ -57,7 +57,7 @@ public final class BinaryTokenStream extends TokenStream {
         public void setBytesRef(BytesRef bytes);
     }
 
-    public static class ByteTermAttributeImpl extends AttributeImpl implements ByteTermAttribute {
+    public static class ByteTermAttributeImpl extends AttributeImpl implements ByteTermAttribute, TermToBytesRefAttribute {
         private BytesRef bytes;
 
         @Override
@@ -77,13 +77,18 @@ public final class BinaryTokenStream extends TokenStream {
 
         @Override
         public void reflectWith(org.apache.lucene.util.AttributeReflector reflector) {
-            reflector.reflect(ByteTermAttribute.class, "bytes", bytes);
+            reflector.reflect(TermToBytesRefAttribute.class, "bytes", getBytesRef());
         }
 
         @Override
         public void copyTo(AttributeImpl target) {
-            ByteTermAttributeImpl other = (ByteTermAttributeImpl) target;
-            other.bytes = bytes;
+            if (target instanceof ByteTermAttribute) {
+                ((ByteTermAttribute) target).setBytesRef(bytes);
+            } else if (target instanceof TermToBytesRefAttribute) {
+                // Since we implement TermToBytesRefAttribute, Lucene might expect this
+                // Although TermToBytesRefAttribute doesn't have a setter, 
+                // some implementations might. But our interface ByteTermAttribute does.
+            }
         }
     }
 }

@@ -449,16 +449,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
 
             // docId and nodeId are stored as doc value
-            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(FIELD_NODE_ID, new BytesRef(8));
             BinaryDocValuesField fAddress = new BinaryDocValuesField(FIELD_ADDRESS, new BytesRef(8));
-            // docId also needs to be indexed
+            // docId also needs to be indexed. IntField in Lucene 10+ also provides doc values.
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
             for (RangeIndexDoc pending : nodesToWrite) {
                 Document doc = new Document();
-
-                fDocId.setLongValue(currentDoc.getDocId());
-                doc.add(fDocId);
 
                 // store the node id
                 int nodeIdLen = pending.getNodeId().size();
