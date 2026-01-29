@@ -173,7 +173,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public synchronized void sync() throws DBException {
-        //Nothing special to do
+        // Lucene uses IndexWriter#commit() via commit() method
         commit();
     }
 
