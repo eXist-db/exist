@@ -34,7 +34,11 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.NodeValue;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
