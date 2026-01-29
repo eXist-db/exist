@@ -636,11 +636,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // create Lucene document
             pendingDoc = new Document();
 
-            // Set DocId
-            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId());
-
-            pendingDoc.add(fDocId);
-
+            // Set DocId. IntField in Lucene 10+ also provides doc values.
             final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
 
@@ -1403,9 +1399,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
             // docId and nodeId are stored as doc value
-            NumericDocValuesField fDocId = new NumericDocValuesField(FIELD_DOC_ID, 0);
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(LuceneUtil.FIELD_NODE_ID, new BytesRef(8));
-            // docId also needs to be indexed
+            // docId also needs to be indexed. IntField in Lucene 10+ also provides doc values.
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
 
             for (PendingDoc pending : nodesToWrite) {
@@ -1416,9 +1411,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 facetConfigs.forEach(config ->
                     config.build(broker, currentDoc, pending.nodeId, doc, pending.text)
                 );
-
-                fDocId.setLongValue(currentDoc.getDocId());
-                doc.add(fDocId);
 
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
