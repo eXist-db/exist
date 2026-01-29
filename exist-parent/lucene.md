@@ -50,3 +50,8 @@ This led to a logical move of the clauses count from BooleanQuery to IndexSearch
 - FloatField(String name, float value). Use FloatField(String, float, Field.Store) with Field.Store#NO instead.
 - LongField(String name, long value). Use LongField(String, long, Field.Store) with Field.Store#NO instead.
 - BooleanQuery#TooManyClauses, BooleanQuery#getMaxClauseCount(), BooleanQuery#setMaxClauseCount(). Use IndexSearcher#TooManyClauses, IndexSearcher#getMaxClauseCount(), IndexSearcher#setMaxClauseCount() instead
+
+
+## Notes
+
+`mvn help:effective-pom -Doutput=effective-lucene.xml -f extensions/indexes/lucene/pom.xml`
