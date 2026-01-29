@@ -55,7 +55,7 @@ import java.util.stream.Stream;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_4_10_4;
+    public final static Version LUCENE_VERSION_IN_USE = Version.LATEST;
 
     private static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
 
@@ -105,7 +105,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
 
         if (defaultAnalyzer == null)
-            defaultAnalyzer = new StandardAnalyzer(LUCENE_VERSION_IN_USE);
+            defaultAnalyzer = new StandardAnalyzer();
         if (LOG.isDebugEnabled())
             LOG.debug("Using default analyzer: {}", defaultAnalyzer.getClass().getName());
     }
@@ -127,16 +127,16 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
                 Files.createDirectories(taxoDir);
             }
 
-            directory = FSDirectory.open(dir.toFile());
-            taxoDirectory = FSDirectory.open(taxoDir.toFile());
+            directory = FSDirectory.open(dir);
+            taxoDirectory = FSDirectory.open(taxoDir);
 
-            final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
+            final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(defaultAnalyzer);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
             cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxoDirectory);
 
             searcherManager = new SearcherTaxonomyManager(cachedWriter, true, null, cachedTaxonomyWriter);
-            readerManager = new ReaderManager(cachedWriter, true);
+            readerManager = new ReaderManager(cachedWriter);
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading Lucene index directory: " +
                 e.getMessage(), e);

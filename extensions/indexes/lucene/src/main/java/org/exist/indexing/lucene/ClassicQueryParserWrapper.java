@@ -22,6 +22,7 @@
 package org.exist.indexing.lucene;
 
 import com.evolvedbinary.j8fu.function.TriFunction;
+import java.util.function.BiFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -59,13 +60,13 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
             final Class<?> clazz = Class.forName(className);
             if (QueryParserBase.class.isAssignableFrom(clazz)) {
 
-                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, Version.class, String.class, Analyzer.class));
-                final TriFunction<Version, String, Analyzer, QueryParserBase> constructor = (TriFunction<Version, String, Analyzer, QueryParserBase>)
+                final MethodHandle methodHandle = LOOKUP.findConstructor(clazz, methodType(void.class, String.class, Analyzer.class));
+                final BiFunction<String, Analyzer, QueryParserBase> constructor = (BiFunction<String, Analyzer, QueryParserBase>)
                         LambdaMetafactory.metafactory(
-                                LOOKUP, "apply", methodType(TriFunction.class),
+                                LOOKUP, "apply", methodType(BiFunction.class),
                                 methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
-                parser = constructor.apply(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
+                parser = constructor.apply(field, analyzer);
             }
 
         } catch (final Throwable e) {
@@ -80,7 +81,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
 
     public ClassicQueryParserWrapper(String field, Analyzer analyzer) {
         super(field, analyzer);
-        parser = new QueryParser(LuceneIndex.LUCENE_VERSION_IN_USE, field, analyzer);
+        parser = new QueryParser(field, analyzer);
     }
 
     public Query parse(String query) throws XPathException {
