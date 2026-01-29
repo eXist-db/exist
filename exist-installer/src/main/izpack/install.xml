@@ -41,7 +41,7 @@
         <javaversion>@{maven.compiler.release}</javaversion>
         <requiresjdk>no</requiresjdk>
         <run-privileged condition="izpack.windowsinstall"/>
-        <pack-compression-format>xz</pack-compression-format>
+        <pack-compression-format>bzip2</pack-compression-format>
         <uninstaller name="izpack-uninstaller.jar" path="$INSTALL_PATH/lib"/>
     </info>
 
