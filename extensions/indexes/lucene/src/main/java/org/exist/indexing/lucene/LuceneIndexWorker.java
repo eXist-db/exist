@@ -702,8 +702,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public NodeImpl search(final XQueryContext context, final List<String> toBeMatchedURIs, String queryText, String[] fieldsToGet, QueryOptions options) throws XPathException, IOException {
 
         return index.withSearcher(searcher -> {
-            // Get analyzer : to be retrieved from configuration
-            final Analyzer searchAnalyzer = new StandardAnalyzer();
+            final Analyzer searchAnalyzer = index.getDefaultAnalyzer();
 
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
@@ -1403,7 +1402,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // docId also needs to be indexed. IntField in Lucene 10+ also provides doc values.
             IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
 
-            for (PendingDoc pending : nodesToWrite) {
+            for (final PendingDoc pending : nodesToWrite) {
                 final Document doc = new Document();
 
 
@@ -1448,7 +1447,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 } else {
                     LOG.warn("Custom analyzer for pending doc is not supported in Lucene 10 upgrade yet. Using default.");
                     writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
-		        }
+                }
 	        }
         } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);

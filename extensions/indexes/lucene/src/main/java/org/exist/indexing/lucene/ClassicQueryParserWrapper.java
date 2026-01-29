@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import com.evolvedbinary.j8fu.function.TriFunction;
 import java.util.function.BiFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +30,6 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.Version;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
@@ -79,12 +77,12 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
         }
     }
 
-    public ClassicQueryParserWrapper(String field, Analyzer analyzer) {
+    public ClassicQueryParserWrapper(final String field, final Analyzer analyzer) {
         super(field, analyzer);
         parser = new QueryParser(field, analyzer);
     }
 
-    public Query parse(String query) throws XPathException {
+    public Query parse(final String query) throws XPathException {
         try {
             return parser.parse(query);
         } catch (ParseException e) {
