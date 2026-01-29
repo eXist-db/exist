@@ -24,4 +24,15 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.util.AttributeImpl;
 
 public abstract class ByteTermAttributeImpl extends AttributeImpl {
+    /**
+     * @deprecated fillBytesRef() is no longer part of the Lucene 10 API.
+     * It was previously part of the {@link org.apache.lucene.analysis.tokenattributes.TermToBytesRefAttribute}
+     * but has been removed.
+     *
+     * TODO: This method is currently kept as a dummy to avoid AbstractMethodError
+     * during transition but should be removed once all callers are updated to the Lucene 10 API.
+     */
+    @Deprecated
+    public void fillBytesRef() {
+    }
 }

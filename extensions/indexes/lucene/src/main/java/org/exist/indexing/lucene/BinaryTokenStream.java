@@ -88,6 +88,9 @@ public final class BinaryTokenStream extends TokenStream {
                 // Since we implement TermToBytesRefAttribute, Lucene might expect this
                 // Although TermToBytesRefAttribute doesn't have a setter, 
                 // some implementations might. But our interface ByteTermAttribute does.
+
+                // TODO: Lucene 10 has removed fillBytesRef() from TermToBytesRefAttribute.
+                // Modern Lucene uses getBytesRef() directly. Ensure callers are updated.
             }
         }
     }
