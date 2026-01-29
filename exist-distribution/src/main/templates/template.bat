@@ -75,7 +75,7 @@ set EXIST_COMMAND=
 if /i "%SCRIPT_NAME%"=="client" set EXIST_COMMAND=client
 if /i "%SCRIPT_NAME%"=="backup" set EXIST_COMMAND=backup
 if /i "%SCRIPT_NAME%"=="export-gui" set EXIST_COMMAND=export-gui
-if /i "%SCRIPT_NAME%"=="jmx-client" set EXIST_COMMAND=jmx-client
+if /i "%SCRIPT_NAME%"=="jmxclient" set EXIST_COMMAND=jmxclient
 if /i "%SCRIPT_NAME%"=="launcher" set EXIST_COMMAND=launcher
 if /i "%SCRIPT_NAME%"=="shutdown" set EXIST_COMMAND=shutdown
 if /i "%SCRIPT_NAME%"=="startup" set EXIST_COMMAND=jetty
