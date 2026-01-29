@@ -253,11 +253,11 @@ public class QueryOptions {
             parser.setAllowLeadingWildcard(true);
         phraseSlop.ifPresent(parser::setPhraseSlop);
         if (filterRewrite)
-            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         else
-            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
         if (lowercaseExpandedTerms) {
-            parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
     }
 

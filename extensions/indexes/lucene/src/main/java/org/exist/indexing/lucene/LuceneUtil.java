@@ -28,7 +28,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.lucene.facet.DrillDownQuery;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
@@ -70,10 +70,13 @@ public class LuceneUtil {
         return data;
     }
 
-    public static NodeId readNodeId(final int doc, final BinaryDocValues nodeIdValues, final BrokerPool pool) {
-        final BytesRef ref = nodeIdValues.get(doc);
-        final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
-        return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+    public static NodeId readNodeId(final int doc, final BinaryDocValues nodeIdValues, final BrokerPool pool) throws IOException {
+        if (nodeIdValues.advanceExact(doc)) {
+            final BytesRef ref = nodeIdValues.binaryValue();
+            final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
+            return pool.getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+        }
+        return null;
     }
 
     /**
@@ -155,30 +158,30 @@ public class LuceneUtil {
             case DrillDownQuery drillDownQuery ->
                     extractTermsFromDrillDown(drillDownQuery, terms, reader, includeFields);
             case null, default -> {
-                // fallback to Lucene's Query.extractTerms if none of the
-                // above matches
-                final Set<Term> tempSet = new TreeSet<>();
-                query.extractTerms(tempSet);
-                for (final Term t : tempSet) {
-                    if (includeFields) {
-                        terms.put(t, query);
-                    } else {
-                        terms.put(t.text(), query);
+                query.visit(new QueryVisitor() {
+                    @Override
+                    public void consumeTerms(Query query, Term... termsArray) {
+                        for (Term t : termsArray) {
+                            if (includeFields) {
+                                terms.put(t, query);
+                            } else {
+                                terms.put(t.text(), query);
+                            }
+                        }
                     }
-                }
+                });
             }
         }
     }
 
     private static void extractTermsFromDrillDown(DrillDownQuery query, Map<Object, Query> terms, IndexReader reader, boolean includeFields) throws IOException {
-        final Query rewritten = query.rewrite(reader);
+        final Query rewritten = query.rewrite(new IndexSearcher(reader));
         extractTerms(rewritten, terms, reader, includeFields);
     }
 
     private static void extractTermsFromBoolean(final BooleanQuery query, final Map<Object, Query> terms, final IndexReader reader, final boolean includeFields) throws IOException {
-        final BooleanClause clauses[] = query.getClauses();
-        for (final BooleanClause clause : clauses) {
-            extractTerms(clause.getQuery(), terms, reader, includeFields);
+        for (final BooleanClause clause : query.clauses()) {
+            extractTerms(clause.query(), terms, reader, includeFields);
         }
     }
 
@@ -222,8 +225,7 @@ public class LuceneUtil {
     }
 
     private static Query rewrite(final MultiTermQuery query, final IndexReader reader) throws IOException {
-        query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
-        return query.rewrite(reader);
+        return query.rewrite(new IndexSearcher(reader));
     }
 
     private static void extractTermsFromMultiTerm(final MultiTermQuery query, final Map<Object, Query> termsMap, final IndexReader reader, final boolean includeFields) throws IOException {
@@ -241,14 +243,8 @@ public class LuceneUtil {
 
         public void extractTerms(final MultiTermQuery query, final Map<Object, Query> termsMap, final IndexReader reader, final boolean includeFields) throws IOException {
             final IndexReaderContext topReaderContext = reader.getContext();
-            for (final AtomicReaderContext context : topReaderContext.leaves()) {
-                final Fields fields = context.reader().fields();
-                if (fields == null) {
-                    // reader has no fields
-                    continue;
-                }
-
-                final Terms terms = fields.terms(query.getField());
+            for (final LeafReaderContext context : topReaderContext.leaves()) {
+                final Terms terms = context.reader().terms(query.getField());
                 if (terms == null) {
                     // field does not exist
                     continue;
@@ -274,7 +270,7 @@ public class LuceneUtil {
         }
 
         @Override
-        public Query rewrite(final IndexReader reader, final MultiTermQuery query) throws IOException {
+        public Query rewrite(final IndexSearcher searcher, final MultiTermQuery query) throws IOException {
             throw new UnsupportedOperationException();
         }
     }

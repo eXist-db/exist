@@ -21,6 +21,7 @@
  */
 package org.exist.indexing.lucene;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -93,7 +94,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         TYPE_NODE_ID.setStored(false);
         TYPE_NODE_ID.setOmitNorms(true);
         TYPE_NODE_ID.setStoreTermVectors(false);
-        TYPE_NODE_ID.setTokenized(true);
+        TYPE_NODE_ID.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
     }
 
     static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
@@ -313,9 +314,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToSortableBytes(docId, bytes.bytes(), 0);
-            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
+            final byte[] data = new byte[Integer.BYTES];
+            NumericUtils.intToSortableBytes(docId, data, 0);
+            Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
             writer.deleteDocuments(dt);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
@@ -349,9 +350,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                final BytesRefBuilder bytes = new BytesRefBuilder();
-                NumericUtils.intToSortableBytes(doc.getDocId(), bytes.bytes(), 0);
-                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
+                final byte[] data = new byte[Integer.BYTES];
+                NumericUtils.intToSortableBytes(doc.getDocId(), data, 0);
+                Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
                 writer.deleteDocuments(dt);
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
@@ -383,9 +384,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
 
-            final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToSortableBytes(currentDoc.getDocId(), bytes.bytes(), 0);
-            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
+            final byte[] docIdData = new byte[Integer.BYTES];
+            NumericUtils.intToSortableBytes(currentDoc.getDocId(), docIdData, 0);
+            Term dt = new Term(FIELD_DOC_ID, new BytesRef(docIdData));
             TermQuery tq = new TermQuery(dt);
             for (NodeId nodeId : nodesToRemove) {
                 // store the node id
@@ -885,11 +886,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public IndexableField[] getField(final int docId, final String field) throws IOException {
         final Set<String> fields = Collections.singleton(field);
-        return index.withReader(reader -> {
+        final DirectoryReader reader = index.readerManager.acquire();
+        try {
             final Document doc = reader.storedFields().document(docId, fields);
-            final List<IndexableField> fieldList = doc.getFields(field);
-            return fieldList.toArray(new IndexableField[0]);
-        });
+            final Object fieldsObj = doc.getFields(field);
+            if (fieldsObj instanceof List) {
+                final List<IndexableField> fieldList = (List<IndexableField>) fieldsObj;
+                final IndexableField[] result = new IndexableField[fieldList.size()];
+                int i = 0;
+                for (final IndexableField f : fieldList) {
+                    result[i++] = f;
+                }
+                return result;
+            } else if (fieldsObj instanceof IndexableField[]) {
+                return (IndexableField[]) fieldsObj;
+            }
+            return new IndexableField[0];
+        } finally {
+            index.readerManager.release(reader);
+        }
     }
 
     public boolean hasIndex(int docId) throws IOException {
