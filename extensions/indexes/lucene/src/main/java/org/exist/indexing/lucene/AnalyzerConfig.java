@@ -165,21 +165,8 @@ public class AnalyzerConfig {
             newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
         } else {
             // Either no parameters have been provided, or more than one parameter
-
-            // Extend arrays with (default) Version object info, add to front.
-            Class<?>[] vcParamClasses = addVersionToClasses(cParamClasses);
-            Object[] vcParamValues = addVersionValueToValues(cParamValues);
-
-            // Finally create Analyzer
-            newAnalyzer = createInstance(clazz, vcParamClasses, vcParamValues, true);
-
-            // Fallback scenario: a special (not standard type of) Analyzer has been specified without
-            // a 'Version' argument on purpose. For this (try) to create the Analyzer with
-            // the original parameters.
-            if (newAnalyzer == null) {
-                newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
-            }
-
+            // Analyzer has been specified without a 'Version' argument (the default)
+            newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
         }
 
         if (newAnalyzer == null) {
@@ -235,26 +222,6 @@ public class AnalyzerConfig {
             }
         }
         return null;
-    }
-
-    /**
-     * Extend list of values, add version-value to front
-     */
-    private static Object[] addVersionValueToValues(final Object[] cParamValues) {
-        final Object[] vcParamValues = new Object[cParamValues.length + 1];
-        vcParamValues[0] = LuceneIndex.LUCENE_VERSION_IN_USE;
-        System.arraycopy(cParamValues, 0, vcParamValues, 1, cParamValues.length);
-        return vcParamValues;
-    }
-
-    /**
-     * Extend list of classes, add version-class to front
-     */
-    private static Class<?>[] addVersionToClasses(final Class<?>[] cParamClasses) {
-        final Class<?>[] vcParamClasses = new Class<?>[cParamClasses.length + 1];
-        vcParamClasses[0] = Version.class;
-        System.arraycopy(cParamClasses, 0, vcParamClasses, 1, cParamClasses.length);
-        return vcParamClasses;
     }
 
     /**
