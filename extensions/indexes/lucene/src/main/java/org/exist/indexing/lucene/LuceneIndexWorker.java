@@ -1162,12 +1162,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public static LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = i.next();
-            IndexSpec idxConf = collection.getIndexConfiguration(broker);
-            if (idxConf != null) {
-                LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
-                if (config != null) {
-                    return config;
+            try (Collection collection = i.next();) {
+                IndexSpec idxConf = collection.getIndexConfiguration(broker);
+                if (idxConf != null) {
+                    LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
+                    if (config != null) {
+                        return config;
+                    }
                 }
             }
         }
@@ -1269,48 +1270,57 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<LeafReaderContext> leaves = reader.leaves();
         for (LeafReaderContext context : leaves) {
             LeafReader leafReader = context.reader();
+            // FIXME: docidvalues is null and likely should not be
             NumericDocValues docIdValues = leafReader.getNumericDocValues(FIELD_DOC_ID);
             BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
-            if (terms != null) {
-                TermsEnum termsIter = terms.iterator();
-                if (termsIter.next() != null) {
-                    do {
-                        if (map.size() >= max) {
-                            break;
-                        }
-                        BytesRef ref = termsIter.term();
-                        String term = ref.utf8ToString();
-                        if ((end == null || term.compareTo(end) <= 0) && (start == null || term.startsWith(start))) {
-                            PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
-                            while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
-                                if (liveDocs != null && !liveDocs.get(postings.docID())) {
-                                    continue;
-                                }
-                                if (docIdValues != null && docIdValues.advanceExact(postings.docID())) {
-                                    int docId = (int) docIdValues.longValue();
-                                    DocumentImpl storedDocument = docs.getDoc(docId);
-                                    if (storedDocument == null)
-                                        continue;
-                                    if (nodes != null) {
-                                        if (nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
-                                            final BytesRef nodeIdRef = nodeIdValues.binaryValue();
-                                            int units = ByteConversion.byteToShort(nodeIdRef.bytes, nodeIdRef.offset);
-                                            NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                                            if (nodes.get(storedDocument, nodeId) != null) {
-                                                addOccurrence(map, term, postings.freq(), storedDocument);
-                                            }
-                                        }
-                                    } else {
-                                        addOccurrence(map, term, postings.freq(), storedDocument);
-                                    }
-                                }
-                            }
-                        }
-                    } while (termsIter.next() != null);
-                }
+            if (terms == null) {
+                continue;
             }
+            TermsEnum termsIter = terms.iterator();
+
+            if (termsIter.next() == null) {
+                continue;
+            }
+            do {
+                if (map.size() >= max) {
+                    break;
+                }
+                BytesRef ref = termsIter.term();
+                String term = ref.utf8ToString();
+                if ((end != null && term.compareTo(end) > 0) || (start != null && !term.startsWith(start))) {
+                    continue;
+                }
+                PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
+                while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
+                    if (liveDocs != null && !liveDocs.get(postings.docID())) {
+                        continue;
+                    }
+                    if (docIdValues == null || !docIdValues.advanceExact(postings.docID())) {
+                        continue;
+                    }
+                    int docId = (int) docIdValues.longValue();
+                    DocumentImpl storedDocument = docs.getDoc(docId);
+                    if (storedDocument == null) {
+                        continue;
+                    }
+                    if (nodes == null) {
+                        addOccurrence(map, term, postings.freq(), storedDocument);
+                    } else {
+                        if (nodeIdValues == null || !nodeIdValues.advanceExact(postings.docID())) {
+                            continue;
+                        }
+                        final BytesRef nodeIdRef = nodeIdValues.binaryValue();
+                        int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
+                        NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
+                        if (nodes.get(storedDocument, nodeId) != null) {
+                            addOccurrence(map, term, postings.freq(), storedDocument);
+                        }
+                    }
+                }
+
+            } while (termsIter.next() != null);
         }
     }
 
@@ -1414,7 +1424,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
                 byte[] data = new byte[nodeIdLen + 2];
-                ByteConversion.shortToByte((short) pending.nodeId.units(), data, 0);
+                ByteConversion.shortToByteH((short) pending.nodeId.units(), data, 0);
                 pending.nodeId.serialize(data, 2);
                 fNodeId.setBytesValue(data);
                 doc.add(fNodeId);
@@ -1429,10 +1439,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     // the text content is indexed in a field using either
                     // the qname of the element or attribute or the field
                     // name defined in the configuration
-                    if (pending.idxConf.isNamed())
+                    if (pending.idxConf.isNamed()) {
                         contentField = pending.idxConf.getName();
-                    else
+                    } else {
                         contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
+                    }
 
                     Field fld = new TextField(contentField, pending.text.toString(), Field.Store.NO);
 
@@ -1445,6 +1456,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (pending.idxConf.getAnalyzer() == null) {
                     writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
                 } else {
+                    // FIXME: re-enable custom analyzers again
                     LOG.warn("Custom analyzer for pending doc is not supported in Lucene 10 upgrade yet. Using default.");
                     writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
                 }
