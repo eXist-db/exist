@@ -24,12 +24,12 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.spans.*;
+import org.apache.lucene.queries.spans.*;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automaton;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
@@ -246,7 +246,7 @@ public class XMLToQuery {
             final Automaton automaton = WildcardQuery.toAutomaton(new Term(field, queryStr));
             final CompiledAutomaton compiled = new CompiledAutomaton(automaton);
             final List<Term> termList = new ArrayList<>(8);
-            for (AtomicReaderContext atomic : reader.leaves()) {
+            for (LeafReaderContext atomic : reader.leaves()) {
                 Terms terms = atomic.reader().terms(field);
                 if (terms != null) {
                     TermsEnum termsEnum = compiled.getTermsEnum(terms);
