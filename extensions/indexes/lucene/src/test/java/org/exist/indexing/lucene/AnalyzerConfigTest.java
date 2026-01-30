@@ -267,7 +267,6 @@ public class AnalyzerConfigTest {
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertEquals(vcParamValues[0], mockAnalyzer.arg1);
         assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
@@ -276,21 +275,18 @@ public class AnalyzerConfigTest {
     public void constructIntegerAndSetMockAnalyzerWithVersion() {
         final Class<IntegerAndSetConstructorMockAnalyzer> analyerClass = IntegerAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 Integer.class,
                 Set.class
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 12345,
                 new HashSet<>(Arrays.asList("s1, s2"))
         };
 
         final IntegerAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertEquals(vcParamValues[1], mockAnalyzer.arg1);
-        assertEquals(vcParamValues[2], mockAnalyzer.arg2);
+        assertEquals(vcParamValues[0], mockAnalyzer.arg1);
+        assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
 
     @Test
@@ -307,7 +303,6 @@ public class AnalyzerConfigTest {
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertEquals(vcParamValues[0], mockAnalyzer.arg1);
         assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
@@ -316,21 +311,18 @@ public class AnalyzerConfigTest {
     public void constructIntAndSetMockAnalyzerWithVersion() {
         final Class<IntAndSetConstructorMockAnalyzer> analyerClass = IntAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 int.class,
                 Set.class
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 12345,
                 new HashSet<>(Arrays.asList("s1, s2"))
         };
 
         final IntAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertEquals(vcParamValues[1], mockAnalyzer.arg1);
-        assertEquals(vcParamValues[2], mockAnalyzer.arg2);
+        assertEquals(vcParamValues[0], mockAnalyzer.arg1);
+        assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
 
     @Test
@@ -347,7 +339,6 @@ public class AnalyzerConfigTest {
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertEquals(vcParamValues[0], mockAnalyzer.arg1);
         assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
@@ -356,21 +347,18 @@ public class AnalyzerConfigTest {
     public void constructBooleanAndSetMockAnalyzerWithVersion() {
         final Class<BooleanAndSetConstructorMockAnalyzer> analyerClass = BooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 Boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 Boolean.TRUE,
                 new HashSet<>(Arrays.asList("s1, s2"))
         };
 
         final BooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertEquals(vcParamValues[1], mockAnalyzer.arg1);
-        assertEquals(vcParamValues[2], mockAnalyzer.arg2);
+        assertEquals(vcParamValues[0], mockAnalyzer.arg1);
+        assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
 
     @Test
@@ -387,7 +375,6 @@ public class AnalyzerConfigTest {
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertEquals(vcParamValues[0], mockAnalyzer.arg1);
         assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
@@ -396,21 +383,18 @@ public class AnalyzerConfigTest {
     public void constructPrimitiveBooleanAndSetMockAnalyzerWithVersion() {
         final Class<PrimitiveBooleanAndSetConstructorMockAnalyzer> analyerClass = PrimitiveBooleanAndSetConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 boolean.class,
                 Set.class
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 true,
                 new HashSet<>(Arrays.asList("s1, s2"))
         };
 
         final PrimitiveBooleanAndSetConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertEquals(vcParamValues[1], mockAnalyzer.arg1);
-        assertEquals(vcParamValues[2], mockAnalyzer.arg2);
+        assertEquals(vcParamValues[0], mockAnalyzer.arg1);
+        assertEquals(vcParamValues[1], mockAnalyzer.arg2);
     }
 
     @Test
@@ -425,7 +409,6 @@ public class AnalyzerConfigTest {
 
         final CharArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertArrayEquals((char[])vcParamValues[0], mockAnalyzer.arg1);
     }
 
@@ -433,18 +416,15 @@ public class AnalyzerConfigTest {
     public void constructCharArrayMockAnalyzerWithVersion() {
         final Class<CharArrayConstructorMockAnalyzer> analyerClass = CharArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 char[].class,
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 new char[] {'\'', '-'}
         };
 
         final CharArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertArrayEquals((char[])vcParamValues[1], mockAnalyzer.arg1);
+        assertArrayEquals((char[])vcParamValues[0], mockAnalyzer.arg1);
     }
 
     @Test
@@ -459,7 +439,6 @@ public class AnalyzerConfigTest {
 
         final StringArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertNull(mockAnalyzer.luceneVersion);
         assertArrayEquals((String[])vcParamValues[0], mockAnalyzer.arg1);
     }
 
@@ -467,18 +446,15 @@ public class AnalyzerConfigTest {
     public void constructStringArrayMockAnalyzerWithVersion() {
         final Class<StringArrayConstructorMockAnalyzer> analyerClass = StringArrayConstructorMockAnalyzer.class;
         final Class<?>[] vcParamClasses = new Class[] {
-                Version.class,
                 String[].class,
         };
         final Object[] vcParamValues = {
-                LuceneIndex.LUCENE_VERSION_IN_USE,
                 new String[] {"abc", "def"}
         };
 
         final StringArrayConstructorMockAnalyzer mockAnalyzer = AnalyzerConfig.createInstance(analyerClass, vcParamClasses, vcParamValues, true);
         assertNotNull(mockAnalyzer);
-        assertEquals(vcParamValues[0], mockAnalyzer.luceneVersion);
-        assertArrayEquals((String[])vcParamValues[1], mockAnalyzer.arg1);
+        assertArrayEquals((String[])vcParamValues[0], mockAnalyzer.arg1);
     }
 
     private Document parse(final String strXml) throws ParserConfigurationException, IOException, SAXException {
@@ -487,16 +463,9 @@ public class AnalyzerConfigTest {
     }
 
     static class IntegerAndSetConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final Integer arg1;
         final Set<String> arg2;
-
         public IntegerAndSetConstructorMockAnalyzer(final Integer arg1, final Set<String> arg2) {
-            this(null, arg1, arg2);
-        }
-
-        public IntegerAndSetConstructorMockAnalyzer(final Version luceneVersion, final Integer arg1, final Set<String> arg2) {
-            this.luceneVersion = luceneVersion;
             this.arg1 = arg1;
             this.arg2 = arg2;
         }
@@ -508,16 +477,10 @@ public class AnalyzerConfigTest {
     }
 
     static class IntAndSetConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final int arg1;
         final Set<String> arg2;
 
         public IntAndSetConstructorMockAnalyzer(final int arg1, final Set<String> arg2) {
-            this(null, arg1, arg2);
-        }
-
-        public IntAndSetConstructorMockAnalyzer(final Version luceneVersion, final int arg1, final Set<String> arg2) {
-            this.luceneVersion = luceneVersion;
             this.arg1 = arg1;
             this.arg2 = arg2;
         }
@@ -529,16 +492,11 @@ public class AnalyzerConfigTest {
     }
 
     static class BooleanAndSetConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final Boolean arg1;
         final Set<String> arg2;
 
-        public BooleanAndSetConstructorMockAnalyzer(final Boolean arg1, final Set<String> arg2) {
-            this(null, arg1, arg2);
-        }
 
-        public BooleanAndSetConstructorMockAnalyzer(final Version luceneVersion, final Boolean arg1, final Set<String> arg2) {
-            this.luceneVersion = luceneVersion;
+        public BooleanAndSetConstructorMockAnalyzer(final Boolean arg1, final Set<String> arg2) {
             this.arg1 = arg1;
             this.arg2 = arg2;
         }
@@ -550,16 +508,10 @@ public class AnalyzerConfigTest {
     }
 
     static class PrimitiveBooleanAndSetConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final boolean arg1;
         final Set<String> arg2;
 
         public PrimitiveBooleanAndSetConstructorMockAnalyzer(final boolean arg1, final Set<String> arg2) {
-            this(null, arg1, arg2);
-        }
-
-        public PrimitiveBooleanAndSetConstructorMockAnalyzer(final Version luceneVersion, final boolean arg1, final Set<String> arg2) {
-            this.luceneVersion = luceneVersion;
             this.arg1 = arg1;
             this.arg2 = arg2;
         }
@@ -571,15 +523,10 @@ public class AnalyzerConfigTest {
     }
 
     static class CharArrayConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final char[] arg1;
 
-        public CharArrayConstructorMockAnalyzer(final char[] arg1) {
-            this(null, arg1);
-        }
 
-        public CharArrayConstructorMockAnalyzer(final Version luceneVersion, final char[] arg1) {
-            this.luceneVersion = luceneVersion;
+        public CharArrayConstructorMockAnalyzer(final char[] arg1) {
             this.arg1 = arg1;
         }
 
@@ -590,15 +537,10 @@ public class AnalyzerConfigTest {
     }
 
     static class StringArrayConstructorMockAnalyzer extends Analyzer {
-        final Version luceneVersion;
         final String[] arg1;
 
-        public StringArrayConstructorMockAnalyzer(final String[] arg1) {
-            this(null, arg1);
-        }
 
-        public StringArrayConstructorMockAnalyzer(final Version luceneVersion, final String[] arg1) {
-            this.luceneVersion = luceneVersion;
+        public StringArrayConstructorMockAnalyzer(final String[] arg1) {
             this.arg1 = arg1;
         }
 
