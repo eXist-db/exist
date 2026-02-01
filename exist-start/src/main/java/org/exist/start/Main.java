@@ -292,6 +292,7 @@ public class Main {
                 case "shutdown" -> className = "org.exist.jetty.ServerShutdown";
                 case "export" -> className = "org.exist.backup.ExportMain";
                 case "export-gui" -> className = "org.exist.backup.ExportGUI";
+                case "jmxclient" -> className = "org.exist.management.client.JMXClient";
                 case null, default -> className = firstArgument;
             }
         }

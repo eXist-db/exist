@@ -43,7 +43,7 @@ BASEDIR=$(cd "$PRGDIR/.." >/dev/null; pwd)
 
 # Set variables based on the symbolic link name
 case "$SHORT_NAME" in
-  client|backup|export-gui|jmx-client,launcher,shutdown)
+  client|backup|export-gui|jmxclient|launcher|shutdown)
       EXIST_COMMAND=$SHORT_NAME
       ;;
   startup)
