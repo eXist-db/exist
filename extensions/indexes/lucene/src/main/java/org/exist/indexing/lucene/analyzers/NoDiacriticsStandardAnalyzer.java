@@ -97,8 +97,8 @@ public class NoDiacriticsStandardAnalyzer extends StopwordAnalyzerBase {
         final StandardTokenizer src = new StandardTokenizer();
         src.setMaxTokenLength(maxTokenLength);
 
-        TokenStream tok = new ICUFoldingFilter(src);
-        tok = new LowerCaseFilter(tok);
+        TokenStream tok = new LowerCaseFilter(src);
+        tok = new ICUFoldingFilter(tok);
         tok = new StopFilter(tok, stopwords);
         return new TokenStreamComponents(src, tok);
     }

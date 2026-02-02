@@ -65,12 +65,16 @@ public class Collations extends BasicFunction {
 			throws XPathException {
 		final ValueSequence result = new ValueSequence();
 		final Locale[] locales = Collator.getAvailableLocales();
-		for (Locale locale : locales) {
+		for (int i = 0; i < locales.length; i++) {
+			final Locale locale = locales[i];
 			String language = locale.getLanguage();
 			if (!locale.getCountry().isEmpty()) {
 				language += '-' + locale.getCountry();
 			}
 			result.add(new StringValue(this, language));
+			if (i < locales.length - 1) {
+				result.add(new StringValue(this, " "));
+			}
 		}
 		return result;
 	}
