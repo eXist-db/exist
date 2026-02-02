@@ -976,9 +976,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException {
-            final LeafCollector chainedLeafCollector = chainedCollector.getLeafCollector(context);
-            if (chainedLeafCollector == null) {
-                return null;
+            final LeafCollector chainedLeafCollector;
+            try {
+                chainedLeafCollector = chainedCollector.getLeafCollector(context);
+            } catch (AssertionError e) {
+                // If the segment doesn't contain any facet-relevant data, FacetsCollector.getLeafCollector()
+                // might throw an AssertionError (specifically in doSetNextReader).
+                // We still want to collect hits for the main query.
+                return new LuceneHitLeafCollector(context, null);
             }
             return new LuceneHitLeafCollector(context, chainedLeafCollector);
         }
@@ -1007,7 +1012,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             @Override
             public void setScorer(Scorable scorer) throws IOException {
                 this.scorer = scorer;
-                chainedLeafCollector.setScorer(scorer);
+                if (chainedLeafCollector != null) {
+                    chainedLeafCollector.setScorer(scorer);
+                }
             }
 
             @Override
@@ -1041,19 +1048,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                         parentNode.deepCopyContext(storedNode, contextId);
                                     } else
                                         parentNode.copyContext(storedNode);
-                                    chainedLeafCollector.collect(doc);
+                                    if (chainedLeafCollector != null) {
+                                        chainedLeafCollector.collect(doc);
+                                    }
                                 }
                             } else {
                                 LuceneMatch match = createMatch(doc, score, nodeId);
                                 storedNode.addMatch(match);
                                 resultSet.add(storedNode, sizeHint);
-                                chainedLeafCollector.collect(doc);
+                                if (chainedLeafCollector != null) {
+                                    chainedLeafCollector.collect(doc);
+                                }
                             }
                         } else {
                             LuceneMatch match = createMatch(doc, score, nodeId);
                             storedNode.addMatch(match);
                             resultSet.add(storedNode);
-                            chainedLeafCollector.collect(doc);
+                            if (chainedLeafCollector != null) {
+                                chainedLeafCollector.collect(doc);
+                            }
                         }
                     }
                 }
