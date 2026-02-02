@@ -976,7 +976,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException {
-            return new LuceneHitLeafCollector(context, chainedCollector.getLeafCollector(context));
+            final LeafCollector chainedLeafCollector = chainedCollector.getLeafCollector(context);
+            if (chainedLeafCollector == null) {
+                return null;
+            }
+            return new LuceneHitLeafCollector(context, chainedLeafCollector);
         }
 
         @Override
