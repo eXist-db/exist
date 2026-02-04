@@ -104,8 +104,8 @@ declare
 function unic-smp-l:setup() {
     ( xmldb:create-collection("/db", $unic-smp-l:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $unic-smp-l:COLLECTION_NAME),
-      xmldb:store($unic-smp-l:COLLECTION, "test.xml", $unic-smp-l:XML),
       xmldb:store("/db/system/config/db/" || $unic-smp-l:COLLECTION_NAME, "collection.xconf", $unic-smp-l:xconf),
+      xmldb:store($unic-smp-l:COLLECTION, "test.xml", $unic-smp-l:XML),
       xmldb:reindex($unic-smp-l:COLLECTION) )
 };
 

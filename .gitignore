@@ -17,3 +17,4 @@ dependency-reduced-pom.xml
 # OS specific files
 .DS_Store
 
+plans/
