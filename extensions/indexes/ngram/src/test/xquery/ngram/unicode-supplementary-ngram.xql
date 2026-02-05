@@ -103,7 +103,9 @@ declare variable $unic-smp-n:COLLECTION := "/db/" || $unic-smp-n:COLLECTION_NAME
 declare
     %test:setUp
 function unic-smp-n:setup() {
-    ( xmldb:create-collection("/db", $unic-smp-n:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $unic-smp-n:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $unic-smp-n:COLLECTION_NAME),
       xmldb:store($unic-smp-n:COLLECTION, "test.xml", $unic-smp-n:XML),
       xmldb:store("/db/system/config/db/" || $unic-smp-n:COLLECTION_NAME, "collection.xconf", $unic-smp-n:xconf),

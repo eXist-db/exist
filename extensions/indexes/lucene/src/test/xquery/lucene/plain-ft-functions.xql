@@ -48,7 +48,8 @@ declare variable $pftf:COLLECTION_BINARY := "/db/binary";
 declare
     %test:setUp
 function pftf:setUp() {
-    ( xmldb:create-collection("/db/system/config", "db"),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
       xmldb:store("/db/system/config/db", "collection.xconf", $pftf:XCONF),
       xmldb:create-collection("/db", "binary"),
       xmldb:store($pftf:COLLECTION_BINARY, "data1.txt", "AAAAAA", "text/plain"),

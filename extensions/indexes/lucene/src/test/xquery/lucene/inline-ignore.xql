@@ -87,7 +87,9 @@ declare variable $inlg:EXPECTED_IGNORED_MATCH as element(p) :=
 declare
     %test:setUp
 function inlg:setUp() {
-    ( xmldb:create-collection("/db", $inlg:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $inlg:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $inlg:COLLECTION_NAME),
       xmldb:store("/db/system/config/db/" || $inlg:COLLECTION_NAME, "collection.xconf", $inlg:XCONF),
       xmldb:store($inlg:COLLECTION, "text.xml", $inlg:XML),

@@ -101,7 +101,9 @@ declare variable $plst:EXPECTED_ATTR_RESULT as element(result)+ := (
 declare
     %test:setUp
 function plst:setUp() {
-    ( xmldb:create-collection("/db", $plst:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $plst:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $plst:COLLECTION_NAME),
       xmldb:store("/db/system/config/db/" || $plst:COLLECTION_NAME, "collection.xconf", $plst:XCONF),
       xmldb:store($plst:COLLECTION, "test.xml", $plst:XML),

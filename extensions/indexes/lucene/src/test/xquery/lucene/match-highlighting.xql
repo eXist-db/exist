@@ -76,7 +76,9 @@ declare variable $mhlt:EXPECTED_NONE as element(el) :=
 declare
     %test:setUp
 function mhlt:setUp() {
-    ( xmldb:create-collection("/db", $mhlt:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $mhlt:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $mhlt:COLLECTION_NAME),
       xmldb:store("/db/system/config/db/" || $mhlt:COLLECTION_NAME, "collection.xconf", $mhlt:XCONF),
       xmldb:store($mhlt:COLLECTION, "test.xml", $mhlt:XML),

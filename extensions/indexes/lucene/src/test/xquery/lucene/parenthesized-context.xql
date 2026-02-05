@@ -109,7 +109,9 @@ function pctx:term-callback($term as xs:string, $data as xs:int+) as element(ter
 declare
     %test:setUp
 function pctx:setUp() {
-    ( xmldb:create-collection("/db", $pctx:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $pctx:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $pctx:COLLECTION_NAME),
       xmldb:store("/db/system/config/db/" || $pctx:COLLECTION_NAME, "collection.xconf", $pctx:XCONF),
       xmldb:store($pctx:COLLECTION, "test.xml", $pctx:XML),

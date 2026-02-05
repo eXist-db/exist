@@ -200,6 +200,7 @@ declare variable $ct:COLLECTION := "/db/" || $ct:COLLECTION_NAME;
 declare
 %test:setUp
 function ct:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ct:COLLECTION_NAME),

@@ -76,6 +76,7 @@ declare variable $fto:COLLECTION := "/db/" || $fto:COLLECTION_NAME;
 declare
     %test:setUp
 function fto:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $fto:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $fto:COLLECTION_NAME, "collection.xconf", $fto:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $fto:COLLECTION_NAME),

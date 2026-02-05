@@ -57,7 +57,9 @@ declare variable $stof:COLLECTION := "/db/" || $stof:COLLECTION_NAME;
 declare
     %test:setUp
 function stof:setUp() {
-    ( xmldb:create-collection("/db", $stof:COLLECTION_NAME),
+    ( xmldb:create-collection("/db/system", "config"),
+      xmldb:create-collection("/db/system/config", "db"),
+      xmldb:create-collection("/db", $stof:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $stof:COLLECTION_NAME),
       xmldb:store("/db/system/config/db/" || $stof:COLLECTION_NAME, "collection.xconf", $stof:XCONF),
       xmldb:store($stof:COLLECTION, "test1.xml", document { <test><a><b>word</b></a><el>strong string</el></test> }),

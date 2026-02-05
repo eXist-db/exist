@@ -44,6 +44,7 @@ declare variable $qf:XML  as document-node() :=
         </test>
      };
 
+declare variable $qf:_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"));
 declare variable $qf:testCol := xmldb:create-collection("/db", "queryfieldtest");
 declare variable $qf:confCol := xmldb:create-collection("/db/system/config/db", "queryfieldtest");
 

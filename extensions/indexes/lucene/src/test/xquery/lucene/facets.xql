@@ -285,6 +285,7 @@ declare variable $facet:XCONF1 :=
 declare
     %test:setUp
 function facet:setup() {
+    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
     let $testCol := xmldb:create-collection("/db", "lucenetest")
     let $personsCol := xmldb:create-collection("/db/lucenetest", "persons")
     let $confCol := xmldb:create-collection("/db/system/config/db", "lucenetest")
