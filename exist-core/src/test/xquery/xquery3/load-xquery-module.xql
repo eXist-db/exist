@@ -96,7 +96,7 @@ function lxm:import-wrong-version() {
 };
 
 declare 
-    %test:assertEquals(7)
+    %test:assertEquals(8)
 function lxm:import-from-classpath() {
     let $module := load-xquery-module("http://exist-db.org/xquery/xqsuite", map {
         "location-hints": "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql"
