@@ -36,9 +36,11 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.param;
@@ -46,13 +48,21 @@ import static org.exist.xquery.FunctionDSL.params;
 
 public class ExtTestFailureFunction extends JUnitIntegrationFunction {
 
+    @Nullable
+    private final Path sourcePath;
+
     public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
+        this(context, parentName, notifier, null);
+    }
+
+    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier, @Nullable final Path sourcePath) {
         super("ext-test-failure-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
                         param("expected", Type.MAP_ITEM, "expected result of the test"),
                         param("actual", Type.MAP_ITEM, "actual result of the test")
                 ), context, parentName, notifier);
+        this.sourcePath = sourcePath;
     }
 
     @Override
@@ -70,10 +80,17 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
 
         // notify JUnit
         try {
-            final AssertionError failureReason = new ComparisonFailure("", expectedToString(expected), actualToString(actual));
+            final String locationMessage = sourcePath != null ? sourcePath.toAbsolutePath().toString() + " :: " + name : "";
+            final AssertionError failureReason = new ComparisonFailure(locationMessage, expectedToString(expected), actualToString(actual));
 
-            // NOTE: We remove the StackTrace, because it is not useful to have a Java Stack Trace pointing into the XML XQuery Test Suite code
-            failureReason.setStackTrace(new StackTraceElement[0]);
+            if (sourcePath != null) {
+                final String fileName = sourcePath.getFileName() != null ? sourcePath.getFileName().toString() : sourcePath.toString();
+                failureReason.setStackTrace(new StackTraceElement[]{
+                    new StackTraceElement(suiteName, name, fileName, 0)
+                });
+            } else {
+                failureReason.setStackTrace(new StackTraceElement[0]);
+            }
 
             notifier.fireTestFailure(new Failure(description, failureReason));
         } catch (final XPathException | SAXException | IOException | IllegalStateException e) {

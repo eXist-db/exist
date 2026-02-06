@@ -60,7 +60,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
 
         // notify JUnit
         try {
-            final XPathException errorReason = errorMapAsXPathException(error);
+            final XPathException errorReason = errorMapAsXPathException(name, error);
             notifier.fireTestFailure(new Failure(description, errorReason));
         } catch (final XPathException e) {
             //signal internal failure
@@ -70,7 +70,14 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         return Sequence.EMPTY_SEQUENCE;
     }
 
-    private XPathException errorMapAsXPathException(final MapType errorMap) throws XPathException {
+    private XPathException errorMapAsXPathException(final String testName, final MapType errorMap) throws XPathException {
+        if (errorMap == null) {
+            final XPathException xpe = new XPathException(-1, -1, ErrorCodes.ERROR, "unknown error");
+            xpe.setStackTrace(new StackTraceElement[]{
+                new StackTraceElement(suiteName, testName != null ? testName : "eval", "xquery", 0)
+            });
+            return xpe;
+        }
         final Sequence seqDescription = errorMap.get(new StringValue(this, "description"));
         final String description;
         if(seqDescription != null && !seqDescription.isEmpty()) {
@@ -105,13 +112,33 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
 
         final XPathException xpe = new XPathException(lineNumber, columnNumber, errorCode, description);
 
+        final Sequence seqModule = errorMap.get(new StringValue(this, "module"));
+        final String modulePath = (seqModule != null && !seqModule.isEmpty())
+            ? seqModule.itemAt(0).getStringValue() : null;
+        final String moduleFileName = modulePath != null ? modulePath.replaceFirst("^.*[/\\\\]", "") : null;
+
+        StackTraceElement[] javaStack = null;
         final Sequence seqJavaStackTrace = errorMap.get(new StringValue(this, "java-stack-trace"));
         if (seqJavaStackTrace != null && !seqJavaStackTrace.isEmpty()) {
             try {
-                xpe.setStackTrace(convertStackTraceElements(seqJavaStackTrace));
+                javaStack = convertStackTraceElements(seqJavaStackTrace);
             } catch (final NullPointerException e) {
                 e.printStackTrace();
             }
+        }
+
+        final StackTraceElement xqueryFrame = new StackTraceElement(
+            suiteName,
+            testName != null ? testName : "eval",
+            moduleFileName != null ? moduleFileName : "xquery",
+            lineNumber > 0 ? lineNumber : 0);
+        if (javaStack != null && javaStack.length > 0) {
+            final StackTraceElement[] fullStack = new StackTraceElement[1 + javaStack.length];
+            fullStack[0] = xqueryFrame;
+            System.arraycopy(javaStack, 0, fullStack, 1, javaStack.length);
+            xpe.setStackTrace(fullStack);
+        } else {
+            xpe.setStackTrace(new StackTraceElement[] { xqueryFrame });
         }
 
         return xpe;
