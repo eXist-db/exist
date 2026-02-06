@@ -38,11 +38,18 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
 import org.junit.runner.Description;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -73,7 +80,24 @@ public class XQueryTestRunner extends AbstractTestRunner {
      */
     public XQueryTestRunner(final Path path, final boolean parallel) throws InitializationError {
         super(path, parallel);
-        this.info = extractTestInfo(path);
+        this.info = discoverOrExtractTestInfo(path);
+    }
+
+    /**
+     * Prefer discovery via runDiscovery when the DB is already started (e.g. by XSuite for XQuery suites);
+     * otherwise fall back to compiling the module in extractTestInfo.
+     */
+    private static XQueryTestInfo discoverOrExtractTestInfo(final Path path) throws InitializationError {
+        if (XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
+            final BrokerPool pool = XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.getBrokerPool();
+            if (pool != null) {
+                final XQueryTestInfo discovered = runDiscovery(pool, path);
+                if (discovered != null) {
+                    return discovered;
+                }
+            }
+        }
+        return extractTestInfo(path);
     }
 
     private static Configuration getConfiguration() throws DatabaseConfigurationException {
@@ -172,6 +196,48 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
+    /**
+     * Runs the discovery XQuery for the given path (single XQuery per file).
+     * Returns test info from the discovery result, or null if discovery fails or DB is not available.
+     * Used to avoid double compile (see Todo 6: discovery via one XQuery run).
+     */
+    @Nullable
+    static XQueryTestInfo runDiscovery(final BrokerPool brokerPool, final Path path) {
+        try {
+            final String pkgName = XQueryTestRunner.class.getPackage().getName().replace('.', '/');
+            final Source discoverySource = new ClassLoaderSource(pkgName + "/xquery-discovery.xq");
+            final List<java.util.function.Function<XQueryContext, Tuple2<String, Object>>> bindings = Collections.singletonList(
+                context -> new Tuple2<>("test-module-uri", new AnyURIValue(path.toAbsolutePath().toUri()))
+            );
+            final Sequence result = executeQuery(brokerPool, discoverySource, bindings, path.getParent());
+            if (result == null || result.getItemCount() < 1) {
+                return null;
+            }
+            final Item first = result.itemAt(0);
+            if (!(first instanceof NodeValue)) {
+                return null;
+            }
+            final Node root = ((NodeValue) first).getNode();
+            if (root.getNodeType() != Node.ELEMENT_NODE || !"discovery".equals(root.getLocalName())) {
+                return null;
+            }
+            final Element discovery = (Element) root;
+            final String namespace = discovery.getAttribute("namespace");
+            final String prefix = discovery.getAttribute("prefix");
+            final NodeList fList = discovery.getElementsByTagName("f");
+            final List<XQueryTestInfo.TestFunctionDef> testFunctions = new ArrayList<>(fList.getLength());
+            for (int i = 0; i < fList.getLength(); i++) {
+                final Element f = (Element) fList.item(i);
+                final String name = f.getAttribute("name");
+                final int arity = Integer.parseInt(f.getAttribute("arity"));
+                testFunctions.add(new XQueryTestInfo.TestFunctionDef(name, arity));
+            }
+            return new XQueryTestInfo(prefix, namespace, testFunctions);
+        } catch (final Exception e) {
+            return null;
+        }
+    }
+
     private String getSuiteName() {
         if (info.getNamespace() == null) {
             return path.getFileName().toString();
@@ -257,7 +323,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private static class XQueryTestInfo {
+    static class XQueryTestInfo {
         private final String prefix;
         private final String namespace;
         private final List<TestFunctionDef> testFunctions;
@@ -280,7 +346,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
             return testFunctions;
         }
 
-        private static class TestFunctionDef {
+        static class TestFunctionDef {
             private final String localName;
             private final int arity;
 

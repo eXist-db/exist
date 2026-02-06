@@ -195,6 +195,45 @@ public class XSuite extends ParentRunner<Runner> {
     }
 
     /**
+     * Returns true if any of the suite paths is an XQuery file or a directory containing at least one XQuery file.
+     * Used to decide whether to start the DB before getRunners (so discovery can run for XQueryTestRunner).
+     */
+    private static boolean hasAnyXQueryFiles(final String[] suites) throws IOException {
+        if (suites == null) {
+            return false;
+        }
+        final java.util.function.Predicate<Path> isXQueryFile = XQueryFilenameFilter.asPredicate();
+        for (final String suite : suites) {
+            final Path path = Paths.get(suite);
+            if (!Files.exists(path)) {
+                continue;
+            }
+            if (Files.isDirectory(path)) {
+                try (final Stream<Path> children = Files.list(path)) {
+                    final boolean hasXq = children.anyMatch(p -> !Files.isDirectory(p) && isXQueryFile.test(p) && !"runTests.xql".equals(p.getFileName().toString()));
+                    if (hasXq) {
+                        return true;
+                    }
+                }
+            } else if (isXQueryFile.test(path) && !"runTests.xql".equals(path.getFileName().toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Starts the embedded DB if not already started. Idempotent.
+     * Called before getRunners when the suite contains XQuery files so discovery can use the DB.
+     */
+    private static void ensureExistDbStarted() throws Throwable {
+        if (EXIST_EMBEDDED_SERVER_CLASS_INSTANCE == null) {
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = newExistDbServer();
+            EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.startDb();
+        }
+    }
+
+    /**
      * Get the runners for the suiteDirectories.
      *
      * @param suites/files the directories in the suite
@@ -208,6 +247,13 @@ public class XSuite extends ParentRunner<Runner> {
         }
 
         try {
+            if (hasAnyXQueryFiles(suites)) {
+                try {
+                    ensureExistDbStarted();
+                } catch (final Throwable t) {
+                    throw new InitializationError(t);
+                }
+            }
 
             final List<Runner> runners = new ArrayList<>();
             for (final String suite : suites) {
@@ -368,7 +414,7 @@ public class XSuite extends ParentRunner<Runner> {
         @Override
         public void evaluate() throws Throwable {
             if (EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
-                throw new IllegalStateException("EXIST_EMBEDDED_SERVER_CLASS_INSTANCE already instantiated");
+                return;
             }
             EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = newExistDbServer();
             EXIST_EMBEDDED_SERVER_CLASS_INSTANCE.startDb();

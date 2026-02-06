@@ -75,6 +75,10 @@ public abstract class AbstractTestRunner extends Runner {
     }
 
     protected static Sequence executeQuery(final BrokerPool brokerPool, final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
+        return executeQuery(brokerPool, query, externalVariableBindings, null);
+    }
+
+    protected static Sequence executeQuery(final BrokerPool brokerPool, final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings, @javax.annotation.Nullable final Path moduleLoadPath) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
 	final SecurityManager securityManager = requireNonNull(brokerPool.getSecurityManager(), "securityManager is null");
         try (final DBBroker broker = brokerPool.get(Optional.of(securityManager.getSystemSubject()))) {
             final XQueryPool queryPool = brokerPool.getXQueryPool();
@@ -91,9 +95,11 @@ public abstract class AbstractTestRunner extends Runner {
 
                 // setup misc. context
                 context.setBaseURI(new AnyURIValue("/db"));
-                if(query instanceof FileSource) {
+                if (moduleLoadPath != null) {
+                    context.setModuleLoadPath(moduleLoadPath.toAbsolutePath().toString());
+                } else if (query instanceof FileSource) {
                     final Path queryPath = Paths.get(((FileSource) query).getPath().toAbsolutePath().toString());
-                    if(Files.isDirectory(queryPath)) {
+                    if (Files.isDirectory(queryPath)) {
                         context.setModuleLoadPath(queryPath.toString());
                     } else {
                         context.setModuleLoadPath(queryPath.getParent().toString());
