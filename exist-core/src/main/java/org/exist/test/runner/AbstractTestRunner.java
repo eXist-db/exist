@@ -65,6 +65,15 @@ public abstract class AbstractTestRunner extends Runner {
         this.parallel = parallel;
     }
 
+    /**
+     * Returns the path to the test file (XQuery or XML). Used for hang reporting and diagnostics.
+     *
+     * @return the source path of the test file
+     */
+    public Path getSourcePath() {
+        return path;
+    }
+
     protected static Sequence executeQuery(final BrokerPool brokerPool, final Source query, final List<Function<XQueryContext, Tuple2<String, Object>>> externalVariableBindings) throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
 	final SecurityManager securityManager = requireNonNull(brokerPool.getSecurityManager(), "securityManager is null");
         try (final DBBroker broker = brokerPool.get(Optional.of(securityManager.getSystemSubject()))) {
