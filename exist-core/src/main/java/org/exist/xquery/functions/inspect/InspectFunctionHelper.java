@@ -24,6 +24,7 @@ package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.source.Source;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -65,6 +66,23 @@ public class InspectFunctionHelper {
         final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "name", "name", "CDATA", sig.getName().getStringValue());
         attribs.addAttribute("", "module", "module", "CDATA", sig.getName().getNamespaceURI());
+        if (func != null) {
+            final int line = func.getLine();
+            final int column = func.getColumn();
+            if (line > 0) {
+                attribs.addAttribute("", "line", "line", "CDATA", String.valueOf(line));
+            }
+            if (column > 0) {
+                attribs.addAttribute("", "column", "column", "CDATA", String.valueOf(column));
+            }
+            final Source source = func.getSource();
+            if (source != null) {
+                final String path = source.pathOrShortIdentifier();
+                if (path != null && !path.isEmpty()) {
+                    attribs.addAttribute("", "source", "source", "CDATA", path);
+                }
+            }
+        }
         final int nodeNr = builder.startElement(FUNCTION_QNAME, attribs);
         writeParameters(sig, builder);
         final SequenceType returnType = sig.getReturnType();

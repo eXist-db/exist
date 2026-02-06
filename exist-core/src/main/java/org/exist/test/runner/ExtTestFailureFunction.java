@@ -26,6 +26,7 @@ import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -83,10 +84,11 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             final String locationMessage = sourcePath != null ? sourcePath.toAbsolutePath().toString() + " :: " + name : "";
             final AssertionError failureReason = new ComparisonFailure(locationMessage, expectedToString(expected), actualToString(actual));
 
-            if (sourcePath != null) {
-                final String fileName = sourcePath.getFileName() != null ? sourcePath.getFileName().toString() : sourcePath.toString();
+            final String fileName = getFileNameFromActual(actual);
+            final int lineNumber = getLineFromActual(actual);
+            if (fileName != null) {
                 failureReason.setStackTrace(new StackTraceElement[]{
-                    new StackTraceElement(suiteName, name, fileName, 0)
+                    new StackTraceElement(suiteName, name, fileName, lineNumber)
                 });
             } else {
                 failureReason.setStackTrace(new StackTraceElement[0]);
@@ -99,6 +101,36 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private String getFileNameFromActual(final MapType actual) throws XPathException {
+        final Sequence seqSource = actual.get(new StringValue(this, "source"));
+        if (!seqSource.isEmpty()) {
+            final String s = seqSource.itemAt(0).getStringValue();
+            if (s != null && !s.isEmpty()) {
+                return s;
+            }
+        }
+        if (sourcePath != null) {
+            return sourcePath.getFileName() != null ? sourcePath.getFileName().toString() : sourcePath.toString();
+        }
+        return null;
+    }
+
+    private int getLineFromActual(final MapType actual) throws XPathException {
+        final Sequence seqLine = actual.get(new StringValue(this, "line"));
+        if (!seqLine.isEmpty()) {
+            final Item item = seqLine.itemAt(0);
+            if (item instanceof IntegerValue) {
+                return (int) ((IntegerValue) item).getLong();
+            }
+            try {
+                return Integer.parseInt(item.getStringValue());
+            } catch (final NumberFormatException ignored) {
+                // fall through to 0
+            }
+        }
+        return 0;
     }
 
     private String expectedToString(final MapType expected) throws XPathException, SAXException, IOException {

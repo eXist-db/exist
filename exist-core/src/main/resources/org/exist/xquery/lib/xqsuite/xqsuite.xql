@@ -339,6 +339,17 @@ function test:test-assumption(
 };
 
 (:~
+ : Merge optional line/source from util:inspect-function $meta into the actual map for the failure callback (IDE location).
+ :)
+declare %private function test:actual-with-location($actual as map(xs:string, item()?), $meta as element(function)) as map(xs:string, item()?) {
+    map:merge((
+        $actual,
+        if (exists($meta/@line)) then map { "line": $meta/@line/data() } else map {},
+        if (exists($meta/@source)) then map { "source": $meta/@source/string() } else map {}
+    ))
+};
+
+(:~
  : The main function for running a single test. Executes the test function
  : and compares the result against each assertXXX annotation.
  :)
@@ -367,19 +378,18 @@ declare %private function test:test(
                 return
                     if ($assertError) then
                     (
-                        if (not(empty($test-failure-function))) then
-                            $test-failure-function(
-                                test:get-test-name($meta),
-                                (: expected :)
-                                map {
-                                    "error": $assertError/value/string()
-                                },
-                                (: actual :)
-                                map {
-                                    "error": map {
-                                        "value": $result
-                                    }
-                                }
+                        if(not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
+                                    test:actual-with-location(map {
+                                        "error": map {
+                                            "value": $result
+                                        }
+                                    }, $meta)
                             )
                         else (),
                         test:print-result(
@@ -393,16 +403,15 @@ declare %private function test:test(
                         )
                     ) else (
                         if ($assertResult[failure] and not(empty($test-failure-function))) then
-                            $test-failure-function(
-                                test:get-test-name($meta),
-                                (: expected :)
-                                map {
-                                    "value": test:expected-strings($assertResult)
-                                },
-                                (: actual :)
-                                map {
-                                    "result": test:actual-strings($assertResult)
-                                }
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "value": test:expected-strings($assertResult)
+                                    },
+                                    (: actual :)
+                                    test:actual-with-location(map {
+                                        "result": test:actual-strings($assertResult)
+                                    }, $meta)
                             )
                         else(),
                         test:print-result($meta, $result, $assertResult)
@@ -420,7 +429,7 @@ declare %private function test:test(
                             (: expected :)
                             map { "value": $serialized-expected },
                             (: actual :)
-                            map { "result": $serialized-actual }
+                            test:actual-with-location(map { "result": $serialized-actual }, $meta)
                         )
                     else ()
                     ,
@@ -441,27 +450,26 @@ declare %private function test:test(
                         or matches($err:description, $assertError/value/string()))
                     ) then
                     (
-                        if (not(empty($test-failure-function))) then
-                            $test-failure-function(
-                                test:get-test-name($meta),
-                                (: expected :)
-                                map {
-                                    "error": $assertError/value/string()
-                                },
-                                (: actual :)
-                                map {
-                                    "error": map {
-                                        "code": $err:code,
-                                        "description": $err:description,
-                                        "value": $err:value,
-                                        "module": $err:module,
-                                        "line-number": $err:line-number,
-                                        "column-number": $err:column-number,
-                                        "additional": $err:additional,
-                                        "xquery-stack-trace": $exerr:xquery-stack-trace,
-                                        "java-stack-trace": $exerr:java-stack-trace
-                                    }
-                                }
+                        if(not(empty($test-failure-function))) then
+                            $test-failure-function(test:get-test-name($meta),
+                                    (: expected :)
+                                    map {
+                                        "error": $assertError/value/string()
+                                    },
+                                    (: actual :)
+                                    test:actual-with-location(map {
+                                        "error": map {
+                                            "code": $err:code,
+                                            "description": $err:description,
+                                            "value": $err:value,
+                                            "module": $err:module,
+                                            "line-number": $err:line-number,
+                                            "column-number": $err:column-number,
+                                            "additional": $err:additional,
+                                            "xquery-stack-trace": $exerr:xquery-stack-trace,
+                                            "java-stack-trace": $exerr:java-stack-trace
+                                        }
+                                    }, $meta)
                             )
                         else ()
                         ,
