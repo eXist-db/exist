@@ -105,7 +105,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         super.before();
     }
 
-    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, NoSuchMethodException {
         try {
             existEmbeddedServer.startDb();
         } catch (final DatabaseConfigurationException | EXistException | IOException e) {
@@ -114,11 +114,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         startXmldb();
     }
 
-    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, NoSuchMethodException {
         if (database == null) {
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
+            database = (Database) cl.getDeclaredConstructor().newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             if (asGuest) {
