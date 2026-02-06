@@ -119,7 +119,7 @@ public abstract class AbstractTestRunner extends Runner {
         }
     }
 
-    protected static String checkDescription(Object source,  String description) {
+    protected static String checkDescription(final Object source, final String description) {
         if (description == null) {
             throw new IllegalArgumentException(source + " description is null");
         }

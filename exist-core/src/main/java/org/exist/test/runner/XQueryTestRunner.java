@@ -173,11 +173,11 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     private String getSuiteName() {
-        if (info.getNamespace() == null) {
+        if (info.namespace() == null) {
             return path.getFileName().toString();
         }
 
-        return namespaceToPackageName(info.getNamespace());
+        return namespaceToPackageName(info.namespace());
     }
 
     private String namespaceToPackageName(final String namespace) {
@@ -220,8 +220,8 @@ public class XQueryTestRunner extends AbstractTestRunner {
     public Description getDescription() {
         final String suiteName = checkDescription(this, getSuiteName());
         final Description description = Description.createSuiteDescription(suiteName);
-        for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.getTestFunctions()) {
-            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.getLocalName())));
+        for (final XQueryTestInfo.TestFunctionDef testFunctionDef : info.testFunctions()) {
+            description.addChild(Description.createTestDescription(suiteName, checkDescription(testFunctionDef, testFunctionDef.localName())));
         }
         return description;
     }
@@ -257,45 +257,9 @@ public class XQueryTestRunner extends AbstractTestRunner {
         }
     }
 
-    private static class XQueryTestInfo {
-        private final String prefix;
-        private final String namespace;
-        private final List<TestFunctionDef> testFunctions;
+    private record XQueryTestInfo(String prefix, String namespace, List<TestFunctionDef> testFunctions) {
 
-        private XQueryTestInfo(final String prefix, final String namespace, final List<TestFunctionDef> testFunctions) {
-            this.prefix = prefix;
-            this.namespace = namespace;
-            this.testFunctions = testFunctions;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public String getNamespace() {
-            return namespace;
-        }
-
-        public List<TestFunctionDef> getTestFunctions() {
-            return testFunctions;
-        }
-
-        private static class TestFunctionDef {
-            private final String localName;
-            private final int arity;
-
-            private TestFunctionDef(final String localName, final int arity) {
-                this.localName = localName;
-                this.arity = arity;
-            }
-
-            public String getLocalName() {
-                return localName;
-            }
-
-            public int getArity() {
-                return arity;
+        private record TestFunctionDef(String localName, int arity) {
             }
         }
-    }
 }
