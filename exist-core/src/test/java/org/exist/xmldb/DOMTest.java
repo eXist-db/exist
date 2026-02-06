@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -111,7 +112,8 @@ public class DOMTest {
 	 * - simple access via getContentAsDOM()
 	 * */
 	@Test
-	public void test2() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException, ParserConfigurationException, IOException {
+	public void test2() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException,
+			ParserConfigurationException, IOException, InvocationTargetException, NoSuchMethodException {
 		for (int i = 0; i < 2; i++) {
 			XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
 			if (resource == null) {
@@ -145,7 +147,8 @@ public class DOMTest {
 	
 	/** like test 2 but add attribute and text as well */
 	@Test
-	public void test3() throws XMLDBException, ParserConfigurationException {
+	public void test3() throws XMLDBException, ParserConfigurationException,
+			InvocationTargetException, NoSuchMethodException {
 		Collection coll = existEmbeddedServer.getRoot();
 		XMLResource resource =
 			coll.createResource(

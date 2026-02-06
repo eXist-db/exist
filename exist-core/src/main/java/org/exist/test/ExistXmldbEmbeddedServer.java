@@ -40,6 +40,7 @@ import org.xmldb.api.modules.XMLResource;
 import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -104,7 +105,8 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         super.before();
     }
 
-    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, NoSuchMethodException {
+    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+            XMLDBException, NoSuchMethodException, InvocationTargetException {
         try {
             existEmbeddedServer.startDb();
         } catch (final DatabaseConfigurationException | EXistException | IOException e) {
@@ -113,7 +115,8 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         startXmldb();
     }
 
-    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, NoSuchMethodException {
+    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException,
+            XMLDBException, NoSuchMethodException, InvocationTargetException {
         if (database == null) {
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -131,11 +134,13 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         }
     }
 
-    public void restart() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    public void restart() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
         restart(false);
     }
 
-    public void restart(final boolean clearTemporaryStorage) throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    public void restart(final boolean clearTemporaryStorage) throws ClassNotFoundException, InstantiationException,
+            XMLDBException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         stopDb(clearTemporaryStorage);
         startDb();
     }
