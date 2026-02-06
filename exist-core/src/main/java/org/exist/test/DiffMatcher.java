@@ -66,7 +66,7 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
 
     /**
      * Compares that the XML sources are similar.
-     *
+     * <p>
      * In this context "similar" is defined by {@link DiffBuilder#checkForSimilar()}.
      *
      * @param expectedSource the expected XML
@@ -79,7 +79,7 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
 
     /**
      * Compares that the XML sources are identical.
-     *
+     * <p>
      * In this context "similar" is defined by {@link DiffBuilder#checkForIdentical()} ()}.
      *
      * @param expectedSource the expected XML
@@ -101,7 +101,7 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
         if (item instanceof NodeValue) {
             actualItem = (NodeValue) item;
 
-        } else if (item instanceof Sequence actual) {
+        } else if (item instanceof final Sequence actual) {
 
             if (actual.getItemCount() != 1) {
                 mismatch.appendText("Sequence does not contain 1 item");

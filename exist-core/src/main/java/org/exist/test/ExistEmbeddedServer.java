@@ -142,7 +142,7 @@ public class ExistEmbeddedServer extends ExternalResource {
             });
 
             if (useTemporaryStorage) {
-                if (!temporaryStorage.isPresent()) {
+                if (temporaryStorage.isEmpty()) {
                     this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistEmbeddedServer"));
                 }
                 config.setProperty(BrokerPool.PROPERTY_DATA_DIR, temporaryStorage.get());
