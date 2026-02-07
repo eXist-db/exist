@@ -61,6 +61,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         // notify JUnit
         try {
             final XPathException errorReason = errorMapAsXPathException(name, error);
+            logOneLineIfXQueryError(name, error);
             notifier.fireTestFailure(new Failure(description, errorReason));
         } catch (final XPathException e) {
             //signal internal failure
@@ -68,6 +69,25 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private void logOneLineIfXQueryError(final String testName, @Nullable final MapType errorMap) {
+        if (errorMap == null) {
+            return;
+        }
+        try {
+            final Sequence seqModule = errorMap.get(new StringValue(this, "module"));
+            final String modulePath = (seqModule != null && !seqModule.isEmpty())
+                ? seqModule.itemAt(0).getStringValue() : null;
+            final String file = modulePath != null ? modulePath.replaceFirst("^.*[/\\\\]", "") : "xquery";
+            final Sequence seqLine = errorMap.get(new StringValue(this, "line-number"));
+            final int line = (seqLine != null && !seqLine.isEmpty())
+                ? seqLine.itemAt(0).toJavaObject(int.class) : 0;
+            final String oneLine = "XQuery failure: " + file + (line > 0 ? ":" + line + " " : " ") + testName;
+            XQueryFailureLog.log(oneLine);
+        } catch (final Exception ignored) {
+            // do not affect test execution
+        }
     }
 
     private XPathException errorMapAsXPathException(final String testName, final MapType errorMap) throws XPathException {

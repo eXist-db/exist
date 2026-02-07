@@ -42,6 +42,7 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.param;
@@ -81,11 +82,14 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
 
         // notify JUnit
         try {
-            final String locationMessage = sourcePath != null ? sourcePath.toAbsolutePath().toString() + " :: " + name : "";
-            final AssertionError failureReason = new ComparisonFailure(locationMessage, expectedToString(expected), actualToString(actual));
-
             final String fileName = getFileNameFromActual(actual);
             final int lineNumber = getLineFromActual(actual);
+            // Short one-line for logs (filename only); stack trace keeps full path for IDE
+            final String shortLocation = fileName != null ? lastPathSegment(fileName) + (lineNumber > 0 ? ":" + lineNumber : "") : null;
+            final String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
+            XQueryFailureLog.log(oneLine);
+            final AssertionError failureReason = new ComparisonFailure(oneLine, expectedToString(expected), actualToString(actual));
+
             if (fileName != null) {
                 failureReason.setStackTrace(new StackTraceElement[]{
                     new StackTraceElement(suiteName, name, fileName, lineNumber)
@@ -101,6 +105,21 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Last path segment for short display in failure message (full path remains in stack trace).
+     */
+    private static String lastPathSegment(final String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        try {
+            final Path p = Paths.get(path);
+            return p.getFileName() != null ? p.getFileName().toString() : path;
+        } catch (final Exception ignored) {
+            return path;
+        }
     }
 
     private String getFileNameFromActual(final MapType actual) throws XPathException {

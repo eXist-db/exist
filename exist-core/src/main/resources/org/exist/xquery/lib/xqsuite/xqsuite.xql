@@ -814,14 +814,19 @@ declare %private function test:get-test-name($meta as element(function)) as xs:s
  :)
 declare %private function test:print-result($meta as element(function), $result as item()*,
         $assertResult as element(report)*) {
-    <testcase name="{test:get-test-name($meta)}" class="{$meta/@name}">
-    {
+    element testcase {
+        attribute name { test:get-test-name($meta) },
+        attribute class { $meta/@name },
+        if (exists($meta/@line)) then attribute line { $meta/@line/data() } else (),
+        (: Prefer inspect source; fallback to module namespace so eXide report has a location (e.g. when no file source) :)
+        if (exists($meta/@source)) then attribute source { $meta/@source/string() }
+        else if (exists($meta/@module)) then attribute source { $meta/@module/string() }
+        else (),
         if (exists($assertResult)) then
             ($assertResult[failure] | $assertResult)[1]/*
         else
             ()
     }
-    </testcase>
 };
 
 (:~
