@@ -42,22 +42,24 @@ public final class XQueryFailureLog {
     }
 
     /**
-     * Append a single line (no newline) plus newline to the XQuery failures log.
+     * Append a single line to the XQuery failures log (one line per failure for CI/grep).
+     * If the message contains newlines, only the first line is written.
      * Safe to call from any thread; IO errors are swallowed.
      *
-     * @param oneLine one line of text (e.g. "XQuery failure: file.xq:34 testName")
+     * @param message failure message (e.g. "XQuery failure: file.xq:34 testName"; may contain newlines)
      */
-    public static void log(final String oneLine) {
-        if (oneLine == null || oneLine.isEmpty()) {
+    public static void log(final String message) {
+        if (message == null || message.isEmpty()) {
             return;
         }
+        final String firstLine = message.contains("\n") ? message.substring(0, message.indexOf('\n')) : message;
         try {
             final Path dir = Paths.get(System.getProperty("user.dir", "."), "target", "surefire-reports");
             if (!Files.isDirectory(dir)) {
                 Files.createDirectories(dir);
             }
             final Path file = dir.resolve(LOG_NAME);
-            Files.write(file, (oneLine + "\n").getBytes(StandardCharsets.UTF_8),
+            Files.write(file, (firstLine + "\n").getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (final IOException ignored) {
             // do not affect test execution

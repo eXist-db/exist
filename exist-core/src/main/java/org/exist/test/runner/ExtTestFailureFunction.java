@@ -128,6 +128,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
     }
 
+    /** Source from inspect can be full path or short identifier (implementation-dependent); we use last segment for IDE links. */
     private String getFileNameFromActual(final MapType actual) throws XPathException {
         final Sequence seqSource = actual.get(new StringValue(this, "source"));
         if (!seqSource.isEmpty()) {

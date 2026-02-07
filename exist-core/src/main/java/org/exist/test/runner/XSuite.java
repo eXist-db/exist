@@ -67,6 +67,10 @@ import java.util.stream.Stream;
  */
 public class XSuite extends ParentRunner<Runner> {
 
+    private final List<Runner> runners;
+    @Nullable
+    private final ParallelFileScheduler parallelScheduler;
+
     /**
      * Returns an empty suite.
      *
@@ -103,10 +107,6 @@ public class XSuite extends ParentRunner<Runner> {
     @Inherited
     public @interface XSuiteParallel {
     }
-
-    private final List<Runner> runners;
-    @Nullable
-    private final ParallelFileScheduler parallelScheduler;
 
     private static String[] getAnnotatedDirectories(final Class<?> klass) throws InitializationError {
         final XSuite.XSuiteFiles annotation = klass.getAnnotation(XSuite.XSuiteFiles.class);
