@@ -98,55 +98,65 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             });
             return xpe;
         }
-        final Sequence seqDescription = errorMap.get(new StringValue(this, "description"));
-        final String description;
-        if(seqDescription != null && !seqDescription.isEmpty()) {
-            description = seqDescription.itemAt(0).getStringValue();
-        } else {
-            description = "";
-        }
-
-        final Sequence seqErrorCode = errorMap.get(new StringValue(this, "code"));
-        final ErrorCodes.ErrorCode errorCode;
-        if(seqErrorCode != null && !seqErrorCode.isEmpty()) {
-            errorCode = new ErrorCodes.ErrorCode(((QNameValue)seqErrorCode.itemAt(0)).getQName(), description);
-        } else {
-            errorCode = ErrorCodes.ERROR;
-        }
-
-        final Sequence seqLineNumber = errorMap.get(new StringValue(this, "line-number"));
-        final int lineNumber;
-        if(seqLineNumber != null && !seqLineNumber.isEmpty()) {
-            lineNumber = seqLineNumber.itemAt(0).toJavaObject(int.class);
-        } else {
-            lineNumber = -1;
-        }
-
-        final Sequence seqColumnNumber = errorMap.get(new StringValue(this, "column-number"));
-        final int columnNumber;
-        if(seqColumnNumber != null && !seqColumnNumber.isEmpty()) {
-            columnNumber = seqColumnNumber.itemAt(0).toJavaObject(int.class);
-        } else {
-            columnNumber = -1;
-        }
-
+        final String description = getStringFromErrorMap(errorMap, "description", "");
+        final ErrorCodes.ErrorCode errorCode = getErrorCodeFromErrorMap(errorMap, description);
+        final int lineNumber = getIntFromErrorMap(errorMap, "line-number", -1);
+        final int columnNumber = getIntFromErrorMap(errorMap, "column-number", -1);
         final XPathException xpe = new XPathException(lineNumber, columnNumber, errorCode, description);
+        final String moduleFileName = getModuleFileNameFromErrorMap(errorMap);
+        final StackTraceElement[] javaStack = getJavaStackFromErrorMap(errorMap);
+        setStackTraceOnException(xpe, testName, moduleFileName, lineNumber, javaStack);
+        return xpe;
+    }
 
-        final Sequence seqModule = errorMap.get(new StringValue(this, "module"));
-        final String modulePath = (seqModule != null && !seqModule.isEmpty())
-            ? seqModule.itemAt(0).getStringValue() : null;
-        final String moduleFileName = modulePath != null ? modulePath.replaceFirst("^.*[/\\\\]", "") : null;
-
-        StackTraceElement[] javaStack = null;
-        final Sequence seqJavaStackTrace = errorMap.get(new StringValue(this, "java-stack-trace"));
-        if (seqJavaStackTrace != null && !seqJavaStackTrace.isEmpty()) {
-            try {
-                javaStack = convertStackTraceElements(seqJavaStackTrace);
-            } catch (final NullPointerException e) {
-                e.printStackTrace();
-            }
+    private String getStringFromErrorMap(final MapType errorMap, final String key, final String defaultVal) throws XPathException {
+        final Sequence seq = errorMap.get(new StringValue(this, key));
+        if (seq != null && !seq.isEmpty()) {
+            return seq.itemAt(0).getStringValue();
         }
+        return defaultVal;
+    }
 
+    private ErrorCodes.ErrorCode getErrorCodeFromErrorMap(final MapType errorMap, final String description) throws XPathException {
+        final Sequence seq = errorMap.get(new StringValue(this, "code"));
+        if (seq != null && !seq.isEmpty()) {
+            return new ErrorCodes.ErrorCode(((QNameValue) seq.itemAt(0)).getQName(), description);
+        }
+        return ErrorCodes.ERROR;
+    }
+
+    private int getIntFromErrorMap(final MapType errorMap, final String key, final int defaultVal) throws XPathException {
+        final Sequence seq = errorMap.get(new StringValue(this, key));
+        if (seq != null && !seq.isEmpty()) {
+            return seq.itemAt(0).toJavaObject(int.class);
+        }
+        return defaultVal;
+    }
+
+    private String getModuleFileNameFromErrorMap(final MapType errorMap) throws XPathException {
+        final Sequence seq = errorMap.get(new StringValue(this, "module"));
+        if (seq == null || seq.isEmpty()) {
+            return null;
+        }
+        final String path = seq.itemAt(0).getStringValue();
+        return path != null ? path.replaceFirst("^.*[/\\\\]", "") : null;
+    }
+
+    private StackTraceElement[] getJavaStackFromErrorMap(final MapType errorMap) throws XPathException {
+        final Sequence seq = errorMap.get(new StringValue(this, "java-stack-trace"));
+        if (seq == null || seq.isEmpty()) {
+            return null;
+        }
+        try {
+            return convertStackTraceElements(seq);
+        } catch (final NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void setStackTraceOnException(final XPathException xpe, final String testName,
+            final String moduleFileName, final int lineNumber, final StackTraceElement[] javaStack) {
         final StackTraceElement xqueryFrame = new StackTraceElement(
             suiteName,
             testName != null ? testName : "eval",
@@ -160,8 +170,6 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         } else {
             xpe.setStackTrace(new StackTraceElement[] { xqueryFrame });
         }
-
-        return xpe;
     }
 
     private static final Pattern PTN_CAUSED_BY = Pattern.compile("Caused by:\\s([a-zA-Z0-9_$\\.]+)(?::\\s(.+))?");

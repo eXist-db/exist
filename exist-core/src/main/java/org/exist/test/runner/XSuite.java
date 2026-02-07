@@ -104,6 +104,10 @@ public class XSuite extends ParentRunner<Runner> {
     public @interface XSuiteParallel {
     }
 
+    private final List<Runner> runners;
+    @Nullable
+    private final ParallelFileScheduler parallelScheduler;
+
     private static String[] getAnnotatedDirectories(final Class<?> klass) throws InitializationError {
         final XSuite.XSuiteFiles annotation = klass.getAnnotation(XSuite.XSuiteFiles.class);
         if (annotation == null) {
@@ -119,10 +123,6 @@ public class XSuite extends ParentRunner<Runner> {
         final XSuite.XSuiteParallel annotation = klass.getAnnotation(XSuite.XSuiteParallel.class);
         return annotation != null;
     }
-
-    private final List<Runner> runners;
-    @Nullable
-    private final ParallelFileScheduler parallelScheduler;
 
     /**
      * Called reflectively on classes annotated with <code>@RunWith(XSuite.class)</code>

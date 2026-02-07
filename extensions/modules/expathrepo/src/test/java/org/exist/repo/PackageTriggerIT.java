@@ -45,6 +45,7 @@ import org.junit.Assume;
 import org.xml.sax.SAXException;
 
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,7 +76,7 @@ public class PackageTriggerIT {
                 try {
                     return Files.newInputStream(relPath);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
             };
         }
@@ -86,7 +87,7 @@ public class PackageTriggerIT {
                 try {
                     return Files.newInputStream(generated);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
             };
         }
