@@ -84,15 +84,21 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         try {
             final String fileName = getFileNameFromActual(actual);
             final int lineNumber = getLineFromActual(actual);
-            // Short one-line for logs (filename only); stack trace keeps full path for IDE
-            final String shortLocation = fileName != null ? lastPathSegment(fileName) + (lineNumber > 0 ? ":" + lineNumber : "") : null;
-            final String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
+            // Short one-line for logs (filename only)
+            final String shortFileName = fileName != null ? lastPathSegment(fileName) : null;
+            final String shortLocation = shortFileName != null ? shortFileName + (lineNumber > 0 ? ":" + lineNumber : "") : null;
+            String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
+            if (shortFileName != null && lineNumber > 0) {
+                oneLine += "\n\tat (" + shortFileName + ":" + lineNumber + ")";
+            }
             XQueryFailureLog.log(oneLine);
             final AssertionError failureReason = new ComparisonFailure(oneLine, expectedToString(expected), actualToString(actual));
 
-            if (fileName != null) {
+            // Stack trace for IDE navigation. IntelliJ linkifies short "filename:line" in stack traces
+            // but not absolute paths; use short filename so the stack line becomes clickable.
+            if (shortFileName != null) {
                 failureReason.setStackTrace(new StackTraceElement[]{
-                    new StackTraceElement(suiteName, name, fileName, lineNumber)
+                    new StackTraceElement(" ", " ", shortFileName, lineNumber > 0 ? lineNumber : 1)
                 });
             } else {
                 failureReason.setStackTrace(new StackTraceElement[0]);
@@ -108,7 +114,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
     }
 
     /**
-     * Last path segment for short display in failure message (full path remains in stack trace).
+     * Last path segment for short display in failure message and stack trace (short name makes IDE stack trace link clickable).
      */
     private static String lastPathSegment(final String path) {
         if (path == null || path.isEmpty()) {
