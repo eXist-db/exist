@@ -30,12 +30,7 @@ jobs:
         id: buildx
         with:
           install: true
-      - name: Cache Maven packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2
-          key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: deploy-${{ runner.os }}-maven
+      - uses: ./.github/actions/maven-cache
       - name: Install bats
         run: sudo apt-get install bats
         # Hack around #5450
@@ -57,6 +52,13 @@ jobs:
           sleep 35s
       - name: Run tests
         run: bats --tap exist-docker/src/test/bats/*.bats
+
+      - name: Save Maven cache
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.m2
+          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
 
       - name: debug logs
         if: failure()

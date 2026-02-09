@@ -1,0 +1,14 @@
+# Shared Maven cache: restore only. Caller adds a separate Save step at end of job when appropriate (see plans/caching.md).
+name: Maven cache
+description: Restore Maven repository cache (one cache per branch, PRs read-only). Add actions/cache/save at end of job for the single job that should persist.
+runs:
+  using: 'composite'
+  steps:
+    - name: Restore Maven cache
+      uses: actions/cache/restore@v5
+      with:
+        path: ~/.m2
+        key: maven-${{ github.event.pull_request.base.ref || github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ github.event.pull_request.base.ref || github.ref_name }}-
+          maven-

@@ -15,7 +15,7 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ env.DEV_JDK }}
-          cache: 'maven'
+      - uses: ./.github/actions/maven-cache
       - run: mvn -V -B license:check
         timeout-minutes: 60
   dependencies:
@@ -28,12 +28,26 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ env.DEV_JDK }}
-          cache: 'maven'
+      - uses: ./.github/actions/maven-cache
+      - name: Set week for OWASP cache key
+        run: echo "WEEK=$(date +%Y-%U)" >> $GITHUB_ENV
+      - name: Restore OWASP dependency-check cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.dependency-check-data
+          key: owasp-dc-${{ env.WEEK }}
+          restore-keys: owasp-dc-
       - name: OWASP dependency check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: mvn -V -B dependency-check:check
         timeout-minutes: 60
+      - name: Save OWASP dependency-check cache
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.dependency-check-data
+          key: owasp-dc-${{ env.WEEK }}
   test:
     name: ${{ matrix.os }} Test
     strategy:
@@ -49,7 +63,7 @@ jobs:
         with:
           distribution: liberica
           java-version: ${{ matrix.jvm }}
-          cache: 'maven'
+      - uses: ./.github/actions/maven-cache
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
@@ -77,6 +91,12 @@ jobs:
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B jacoco:report coveralls:report
+      - name: Save Maven cache
+        if: github.event_name == 'push' && matrix.os == 'ubuntu-latest'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.m2
+          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v6

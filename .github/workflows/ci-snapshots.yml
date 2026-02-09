@@ -22,12 +22,7 @@ jobs:
           java-version: '21'
           server-id: github
           settings-path: ${{ github.workspace }}
-      - name: Cache Maven packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2
-          key: deploy-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: deploy-${{ runner.os }}-maven
+      - uses: ./.github/actions/maven-cache
       - name: Deploy SNAPSHOT maven artefacts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,3 +31,9 @@ jobs:
           -s $GITHUB_WORKSPACE/settings.xml \
           -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
           clean deploy
+      - name: Save Maven cache
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.m2
+          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
