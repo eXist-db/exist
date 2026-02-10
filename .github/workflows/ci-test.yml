@@ -97,6 +97,7 @@ jobs:
         with:
           path: ~/.m2
           key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+          enableCrossOsArchive: true
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v6

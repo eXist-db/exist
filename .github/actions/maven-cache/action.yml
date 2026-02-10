@@ -9,6 +9,7 @@ runs:
       with:
         path: ~/.m2
         key: maven-${{ github.event.pull_request.base.ref || github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+        enableCrossOsArchive: true
         restore-keys: |
           maven-${{ github.event.pull_request.base.ref || github.ref_name }}-
           maven-
