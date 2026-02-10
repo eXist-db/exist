@@ -1,0 +1,20 @@
+* text=auto eol=lf
+
+# Windows batch scripts: keep CRLF on checkout so they run on Windows
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: do not normalize or diff
+*.jar binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.gif binary
+*.exe binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.hprof binary
+*.zst binary
