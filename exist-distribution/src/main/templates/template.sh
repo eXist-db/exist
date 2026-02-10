@@ -116,7 +116,7 @@ if [ ! -x "$JAVACMD" ] ; then
 fi
 
 REPO="$BASEDIR"/lib
-CLASSPATH="$BASEDIR"/etc:"$REPO"/*
+CLASSPATH="$BASEDIR/etc:$REPO/*"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
@@ -133,7 +133,7 @@ if [ -n "$JAVA_OPTS" ] ; then
 fi
 
 _EXIST_OPTS="-Dlog4j.configurationFile=$BASEDIR/etc/log4j2.xml -Dexist.home=$BASEDIR \
-             -Dexist.configurationFile=$BASEDIR/etc/conf.xml    -Djetty.home=$BASEDIR \
+             -Dexist.configurationFile=$BASEDIR/etc/conf.xml   -Djetty.home=$BASEDIR \
              -Dexist.jetty.config=$BASEDIR/etc/jetty/standard.enabled-jetty-configs"
 if [ -n "$EXIST_OPTS" ] ; then
   _EXIST_OPTS="$_EXIST_OPTS $EXIST_OPTS"
@@ -141,13 +141,15 @@ fi
 
 if [ -n "$DEBUG" ] ; then
   echo "################"
-  echo JAVA_OPTS=$_JAVA_OPTS
+  echo JAVA_OPTS="$_JAVA_OPTS"
   echo "################"
-  echo EXIST_OPTS=$_EXIST_OPTS
+  echo EXIST_OPTS="$_EXIST_OPTS"
   echo "################"
-  echo EXIST_COMMAND./bin =$EXIST_COMMAND
+  echo EXIST_COMMAND="$EXIST_COMMAND"
   echo "################"
 fi
+
+# Dot not double quote variables below
 
 exec "$JAVACMD" $_JAVA_OPTS $_EXIST_OPTS \
   -classpath "$CLASSPATH" \
