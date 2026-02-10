@@ -31,9 +31,3 @@ jobs:
           -s $GITHUB_WORKSPACE/settings.xml \
           -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
           clean deploy
-      - name: Save Maven cache
-        if: github.event_name == 'push'
-        uses: actions/cache/save@v5
-        with:
-          path: ~/.m2
-          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}

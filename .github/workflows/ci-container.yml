@@ -53,13 +53,6 @@ jobs:
       - name: Run tests
         run: bats --tap exist-docker/src/test/bats/*.bats
 
-      - name: Save Maven cache
-        if: github.event_name == 'push'
-        uses: actions/cache/save@v5
-        with:
-          path: ~/.m2
-          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
-
       - name: debug logs
         if: failure()
         run: docker logs exist-ci | grep 'ERROR'

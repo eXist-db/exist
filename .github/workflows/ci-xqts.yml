@@ -60,9 +60,3 @@ jobs:
         run: java -jar ~/.m2/repository/net/sf/saxon/Saxon-HE/9.9.1-8/Saxon-HE-9.9.1-8.jar -xsl:exist-xqts/src/main/xslt/compare-results.xslt -it:compare-results -o:/tmp/comparison-results.xml xqts.previous.junit-data-path=/tmp/previous-xqts-output/junit/data xqts.current.junit-data-path=/tmp/xqts-output/junit/data
       - name: Show Comparison Results
         run: cat /tmp/comparison-results.xml
-      - name: Save Maven cache
-        if: github.event_name == 'push'
-        uses: actions/cache/save@v5
-        with:
-          path: ~/.m2
-          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
