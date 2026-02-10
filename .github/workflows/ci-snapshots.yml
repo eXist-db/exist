@@ -10,6 +10,7 @@ jobs:
   publish-snapshots:
     name: Deploy Snapshots
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     if: github.ref == 'refs/heads/develop'
     steps:
       - uses: actions/checkout@v6
@@ -24,6 +25,7 @@ jobs:
           settings-path: ${{ github.workspace }}
       - uses: ./.github/actions/maven-cache
       - name: Deploy SNAPSHOT maven artefacts
+        timeout-minutes: 40
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

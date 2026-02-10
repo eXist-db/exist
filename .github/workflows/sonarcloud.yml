@@ -8,6 +8,7 @@ jobs:
   build:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,6 +26,7 @@ jobs:
           restore-keys: sonarcloud-${{ runner.os }}-cache
       - uses: ./.github/actions/maven-cache
       - name: Analyze
+        timeout-minutes: 55
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
