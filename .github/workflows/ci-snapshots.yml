@@ -29,7 +29,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mvn -V -B -q -DskipTests -Ddependency-check.skip=true \
+          mvn -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true \
           -s $GITHUB_WORKSPACE/settings.xml \
           -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
           clean deploy

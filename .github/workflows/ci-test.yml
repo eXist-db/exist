@@ -17,7 +17,7 @@ jobs:
           distribution: liberica
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
-      - run: mvn -V -B license:check
+      - run: mvn -V -B --no-transfer-progress license:check
         timeout-minutes: 10
   dependencies:
     name: Dependency checks
@@ -42,7 +42,7 @@ jobs:
       - name: OWASP dependency check
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn -V -B dependency-check:check
+        run: mvn -V -B --no-transfer-progress dependency-check:check
         timeout-minutes: 90
       - name: Save OWASP dependency-check cache
         if: github.event_name == 'push'
@@ -78,13 +78,13 @@ jobs:
         timeout-minutes: 30
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
       - name: Maven Test
         timeout-minutes: 60
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (Linux only)
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
       - name: Maven Code Coverage (Develop branch on Linux only)
         if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
         env:
@@ -93,7 +93,7 @@ jobs:
           CI_BUILD_NUMBER: ${{ github.run_id }}
           CI_BUILD_URL: https://github.com/${{ github.repository }}/commit/${{ github.event.after }}/checks
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B jacoco:report coveralls:report
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report coveralls:report
       - name: Save Maven cache
         if: github.event_name == 'push' && matrix.os == 'ubuntu-latest'
         uses: actions/cache/save@v5
