@@ -8,6 +8,7 @@ jobs:
   build:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
         with:
@@ -23,14 +24,10 @@ jobs:
           path: ~/.sonar/cache
           key: sonarcloud-${{ runner.os }}-cache-${{ hashFiles('**/pom.xml') }}
           restore-keys: sonarcloud-${{ runner.os }}-cache
-      - name: Cache Maven packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.m2
-          key: sonarcloud-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: sonarcloud-${{ runner.os }}-maven
+      - uses: ./.github/actions/maven-cache
       - name: Analyze
+        timeout-minutes: 55
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -V -B -Dsurefire.useFile=false -DtrimStackTrace=false -Ddependency-check.skip=true -Ddocker=false -P \!mac-dmg-on-mac,\!codesign-mac-dmg,\!mac-dmg-on-unix,\!installer,\!concurrency-stress-tests,\!micro-benchmarks,\!build-dist-archives verify site org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        run: mvn -V -B --no-transfer-progress -Dsurefire.useFile=false -DtrimStackTrace=false -Ddependency-check.skip=true -Ddocker=false -P \!mac-dmg-on-mac,\!codesign-mac-dmg,\!mac-dmg-on-unix,\!installer,\!concurrency-stress-tests,\!micro-benchmarks,\!build-dist-archives verify site org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
