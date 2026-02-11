@@ -133,6 +133,9 @@
         <junit.toolbox.version>2.4</junit.toolbox.version>
         <hamcrest.version>3.0</hamcrest.version>
 
+        <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
+        <skipUnitTests>false</skipUnitTests>
+
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
         
