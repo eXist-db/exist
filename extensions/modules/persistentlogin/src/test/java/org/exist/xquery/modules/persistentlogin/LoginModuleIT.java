@@ -74,7 +74,7 @@ public class LoginModuleIT {
             try (java.net.Socket s = new java.net.Socket()) {
                 s.connect(new java.net.InetSocketAddress("localhost", port), 1000);
                 return;
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 Thread.sleep(500);
             }
         }
