@@ -49,9 +49,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -63,7 +61,10 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author wolf
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+/**
+ * Test recovery after a forced database corruption.
+ * Single test method: store with FORCE_CORRUPTION, stop (preserving storage), restart, verify recovery.
+ */
 public class Recovery2Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
@@ -77,23 +78,16 @@ public class Recovery2Test {
             throw new RuntimeException("Cannot resolve recovery/saami path", e);
         }
     }
-    
-    @SuppressWarnings("unused")
-	private static String TEST_XML =
-        "<?xml version=\"1.0\"?>" +
-        "<test>" +
-        "  <title>Hello</title>" +
-        "  <para>Hello World!</para>" +
-        "</test>";
 
     @Test
-    public void test01_store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
+    public void storeThenRecoverAndRead() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
+        // Phase 1: store with forced corruption (simulates crash during write)
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
@@ -105,11 +99,10 @@ public class Recovery2Test {
 
             DOMFile domDb = ((NativeBroker) broker).getDOMFile();
             assertNotNull(domDb);
-            try(final Writer writer = new StringWriter()) {
+            try (final Writer writer = new StringWriter()) {
                 domDb.dump(writer);
             }
 
-            // store some documents. Will be replaced below
             final Path dir = getXmlDir();
             final List<Path> docs = FileUtils.list(dir);
             for (final Path f : docs) {
@@ -118,18 +111,19 @@ public class Recovery2Test {
 
             transact.commit(transaction);
         }
-    }
 
-    @Test
-    public void test02_read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, IOException {
+        // Stop without clearing storage (simulates crash; data must persist for recovery)
+        existEmbeddedServer.stopDb(false);
+
+        // Phase 2: restart and verify recovery restores documents
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDb();
+        final BrokerPool pool2 = startDb();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool2.get(Optional.of(pool2.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
             final Serializer serializer = broker.borrowSerializer();
-            
-            try(final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK)) {
+
+            try (final LockedDocument lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), LockMode.READ_LOCK)) {
                 assertNotNull("Document should not be null", lockedDoc);
                 String data = serializer.serialize(lockedDoc.getDocument());
                 assertNotNull(data);
@@ -146,6 +140,14 @@ public class Recovery2Test {
 
     @After
     public void stopDb() {
-        existEmbeddedServer.stopDb();
+        try {
+            existEmbeddedServer.stopDb(true);
+        } catch (final IllegalStateException e) {
+            if (e.getMessage() != null && e.getMessage().contains("already stopped")) {
+                existEmbeddedServer.getTemporaryStorage().ifPresent(FileUtils::deleteQuietly);
+            } else {
+                throw e;
+            }
+        }
     }
 }

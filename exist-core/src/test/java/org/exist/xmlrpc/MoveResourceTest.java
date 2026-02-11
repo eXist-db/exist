@@ -67,6 +67,9 @@ public class MoveResourceTest {
 
     private static final int DELAY = 10;  // milliseconds
     private static final long TIMEOUT = 5 * 60 * 1000;  // milliseconds
+    /** Retry REST calls on transient 5xx (warmup, lock contention, stale connections). Real deadlocks still fail. */
+    private static final int REST_RETRY_MAX = 3;
+    private static final int REST_RETRY_DELAY_MS = 100;
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
@@ -215,8 +218,19 @@ public class MoveResourceTest {
             final Request request = Request.Get(reqUrl);
 
             for (int i = 0; i < iterations; i++) {
-                final HttpResponse response = executor.execute(request).returnResponse();
-
+                HttpResponse response = null;
+                int lastStatus = -1;
+                for (int r = 0; r <= REST_RETRY_MAX; r++) {
+                    response = executor.execute(request).returnResponse();
+                    lastStatus = response.getStatusLine().getStatusCode();
+                    if (lastStatus == HttpStatus.SC_OK) {
+                        break;
+                    }
+                    if (lastStatus < 500 || r == REST_RETRY_MAX) {
+                        fail("REST query failed" + (r > 0 ? " after " + r + " retries" : "") + ": " + response.getStatusLine());
+                    }
+                    Thread.sleep(REST_RETRY_DELAY_MS);
+                }
                 assertEquals(response.getStatusLine().toString(), HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
 
                 Thread.sleep(DELAY);

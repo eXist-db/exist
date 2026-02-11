@@ -40,14 +40,11 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
-import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runners.MethodSorters;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertNotNull;
@@ -56,11 +53,10 @@ import static org.junit.Assert.fail;
 /**
  * Add a larger number of documents into a collection,
  * crash the database, restart, remove the collection and add some
- * more documents. store() must run before read() and read2().
+ * more documents. Single test method ensures data persists across phases.
  *
  * @author wolf
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Recovery3Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
@@ -70,25 +66,21 @@ public class Recovery3Test {
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
     private final static int RESOURCE_COUNT = 150;
-    
-    private Path dir;
-
-    @Before
-    public void createTestData() throws IOException {
-        dir = tempFolder.newFolder("recovery3-data").toPath();
-        for (int i = 0; i < RESOURCE_COUNT; i++) {
-            final Path f = dir.resolve("doc" + i + ".xml");
-            Files.write(f, ("<?xml version=\"1.0\"?><movie id=\"" + i + "\"><title>Movie " + i + "</title></movie>").getBytes(StandardCharsets.UTF_8));
-        }
-    }
 
     @Test
-    public void test01_store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
-        BrokerPool.FORCE_CORRUPTION = true;
-        final BrokerPool pool = startDb();
-        final TransactionManager transact = pool.getTransactionManager();
+    public void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+        final Path dir = tempFolder.newFolder("recovery3-data").toPath();
+        for (int i = 0; i < RESOURCE_COUNT; i++) {
+            Files.write(dir.resolve("doc" + i + ".xml"),
+                    ("<?xml version=\"1.0\"?><movie id=\"" + i + "\"><title>Movie " + i + "</title></movie>").getBytes(StandardCharsets.UTF_8));
+        }
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+        // Phase 1: store many documents with forced corruption
+        BrokerPool.FORCE_CORRUPTION = true;
+        BrokerPool pool = startDb();
+        TransactionManager transact = pool.getTransactionManager();
+
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -102,7 +94,6 @@ public class Recovery3Test {
             final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
             assertNotNull(files);
 
-            // store some documents.
             for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                 final Path f = files.get(i);
                 try {
@@ -114,22 +105,22 @@ public class Recovery3Test {
 
             transact.commit(transaction);
         }
-    }
 
-    @Test
-    public void test02_read() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+        // Stop without clearing storage (simulates crash)
+        existEmbeddedServer.stopDb(false);
 
-    	BrokerPool.FORCE_CORRUPTION = false;
-        final BrokerPool pool = startDb();
-        final TransactionManager transact = pool.getTransactionManager();
+        // Phase 2: restart, remove collection, re-add documents
+        BrokerPool.FORCE_CORRUPTION = false;
+        pool = startDb();
+        transact = pool.getTransactionManager();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             BrokerPool.FORCE_CORRUPTION = true;
 
             try (final Txn transaction = transact.beginTransaction();
                     final Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, LockMode.WRITE_LOCK)) {
-                assertNotNull(root);
+                assertNotNull("Collection should exist after recovery", root);
                 transaction.acquireCollectionLock(() -> broker.getBrokerPool().getLockManager().acquireCollectionWriteLock(root.getURI()));
                 broker.removeCollection(transaction, root);
 
@@ -141,14 +132,12 @@ public class Recovery3Test {
                 assertNotNull(root);
                 broker.saveCollection(transaction, root);
 
-                //TODO(AR) needs write lock
-                try(final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2)) {
+                try (final Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2)) {
                     assertNotNull(test2);
                     broker.saveCollection(transaction, test2);
 
                     final List<Path> files = FileUtils.list(dir, XMLFilenameFilter.asPredicate());
 
-                    // store some documents.
                     for (int i = 0; i < files.size() && i < RESOURCE_COUNT; i++) {
                         final Path f = files.get(i);
                         try {
@@ -162,19 +151,17 @@ public class Recovery3Test {
                 transact.commit(transaction);
             }
         }
-    }
 
-    @Test
-    public void test03_read2() throws DatabaseConfigurationException, EXistException, IOException {
+        // Stop without clearing storage
+        existEmbeddedServer.stopDb(false);
+
+        // Phase 3: final restart
         BrokerPool.FORCE_CORRUPTION = false;
-        BrokerPool pool = startDb();
+        pool = startDb();
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             assertNotNull(broker);
-
-            //TODO : do something ?
-	    }
+        }
     }
 
     private BrokerPool startDb() throws EXistException, IOException, DatabaseConfigurationException {
@@ -184,7 +171,7 @@ public class Recovery3Test {
 
     @After
     public void stopDb() {
-        existEmbeddedServer.stopDb();
+        existEmbeddedServer.stopDb(true);
     }
 
 }

@@ -69,13 +69,13 @@ public class RecoverBinary2Test {
         BrokerPool pool = startDb();
         store(pool);
 
-        stopDb();
+        stopDb(false);  // preserve storage for recovery simulation
 
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDb();
         read(pool);
 
-        stopDb();
+        stopDb(false);  // preserve storage for read2 phase
 
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDb();
@@ -168,6 +168,10 @@ public class RecoverBinary2Test {
 
     @After
     public void stopDb() {
-        existEmbeddedServer.stopDb();
+        existEmbeddedServer.stopDb(true);
+    }
+
+    public void stopDb(final boolean clearTemporaryStorage) {
+        existEmbeddedServer.stopDb(clearTemporaryStorage);
     }
 }
