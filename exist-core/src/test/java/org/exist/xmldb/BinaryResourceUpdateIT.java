@@ -25,53 +25,36 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
-public class BinaryResourceUpdateTest  {
+/**
+ * Integration test: replacing a binary resource with an XML resource using the same document name.
+ * This scenario exhibits platform-specific behaviour (notably on Windows) and is run in Failsafe
+ * alongside other integration tests.
+ */
+public class BinaryResourceUpdateIT {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testBinaryResource";
-
-    private Collection testCollection;
-
+    private static final String TEST_COLLECTION = "testBinaryResource";
     private static final int REPEAT = 10;
 
+    private Collection testCollection;
     private URL binFile;
     private URL xmlFile;
-
-    @Test
-    public void updateBinary() throws XMLDBException, URISyntaxException {
-        for (int i = 0; i < REPEAT; i++) {
-            BinaryResource binaryResource = testCollection.createResource("test1.xml", BinaryResource.class);
-            binaryResource.setContent(Paths.get(binFile.toURI()));
-            testCollection.storeResource(binaryResource);
-
-            Resource resource = testCollection.getResource("test1.xml");
-            assertNotNull(resource);
-
-            XMLResource xmlResource = testCollection.createResource("test2.xml", XMLResource.class);
-            xmlResource.setContent(Paths.get(xmlFile.toURI()));
-            testCollection.storeResource(xmlResource);
-
-            resource = testCollection.getResource("test2.xml");
-            assertNotNull(resource);
-        }
-        
-    }
 
     @Before
     public void setUp() throws Exception {
@@ -86,10 +69,29 @@ public class BinaryResourceUpdateTest  {
 
     @After
     public void tearDown() throws XMLDBException {
-        //delete the test collection
         final CollectionManagementService service = testCollection.getParentCollection().getService(CollectionManagementService.class);
         service.removeCollection(TEST_COLLECTION);
+        testCollection = null;
         binFile = null;
         xmlFile = null;
+    }
+
+    @Test
+    public void updateBinarySameName() throws XMLDBException, URISyntaxException {
+        for (int i = 0; i < REPEAT; i++) {
+            BinaryResource binaryResource = testCollection.createResource("test.xml", BinaryResource.class);
+            binaryResource.setContent(Paths.get(binFile.toURI()));
+            testCollection.storeResource(binaryResource);
+
+            Resource resource = testCollection.getResource("test.xml");
+            assertNotNull(resource);
+
+            XMLResource xmlResource = testCollection.createResource("test.xml", XMLResource.class);
+            xmlResource.setContent(Paths.get(xmlFile.toURI()));
+            testCollection.storeResource(xmlResource);
+
+            resource = testCollection.getResource("test.xml");
+            assertNotNull(resource);
+        }
     }
 }
