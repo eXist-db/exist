@@ -51,10 +51,12 @@ import java.util.Iterator;
 import java.util.Optional;
 
 /**
- * @author wolf
+ * Integration test for collection removal and recovery.
+ * Moved from unit tests (Surefire) to integration tests (Failsafe) per issue #2726.
  *
+ * @author wolf
  */
-public class RemoveCollectionTest {
+public class RemoveCollectionIT {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);

@@ -63,14 +63,15 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 
 /**
- * Test deadlock detection and resolution.
- * 
+ * Integration test for deadlock detection and resolution.
+ * Moved from unit tests (Surefire) to integration tests (Failsafe) per issue #2726.
+ *
  * @author wolf
  */
 @RunWith(Parameterized.class)
-public class DeadlockTest {
+public class DeadlockIT {
 
-	private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
+	private static final Logger LOG = LogManager.getLogger(DeadlockIT.class);
 
 	/** pick a set of random collections to query */
 	private static final int TEST_RANDOM_COLLECTION = 0;
