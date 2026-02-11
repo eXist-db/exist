@@ -25,13 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.XMLReaderPool;
-import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.validation.Shared;
 import org.exist.xquery.value.*;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -45,10 +41,8 @@ public class ParsingFunctions extends BasicFunction {
 
     private static final String FRAGMENT_WRAPPER_NAME = "__parse-xml-fragment__";
 
-	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML = new FunctionReturnSequenceType(Type.DOCUMENT,
-			Cardinality.ZERO_OR_ONE, "the parsed document");
-	protected static final FunctionReturnSequenceType RESULT_TYPE_FOR_PARSE_XML_FRAGMENT = new FunctionReturnSequenceType(Type.DOCUMENT,
-			Cardinality.ZERO_OR_ONE, "the parsed document fragment");
+	protected static final FunctionReturnSequenceType PARSE_RESULT_TYPE = new FunctionReturnSequenceType(Type.DOCUMENT,
+			Cardinality.ZERO_OR_ONE, "the document node with the parsed result");
 
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType(
 			"arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");
@@ -58,14 +52,20 @@ public class ParsingFunctions extends BasicFunction {
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
-					"This function takes as input an XML document represented as a string,"
-							+ " and returns the document node at the root of an XDM tree representing the parsed document.",
-					new SequenceType[] { TO_BE_PARSED_PARAMETER }, RESULT_TYPE_FOR_PARSE_XML),
+					"Parse an XML document represented as a string. "
+							+ "Returns the document node with the parsed document.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER },
+                    PARSE_RESULT_TYPE
+            ),
 			new FunctionSignature(
 					new QName("parse-xml-fragment", Function.BUILTIN_FUNCTION_NS),
-					"This function takes as input an XML external entity represented as a string," +
-					"and returns the document node at the root of an XDM tree representing the parsed document fragment.",
-					new SequenceType[] { TO_BE_PARSED_PARAMETER }, RESULT_TYPE_FOR_PARSE_XML_FRAGMENT) };
+					"Parse an XML fragment represented as a string. "
+                            + "External entities must have been parsed before. "
+					        + "Returns the document node with the parsed document fragment.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER },
+                    PARSE_RESULT_TYPE
+            )
+    };
 
 	public ParsingFunctions(final XQueryContext context, final FunctionSignature signature) {
 		super(context, signature);
@@ -76,58 +76,43 @@ public class ParsingFunctions extends BasicFunction {
 		if (args[0].getItemCount() == 0) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-		final String xmlContent = args[0].itemAt(0).getStringValue();
-		if (xmlContent.isEmpty()) {
+		final String xmlString = args[0].itemAt(0).getStringValue();
+		if (xmlString.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		}
-        
-        return parse(xmlContent, args);
-	}
 
-
-    private Sequence parse(final String xmlContent, final Sequence[] args) throws XPathException {
-        final SAXAdapter adapter = new FragmentSAXAdapter(this, context, isCalledAs("parse-xml-fragment"));
-	    final ValidationReport report = validate(xmlContent, adapter);
-
-        if (report.isValid()) {
-            return adapter.getDocument();
-        } else {
-            try {
-                context.pushDocumentContext();
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                final NodeImpl result = Shared.writeReport(report, builder);
-                throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + report, result);
-            } finally {
-                context.popDocumentContext();
-            }
+        if (isCalledAs("parse-xml-fragment")) {
+            return parseFragment(xmlString);
         }
+        return parseDocument(xmlString);
     }
 
-    private ValidationReport validate(final String xmlContent, final SAXAdapter saxAdapter) throws XPathException {
-        final String xml;
-	    if (isCalledAs("parse-xml-fragment")) {
-            xml = "<" + FRAGMENT_WRAPPER_NAME + ">" + xmlContent + "</" + FRAGMENT_WRAPPER_NAME + ">";
-        } else {
-	        xml = xmlContent;
-        }
+    private Sequence parseDocument(final String xmlDocumentString) throws XPathException {
+        final SAXAdapter documentAdapter = new SAXAdapter(this, context);
+        parse(xmlDocumentString, documentAdapter);
+        return documentAdapter.getDocument();
+    }
 
-        final ValidationReport report = new ValidationReport();
+    private Sequence parseFragment(final String xmlFragmentString) throws XPathException {
+        final SAXAdapter fragmentAdapter = new FragmentSAXAdapter(this, context);
+        parse(wrapXmlFragment(xmlFragmentString), fragmentAdapter);
+        return fragmentAdapter.getDocument();
+    }
 
+    private void parse(final String xml, final SAXAdapter saxAdapter) throws XPathException {
         try (final StringReader reader = new StringReader(xml)) {
             final InputSource src = new InputSource(reader);
 
-            final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getParserPool();
+            final XMLReaderPool parserPool = context.getBroker().getBrokerPool().getXmlReaderPool();
             XMLReader xr = null;
             try {
                 xr = parserPool.borrowXMLReader();
-                xr.setErrorHandler(report);
                 xr.setContentHandler(saxAdapter);
                 xr.setProperty(Namespaces.SAX_LEXICAL_HANDLER, saxAdapter);
                 xr.parse(src);
-            } catch (final SAXException e) {
-                logger.debug("Error while parsing XML: {}", e.getMessage(), e);
-            } catch (final IOException e) {
-                throw new XPathException(this, ErrorCodes.FODC0006, ErrorCodes.FODC0006.getDescription() + ": " + e.getMessage(),
+            } catch (final IOException | SAXException e) {
+                throw new XPathException(this, ErrorCodes.FODC0006,
+                        this.getName().getLocalPart() + " failed with: " + e.getMessage(),
                         new StringValue(this, xml), e);
             } finally {
                 if (xr != null) {
@@ -135,39 +120,49 @@ public class ParsingFunctions extends BasicFunction {
                 }
             }
         }
+    }
 
-        return report;
+    private static String wrapXmlFragment(final String xmlContent) {
+        String xmlHeader = "";
+        int offset = 0;
+        if (xmlContent.startsWith("<?xml ")) {
+            offset = xmlContent.indexOf("?>") + 2;
+            xmlHeader = xmlContent.substring(0, offset);
+        }
+        return xmlHeader + "<" + FRAGMENT_WRAPPER_NAME + ">" + xmlContent.substring(offset) + "</" + FRAGMENT_WRAPPER_NAME + ">";
     }
 
     private static class FragmentSAXAdapter extends SAXAdapter {
-        private final boolean hasFragmentWrapper;
-        private boolean strippedFramentWrapper = false;
+        private boolean strippedFragmentWrapper = false;
 
-        public FragmentSAXAdapter(final XQueryContext context, final boolean hasFragmentWrapper) {
-            this(null, context, hasFragmentWrapper);
-        }
-
-        public FragmentSAXAdapter(final Expression expression, final XQueryContext context, final boolean hasFragmentWrapper) {
+        public FragmentSAXAdapter(final Expression expression, final XQueryContext context) {
             super(expression, context);
-            this.hasFragmentWrapper = hasFragmentWrapper;
         }
 
         @Override
         public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
-            if (hasFragmentWrapper && !strippedFramentWrapper && localName.equals(FRAGMENT_WRAPPER_NAME)) {
-                // no-op
-            } else {
+            if (strippedFragmentWrapper || !localName.equals(FRAGMENT_WRAPPER_NAME)) {
                 super.startElement(namespaceURI, localName, qName, atts);
             }
+            // skip fragment wrapper element
         }
 
         @Override
         public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
-            if (hasFragmentWrapper && !strippedFramentWrapper && localName.equals(FRAGMENT_WRAPPER_NAME)) {
-                strippedFramentWrapper = true;
-            } else {
+            if (strippedFragmentWrapper || !localName.equals(FRAGMENT_WRAPPER_NAME)) {
                 super.endElement(namespaceURI, localName, qName);
+            } else {
+                strippedFragmentWrapper = true;
             }
         }
+
+        @Override
+        public void declaration(final String version, final String encoding, final String standalone) throws SAXException {
+            if (standalone != null) {
+                throw new SAXException("Pseudo attribute \"standalone\" not allowed in input fragment");
+            }
+            super.declaration(version, encoding, null);
+        }
+
     }
 }
