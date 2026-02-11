@@ -24,12 +24,18 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
+import org.junit.After;
+import org.junit.Before;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class FragmentsTest extends ConcurrentTestBase {
-    
+
+    private static final String C2 = "C2";
+
     private final static String QUERY =
         "let $node := " +
         "   <root>" +
@@ -42,6 +48,21 @@ public class FragmentsTest extends ConcurrentTestBase {
     @Override
     public String getTestCollectionName() {
         return "C1";
+    }
+
+    @Before
+    public void createC2() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        if (rootCol.getChildCollection(C2) != null) {
+            DBUtils.removeCollection(rootCol, C2);
+        }
+        DBUtils.addCollection(rootCol, C2);
+    }
+
+    @After
+    public void removeC2() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        DBUtils.removeCollection(rootCol, C2);
     }
 
     @Override
