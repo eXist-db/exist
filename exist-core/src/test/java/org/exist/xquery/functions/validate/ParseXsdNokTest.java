@@ -62,10 +62,10 @@ public class ParseXsdNokTest {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
         }
 
-        // Store schematron 1.5 test files
+        // Store addressbook test files (xsd, catalog, instances)
         try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook")) {
 
-            final String[] xsdTestFiles = {"addressbook.xsd", "addressbook_invalid.xml", "addressbook_valid.xml"};
+            final String[] xsdTestFiles = {"addressbook.xsd", "catalog.xml", "addressbook_invalid.xml", "addressbook_valid.xml"};
 
             for (final String xsdTestFile : xsdTestFiles) {
                 try (final InputStream is = SAMPLES.getSample("validation/addressbook/" + xsdTestFile)) {
@@ -78,8 +78,7 @@ public class ParseXsdNokTest {
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
-                "doc('/db/addressbook/addressbook_valid.xml'), " +
-                "xs:anyURI('/db/addressbook/addressbook.xsd'), () )";
+                "doc('/db/addressbook/addressbook_valid.xml'), false(), doc('/db/addressbook/catalog.xml') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());

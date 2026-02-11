@@ -62,8 +62,8 @@ public class ParseDtdNokTest {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
         }
 
-        // Store dtd test files
-        final String[] dtdTestFiles = { "catalog.xml", "hamlet_invalid.xml", "hamlet_nodoctype.xml", "hamlet_valid.xml", "hamlet_wrongdoctype.xml" };
+        // Store dtd test files; catalog.xml expects hamlet.dtd in same collection
+        final String[] dtdTestFiles = { "catalog.xml", "hamlet.dtd", "hamlet_invalid.xml", "hamlet_nodoctype.xml", "hamlet_valid.xml", "hamlet_wrongdoctype.xml" };
         try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet")) {
 
             for (final String dtdTestFile : dtdTestFiles) {
@@ -73,19 +73,12 @@ public class ParseDtdNokTest {
             }
         }
 
-        try (Collection collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd")) {
-            try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
-                ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", InputStreamUtil.readAll(is));
-            }
-        }
-
     }
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
-                "doc('/db/hamlet/hamlet_valid.xml'), " +
-                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
+                "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -96,8 +89,7 @@ public class ParseDtdNokTest {
 
     @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
-                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
+        final String query = "validation:jaxp-report( xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -109,8 +101,7 @@ public class ParseDtdNokTest {
     @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/hamlet/hamlet_valid.xml'), " +
-                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
+                "xs:anyURI('/db/hamlet/hamlet_valid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -122,8 +113,7 @@ public class ParseDtdNokTest {
     @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
-                "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), " +
-                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
+                "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), false(), xs:anyURI('/db/hamlet/') )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());

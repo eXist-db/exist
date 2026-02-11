@@ -22,8 +22,9 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,9 +40,15 @@ import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -49,27 +56,34 @@ import static org.junit.Assert.fail;
 /**
  * Add a larger number of documents into a collection,
  * crash the database, restart, remove the collection and add some
- * more documents.
- * 
- * This test needs quite a few documents to be in the collection. Change
- * the directory path below to point to a directory with at least 1000 docs.
- * 
- * @author wolf
+ * more documents. store() must run before read() and read2().
  *
+ * @author wolf
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Recovery3Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static int RESOURCE_COUNT = 5000;
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
+
+    private final static int RESOURCE_COUNT = 150;
     
-    private static String directory = "/media/Shared/XML/movies";
-    
-    private static Path dir = Paths.get(directory);
+    private Path dir;
+
+    @Before
+    public void createTestData() throws IOException {
+        dir = tempFolder.newFolder("recovery3-data").toPath();
+        for (int i = 0; i < RESOURCE_COUNT; i++) {
+            final Path f = dir.resolve("doc" + i + ".xml");
+            Files.write(f, ("<?xml version=\"1.0\"?><movie id=\"" + i + "\"><title>Movie " + i + "</title></movie>").getBytes(StandardCharsets.UTF_8));
+        }
+    }
 
     @Test
-    public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    public void test01_store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
@@ -103,7 +117,7 @@ public class Recovery3Test {
     }
 
     @Test
-    public void read() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
+    public void test02_read() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {
 
     	BrokerPool.FORCE_CORRUPTION = false;
         final BrokerPool pool = startDb();
@@ -151,7 +165,7 @@ public class Recovery3Test {
     }
 
     @Test
-    public void read2() throws DatabaseConfigurationException, EXistException, IOException {
+    public void test03_read2() throws DatabaseConfigurationException, EXistException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
 

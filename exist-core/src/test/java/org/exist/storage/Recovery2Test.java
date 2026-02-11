@@ -24,6 +24,8 @@ package org.exist.storage;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -47,7 +49,9 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -55,16 +59,24 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Test recovery after a forced database corruption.
- * 
- * @author wolf
+ * store() must run before read() - they share DB state.
  *
+ * @author wolf
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Recovery2Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static String xmlDir = "/home/wolf/xml/Saami";
+    private static Path getXmlDir() {
+        try {
+            final URI uri = Recovery2Test.class.getResource("/recovery/saami/terms-eng.xml").toURI();
+            return Paths.get(uri).getParent();
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException("Cannot resolve recovery/saami path", e);
+        }
+    }
     
     @SuppressWarnings("unused")
 	private static String TEST_XML =
@@ -75,7 +87,7 @@ public class Recovery2Test {
         "</test>";
 
     @Test
-    public void store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
+    public void test01_store() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, SAXException, BTreeException, LockException {
         BrokerPool.FORCE_CORRUPTION = true;
         final BrokerPool pool = startDb();
         final TransactionManager transact = pool.getTransactionManager();
@@ -98,7 +110,7 @@ public class Recovery2Test {
             }
 
             // store some documents. Will be replaced below
-            final Path dir = Paths.get(xmlDir);
+            final Path dir = getXmlDir();
             final List<Path> docs = FileUtils.list(dir);
             for (final Path f : docs) {
                 broker.storeDocument(transaction, XmldbURI.create(FileUtils.fileName(f)), new InputSource(f.toUri().toASCIIString()), MimeType.XML_TYPE, test2);
@@ -109,7 +121,7 @@ public class Recovery2Test {
     }
 
     @Test
-    public void read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, IOException {
+    public void test02_read() throws EXistException, DatabaseConfigurationException, PermissionDeniedException, SAXException, IOException {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = startDb();
 
