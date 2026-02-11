@@ -51,7 +51,7 @@ import static org.exist.util.PropertiesBuilder.propertiesBuilder;
  *
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class DatabaseInsertResources_WithValidation_Test {
+public class DatabaseInsertResourcesWithValidationTest {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(

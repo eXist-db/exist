@@ -40,11 +40,11 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * Tests for the validation:jing() function with SCHs.
+ * Tests for the validation:jaxp() function with DTDss.
  * 
  * @author dizzzz@exist-db.org
  */
-public class ParseXsdTestNOK {
+public class ParseDtdNokTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -58,28 +58,34 @@ public class ParseXsdTestNOK {
     public static void prepareResources() throws Exception {
 
         // Switch off validation
-        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/addressbook")) {
+        try (Collection conf = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "system/config/db/hamlet")) {
             ExistXmldbEmbeddedServer.storeResource(conf, DEFAULT_COLLECTION_CONFIG_FILE, noValidation.getBytes());
         }
 
-        // Store schematron 1.5 test files
-        try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "addressbook")) {
+        // Store dtd test files
+        final String[] dtdTestFiles = { "catalog.xml", "hamlet_invalid.xml", "hamlet_nodoctype.xml", "hamlet_valid.xml", "hamlet_wrongdoctype.xml" };
+        try (Collection collection = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet")) {
 
-            final String[] xsdTestFiles = {"addressbook.xsd", "addressbook_invalid.xml", "addressbook_valid.xml"};
-
-            for (final String xsdTestFile : xsdTestFiles) {
-                try (final InputStream is = SAMPLES.getSample("validation/addressbook/" + xsdTestFile)) {
-                    ExistXmldbEmbeddedServer.storeResource(collection, xsdTestFile, InputStreamUtil.readAll(is));
+            for (final String dtdTestFile : dtdTestFiles) {
+                try (final InputStream is = SAMPLES.getSample("validation/dtd/" + dtdTestFile)) {
+                    ExistXmldbEmbeddedServer.storeResource(collection, dtdTestFile, InputStreamUtil.readAll(is));
                 }
             }
         }
+
+        try (Collection collection1 = existEmbeddedServer.createCollection(existEmbeddedServer.getRoot(), "hamlet/dtd")) {
+            try (final InputStream is = SAMPLES.getSample("validation/dtd/hamlet.dtd")) {
+                ExistXmldbEmbeddedServer.storeResource(collection1, "hamlet.dtd", InputStreamUtil.readAll(is));
+            }
+        }
+
     }
 
     @Test
     public void xsd_stored_valid() throws XMLDBException, SAXException, IOException, XpathException {
         final String query = "validation:jaxp-report( " +
-                "doc('/db/addressbook/addressbook_valid.xml'), " +
-                "xs:anyURI('/db/addressbook/addressbook.xsd'), () )";
+                "doc('/db/hamlet/hamlet_valid.xml'), " +
+                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -88,10 +94,10 @@ public class ParseXsdTestNOK {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_stored_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( doc('/db/tournament/1.5/Tournament-invalid.xml'), " +
-                "doc('/db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report(doc('/db/hamlet/hamlet_invalid.xml'), " +
+                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -100,10 +106,11 @@ public class ParseXsdTestNOK {
         assertXpathEvaluatesTo("invalid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_anyuri_valid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-valid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report( " +
+                "xs:anyURI('/db/hamlet/hamlet_valid.xml'), " +
+                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());
@@ -112,10 +119,11 @@ public class ParseXsdTestNOK {
         assertXpathEvaluatesTo("valid", "//status/text()", r);
     }
 
-    @Test @Ignore("todo")
+    @Test
     public void xsd_anyuri_invalid() throws XMLDBException, SAXException, IOException, XpathException {
-        final String query = "validation:jaxp-report( xs:anyURI('xmldb:exist:///db/tournament/1.5/Tournament-invalid.xml'), " +
-                "xs:anyURI('xmldb:exist:///db/tournament/1.5/tournament-schema.sch') )";
+        final String query = "validation:jaxp-report( " +
+                "xs:anyURI('/db/hamlet/hamlet_invalid.xml'), " +
+                "xs:anyURI('/db/hamlet/dtd/hamlet.dtd'), () )";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         assertEquals(1, results.getSize());

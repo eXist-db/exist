@@ -60,7 +60,7 @@ import org.xml.sax.SAXException;
  *
  * @author ljo
  */
-public class IndexerTest2 {
+public class Indexer2Test {
 
     private final static String XML =
             "<?xml version=\"1.0\"?>\n" +

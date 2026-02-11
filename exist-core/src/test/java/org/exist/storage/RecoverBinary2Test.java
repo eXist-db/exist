@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertNotNull;
 
-public class RecoverBinaryTest2 {
+public class RecoverBinary2Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);

@@ -42,9 +42,9 @@ import org.junit.Test;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class GetReleaseBrokerDeadlocks {
+public class GetReleaseBrokerDeadlocksTest {
 
-	private static final Logger LOG = LogManager.getLogger(GetReleaseBrokerDeadlocks.class);
+	private static final Logger LOG = LogManager.getLogger(GetReleaseBrokerDeadlocksTest.class);
 	
 	private static Random rd = new Random();
 

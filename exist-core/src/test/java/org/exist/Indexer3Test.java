@@ -56,7 +56,7 @@ import org.xml.sax.SAXException;
  *
  * @author ljo
  */
-public class IndexerTest3 {
+public class Indexer3Test {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);

@@ -57,7 +57,7 @@ import static org.junit.Assert.fail;
  * @author wolf
  *
  */
-public class RecoveryTest3 {
+public class Recovery3Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
