@@ -48,7 +48,11 @@ import java.io.IOException;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
 
-public class LoginModuleTest {
+/**
+ * Integration test: requires ExistWebServer (Jetty) with XML-RPC and REST.
+ * Runs in Failsafe phase.
+ */
+public class LoginModuleIT {
 
     private static String XQUERY = "import module namespace login=\"http://exist-db.org/xquery/login\" " +
             "at \"resource:org/exist/xquery/modules/persistentlogin/login.xql\";" +
@@ -56,16 +60,48 @@ public class LoginModuleTest {
             "sm:id()/(descendant::sm:effective,descendant::sm:real)[1]/sm:username/string()";
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     private final static String XQUERY_FILENAME = "test-login.xql";
 
     private static Collection root;
     private static HttpClient client;
 
+    /** Wait for server port to accept connections before XML-RPC. Windows CI can be slower to bind. */
+    private static void waitForServerReady(int port, int timeoutMs) throws InterruptedException {
+        final long deadline = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < deadline) {
+            try (java.net.Socket s = new java.net.Socket()) {
+                s.connect(new java.net.InetSocketAddress("localhost", port), 1000);
+                return;
+            } catch (java.io.IOException e) {
+                Thread.sleep(500);
+            }
+        }
+    }
+
     @BeforeClass
-    public static void beforeClass() throws XMLDBException {
-        root = DatabaseManager.getCollection("xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc" + XmldbURI.ROOT_COLLECTION, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+    public static void beforeClass() throws XMLDBException, InterruptedException {
+        final int port = existWebServer.getPort();
+        final boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
+        waitForServerReady(port, isWindows ? 60_000 : 30_000);
+
+        final String uri = "xmldb:exist://localhost:" + port + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
+        XMLDBException lastException = null;
+        for (int i = 0; i < 20; i++) {
+            try {
+                root = DatabaseManager.getCollection(uri, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+                break;
+            } catch (XMLDBException e) {
+                lastException = e;
+                if (i < 19) {
+                    Thread.sleep(500);
+                }
+            }
+        }
+        if (root == null) {
+            throw new AssertionError("Failed to connect to XML-RPC after 20 retries: " + (lastException != null ? lastException.getMessage() : ""));
+        }
         final BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
         res.setContent(XQUERY);
@@ -79,8 +115,12 @@ public class LoginModuleTest {
 
     @AfterClass
     public static void afterClass() throws XMLDBException {
-        final BinaryResource res = (BinaryResource)root.getResource(XQUERY_FILENAME);
-        root.removeResource(res);
+        if (root != null) {
+            final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
+            if (res != null) {
+                root.removeResource(res);
+            }
+        }
     }
 
     @Test
