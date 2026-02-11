@@ -34,6 +34,17 @@ declare variable $qf:XCONF1 :=
         </index>
     </collection>;
 
+declare variable $qf:XML  as document-node() :=
+     document {
+        <test>
+            <p>Rüsselsheim</p>
+            <p>Russelsheim</p>
+            <p>Māori</p>
+            <p>Maori</p>
+        </test>
+     };
+
+declare variable $qf:_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"));
 declare variable $qf:testCol := xmldb:create-collection("/db", "queryfieldtest");
 declare variable $qf:confCol := xmldb:create-collection("/db/system/config/db", "queryfieldtest");
 
@@ -43,22 +54,8 @@ function qf:setup() {
 
     (
         xmldb:store($qf:confCol, "collection.xconf", $qf:XCONF1),
-        xmldb:store($qf:testCol, "test1.xml",
-                <test>
-                    <p>Rüsselsheim</p>
-                    <p>Russelsheim</p>
-                    <p>Māori</p>
-                    <p>Maori</p>
-                </test>
-        ),
-        xmldb:store($qf:testCol, "test2.xml",
-                <test>
-                    <p>Rüsselsheim</p>
-                    <p>Russelsheim</p>
-                    <p>Māori</p>
-                    <p>Maori</p>
-                </test>
-        )
+        xmldb:store($qf:testCol, "test1.xml", $qf:XML),
+        xmldb:store($qf:testCol, "test2.xml", $qf:XML)
     )
 };
 

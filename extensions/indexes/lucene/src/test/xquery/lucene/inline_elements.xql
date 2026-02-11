@@ -50,6 +50,7 @@ declare variable $fti:COLLECTION := "/db/" || $fti:COLLECTION_NAME;
 declare
 %test:setUp
 function fti:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $fti:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $fti:COLLECTION_NAME, "collection.xconf", $fti:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $fti:COLLECTION_NAME),

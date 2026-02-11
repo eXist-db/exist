@@ -162,6 +162,7 @@ declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 declare
     %test:setUp
 function ot:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ot:COLLECTION_NAME),

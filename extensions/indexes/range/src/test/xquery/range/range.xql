@@ -107,6 +107,7 @@ declare variable $rt:DATA2 :=
 declare
     %test:setUp
 function rt:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", "rangetest"),
     xmldb:store("/db/system/config/db/rangetest", "collection.xconf", $rt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", "rangetest"),

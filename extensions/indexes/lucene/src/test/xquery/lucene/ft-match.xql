@@ -54,6 +54,7 @@ declare variable $ftt:COLLECTION := "/db/" || $ftt:COLLECTION_NAME;
 declare
     %test:setUp
 function ftt:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $ftt:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ftt:COLLECTION_NAME, "collection.xconf", $ftt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ftt:COLLECTION_NAME),
@@ -80,4 +81,29 @@ declare
 function ftt:highlight($query as xs:string) {
     count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., $query)][1])//exist:match),
     count(util:expand(collection($ftt:COLLECTION)//div[ft:query(., $query)][2])//exist:match)
+};
+
+(:~
+ : Asserts that string proximity '"Introduction text"~1' and XML
+ : &lt;near slop="1"&gt;&lt;term&gt;Introduction&lt;/term&gt;&lt;term&gt;text&lt;/term&gt;&lt;/near&gt;
+ : return identical match counts (from util:expand//exist:match).
+ :
+ : @see https://github.com/eXist-db/exist/issues/833
+ : @return xs:integer+ (match-count for string query, match-count for XML query)
+ :)
+declare
+    %test:pending("Proximity/slop string vs XML match-count equality, see #833")
+    %test:assertEquals(1, 1)
+function ftt:slop-string-vs-xml-equality() {
+    let $queries := (
+        '"Introduction text"~1',
+        <query><near slop="1"><term>Introduction</term><term>text</term></near></query>
+    ),
+    $results :=
+        for $query in $queries
+        let $hits := collection($ftt:COLLECTION)//div[ft:query(., $query)],
+            $expanded := util:expand($hits),
+            $match-count := count($expanded//exist:match)
+        return $match-count
+    return ($results[1], $results[2])
 };

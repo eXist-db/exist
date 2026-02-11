@@ -53,6 +53,7 @@ declare variable $analyze:XCONF2 :=
 declare
     %test:setUp
 function analyze:setup() {
+    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
     let $testCol := xmldb:create-collection("/db", "lucenetest")
     let $testCol1 := xmldb:create-collection("/db/lucenetest", "test1")
     let $testCol2 := xmldb:create-collection("/db/lucenetest", "test2")

@@ -27,6 +27,8 @@ xquery version "3.0";
  :
  : Expressions use the @test:stats annotation to retrieve execution statistics
  : for each test function.
+ :
+ : @see https://github.com/eXist-db/exist/issues/873 indirect query optimizer regression
  :)
 
 module namespace fto="http://exist-db.org/xquery/ft-optimizer/test";
@@ -74,10 +76,12 @@ declare variable $fto:COLLECTION := "/db/" || $fto:COLLECTION_NAME;
 declare
     %test:setUp
 function fto:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $fto:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $fto:COLLECTION_NAME, "collection.xconf", $fto:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $fto:COLLECTION_NAME),
-    xmldb:store($fto:COLLECTION, "test.xml", $fto:DATA)
+    xmldb:store($fto:COLLECTION, "test.xml", $fto:DATA),
+    xmldb:reindex($fto:COLLECTION)
 };
 
 declare
@@ -112,4 +116,38 @@ declare
     %test:assertEquals("Rüsselsheim")
 function fto:do-not-simplify($name as xs:string) {
     fto:collection-helper($fto:COLLECTION)[ft:query(name, $name)]/city/string()
+};
+
+(:~
+ : Direct vs indirect Lucene ft:query must return the same hit count (optimizer regression).
+ : Direct: collection(...)//name[ft:query(., $term)]; indirect: let $hits := collection(...)//name return $hits[ft:query(., $term)].
+ : @param $term full-text search term
+ : @return (direct-count, indirect-count) for assertion
+ : @see https://github.com/eXist-db/exist/issues/873
+ :)
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals(1, 1)
+function fto:indirect-vs-direct-lucene-same-count($term as xs:string) {
+    let $hits := collection($fto:COLLECTION)//name,
+        $direct := count(collection($fto:COLLECTION)//name[ft:query(., $term)]),
+        $indirect := count($hits[ft:query(., $term)])
+    return ($direct, $indirect)
+};
+
+(:~
+ : Indirect Lucene ft:query should use index (optimizer); assert index calls = 1.
+ : @param $term full-text search term
+ : @return stats (for assertXPath)
+ : @see https://github.com/eXist-db/exist/issues/873
+ : @see https://github.com/eXist-db/exist/issues/873#issuecomment-199351350
+ :)
+declare
+    %test:stats
+    %test:args("Rudi Rüssel")
+    %test:pending("optimizer does not use index for indirect query, see #873")
+    %test:assertXPath("$result//stats:index[@calls = 1]")
+function fto:indirect-query-uses-index($term as xs:string) {
+    let $hits := collection($fto:COLLECTION)//name
+    return $hits[ft:query(., $term)]
 };

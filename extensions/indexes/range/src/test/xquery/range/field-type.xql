@@ -60,6 +60,7 @@ declare variable $rt:NON_INDEXED_COLLECTION := "/db/" || $rt:NON_INDEXED_COLLECT
 declare
     %test:setUp
 function rt:setup() {
+    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
     xmldb:create-collection("/db/system/config/db", $rt:INDEXED_COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $rt:INDEXED_COLLECTION_NAME),
