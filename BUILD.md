@@ -24,6 +24,14 @@ Useful build switches:
 
 Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist").
 
+### Running tests locally
+
+From the repo root:
+
+- **All tests:** `mvn -V -B verify -Ddependency-check.skip -Dlicense.skip`
+- **exist-core only:** add `--projects exist-core --also-make` to the above
+- **Single test class:** `mvn -Dtest=fully.qualified.TestClass test --projects exist-core --also-make`
+
 **NOTE:** 
 In the above example, we switched the current (checked-out) branch from `develop` to `master`. We use the [GitFlow for eXist-db](#contributing-to-exist) process:
 - `develop` is the current (and stable) work-in-progress (the next release)

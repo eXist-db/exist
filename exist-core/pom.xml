@@ -1199,24 +1199,29 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
+                    <!-- Include tests that do not match default Surefire patterns (e.g. *Test2, *Test3, *TestNOK, DOMTestJUnit, MemtreeInXQuery). See https://github.com/eXist-db/exist/issues/5903 -->
+                    <includes>
+                        <include>**/Test*.java</include>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                        <include>**/*Test*.java</include>
+                        <include>**/XQueryProcessingInstruction.java</include>
+                        <include>**/GetReleaseBrokerDeadlocks.java</include>
+                        <include>**/MemtreeInXQuery.java</include>
+                    </includes>
+
                     <excludes>
 
                         <!-- NOTE: these can still exhibit deadlocks -->
                         <exclude>org.exist.collections.ConcurrencyTest</exclude>
                         <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
 
-                        <!-- NOTE: these tests appear to be invalid -->
-                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest2</exclude>
-                        <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest3</exclude>
-
                         <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin -->
                         <exclude>org.exist.http.underheavyload.DatabaseUnderLoadTest</exclude>
                         <exclude>org.exist.storage.lock.DeadlockTest</exclude>
                         <exclude>org.exist.storage.RemoveCollectionTest</exclude>
                         <exclude>org.exist.xmldb.ShutdownTest</exclude>
-
-                        <!-- NOTE: this never completes under Java 8 on Travis CI Mac platform! -->
-                        <exclude>org.exist.xmlrpc.MoveResourceTest</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -1273,27 +1278,35 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
                                 <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                             </systemPropertyVariables>
+                            <!-- Same includes as main config so all tests run on Windows CI too (see issue #5903) -->
+                            <includes>
+                                <include>**/Test*.java</include>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
+                                <include>**/*TestCase.java</include>
+                                <include>**/*Test*.java</include>
+                                <include>**/XQueryProcessingInstruction.java</include>
+                                <include>**/GetReleaseBrokerDeadlocks.java</include>
+                                <include>**/MemtreeInXQuery.java</include>
+                            </includes>
                             <excludes>
                                 <!-- NOTE: this test occasionally fails on Windows CI
-                                 but not on some other Windows systems :-/ -->
+                                 but not on some other Windows systems :-/ 
+                                 see https://github.com/eXist-db/exist/issues/2727 -->
                                 <exclude>org.exist.storage.lock.CollectionLocksTest</exclude>
 
-                                <!-- NOTE: these can still exhibit deadlocks -->
+                                <!-- NOTE: these can still exhibit deadlocks 
+                                 see https://github.com/eXist-db/exist/issues/4140 
+                                 see https://github.com/eXist-db/exist/issues/3685 -->
                                 <exclude>org.exist.collections.ConcurrencyTest</exclude>
                                 <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
 
-                                <!-- NOTE: these tests appear to be invalid -->
-                                <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest2</exclude>
-                                <exclude>org.exist.xmldb.concurrent.ConcurrentResourceTest3</exclude>
-
-                                <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin -->
+                                <!-- NOTE: these take a long time to run and should become integration tests via maven-failsafe-plugin 
+                                 see https://github.com/eXist-db/exist/issues/2726 -->
                                 <exclude>org.exist.http.underheavyload.DatabaseUnderLoadTest</exclude>
                                 <exclude>org.exist.storage.lock.DeadlockTest</exclude>
                                 <exclude>org.exist.storage.RemoveCollectionTest</exclude>
                                 <exclude>org.exist.xmldb.ShutdownTest</exclude>
-
-                                <!-- NOTE: this never completes under Java 8 on Travis CI Mac platform! -->
-                                <exclude>org.exist.xmlrpc.MoveResourceTest</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
