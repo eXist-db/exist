@@ -34,7 +34,8 @@ import java.util.List;
 
 public class FragmentsTest extends ConcurrentTestBase {
 
-    private static final String C2 = "C2";
+    /** Second root-level collection for XQuery runner; base provides C1 only. */
+    private static final String SECOND_QUERY_COLLECTION = "C2";
 
     private final static String QUERY =
         "let $node := " +
@@ -53,23 +54,23 @@ public class FragmentsTest extends ConcurrentTestBase {
     @Before
     public void createC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
-        if (rootCol.getChildCollection(C2) != null) {
-            DBUtils.removeCollection(rootCol, C2);
+        if (rootCol.getChildCollection(SECOND_QUERY_COLLECTION) != null) {
+            DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
         }
-        DBUtils.addCollection(rootCol, C2);
+        DBUtils.addCollection(rootCol, SECOND_QUERY_COLLECTION);
     }
 
     @After
     public void removeC2() throws XMLDBException {
         final Collection rootCol = existXmldbEmbeddedServer.getRoot();
-        DBUtils.removeCollection(rootCol, C2);
+        DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
     }
 
     @Override
     public List<Runner> getRunners() {
         return Arrays.asList(
                 new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "test.xml", QUERY), 200, 0, 50),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C2", "test.xml", QUERY), 200, 0, 50),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/" + SECOND_QUERY_COLLECTION, "test.xml", QUERY), 200, 0, 50),
                 new Runner(new CreateCollectionAction(XmldbURI.LOCAL_DB + "/C1", "testappend.xml"), 200, 0, 0)
         );
     }

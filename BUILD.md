@@ -19,10 +19,11 @@ From here, you now have a compiled version of eXist-db in the `exist-distributio
 
 Useful build switches:
 - `-Ddocker=true` : builds the docker image
-- `-DskipTests` : skips running tests
+- `-DskipTests` : skips running all tests
+- `-DskipUnitTests=true` : run only integration tests
 - `-Ddependency-check.skip=true` : skips validating dependencies
 
-Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist").
+Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist") and on the workflow files of this repo.
 
 ### Running tests locally
 

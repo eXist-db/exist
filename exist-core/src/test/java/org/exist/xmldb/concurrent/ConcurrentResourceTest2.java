@@ -43,7 +43,7 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
     
     private static final String QUERY0 =
         "declare default element namespace 'http://www.loc.gov/mods/v3';" +
-        "collection(\"" + XmldbURI.ROOT_COLLECTION + "\")//mods[contains(lower-case(string(titleInfo/title)), 'germany')]";
+        "collection(\"" + XmldbURI.ROOT_COLLECTION + "\")//mods[contains(lower-case(titleInfo/title), 'germany')]";
     
     private static final String QUERY1 =
         "declare default element namespace 'http://www.loc.gov/mods/v3';" +
