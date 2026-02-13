@@ -1194,6 +1194,29 @@
     </reporting>
 
     <repositories>
+        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first to reduce Nexus traffic; proxy as fallback. -->
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db-maven-central-proxy</id>
+            <name>exist-db maven central proxy (fallback)</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>github</id>
             <name>GitHub Registry for Snapshots</name>
@@ -1220,17 +1243,6 @@
             <id>exist-db</id>
             <name>eXist-db Releases</name>
             <url>https://repo.exist-db.org/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>exist-db-maven-central-proxy</id>
-            <name>exist-db maven central proxy</name>
-            <url>https://repo.exist-db.org/repository/maven-central/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -1263,19 +1275,38 @@
     </repositories>
 
     <pluginRepositories>
+        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first; proxy as fallback. -->
         <pluginRepository>
-            <id>clojars.org</id>
-            <url>https://clojars.org/repo</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db</id>
-            <name>eXist-db Releases</name>
-            <url>https://repo.exist-db.org/repository/exist-db/</url>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-maven-central-proxy</id>
+            <name>exist-db maven central proxy (fallback)</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
         <pluginRepository>
@@ -1290,9 +1321,9 @@
             </snapshots>
         </pluginRepository>
         <pluginRepository>
-            <id>evolved-binary</id>
-            <name>Evolved Binary - eXist-db Releases</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
+            <id>exist-db</id>
+            <name>eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/exist-db/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -1312,14 +1343,14 @@
             </snapshots>
         </pluginRepository>
         <pluginRepository>
-            <id>github</id>
-            <name>GitHub Registry for Snapshots</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <id>evolved-binary</id>
+            <name>Evolved Binary - eXist-db Releases</name>
+            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
             <releases>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>

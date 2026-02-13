@@ -1,0 +1,29 @@
+# Demo workflow for issue #5821: Multi-repo resolution without cache
+# Runs a clean Maven build to show "Downloading from" behavior after repo reorder.
+# Use workflow_dispatch to run manually. No cache = all downloads visible in logs.
+name: Repo resolution demo (no cache)
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  repo-demo:
+    name: Clean build (no cache)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: '21'
+      - name: Clear Maven local repository
+        run: rm -rf ~/.m2/repository
+      - name: Maven package (shows Downloading from output)
+        run: |
+          mvn -V -B package -DskipTests -D'dependency-check.skip' -D'license.skip' \
+            -pl exist-core -am
+        timeout-minutes: 20
+      - name: Summarize download sources
+        run: |
+          echo "Build completed. Check the Maven package step output above for 'Downloading from' lines."
+          echo "Preferred order: releases: central (direct), nexus proxy (fallback), exist-db, evolved-binary; snapshots: github, exist-db, evolved-binary."
