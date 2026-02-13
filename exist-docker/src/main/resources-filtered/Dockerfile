@@ -37,7 +37,7 @@ LABEL org.label-schema.build-date=${maven.build.timestamp} \
       org.label-schema.name="existdb" \
       org.label-schema.schema-version="1.0" \
       org.label-schema.url="${project.url}" \
-      org.label-schema.vcs-ref=${build-commit-abbrev} \
+      org.label-schema.vcs-ref=${git.commit.id.abbrev} \
       org.label-schema.vcs-url="${project.scm.url}" \
       org.label-schema.vendor="existdb"
 

@@ -652,9 +652,9 @@
                     <version>3.4.0</version>
                 </plugin>
                 <plugin>
-                    <groupId>com.code54.mojo</groupId>
-                    <artifactId>buildversion-plugin</artifactId>
-                    <version>1.0.3</version>
+                    <groupId>io.github.git-commit-id</groupId>
+                    <artifactId>git-commit-id-maven-plugin</artifactId>
+                    <version>9.0.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -701,11 +701,11 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                             <manifestEntries>
-                                <Build-Tag>${build-tag}</Build-Tag>
-                                <Git-Commit>${build-commit}</Git-Commit>
-                                <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
-                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
-                                <Build-Version>${build-version}</Build-Version>
+                                <Build-Tag>${git.closest.tag.name}</Build-Tag>
+                                <Git-Commit>${git.commit.id}</Git-Commit>
+                                <Git-Commit-Abbrev>${git.commit.id.abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${git.commit.time}</Git-Commit-Timestamp>
+                                <Build-Version>${git.commit.id.describe}</Build-Version>
                                 <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
@@ -725,11 +725,11 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                             <manifestEntries>
-                                <Build-Tag>${build-tag}</Build-Tag>
-                                <Git-Commit>${build-commit}</Git-Commit>
-                                <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
-                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
-                                <Build-Version>${build-version}</Build-Version>
+                                <Build-Tag>${git.closest.tag.name}</Build-Tag>
+                                <Git-Commit>${git.commit.id}</Git-Commit>
+                                <Git-Commit-Abbrev>${git.commit.id.abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${git.commit.time}</Git-Commit-Timestamp>
+                                <Build-Version>${git.commit.id.describe}</Build-Version>
                                 <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
@@ -750,11 +750,11 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                             <manifestEntries>
-                                <Build-Tag>${build-tag}</Build-Tag>
-                                <Git-Commit>${build-commit}</Git-Commit>
-                                <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
-                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
-                                <Build-Version>${build-version}</Build-Version>
+                                <Build-Tag>${git.closest.tag.name}</Build-Tag>
+                                <Git-Commit>${git.commit.id}</Git-Commit>
+                                <Git-Commit-Abbrev>${git.commit.id.abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${git.commit.time}</Git-Commit-Timestamp>
+                                <Build-Version>${git.commit.id.describe}</Build-Version>
                                 <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
@@ -894,11 +894,11 @@
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             </manifest>
                             <manifestEntries>
-                                <Build-Tag>${build-tag}</Build-Tag>
-                                <Git-Commit>${build-commit}</Git-Commit>
-                                <Git-Commit-Abbrev>${build-commit-abbrev}</Git-Commit-Abbrev>
-                                <Git-Commit-Timestamp>${build-tstamp}</Git-Commit-Timestamp>
-                                <Build-Version>${build-version}</Build-Version>
+                                <Build-Tag>${git.closest.tag.name}</Build-Tag>
+                                <Git-Commit>${git.commit.id}</Git-Commit>
+                                <Git-Commit-Abbrev>${git.commit.id.abbrev}</Git-Commit-Abbrev>
+                                <Git-Commit-Timestamp>${git.commit.time}</Git-Commit-Timestamp>
+                                <Build-Version>${git.commit.id.describe}</Build-Version>
                                 <Build-Timestamp>${maven.build.timestamp}</Build-Timestamp>
                                 <Source-Repository>${project.scm.connection}</Source-Repository>
                                 <Description>${project.description}</Description>
@@ -1085,14 +1085,28 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.code54.mojo</groupId>
-                <artifactId>buildversion-plugin</artifactId>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
+                        <id>get-the-git-infos</id>
+                        <phase>initialize</phase>
                         <goals>
-                            <goal>set-properties</goal>
+                            <goal>revision</goal>
                         </goals>
+                        <configuration>
+                            <dotGitDirectory>${session.executionRootDirectory}/.git</dotGitDirectory>
+                            <skipPoms>false</skipPoms>
+                            <injectAllReactorProjects>true</injectAllReactorProjects>
+                            <runOnlyOnce>true</runOnlyOnce>
+                            <dateFormat>yyyyMMddHHmmss</dateFormat>
+                            <gitDescribe>
+                                <skip>false</skip>
+                                <always>true</always>
+                                <dirty>-dirty</dirty>
+                                <match>v*</match>
+                            </gitDescribe>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
