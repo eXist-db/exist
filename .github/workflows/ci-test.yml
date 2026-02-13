@@ -31,6 +31,7 @@ jobs:
           distribution: liberica
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
       - name: Set week for OWASP cache key
         run: echo "WEEK=$(date +%Y-%U)" >> $GITHUB_ENV
       - name: Restore OWASP dependency-check cache
@@ -41,6 +42,7 @@ jobs:
           restore-keys: owasp-dc-
       - name: OWASP dependency check
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: mvn -V -B --no-transfer-progress dependency-check:check
         timeout-minutes: 90

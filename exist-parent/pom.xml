@@ -1229,6 +1229,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>github-xqts-runner</id>
+            <name>GitHub Registry - exist-xqts-runner</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>exist-db-snapshots</id>
             <name>eXist-db Snapshots</name>
             <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
@@ -1302,6 +1313,17 @@
             <id>github</id>
             <name>GitHub Registry for Snapshots</name>
             <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>github-xqts-runner</id>
+            <name>GitHub Registry - exist-xqts-runner</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
             <releases>
                 <enabled>false</enabled>
             </releases>

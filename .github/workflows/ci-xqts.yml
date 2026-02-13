@@ -16,6 +16,7 @@ jobs:
           distribution: liberica
           java-version: '21'
       - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
       - name: Maven XQTS Build
         timeout-minutes: 25
         env:
