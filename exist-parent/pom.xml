@@ -743,6 +743,10 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.12.0</version>
                     <configuration>
+                        <!-- Disable auto offline links: exist-jetty-config has no Java source, so its
+                             target/reports/apidocs does not exist and causes "Error fetching link" for
+                             modules that depend on it (core, file, webdav, persistentlogin, etc.) -->
+                        <detectOfflineLinks>false</detectOfflineLinks>
                         <source>${maven.compiler.release}</source>
                         <archive>
                             <manifest>
