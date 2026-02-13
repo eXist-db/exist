@@ -51,7 +51,7 @@ jobs:
           path: ~/.dependency-check-data
           key: owasp-dc-${{ env.WEEK }}
   test:
-    name: ${{ matrix.os }} ${{ matrix.test-type }}
+    name: ${{ matrix.os }} ${{ matrix.test-type }} (Java ${{ matrix.java-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
@@ -59,6 +59,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         test-type: [unit, integration]
+        java-version: ['21']
         exclude:
           - os: windows-latest
             test-type: unit
@@ -70,8 +71,10 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: liberica
-          java-version: ${{ env.DEV_JDK }}
+          java-version: ${{ matrix.java-version }}
       - uses: ./.github/actions/maven-cache
+        with:
+          java-version: ${{ matrix.java-version }}
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
@@ -109,13 +112,13 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: ~/.m2
-          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+          key: maven-${{ github.ref_name }}-java${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
           enableCrossOsArchive: true
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ runner.os }}-${{ matrix.test-type }}-build-logs
+          name: ${{ runner.os }}-${{ matrix.test-type }}-java${{ matrix.java-version }}-build-logs
           retention-days: 5
           path: |
             **/hs_err_pid*.log

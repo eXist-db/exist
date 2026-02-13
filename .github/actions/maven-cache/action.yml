@@ -1,6 +1,11 @@
 # Shared Maven cache: restore only. Caller adds a separate Save step at end of job when appropriate (see plans/caching.md).
 name: Maven cache
 description: Restore Maven repository cache (one cache per branch, PRs read-only). Add actions/cache/save at end of job for the single job that should persist.
+inputs:
+  java-version:
+    description: 'Java version for cache key (e.g. matrix.java-version); omit for jobs with single JDK'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
@@ -8,8 +13,9 @@ runs:
       uses: actions/cache/restore@v5
       with:
         path: ~/.m2
-        key: maven-${{ github.event.pull_request.base.ref || github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+        key: maven-${{ github.event.pull_request.base.ref || github.ref_name }}-${{ inputs.java-version && format('java{0}-', inputs.java-version) || '' }}${{ hashFiles('**/pom.xml') }}
         enableCrossOsArchive: true
         restore-keys: |
+          maven-${{ github.event.pull_request.base.ref || github.ref_name }}-${{ inputs.java-version && format('java{0}-', inputs.java-version) || '' }}
           maven-${{ github.event.pull_request.base.ref || github.ref_name }}-
           maven-
