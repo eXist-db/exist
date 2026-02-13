@@ -82,8 +82,7 @@ declare
     %test:tearDown
 function igc:tearDown() {
     xmldb:remove($igc:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $igc:COLLECTION_NAME),
-    xmldb:reindex($igc:COLLECTION)
+    xmldb:remove("/db/system/config/db/" || $igc:COLLECTION_NAME)
 };
 
 (:~
