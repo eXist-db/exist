@@ -29,7 +29,6 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Security Manager round trip tests against the XML:DB Local API
@@ -50,8 +49,7 @@ public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRo
     protected void restartServer() throws XMLDBException, IOException {
         try {
             existXmldbEmbeddedServer.restart();
-        } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException |
-                       InvocationTargetException | NoSuchMethodException e) {
+        } catch (final ReflectiveOperationException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
     }

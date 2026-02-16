@@ -94,8 +94,7 @@ public class BackupRestoreSecurityPrincipalsTest {
      */
     @Test
     public void restoreConflictingUsername() throws PermissionDeniedException, EXistException,
-            SAXException, IOException, XMLDBException, IllegalAccessException, ClassNotFoundException,
-            InstantiationException, InvocationTargetException, NoSuchMethodException {
+            SAXException, IOException, XMLDBException, ReflectiveOperationException {
         // creates a database with new users: 'frank(id=11)', 'joe(id=12)', and 'jack(id=13)'
         createInitialUsers(FRANK_USER, JOE_USER, JACK_USER);
 

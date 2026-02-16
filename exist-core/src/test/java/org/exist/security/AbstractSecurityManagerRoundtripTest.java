@@ -21,19 +21,18 @@
  */
 package org.exist.security;
 
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.internal.aider.UserAider;
+import org.exist.xmldb.UserManagementService;
+import org.junit.Test;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+
 import java.io.IOException;
 import java.util.List;
 
-import org.exist.EXistException;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.base.Collection;
-import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.internal.aider.UserAider;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import org.xmldb.api.base.XMLDBException;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Ensures that security manager data, accounts, groups (and associations)
@@ -48,7 +47,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     protected abstract void restartServer() throws XMLDBException, IOException;
 
     @Test
-    public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
+    public void checkGroupMembership() throws XMLDBException, PermissionDeniedException, IOException {
         UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String group1Name = "testGroup1";
@@ -105,7 +104,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     }
 
     @Test
-    public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
+    public void checkPrimaryGroupRemainsDBA() throws XMLDBException, PermissionDeniedException, IOException {
         UserManagementService ums = getRoot().getService(UserManagementService.class);
 
         final String group1Name = "testGroup1";
@@ -164,7 +163,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
     }
 
     @Test
-    public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, EXistException, IOException, DatabaseConfigurationException {
+    public void checkPrimaryGroupStability() throws XMLDBException, PermissionDeniedException, IOException {
 
         UserManagementService ums = getRoot().getService(UserManagementService.class);
 

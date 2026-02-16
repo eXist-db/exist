@@ -32,7 +32,13 @@ import org.exist.xmldb.EXistXQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.rules.ExternalResource;
 import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
@@ -40,7 +46,6 @@ import org.xmldb.api.modules.XMLResource;
 import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -105,8 +110,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         super.before();
     }
 
-    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException,
-            XMLDBException, NoSuchMethodException, InvocationTargetException {
+    private void startDb() throws ReflectiveOperationException, XMLDBException {
         try {
             existEmbeddedServer.startDb();
         } catch (final DatabaseConfigurationException | EXistException | IOException e) {
@@ -115,8 +119,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         startXmldb();
     }
 
-    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException,
-            XMLDBException, NoSuchMethodException, InvocationTargetException {
+    private void startXmldb() throws ReflectiveOperationException, XMLDBException {
         if (database == null) {
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -134,13 +137,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         }
     }
 
-    public void restart() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException,
-            InvocationTargetException, NoSuchMethodException {
+    public void restart() throws ReflectiveOperationException, XMLDBException {
         restart(false);
     }
 
-    public void restart(final boolean clearTemporaryStorage) throws ClassNotFoundException, InstantiationException,
-            XMLDBException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    public void restart(final boolean clearTemporaryStorage) throws ReflectiveOperationException, XMLDBException {
         stopDb(clearTemporaryStorage);
         startDb();
     }
