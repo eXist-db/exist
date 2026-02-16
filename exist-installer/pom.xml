@@ -79,7 +79,7 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed at runtime to support lucene query syntax -->
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-distribution:pom:${project.version}</ignoredUnusedDeclaredDependency>  <!-- needed: izpack baseDir points to exist-distribution output -->
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

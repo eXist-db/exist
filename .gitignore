@@ -8,6 +8,9 @@ target/
 # quartz artefacts
 dependency-reduced-pom.xml
 
+# Maven generated
+effective-pom.xml
+
 # IDE specific files
 .idea/*
 !/.idea/runConfigurations
