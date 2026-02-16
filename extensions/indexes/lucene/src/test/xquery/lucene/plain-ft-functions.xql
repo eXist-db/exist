@@ -59,13 +59,13 @@ function pftf:setUp() {
 };
 
 (:~
- : tearDown: remove /db/binary, remove config document.
+ : tearDown: remove /db/binary, remove config document (not the collection - other tests need /db/system/config/db).
  :)
 declare
     %test:tearDown
 function pftf:tearDown() {
     xmldb:remove($pftf:COLLECTION_BINARY),
-    xmldb:remove("/db/system/config/db")
+    xmldb:remove("/db/system/config/db", "collection.xconf")
 };
 
 (:~

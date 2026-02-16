@@ -52,7 +52,7 @@ import static org.junit.Assert.assertArrayEquals;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @RunWith(value = ParallelParameterized.class)
-public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
+public class CachingFilterInputStreamNonMarkableByteArrayInputStreamTest {
 
     @Parameters
     public static Collection data() {
@@ -72,7 +72,7 @@ public class CachingFilterInputStreamTest_NonMarkableByteArrayInputStream {
 
     private final Class<FilterInputStreamCache> cacheClass;
 
-    public CachingFilterInputStreamTest_NonMarkableByteArrayInputStream(final Class<FilterInputStreamCache> cacheClass) {
+    public CachingFilterInputStreamNonMarkableByteArrayInputStreamTest(final Class<FilterInputStreamCache> cacheClass) {
         this.cacheClass = cacheClass;
     }
 

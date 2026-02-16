@@ -36,7 +36,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
  *
  * @author jimfuller
  */
-public class XQueryProcessingInstruction {
+public class XQueryProcessingInstructionTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);

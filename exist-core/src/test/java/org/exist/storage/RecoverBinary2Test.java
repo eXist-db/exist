@@ -22,8 +22,11 @@
 package org.exist.storage;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -46,12 +49,19 @@ import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertNotNull;
 
-public class RecoverBinaryTest2 {
+public class RecoverBinary2Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static String directory = "webapp/resources";
+    private static Path getBinaryResourcesDir() {
+        try {
+            final URI uri = RecoverBinary2Test.class.getResource("/binary-resources/sample.bin").toURI();
+            return Paths.get(uri).getParent();
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException("Cannot resolve binary-resources path", e);
+        }
+    }
 
     @Test
     public void storeAndRead() throws SAXException, PermissionDeniedException, DatabaseConfigurationException, IOException, LockException, EXistException {
@@ -59,13 +69,13 @@ public class RecoverBinaryTest2 {
         BrokerPool pool = startDb();
         store(pool);
 
-        stopDb();
+        stopDb(false);  // preserve storage for recovery simulation
 
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDb();
         read(pool);
 
-        stopDb();
+        stopDb(false);  // preserve storage for read2 phase
 
         BrokerPool.FORCE_CORRUPTION = false;
         pool = startDb();
@@ -94,6 +104,7 @@ public class RecoverBinaryTest2 {
     public void read(final BrokerPool pool) throws EXistException, DatabaseConfigurationException, PermissionDeniedException, LockException, IOException, SAXException {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            assertNotNull("Collection " + TestConstants.TEST_COLLECTION_URI2 + " should exist after store()", test2);
             for (final Iterator<DocumentImpl> i = test2.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
             }
@@ -130,8 +141,8 @@ public class RecoverBinaryTest2 {
     }
     
     private void storeFiles(final DBBroker broker, final Txn transaction, final Collection test2) throws IOException, EXistException, PermissionDeniedException, LockException, SAXException {
-        // Get files in directory
-        final Path dir = FileUtils.resolve(ConfigurationHelper.getExistHome(), directory);
+        // Get files in directory (from test resources)
+        final Path dir = getBinaryResourcesDir();
         final List<Path> files = FileUtils.list(dir);
         assertNotNull("Check directory '"+ dir.toAbsolutePath() +"'.",files);
         
@@ -157,6 +168,10 @@ public class RecoverBinaryTest2 {
 
     @After
     public void stopDb() {
-        existEmbeddedServer.stopDb();
+        existEmbeddedServer.stopDb(true);
+    }
+
+    public void stopDb(final boolean clearTemporaryStorage) {
+        existEmbeddedServer.stopDb(clearTemporaryStorage);
     }
 }

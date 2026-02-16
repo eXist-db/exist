@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:pierrick.brihaye@free.fr">jmv
  * @author Pierrick Brihaye</a>
  */
-public class DOMTestJUnit extends RemoteDBTest {
+public class DOMJUnitTest extends RemoteDBTest {
 	private static String name = "test.xml";
 	private Collection rootColl;
 	private Database database;

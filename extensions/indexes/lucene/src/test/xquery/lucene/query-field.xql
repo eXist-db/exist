@@ -44,26 +44,29 @@ declare variable $qf:XML  as document-node() :=
         </test>
      };
 
-declare variable $qf:_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"));
-declare variable $qf:testCol := xmldb:create-collection("/db", "queryfieldtest");
-declare variable $qf:confCol := xmldb:create-collection("/db/system/config/db", "queryfieldtest");
+(: Create config hierarchy in setup; plain-ft-functions removes /db/system/config/db so we must recreate. :)
+declare variable $qf:config-db-path := "/db/system/config/db";
+declare variable $qf:test-coll-name := "queryfieldtest";
+declare variable $qf:conf-coll-path := $qf:config-db-path || "/" || $qf:test-coll-name;
 
 declare
 %test:setUp
 function qf:setup() {
-
-    (
-        xmldb:store($qf:confCol, "collection.xconf", $qf:XCONF1),
-        xmldb:store($qf:testCol, "test1.xml", $qf:XML),
-        xmldb:store($qf:testCol, "test2.xml", $qf:XML)
+    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
+    let $confCol := xmldb:create-collection($qf:config-db-path, $qf:test-coll-name)
+    let $testCol := xmldb:create-collection("/db", $qf:test-coll-name)
+    return (
+        xmldb:store($confCol, "collection.xconf", $qf:XCONF1),
+        xmldb:store($testCol, "test1.xml", $qf:XML),
+        xmldb:store($testCol, "test2.xml", $qf:XML)
     )
 };
 
 declare
 %test:tearDown
 function qf:tearDown() {
-    xmldb:remove($qf:testCol),
-    xmldb:remove($qf:confCol)
+    xmldb:remove("/db/" || $qf:test-coll-name),
+    xmldb:remove($qf:conf-coll-path)
 };
 
 
@@ -72,5 +75,5 @@ declare
 %test:stats
 %test:assertXPath("$result/stats:index[@type eq 'lucene' and @calls eq '1']")
 function qf:query-field-context() {
-    count(collection($qf:testCol)/*[ft:query-field("testField", "Rüsselsheim", <options/>)])
+    count(collection("/db/" || $qf:test-coll-name)/*[ft:query-field("testField", "Rüsselsheim", <options/>)])
 };

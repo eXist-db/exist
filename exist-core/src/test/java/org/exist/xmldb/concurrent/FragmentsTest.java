@@ -24,12 +24,19 @@ package org.exist.xmldb.concurrent;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.CreateCollectionAction;
 import org.exist.xmldb.concurrent.action.XQueryAction;
+import org.junit.After;
+import org.junit.Before;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class FragmentsTest extends ConcurrentTestBase {
-    
+
+    /** Second root-level collection for XQuery runner; base provides C1 only. */
+    private static final String SECOND_QUERY_COLLECTION = "C2";
+
     private final static String QUERY =
         "let $node := " +
         "   <root>" +
@@ -44,11 +51,26 @@ public class FragmentsTest extends ConcurrentTestBase {
         return "C1";
     }
 
+    @Before
+    public void createC2() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        if (rootCol.getChildCollection(SECOND_QUERY_COLLECTION) != null) {
+            DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
+        }
+        DBUtils.addCollection(rootCol, SECOND_QUERY_COLLECTION);
+    }
+
+    @After
+    public void removeC2() throws XMLDBException {
+        final Collection rootCol = existXmldbEmbeddedServer.getRoot();
+        DBUtils.removeCollection(rootCol, SECOND_QUERY_COLLECTION);
+    }
+
     @Override
     public List<Runner> getRunners() {
         return Arrays.asList(
                 new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C1", "test.xml", QUERY), 200, 0, 50),
-                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/C2", "test.xml", QUERY), 200, 0, 50),
+                new Runner(new XQueryAction(XmldbURI.LOCAL_DB + "/" + SECOND_QUERY_COLLECTION, "test.xml", QUERY), 200, 0, 50),
                 new Runner(new CreateCollectionAction(XmldbURI.LOCAL_DB + "/C1", "testappend.xml"), 200, 0, 0)
         );
     }

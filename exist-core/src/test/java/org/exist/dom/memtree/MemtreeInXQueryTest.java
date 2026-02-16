@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 @RunWith(ParallelRunner.class)
-public class MemtreeInXQuery {
+public class MemtreeInXQueryTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(true, true, true);

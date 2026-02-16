@@ -50,7 +50,7 @@ import static org.junit.Assert.assertNotNull;
  * Due to limitation of ExistXmldbEmbeddedServer we need to split this test to two files.
  * It's not possible to have two instances of ExistXmldbEmbeddedServer at the same time.
  */
-public class DbStoreTest2 {
+public class DbStore2Test {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServerWithAnyURI = new ExistXmldbEmbeddedServer(false, true,

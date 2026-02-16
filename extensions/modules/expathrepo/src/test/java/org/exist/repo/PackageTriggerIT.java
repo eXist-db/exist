@@ -48,7 +48,11 @@ import java.util.Optional;
 
 import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
 
-public class PackageTriggerTest {
+/**
+ * Integration test: requires the XAR from expathrepo-trigger-test (built in package phase).
+ * Runs in Failsafe so the full build has completed and the XAR resource is available.
+ */
+public class PackageTriggerIT {
 
     static final String xarFile = "exist-expathrepo-trigger-test-" + Version.getVersion() + ".xar";
     static final XmldbURI triggerTestCollection = XmldbURI.create("/db");
@@ -78,7 +82,7 @@ public class PackageTriggerTest {
             try (final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(xarUri.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, xarUri.removeLastSegment());
 
-                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerTest.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE, collection);
+                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerIT.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE, collection);
                 broker.saveCollection(transaction, collection);
             }
 

@@ -51,22 +51,30 @@ jobs:
           path: ~/.dependency-check-data
           key: owasp-dc-${{ env.WEEK }}
   test:
-    name: ${{ matrix.os }} Test
+    name: ${{ matrix.os }} ${{ matrix.test-type }} (Java ${{ matrix.java-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        jvm: ['21']
+        test-type: [unit, integration]
+        java-version: ['21']
+        exclude:
+          - os: windows-latest
+            test-type: unit
+          - os: macOS-latest
+            test-type: unit
     steps:
       - uses: actions/checkout@v6
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
           distribution: liberica
-          java-version: ${{ matrix.jvm }}
+          java-version: ${{ matrix.java-version }}
       - uses: ./.github/actions/maven-cache
+        with:
+          java-version: ${{ matrix.java-version }}
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd
@@ -79,14 +87,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip'
-      - name: Maven Test
-        timeout-minutes: 60
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
-      - name: Javadoc (Linux only)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - name: Maven Unit Tests
+        if: matrix.test-type == 'unit'
+        timeout-minutes: 45
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+      - name: Maven Integration Tests
+        if: matrix.test-type == 'integration'
+        timeout-minutes: 45
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -DskipUnitTests=true -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+      - name: Javadoc (ubuntu unit only)
+        if: matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
-      - name: Maven Code Coverage (Develop branch on Linux only)
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' }}
+      - name: Maven Code Coverage (Develop branch, ubuntu unit only)
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/develop' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         env:
           CI_NAME: github
           BRANCH_NAME_OR_REF: ${{ github.head_ref || github.ref }}
@@ -95,18 +108,19 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress jacoco:report coveralls:report
       - name: Save Maven cache
-        if: github.event_name == 'push' && matrix.os == 'ubuntu-latest'
+        if: github.event_name == 'push' && matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         uses: actions/cache/save@v5
         with:
           path: ~/.m2
-          key: maven-${{ github.ref_name }}-${{ hashFiles('**/pom.xml') }}
+          key: maven-${{ github.ref_name }}-java${{ matrix.java-version }}-${{ hashFiles('**/pom.xml') }}
           enableCrossOsArchive: true
       - name: Archive build logs
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ runner.os }}-${{ matrix.jvm }}-build-logs
+          name: ${{ runner.os }}-${{ matrix.test-type }}-java${{ matrix.java-version }}-build-logs
           retention-days: 5
           path: |
             **/hs_err_pid*.log
             **/target/surefire-reports/*
+            **/target/failsafe-reports/*

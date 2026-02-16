@@ -39,13 +39,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.exist.samples.Samples.SAMPLES;
 
 /**
- * Check if database shutdownDB/restart works properly. The test opens
- * the database, stores a few files and queries them, then shuts down the
- * db.
- *  
+ * Integration test: check if database shutdown/restart works properly.
+ * The test opens the database, stores a few files and queries them, then shuts down the db.
+ * Moved from unit tests (Surefire) to integration tests (Failsafe) per issue #2726.
+ *
  * @author wolf
  */
-public class ShutdownTest {
+public class ShutdownIT {
 
 	private final static int ITERATIONS = 50;
 	
