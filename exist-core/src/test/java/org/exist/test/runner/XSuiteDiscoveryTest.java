@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * TDD for Todo 6: discovery via single XQuery per file.
+ * Tests discovery via a single XQuery per file.
  * Asserts that the discovery XQuery returns the expected test list for known files,
  * and that XQueryTestRunner uses discovery when the DB is up and runs the same tests.
  */
@@ -50,7 +50,7 @@ public class XSuiteDiscoveryTest {
     @Test
     public void discoveryReturnsTestListForSingleTestFile() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xq").toAbsolutePath();
+        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final XQueryTestRunner.XQueryTestInfo info = XQueryTestRunner.runDiscovery(pool, path);
         assertNotNull("discovery XQuery should return test info", info);
         assertEquals("namespace", "http://exist-db.org/xquery/single-test-module", info.getNamespace());
@@ -65,7 +65,7 @@ public class XSuiteDiscoveryTest {
      */
     @Test
     public void runnerUsesDiscoveryWhenDbIsUp() throws InitializationError {
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xq").toAbsolutePath();
+        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQueryTestRunner.XQueryTestInfo discoveryInfo = XQueryTestRunner.runDiscovery(pool, path);
         assertNotNull("discovery must succeed in this test", discoveryInfo);

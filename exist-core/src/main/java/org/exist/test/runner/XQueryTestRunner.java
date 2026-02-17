@@ -84,8 +84,15 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     /**
-     * Prefer discovery via runDiscovery when the DB is already started (e.g. by XSuite for XQuery suites);
-     * otherwise fall back to compiling the module in extractTestInfo.
+     * Obtain test metadata by discovery when possible, otherwise by compiling the module.
+     * When the DB is already started (e.g. by XSuite), try runDiscovery first so we run a single
+     * discovery XQuery instead of compiling the module twice. Fall back to extractTestInfo in two
+     * cases: (1) the DB is not started, or (2) the DB is started but runDiscovery returns null
+     * (e.g. discovery failed, empty result, or wrong XML shape).
+     *
+     * @param path the path to the XQuery file containing the XQSuite tests
+     * @return test info (from discovery or from compiling the module)
+     * @throws InitializationError if the runner could not be constructed
      */
     private static XQueryTestInfo discoverOrExtractTestInfo(final Path path) throws InitializationError {
         if (XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE != null) {
@@ -198,8 +205,11 @@ public class XQueryTestRunner extends AbstractTestRunner {
 
     /**
      * Runs the discovery XQuery for the given path (single XQuery per file).
-     * Returns test info from the discovery result, or null if discovery fails or DB is not available.
-     * Used to avoid double compile (see Todo 6: discovery via one XQuery run).
+     * Used so callers can avoid compiling the module twice (one discovery run vs full compile in extractTestInfo).
+     *
+     * @param brokerPool the broker pool (DB must be started)
+     * @param path the path to the XQuery file
+     * @return test info from the discovery result, or null if discovery fails or returns no usable result
      */
     @Nullable
     static XQueryTestInfo runDiscovery(final BrokerPool brokerPool, final Path path) {

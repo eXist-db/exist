@@ -25,12 +25,12 @@ package org.exist.test.runner;
 import org.junit.runner.RunWith;
 
 /**
- * XSuite that runs the debuggability test resource (failing-both.xq: one assertion failure,
+ * XSuite that runs the debuggability test resource (failing-both.xqm: one assertion failure,
  * one unexpected error) so we can assert on failure stack traces (navigate to XQuery / navigate to Java).
  */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/failing-both.xq"
+    "src/test/resources/org/exist/test/runner/failing-both.xqm"
 })
 public class DebuggabilityNavigabilitySuite {
 }

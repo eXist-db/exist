@@ -31,8 +31,8 @@ import org.junit.runner.RunWith;
 @RunWith(XSuite.class)
 @XSuite.XSuiteParallel
 @XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/single-test.xq",
-    "src/test/resources/org/exist/test/runner/no-tests.xq"
+    "src/test/resources/org/exist/test/runner/single-test.xqm",
+    "src/test/resources/org/exist/test/runner/no-tests.xqm"
 })
 public class ParallelPassingSuite {
 }

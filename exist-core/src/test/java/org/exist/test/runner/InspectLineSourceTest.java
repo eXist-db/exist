@@ -48,7 +48,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests that util:inspect-function returns line and source attributes for user-defined functions (plan item 7).
+ * Tests that util:inspect-function returns line and source attributes for user-defined functions.
  */
 public class InspectLineSourceTest {
 
@@ -58,7 +58,7 @@ public class InspectLineSourceTest {
     @Test
     public void inspectFunctionReturnsLineAndSourceForUDF() throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/inspect-line-source-test.xq").toAbsolutePath();
+        final Path path = Paths.get("src/test/resources/org/exist/test/runner/inspect-line-source-test.xqm").toAbsolutePath();
         if (!Files.exists(path)) {
             throw new AssertionError("Test resource missing: " + path);
         }

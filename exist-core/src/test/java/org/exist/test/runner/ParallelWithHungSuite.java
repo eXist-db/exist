@@ -25,14 +25,14 @@ package org.exist.test.runner;
 import org.junit.runner.RunWith;
 
 /**
- * XSuite that runs one passing file and one file that never emits activity (hanging.xq).
+ * XSuite that runs one passing file and one file that never emits activity (hanging.xqm).
  * Used by XSuiteParallelTest to verify progress-based hang detection reports the hung file.
  */
 @RunWith(XSuite.class)
 @XSuite.XSuiteParallel
 @XSuite.XSuiteFiles({
-    "src/test/resources/org/exist/test/runner/single-test.xq",
-    "src/test/resources/org/exist/test/runner/hanging.xq"
+    "src/test/resources/org/exist/test/runner/single-test.xqm",
+    "src/test/resources/org/exist/test/runner/hanging.xqm"
 })
 public class ParallelWithHungSuite {
 }

@@ -48,7 +48,7 @@ class XSuiteDebuggabilityTest {
             .findFirst()
             .orElse(null);
         assertTrue(assertionFailure != null,
-            "expected one assertion failure (ComparisonFailure) from failing-both.xq; collected failures: " + failures.size()
+            "expected one assertion failure (ComparisonFailure) from failing-both.xqm; collected failures: " + failures.size()
                 + " types: " + failures.stream().map(f -> f.getException() == null ? "null" : f.getException().getClass().getName()).toList());
 
         final Throwable t = assertionFailure.getException();
@@ -69,7 +69,7 @@ class XSuiteDebuggabilityTest {
             hasLocation = message.contains("failing-both");
         }
         assertTrue(hasLocation,
-            "assertion failure should include test file (failing-both.xq) in stack trace or message for IDE navigation (navigate to XQuery); stack.length=" + (stack != null ? stack.length : 0) + " message=" + message);
+            "assertion failure should include test file (failing-both.xqm) in stack trace or message for IDE navigation (navigate to XQuery); stack.length=" + (stack != null ? stack.length : 0) + " message=" + message);
     }
 
     @Test
@@ -80,7 +80,7 @@ class XSuiteDebuggabilityTest {
             .findFirst()
             .orElse(null);
         assertTrue(errorFailure != null,
-            "expected one error failure (XPathException) from failing-both.xq throwsUnexpectedError; xqsuite runs only functions with assert* annotations");
+            "expected one error failure (XPathException) from failing-both.xqm throwsUnexpectedError; xqsuite runs only functions with assert* annotations");
         final Throwable t = errorFailure.getException();
         final StackTraceElement[] stack = t.getStackTrace();
 
@@ -107,9 +107,9 @@ class XSuiteDebuggabilityTest {
             }
         });
         final Result result = core.run(DebuggabilityNavigabilitySuite.class);
-        assertFalse(result.wasSuccessful(), "suite is expected to have failures (failing-both.xq)");
+        assertFalse(result.wasSuccessful(), "suite is expected to have failures (failing-both.xqm)");
         assertTrue(collected.size() >= 2,
-            "expected at least 2 failures (assertion + error) from failing-both.xq; got " + collected.size()
+            "expected at least 2 failures (assertion + error) from failing-both.xqm; got " + collected.size()
                 + " types: " + collected.stream().map(f -> f.getException() == null ? "null" : f.getException().getClass().getName()).toList());
         return collected;
     }

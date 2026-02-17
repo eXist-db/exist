@@ -60,7 +60,7 @@ class XSuiteParallelTest {
      * Parallel suite with two files (one passing, one that would hang if module vars were evaluated at load).
      * Runs to verify the parallel path with multiple files and that hang-detection properties are read.
      * Full "appears hung" behaviour is not asserted here because eXist may not evaluate library module
-     * variables when inspect:module-functions loads the module, so hanging.xq can complete without hanging.
+     * variables when inspect:module-functions loads the module, so hanging.xqm can complete without hanging.
      */
     @Test
     void parallelSuiteWithTwoFilesCompletes() {
