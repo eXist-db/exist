@@ -26,33 +26,34 @@ module namespace testTransform="http://exist-db.org/xquery/test/function_transfo
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $testTransform:transform-71-xsl := document {
-<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'
-            xmlns:xs='http://www.w3.org/2001/XMLSchema'
-            xmlns:chrono='http://chronology.com/' version='2.0'>
-            <xsl:import-schema>
-              <xs:schema targetNamespace='http://chronology.com/'>
-                <xs:simpleType name='c4'>
-                  <xs:restriction base='xs:string'>
-                    <xs:pattern value='....'/>
-                  </xs:restriction>
-                </xs:simpleType>
-              </xs:schema>
-            </xsl:import-schema>
-            <xsl:template name='main'>
-              <out><xsl:value-of select="chrono:c4('abcd')"/></out>
-            </xsl:template>
-        </xsl:stylesheet> };
+  <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'
+        xmlns:xs='http://www.w3.org/2001/XMLSchema'
+        xmlns:chrono='http://chronology.com/' version='2.0'>
+    <xsl:import-schema>
+      <xs:schema targetNamespace='http://chronology.com/'>
+        <xs:simpleType name='c4'>
+          <xs:restriction base='xs:string'>
+            <xs:pattern value='....'/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:schema>
+    </xsl:import-schema>
+    <xsl:template name='main'>
+      <out><xsl:value-of select="chrono:c4('abcd')"/></out>
+    </xsl:template>
+  </xsl:stylesheet>
+};
 
 declare
     %test:assertError("XTSE1650")
 function testTransform:transform-71() {
-    let $xsl := $testTransform:transform-71-xsl
-    let $result := fn:transform(map{
-    "stylesheet-node":$xsl,
-                "source-node": parse-xml($xsl),
-                "initial-template": fn:QName('','main'),
-                    "delivery-format" : "serialized",
-                    "requested-properties" : map{fn:QName('http://www.w3.org/1999/XSL/Transform','is-schema-aware'):false()}
-                    })
-    return $result("output")
+    let $result := transform(map{
+        "stylesheet-node": $testTransform:transform-71-xsl,
+        "initial-template": QName('','main'),
+        "delivery-format" : "serialized",
+        "requested-properties" : map{
+          QName('http://www.w3.org/1999/XSL/Transform','is-schema-aware'): false()
+        }
+    })
+    return $result?output
 };
