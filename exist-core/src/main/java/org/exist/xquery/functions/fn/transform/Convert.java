@@ -133,9 +133,9 @@ class Convert {
                 return ofAtomic((AtomicValue) item);
             } else if (Type.subTypeOf(itemType, Type.NODE)) {
                 return ofNode((Node) item);
-            } else if (Type.subTypeOf(itemType, Type.MAP)) {
+            } else if (Type.subTypeOf(itemType, Type.MAP_ITEM)) {
                 return ofMap((AbstractMapType) item);
-            } else if (Type.subTypeOf(itemType,  Type.ARRAY)) {
+            } else if (Type.subTypeOf(itemType,  Type.ARRAY_ITEM)) {
                 return ofArray((ArrayType) item);
             }
             throw new XPathException(ErrorCodes.XPTY0004,

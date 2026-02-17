@@ -80,10 +80,10 @@ declare
 function testTransform:memtree-second-child() {
     let $source := element root { <a>first</a>, <b>second</b> }
     let $selection := $source/b
-    let $result := (fn:transform(map{
+    let $result := fn:transform(map{
         "initial-match-selection": $selection,
         "stylesheet-node": $testTransform:transform-5882-simple-xsl
-    }))?output
+    })?output
     return $result
 };
 
