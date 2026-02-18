@@ -1,5 +1,5 @@
 name: XQTS
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 
@@ -16,6 +16,7 @@ jobs:
           distribution: liberica
           java-version: '21'
       - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
       - name: Maven XQTS Build
         timeout-minutes: 25
         env:

@@ -21,15 +21,13 @@ jobs:
         with:
           distribution: liberica
           java-version: '21'
-          server-id: github
-          settings-path: ${{ github.workspace }}
       - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
       - name: Deploy SNAPSHOT maven artefacts
         timeout-minutes: 40
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true \
-          -s $GITHUB_WORKSPACE/settings.xml \
           -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
           clean deploy

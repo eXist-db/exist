@@ -68,6 +68,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -138,11 +143,6 @@
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
-
-                            <ignoredUsedUndeclaredDependencies>
-                                <ignoredUsedUndeclaredDependency>com.ibm.icu:icu4j:jar</ignoredUsedUndeclaredDependency>
-                            </ignoredUsedUndeclaredDependencies>
-
                         </configuration>
                     </execution>
                 </executions>

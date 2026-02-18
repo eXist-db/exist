@@ -23,6 +23,21 @@ Useful build switches:
 - `-DskipUnitTests=true` : run only integration tests
 - `-Ddependency-check.skip=true` : skips validating dependencies
 
+### Maven repositories
+
+Maven resolves dependencies from these repositories (defined in `exist-parent/pom.xml`):
+
+- **Releases:** Maven Central (direct) → exist-db proxy → exist-db → evolved-binary (all public)
+- **Snapshots:** GitHub Packages (exist, exist-xqts-runner) → exist-db-snapshots → evolved-binary-snapshots
+
+### GitHub Packages (authentication for SNAPSHOT builds)
+
+When building from `develop` (or any SNAPSHOT version), Maven resolves `exist-xqts-runner` from `https://maven.pkg.github.com/eXist-db/exist-xqts-runner`. GitHub Packages requires authentication; without it you get **401 Unauthorized**.
+
+**Option 1 – Exclude XQTS** (no auth needed): use `mvn -DskipTests package -pl '!exist-xqts'` to skip the XQTS module.
+
+**Option 2 – Configure GitHub auth** (if you need XQTS or a full build): add a GitHub PAT to `~/.m2/settings.xml` as server `github-xqts-runner` (and optionally `github` for eXist snapshots). See `.github/actions/maven-github-settings/action.yml` for the expected `<server>` format.
+
 Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist") and on the workflow files of this repo.
 
 ### Running tests locally

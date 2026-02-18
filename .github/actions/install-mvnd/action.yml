@@ -48,7 +48,7 @@ runs:
     - name: Cache mvnd
       if: inputs.cache == 'true'
       id: cache-mvnd
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ${{ inputs.install-path }}/${{ env.MVND_NAME }}.zip
