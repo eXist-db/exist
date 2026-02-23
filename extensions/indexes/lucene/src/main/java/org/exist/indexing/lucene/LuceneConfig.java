@@ -173,6 +173,23 @@ public class LuceneConfig {
         return false;
     }
 
+    /**
+     * @return true if any index config uses boosts (match-attribute, has-attribute, or boost attr)
+     */
+    public boolean hasBoostConfig() {
+        for (LuceneIndexConfig config : paths.values()) {
+            if (config.usesBoost()) {
+                return true;
+            }
+        }
+        for (LuceneIndexConfig config : wildcardPaths) {
+            if (config.usesBoost()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         while (idxConf != null) {
