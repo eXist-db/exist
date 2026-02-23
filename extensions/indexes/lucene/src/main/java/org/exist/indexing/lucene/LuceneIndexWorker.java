@@ -1430,6 +1430,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 facetConfigs.forEach(config ->
                     config.build(broker, currentDoc, pending.nodeId, doc, pending.text)
                 );
+                // register field analyzers so indexing uses the same analyzer as querying
+                for (AbstractFieldConfig config : facetConfigs) {
+                    if (config instanceof LuceneFieldConfig lfc && lfc.getAnalyzer() != null) {
+                        index.addFieldAnalyzer(lfc.getName(), lfc.getAnalyzer());
+                    }
+                }
 
                 // store the node id
                 int nodeIdLen = pending.nodeId.size();
