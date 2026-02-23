@@ -267,7 +267,7 @@ declare variable $facet:XCONF1 :=
                     <field name="english2" if="ancestor::body[@xml:lang = 'en']" analyzer="english"/>
                     <facet dimension="language" expression="ancestor::body/@xml:lang"/>
                     <ignore qname="note"/>
-                </text>`
+                </text>
                 <text qname="person">
                     <facet dimension="city" expression="idx:city-id-to-label(city-id)"/>
                 </text>
@@ -299,6 +299,7 @@ function facet:setup() {
         xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE),
         $facet:PERSONS ! xmldb:store($personsCol, ./id || ".xml", .),
         xmldb:store($testCol, "cities.xml", $facet:CITIES),
+        xmldb:reindex($testCol),
         xmldb:reindex($personsCol)
     )
 };
