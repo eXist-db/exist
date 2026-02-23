@@ -73,6 +73,7 @@ public class LuceneIndexConfig {
 
     private boolean doIndex = true;
 
+    protected final LuceneConfig parent;
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
     private MultiMap matchAttrs;
@@ -81,6 +82,7 @@ public class LuceneIndexConfig {
 
     public LuceneIndexConfig(LuceneConfig parent, Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
                              Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
+        this.parent = parent;
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
             path = new NodePathPattern(qname);
@@ -297,6 +299,10 @@ public class LuceneIndexConfig {
 	    nextConfig = config;
 	else
 	    nextConfig.add(config);
+    }
+
+    public LuceneConfig getParent() {
+        return parent;
     }
 
     public LuceneIndexConfig getNext() {

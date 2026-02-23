@@ -253,6 +253,15 @@ public class LuceneIndexTest {
     private static Collection root;
     private Boolean savedConfig;
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
+            propertiesBuilder()
+                .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
+                .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
+                .build(),
+            true,
+            true);
+
     @Test
     public void simpleQueries() throws EXistException, CollectionConfigurationException, PermissionDeniedException, SAXException, LockException, IOException, XPathException, QName.IllegalQNameException {
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG1, XML1, "test.xml");
@@ -1367,15 +1376,6 @@ public class LuceneIndexTest {
             config.setProperty(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, savedConfig);
         }
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(
-            propertiesBuilder()
-                .set(Indexer.PROPERTY_SUPPRESS_WHITESPACE, "none")
-                .put(Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE, Boolean.TRUE)
-                .build(),
-            true,
-            false);
 
     @AfterClass
     public static void cleanupDb() throws LockException, TriggerException, PermissionDeniedException, EXistException, IOException {
