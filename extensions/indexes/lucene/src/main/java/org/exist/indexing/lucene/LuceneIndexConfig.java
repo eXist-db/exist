@@ -246,6 +246,20 @@ public class LuceneIndexConfig {
     }
 
     /**
+     * @return true if this config or any in the chain uses attribute/element boosts
+     */
+    public boolean usesBoost() {
+        LuceneIndexConfig c = this;
+        while (c != null) {
+            if (c.matchAttrs != null || (c.type != null && c.type.getBoost() > 0)) {
+                return true;
+            }
+            c = c.nextConfig;
+        }
+        return false;
+    }
+
+    /**
      * Get boost by matching the config with given attributes
      * (e.g. sibling or child atributes)
      * if no match, the value from getBoost() is returned
