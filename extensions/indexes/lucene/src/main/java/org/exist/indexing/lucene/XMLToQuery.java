@@ -24,6 +24,7 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.document.IntField;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -92,6 +93,7 @@ public class XMLToQuery {
                 case "near" -> nearQuery(getField(root, field), root, analyzer);
                 case "first" -> getSpanFirst(getField(root, field), root, analyzer);
                 case "regex" -> regexQuery(getField(root, field), root, options);
+                case "id" -> idQuery(getField(root, field), root);
                 default ->
                         throw new XPathException((Expression) null, "Unknown element in lucene query expression: " + localName);
             };
@@ -329,6 +331,12 @@ public class XMLToQuery {
     private Query termQuery(String field, Element node, Analyzer analyzer) throws XPathException {
     	String termStr = getTerm(field, getText(node), analyzer);
     	return termStr == null ? null : new TermQuery(new Term(field, termStr));
+    }
+
+    private Query idQuery(String field, Element node) {
+        String text = getText(node);
+        int docId = Integer.parseInt(text);
+        return IntField.newExactQuery(field, docId);
     }
 
     private String getTerm(String field, String text, Analyzer analyzer) throws XPathException {

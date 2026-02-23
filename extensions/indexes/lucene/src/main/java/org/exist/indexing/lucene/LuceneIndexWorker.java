@@ -41,8 +41,6 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.BytesRefBuilder;
-import org.apache.lucene.util.NumericUtils;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -314,10 +312,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            final byte[] data = new byte[Integer.BYTES];
-            NumericUtils.intToSortableBytes(docId, data, 0);
-            Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
-            writer.deleteDocuments(dt);
+            final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
+            writer.deleteDocuments(docIdQuery);
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
@@ -350,10 +346,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                final byte[] data = new byte[Integer.BYTES];
-                NumericUtils.intToSortableBytes(doc.getDocId(), data, 0);
-                Term dt = new Term(FIELD_DOC_ID, new BytesRef(data));
-                writer.deleteDocuments(dt);
+                writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
@@ -384,10 +377,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
 
-            final byte[] docIdData = new byte[Integer.BYTES];
-            NumericUtils.intToSortableBytes(currentDoc.getDocId(), docIdData, 0);
-            Term dt = new Term(FIELD_DOC_ID, new BytesRef(docIdData));
-            TermQuery tq = new TermQuery(dt);
+            final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, currentDoc.getDocId());
             for (NodeId nodeId : nodesToRemove) {
                 // store the node id
                 int nodeIdLen = nodeId.size();
@@ -399,7 +389,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 TermQuery iq = new TermQuery(it);
                 BooleanQuery q = new BooleanQuery.Builder()
-                    .add(tq, BooleanClause.Occur.MUST)
+                    .add(docIdQuery, BooleanClause.Occur.MUST)
                     .add(iq, BooleanClause.Occur.MUST)
                     .build();
                 writer.deleteDocuments(q);
@@ -636,9 +626,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // create Lucene document
             pendingDoc = new Document();
 
-            // Set DocId. IntField in Lucene 10+ also provides doc values.
+            // Set DocId. IntField (Points) for querying; SortedNumericDocValuesField for collectors (Lucene 10 consistency).
             final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
+            pendingDoc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
 
             // For binary documents the doc path needs to be stored
             final String uri = currentDoc.getURI().toString();
@@ -839,25 +830,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public String getFieldContent(int docId, String field) throws IOException {
-        final BytesRefBuilder bytes = new BytesRefBuilder();
-        NumericUtils.intToSortableBytes(docId, bytes.bytes(), 0);
-        Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
-
-        return index.withReader(reader -> {
-            List<LeafReaderContext> leaves = reader.leaves();
-            for (LeafReaderContext context : leaves) {
-                LeafReader leafReader = context.reader();
-                PostingsEnum postings = leafReader.postings(dt);
-                if (postings != null && postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
-                    Document doc = leafReader.storedFields().document(postings.docID());
-                    String value = doc.get(field);
-                    if (value != null) {
-                        return value;
-                    }
+        try {
+            return index.withSearcher(searcher -> {
+                final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
+                final TopDocs topDocs = searcher.searcher().search(docIdQuery, 1);
+                if (topDocs.totalHits.value() == 0) {
+                    return null;
                 }
-            }
-            return null;
-        });
+                final Document doc = searcher.searcher().storedFields().document(topDocs.scoreDocs[0].doc);
+                return doc.get(field);
+            });
+        } catch (XPathException e) {
+            throw new IOException("Unexpected XPath error in getFieldContent", e);
+        }
     }
 
     public @Nullable BytesRef getBinaryField(final int docId, final String field) throws IOException {
@@ -903,22 +888,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public boolean hasIndex(int docId) throws IOException {
-        final BytesRefBuilder bytes = new BytesRefBuilder();
-        NumericUtils.intToSortableBytes(docId, bytes.bytes(), 0);
-        Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
-
-        return index.withReader(reader -> {
-            boolean found = false;
-            List<LeafReaderContext> leaves = reader.leaves();
-            for (LeafReaderContext context : leaves) {
-                PostingsEnum postings = context.reader().postings(dt);
-                if (postings != null && postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
-                    found = true;
-                    break;
-                }
-            }
-            return found;
-        });
+        try {
+            return index.withSearcher(searcher -> {
+                final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
+                final TopDocs topDocs = searcher.searcher().search(docIdQuery, 1);
+                return topDocs.totalHits.value() > 0;
+            });
+        } catch (XPathException e) {
+            throw new IOException("Unexpected XPath error in hasIndex", e);
+        }
     }
     
     /**
@@ -998,14 +976,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             private final int docBase;
             private final LeafCollector chainedLeafCollector;
             private Scorable scorer;
-            private NumericDocValues docIdValues;
+            private SortedNumericDocValues docIdValues;
             private BinaryDocValues nodeIdValues;
 
             public LuceneHitLeafCollector(LeafReaderContext context, LeafCollector chainedLeafCollector) throws IOException {
                 this.reader = context.reader();
                 this.docBase = context.docBase;
                 this.chainedLeafCollector = chainedLeafCollector;
-                this.docIdValues = reader.getNumericDocValues(FIELD_DOC_ID);
+                this.docIdValues = reader.getSortedNumericDocValues(FIELD_DOC_ID);
                 this.nodeIdValues = reader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             }
 
@@ -1020,15 +998,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             @Override
             public void collect(int doc) throws IOException {
                 float score = scorer.score();
+                int docId;
                 if (docIdValues != null && docIdValues.advanceExact(doc)) {
-                    int docId = (int) docIdValues.longValue();
-                    DocumentImpl storedDocument = docs.getDoc(docId);
-                    if (storedDocument == null)
-                        return;
-
-                    if (nodeIdValues != null && nodeIdValues.advanceExact(doc)) {
+                    docId = (int) docIdValues.nextValue();
+                } else {
+                    docId = reader.storedFields().document(doc).getField(FIELD_DOC_ID).numericValue().intValue();
+                }
+                DocumentImpl storedDocument = docs.getDoc(docId);
+                if (storedDocument == null)
+                    return;
+                if (nodeIdValues != null && nodeIdValues.advanceExact(doc)) {
                         final BytesRef ref = nodeIdValues.binaryValue();
-                        int units = ByteConversion.byteToShort(ref.bytes, ref.offset);
+                        int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
                         NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 
                         NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
@@ -1041,7 +1022,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             if (returnAncestor) {
                                 NodeProxy parentNode = contextSet.get(storedNode);
                                 if (parentNode != null) {
-                                    LuceneMatch match = createMatch(doc, score, nodeId);
+                                    LuceneMatch match = createMatch(doc, score, nodeId, docBase);
                                     parentNode.addMatch(match);
                                     resultSet.add(parentNode, sizeHint);
                                     if (Expression.NO_CONTEXT_ID != contextId) {
@@ -1053,7 +1034,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                     }
                                 }
                             } else {
-                                LuceneMatch match = createMatch(doc, score, nodeId);
+                                LuceneMatch match = createMatch(doc, score, nodeId, docBase);
                                 storedNode.addMatch(match);
                                 resultSet.add(storedNode, sizeHint);
                                 if (chainedLeafCollector != null) {
@@ -1061,18 +1042,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 }
                             }
                         } else {
-                            LuceneMatch match = createMatch(doc, score, nodeId);
+                            LuceneMatch match = createMatch(doc, score, nodeId, docBase);
                             storedNode.addMatch(match);
                             resultSet.add(storedNode);
                             if (chainedLeafCollector != null) {
                                 chainedLeafCollector.collect(doc);
                             }
                         }
-                    }
                 }
             }
 
-            private LuceneMatch createMatch(final int docId, final float score, final NodeId nodeId) {
+            private LuceneMatch createMatch(final int docId, final float score, final NodeId nodeId, final int docBase) {
                 final LuceneMatch match = new LuceneMatch(contextId, docId + docBase, nodeId, query, facets);
                 match.setScore(score);
                 return match;
@@ -1288,7 +1268,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         for (LeafReaderContext context : leaves) {
             LeafReader leafReader = context.reader();
             // FIXME: docidvalues is null and likely should not be
-            NumericDocValues docIdValues = leafReader.getNumericDocValues(FIELD_DOC_ID);
+            SortedNumericDocValues docIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
             BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
@@ -1314,10 +1294,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (liveDocs != null && !liveDocs.get(postings.docID())) {
                         continue;
                     }
-                    if (docIdValues == null || !docIdValues.advanceExact(postings.docID())) {
-                        continue;
+                    int docId;
+                    if (docIdValues != null && docIdValues.advanceExact(postings.docID())) {
+                        docId = (int) docIdValues.nextValue();
+                    } else {
+                        docId = leafReader.storedFields().document(postings.docID()).getField(FIELD_DOC_ID).numericValue().intValue();
                     }
-                    int docId = (int) docIdValues.longValue();
                     DocumentImpl storedDocument = docs.getDoc(docId);
                     if (storedDocument == null) {
                         continue;
@@ -1469,13 +1451,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
+                doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
+                doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 
                 if (pending.idxConf.getAnalyzer() == null) {
-                    writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
+                    writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
                 } else {
                     // FIXME: re-enable custom analyzers again
                     LOG.warn("Custom analyzer for pending doc is not supported in Lucene 10 upgrade yet. Using default.");
-                    writer.addDocument(config.facetsConfig.build(index.getTaxonomyWriter(), doc));
+                    writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
                 }
 	        }
         } catch (final IOException e) {
@@ -1698,18 +1682,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     pendingAttrs.clear();
                     releaseAttributes();
                 }
-        }
+            }
 
-        private void releaseAttributes() {
-            try {
-                for (Attr attr : attributes) {
-                    NodePool.getInstance().returnNode((AttrImpl) attr);
+            private void releaseAttributes() {
+                try {
+                    for (Attr attr : attributes) {
+                        NodePool.getInstance().returnNode((AttrImpl) attr);
+                    }
+                } finally {
+                    attributes.clear();
                 }
-            } finally {
-                attributes.clear();
             }
         }
     }
-
-}
-
