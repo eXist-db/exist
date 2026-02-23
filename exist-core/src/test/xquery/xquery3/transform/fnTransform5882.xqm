@@ -21,106 +21,127 @@
  :)
 xquery version "3.1";
 
-module namespace testTransform="http://exist-db.org/xquery/test/function_transform";
+(:~
+ : Pass in-memory nodes and function types to fn:transform
+ : Regression tests for PR 5882
+ : @see https://github.com/eXist-db/exist/pull/5882
+ :)
+module namespace fnTransform5882="http://exist-db.org/xquery/test/function_transform";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace xsl="http://www.w3.org/1999/XSL/Transform";
 
-(:~
- : Regression test for PR 5882: fn:transform with MemTree nodes.
- : A bare element constructor (element root { ... }) creates a MemTree node whose
- : getParentNode() returns null (see issue #1463). We use initial-match-selection
- : because that path calls Convert.ofNode/treeIndex. Without the TreeUtils fix:
- : - For root: treeIndex returns [], xdmNodeAtIndex returns doc (wrong but works)
- : - For second child: treeIndex returns [1] (missing leading 0 for root), doc has
- :   only one child, so xdmNodeAtIndex(doc, [1]) returns null, causing failure.
- : @see https://github.com/eXist-db/exist/pull/5882
- :)
-declare variable $testTransform:transform-5882-simple-xsl := <xsl:stylesheet version='1.0'>
-    <xsl:template match='*'>
-        <out><xsl:value-of select='.'/></out>
-    </xsl:template>
-</xsl:stylesheet>;
+declare variable $fnTransform5882:simple-xsl :=
+    <xsl:stylesheet version='1.0'>
+        <xsl:output omit-xml-declaration="yes"/>
+        <xsl:template match='*'>
+            <out><xsl:value-of select='.'/></out>
+        </xsl:template>
+    </xsl:stylesheet>
+;
 
-declare variable $testTransform:transform-5882-map-array-xsl := <xsl:stylesheet version='3.0'>
-    <xsl:param name='m' as='map(*)'/>
-    <xsl:param name='a' as='array(*)'/>
-    <xsl:template name='main'>
-        <out>
-            <xsl:attribute name='map-val' select='$m("k")'/>
-            <xsl:attribute name='array-val' select='$a(2)'/>
-        </out>
-    </xsl:template>
-</xsl:stylesheet>;
+declare variable $fnTransform5882:map-array-xsl :=
+    <xsl:stylesheet version='3.0'>
+        <xsl:output omit-xml-declaration="yes"/>
+        <xsl:param name='map-parameter' as='map(*)'/>
+        <xsl:param name='array-parameter' as='array(*)'/>
+        <xsl:template name='main'>
+            <out>
+                <xsl:attribute name='value-of-k-in-map' select='$map-parameter("k")'/>
+                <xsl:attribute name='second-array-member' select='$array-parameter(2)'/>
+            </out>
+        </xsl:template>
+    </xsl:stylesheet>
+;
 
-declare variable $testTransform:transform-5882-stored-doc := <root id="attr"><child>stored-val</child></root>;
+declare variable $fnTransform5882:collection-name := "fn-transform-5882-stored";
+declare variable $fnTransform5882:collection := "/db/" || $fnTransform5882:collection-name;
 
-declare variable $testTransform:transform-5882-coll := "/db/fn-transform-5882-stored";
+declare variable $fnTransform5882:direct-element-constructor := <root attr="val"><a>first</a><b>second</b></root>;
+declare variable $fnTransform5882:computed-element-constructor := element root { <a>first</a>, <b>second</b> };
+declare variable $fnTransform5882:mixed-element-constructor := element root { element a { "first" }, element b { "second" }};
 
 declare
     %test:setUp
-function testTransform:setup() {
-    xmldb:create-collection("/db", "fn-transform-5882-stored"),
-    xmldb:store($testTransform:transform-5882-coll, "doc.xml", $testTransform:transform-5882-stored-doc)
+function fnTransform5882:setup() {
+    xmldb:create-collection("/db", $fnTransform5882:collection-name),
+    xmldb:store($fnTransform5882:collection, "doc.xml", $fnTransform5882:direct-element-constructor)
 };
 
 declare
     %test:tearDown
-function testTransform:tearDown() {
-    xmldb:remove($testTransform:transform-5882-coll)
+function fnTransform5882:tearDown() {
+    xmldb:remove($fnTransform5882:collection)
 };
 
 (:~
- : Select the second child of a MemTree root. Without the fix, treeIndex(b) = [1]
- : (missing index 0 for root), but doc has only one child; xdmNodeAtIndex returns null.
+ : Select the second child of the root element of an in-memory tree constructed using a direct-element constructor
  :)
 declare
     %test:assertEquals('<out>second</out>')
-function testTransform:memtree-second-child() {
-    let $source := element root { <a>first</a>, <b>second</b> }
-    let $selection := $source/b
-    let $result := fn:transform(map{
-        "initial-match-selection": $selection,
-        "stylesheet-node": $testTransform:transform-5882-simple-xsl
+function fnTransform5882:direct-element-constructor-second-child() {
+    fn:transform(map{
+        "initial-match-selection": $fnTransform5882:direct-element-constructor/b,
+        "stylesheet-node": $fnTransform5882:simple-xsl,
+        "delivery-format": "serialized"
     })?output
-    return $result
 };
 
 (:~
- : PR 5882 adds Convert.ofMap/ofArray for stylesheet params. Without it, map/array
- : params cause XPTY0004. XSLT 3.0 required for map(*) and array(*) param types.
- : @see https://github.com/eXist-db/exist/pull/5882
+ : Select the second child of the root element of an in-memory tree constructed using a computed-element constructor
  :)
 declare
-    %test:assertEquals('v', 'y')
-function testTransform:stylesheet-params-map-array() {
-    let $result := fn:transform(map{
-        "stylesheet-node": $testTransform:transform-5882-map-array-xsl,
-        "initial-template": QName('','main'),
+    %test:assertEquals('<out>second</out>')
+function fnTransform5882:computed-element-constructor-second-child() {
+    fn:transform(map{
+        "initial-match-selection": $fnTransform5882:computed-element-constructor/b,
+        "stylesheet-node": $fnTransform5882:simple-xsl,
+        "delivery-format": "serialized"
+    })?output
+};
+
+(:~
+ : Select the second child of the root element of an in-memory tree constructed using a mix of direct
+ : and computed element constructors
+ :)
+declare
+    %test:assertEquals('<out>second</out>')
+function fnTransform5882:mixed-element-constructor-second-child() {
+    fn:transform(map{
+        "initial-match-selection": $fnTransform5882:mixed-element-constructor/b,
+        "stylesheet-node": $fnTransform5882:simple-xsl,
+        "delivery-format": "serialized"
+    })?output
+};
+
+(:~
+ : Selects the child element as initial-match-selection to test that attributes
+ : cannot appear as previous siblings of child elements in a stored document.
+ :)
+declare
+    %test:assertEquals('<out>first</out>')
+function fnTransform5882:stored-doc-with-attributes() {
+    fn:transform(map{
+        "initial-match-selection": doc($fnTransform5882:collection || "/doc.xml")/root/a,
+        "stylesheet-node": $fnTransform5882:simple-xsl,
+        "delivery-format": "serialized"
+    })?output
+};
+
+(:~
+ : Pass function types to fn:transform and retrieve them in the stylesheet
+ :)
+declare
+    %test:assertEquals('<out value-of-k-in-map="v" second-array-member="y"/>')
+function fnTransform5882:stylesheet-params-map-array() {
+    fn:transform(map{
+        "stylesheet-node": $fnTransform5882:map-array-xsl,
+        "initial-template": xs:QName('main'),
         "stylesheet-params": map {
-            QName('','m'): map{'k':'v'},
-            QName('','a'): ['x','y','z']
-        }
+            xs:QName('map-parameter'): map{ 'k': 'v' },
+            xs:QName('array-parameter'): [ 'x','y','z' ]
+        },
+        "delivery-format": "serialized"
     })?output
-    return
-       ($result/out/@map-val/string(), $result/out/@array-val/string())
-
-};
-
-(:~
- : PR 5882 fixes TreeUtils.previousSiblingNotAttribute for StoredNode: attributes
- : appear as previous siblings of element children. Store a doc with attrs, select
- : the child element as initial-match-selection.
- : @see https://github.com/eXist-db/exist/pull/5882
- :)
-declare
-    %test:assertEquals('<out>stored-val</out>')
-function testTransform:stored-doc-with-attributes() {
-    let $selection := doc($testTransform:transform-5882-coll || "/doc.xml")/root/child
-    let $result := fn:transform(map{
-        "initial-match-selection": $selection,
-        "stylesheet-node": $testTransform:transform-5882-simple-xsl
-    })?output
-    return $result
 };
