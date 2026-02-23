@@ -26,6 +26,7 @@ import org.exist.util.serializer.XQuerySerializer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -36,9 +37,12 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.param;
@@ -46,13 +50,21 @@ import static org.exist.xquery.FunctionDSL.params;
 
 public class ExtTestFailureFunction extends JUnitIntegrationFunction {
 
+    @Nullable
+    private final Path sourcePath;
+
     public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {
+        this(context, parentName, notifier, null);
+    }
+
+    public ExtTestFailureFunction(final XQueryContext context, final String parentName, final RunNotifier notifier, @Nullable final Path sourcePath) {
         super("ext-test-failure-function",
                 params(
                         param("name", Type.STRING, "name of the test"),
                         param("expected", Type.MAP_ITEM, "expected result of the test"),
                         param("actual", Type.MAP_ITEM, "actual result of the test")
                 ), context, parentName, notifier);
+        this.sourcePath = sourcePath;
     }
 
     @Override
@@ -70,10 +82,27 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
 
         // notify JUnit
         try {
-            final AssertionError failureReason = new ComparisonFailure("", expectedToString(expected), actualToString(actual));
+            final String fileName = getFileNameFromActual(actual);
+            final int lineNumber = getLineFromActual(actual);
+            // Short one-line for logs (filename only)
+            final String shortFileName = fileName != null ? lastPathSegment(fileName) : null;
+            final String shortLocation = shortFileName != null ? shortFileName + (lineNumber > 0 ? ":" + lineNumber : "") : null;
+            String oneLine = "XQuery failure: " + (shortLocation != null ? shortLocation + " " : "") + name;
+            if (shortFileName != null && lineNumber > 0) {
+                oneLine += "\n\tat (" + shortFileName + ":" + lineNumber + ")";
+            }
+            XQueryFailureLog.log(oneLine);
+            final AssertionError failureReason = new ComparisonFailure(oneLine, expectedToString(expected), actualToString(actual));
 
-            // NOTE: We remove the StackTrace, because it is not useful to have a Java Stack Trace pointing into the XML XQuery Test Suite code
-            failureReason.setStackTrace(new StackTraceElement[0]);
+            // Stack trace for IDE navigation. IntelliJ linkifies short "filename:line" in stack traces
+            // but not absolute paths; use short filename so the stack line becomes clickable.
+            if (shortFileName != null) {
+                failureReason.setStackTrace(new StackTraceElement[]{
+                    new StackTraceElement(" ", " ", shortFileName, lineNumber > 0 ? lineNumber : 1)
+                });
+            } else {
+                failureReason.setStackTrace(new StackTraceElement[0]);
+            }
 
             notifier.fireTestFailure(new Failure(description, failureReason));
         } catch (final XPathException | SAXException | IOException | IllegalStateException e) {
@@ -82,6 +111,52 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         }
 
         return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Last path segment for short display in failure message and stack trace (short name makes IDE stack trace link clickable).
+     */
+    private static String lastPathSegment(final String path) {
+        if (path == null || path.isEmpty()) {
+            return path;
+        }
+        try {
+            final Path p = Paths.get(path);
+            return p.getFileName() != null ? p.getFileName().toString() : path;
+        } catch (final Exception ignored) {
+            return path;
+        }
+    }
+
+    /** Source from inspect can be full path or short identifier (implementation-dependent); we use last segment for IDE links. */
+    private String getFileNameFromActual(final MapType actual) throws XPathException {
+        final Sequence seqSource = actual.get(new StringValue(this, "source"));
+        if (!seqSource.isEmpty()) {
+            final String s = seqSource.itemAt(0).getStringValue();
+            if (s != null && !s.isEmpty()) {
+                return s;
+            }
+        }
+        if (sourcePath != null) {
+            return sourcePath.getFileName() != null ? sourcePath.getFileName().toString() : sourcePath.toString();
+        }
+        return null;
+    }
+
+    private int getLineFromActual(final MapType actual) throws XPathException {
+        final Sequence seqLine = actual.get(new StringValue(this, "line"));
+        if (!seqLine.isEmpty()) {
+            final Item item = seqLine.itemAt(0);
+            if (item instanceof IntegerValue) {
+                return (int) ((IntegerValue) item).getLong();
+            }
+            try {
+                return Integer.parseInt(item.getStringValue());
+            } catch (final NumberFormatException ignored) {
+                // fall through to 0
+            }
+        }
+        return 0;
     }
 
     private String expectedToString(final MapType expected) throws XPathException, SAXException, IOException {

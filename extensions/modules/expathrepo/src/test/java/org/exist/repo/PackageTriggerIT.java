@@ -41,7 +41,14 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.Assume;
 import org.xml.sax.SAXException;
+
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -55,6 +62,37 @@ import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_C
 public class PackageTriggerIT {
 
     static final String xarFile = "exist-expathrepo-trigger-test-" + Version.getVersion() + ".xar";
+
+    private static java.util.function.Supplier<InputStream> resolveXarSupplier() {
+        // 1) Try from test classpath (added via maven-resources-plugin to target/generated-test-resources)
+        if (PackageTriggerIT.class.getResource("/" + xarFile) != null ||
+                PackageTriggerIT.class.getClassLoader().getResource(xarFile) != null) {
+            return () -> PackageTriggerIT.class.getResourceAsStream("/" + xarFile);
+        }
+        // 2) Try from sibling module build output
+        final Path relPath = Paths.get("extensions/modules/expathrepo/expathrepo-trigger-test/target", xarFile);
+        if (Files.exists(relPath)) {
+            return () -> {
+                try {
+                    return Files.newInputStream(relPath);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            };
+        }
+        // 3) Try from current module generated-test-resources (in case direct run already copied it)
+        final Path generated = Paths.get("extensions/modules/expathrepo/target/generated-test-resources", xarFile);
+        if (Files.exists(generated)) {
+            return () -> {
+                try {
+                    return Files.newInputStream(generated);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            };
+        }
+        return null;
+    }
     static final XmldbURI triggerTestCollection = XmldbURI.create("/db");
     static final XmldbURI xarUri = triggerTestCollection.append(xarFile);
 
@@ -75,6 +113,10 @@ public class PackageTriggerIT {
             transaction.commit();
         }
 
+        // Resolve XAR supplier (skip test class if not available in non-Maven runs)
+        final java.util.function.Supplier<InputStream> xarSupplier = resolveXarSupplier();
+        Assume.assumeTrue("XAR '" + xarFile + "' not found on classpath or filesystem. Run via Maven to generate it.", xarSupplier != null);
+
         // Store XAR in database
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
              final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
@@ -82,7 +124,7 @@ public class PackageTriggerIT {
             try (final ManagedCollectionLock collectionLock = brokerPool.getLockManager().acquireCollectionWriteLock(xarUri.removeLastSegment())) {
                 final Collection collection = broker.getOrCreateCollection(transaction, xarUri.removeLastSegment());
 
-                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(() -> PackageTriggerIT.class.getResourceAsStream("/" + xarFile)), MimeType.EXPATH_PKG_TYPE, collection);
+                broker.storeDocument(transaction, xarUri.lastSegment(), new InputStreamSupplierInputSource(xarSupplier::get), MimeType.EXPATH_PKG_TYPE, collection);
                 broker.saveCollection(transaction, collection);
             }
 

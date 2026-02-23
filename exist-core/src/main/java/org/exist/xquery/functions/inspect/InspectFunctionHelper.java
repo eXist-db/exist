@@ -24,6 +24,7 @@ package org.exist.xquery.functions.inspect;
 
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.source.Source;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -65,6 +66,26 @@ public class InspectFunctionHelper {
         final AttributesImpl attribs = new AttributesImpl();
         attribs.addAttribute("", "name", "name", "CDATA", sig.getName().getStringValue());
         attribs.addAttribute("", "module", "module", "CDATA", sig.getName().getNamespaceURI());
+        if (func != null) {
+            int line = func.getLine();
+            final int column = func.getColumn();
+            if (line <= 0 && func.getFunctionBody() != null) {
+                line = firstPositiveLineIn(func.getFunctionBody());
+            }
+            if (line >= 0) {
+                attribs.addAttribute("", "line", "line", "CDATA", String.valueOf(line));
+            }
+            if (column >= 0) {
+                attribs.addAttribute("", "column", "column", "CDATA", String.valueOf(column));
+            }
+            final Source source = func.getSource();
+            if (source != null) {
+                final String path = source.pathOrShortIdentifier();
+                if (path != null && !path.isEmpty()) {
+                    attribs.addAttribute("", "source", "source", "CDATA", path);
+                }
+            }
+        }
         final int nodeNr = builder.startElement(FUNCTION_QNAME, attribs);
         writeParameters(sig, builder);
         final SequenceType returnType = sig.getReturnType();
@@ -145,6 +166,28 @@ public class InspectFunctionHelper {
                 builder.endElement();
             }
         }
+    }
+
+    /**
+     * Depth-first search for the first positive line number in an expression tree.
+     * Used as fallback when the UDF's own line is not set (e.g. module loaded from DB in eXide).
+     */
+    private static int firstPositiveLineIn(final Expression expr) {
+        if (expr == null) {
+            return -1;
+        }
+        final int line = expr.getLine();
+        if (line > 0) {
+            return line;
+        }
+        final int count = expr.getSubExpressionCount();
+        for (int i = 0; i < count; i++) {
+            final int sub = firstPositiveLineIn(expr.getSubExpression(i));
+            if (sub > 0) {
+                return sub;
+            }
+        }
+        return -1;
     }
 
     /**

@@ -25,6 +25,8 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
+import javax.annotation.Nullable;
+
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.returns;
 import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
@@ -47,13 +49,19 @@ public class InspectFunction extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
         final FunctionSignature sig = ref.getSignature();
+        final UserDefinedFunction udf = getUDF(ref);
         try {
             context.pushDocumentContext();
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            final int nodeNr = InspectFunctionHelper.generateDocs(sig, null, builder);
+            final int nodeNr = InspectFunctionHelper.generateDocs(sig, udf, builder);
             return builder.getDocument().getNode(nodeNr);
         } finally {
             context.popDocumentContext();
         }
+    }
+
+    private static @Nullable UserDefinedFunction getUDF(final FunctionReference ref) {
+        final FunctionCall call = ref.getCall();
+        return call != null ? call.getFunction() : null;
     }
 }

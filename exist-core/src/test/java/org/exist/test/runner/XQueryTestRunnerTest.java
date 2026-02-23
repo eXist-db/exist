@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class XQueryTestRunnerTest {
     @Test
     void testGetDescription() throws URISyntaxException, InitializationError {
-        final URL queryUrl = getClass().getResource("single-test.xq");
+        final URL queryUrl = getClass().getResource("single-test.xqm");
         final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
         assertNotNull(description);
@@ -53,13 +53,13 @@ class XQueryTestRunnerTest {
 
     @Test
      void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
-        final URL queryUrl = getClass().getResource("no-tests.xq");
+        final URL queryUrl = getClass().getResource("no-tests.xqm");
         final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertFalse(description.isSuite());
         assertEquals(true, description.getAnnotations().isEmpty());
-        assertEquals("no-tests.xq", description.getDisplayName());
+        assertEquals("no-tests.xqm", description.getDisplayName());
         assertEquals(1, description.testCount());
     }
 }
