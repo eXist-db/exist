@@ -1286,7 +1286,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 BytesRef ref = termsIter.term();
                 String term = ref.utf8ToString();
-                if ((end != null && term.compareTo(end) > 0) || (start != null && !term.startsWith(start))) {
+                if ((end != null && term.compareTo(end) > 0) || (start != null && !term.toLowerCase().startsWith(start.toLowerCase()))) {
                     continue;
                 }
                 PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
@@ -1433,16 +1433,14 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Field fNodeIdIdx = new Field(LuceneUtil.FIELD_NODE_ID, bts, TYPE_NODE_ID);
                 doc.add(fNodeIdIdx);
 
+                String contentField = null;
                 if (pending.idxConf.doIndex()) {
-                    String contentField;
                     // the text content is indexed in a field using either
                     // the qname of the element or attribute or the field
                     // name defined in the configuration
-                    if (pending.idxConf.isNamed()) {
-                        contentField = pending.idxConf.getName();
-                    } else {
-                        contentField = LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
-                    }
+                    contentField = pending.idxConf.isNamed()
+                        ? pending.idxConf.getName()
+                        : LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
 
                     Field fld = new TextField(contentField, pending.text.toString(), Field.Store.NO);
 
@@ -1454,13 +1452,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
                 doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 
-                if (pending.idxConf.getAnalyzer() == null) {
-                    writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
-                } else {
-                    // FIXME: re-enable custom analyzers again
-                    LOG.warn("Custom analyzer for pending doc is not supported in Lucene 10 upgrade yet. Using default.");
-                    writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
+                final Analyzer customAnalyzer = pending.idxConf.getAnalyzer();
+                if (customAnalyzer != null && contentField != null) {
+                    index.addFieldAnalyzer(contentField, customAnalyzer);
                 }
+                writer.addDocument(pending.idxConf.getParent().facetsConfig.build(index.getTaxonomyWriter(), doc));
 	        }
         } catch (final IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
