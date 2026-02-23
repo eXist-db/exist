@@ -37,6 +37,7 @@ import org.apache.lucene.facet.taxonomy.FastTaxonomyFacetCounts;
 import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.*;
+import org.apache.lucene.queries.function.FunctionScoreQuery;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
@@ -445,6 +446,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
                 }
+                if (config != null && config.hasBoostConfig()) {
+                    query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
+                }
                 searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                         returnAncestor, searcher, query, config);
             }
@@ -489,6 +493,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     query = drilldown(facets.get(), query, config);
                 }
                 if (query != null) {
+                    if (config != null && config.hasBoostConfig()) {
+                        query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
+                    }
                     searchAndProcess(contextId, qname, docs, contextSet, resultSet,
                             returnAncestor, searcher, query, config);
                 }
@@ -505,8 +512,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final boolean returnAncestor = axis == NodeSet.ANCESTOR;
             final LuceneConfig config = getLuceneConfig(broker, docs);
             analyzer = getQueryAnalyzer(config, field, null, options);
-            final Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
+            Query query = queryTranslator.parse(field, queryRoot, analyzer, options);
             if (query != null) {
+                if (config != null && config.hasBoostConfig()) {
+                    query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
+                }
                 searchAndProcess(contextId, null, docs, contextSet, resultSet,
                         returnAncestor, searcher, query, config);
             }
@@ -630,6 +640,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
             pendingDoc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
+            pendingDoc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, 1.0f));
 
             // For binary documents the doc path needs to be stored
             final String uri = currentDoc.getURI().toString();
@@ -1451,6 +1462,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(fDocIdIdx);
                 doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
                 doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
+
+                final float boostVal = pending.boost > 0 ? pending.boost : 1.0f;
+                doc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, boostVal));
 
                 final Analyzer customAnalyzer = pending.idxConf.getAnalyzer();
                 if (customAnalyzer != null && contentField != null) {
