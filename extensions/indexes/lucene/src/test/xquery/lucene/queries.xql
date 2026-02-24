@@ -163,11 +163,11 @@ function qrys:tearDown() {
 
 (: --- Term / range / boolean / phrase / near / wildcard / regex (XML expected) --- :)
 
-(:~ Term range query :)
+(:~ Term range query (Lucene QueryParser requires [lower TO upper] brackets for range) :)
 declare
     %test:assertTrue
 function qrys:term-range-query() {
-    let $result := doc("/db/lucene/text1.xml")//p[ft:query(., 'eins TO zwei')]
+    let $result := doc("/db/lucene/text1.xml")//p[ft:query(., '[eins TO zwei]')]
     return deep-equal($result, <p>Eins zwei drei vier zwei fünf sechs.</p>)
 };
 
