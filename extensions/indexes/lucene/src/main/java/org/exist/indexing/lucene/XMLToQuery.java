@@ -85,8 +85,8 @@ public class XMLToQuery {
             query = switch (localName) {
                 case "query" -> parseChildren(field, root, analyzer, options);
                 case "term" -> termQuery(getField(root, field), root, analyzer);
-                case "wildcard" -> wildcardQuery(getField(root, field), root, options);
-                case "prefix" -> prefixQuery(getField(root, field), root, options);
+                case "wildcard" -> wildcardQuery(getField(root, field), root, analyzer, options);
+                case "prefix" -> prefixQuery(getField(root, field), root, analyzer, options);
                 case "fuzzy" -> fuzzyQuery(getField(root, field), root);
                 case "bool" -> booleanQuery(getField(root, field), root, analyzer, options);
                 case "phrase" -> phraseQuery(getField(root, field), root, analyzer);
@@ -363,14 +363,46 @@ public class XMLToQuery {
         }
     }
     
-    private Query wildcardQuery(String field, Element node, QueryOptions options) {
-        WildcardQuery query = new WildcardQuery(new Term(field, getText(node)));
+    /**
+     * Normalizes the pattern with the analyzer so it matches index terms.
+     * For prefix patterns (ending with * and no other wildcards), analyzes the stem.
+     * For other patterns, uses raw text (analyzer may alter wildcards undesirably).
+     */
+    private String normalizeMultiTermPattern(String field, String pattern, Analyzer analyzer) throws XPathException {
+        if (analyzer == null) return pattern;
+        int lastStar = pattern.lastIndexOf('*');
+        int lastQ = pattern.lastIndexOf('?');
+        boolean isSimplePrefix = lastStar == pattern.length() - 1 && lastQ < 0 && pattern.indexOf('*') == lastStar;
+        if (isSimplePrefix) {
+            String stem = pattern.substring(0, lastStar);
+            String term = getTerm(field, stem, analyzer);
+            return term != null ? term + "*" : pattern;
+        }
+        return pattern;
+    }
+
+    private Query wildcardQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
+        String pattern = getText(node);
+        if (analyzer != null) {
+            pattern = normalizeMultiTermPattern(field, pattern, analyzer);
+        }
+        WildcardQuery query = new WildcardQuery(new Term(field, pattern));
         setRewriteMethod(query, node, options);
         return query;
     }
 
-    private Query prefixQuery(String field, Element node, QueryOptions options) {
-        PrefixQuery query = new PrefixQuery(new Term(field, getText(node)));
+    /**
+     * Prefix queries must use the analyzer to normalize the prefix so it matches
+     * index terms (e.g. "rüssels" normalizes to "russels" when the index uses
+     * NoDiacriticsStandardAnalyzer).
+     */
+    private Query prefixQuery(String field, Element node, Analyzer analyzer, QueryOptions options) throws XPathException {
+        String prefix = getText(node);
+        if (analyzer != null) {
+            String term = getTerm(field, prefix, analyzer);
+            if (term != null) prefix = term;
+        }
+        PrefixQuery query = new PrefixQuery(new Term(field, prefix));
         setRewriteMethod(query, node, options);
         return query;
     }

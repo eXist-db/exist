@@ -441,6 +441,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     final QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
                     options.configureParser(parser.getConfiguration());
                     query = parser.parse(queryStr);
+                    query = AnalyzingQueryRewriter.rewrite(query, analyzer);
                 }
                 query = filterByIndexType(query, field);
                 final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
@@ -614,6 +615,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
             options.configureParser(parser.getConfiguration());
             Query query = parser.parse(queryString);
+            query = AnalyzingQueryRewriter.rewrite(query, analyzer);
             searchAndProcess(contextId, null, docs, contextSet, resultSet,
                     returnAncestor, searcher, query, config);
             return resultSet;
@@ -723,7 +725,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // Setup query Version, default field, analyzer
             final QueryParserWrapper parser = getQueryParser("", searchAnalyzer, null);
             options.configureParser(parser.getConfiguration());
-            final Query query = parser.parse(queryText);
+            Query query = parser.parse(queryText);
+            query = AnalyzingQueryRewriter.rewrite(query, searchAnalyzer);
 
             // extract all used fields from query
             final String[] fields;
