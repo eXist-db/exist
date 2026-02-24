@@ -111,7 +111,7 @@ public class DOMTest {
 	 * - simple access via getContentAsDOM()
 	 * */
 	@Test
-	public void test2() throws XMLDBException, InstantiationException, IllegalAccessException, ClassNotFoundException, ParserConfigurationException, IOException {
+	public void test2() throws XMLDBException, ReflectiveOperationException, ParserConfigurationException, IOException {
 		for (int i = 0; i < 2; i++) {
 			XMLResource resource = (XMLResource) existEmbeddedServer.getRoot().getResource(name);
 			if (resource == null) {

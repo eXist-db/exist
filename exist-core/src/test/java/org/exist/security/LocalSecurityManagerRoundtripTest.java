@@ -49,7 +49,7 @@ public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRo
     protected void restartServer() throws XMLDBException, IOException {
         try {
             existXmldbEmbeddedServer.restart();
-        } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+        } catch (final ReflectiveOperationException e) {
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e);
         }
     }

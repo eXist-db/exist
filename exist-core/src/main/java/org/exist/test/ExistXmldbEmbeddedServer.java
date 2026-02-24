@@ -104,7 +104,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         super.before();
     }
 
-    private void startDb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    private void startDb() throws ReflectiveOperationException, XMLDBException {
         try {
             existEmbeddedServer.startDb();
         } catch (final DatabaseConfigurationException | EXistException | IOException e) {
@@ -113,11 +113,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         startXmldb();
     }
 
-    private void startXmldb() throws ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException {
+    private void startXmldb() throws ReflectiveOperationException, XMLDBException {
         if (database == null) {
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.newInstance();
+            database = (Database) cl.getDeclaredConstructor().newInstance();;
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             if (asGuest) {
@@ -131,11 +131,11 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         }
     }
 
-    public void restart() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    public void restart() throws ReflectiveOperationException, XMLDBException {
         restart(false);
     }
 
-    public void restart(final boolean clearTemporaryStorage) throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {
+    public void restart(final boolean clearTemporaryStorage) throws ReflectiveOperationException, XMLDBException {
         stopDb(clearTemporaryStorage);
         startDb();
     }
