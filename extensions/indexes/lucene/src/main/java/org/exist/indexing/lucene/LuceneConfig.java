@@ -232,21 +232,60 @@ public class LuceneConfig {
 
     public Analyzer getAnalyzer(String field) {
         LuceneIndexConfig config = namedIndexes.get(field);
-        String id = config != null ? config.getAnalyzerId() : null;
-        if (id == null)
-            return analyzers.getDefaultAnalyzer();
+        if (config != null) {
+            String id = config.getAnalyzerId();
+            if (id != null) {
+                final String indexSuffix = ":index";
+                if (id.endsWith(indexSuffix)) {
+                    // Substitute <analyzer-id>:index with <analyzer-id>:query
+                    String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
+                    Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
+                    if (queryAnalyzer != null)
+                        return queryAnalyzer;
 
-        final String indexSuffix = ":index";
-        if (id.endsWith(indexSuffix)) {
-            // Substitute <analyzer-id>:index with <analyzer-id>:query
-            String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
-            Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
-            if (queryAnalyzer != null)
-                return queryAnalyzer;
-
-            LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
+                    LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
+                }
+                return analyzers.getAnalyzerById(id);
+            }
         }
-        return analyzers.getAnalyzerById(config.getAnalyzerId());
+        // Look up field analyzer from nested <field name="..."> configs
+        Analyzer fieldAnalyzer = getFieldAnalyzer(field);
+        return fieldAnalyzer != null ? fieldAnalyzer : analyzers.getDefaultAnalyzer();
+    }
+
+    /**
+     * Find analyzer for a named field from nested &lt;field name="..."&gt; configs.
+     * When a field has no explicit analyzer, inherits from the parent index.
+     *
+     * @param field the field name
+     * @return the analyzer or null if not found
+     */
+    protected Analyzer getFieldAnalyzer(String field) {
+        for (LuceneIndexConfig idxConf : paths.values()) {
+            LuceneIndexConfig config = idxConf;
+            while (config != null) {
+                Analyzer a = getFieldAnalyzerFromConfig(config, field);
+                if (a != null) return a;
+                config = config.getNext();
+            }
+        }
+        for (LuceneIndexConfig config : wildcardPaths) {
+            Analyzer a = getFieldAnalyzerFromConfig(config, field);
+            if (a != null) return a;
+        }
+        return null;
+    }
+
+    private Analyzer getFieldAnalyzerFromConfig(LuceneIndexConfig config, String field) {
+        for (AbstractFieldConfig fc : config.getFacetsAndFields()) {
+            if (fc instanceof LuceneFieldConfig lfc && field.equals(lfc.getName())) {
+                if (lfc.getAnalyzer() != null) return lfc.getAnalyzer();
+                // Field exists but has no analyzer: inherit from parent index
+                String id = config.getAnalyzerId();
+                return id != null ? analyzers.getAnalyzerById(id) : null;
+            }
+        }
+        return null;
     }
 
     /**
