@@ -47,6 +47,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.Automaton;
@@ -93,6 +94,7 @@ public class XMLToQuery {
                 case "near" -> nearQuery(getField(root, field), root, analyzer);
                 case "first" -> getSpanFirst(getField(root, field), root, analyzer);
                 case "regex" -> regexQuery(getField(root, field), root, options);
+                case "range" -> rangeQuery(getField(root, field), root, analyzer);
                 case "id" -> idQuery(getField(root, field), root);
                 default ->
                         throw new XPathException((Expression) null, "Unknown element in lucene query expression: " + localName);
@@ -346,6 +348,31 @@ public class XMLToQuery {
         String text = getText(node);
         int docId = Integer.parseInt(text);
         return IntField.newExactQuery(field, docId);
+    }
+
+    private Query rangeQuery(String field, Element node, Analyzer analyzer) throws XPathException {
+        String lower = getChildText(node, "lower");
+        String upper = getChildText(node, "upper");
+        if (lower == null || upper == null) {
+            throw new XPathException((Expression) null, "range query requires <lower> and <upper> child elements");
+        }
+        String lowerTerm = getTerm(field, lower, analyzer);
+        String upperTerm = getTerm(field, upper, analyzer);
+        if (lowerTerm == null || upperTerm == null) {
+            return null;
+        }
+        return TermRangeQuery.newStringRange(field, lowerTerm, upperTerm, true, true);
+    }
+
+    private String getChildText(Element parent, String childLocalName) {
+        NodeList nl = parent.getChildNodes();
+        for (int i = 0; i < nl.getLength(); i++) {
+            Node n = nl.item(i);
+            if (n.getNodeType() == Node.ELEMENT_NODE && childLocalName.equals(n.getLocalName())) {
+                return getText((Element) n);
+            }
+        }
+        return null;
     }
 
     private String getTerm(String field, String text, Analyzer analyzer) throws XPathException {
