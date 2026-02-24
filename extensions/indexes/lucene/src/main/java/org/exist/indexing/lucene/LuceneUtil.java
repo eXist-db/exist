@@ -56,6 +56,8 @@ public class LuceneUtil {
     public static final String FIELD_DOC_URI = "docUri";
     /** Per-document boost for attribute/config-based scoring (Lucene 10: index-time boost via FloatDocValues) */
     public static final String FIELD_BOOST = "_boost";
+    /** Identifies which index config created the Lucene doc; used to filter when multiple indexes share a collection. */
+    public static final String FIELD_INDEX_TYPE = "_idx";
 
     public static byte[] createId(final int docId, final NodeId nodeId) {
         // build id from nodeId and docId
