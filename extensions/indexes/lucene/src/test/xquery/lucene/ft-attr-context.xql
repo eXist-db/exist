@@ -59,7 +59,7 @@ declare variable $ftac:XML as document-node() :=
         <p att1="val1" att2="val2">this is a test document</p>
     };
 
-declare variable $ftac:COLLECTION_NAME := "ft-attr-context";
+declare variable $ftac:COLLECTION_NAME := "lucene-test-ft-attr-context";
 declare variable $ftac:COLLECTION := "/db/" || $ftac:COLLECTION_NAME;
 
 (:~ Callback for util:index-keys. :)

@@ -76,7 +76,7 @@ declare variable $plst:XML as document-node() :=
         </test>
     };
 
-declare variable $plst:COLLECTION_NAME := "parenthesized-location-step";
+declare variable $plst:COLLECTION_NAME := "lucene-test-parenthesized-location-step";
 declare variable $plst:COLLECTION := "/db/" || $plst:COLLECTION_NAME;
 
 (:~

@@ -72,7 +72,7 @@ declare variable $pctx:XML as document-node() :=
         </test>
     };
 
-declare variable $pctx:COLLECTION_NAME := "parenthesized-context";
+declare variable $pctx:COLLECTION_NAME := "lucene-test-parenthesized-context";
 declare variable $pctx:COLLECTION := "/db/" || $pctx:COLLECTION_NAME;
 
 (:~

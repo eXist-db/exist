@@ -38,8 +38,9 @@ declare variable $analyze:XCONF1 :=
         </triggers>
     </collection>;
 
-(: Unique name to avoid collision with facets.xql which also uses config under /db/system/config/db. :)
-declare variable $analyze:COLLECTION_NAME := "lucene-analyzers";
+(: Per-module subpath under /db/lucene-test/ for isolation. :)
+declare variable $analyze:COLLECTION_PATH := "/db/lucene-test/analyzers";
+declare variable $analyze:CONFIG_PATH := "/db/system/config/db/lucene-test/analyzers";
 
 declare variable $analyze:XCONF2 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -56,13 +57,14 @@ declare variable $analyze:XCONF2 :=
 declare
     %test:setUp
 function analyze:setup() {
-    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
-    let $testCol := xmldb:create-collection("/db", $analyze:COLLECTION_NAME)
-    let $testCol1 := xmldb:create-collection("/db/" || $analyze:COLLECTION_NAME, "test1")
-    let $testCol2 := xmldb:create-collection("/db/" || $analyze:COLLECTION_NAME, "test2")
-    let $confCol := xmldb:create-collection("/db/system/config/db", $analyze:COLLECTION_NAME)
-    let $confCol1 := xmldb:create-collection("/db/system/config/db/" || $analyze:COLLECTION_NAME, "test1")
-    let $confCol2 := xmldb:create-collection("/db/system/config/db/" || $analyze:COLLECTION_NAME, "test2")
+    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"),
+        xmldb:create-collection("/db", "lucene-test"), xmldb:create-collection("/db/system/config/db", "lucene-test"))
+    let $testCol := xmldb:create-collection("/db/lucene-test", "analyzers")
+    let $testCol1 := xmldb:create-collection($testCol, "test1")
+    let $testCol2 := xmldb:create-collection($testCol, "test2")
+    let $confCol := xmldb:create-collection("/db/system/config/db/lucene-test", "analyzers")
+    let $confCol1 := xmldb:create-collection($confCol, "test1")
+    let $confCol2 := xmldb:create-collection($confCol, "test2")
     return (
         xmldb:store($confCol1, "collection.xconf", $analyze:XCONF1),
         xmldb:store($testCol1, "test.xml",
@@ -116,7 +118,7 @@ function analyze:setup() {
                 <p>ziyou</p>
             </test>
         ),
-        xmldb:reindex("/db/" || $analyze:COLLECTION_NAME)
+        xmldb:reindex($analyze:COLLECTION_PATH)
     )
 };
 
@@ -154,7 +156,7 @@ declare
     %test:args("ziyou")
     %test:assertEquals(2)
 function analyze:no-diacrictics($term as xs:string) {
-    count(collection("/db/" || $analyze:COLLECTION_NAME || "/test1")//p[ft:query(., $term)])
+    count(collection($analyze:COLLECTION_PATH || "/test1")//p[ft:query(., $term)])
 };
 
 declare
@@ -191,7 +193,7 @@ declare
     %test:args("zìyóu")
     %test:assertEquals(1)
 function analyze:diacrictics($term as xs:string) {
-    count(collection("/db/" || $analyze:COLLECTION_NAME || "/test2")//p[ft:query(., $term)])
+    count(collection($analyze:COLLECTION_PATH || "/test2")//p[ft:query(., $term)])
 };
 
 declare
@@ -214,12 +216,12 @@ declare
     %test:args("n*")
     %test:assertEquals(3)
 function analyze:query-parser($term as xs:string) {
-    count(collection("/db/" || $analyze:COLLECTION_NAME || "/test1")//p[ft:query(., $term)])
+    count(collection($analyze:COLLECTION_PATH || "/test1")//p[ft:query(., $term)])
 };
 
 declare
     %test:tearDown
 function analyze:tearDown() {
-    xmldb:remove("/db/" || $analyze:COLLECTION_NAME),
-    xmldb:remove("/db/system/config/db/" || $analyze:COLLECTION_NAME)
+    xmldb:remove($analyze:COLLECTION_PATH),
+    xmldb:remove($analyze:CONFIG_PATH)
 };

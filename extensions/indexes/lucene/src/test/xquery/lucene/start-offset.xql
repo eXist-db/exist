@@ -48,7 +48,7 @@ declare variable $stof:XCONF as element(collection) :=
         </index>
     </collection>;
 
-declare variable $stof:COLLECTION_NAME := "start-offset";
+declare variable $stof:COLLECTION_NAME := "lucene-test-start-offset";
 declare variable $stof:COLLECTION := "/db/" || $stof:COLLECTION_NAME;
 
 (:~
