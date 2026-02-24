@@ -442,6 +442,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     options.configureParser(parser.getConfiguration());
                     query = parser.parse(queryStr);
                 }
+                query = filterByIndexType(query, field);
                 final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
@@ -488,11 +489,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 LuceneConfig config = getLuceneConfig(broker, docs);
                 analyzer = getQueryAnalyzer(config, null, qname, options);
                 Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
-                Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
-                if (facets.isPresent() && config != null) {
-                    query = drilldown(facets.get(), query, config);
-                }
                 if (query != null) {
+                    query = filterByIndexType(query, field);
+                    Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
+                    if (facets.isPresent() && config != null) {
+                        query = drilldown(facets.get(), query, config);
+                    }
                     if (config != null && config.hasBoostConfig()) {
                         query = FunctionScoreQuery.boostByValue(query, DoubleValuesSource.fromFloatField(LuceneUtil.FIELD_BOOST));
                     }
@@ -531,6 +533,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             facet.getValue().toQuery(facet.getKey(), drillDownQuery, dimConfig.hierarchical);
         }
         return drillDownQuery;
+    }
+
+    /**
+     * Wraps the query in a BooleanQuery that filters by {@link LuceneUtil#FIELD_INDEX_TYPE}
+     * when querying by qname, so we only match Lucene docs from that index config.
+     * Required when multiple indexes (e.g. document vs abstract) share a collection.
+     */
+    private Query filterByIndexType(Query query, String indexField) {
+        return new BooleanQuery.Builder()
+                .add(query, BooleanClause.Occur.MUST)
+                .add(new TermQuery(new Term(LuceneUtil.FIELD_INDEX_TYPE, indexField)), BooleanClause.Occur.FILTER)
+                .build();
     }
 
     private void searchAndProcess(final int contextId, final QName qname, final DocumentSet docs,
@@ -1469,7 +1483,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     Field fld = new TextField(contentField, pending.text.toString(), Field.Store.NO);
 
                     doc.add(fld);
+                } else {
+                    contentField = pending.idxConf.isNamed()
+                        ? pending.idxConf.getName()
+                        : LuceneUtil.encodeQName(pending.qname, index.getBrokerPool().getSymbols());
                 }
+                doc.add(new StringField(LuceneUtil.FIELD_INDEX_TYPE, contentField, Field.Store.NO));
 
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);

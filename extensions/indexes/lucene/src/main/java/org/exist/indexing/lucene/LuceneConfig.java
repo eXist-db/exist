@@ -192,10 +192,42 @@ public class LuceneConfig {
 
     public Analyzer getAnalyzer(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
-        while (idxConf != null) {
-            if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname))
-                break;
-            idxConf = idxConf.getNext();
+        boolean foundByFallback = false;
+        if (idxConf == null && qname != null) {
+            // Fallback: paths uses config's path component as key; query QName may differ
+            // (e.g. name type, prefix). Match by local part and namespace.
+            final String local = qname.getLocalPart();
+            final String ns = qname.getNamespaceURI();
+            if (local != null && !local.equals(QName.WILDCARD)) {
+                for (LuceneIndexConfig config : paths.values()) {
+                    LuceneIndexConfig c = config;
+                    while (c != null) {
+                        if (!c.isNamed()) {
+                            QName pathQName = c.getNodePathPattern().getLastComponent();
+                            String pathNs = pathQName.getNamespaceURI();
+                            boolean nsMatch = (ns == null || ns.isEmpty())
+                                    ? (pathNs == null || pathNs.isEmpty())
+                                    : ns.equals(pathNs);
+                            if (pathQName != null
+                                    && local.equals(pathQName.getLocalPart())
+                                    && nsMatch) {
+                                idxConf = c;
+                                foundByFallback = true;
+                                break;
+                            }
+                        }
+                        c = c.getNext();
+                    }
+                    if (idxConf != null) break;
+                }
+            }
+        }
+        if (!foundByFallback) {
+            while (idxConf != null) {
+                if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname))
+                    break;
+                idxConf = idxConf.getNext();
+            }
         }
         if (idxConf != null) {
             final Analyzer analyzer = idxConf.getAnalyzer();
