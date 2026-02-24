@@ -163,6 +163,19 @@ function idxk:tearDown() {
 };
 
 (:~
+ : util:index-keys on path-based Lucene index (match="//pPath") should return terms.
+ : getQNamesFromNodes or scanIndex must resolve path-based Lucene indexes from context.
+ :)
+declare
+    %test:assertTrue
+function idxk:index-scan-path-lucene-has-terms() {
+    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+        $hits := collection($idxk:COLLECTION)//pPath,
+        $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
+    return count($result) eq count($idxk:EXPECTED_PATH_LUCENE)
+};
+
+(:~
  : index scan on path-based Lucene FT indexed nodes
  :)
 declare
@@ -172,6 +185,19 @@ function idxk:index-scan-path-lucene() {
         $hits := collection($idxk:COLLECTION)//pPath,
         $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
     return deep-equal($result, $idxk:EXPECTED_PATH_LUCENE)
+};
+
+(:~
+ : util:index-keys on qname-based Lucene index (qname="pQname") should return terms.
+ : getQNamesFromNodes or scanIndex must resolve qname-based Lucene indexes from context.
+ :)
+declare
+    %test:assertTrue
+function idxk:index-scan-qname-lucene-has-terms() {
+    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+        $hits := collection($idxk:COLLECTION)//pQname,
+        $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
+    return count($result) eq count($idxk:EXPECTED_PATH_LUCENE)
 };
 
 (:~
