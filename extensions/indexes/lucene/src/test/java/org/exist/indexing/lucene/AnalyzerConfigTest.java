@@ -22,7 +22,6 @@
 package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.util.Version;
 import org.exist.util.StringInputSource;
 import org.junit.Test;
 import org.w3c.dom.Document;

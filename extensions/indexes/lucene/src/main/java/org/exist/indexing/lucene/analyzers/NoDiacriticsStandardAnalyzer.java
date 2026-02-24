@@ -30,8 +30,6 @@ import org.apache.lucene.analysis.StopFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.StopwordAnalyzerBase;
-import org.apache.lucene.util.Version;
-import org.exist.indexing.lucene.LuceneIndex;
 
 import java.io.IOException;
 import java.io.Reader;

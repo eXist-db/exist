@@ -39,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.CharArraySet;
-import org.apache.lucene.util.Version;
 
 import org.exist.collections.CollectionConfiguration;
 import org.exist.util.DatabaseConfigurationException;
@@ -154,20 +153,8 @@ public class AnalyzerConfig {
         }
 
         // Create new analyzer
-        Analyzer newAnalyzer;
-        if (cParamClasses.length > 0 && cParamClasses[0] == Version.class) {
-            if (LOG.isDebugEnabled()) {
-                Version version = (Version) cParamValues[0];
-                LOG.debug("An explicit Version {} of lucene has been specified.", version.toString());
-            }
-
-            // A lucene Version object has been provided, so it shall be used
-            newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
-        } else {
-            // Either no parameters have been provided, or more than one parameter
-            // Analyzer has been specified without a 'Version' argument (the default)
-            newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
-        }
+        // Note: Lucene 10 removed Version constants (LUCENE_4_*, etc.). Analyzers no longer take Version.
+        final Analyzer newAnalyzer = createInstance(clazz, cParamClasses, cParamValues, false);
 
         if (newAnalyzer == null) {
             LOG.error("Unable to create analyzer '{}'", className);
@@ -288,7 +275,13 @@ public class AnalyzerConfig {
                     final Object fValue = field.get(fieldClazz.getDeclaredConstructor().newInstance());
                     yield new KeyTypedValue<>(name, fValue, Object.class);
 
-                } catch (final NoSuchFieldException | ClassNotFoundException | InstantiationException |
+                } catch (final NoSuchFieldException | NoSuchFieldError e) {
+                    if (clazzName.contains("lucene") && clazzName.contains("Version")) {
+                        throw new ParameterException("Lucene Version constants (e.g. LUCENE_4_10_4) were removed in Lucene 10. "
+                                + "Use analyzers that do not require a Version parameter.", e);
+                    }
+                    throw new ParameterException(e.getMessage(), e);
+                } catch (final ClassNotFoundException | InstantiationException |
                                IllegalAccessException | NoSuchMethodException | InvocationTargetException reflectiveOperationException) {
                     throw new ParameterException(reflectiveOperationException.getMessage(), reflectiveOperationException);
                 }
