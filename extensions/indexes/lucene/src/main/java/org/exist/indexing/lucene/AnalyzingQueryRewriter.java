@@ -29,6 +29,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 
 import java.io.IOException;
@@ -69,6 +70,14 @@ public final class AnalyzingQueryRewriter {
         }
         if (query instanceof BoostQuery boost) {
             return new BoostQuery(rewriteQuery(boost.getQuery(), analyzer), boost.getBoost());
+        }
+        if (query instanceof TermQuery tq) {
+            Term t = tq.getTerm();
+            String norm = normalizeTerm(t.field(), t.text(), analyzer);
+            if (norm != null) {
+                return new TermQuery(new Term(t.field(), norm));
+            }
+            return query;
         }
         if (query instanceof PrefixQuery pq) {
             Term t = pq.getPrefix();

@@ -1478,9 +1478,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     config.build(broker, currentDoc, pending.nodeId, doc, pending.text)
                 );
                 // register field analyzers so indexing uses the same analyzer as querying
+                final LuceneConfig luceneConfig = pending.idxConf.getParent();
                 for (AbstractFieldConfig config : facetConfigs) {
-                    if (config instanceof LuceneFieldConfig lfc && lfc.getAnalyzer() != null) {
-                        index.addFieldAnalyzer(lfc.getName(), lfc.getAnalyzer());
+                    if (config instanceof LuceneFieldConfig lfc) {
+                        Analyzer a = lfc.getAnalyzer();
+                        if (a == null) {
+                            a = luceneConfig.getFieldAnalyzer(lfc.getName());
+                            if (a == null) {
+                                a = pending.idxConf.getAnalyzer();
+                            }
+                        }
+                        if (a != null) {
+                            index.addFieldAnalyzer(lfc.getName(), a);
+                        }
                     }
                 }
 
