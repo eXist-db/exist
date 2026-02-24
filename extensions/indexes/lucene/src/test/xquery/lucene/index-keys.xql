@@ -67,7 +67,7 @@ declare variable $idxk:TEST_DOC as element(test) :=
         <pQname>some text inside a paragraph</pQname>
     </test>;
 
-declare variable $idxk:COLLECTION_NAME := "index-keys";
+declare variable $idxk:COLLECTION_NAME := "lucene-test-index-keys";
 declare variable $idxk:COLLECTION := "/db/" || $idxk:COLLECTION_NAME;
 
 (:~

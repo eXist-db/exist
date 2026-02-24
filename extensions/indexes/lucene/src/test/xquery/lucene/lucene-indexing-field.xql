@@ -66,7 +66,7 @@ declare variable $lif:xconf :=
     </collection>;
 
 (:~ Test collection name (no path). :)
-declare variable $lif:COLLECTION_NAME := "lucene-indexing-field";
+declare variable $lif:COLLECTION_NAME := "lucene-test-lucene-indexing-field";
 
 (:~ Full path of the test collection. :)
 declare variable $lif:COLLECTION := "/db/" || $lif:COLLECTION_NAME;

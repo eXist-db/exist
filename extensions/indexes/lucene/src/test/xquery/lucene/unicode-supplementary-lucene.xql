@@ -91,7 +91,7 @@ declare variable $unic-smp-l:xconf :=
     </collection>;
 
 (:~ Name of the test collection (no path). :)
-declare variable $unic-smp-l:COLLECTION_NAME := "unicode-supplementary-lucene";
+declare variable $unic-smp-l:COLLECTION_NAME := "lucene-test-unicode-supplementary";
 
 (:~ Full path of the test collection. :)
 declare variable $unic-smp-l:COLLECTION := "/db/" || $unic-smp-l:COLLECTION_NAME;
