@@ -221,12 +221,35 @@ function pctx:query-path-indirect-desc-attr() {
 };
 
 (:~
+ : util:index-keys with parenthesized qname context (collection()//test/(qname)).
+ : Parentheses affect how the optimizer derives index hints; index lookup must handle them.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-qname-fully-paren-has-terms() {
+    let $a := (collection($pctx:COLLECTION)//test/qname),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
+};
+
+(:~
  : [index] fully parenthesized element node.
  :)
 declare
     %test:assertTrue
 function pctx:index-qname-fully-paren() {
     let $a := (collection($pctx:COLLECTION)//test/qname) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERMS_ELEMENT)
+};
+(:~
+ : util:index-keys with fully parenthesized path context. (collection()//test/path)
+ : wraps the entire step; scan must resolve path-based index from this context.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-path-fully-paren-has-terms() {
+    let $a := (collection($pctx:COLLECTION)//test/path),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
 };
 declare
     %test:assertTrue
@@ -356,6 +379,18 @@ declare
     %test:assertEquals("test")
 function pctx:query-path-indirect-desc-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/path/(@att.path) return $a[ft:query(., 'test')]/string()
+};
+
+(:~
+ : util:index-keys with (path) in location step. Context (collection()//test/(path))
+ : differs from //test/path; index lookup must resolve parenthesized step.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-path-paren-has-terms() {
+    let $a := collection($pctx:COLLECTION)//test/(path),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
 };
 
 (:~

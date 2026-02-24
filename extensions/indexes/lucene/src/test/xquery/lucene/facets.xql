@@ -602,6 +602,28 @@ function facet:query-field($query as xs:string) {
     count(collection("/db/lucene-test/facets")//letter[ft:query(., $query)])
 };
 
+(:~
+ : Single-term field query on place. Place values are indexed with NoDiacriticsStandardAnalyzer;
+ : "Wrocław" normalizes to "wroclaw", so place:wroclaw matches 2 letters.
+ :)
+declare
+    %test:args("place:wroclaw")
+    %test:assertEquals(2)
+function facet:query-field-place-term($query as xs:string) {
+    count(collection("/db/lucene-test/facets")//letter[ft:query(., $query)])
+};
+
+(:~
+ : Field query with prefix in to field. to:(ba* müller) matches letters to "Basia Müller",
+ : "Basia Kowalska", "Babsi Müller" – prefix ba* matches Basia, Babsi.
+ :)
+declare
+    %test:args('to:(ba* müller)')
+    %test:assertEquals(2)
+function facet:query-field-to-prefix($query as xs:string) {
+    count(collection("/db/lucene-test/facets")//letter[ft:query(., $query)])
+};
+
 declare
     %test:assertEquals("Babsi Müller", "Basia Kowalska", "Basia Müller")
 function facet:query-and-sort() {
@@ -817,6 +839,33 @@ function facet:avoid-range-index-conflict-city() {
             $persons-facet?none || " city values were calculated without id range indexes present"
         else
             ()
+};
+
+(:~
+ : Phrase in abstract field should highlight as single span. abstract:"Götter sich streiten"
+ : matches one contiguous phrase; ft:highlight-field-matches should wrap the whole phrase
+ : in one exist:match.
+ :)
+declare
+    %test:args('abstract:"Götter sich streiten"', "abstract")
+    %test:assertEquals("<exist:field xmlns:exist='http://exist.sourceforge.net/NS/exist'>Da nun einmal der Himmel zerrissen und die <exist:match>Götter sich streiten</exist:match></exist:field>")
+function facet:query-field-expand-phrase-span($query as xs:string, $field as xs:string) {
+    let $result := doc("/db/lucene-test/facets/documents.xml")//document[ft:query(., $query)]
+    return
+        ft:highlight-field-matches($result, $field)[.//exist:match]
+};
+
+(:~
+ : Title phrase should highlight as single span. title:"Streiten und Hoffen" matches
+ : the full title; each term wrapped separately indicates phrase span merge is needed.
+ :)
+declare
+    %test:args('title:"Streiten und Hoffen"', "title")
+    %test:assertEquals("<exist:field xmlns:exist='http://exist.sourceforge.net/NS/exist'><exist:match>Streiten und Hoffen</exist:match></exist:field>")
+function facet:query-field-expand-title-phrase-span($query as xs:string, $field as xs:string) {
+    let $result := doc("/db/lucene-test/facets/documents.xml")//document[ft:query(., $query)]
+    return
+        ft:highlight-field-matches($result, $field)[.//exist:match]
 };
 
 (: FIXME: After Lucene 10 FIELD_INDEX_TYPE fix, some cases return 2 items when 1 expected (e.g. abstract:"Walde weht ein Wind" on docs with multiple abstracts). Review whether expectations need updating. :)
