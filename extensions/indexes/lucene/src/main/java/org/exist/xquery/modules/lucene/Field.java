@@ -57,6 +57,7 @@ import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
 public class Field extends BasicFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
+    private static final FunctionParameterSequenceType FS_PARAM_NODES_OPT = optManyParam("nodes", Type.NODE, "zero or more context nodes (empty returns empty)");
     private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING, "name of the field");
     private static final FunctionParameterSequenceType TYPE_PARAMETER = param("type", Type.STRING, "intended target type to cast the field value to. Casting may fail with a dynamic error.");
 
@@ -99,9 +100,9 @@ public class Field extends BasicFunction {
             FS_HIGHLIGHT_FIELD_MATCHES_NAME,
             "Highlights matches for the last executed lucene query within the value of a field " +
             "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
-            "available to highlighting.",
-            returnsOpt(Type.ELEMENT, "An exist:field containing the content of the requested field with all query matches enclosed in an exist:match"),
-            FS_PARAM_NODE,
+            "available to highlighting. Accepts zero or more nodes; empty input returns empty.",
+            returnsOptMany(Type.ELEMENT, "exist:field elements with matches enclosed in exist:match"),
+            FS_PARAM_NODES_OPT,
             FS_PARAM_FIELD
     );
 
@@ -111,6 +112,15 @@ public class Field extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final String called = getSignature().getName().getLocalPart();
+
+        if (FS_HIGHLIGHT_FIELD_MATCHES_NAME.equals(called)) {
+            return evalHighlightFieldMatches(args);
+        }
+
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
         final NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
             return Sequence.EMPTY_SEQUENCE;
@@ -129,19 +139,44 @@ public class Field extends BasicFunction {
         if (match == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final String called = getSignature().getName().getLocalPart();
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
             return switch (called) {
                 case FS_FIELD_NAME -> getFieldValues(fieldName, type, match, index);
-                case FS_HIGHLIGHT_FIELD_MATCHES_NAME -> {
-                    final Sequence result = getFieldValues(fieldName, type, match, index);
-                    yield highlightMatches(fieldName, proxy, match, result);
-                }
                 case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, match, index);
                 default -> throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
             };
+        } catch (final IOException e) {
+            throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
+        }
+    }
+
+    private Sequence evalHighlightFieldMatches(final Sequence[] args) throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final String fieldName = args[1].itemAt(0).getStringValue();
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final ValueSequence result = new ValueSequence();
+        try {
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                final NodeValue nodeValue = (NodeValue) i.nextItem();
+                if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                    continue;
+                }
+                final NodeProxy proxy = (NodeProxy) nodeValue;
+                final LuceneMatch match = getMatch(proxy);
+                if (match == null) {
+                    continue;
+                }
+                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, match, index);
+                final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
+                for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
+                    result.add(hi.nextItem());
+                }
+            }
+            return result;
         } catch (final IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
