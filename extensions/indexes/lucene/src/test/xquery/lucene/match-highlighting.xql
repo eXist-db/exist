@@ -61,7 +61,7 @@ declare variable $mhlt:XML as document-node() :=
         </test>
     };
 
-declare variable $mhlt:COLLECTION_NAME := "match-highlighting";
+declare variable $mhlt:COLLECTION_NAME := "lucene-test-match-highlighting";
 declare variable $mhlt:COLLECTION := "/db/" || $mhlt:COLLECTION_NAME;
 
 (:~

@@ -48,41 +48,41 @@ declare variable $pstor:SAMPLE_PLAY as document-node() :=
     };
 
 (:~
- : setUp: create morebinary, morebinary2, morebinary3; store text files and sample XML.
+ : setUp: create lucene-test-morebinary, lucene-test-morebinary2, lucene-test-morebinary3; store text files and sample XML.
  : No ft:index here — Store index 1/2/3 build the index; query tests run after and depend on it.
  :)
 declare
     %test:setUp
 function pstor:setUp() {
-    ( xmldb:create-collection("/db", "morebinary"),
-      xmldb:store("/db/morebinary", "index1.txt", "AAAAAA", "text/plain"),
-      xmldb:store("/db/morebinary", "index2.txt", "BBBBBB", "text/plain"),
-      xmldb:store("/db/morebinary", "index3.txt", "CCCCCC", "text/plain"),
-      xmldb:create-collection("/db/morebinary", "shakespeare"),
-      xmldb:store("/db/morebinary/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY),
-      xmldb:create-collection("/db", "morebinary2"),
-      xmldb:create-collection("/db/morebinary2", "shakespeare"),
-      xmldb:store("/db/morebinary2/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary2/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary2/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY),
-      xmldb:create-collection("/db", "morebinary3"),
-      xmldb:create-collection("/db/morebinary3", "shakespeare"),
-      xmldb:store("/db/morebinary3/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary3/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
-      xmldb:store("/db/morebinary3/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY) )
+    ( xmldb:create-collection("/db", "lucene-test-morebinary"),
+      xmldb:store("/db/lucene-test-morebinary", "index1.txt", "AAAAAA", "text/plain"),
+      xmldb:store("/db/lucene-test-morebinary", "index2.txt", "BBBBBB", "text/plain"),
+      xmldb:store("/db/lucene-test-morebinary", "index3.txt", "CCCCCC", "text/plain"),
+      xmldb:create-collection("/db/lucene-test-morebinary", "shakespeare"),
+      xmldb:store("/db/lucene-test-morebinary/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY),
+      xmldb:create-collection("/db", "lucene-test-morebinary2"),
+      xmldb:create-collection("/db/lucene-test-morebinary2", "shakespeare"),
+      xmldb:store("/db/lucene-test-morebinary2/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary2/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary2/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY),
+      xmldb:create-collection("/db", "lucene-test-morebinary3"),
+      xmldb:create-collection("/db/lucene-test-morebinary3", "shakespeare"),
+      xmldb:store("/db/lucene-test-morebinary3/shakespeare", "hamlet.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary3/shakespeare", "macbeth.xml", $pstor:SAMPLE_PLAY),
+      xmldb:store("/db/lucene-test-morebinary3/shakespeare", "r_and_j.xml", $pstor:SAMPLE_PLAY) )
 };
 
 (:~
- : tearDown: remove morebinary, morebinary2, morebinary3 (ignore missing for morebinary3).
+ : tearDown: remove lucene-test-morebinary, lucene-test-morebinary2, lucene-test-morebinary3 (ignore missing for lucene-test-morebinary3).
  :)
 declare
     %test:tearDown
 function pstor:tearDown() {
-    ( xmldb:remove("/db/morebinary"),
-      xmldb:remove("/db/morebinary2"),
-      if (xmldb:collection-available("/db/morebinary3")) then xmldb:remove("/db/morebinary3") else () )
+    ( xmldb:remove("/db/lucene-test-morebinary"),
+      xmldb:remove("/db/lucene-test-morebinary2"),
+      if (xmldb:collection-available("/db/lucene-test-morebinary3")) then xmldb:remove("/db/lucene-test-morebinary3") else () )
 };
 
 (:~
@@ -92,7 +92,7 @@ function pstor:tearDown() {
 declare
     %test:assertEmpty
 function pstor:a-store-index-1() {
-    ft:index("/db/morebinary/index1.txt", <doc><field name="author" store="yes">Dannes Wessels</field><field name="para">Some text for a paragraph</field></doc>)
+    ft:index("/db/lucene-test-morebinary/index1.txt", <doc><field name="author" store="yes">Dannes Wessels</field><field name="para">Some text for a paragraph</field></doc>)
 };
 
 (:~
@@ -102,7 +102,7 @@ function pstor:a-store-index-1() {
 declare
     %test:assertEmpty
 function pstor:b-store-index-2() {
-    ft:index("/db/morebinary/index2.txt", <doc><field name="author">Adam Retter</field><field name="para">Some text for a paragraph Some text for a paragraph Some text for a paragraph.</field></doc>)
+    ft:index("/db/lucene-test-morebinary/index2.txt", <doc><field name="author">Adam Retter</field><field name="para">Some text for a paragraph Some text for a paragraph Some text for a paragraph.</field></doc>)
 };
 
 (:~
@@ -112,25 +112,25 @@ function pstor:b-store-index-2() {
 declare
     %test:assertEmpty
 function pstor:c-store-index-3() {
-    ft:index("/db/morebinary/index3.txt", <doc><field name="author">Harry Potter</field><field name="para" store="yes">Some blah for a paragraph Some blah for a paragraph Some blah for a paragraph paragraph paragraph.</field></doc>)
+    ft:index("/db/lucene-test-morebinary/index3.txt", <doc><field name="author">Harry Potter</field><field name="para" store="yes">Some blah for a paragraph Some blah for a paragraph Some blah for a paragraph paragraph paragraph.</field></doc>)
 };
 
 (:~
  : Query for text in para.
  :)
 declare
-    %test:assertEquals("/db/morebinary/index1.txt /db/morebinary/index2.txt")
+    %test:assertEquals("/db/lucene-test-morebinary/index1.txt /db/lucene-test-morebinary/index2.txt")
 function pstor:query-para-text() {
-    string-join(for $uri in ft:search("/db/morebinary/", "para:text")//@uri order by $uri return string($uri), ' ')
+    string-join(for $uri in ft:search("/db/lucene-test-morebinary/", "para:text")//@uri order by $uri return string($uri), ' ')
 };
 
 (:~
  : Query for text in non-stored field.
  :)
 declare
-    %test:assertXPath("//search[@uri = '/db/morebinary/index3.txt']")
+    %test:assertXPath("//search[@uri = '/db/lucene-test-morebinary/index3.txt']")
 function pstor:query-non-stored-field() {
-    ft:search("/db/morebinary/", "author:potter")
+    ft:search("/db/lucene-test-morebinary/", "author:potter")
 };
 
 (:~
@@ -139,7 +139,7 @@ function pstor:query-non-stored-field() {
 declare
     %test:assertXPath("//search/field")
 function pstor:query-stored-field() {
-    ft:search("/db/morebinary/", "author:dannes")
+    ft:search("/db/lucene-test-morebinary/", "author:dannes")
 };
 
 (:~
@@ -148,7 +148,7 @@ function pstor:query-stored-field() {
 declare
     %test:assertEquals("true true true")
 function pstor:validate-scores() {
-    let $results := ft:search("/db/morebinary/", "para:paragraph"),
+    let $results := ft:search("/db/lucene-test-morebinary/", "para:paragraph"),
         $score := for $s in $results//@score order by xs:double($s) descending return xs:double($s)
     return string-join(($score[1] > $score[2], $score[2] > $score[3], $score[1] > $score[3]), ' ')
 };
@@ -159,7 +159,7 @@ function pstor:validate-scores() {
 declare
     %test:assertTrue
 function pstor:get-content-stored-field() {
-    let $result := ft:search("/db/morebinary/", "para:blah")//field
+    let $result := ft:search("/db/lucene-test-morebinary/", "para:blah")//field
     return deep-equal($result, <field name="para">Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph Some <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">blah</exist:match> for a paragraph paragraph paragraph.</field>)
 };
 
@@ -181,7 +181,7 @@ function pstor:index-data($scene as element(SCENE)) as element(doc) {
 declare
     %test:assertEquals(1)
 function pstor:add-index-xml-document() {
-    let $path := "/db/morebinary/shakespeare/macbeth.xml",
+    let $path := "/db/lucene-test-morebinary/shakespeare/macbeth.xml",
         $doc := doc($path),
         $index := for $scene in $doc//SCENE return ft:index($path, pstor:index-data($scene))
     return count(ft:search($path, 'speech:"boil and bake"')//search)
@@ -194,7 +194,7 @@ declare
     %test:pending("previously ignored; query on parent collection")
     %test:assertEquals(1)
 function pstor:query-parent-includes-subcollections() {
-    count(ft:search("/db/morebinary/shakespeare", 'speech:"boil bake"')//field)
+    count(ft:search("/db/lucene-test-morebinary/shakespeare", 'speech:"boil bake"')//field)
 };
 
 (:~
@@ -203,8 +203,8 @@ function pstor:query-parent-includes-subcollections() {
 declare
     %test:assertEquals(0)
 function pstor:remove-single-document() {
-    xmldb:remove("/db/morebinary2/shakespeare", "macbeth.xml"),
-    count(ft:search("/db/morebinary2/shakespeare", 'speech:"boil bake"')//field)
+    xmldb:remove("/db/lucene-test-morebinary2/shakespeare", "macbeth.xml"),
+    count(ft:search("/db/lucene-test-morebinary2/shakespeare", 'speech:"boil bake"')//field)
 };
 
 (:~
@@ -213,6 +213,6 @@ function pstor:remove-single-document() {
 declare
     %test:assertEmpty
 function pstor:remove-collection() {
-    xmldb:remove("/db/morebinary3"),
-    ft:search("/db/morebinary3", "para:text")//@uri
+    xmldb:remove("/db/lucene-test-morebinary3"),
+    ft:search("/db/lucene-test-morebinary3", "para:text")//@uri
 };

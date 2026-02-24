@@ -48,7 +48,7 @@ declare variable $ftt:DATA :=
         </div>
     </body>;
     
-declare variable $ftt:COLLECTION_NAME := "matchestest";
+declare variable $ftt:COLLECTION_NAME := "lucene-test-ft-match";
 declare variable $ftt:COLLECTION := "/db/" || $ftt:COLLECTION_NAME;
 
 declare

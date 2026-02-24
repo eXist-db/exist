@@ -76,7 +76,7 @@ declare variable $anix:XML as document-node() :=
         </text>
     };
 
-declare variable $anix:COLLECTION_NAME := "analyzers-index";
+declare variable $anix:COLLECTION_NAME := "lucene-test-analyzers-index";
 declare variable $anix:COLLECTION := "/db/" || $anix:COLLECTION_NAME;
 
 (:~ setUp: create collection, config, store doc, reindex.
