@@ -165,6 +165,7 @@ function idxk:tearDown() {
 (:~
  : util:index-keys on path-based Lucene index (match="//pPath") should return terms.
  : getQNamesFromNodes or scanIndex must resolve path-based Lucene indexes from context.
+ : New test for Lucene 10; counterpart: idxk:index-scan-path-lucene.
  :)
 declare
     %test:assertTrue
@@ -190,6 +191,7 @@ function idxk:index-scan-path-lucene() {
 (:~
  : util:index-keys on qname-based Lucene index (qname="pQname") should return terms.
  : getQNamesFromNodes or scanIndex must resolve qname-based Lucene indexes from context.
+ : New test for Lucene 10; counterpart: idxk:index-scan-qname-lucene.
  :)
 declare
     %test:assertTrue

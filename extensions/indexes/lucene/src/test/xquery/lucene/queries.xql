@@ -166,6 +166,7 @@ function qrys:tearDown() {
 (:~
  : Term range query: [eins TO zwei] matches documents containing terms in that range.
  : Lucene QueryParser uses square brackets for inclusive range.
+ : New test for Lucene 10; counterpart: qrys:term-range-query.
  :)
 declare
     %test:assertTrue
@@ -348,8 +349,9 @@ function qrys:wildcard-context-acht() {
 };
 
 (:~
- : Wildcard context ft:query(*, "should"): query all children of test; "should" appears in p.
- : test[ft:query(*, "should")] must return the test element whose p child matches.
+ : Wildcard context ft:query(*, "should"): query all children of test; "should" appears in para.
+ : test[ft:query(*, "should")] must return the test element whose child matches.
+ : New test for Lucene 10; counterpart: qrys:wildcard-context-should.
  :)
 declare
     %test:assertXPath("exists($result/p)")
@@ -718,6 +720,7 @@ function qrys:analyzer-phrase-stopword-xml() {
 (:~
  : Phrase "and indexed" with stopword: para contains "The stopwords should not be indexed."
  : StandardAnalyzer removes "and"; phrase query and+indexed should still match.
+ : New test for Lucene 10; counterpart: qrys:analyzer-phrase-stopword.
  :)
 declare
     %test:assertTrue
@@ -770,6 +773,7 @@ function qrys:analyzer-bool-stopword-only() {
 (:~
  : Boolean with stopword: bool must stopwords+and. "and" is stopword but query requires
  : both terms; analyzer should skip "and" and match on "stopwords" only for that clause.
+ : New test for Lucene 10; counterpart: qrys:analyzer-bool-with-stopword.
  :)
 declare
     %test:assertTrue
