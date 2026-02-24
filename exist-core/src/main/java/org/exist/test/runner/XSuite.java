@@ -79,7 +79,7 @@ public class XSuite extends ParentRunner<Runner> {
     public static Runner emptySuite() {
         try {
             return new XSuite((Class<?>) null, new String[0]);
-        } catch (InitializationError e) {
+        } catch (final InitializationError e) {
             throw new RuntimeException("This shouldn't be possible");
         }
     }
