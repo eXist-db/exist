@@ -1254,10 +1254,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map<?,?> hints) {
         try {
             List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("scanIndex: qnamesFromHints={}, nodes={}, docCount={}",
+                    qnames, nodes != null ? nodes.getItemCount() : 0, docs != null ? docs.getDocumentCount() : 0);
+            }
             if (qnames == null && nodes != null && !nodes.isEmpty()) {
                 qnames = getQNamesFromNodes(nodes);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("scanIndex: qnamesFromNodes={}", qnames);
+                }
             }
             qnames = getDefinedIndexes(qnames);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("scanIndex: qnamesAfterGetDefined={}", qnames);
+            }
             //Expects a StringValue
             String start = null;
             String end = null;
@@ -1270,7 +1280,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 IntegerValue vmax = (IntegerValue) hints.get(VALUE_COUNT);
                 max = vmax == null ? Long.MAX_VALUE : vmax.getValue();
             }
-            return scanIndexByQName(qnames, docs, nodes, start, end, max);
+            Occurrences[] result = scanIndexByQName(qnames, docs, nodes, start, end, max);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("scanIndex: resultCount={}", result != null ? result.length : 0);
+            }
+            return result;
         } catch (IOException e) {
             LOG.warn("Failed to scan index occurrences: {}", e.getMessage(), e);
             return new Occurrences[0];
@@ -1303,6 +1317,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         index.withReader(reader -> {
             for (QName qname : qnames) {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("scanIndexByQName: qname={} -> field={}", qname, field);
+                }
                 doScanIndex(docs, nodes, start, end, max, map, reader, field);
             }
             return null;
@@ -1330,6 +1347,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(LuceneUtil.FIELD_NODE_ID);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
+            if (LOG.isDebugEnabled() && terms == null) {
+                LOG.debug("doScanIndex: field={} terms=null (field not in segment)", field);
+            }
             if (terms == null) {
                 continue;
             }
@@ -1360,12 +1380,19 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     }
                     DocumentImpl storedDocument = docs.getDoc(docId);
                     if (storedDocument == null) {
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("doScanIndex: docId={} not in docs (getDoc=null)", docId);
+                        }
                         continue;
                     }
                     if (nodes == null) {
                         addOccurrence(map, term, postings.freq(), storedDocument);
                     } else {
                         if (nodeIdValues == null || !nodeIdValues.advanceExact(postings.docID())) {
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("doScanIndex: nodeIdValues null={} (skipping term={} doc={})",
+                                    nodeIdValues == null, term, postings.docID());
+                            }
                             continue;
                         }
                         final BytesRef nodeIdRef = nodeIdValues.binaryValue();
@@ -1373,6 +1400,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         if (nodes.get(storedDocument, nodeId) != null) {
                             addOccurrence(map, term, postings.freq(), storedDocument);
+                        } else if (LOG.isDebugEnabled()) {
+                            LOG.debug("doScanIndex: term={} docId={} nodeId not in nodes", term, docId);
                         }
                     }
                 }

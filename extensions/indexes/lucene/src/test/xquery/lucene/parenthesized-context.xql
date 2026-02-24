@@ -223,6 +223,7 @@ function pctx:query-path-indirect-desc-attr() {
 (:~
  : util:index-keys with parenthesized qname context (collection()//test/(qname)).
  : Parentheses affect how the optimizer derives index hints; index lookup must handle them.
+ : New test for Lucene 10; counterpart: pctx:index-qname-fully-paren.
  :)
 declare
     %test:assertTrue
@@ -384,6 +385,7 @@ function pctx:query-path-indirect-desc-paren-attr() {
 (:~
  : util:index-keys with (path) in location step. Context (collection()//test/(path))
  : differs from //test/path; index lookup must resolve parenthesized step.
+ : New test for Lucene 10; counterpart: pctx:index-path-paren.
  :)
 declare
     %test:assertTrue

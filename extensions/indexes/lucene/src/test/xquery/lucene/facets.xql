@@ -605,6 +605,7 @@ function facet:query-field($query as xs:string) {
 (:~
  : Single-term field query on place. Place values are indexed with NoDiacriticsStandardAnalyzer;
  : "Wrocław" normalizes to "wroclaw", so place:wroclaw matches 2 letters.
+ : New test for Lucene 10; counterpart: facet:query-field.
  :)
 declare
     %test:args("place:wroclaw")
@@ -616,6 +617,7 @@ function facet:query-field-place-term($query as xs:string) {
 (:~
  : Field query with prefix in to field. to:(ba* müller) matches letters to "Basia Müller",
  : "Basia Kowalska", "Babsi Müller" – prefix ba* matches Basia, Babsi.
+ : New test for Lucene 10; counterpart: facet:query-field.
  :)
 declare
     %test:args('to:(ba* müller)')
@@ -845,6 +847,7 @@ function facet:avoid-range-index-conflict-city() {
  : Phrase in abstract field should highlight as single span. abstract:"Götter sich streiten"
  : matches one contiguous phrase; ft:highlight-field-matches should wrap the whole phrase
  : in one exist:match.
+ : New test for Lucene 10; counterpart: facet:query-field-expand-matches.
  :)
 declare
     %test:args('abstract:"Götter sich streiten"', "abstract")
@@ -858,6 +861,7 @@ function facet:query-field-expand-phrase-span($query as xs:string, $field as xs:
 (:~
  : Title phrase should highlight as single span. title:"Streiten und Hoffen" matches
  : the full title; each term wrapped separately indicates phrase span merge is needed.
+ : New test for Lucene 10; counterpart: facet:query-field-expand-matches.
  :)
 declare
     %test:args('title:"Streiten und Hoffen"', "title")
