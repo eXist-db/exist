@@ -33,6 +33,13 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
  * StandardAnalyzer with English stopwords.
  * Lucene 8+ removed stopwords from StandardAnalyzer; this restores the
  * pre-Lucene-8 behaviour for backward compatibility.
+ *
+ * FIXME: Stopgap for backwards compatibility. For Lucene 10 native stopword
+ * support without this custom analyzer, use {@code org.apache.lucene.analysis.en.EnglishAnalyzer}
+ * directly. Example config:
+ *   &lt;analyzer class="org.apache.lucene.analysis.en.EnglishAnalyzer"/&gt;
+ * EnglishAnalyzer filters stopwords and stems (Porter); it has a no-arg constructor.
+ * See lucene-native-english.xql for a cleanroom test of that approach.
  */
 public class EnglishStopwordsStandardAnalyzer extends StopwordAnalyzerBase {
 
