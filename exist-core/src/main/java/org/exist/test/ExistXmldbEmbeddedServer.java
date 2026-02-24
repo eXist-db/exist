@@ -117,7 +117,7 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
         if (database == null) {
             // initialize driver
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            database = (Database) cl.getDeclaredConstructor().newInstance();;
+            database = (Database) cl.getDeclaredConstructor().newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             if (asGuest) {

@@ -46,7 +46,7 @@ public class LocalSecurityManagerRoundtripTest extends AbstractSecurityManagerRo
     }
 
     @Override
-    protected void restartServer() throws XMLDBException, IOException {
+    protected void restartServer() throws XMLDBException {
         try {
             existXmldbEmbeddedServer.restart();
         } catch (final ReflectiveOperationException e) {
