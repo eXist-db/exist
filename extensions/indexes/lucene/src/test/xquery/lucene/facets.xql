@@ -815,6 +815,7 @@ function facet:avoid-range-index-conflict-city() {
             ()
 };
 
+(: FIXME: After Lucene 10 FIELD_INDEX_TYPE fix, some cases return 2 items when 1 expected (e.g. abstract:"Walde weht ein Wind" on docs with multiple abstracts). Review whether expectations need updating. :)
 declare
     %test:args("abstract:vogel", "abstract")
     %test:assertEquals("<exist:field xmlns:exist='http://exist.sourceforge.net/NS/exist'>Es zwitschern die <exist:match>Vögel</exist:match> im Walde</exist:field>")
