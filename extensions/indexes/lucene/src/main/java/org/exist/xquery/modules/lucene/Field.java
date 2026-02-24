@@ -245,8 +245,8 @@ public class Field extends BasicFunction {
                         String token = stream.getAttribute(CharTermAttribute.class).toString();
                         final Query query = terms.get(token);
                         if (query != null) {
-                            if (match.getQuery() instanceof PhraseQuery) {
-                                final Term phraseTerms[] = ((PhraseQuery) match.getQuery()).getTerms();
+                            if (query instanceof PhraseQuery phraseQuery) {
+                                final Term phraseTerms[] = phraseQuery.getTerms();
                                 if (token.equals(phraseTerms[0].text())) {
                                     // Scan the following text and collect tokens to see
                                     // if they are part of the phrase.

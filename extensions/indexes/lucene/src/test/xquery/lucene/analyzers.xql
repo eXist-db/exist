@@ -223,6 +223,7 @@ function analyze:query-parser($term as xs:string) {
  : Prefix queries via XML syntax (<query><prefix>...</prefix></query>).
  : Expects the same hits as string prefix: prefix text is normalized by the index
  : analyzer (e.g. diacritics stripped) so it matches indexed terms.
+ : New test for Lucene 10; counterpart: analyze:query-parser (prefix args).
  :)
 declare
     %test:args("rüssels")
