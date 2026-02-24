@@ -173,10 +173,17 @@ public class XMLToQuery {
             } catch (IOException e) {
                 throw new XPathException((Expression) null, "Error while parsing phrase query: " + qstr);
             }
-            return new SpanNearQuery(list.toArray(new SpanTermQuery[0]), slop, inOrder);
+            return spanNearOrSingle(list.toArray(new SpanTermQuery[0]), slop, inOrder);
         }
         SpanQuery[] children = parseSpanChildren(field, node, analyzer);
-        return new SpanNearQuery(children, slop, inOrder);
+        return spanNearOrSingle(children, slop, inOrder);
+    }
+
+    /** SpanNearQuery requires at least 2 clauses; return single span or null for 0. */
+    private SpanQuery spanNearOrSingle(SpanQuery[] clauses, int slop, boolean inOrder) {
+        if (clauses.length == 0) return null;
+        if (clauses.length == 1) return clauses[0];
+        return new SpanNearQuery(clauses, slop, inOrder);
     }
 
     private SpanQuery[] parseSpanChildren(String field, Element node, Analyzer analyzer) throws XPathException {
@@ -190,9 +197,11 @@ public class XMLToQuery {
                         case "term":
                             getSpanTerm(list, field, (Element) child, analyzer);
                             break;
-                        case "near":
-                            list.add(nearQuery(field, (Element) child, analyzer));
+                        case "near": {
+                            SpanQuery sq = nearQuery(field, (Element) child, analyzer);
+                            if (sq != null) list.add(sq);
                             break;
+                        }
                         case "first":
                             list.add(getSpanFirst(field, (Element) child, analyzer));
                             break;
