@@ -1007,6 +1007,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
 
             @Override
+            public void finish() throws IOException {
+                if (chainedLeafCollector != null) {
+                    chainedLeafCollector.finish();
+                }
+            }
+
+            @Override
             public void collect(int doc) throws IOException {
                 float score = scorer.score();
                 int docId;
