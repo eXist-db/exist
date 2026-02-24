@@ -118,7 +118,10 @@ public class Query extends Function implements Optimizable {
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
 
-        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (steps.isEmpty() && getArgument(0) instanceof LocationStep step) {
+            steps = List.of(step);
+        }
         if (!steps.isEmpty()) {
             final LocationStep firstStep = steps.getFirst();
             final LocationStep lastStep = steps.getLast();
