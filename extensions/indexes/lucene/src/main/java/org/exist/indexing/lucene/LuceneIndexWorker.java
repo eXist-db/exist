@@ -1149,6 +1149,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
+     * Derive unique QNames from a node set. Used when util:index-keys is called
+     * with nodes but no QNAMES_KEY hint, so we restrict scanning to the fields
+     * corresponding to those nodes (avoids double-counting when multiple indexes
+     * share a collection, e.g. path-based and qname-based).
+     *
+     * @param nodes the node set (elements or attributes)
+     * @return list of unique QNames, or empty list if nodes is empty
+     */
+    private static List<QName> getQNamesFromNodes(NodeSet nodes) {
+        final Set<QName> seen = new ObjectArraySet<>();
+        for (NodeProxy proxy : nodes) {
+            final QName qname = proxy.getQName();
+            if (qname != null) {
+                seen.add(qname);
+            }
+        }
+        return new ArrayList<>(seen);
+    }
+
+    /**
      * Return the analyzer to be used for the given field or qname. Either field
      * or qname should be specified.
      *
@@ -1231,6 +1251,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public Occurrences[] scanIndex(XQueryContext context, DocumentSet docs, NodeSet nodes, Map<?,?> hints) {
         try {
             List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
+            if (qnames == null && nodes != null && !nodes.isEmpty()) {
+                qnames = getQNamesFromNodes(nodes);
+            }
             qnames = getDefinedIndexes(qnames);
             //Expects a StringValue
             String start = null;
