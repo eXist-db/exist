@@ -115,10 +115,10 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     @Override
     public Analyzer getAnalyzer(String fieldName) {
-        if (fields.containsKey(fieldName)) {
-            return analyzer;
-        }
-        return null;
+        // Return analyzer for all fields. Path-based (encoded qname) fieldName is not in
+        // fields map; previously returned null causing 0 hits. Use default analyzer so
+        // index-time tokenization matches query-time analyzeContent.
+        return analyzer;
     }
 
     public RangeIndexConfigField getField(NodePath path) {

@@ -27,9 +27,13 @@ import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:o
 
 declare namespace mods="http://www.loc.gov/mods/v3";
 
-declare variable $rt:COLLECTION := "/db/rangetest";
+(:~ Test collection name (no path). :)
+declare variable $rt:COLLECTION_NAME := "range-test-updates";
 
-declare variable $rt:COLLECTION_CONFIG := 
+(:~ Full path of the test collection. :)
+declare variable $rt:COLLECTION := "/db/" || $rt:COLLECTION_NAME;
+
+declare variable $rt:COLLECTION_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:vra="http://www.vraweb.org/vracore4.htm" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mods="http://www.loc.gov/mods/v3">
             <lucene>
@@ -84,22 +88,30 @@ declare variable $rt:DATA :=
     </mods:modsCollection>
 ;
 
+(:~
+ : XQSuite setUp: create config parent chain, test collection, config subcollection,
+ : store xconf and document, reindex.
+ :)
 declare
     %test:setUp
 function rt:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", "rangetest"),
-    xmldb:store("/db/system/config/db/rangetest", "collection.xconf", $rt:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", "rangetest"),
-    xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rt:COLLECTION_NAME),
+     xmldb:create-collection("/db", $rt:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rt:COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
+     xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA),
+     xmldb:reindex($rt:COLLECTION))
 };
 
+(:~
+ : XQSuite tearDown: remove test collection and its config.
+ :)
 declare
     %test:tearDown
 function rt:cleanup() {
-    xmldb:remove($rt:COLLECTION, "test.xml"),
     xmldb:remove($rt:COLLECTION),
-    xmldb:remove("/db/system/config/db/rangetest")
+    xmldb:remove("/db/system/config/db/" || $rt:COLLECTION_NAME)
 };
 
 declare

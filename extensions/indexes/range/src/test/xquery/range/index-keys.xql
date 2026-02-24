@@ -77,12 +77,14 @@ declare variable $rtik:COLLECTION := "/db/" || $rtik:COLLECTION_NAME;
 declare
 %test:setUp
 function rtik:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $rtik:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $rtik:COLLECTION_NAME, "collection.xconf", $rtik:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $rtik:COLLECTION_NAME),
-    xmldb:store($rtik:COLLECTION, "test.xml", $rtik:DATA),
-    xmldb:store($rtik:COLLECTION, "test2.xml", $rtik:DATA)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rtik:COLLECTION_NAME),
+     xmldb:create-collection("/db", $rtik:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rtik:COLLECTION_NAME, "collection.xconf", $rtik:COLLECTION_CONFIG),
+     xmldb:store($rtik:COLLECTION, "test.xml", $rtik:DATA),
+     xmldb:store($rtik:COLLECTION, "test2.xml", $rtik:DATA),
+     xmldb:reindex($rtik:COLLECTION))
 };
 
 declare

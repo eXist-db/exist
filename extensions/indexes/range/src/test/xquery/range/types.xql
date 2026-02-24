@@ -109,12 +109,14 @@ declare variable $tt:COLLECTION := "/db/" || $tt:COLLECTION_NAME;
 declare
     %test:setUp
 function tt:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $tt:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $tt:COLLECTION_NAME, "collection.xconf", $tt:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $tt:COLLECTION_NAME),
-    xmldb:store($tt:COLLECTION, "test.xml", $tt:XML),
-    xmldb:store($tt:COLLECTION, "words.xml", $tt:WORDS)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $tt:COLLECTION_NAME),
+     xmldb:create-collection("/db", $tt:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $tt:COLLECTION_NAME, "collection.xconf", $tt:COLLECTION_CONFIG),
+     xmldb:store($tt:COLLECTION, "test.xml", $tt:XML),
+     xmldb:store($tt:COLLECTION, "words.xml", $tt:WORDS),
+     xmldb:reindex($tt:COLLECTION))
 };
 
 declare
@@ -139,6 +141,19 @@ declare
     %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function tt:eq-date-optimize($date as xs:date) {
     collection($tt:COLLECTION)//entry[date = $date]
+};
+
+(:~
+ : TDD: string-lc (case-insensitive) equality via explicit range:eq.
+ :)
+declare
+    %test:pending("Range index string fields return 0 hits with Lucene 10; root cause TBD")
+    %test:args("mixedmode")
+    %test:assertEquals("E3")
+    %test:args("MIXEDMODE")
+    %test:assertEquals("E3")
+function tt:string-lc-eq-explicit($s as xs:string) {
+    collection($tt:COLLECTION)//entry[range:eq(string-lc, $s)]/id/string()
 };
 
 declare 
