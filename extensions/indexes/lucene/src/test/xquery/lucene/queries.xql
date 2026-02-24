@@ -163,6 +163,17 @@ function qrys:tearDown() {
 
 (: --- Term / range / boolean / phrase / near / wildcard / regex (XML expected) --- :)
 
+(:~
+ : Term range query: [eins TO zwei] matches documents containing terms in that range.
+ : Lucene QueryParser uses square brackets for inclusive range.
+ :)
+declare
+    %test:assertTrue
+function qrys:term-range-query-brackets() {
+    let $result := doc($qrys:COLLECTION || "/text1.xml")//p[ft:query(., '[eins TO zwei]')]
+    return exists($result) and deep-equal($result, <p>Eins zwei drei vier zwei fünf sechs.</p>)
+};
+
 (:~ Term range query (Lucene QueryParser requires [lower TO upper] brackets for range) :)
 declare
     %test:assertTrue
@@ -334,6 +345,16 @@ declare
     %test:assertXPath("exists($result/p)")
 function qrys:wildcard-context-acht() {
     doc($qrys:COLLECTION || "/text1.xml")/test[ft:query(*, "acht")]
+};
+
+(:~
+ : Wildcard context ft:query(*, "should"): query all children of test; "should" appears in p.
+ : test[ft:query(*, "should")] must return the test element whose p child matches.
+ :)
+declare
+    %test:assertXPath("exists($result/p)")
+function qrys:wildcard-context-should-has-p() {
+    doc($qrys:COLLECTION || "/text1.xml")/test[ft:query(*, "should")]
 };
 
 (:~ Wildcard context: test[ft:query(*, "should")] -> result has p :)
@@ -694,6 +715,17 @@ function qrys:analyzer-phrase-stopword-xml() {
     return deep-equal($result, <para>The stopwords should not be indexed.</para>)
 };
 
+(:~
+ : Phrase "and indexed" with stopword: para contains "The stopwords should not be indexed."
+ : StandardAnalyzer removes "and"; phrase query and+indexed should still match.
+ :)
+declare
+    %test:assertTrue
+function qrys:analyzer-phrase-stopword-match() {
+    let $result := doc($qrys:COLLECTION || "/text1.xml")//para[ft:query(., '"and indexed"')]
+    return exists($result) and deep-equal($result, <para>The stopwords should not be indexed.</para>)
+};
+
 (:~ Analyzer test 2: near and+indexed :)
 declare
     %test:assertTrue
@@ -733,6 +765,18 @@ declare
 function qrys:analyzer-bool-stopword-only() {
     let $qu := <query><bool><term occur="must">and</term><term occur="must">the</term></bool></query>
     return for $hit in doc($qrys:COLLECTION || "/text1.xml")//para[ft:query(., $qu)] return $hit
+};
+
+(:~
+ : Boolean with stopword: bool must stopwords+and. "and" is stopword but query requires
+ : both terms; analyzer should skip "and" and match on "stopwords" only for that clause.
+ :)
+declare
+    %test:assertTrue
+function qrys:analyzer-bool-with-stopword-match() {
+    let $qu := <query><bool><term occur="must">stopwords</term><term occur="must">and</term></bool></query>,
+        $result := doc($qrys:COLLECTION || "/text1.xml")//para[ft:query(., $qu)]
+    return exists($result) and deep-equal($result, <para>The stopwords should not be indexed.</para>)
 };
 
 (:~ Analyzer test 7: bool stopwords+and matches :)
