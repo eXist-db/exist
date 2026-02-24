@@ -436,7 +436,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 final Analyzer analyzer = getQueryAnalyzer(config,null, qname, options);
                 Query query;
                 if (queryStr == null) {
-                    query = new ConstantScoreQuery(new TermQuery(new Term(field, "")));
+                    query = new MatchAllDocsQuery();
                 } else {
                     final QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
                     options.configureParser(parser.getConfiguration());
@@ -487,7 +487,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 LuceneConfig config = getLuceneConfig(broker, docs);
                 analyzer = getQueryAnalyzer(config, null, qname, options);
-                Query query = queryRoot == null ? new ConstantScoreQuery(new TermQuery(new Term(field, ""))) : queryTranslator.parse(field, queryRoot, analyzer, options);
+                Query query = queryRoot == null ? new MatchAllDocsQuery() : queryTranslator.parse(field, queryRoot, analyzer, options);
                 Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
                 if (facets.isPresent() && config != null) {
                     query = drilldown(facets.get(), query, config);
