@@ -738,8 +738,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         try {
             TokenStream stream = analyzer.tokenStream(field, new StringReader(data));
-            // TODO: TermToBytesRefAttribute in Lucene 10 no longer has fillBytesRef().
-            // Callers should use getBytesRef() directly, which this code already does.
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
