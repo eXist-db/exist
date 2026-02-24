@@ -47,7 +47,7 @@ declare variable $pctx:XCONF as element(collection) :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
-                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer class="org.exist.indexing.lucene.analyzers.EnglishStopwordsStandardAnalyzer"/>
                 <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
                 <text qname="qname"/>
                 <text qname="@att.qname"/>
