@@ -29,7 +29,7 @@ declare variable $analyze:XCONF1 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene diacritics="no">
-                <parser class="org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser"/>
+                <parser class="org.exist.indexing.lucene.StandardQueryParserWrapper"/>
                 <text qname="p"/>
             </lucene>
         </index>
@@ -115,7 +115,8 @@ function analyze:setup() {
                 <p>zìyóu</p>
                 <p>ziyou</p>
             </test>
-        )
+        ),
+        xmldb:reindex("/db/" || $analyze:COLLECTION_NAME)
     )
 };
 
