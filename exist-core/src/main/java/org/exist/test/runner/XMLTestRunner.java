@@ -164,14 +164,14 @@ public class XMLTestRunner extends AbstractTestRunner {
     }
 
     private String getSuiteName() {
-        return "xmlts." + info.getName();
+        return "xmlts." + info.name();
     }
 
     @Override
     public Description getDescription() {
         final String suiteName = checkDescription(info, getSuiteName());
         final Description description = Description.createSuiteDescription(suiteName);
-        for (final String childName : info.getChildNames()) {
+        for (final String childName : info.childNames()) {
             description.addChild(Description.createTestDescription(suiteName, checkDescription(info, childName)));
         }
         return description;
@@ -225,29 +225,6 @@ public class XMLTestRunner extends AbstractTestRunner {
         return adapter.getDocument();
     }
 
-    private static class XMLTestInfo {
-        @Nullable private final String name;
-        @Nullable private final String description;
-        private final List<String> childNames;
-
-        private XMLTestInfo(@Nullable final String name, @Nullable final String description, final List<String> childNames) {
-            this.name = name;
-            this.description = description;
-            this.childNames = childNames;
-        }
-
-        @Nullable
-        public String getName() {
-            return name;
-        }
-
-        @Nullable
-        public String getDescription() {
-            return description;
-        }
-
-        public List<String> getChildNames() {
-            return childNames;
-        }
+    private record XMLTestInfo(@Nullable String name, @Nullable String description, List<String> childNames) {
     }
 }
