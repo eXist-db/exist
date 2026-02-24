@@ -43,8 +43,8 @@ declare variable $qrys:XCONF as element(collection) :=
     <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:tt="urn:test">
         <index>
             <lucene>
-                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                <analyzer id="stop" class="org.apache.lucene.analysis.core.StopAnalyzer"/>
+                <analyzer class="org.exist.indexing.lucene.analyzers.EnglishStopwordsStandardAnalyzer"/>
+                <analyzer id="stop" class="org.exist.indexing.lucene.analyzers.EnglishStopwordsStandardAnalyzer"/>
                 <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                 <text qname="p"/>
                 <text qname="tt:p"/>
