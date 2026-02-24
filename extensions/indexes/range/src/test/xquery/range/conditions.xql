@@ -194,18 +194,19 @@ declare variable $ct:DATA :=
         </text>
     </TEI>;
 
-declare variable $ct:COLLECTION_NAME := "optimizertest";
+declare variable $ct:COLLECTION_NAME := "range-test-conditions";
 declare variable $ct:COLLECTION := "/db/" || $ct:COLLECTION_NAME;
 
 declare
 %test:setUp
 function ct:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $ct:COLLECTION_NAME),
-    xmldb:store($ct:COLLECTION, "data2.xml", $ct:DATA)
-
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
+     xmldb:create-collection("/db", $ct:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
+     xmldb:store($ct:COLLECTION, "data2.xml", $ct:DATA),
+     xmldb:reindex($ct:COLLECTION))
 };
 
 declare

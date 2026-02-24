@@ -120,6 +120,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (operator != RangeIndex.Operator.MATCH) {
                 key = analyzeContent(field, qname, content.getStringValue(), docs);
             }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("QUERY field={} qname={} input={} key={} operator={}",
+                        field, qname, content.getStringValue(), key != null ? key.utf8ToString() : "null", operator);
+            }
             WildcardQuery query;
             switch (operator) {
                 case EQ:
@@ -485,6 +489,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
+                        // Register field analyzer so TextField tokenization at index time matches query-time analyzeContent.
+                        Analyzer fieldAnalyzer = pending.getConfig().getAnalyzer(contentField);
+                        if (fieldAnalyzer != null) {
+                            index.addFieldAnalyzer(contentField, fieldAnalyzer);
+                        }
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("INDEX field={} content={} analyzer={}",
+                                    contentField, field.getContent().toString(), fieldAnalyzer != null ? fieldAnalyzer.getClass().getSimpleName() : "null");
+                        }
                         doc.add(fld);
                     }
                 }
@@ -733,6 +746,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (!isCaseSensitive(qname, field, docs)) {
             data = data.toLowerCase();
         }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("ANALYZE field={} qname={} input={} analyzer={} caseSensitive={}",
+                    field, qname, data, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));
+        }
         if (analyzer == null) {
             return new BytesRef(data);
         }
@@ -748,6 +765,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 stream.end();
             } finally {
                 stream.close();
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("ANALYZE result token={}", token != null ? token.utf8ToString() : "null");
             }
             return token;
         } catch (IOException e) {

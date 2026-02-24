@@ -162,13 +162,15 @@ declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 declare
     %test:setUp
 function ot:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $ot:COLLECTION_NAME),
-    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
-    xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
-    xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
+     xmldb:create-collection("/db", $ot:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
+     xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
+     xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
+     xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS),
+     xmldb:reindex($ot:COLLECTION))
 };
 
 declare

@@ -103,23 +103,38 @@ declare variable $rt:DATA2 :=
             <value>value1</value>
         </parameter>
     </object>;
-    
+
+(:~ Test collection name (no path). :)
+declare variable $rt:COLLECTION_NAME := "range-test-range";
+
+(:~ Full path of the test collection. :)
+declare variable $rt:COLLECTION := "/db/" || $rt:COLLECTION_NAME;
+
+(:~
+ : XQSuite setUp: create config parent chain, test collection, config subcollection,
+ : store xconf and documents, reindex.
+ :)
 declare
     %test:setUp
 function rt:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", "rangetest"),
-    xmldb:store("/db/system/config/db/rangetest", "collection.xconf", $rt:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", "rangetest"),
-    xmldb:store("/db/rangetest", "test.xml", $rt:DATA),
-    xmldb:store("/db/rangetest", "nested.xml", $rt:DATA_NESTED)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rt:COLLECTION_NAME),
+     xmldb:create-collection("/db", $rt:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rt:COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
+     xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA),
+     xmldb:store($rt:COLLECTION, "nested.xml", $rt:DATA_NESTED),
+     xmldb:reindex($rt:COLLECTION))
 };
 
+(:~
+ : XQSuite tearDown: remove test collection and its config.
+ :)
 declare
     %test:tearDown
 function rt:cleanup() {
-    xmldb:remove("/db/rangetest"),
-    xmldb:remove("/db/system/config/db/rangetest")
+    xmldb:remove($rt:COLLECTION),
+    xmldb:remove("/db/system/config/db/" || $rt:COLLECTION_NAME)
 };
 
 declare
@@ -128,7 +143,7 @@ declare
     %test:args("Berta Muh")
     %test:assertEquals("Almweide")
 function rt:equality-string($name as xs:string) {
-    collection("/db/rangetest")//address[range:eq(name, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:eq(name, $name)]/city/text()
 };
 
 declare
@@ -137,22 +152,22 @@ declare
     %test:args("Berta Muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-string-self($name as xs:string) {
-    normalize-space(collection("/db/rangetest")//address/name[range:eq(., $name)]/text())
+    normalize-space(collection($rt:COLLECTION)//address/name[range:eq(., $name)]/text())
 };
 
 declare
     %test:args(65428)
     %test:assertEquals("Rüsselsheim", "Rüsselsheim")
 function rt:equality-int-attribute($code as xs:integer) {
-    collection("/db/rangetest")//address/city[range:eq(@code, $code)]/text(),
-    collection("/db/rangetest")//address[range:eq(city/@code, $code)]/city/text()
+    collection($rt:COLLECTION)//address/city[range:eq(@code, $code)]/text(),
+    collection($rt:COLLECTION)//address[range:eq(city/@code, $code)]/city/text()
 };
 
 declare
     %test:args("muh")
     %test:assertEquals("Berta Muh")
 function rt:equality-qname-string-attribute($id as xs:string) {
-    normalize-space(collection("/db/rangetest")//address[range:eq(@id, $id)]/name/text())
+    normalize-space(collection($rt:COLLECTION)//address[range:eq(@id, $id)]/name/text())
 };
 
 declare
@@ -161,7 +176,7 @@ declare
     %test:args("almweide")
     %test:assertEquals("Almweide")
 function rt:equality-string-collation($name as xs:string) {
-    collection("/db/rangetest")//address[range:eq(city, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:eq(city, $name)]/city/text()
 };
 
 declare 
@@ -170,14 +185,14 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals("Wiesental")
 function rt:equality-fields($name as xs:string) {
-    collection("/db/rangetest")//range:field-eq("address-name", $name)/city/text()
+    collection($rt:COLLECTION)//range:field-eq("address-name", $name)/city/text()
 };
 
 declare 
     %test:args(65428)
     %test:assertEquals("Rudi Rüssel")
 function rt:equality-field-integer($code as xs:integer) {
-    collection("/db/rangetest")//range:field-eq("address-code", $code)/name/text()
+    collection($rt:COLLECTION)//range:field-eq("address-code", $code)/name/text()
 };
 
 declare 
@@ -186,7 +201,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals("Wiesental")
 function rt:equality-fields-with-context($name as xs:string) {
-    doc("/db/rangetest/test.xml")/range:field-eq("address-name", $name)/city/text()
+    doc($rt:COLLECTION || "/test.xml")/range:field-eq("address-name", $name)/city/text()
 };
 
 declare 
@@ -195,7 +210,7 @@ declare
     %test:args("Pü Reh", "Wiesental")
     %test:assertEquals("Wiesental")
 function rt:equality-fields-multi($name as xs:string, $city as xs:string) {
-    collection("/db/rangetest")//range:field-eq(("address-name", "address-city"), $name, $city)/city/text()
+    collection($rt:COLLECTION)//range:field-eq(("address-name", "address-city"), $name, $city)/city/text()
 };
 
 (:declare :)
@@ -213,7 +228,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals(1)
 function rt:gt-string($name as xs:string) {
-    count(collection("/db/rangetest")//address[range:gt(name, $name)])
+    count(collection($rt:COLLECTION)//address[range:gt(name, $name)])
 };
 
 declare
@@ -224,7 +239,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals(2)
 function rt:ge-string($name as xs:string) {
-    count(collection("/db/rangetest")//address[range:ge(name, $name)])
+    count(collection($rt:COLLECTION)//address[range:ge(name, $name)])
 };
 
 declare
@@ -235,7 +250,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals(2)
 function rt:lt-string($name as xs:string) {
-    count(collection("/db/rangetest")//address[range:lt(name, $name)])
+    count(collection($rt:COLLECTION)//address[range:lt(name, $name)])
 };
 
 declare
@@ -246,7 +261,7 @@ declare
     %test:args("Pü Reh")
     %test:assertEquals(3)
 function rt:le-string($name as xs:string) {
-    count(collection("/db/rangetest")//address[range:le(name, $name)])
+    count(collection($rt:COLLECTION)//address[range:le(name, $name)])
 };
 
 declare
@@ -257,7 +272,7 @@ declare
     %test:args(65463)
     %test:assertEquals(2)
 function rt:gt-integer($code as xs:integer) {
-    count(collection("/db/rangetest")//address[range:gt(city/@code, $code)])
+    count(collection($rt:COLLECTION)//address[range:gt(city/@code, $code)])
 };
 
 declare
@@ -268,7 +283,7 @@ declare
     %test:args(65463)
     %test:assertEquals(3)
 function rt:ge-integer($code as xs:integer) {
-    count(collection("/db/rangetest")//address[range:ge(city/@code, $code)])
+    count(collection($rt:COLLECTION)//address[range:ge(city/@code, $code)])
 };
 
 declare
@@ -277,7 +292,7 @@ declare
     %test:args(65463)
     %test:assertEquals(1)
 function rt:lt-integer($code as xs:integer) {
-    count(collection("/db/rangetest")//address[range:lt(city/@code, $code)])
+    count(collection($rt:COLLECTION)//address[range:lt(city/@code, $code)])
 };
 
 declare
@@ -286,7 +301,7 @@ declare
     %test:args(65463)
     %test:assertEquals(2)
 function rt:le-integer($code as xs:integer) {
-    count(collection("/db/rangetest")//address[range:le(city/@code, $code)])
+    count(collection($rt:COLLECTION)//address[range:le(city/@code, $code)])
 };
 
 declare
@@ -295,7 +310,7 @@ declare
     %test:args("Berta")
     %test:assertEquals("Almweide")
 function rt:starts-with-string($name as xs:string) {
-    collection("/db/rangetest")//address[range:starts-with(name, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:starts-with(name, $name)]/city/text()
 };
 
 declare
@@ -304,7 +319,7 @@ declare
     %test:args("Muh")
     %test:assertEquals("Almweide")
 function rt:ends-with-string($name as xs:string) {
-    collection("/db/rangetest")//address[range:ends-with(name, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:ends-with(name, $name)]/city/text()
 };
 
 declare
@@ -313,14 +328,14 @@ declare
     %test:args("ta M")
     %test:assertEquals("Almweide")
 function rt:contains-string($name as xs:string) {
-    collection("/db/rangetest")//address[range:contains(name, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:contains(name, $name)]/city/text()
 };
 
 declare
     %test:args(".*Rüssel")
     %test:assertEquals("Rüsselsheim")
 function rt:matches-string($name as xs:string) {
-    collection("/db/rangetest")//address[range:matches(name, $name)]/city/text()
+    collection($rt:COLLECTION)//address[range:matches(name, $name)]/city/text()
 };
 
 declare
@@ -329,7 +344,7 @@ declare
     %test:args("Berta")
     %test:assertEquals("Almweide")
 function rt:field-starts-with-string($name as xs:string) {
-    collection("/db/rangetest")//range:field-starts-with("address-name", $name)/city/text()
+    collection($rt:COLLECTION)//range:field-starts-with("address-name", $name)/city/text()
 };
 
 declare
@@ -338,7 +353,7 @@ declare
     %test:args("Muh")
     %test:assertEquals("Almweide")
 function rt:field-ends-with-string($name as xs:string) {
-    collection("/db/rangetest")//range:field-ends-with("address-name", $name)/city/text()
+    collection($rt:COLLECTION)//range:field-ends-with("address-name", $name)/city/text()
 };
 
 declare
@@ -347,7 +362,7 @@ declare
     %test:args("ta M")
     %test:assertEquals("Almweide")
 function rt:field-contains-string($name as xs:string) {
-    collection("/db/rangetest")//range:field-contains("address-name", $name)/city/text()
+    collection($rt:COLLECTION)//range:field-contains("address-name", $name)/city/text()
 };
 
 declare
@@ -356,7 +371,7 @@ declare
     %test:args(".*ta M.*")
     %test:assertEquals("Almweide")
 function rt:field-matches-string($name as xs:string) {
-    collection("/db/rangetest")//range:field-matches("address-name", $name)/city/text()
+    collection($rt:COLLECTION)//range:field-matches("address-name", $name)/city/text()
 };
 
 declare 
@@ -367,14 +382,14 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function rt:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    collection("/db/rangetest")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    collection($rt:COLLECTION)//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
 };
 
 (: Test multi-value field lookups :)
 declare
     %test:assertEquals("Hofthiergarten", "Dorfprozelten")
 function rt:equality-field-nested-multi() {
-    collection("/db/rangetest")
+    collection($rt:COLLECTION)
         //range:field-eq(
             ("type", "subtype", "name"),
             "main", "official", ("Hofthiergarten", "Dorfprozelten"))
@@ -384,11 +399,11 @@ function rt:equality-field-nested-multi() {
 declare 
     %test:assertEquals("Almweide")
 function rt:remove-document() {
-    let $stored := xmldb:store("/db/rangetest", "test2.xml", $rt:DATA)
+    let $stored := xmldb:store($rt:COLLECTION, "test2.xml", $rt:DATA)
     return (
-        doc("/db/rangetest/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string(),
-        let $null := xmldb:remove("/db/rangetest", "test2.xml") return $null,
-        doc("/db/rangetest/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string()
+        doc($rt:COLLECTION || "/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string(),
+        let $null := xmldb:remove($rt:COLLECTION, "test2.xml") return $null,
+        doc($rt:COLLECTION || "/test2.xml")/range:field-eq("address-name", "Berta Muh")/city/string()
     )
 };
 
@@ -401,41 +416,41 @@ function rt:update-insert() {
             <street>Uferweg 67</street>
             <city code="77777">Bach</city>
         </address>
-    into doc("/db/rangetest/test.xml")/test,
+    into doc($rt:COLLECTION || "/test.xml")/test,
     range:field-eq("address-name", "Willi Wiesel")/street/text(),
-    collection("/db/rangetest")//address[range:eq(name, "Willi Wiesel")]/city/text()
+    collection($rt:COLLECTION)//address[range:eq(name, "Willi Wiesel")]/city/text()
 };
 
 declare 
     %test:assertEmpty
 function rt:update-delete() {
-    update delete collection("/db/rangetest")/test/address[range:eq(name, "Berta Muh")],
-    collection("/db/rangetest")//address[range:eq(name, "Berta Muh")],
+    update delete collection($rt:COLLECTION)/test/address[range:eq(name, "Berta Muh")],
+    collection($rt:COLLECTION)//address[range:eq(name, "Berta Muh")],
     range:field-eq("address-name", "Berta Muh")
 };
 
 declare
     %test:assertEquals("Am Staudamm 3", "Bach")
 function rt:update-replace() {
-    update replace collection("/db/rangetest")/test/address[range:eq(name, "Albert Amsel")]
+    update replace collection($rt:COLLECTION)/test/address[range:eq(name, "Albert Amsel")]
     with
         <address>
             <name>Berta Bieber</name>
             <street>Am Staudamm 3</street>
             <city code="77777">Bach</city>
         </address>,
-    collection("/db/rangetest")//address[range:eq(name, "Albert Amsel")],
+    collection($rt:COLLECTION)//address[range:eq(name, "Albert Amsel")],
     range:field-eq("address-name", "Albert Amsel"),
-    collection("/db/rangetest")//address[range:eq(name, "Berta Bieber")]/street/text(),
+    collection($rt:COLLECTION)//address[range:eq(name, "Berta Bieber")]/street/text(),
     range:field-eq("address-name", "Berta Bieber")/city/text()
 };
 
 declare
     %test:assertEquals("Am Waldrand 4", "Wiesental")
 function rt:update-value() {
-    update value collection("/db/rangetest")/test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
-    collection("/db/rangetest")//address[range:eq(name, "Pü Reh")],
+    update value collection($rt:COLLECTION)/test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
+    collection($rt:COLLECTION)//address[range:eq(name, "Pü Reh")],
     range:field-eq("address-name", "Pü Reh"),
-    collection("/db/rangetest")//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
+    collection($rt:COLLECTION)//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
     range:field-eq("address-name", "Rita Rebhuhn")/city/text()
 };
