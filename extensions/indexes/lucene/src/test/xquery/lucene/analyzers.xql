@@ -219,6 +219,24 @@ function analyze:query-parser($term as xs:string) {
     count(collection($analyze:COLLECTION_PATH || "/test1")//p[ft:query(., $term)])
 };
 
+(:~
+ : Prefix queries via XML syntax (<query><prefix>...</prefix></query>).
+ : Expects the same hits as string prefix: prefix text is normalized by the index
+ : analyzer (e.g. diacritics stripped) so it matches indexed terms.
+ :)
+declare
+    %test:args("rüssels")
+    %test:assertEquals(2)
+    %test:args("russels")
+    %test:assertEquals(2)
+    %test:args("maor")
+    %test:assertEquals(2)
+    %test:args("ziy")
+    %test:assertEquals(2)
+function analyze:query-parser-prefix-xml($prefix as xs:string) {
+    count(collection($analyze:COLLECTION_PATH || "/test1")//p[ft:query(., <query><prefix>{$prefix}</prefix></query>)])
+};
+
 declare
     %test:tearDown
 function analyze:tearDown() {
