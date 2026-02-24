@@ -134,6 +134,21 @@
             <artifactId>exist-index-lucene</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
+            <!-- Exclude transitive Lucene 4.x from remote snapshot; Lucene 10 comes from exist-index-range or explicit deps -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-icu</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-queryparser</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
