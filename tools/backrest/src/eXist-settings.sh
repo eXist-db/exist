@@ -71,6 +71,7 @@ restore_library_path() {
 
 set_client_java_options() {
     if [ -z "${CLIENT_JAVA_OPTIONS}" ]; then
+	# FIXME: Add --add-modules jdk.incubator.vector for optimal Lucene 10 SIMD
 	CLIENT_JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
     fi
     JAVA_OPTIONS="${CLIENT_JAVA_OPTIONS}";
@@ -78,6 +79,7 @@ set_client_java_options() {
 
 set_java_options() {
     if [ -z "${JAVA_OPTIONS}" ]; then
+	# FIXME: Add --add-modules jdk.incubator.vector for optimal Lucene 10 SIMD
 	JAVA_OPTIONS="-Xms128m -Xmx512m -Dfile.encoding=UTF-8";
     fi
     JAVA_OPTIONS="${JAVA_OPTIONS}";

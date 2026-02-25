@@ -51,6 +51,7 @@ ARG JVM_MAX_RAM_PERCENTAGE
 ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
+# FIXME: Add --add-modules jdk.incubator.vector for optimal Lucene 10 SIMD
 ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \
   -Dsun.jnu.encoding=UTF-8 \
