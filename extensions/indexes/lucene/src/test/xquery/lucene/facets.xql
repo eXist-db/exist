@@ -653,6 +653,16 @@ function facet:query-and-sort-by-time() {
         $letter/from/text()
 };
 
+(:~ #3042 baseline: document[ft:query(.,...)] + order by ft:field — matched node = result node works. :)
+declare
+    %test:assertEquals("D-37/2", "Z-49/2")
+function facet:query-and-sort-by-ident() {
+    for $doc in doc("/db/lucene-test/facets/documents.xml")//document[ft:query(., ())]
+    order by ft:field($doc, "ident")
+    return
+        $doc/@id/string()
+};
+
 declare
     %test:args("likes", "xs:int")
     %test:assertEquals(1, 3, 5, 9, 19, 29)
