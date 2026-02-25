@@ -161,9 +161,15 @@
                             </ignoredUsedUndeclaredDependencies>
 
                             <ignoredUnusedDeclaredDependencies>
-                                <!-- needed for running XQSuite tests that depend on lucene and ngram modules -->
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-ngram:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <!-- needed for running XQSuite tests that load lucene and ngram indexes at runtime -->
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-ngram</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-core</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-analysis-common</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-analysis-icu</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-facet</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queries</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queryparser</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
