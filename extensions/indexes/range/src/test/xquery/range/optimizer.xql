@@ -159,6 +159,21 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
+(: Minimal config for range-test-range (placeName only) – ot:equality-field-nested-explicit uses this; rt:equality-field-nested passes here. :)
+declare variable $ot:RANGE_TEST_CONFIG :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tei="http://www.tei-c.org/ns/1.0">
+            <range>
+                <create match="//tei:placeName">
+                    <field name="name" type="xs:string" nested="no"/>
+                    <field name="type" match="@type" type="xs:string"/>
+                    <field name="subtype" match="@subtype" type="xs:string"/>
+                </create>
+            </range>
+        </index>
+    </collection>;
+
 declare
     %test:setUp
 function ot:setup() {
@@ -170,14 +185,22 @@ function ot:setup() {
      xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
      xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
      xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS),
-     xmldb:reindex($ot:COLLECTION))
+     xmldb:reindex($ot:COLLECTION),
+     (: range-test-range for ot:equality-field-nested-explicit – rt:equality-field-nested passes here :)
+     xmldb:create-collection("/db/system/config/db", "range-test-range"),
+     xmldb:create-collection("/db", "range-test-range"),
+     xmldb:store("/db/system/config/db/range-test-range", "collection.xconf", $ot:RANGE_TEST_CONFIG),
+     xmldb:store("/db/range-test-range", "nested.xml", $ot:DATA_NESTED),
+     xmldb:reindex("/db/range-test-range"))
 };
 
 declare
     %test:tearDown
 function ot:cleanup() {
     xmldb:remove($ot:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME)
+    xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME),
+    xmldb:remove("/db/range-test-range"),
+    xmldb:remove("/db/system/config/db/range-test-range")
 };
 
 declare
@@ -554,6 +577,7 @@ function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
 };
 
+(: Path form: @type, @subtype, [.=$name] should optimize to range:field-eq. Uses range-test-range (same config/data as explicit). :)
 declare
     %test:args("main", "official", "Hofthiergarten")
     %test:assertEquals("Hofthiergarten")
@@ -562,7 +586,42 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+};
+
+(:~
+ : Same intention as ot:equality-field-nested: nested field lookup on placeName (type, subtype, name).
+ : Uses explicit range:field-eq; path form in ot:equality-field-nested should optimize to this.
+ : @see ot:equality-field-nested (path form)
+ : @see rt:equality-field-nested in range.xql (explicit form on range-test-range)
+ : Uses range-test-range (same config/data) to verify the pattern; optimizertest may not have placeName indexed yet when this runs.
+ :)
+declare
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("ref", "inofficial", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten")
+function ot:equality-field-nested-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    (: Use range-test-range: same placeName config and DATA_NESTED as ot; rt:equality-field-nested passes there :)
+    collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+};
+
+(:~
+ : TDD: path form should produce same result as explicit range:field-eq.
+ : @see ot:equality-field-nested (path form)
+ : @see ot:equality-field-nested-explicit (explicit form)
+ :)
+declare
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten", "Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten", "Dorfprozelten")
+function ot:equality-field-nested-path-equals-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    let $path-result := collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    let $explicit-result := collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    return ($path-result, $explicit-result)
 };
 
 declare
