@@ -248,6 +248,23 @@ public class IndexController {
     }
 
     /**
+     * Execute the given runnable with the reindexing flag set. Used when reindexing
+     * a single document via {@code xmldb:reindex($collection-uri, $doc-uri)} so that
+     * index workers (e.g. Lucene) remove existing entries before adding new ones,
+     * instead of creating duplicates. See GitHub #3977.
+     *
+     * @param runnable the operation to run with reindexing enabled
+     */
+    public void runWithReindexing(final Runnable runnable) {
+        setReindexing(true);
+        try {
+            runnable.run();
+        } finally {
+            setReindexing(false);
+        }
+    }
+
+    /**
      * When adding or removing nodes to or from the document tree, it might become
      * necessary to re-index some parts of the tree, in particular if indexes are defined
      * on mixed content nodes. This method will return the top-most root.
