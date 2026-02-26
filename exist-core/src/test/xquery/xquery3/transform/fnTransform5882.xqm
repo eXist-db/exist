@@ -22,8 +22,9 @@
 xquery version "3.1";
 
 (:~
- : Pass in-memory nodes and function types to fn:transform
- : Regression tests for PR 5882
+ : Pass in-memory and persistent nodes as well as function types to fn:transform
+ : in order to ensure proper type conversions between eXist-db's and Saxon's
+ : implementations.
  : @see https://github.com/eXist-db/exist/pull/5882
  :)
 module namespace fnTransform5882="http://exist-db.org/xquery/test/function_transform";
@@ -59,8 +60,7 @@ declare variable $fnTransform5882:collection-name := "fn-transform-5882-stored";
 declare variable $fnTransform5882:collection := "/db/" || $fnTransform5882:collection-name;
 
 declare variable $fnTransform5882:direct-element-constructor := <root attr="val"><a>first</a><b>second</b></root>;
-declare variable $fnTransform5882:computed-element-constructor := element root { <a>first</a>, <b>second</b> };
-declare variable $fnTransform5882:mixed-element-constructor := element root { element a { "first" }, element b { "second" }};
+declare variable $fnTransform5882:computed-element-constructor := element root { element a { "first" }, element b { "second" } };
 
 declare
     %test:setUp
@@ -77,6 +77,9 @@ function fnTransform5882:tearDown() {
 
 (:~
  : Select the second child of the root element of an in-memory tree constructed using a direct-element constructor
+ : org.exist.dom.memtree.NodeImpl.getParentNode() can return null for a non-document node, if it was constructed.
+ : This was introduced in 4ce606a08e719b9aabd730a9af6e05ea7485f38e to fix
+ : @see https://github.com/eXist-db/exist/issues/1463
  :)
 declare
     %test:assertEquals('<out>second</out>')
@@ -90,6 +93,7 @@ function fnTransform5882:direct-element-constructor-second-child() {
 
 (:~
  : Select the second child of the root element of an in-memory tree constructed using a computed-element constructor
+ : org.exist.dom.memtree.NodeImpl.getParentNode() can return null for a non-document node, if it was constructed.
  :)
 declare
     %test:assertEquals('<out>second</out>')
@@ -102,22 +106,8 @@ function fnTransform5882:computed-element-constructor-second-child() {
 };
 
 (:~
- : Select the second child of the root element of an in-memory tree constructed using a mix of direct
- : and computed element constructors
- :)
-declare
-    %test:assertEquals('<out>second</out>')
-function fnTransform5882:mixed-element-constructor-second-child() {
-    fn:transform(map{
-        "initial-match-selection": $fnTransform5882:mixed-element-constructor/b,
-        "stylesheet-node": $fnTransform5882:simple-xsl,
-        "delivery-format": "serialized"
-    })?output
-};
-
-(:~
- : Selects the child element as initial-match-selection to test that attributes
- : cannot appear as previous siblings of child elements in a stored document.
+ : Select the first child of a root element with an attribute in a persistent node tree
+ : to ensure proper translation to Saxon's implementation in TreeUtils.treeIndex
  :)
 declare
     %test:assertEquals('<out>first</out>')
@@ -130,7 +120,8 @@ function fnTransform5882:stored-doc-with-attributes() {
 };
 
 (:~
- : Pass function types to fn:transform and retrieve them in the stylesheet
+ : Pass function types to fn:transform and retrieve them in the stylesheet to ensure these types
+ : are properly translated to the datatypes used by Saxon
  :)
 declare
     %test:assertEquals('<out value-of-k-in-map="v" second-array-member="y"/>')
