@@ -212,8 +212,11 @@ public class LuceneMatchListener extends AbstractMatchListener {
                     case XMLStreamConstants.CHARACTERS:
                         final NodeId nodeId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
                         textOffset += extractor.beforeCharacters();
-                        offsets.add(textOffset, nodeId);
-                        textOffset += extractor.characters(reader.getXMLText());
+                        final int consumed = extractor.characters(reader.getXMLText());
+                        if (consumed > 0) {
+                            offsets.add(textOffset, nodeId);
+                            textOffset += consumed;
+                        }
                         break;
                 }
             }
@@ -337,27 +340,39 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     /**
      * Get all query terms from the original queries.
+     * Excludes terms from configured Lucene fields (e.g. pub-year) so that
+     * util:expand does not produce superfluous highlights for field-only matches.
+     * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
      */
     private void getTerms() {
         try {
             index.withReader(reader -> {
+                final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
+                        ? Collections.emptySet()
+                        : config.getConfiguredFieldNames();
                 final Set<Query> queries = new HashSet<>();
-                termMap = new TreeMap<>();
+                final Map<Object, Query> rawTerms = new TreeMap<>();
                 Match nextMatch = this.match;
                 while (nextMatch != null) {
                     if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
                         final Query query = ((LuceneMatch) nextMatch).getQuery();
                         if (!queries.contains(query)) {
                             queries.add(query);
-                            LuceneUtil.extractTerms(query, termMap, reader, false);
+                            LuceneUtil.extractTerms(query, rawTerms, reader, true);
                         }
                     }
                     nextMatch = nextMatch.getNextMatch();
                 }
+                termMap = new TreeMap<>();
+                for (final Map.Entry<Object, Query> e : rawTerms.entrySet()) {
+                    if (e.getKey() instanceof Term term && !excludedFields.contains(term.field())) {
+                        termMap.put(term.text(), e.getValue());
+                    }
+                }
                 return null;
             });
         } catch (final IOException e) {
-            LOG.warn("Match listener caught IO exception while reading query tersm: {}", e.getMessage(), e);
+            LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
         }
     }
 

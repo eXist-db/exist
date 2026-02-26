@@ -1055,7 +1055,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         if (contextSet != null) {
                             int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
-                                NodeProxy parentNode = contextSet.get(storedNode);
+                                NodeProxy parentNode = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                 if (parentNode != null) {
                                     LuceneMatch match = createMatch(doc, score, nodeId, docBase);
                                     parentNode.addMatch(match);
@@ -1071,6 +1071,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             } else {
                                 LuceneMatch match = createMatch(doc, score, nodeId, docBase);
                                 storedNode.addMatch(match);
+                                NodeProxy fromContext = contextSet.get(storedNode);
+                                if (fromContext == null) {
+                                    fromContext = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                }
+                                if (fromContext != null) {
+                                    if (Expression.NO_CONTEXT_ID != contextId) {
+                                        storedNode.deepCopyContext(fromContext, contextId);
+                                    } else {
+                                        storedNode.copyContext(fromContext);
+                                    }
+                                }
                                 resultSet.add(storedNode, sizeHint);
                                 if (chainedLeafCollector != null) {
                                     chainedLeafCollector.collect(doc);
