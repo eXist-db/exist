@@ -74,7 +74,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
                 broker.reindexCollection(transaction, collectionPath);
                 broker.sync(Sync.MAJOR);
                 return null;
-            } catch(final LockException e) {
+            } catch (final LockException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
             }
         });
@@ -88,8 +88,8 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
     private void reindexDocument(final XmldbURI col, final String docName) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
-            try(final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
-                if(lockedDoc != null) {
+            try (final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
+                if (lockedDoc != null) {
                     broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
                     broker.sync(Sync.MAJOR);
                 }

@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,6 +58,8 @@ import java.util.Optional;
  */
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
+    private static final BigInteger LONG_MAX = new BigInteger("9223372036854775807");
+    private static final BigInteger LONG_MIN = new BigInteger("-9223372036854775808");
     private static final String ATTR_FIELD_NAME = "name";
     private static final String ATTR_TYPE = "type";
     private static final String ATTR_BINARY = "binary";
@@ -193,7 +196,13 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 case Type.INTEGER:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    long lvalue = Long.parseLong(content);
+                    final BigInteger big = new BigInteger(content.trim());
+                    if (big.compareTo(LONG_MIN) < 0 || big.compareTo(LONG_MAX) > 0) {
+                        throw new IllegalStateException(String.format(
+                            "Lucene field '%s' of type xs:integer cannot store value outside long range (-9223372036854775808 to 9223372036854775807): %s. See https://github.com/eXist-db/exist/issues/4532",
+                            fieldName, content));
+                    }
+                    long lvalue = big.longValue();
                     return new LongField(fieldName, lvalue, Field.Store.YES);
                 case Type.INT:
                 case Type.UNSIGNED_INT:
