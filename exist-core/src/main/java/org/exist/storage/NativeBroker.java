@@ -3122,26 +3122,32 @@ public class NativeBroker implements DBBroker {
      * Reindex the nodes in the document. This method will either reindex all
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
+     *
+     * When reindexing a single document (e.g. via {@code xmldb:reindex($col, $doc)}),
+     * runs with the reindexing flag set so index workers remove existing entries
+     * before adding new ones, avoiding duplicates. See GitHub #3977.
      */
     @Override
     public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
-        final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
-        getIndexController().startIndexDocument(transaction, listener);
-        try {
-            final NodeList nodes = doc.getChildNodes();
-            for (int i = 0; i < nodes.getLength(); i++) {
-                final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
-                try (final INodeIterator iterator = getNodeIterator(node)) {
-                    iterator.next();
-                    scanNodes(transaction, iterator, node, new NodePath2(), mode, listener);
-                } catch (final IOException ioe) {
-                    LOG.error("Unable to close node iterator", ioe);
+        getIndexController().runWithReindexing(() -> {
+            final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
+            getIndexController().startIndexDocument(transaction, listener);
+            try {
+                final NodeList nodes = doc.getChildNodes();
+                for (int i = 0; i < nodes.getLength(); i++) {
+                    final IStoredNode<?> node = (IStoredNode<?>) nodes.item(i);
+                    try (final INodeIterator iterator = getNodeIterator(node)) {
+                        iterator.next();
+                        scanNodes(transaction, iterator, node, new NodePath2(), mode, listener);
+                    } catch (final IOException ioe) {
+                        LOG.error("Unable to close node iterator", ioe);
+                    }
                 }
+            } finally {
+                getIndexController().endIndexDocument(transaction, listener);
             }
-        } finally {
-            getIndexController().endIndexDocument(transaction, listener);
-        }
-        flush();
+            flush();
+        });
     }
 
     @Override
