@@ -35,8 +35,13 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.exist.dom.persistent.NodeProxy;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
@@ -238,7 +243,28 @@ public class Query extends Function implements Optimizable {
 
         final DocumentSet docs = contextSequence.getDocumentSet();
         final Item key = getKey(contextSequence, null);
-        @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+        @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+        if (qnames == null && useContext) {
+            final NodeSet ctxSet = contextSequence.toNodeSet();
+            if (ctxSet != null && !ctxSet.isEmpty()) {
+                try {
+                    final List<QName> allIndexes = index.getDefinedIndexes(null);
+                    if (allIndexes.size() > 1) {
+                        final Set<QName> seen = new LinkedHashSet<>();
+                        for (final NodeProxy proxy : ctxSet) {
+                            final QName qn = proxy.getQName();
+                            if (qn != null) {
+                                seen.add(qn);
+                            }
+                        }
+                        if (!seen.isEmpty()) {
+                            qnames = new ArrayList<>(seen);
+                        }
+                    }
+                } catch (final IOException ignored) {
+                }
+            }
+        }
         final QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -283,7 +309,25 @@ public class Query extends Function implements Optimizable {
                 final DocumentSet docs = inNodes.getDocumentSet();
                 final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 final Item key = getKey(contextSequence, contextItem);
-                @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+                @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+                if (qnames == null && inNodes != null && !inNodes.isEmpty()) {
+                    try {
+                        final List<QName> allIndexes = index.getDefinedIndexes(null);
+                        if (allIndexes.size() > 1) {
+                            final Set<QName> seen = new LinkedHashSet<>();
+                            for (final NodeProxy proxy : inNodes) {
+                                final QName qn = proxy.getQName();
+                                if (qn != null) {
+                                    seen.add(qn);
+                                }
+                            }
+                            if (!seen.isEmpty()) {
+                                qnames = new ArrayList<>(seen);
+                            }
+                        }
+                    } catch (final IOException ignored) {
+                    }
+                }
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {

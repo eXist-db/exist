@@ -24,9 +24,15 @@ package xquery.lucene;
 import org.exist.test.runner.XSuite;
 import org.junit.runner.RunWith;
 
+/**
+ * Runs only the ft-match XQSuite tests.
+ * Use to isolate ft-match from cross-module effects.
+ *
+ * mvn -q test -Dtest=FtMatchTests -pl extensions/indexes/lucene -DfailIfNoTests=false -Denforcer.skip=true ...
+ */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/lucene/facets.xql"
+    "src/test/xquery/lucene/ft-match.xql"
 })
-public class FacetsQueryFieldTests {
+public class FtMatchTests {
 }

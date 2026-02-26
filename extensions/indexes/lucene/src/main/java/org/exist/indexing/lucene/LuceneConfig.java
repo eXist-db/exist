@@ -174,6 +174,40 @@ public class LuceneConfig {
     }
 
     /**
+     * Returns the set of configured field and facet dimension names.
+     * Terms from these fields should not produce highlights in util:expand,
+     * since they match metadata rather than main content.
+     * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
+     */
+    public Set<String> getConfiguredFieldNames() {
+        final Set<String> excluded = new HashSet<>();
+        for (LuceneIndexConfig c : paths.values()) {
+            collectFieldNames(c, excluded);
+        }
+        for (LuceneIndexConfig c : wildcardPaths) {
+            collectFieldNames(c, excluded);
+        }
+        for (LuceneIndexConfig c : namedIndexes.values()) {
+            collectFieldNames(c, excluded);
+        }
+        return excluded;
+    }
+
+    private static void collectFieldNames(LuceneIndexConfig config, Set<String> excluded) {
+        LuceneIndexConfig c = config;
+        while (c != null) {
+            for (AbstractFieldConfig fc : c.getFacetsAndFields()) {
+                if (fc instanceof LuceneFieldConfig lfc) {
+                    excluded.add(lfc.getName());
+                } else if (fc instanceof LuceneFacetConfig lfacet) {
+                    excluded.add(lfacet.getDimension());
+                }
+            }
+            c = c.getNext();
+        }
+    }
+
+    /**
      * @return true if any index config uses boosts (match-attribute, has-attribute, or boost attr)
      */
     public boolean hasBoostConfig() {

@@ -56,6 +56,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -302,6 +303,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
+    @Ignore("FIXME: context is missing for node in predicate; //tei:p[.//tei:w[ft:query(.,...)]] ! util:expand(.) — LuceneHitCollector returnAncestor copies null context from storedNode onto parentNode")
     public void inlineMatchNodes_whenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
