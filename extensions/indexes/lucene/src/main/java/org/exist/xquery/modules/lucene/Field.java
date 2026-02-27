@@ -59,7 +59,7 @@ public class Field extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
     private static final FunctionParameterSequenceType FS_PARAM_NODES_OPT = optManyParam("nodes", Type.NODE, "zero or more context nodes (empty returns empty)");
     private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING, "name of the field");
-    private static final FunctionParameterSequenceType TYPE_PARAMETER = param("type", Type.STRING, "intended target type to cast the field value to. Casting may fail with a dynamic error.");
+    private static final FunctionParameterSequenceType TYPE_PARAMETER = optParam("type", Type.STRING, "intended target type to cast the field value to. Empty sequence returns raw (untyped) values as the 2-arg form. Casting may fail with a dynamic error.");
 
     private static final String FS_FIELD_NAME = "field";
     static final FunctionSignature[] FS_FIELD = functionSignatures(
@@ -129,7 +129,8 @@ public class Field extends BasicFunction {
         final String fieldName = args[1].itemAt(0).getStringValue();
 
         int type = Type.STRING;
-        if (getArgumentCount() == 3) {
+        // When type is omitted (empty sequence), use Type.STRING for raw/untyped values.
+        if (getArgumentCount() == 3 && !args[2].isEmpty()) {
             final String typeStr = args[2].itemAt(0).getStringValue();
             type = Type.getType(typeStr);
         }

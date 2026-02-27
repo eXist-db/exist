@@ -711,6 +711,32 @@ function facet:test-field-type() {
     )
 };
 
+(:~
+ : ft:field($node, "field", ()) returns same raw values as ft:field($node, "field").
+ : @see https://github.com/eXist-db/exist/issues/4539
+ :)
+declare
+    %test:assertTrue
+function facet:field-empty-type-same-as-two-arg() {
+    let $letter := collection("/db/lucene-test/facets")//letter[ft:query(., "from:rudi")][1]
+    return deep-equal(ft:field($letter, "to", ()), ft:field($letter, "to"))
+};
+
+(:~
+ : Dynamic type $type := () in ft:field over multiple hits with order by.
+ : FIXME: order by ft:field(..., (), $type) triggers docID out of range (LuceneMatch docId vs leaf reader).
+ : @see https://github.com/eXist-db/exist/issues/4539
+ :)
+declare
+    %test:pending("FIXME: docID resolution in order by ft:field over multiple hits")
+    %test:assertEquals("Babsi Müller", "Basia Kowalska", "Basia Müller")
+function facet:field-dynamic-empty-type() {
+    let $type := ()
+    for $letter in collection("/db/lucene-test/facets")//letter[ft:query(., "from:heinz")]
+    order by ft:field($letter, "to", $type)
+    return ft:field($letter, "to", $type)
+};
+
 declare
     %test:assertEquals(4)
 function facet:index-keys() {
