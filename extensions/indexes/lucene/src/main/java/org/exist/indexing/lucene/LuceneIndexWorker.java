@@ -1139,7 +1139,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 for (final FieldInfo info : context.reader().getFieldInfos()) {
                     if (!FIELD_DOC_ID.equals(info.name)) {
                         final QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                        if (name != null && (qname == null || matchQName(qname, name))) {
+                        if (name != null && name.getLocalPart() != null && !name.getLocalPart().isEmpty()
+                                && (qname == null || matchQName(qname, name))) {
                             if (!indexes.contains(name)) {
                                 indexes.add(name);
                             }
