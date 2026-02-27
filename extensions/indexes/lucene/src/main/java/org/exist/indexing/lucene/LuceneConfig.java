@@ -224,12 +224,16 @@ public class LuceneConfig {
         return false;
     }
 
-    public Analyzer getAnalyzer(QName qname) {
+    /**
+     * Get the LuceneIndexConfig that matches the given QName.
+     *
+     * @param qname the QName to match
+     * @return the matching config, or null if none
+     */
+    public LuceneIndexConfig getIndexConfigForQName(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
         boolean foundByFallback = false;
         if (idxConf == null && qname != null) {
-            // Fallback: paths uses config's path component as key; query QName may differ
-            // (e.g. name type, prefix). Match by local part and namespace.
             final String local = qname.getLocalPart();
             final String ns = qname.getNamespaceURI();
             if (local != null && !local.equals(QName.WILDCARD)) {
@@ -238,6 +242,10 @@ public class LuceneConfig {
                     while (c != null) {
                         if (!c.isNamed()) {
                             QName pathQName = c.getNodePathPattern().getLastComponent();
+                            if (pathQName == null) {
+                                c = c.getNext();
+                                continue;
+                            }
                             String pathNs = pathQName.getNamespaceURI();
                             boolean nsMatch = (ns == null || ns.isEmpty())
                                     ? (pathNs == null || pathNs.isEmpty())
@@ -263,6 +271,11 @@ public class LuceneConfig {
                 idxConf = idxConf.getNext();
             }
         }
+        return idxConf;
+    }
+
+    public Analyzer getAnalyzer(QName qname) {
+        LuceneIndexConfig idxConf = getIndexConfigForQName(qname);
         if (idxConf != null) {
             final Analyzer analyzer = idxConf.getAnalyzer();
             if (analyzer != null) {
