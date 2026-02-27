@@ -1886,7 +1886,9 @@ public class NativeBroker implements DBBroker {
                 public Object start() {
                     if (doc.getResourceType() == DocumentImpl.XML_FILE) {
                         final NodeHandle node = (NodeHandle) doc.getFirstChild();
-                        domDb.removeAll(transaction, node.getInternalAddress());
+                        if (node != null) {
+                            domDb.removeAll(transaction, node.getInternalAddress());
+                        }
                     }
                     return null;
                 }
