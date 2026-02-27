@@ -34,6 +34,8 @@ import org.exist.xquery.value.*;
 import javax.annotation.Nullable;
 import java.util.*;
 
+import org.exist.xquery.modules.lucene.Query;
+
 /**
  * A pragma which checks if an XPath expression could be replaced with a range field lookup.
  *
@@ -71,6 +73,11 @@ public class OptimizeFieldPragma extends AbstractPragma {
     @Override
     public void before(final XQueryContext context, final Expression expression, final Sequence contextSequence) throws XPathException {
         final LocationStep locationStep = (LocationStep) expression;
+        // Don't optimize when inside ft:query: range-only result would ignore Lucene matches.
+        // See https://github.com/eXist-db/exist/issues/3114
+        if (isInsideFtQuery(locationStep)) {
+            return;
+        }
         @Nullable final Predicate[] preds = locationStep.getPredicates();
         if (preds != null) {
             final Expression parentExpr = locationStep.getParentExpression();
@@ -84,6 +91,24 @@ public class OptimizeFieldPragma extends AbstractPragma {
             rewritten = tryRewriteToFields(locationStep, preds, contextPath, contextSequence);
             axis = locationStep.getAxis();
         }
+    }
+
+    /**
+     * Returns true if the expression is nested inside an ft:query() call.
+     * Used to skip range optimization when the path feeds Lucene (#3114).
+     *
+     * @param expr the expression to check (typically a LocationStep)
+     * @return true if an ancestor is {@link org.exist.xquery.modules.lucene.Query}
+     */
+    private static boolean isInsideFtQuery(final Expression expr) {
+        Expression p = expr instanceof LocationStep ls ? ls.getParentExpression() : expr.getParent();
+        while (p != null) {
+            if (p instanceof Query) {
+                return true;
+            }
+            p = p instanceof LocationStep ls ? ls.getParentExpression() : p.getParent();
+        }
+        return false;
     }
 
     private @Nullable Expression tryRewriteToFields(final LocationStep locationStep, final Predicate[] preds, final NodePath contextPath, final Sequence contextSequence) throws XPathException {

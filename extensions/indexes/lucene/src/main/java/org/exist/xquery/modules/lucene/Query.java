@@ -297,7 +297,19 @@ public class Query extends Function implements Optimizable {
             // in-memory docs won't have an index
             return Sequence.EMPTY_SEQUENCE;
         }
-        
+
+        // Fix #3114: When the path has predicates (e.g. [@attr="value"]), cannot use
+        // preselect shortcut – path must be evaluated first so predicates apply, then
+        // Lucene runs on that filtered set. Preselect returns Lucene-only matches and
+        // bypasses predicates (e.g. when range index optimizes @attr).
+        if (preselectResult != null) {
+            final boolean hasPredicates = pathHasPredicates(getArgument(0))
+                || (contextStep != null && contextStep.hasPredicates());
+            if (hasPredicates) {
+                preselectResult = null;
+            }
+        }
+
         final NodeSet result;
         if (preselectResult == null) {
             final long start = System.currentTimeMillis();
@@ -346,7 +358,9 @@ public class Query extends Function implements Optimizable {
             }
         } else {
             // DW: contextSequence can be null
-            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+            if (contextStep != null) {
+                contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+            }
             result = getArgument(0).eval(contextSequence, null).toNodeSet();
         }
 
@@ -405,6 +419,30 @@ public class Query extends Function implements Optimizable {
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    /**
+     * Returns true if the expression tree contains any predicates (e.g. [@attr="value"]).
+     * Checks LocationStep.getPredicates(), FilteredExpression.getPredicates(), and recurses
+     * into sub-expressions. Used by #3114: preselect cannot be used when predicates must apply.
+     *
+     * @param expr the path or expression to inspect
+     * @return true if any predicate is found
+     */
+    private static boolean pathHasPredicates(final Expression expr) {
+        if (expr instanceof LocationStep ls) {
+            final Predicate[] preds = ls.getPredicates();
+            return preds != null && preds.length > 0;
+        }
+        if (expr instanceof FilteredExpression fe) {
+            return !fe.getPredicates().isEmpty();
+        }
+        for (int i = 0; i < expr.getSubExpressionCount(); i++) {
+            if (pathHasPredicates(expr.getSubExpression(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
