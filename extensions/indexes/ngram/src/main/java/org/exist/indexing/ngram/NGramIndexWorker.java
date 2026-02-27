@@ -704,6 +704,16 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         private NGramMatchCallback callback = null;
         @SuppressWarnings("unused")
         private NodeProxy root;
+        /** When a match spans text nodes, we emit startElement in the first chunk but defer endElement. */
+        private NodeId pendingMatchNodeId = null;
+        private int pendingMatchEndOffset = -1;
+        /** True when we have an open exist:match element (emitted startElement but not endElement). */
+        private boolean pendingMatchOpen = false;
+        /** True when the current element had no events since startElement (i.e. empty). */
+        private boolean elementJustStarted = true;
+        /** One-event lookahead: when a pending match hits startElement, we buffer instead of closing. */
+        private QName bufferedStartQname = null;
+        private AttrList bufferedStartAttribs = null;
 
         private NGramMatchListener(final DBBroker broker, final NodeProxy proxy) {
             reset(broker, proxy);
@@ -717,6 +727,12 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             this.root = proxy;
             this.match = proxy.getMatches();
             setNextInChain(null);
+            this.pendingMatchNodeId = null;
+            this.pendingMatchEndOffset = -1;
+            this.pendingMatchOpen = false;
+            this.elementJustStarted = true;
+            this.bufferedStartQname = null;
+            this.bufferedStartAttribs = null;
             /* Check if an index is defined on an ancestor of the current node.
              * If yes, scan the ancestor to get the offset of the first character
              * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
@@ -771,6 +787,22 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
         @Override
         public void startElement(final QName qname, final AttrList attribs) throws SAXException {
+            // Flush buffered startElement: next event is a child startElement, so the buffered element had content
+            if (bufferedStartQname != null && callback == null) {
+                super.endElement(MATCH_ELEMENT);
+                pendingMatchOpen = false;
+                super.startElement(bufferedStartQname, bufferedStartAttribs);
+                bufferedStartQname = null;
+                bufferedStartAttribs = null;
+            }
+            elementJustStarted = false;
+            elementJustStarted = true;
+            // Buffer startElement instead of closing when we have a pending match (one-event lookahead for empty elements)
+            if (pendingMatchOpen && callback == null) {
+                bufferedStartQname = qname;
+                bufferedStartAttribs = copyAttrList(attribs);
+                return;
+            }
             Match nextMatch = match;
             // check if there are any matches in the current element
             // if yes, push a NodeOffset object to the stack to track
@@ -788,28 +820,93 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             super.startElement(qname, attribs);
         }
 
+        private static AttrList copyAttrList(final AttrList src) {
+            if (src == null) {
+                return null;
+            }
+            final AttrList copy = new AttrList();
+            for (int i = 0; i < src.getLength(); i++) {
+                copy.addAttribute(src.getQName(i), src.getValue(i), src.getType(i), src.getNodeId(i));
+            }
+            return copy;
+        }
+
         @Override
         public void endElement(final QName qname) throws SAXException {
+            // Buffered startElement + endElement => empty element; keep match open (issue #4222)
+            if (bufferedStartQname != null && callback == null) {
+                super.startElement(bufferedStartQname, bufferedStartAttribs);
+                super.endElement(qname);
+                bufferedStartQname = null;
+                bufferedStartAttribs = null;
+                return;
+            }
             Match nextMatch = match;
-            // check if we need to pop the stack
             while (nextMatch != null) {
                 if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
                     offsetStack.pop();
+                    if (pendingMatchNodeId != null && pendingMatchNodeId.equals(getCurrentNode().getNodeId())) {
+                        pendingMatchNodeId = null;
+                        pendingMatchEndOffset = -1;
+                    }
                     break;
                 }
                 nextMatch = nextMatch.getNextMatch();
+            }
+            // Close pending match before ending a non-empty element so XML stays well-formed.
+            // When a match spans an empty element (e.g. "名" + <c/> + "天"), we keep the match
+            // open and wrap the empty element, giving one match per hit (issue #4222).
+            if (pendingMatchOpen && !elementJustStarted && callback == null) {
+                super.endElement(MATCH_ELEMENT);
+                pendingMatchOpen = false;
             }
             super.endElement(qname);
         }
 
         @Override
         public void characters(final CharSequence seq) throws SAXException {
-            List<Match.Offset> offsets = null;    // a list of offsets to process
+            // Flush buffered startElement: next event is characters, so the buffered element had content
+            if (bufferedStartQname != null && callback == null) {
+                super.endElement(MATCH_ELEMENT);
+                pendingMatchOpen = false;
+                super.startElement(bufferedStartQname, bufferedStartAttribs);
+                bufferedStartQname = null;
+                bufferedStartAttribs = null;
+            }
+            elementJustStarted = false;
+            List<ChunkOffset> chunkOffsets = null;
+            int continuationLen = 0;
             if (offsetStack != null) {
                 // walk through the stack to find matches which start in
                 // the current string of text
                 for (final Iterator<NodeOffset> it = offsetStack.descendingIterator(); it.hasNext(); ) {
                     final NodeOffset no = it.next();
+                    // First: if this chunk continues a match that spanned from the previous chunk, emit it and close
+                    if (pendingMatchNodeId != null && pendingMatchNodeId.equals(no.nodeId)) {
+                        continuationLen = Math.min(pendingMatchEndOffset - no.offset, seq.length());
+                        if (continuationLen > 0) {
+                            final String s = seq.toString();
+                            if (callback == null) {
+                                if (!pendingMatchOpen) {
+                                    super.startElement(MATCH_ELEMENT, null);
+                                }
+                                super.characters(s.substring(0, continuationLen));
+                                super.endElement(MATCH_ELEMENT);
+                                pendingMatchOpen = false;
+                            } else {
+                                try {
+                                    callback.match(nextListener, s.substring(0, continuationLen),
+                                            new NodeProxy(null, getCurrentNode()));
+                                } catch (final XPathException e) {
+                                    throw new SAXException("An error occurred while calling match callback: " + e.getMessage(), e);
+                                }
+                            }
+                            if (continuationLen >= pendingMatchEndOffset - no.offset) {
+                                pendingMatchNodeId = null;
+                                pendingMatchEndOffset = -1;
+                            }
+                        }
+                    }
                     final int end = no.offset + seq.length();
                     // scan all matches
                     Match next = match;
@@ -818,62 +915,78 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             final int freq = next.getFrequency();
                             for (int j = 0; j < freq; j++) {
                                 final Match.Offset offset = next.getOffset(j);
+                                // skip continuation (match started in previous chunk) - already emitted above
+                                if (offset.getOffset() < no.offset) {
+                                    continue;
+                                }
                                 if (offset.getOffset() < end &&
                                         offset.getOffset() + offset.getLength() > no.offset) {
-                                    // add it to the list to be processed
-                                    if (offsets == null) {
-                                        offsets = new ArrayList<>(4);
+                                    if (chunkOffsets == null) {
+                                        chunkOffsets = new ArrayList<>(4);
                                     }
-                                    // adjust the offset and add it to the list
                                     int start = offset.getOffset() - no.offset;
                                     int len = offset.getLength();
-                                    if (start < 0) {
-                                        len = len - Math.abs(start);
-                                        start = 0;
-                                    }
+                                    final boolean spansNextChunk;
+                                    final int matchEnd;  // absolute end of full match (for continuation)
                                     if (start + len > seq.length()) {
                                         len = seq.length() - start;
+                                        spansNextChunk = true;
+                                        matchEnd = offset.getOffset() + offset.getLength();
+                                    } else {
+                                        spansNextChunk = false;
+                                        matchEnd = no.offset + start + len;
                                     }
-                                    offsets.add(new Match.Offset(start, len));
+                                    final int absEnd = no.offset + start + len;
+                                    chunkOffsets.add(new ChunkOffset(start, len, no.nodeId, absEnd, matchEnd, spansNextChunk));
                                 }
                             }
                         }
                         next = next.getNextMatch();
                     }
-                    // add the length of the current text to the element content length
                     no.offset = end;
                 }
             }
             // now print out the text, marking all matches with a match element
-            if (offsets != null) {
-                FastQSort.sort(offsets, 0, offsets.size() - 1);
+            if (chunkOffsets != null) {
+                chunkOffsets.sort(Comparator.comparingInt(co -> co.start));
                 final String s = seq.toString();
-                int pos = 0;
-                for (final Match.Offset offset : offsets) {
-                    if (offset.getOffset() > pos) {
-                        super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
+                int pos = continuationLen;
+                for (final ChunkOffset co : chunkOffsets) {
+                    if (co.start > pos) {
+                        super.characters(s.substring(pos, co.start));
                     }
                     if (callback == null) {
                         super.startElement(MATCH_ELEMENT, null);
-                        super.characters(s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
-                        super.endElement(MATCH_ELEMENT);
+                        super.characters(s.substring(co.start, co.start + co.len));
+                        if (co.spansNextChunk) {
+                            pendingMatchNodeId = co.nodeId;
+                            pendingMatchEndOffset = co.matchEnd;
+                            pendingMatchOpen = true;
+                        } else {
+                            super.endElement(MATCH_ELEMENT);
+                        }
                     } else {
                         try {
-                            callback.match(nextListener, s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()),
+                            callback.match(nextListener, s.substring(co.start, co.start + co.len),
                                     new NodeProxy(null, getCurrentNode()));
                         } catch (final XPathException e) {
                             throw new SAXException("An error occurred while calling match callback: " + e.getMessage(), e);
                         }
                     }
-                    pos = offset.getOffset() + offset.getLength();
+                    pos = co.start + co.len;
                 }
                 if (pos < s.length()) {
                     super.characters(s.substring(pos));
                 }
-            } else
+            } else if (continuationLen > 0 && continuationLen < seq.length()) {
+                super.characters(seq.subSequence(continuationLen, seq.length()));
+            } else if (pendingMatchNodeId == null && continuationLen == 0) {
                 super.characters(seq);
+            }
         }
     }
+
+    private record ChunkOffset(int start, int len, NodeId nodeId, int absEnd, int matchEnd, boolean spansNextChunk) {}
 
     private static class NodeOffset {
         private final NodeId nodeId;
