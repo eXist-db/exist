@@ -346,6 +346,22 @@ public class LuceneIndexConfig {
         return facetsAndFields;
     }
 
+    /**
+     * Get the searchable field names (from LuceneFieldConfig only, not facets).
+     * Used for MultiFieldQueryParser when the index has nested fields.
+     *
+     * @return array of field names, or empty array if none
+     */
+    public String[] getSearchableFieldNames() {
+        if (facetsAndFields.isEmpty()) {
+            return new String[0];
+        }
+        return facetsAndFields.stream()
+                .filter(LuceneFieldConfig.class::isInstance)
+                .map(fc -> ((LuceneFieldConfig) fc).getName())
+                .toArray(String[]::new);
+    }
+
     public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name.isEmpty()) {

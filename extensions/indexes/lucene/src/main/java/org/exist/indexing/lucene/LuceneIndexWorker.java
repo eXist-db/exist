@@ -438,7 +438,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (queryStr == null) {
                     query = new MatchAllDocsQuery();
                 } else {
-                    final QueryParserWrapper parser = getQueryParser(field, analyzer, docs);
+                    final QueryParserWrapper parser = getQueryParser(field, analyzer, docs, qname, config, queryStr);
                     options.configureParser(parser.getConfiguration());
                     query = parser.parse(queryStr);
                     query = AnalyzingQueryRewriter.rewrite(query, analyzer);
@@ -1240,6 +1240,39 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs) {
+        return getQueryParser(field, analyzer, docs, null, null, null);
+    }
+
+    /**
+     * Get a query parser for the given field(s). When the index has nested Lucene
+     * fields (e.g. lemma, pos) and the query contains explicit field refs (field:value),
+     * uses MultiFieldQueryParser so that regex and other syntax work correctly in all
+     * fields. Fixes GitHub #4389. When index="no" and the query has no field refs,
+     * keeps single-field parser so unqualified terms match nothing.
+     *
+     * <p>Heuristic: queryStr.contains(":") detects field refs. A bare colon can appear
+     * inside regex ({@code field:/a:b/}) or phrases ({@code field:"x:y"}), which may
+     * cause MultiFieldQueryParser to be used even when the user did not intend a
+     * field-qualified term; this is conservative and generally acceptable.
+     */
+    protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs,
+            QName qname, LuceneConfig luceneConfig, String queryStr) {
+        /* Use MultiFieldQueryParser only for index="no" with nested fields. Fixes #4389
+         * (regex in multiple fields). For index="yes", keep single-field parser to avoid
+         * regressions (e.g. facets query-field-no-expression). */
+        if (luceneConfig != null && qname != null && queryStr != null && queryStr.contains(":")) {
+            LuceneIndexConfig idxConfig = luceneConfig.getIndexConfigForQName(qname);
+            if (idxConfig != null && !idxConfig.doIndex()) {
+                String[] searchableFields = idxConfig.getSearchableFieldNames();
+                if (searchableFields.length > 0) {
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Using MultiFieldQueryParser for index=\"no\" qname={} fields={}",
+                                qname, java.util.Arrays.toString(searchableFields));
+                    }
+                    return new MultiFieldQueryParserWrapper(searchableFields, analyzer);
+                }
+            }
+        }
         if (docs != null) {
             for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
                 Collection collection = i.next();
@@ -1255,7 +1288,6 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
-        // not found. return default query parser:
         return new ClassicQueryParserWrapper(field, analyzer);
     }
 
