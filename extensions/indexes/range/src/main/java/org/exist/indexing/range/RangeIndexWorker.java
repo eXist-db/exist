@@ -1032,7 +1032,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
-                            SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
+                            // null fieldName: simple attribute index has no fields
+                            SimpleTextCollector collector = new SimpleTextCollector(
+                                attrib.getValue(),
+                                configuration.getWsTreatment(),
+                                configuration.isCaseSensitive(null));
                             indexText(attrib, attrib.getQName(), path, configuration, collector);
                         }
                     }
