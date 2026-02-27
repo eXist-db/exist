@@ -34,7 +34,10 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.exist.xquery.functions.map.MapType.newLinearMap;
@@ -137,16 +140,48 @@ public class Facets extends BasicFunction {
             }
         }
 
-        // Iterate the found queries/matches and collect facets for each
+        // When multiple Lucene queries contributed to the result (e.g. variable-based path),
+        // each has its own facets. We must merge all first, then apply the limit.
+        // Otherwise we'd get N facets per query, merged = wrong count (GitHub #4190).
+        final int perQueryLimit = (luceneQueries.size() > 1 && count < Integer.MAX_VALUE)
+            ? Integer.MAX_VALUE
+            : count;
+
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
         for (LuceneMatch match : luceneQueries.values()) {
             try {
-                addFacetsToMap(map, dimension, count, paths, match);
+                addFacetsToMap(map, dimension, perQueryLimit, paths, match);
             } catch (IOException e) {
                 throw new XPathException(this, LuceneModule.EXXQDYFT0002, e.getMessage());
             }
         }
-        return new MapType(this, context, map.forked(), Type.STRING);
+
+        // Apply limit to merged result when we fetched all from multiple queries
+        final IMap<AtomicValue, Sequence> result = (perQueryLimit == Integer.MAX_VALUE && count < Integer.MAX_VALUE)
+            ? takeTopByCount(map, count)
+            : map;
+
+        return new MapType(this, context, result.forked(), Type.STRING);
+    }
+
+    /**
+     * Take the top {@code count} entries from the map by value (facet count) descending.
+     */
+    private IMap<AtomicValue, Sequence> takeTopByCount(final IMap<AtomicValue, Sequence> map, final int count) {
+        final List<Map.Entry<AtomicValue, Long>> entries = new ArrayList<>();
+        for (final var e : map) {
+            final long val = ((IntegerValue) e.value().itemAt(0)).getLong();
+            entries.add(new AbstractMap.SimpleEntry<>(e.key(), val));
+        }
+        entries.sort((a, b) -> Long.compare(b.getValue(), a.getValue()));
+
+        final IMap<AtomicValue, Sequence> out = newLinearMap(null);
+        final int n = Math.min(count, entries.size());
+        for (int i = 0; i < n; i++) {
+            final Map.Entry<AtomicValue, Long> e = entries.get(i);
+            out.put(e.getKey(), new IntegerValue(this, e.getValue()));
+        }
+        return out;
     }
 
     private void addFacetsToMap(final IMap<AtomicValue, Sequence> map, String dimension, int count, String[] paths, LuceneMatch match) throws IOException {
