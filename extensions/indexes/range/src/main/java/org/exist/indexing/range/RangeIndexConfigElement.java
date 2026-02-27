@@ -303,6 +303,14 @@ public class RangeIndexConfigElement {
         return caseSensitive;
     }
 
+    /**
+     * Returns the whitespace treatment for this index
+     * (e.g. {@link XMLString#SUPPRESS_NONE}, {@link XMLString#SUPPRESS_BOTH}, {@link XMLString#NORMALIZE}).
+     */
+    public int getWsTreatment() {
+        return wsTreatment;
+    }
+
     public boolean usesCollation() {
         return usesCollation;
     }
