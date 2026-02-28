@@ -44,7 +44,7 @@ declare variable $qf:XML  as document-node() :=
         </test>
      };
 
-(: Create config hierarchy in setup; plain-ft-functions removes /db/system/config/db so we must recreate. :)
+(: Create config hierarchy in setup; ensures /db/system/config/db exists for environments where it is absent. :)
 declare variable $qf:config-db-path := "/db/system/config/db";
 declare variable $qf:test-coll-name := "lucene-test-query-field";
 declare variable $qf:conf-coll-path := $qf:config-db-path || "/" || $qf:test-coll-name;
