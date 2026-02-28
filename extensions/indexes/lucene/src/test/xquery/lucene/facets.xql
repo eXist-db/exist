@@ -723,11 +723,10 @@ function facet:field-empty-type-same-as-two-arg() {
 
 (:~
  : Dynamic type $type := () in ft:field over multiple hits with order by.
- : FIXME: order by ft:field(..., (), $type) triggers docID out of range (LuceneMatch docId vs leaf reader).
+ : Re-enabled after getFieldByExistDocId fix for stable docID resolution.
  : @see https://github.com/eXist-db/exist/issues/4539
  :)
 declare
-    %test:pending("FIXME: docID resolution in order by ft:field over multiple hits")
     %test:assertEquals("Babsi Müller", "Basia Kowalska", "Basia Müller")
 function facet:field-dynamic-empty-type() {
     let $type := ()
