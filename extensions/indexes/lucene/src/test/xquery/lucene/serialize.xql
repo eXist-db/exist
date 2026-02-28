@@ -136,7 +136,8 @@ function ser:setup() {
 declare
     %test:tearDown
 function ser:teardown() {
-    xmldb:remove($ser:collection)
+    ( xmldb:remove($ser:collection),
+      xmldb:remove("/db/system/config/db/" || $ser:collection-name) )
 };
 
 declare

@@ -92,9 +92,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer'
       - name: Maven Unit Tests
+        id: unit-tests
         if: matrix.test-type == 'unit'
         timeout-minutes: 45
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+      - name: Dependency tree on unit test failure
+        if: always() && matrix.test-type == 'unit' && steps.unit-tests.outcome == 'failure'
+        run: |
+          ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress dependency:tree -pl extensions/indexes/lucene -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' | tee dependency-tree-lucene.txt
+          echo "--- Lucene-related dependencies ---"
+          grep -i lucene dependency-tree-lucene.txt || true
       - name: Maven Integration Tests
         if: matrix.test-type == 'integration'
         timeout-minutes: 45
@@ -128,3 +135,4 @@ jobs:
             **/hs_err_pid*.log
             **/target/surefire-reports/*
             **/target/failsafe-reports/*
+            dependency-tree-lucene.txt
