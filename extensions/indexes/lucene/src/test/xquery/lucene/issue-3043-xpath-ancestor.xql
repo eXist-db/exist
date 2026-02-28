@@ -104,6 +104,7 @@ function i3043:entrypos-quote-predicate-self() {
 (:~
  : #3043: entry position on cit from predicate pattern cit[ft:query(quote)]/quote parent.
  : Iterate over quotes; parent cit has ancestor::tei:entry.
+ : Workaround when ft:field had docID issues: order by $q/@xml:id instead of ft:field($q, "xmlid").
  :)
 declare %test:assertEquals(1, 2)
 function i3043:entrypos-cit-predicate-quote-child() {

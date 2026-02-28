@@ -140,12 +140,16 @@ public class Field extends BasicFunction {
         if (match == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
+        final org.exist.dom.persistent.DocumentImpl ownerDoc = proxy.getOwnerDocument();
+        if (ownerDoc == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
             return switch (called) {
-                case FS_FIELD_NAME -> getFieldValues(fieldName, type, match, index);
-                case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, match, index);
+                case FS_FIELD_NAME -> getFieldValues(fieldName, type, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, ownerDoc.getDocId(), proxy.getNodeId(), index);
                 default -> throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
             };
         } catch (final IOException e) {
@@ -171,7 +175,11 @@ public class Field extends BasicFunction {
                 if (match == null) {
                     continue;
                 }
-                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, match, index);
+                final org.exist.dom.persistent.DocumentImpl ownerDoc = proxy.getOwnerDocument();
+                if (ownerDoc == null) {
+                    continue;
+                }
+                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
                 final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
                 for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
                     result.add(hi.nextItem());
@@ -183,16 +191,16 @@ public class Field extends BasicFunction {
         }
     }
 
-    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
-        final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
+    private Sequence getBinaryFieldValue(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+        final BytesRef fieldValue = index.getBinaryFieldByExistDocId(existDocId, nodeId, fieldName);
         if (fieldValue == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
         return bytesToAtomic(fieldValue, type);
     }
 
-    private Sequence getFieldValues(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
-        final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
+    private Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+        final IndexableField[] fields = index.getFieldByExistDocId(existDocId, nodeId, fieldName);
         final Sequence result = new ValueSequence(fields.length);
         for (final IndexableField field : fields) {
             if (field.numericValue() != null) {

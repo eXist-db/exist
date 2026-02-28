@@ -873,11 +873,66 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    public @Nullable BytesRef getBinaryField(final int docId, final String field) throws IOException {
+    /**
+     * Resolve field values by eXist document ID and node ID. Uses query-by-FIELD_DOC_ID
+     * and FIELD_NODE_ID so the lookup is valid across reader refreshes (avoids volatile Lucene docID).
+     * Multiple indexed nodes per document each have the same docId but different nodeId.
+     */
+    public IndexableField[] getFieldByExistDocId(final int existDocId, final NodeId nodeId, final String field) throws IOException {
+        try {
+            return index.withSearcher(searcher -> {
+                final Query q = docIdAndNodeIdQuery(existDocId, nodeId);
+                final TopDocs topDocs = searcher.searcher().search(q, 1);
+                if (topDocs.totalHits.value() == 0) {
+                    return new IndexableField[0];
+                }
+                final int luceneDocId = topDocs.scoreDocs[0].doc;
+                final Set<String> fields = Collections.singleton(field);
+                final Document doc = searcher.searcher().storedFields().document(luceneDocId, fields);
+                final Object fieldsObj = doc.getFields(field);
+                if (fieldsObj instanceof List) {
+                    final List<IndexableField> fieldList = (List<IndexableField>) fieldsObj;
+                    final IndexableField[] result = new IndexableField[fieldList.size()];
+                    int i = 0;
+                    for (final IndexableField f : fieldList) {
+                        result[i++] = f;
+                    }
+                    return result;
+                } else if (fieldsObj instanceof IndexableField[]) {
+                    return (IndexableField[]) fieldsObj;
+                }
+                return new IndexableField[0];
+            });
+        } catch (XPathException e) {
+            throw new IOException("Unexpected XPath error in getFieldByExistDocId", e);
+        }
+    }
+
+    /**
+     * Resolve binary field by eXist document ID and node ID. Uses query-by-FIELD_DOC_ID
+     * and FIELD_NODE_ID so the lookup is valid across reader refreshes (avoids volatile Lucene docID).
+     */
+    public @Nullable BytesRef getBinaryFieldByExistDocId(final int existDocId, final NodeId nodeId, final String field) throws IOException {
+        try {
+            return index.withSearcher(searcher -> {
+                final Query q = docIdAndNodeIdQuery(existDocId, nodeId);
+                final TopDocs topDocs = searcher.searcher().search(q, 1);
+                if (topDocs.totalHits.value() == 0) {
+                    return null;
+                }
+                final int luceneDocId = topDocs.scoreDocs[0].doc;
+                return getBinaryFieldForLuceneDocId(luceneDocId, field);
+            });
+        } catch (XPathException e) {
+            throw new IOException("Unexpected XPath error in getBinaryFieldByExistDocId", e);
+        }
+    }
+
+    private @Nullable BytesRef getBinaryFieldForLuceneDocId(final int luceneDocId, final String field) throws IOException {
         return index.withReader(reader -> {
             final List<LeafReaderContext> leaves = reader.leaves();
             for (final LeafReaderContext context : leaves) {
-                final int id = docId - context.docBase;
+                final int id = luceneDocId - context.docBase;
                 if (id >= 0 && id < context.reader().numDocs()) {
                     final BinaryDocValues values = context.reader().getBinaryDocValues(field);
                     if (values != null && values.advanceExact(id)) {
@@ -892,27 +947,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         });
     }
 
-    public IndexableField[] getField(final int docId, final String field) throws IOException {
-        final Set<String> fields = Collections.singleton(field);
-        final DirectoryReader reader = index.readerManager.acquire();
-        try {
-            final Document doc = reader.storedFields().document(docId, fields);
-            final Object fieldsObj = doc.getFields(field);
-            if (fieldsObj instanceof List) {
-                final List<IndexableField> fieldList = (List<IndexableField>) fieldsObj;
-                final IndexableField[] result = new IndexableField[fieldList.size()];
-                int i = 0;
-                for (final IndexableField f : fieldList) {
-                    result[i++] = f;
-                }
-                return result;
-            } else if (fieldsObj instanceof IndexableField[]) {
-                return (IndexableField[]) fieldsObj;
-            }
-            return new IndexableField[0];
-        } finally {
-            index.readerManager.release(reader);
-        }
+    private static Query docIdAndNodeIdQuery(final int existDocId, final NodeId nodeId) {
+        final int nodeIdLen = nodeId.size();
+        final byte[] data = new byte[nodeIdLen + 2];
+        ByteConversion.shortToByteH((short) nodeId.units(), data, 0);
+        nodeId.serialize(data, 2);
+        final Term nodeTerm = new Term(LuceneUtil.FIELD_NODE_ID, new BytesRef(data));
+        return new BooleanQuery.Builder()
+            .add(IntField.newExactQuery(LuceneIndexWorker.FIELD_DOC_ID, existDocId), BooleanClause.Occur.MUST)
+            .add(new TermQuery(nodeTerm), BooleanClause.Occur.MUST)
+            .build();
     }
 
     public boolean hasIndex(int docId) throws IOException {
