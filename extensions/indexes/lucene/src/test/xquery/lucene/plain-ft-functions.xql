@@ -33,26 +33,27 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
 (:~
- : Empty collection config for /db.
+ : Empty collection config for this test collection (no automatic indexing; ft:index builds index).
  :)
 declare variable $pftf:XCONF as element(collection) :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index/>
     </collection>;
 
-declare variable $pftf:COLLECTION_BINARY := "/db/lucene-test/plain-ft-functions";
+declare variable $pftf:COLLECTION_NAME := "lucene-test-plain-ft-functions";
+declare variable $pftf:COLLECTION_BINARY := "/db/" || $pftf:COLLECTION_NAME;
 
 (:~
- : setUp: create /db/system/config/db, store collection.xconf, create data collection, store 4 text files.
+ : setUp: create config and data collections, store collection.xconf and 4 text files.
  :)
 declare
     %test:setUp
 function pftf:setUp() {
     ( xmldb:create-collection("/db/system", "config"),
       xmldb:create-collection("/db/system/config", "db"),
-      xmldb:store("/db/system/config/db", "collection.xconf", $pftf:XCONF),
-      xmldb:create-collection("/db", "lucene-test"),
-      xmldb:create-collection("/db/lucene-test", "plain-ft-functions"),
+      xmldb:create-collection("/db", $pftf:COLLECTION_NAME),
+      xmldb:create-collection("/db/system/config/db", $pftf:COLLECTION_NAME),
+      xmldb:store("/db/system/config/db/" || $pftf:COLLECTION_NAME, "collection.xconf", $pftf:XCONF),
       xmldb:store($pftf:COLLECTION_BINARY, "data1.txt", "AAAAAA", "text/plain"),
       xmldb:store($pftf:COLLECTION_BINARY, "data2.txt", "BBBBBB", "text/plain"),
       xmldb:store($pftf:COLLECTION_BINARY, "data3.txt", "CCCCCC", "text/plain"),
@@ -60,13 +61,13 @@ function pftf:setUp() {
 };
 
 (:~
- : tearDown: remove only our data collection. Do not remove /db/system/config/db/collection.xconf
- : (our empty /db index config) to avoid affecting other tests that may rely on /db config state.
+ : tearDown: remove data and config collections.
  :)
 declare
     %test:tearDown
 function pftf:tearDown() {
-    xmldb:remove($pftf:COLLECTION_BINARY)
+    ( xmldb:remove($pftf:COLLECTION_BINARY),
+      xmldb:remove("/db/system/config/db/" || $pftf:COLLECTION_NAME) )
 };
 
 (:~
@@ -85,7 +86,7 @@ function pftf:create-index() {
  : Test Index 1 - search title.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data1.txt /db/lucene-test/plain-ft-functions/data2.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data1.txt /db/lucene-test-plain-ft-functions/data2.txt")
 function pftf:search-title-text() {
     string-join(data(ft:search($pftf:COLLECTION_BINARY || "/", "title:text")//@uri), ' ')
 };
@@ -94,7 +95,7 @@ function pftf:search-title-text() {
  : Test Index 1a - search on different level.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data1.txt /db/lucene-test/plain-ft-functions/data2.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data1.txt /db/lucene-test-plain-ft-functions/data2.txt")
 function pftf:search-title-text-db() {
     string-join(data(ft:search("/db/", "title:text")//@uri), ' ')
 };
@@ -103,7 +104,7 @@ function pftf:search-title-text-db() {
  : Test Index 2 - search title foobar.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data3.txt /db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data3.txt /db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-title-foobar() {
     string-join(data(ft:search($pftf:COLLECTION_BINARY || "/", "title:foobar")//@uri), ' ')
 };
@@ -112,7 +113,7 @@ function pftf:search-title-foobar() {
  : Test Index 2a - search title foobar on single doc.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data3.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data3.txt")
 function pftf:search-title-foobar-single() {
     string-join(data(ft:search($pftf:COLLECTION_BINARY || "/data3.txt", "title:foobar")//@uri), ' ')
 };
@@ -121,7 +122,7 @@ function pftf:search-title-foobar-single() {
  : Test Index 2b - search title foobar on two paths.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data3.txt /db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data3.txt /db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-title-foobar-two-paths() {
     string-join(data(ft:search(($pftf:COLLECTION_BINARY || "/data3.txt", $pftf:COLLECTION_BINARY || "/data4.txt"), "title:foobar")//@uri), ' ')
 };
@@ -130,7 +131,7 @@ function pftf:search-title-foobar-two-paths() {
  : Test Index 3 - search paragraph foobaar.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-para-foobaar() {
     string-join(data(ft:search($pftf:COLLECTION_BINARY || "/", "para:foobaar")//@uri), ' ')
 };
@@ -148,7 +149,7 @@ function pftf:search-para-non-existing-collection() {
  : Test Index 3b - one existing one non-existing collection.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-para-mixed-collections() {
     string-join(data(ft:search(("/db/lucene-test-nonexistent/", $pftf:COLLECTION_BINARY || "/"), "para:foobaar")//@uri), ' ')
 };
@@ -157,7 +158,7 @@ function pftf:search-para-mixed-collections() {
  : Test Index 3c - two times the same collection.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-para-same-collection-twice() {
     string-join(data(ft:search(($pftf:COLLECTION_BINARY || "/", $pftf:COLLECTION_BINARY || "/"), "para:foobaar")//@uri), ' ')
 };
@@ -166,7 +167,7 @@ function pftf:search-para-same-collection-twice() {
  : Test Index 4 - expect one result.
  :)
 declare
-    %test:assertEquals("/db/lucene-test/plain-ft-functions/data4.txt")
+    %test:assertEquals("/db/lucene-test-plain-ft-functions/data4.txt")
 function pftf:search-para-collection-and-doc() {
     string-join(data(ft:search(($pftf:COLLECTION_BINARY || "/", $pftf:COLLECTION_BINARY || "/data4.txt"), "para:foobaar")//@uri), ' ')
 };

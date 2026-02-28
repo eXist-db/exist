@@ -43,6 +43,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -267,10 +268,12 @@ public class XSuite extends ParentRunner<Runner> {
                 if (Files.isDirectory(path)) {
                     // directory of files of test(s)
                     try (final Stream<Path> children = Files.list(path)) {
-                        for(final Path child : children.toList()) {
-                            if(!Files.isDirectory(child)) {
+                        final List<Path> sorted = children.collect(Collectors.toList());
+                        sorted.sort(Comparator.comparing(Path::toString));
+                        for (final Path child : sorted) {
+                            if (!Files.isDirectory(child)) {
                                 final Runner runner = getRunner(child, parallel);
-                                if(runner != null) {
+                                if (runner != null) {
                                     runners.add(runner);
                                 }
                             }

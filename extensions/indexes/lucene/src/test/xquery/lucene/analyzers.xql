@@ -38,9 +38,9 @@ declare variable $analyze:XCONF1 :=
         </triggers>
     </collection>;
 
-(: Per-module subpath under /db/lucene-test/ for isolation. :)
-declare variable $analyze:COLLECTION_PATH := "/db/lucene-test/analyzers";
-declare variable $analyze:CONFIG_PATH := "/db/system/config/db/lucene-test/analyzers";
+(: Flat collection for isolation; no shared /db/lucene-test parent. :)
+declare variable $analyze:COLLECTION_PATH := "/db/lucene-test-analyzers";
+declare variable $analyze:CONFIG_PATH := "/db/system/config/db/lucene-test-analyzers";
 
 declare variable $analyze:XCONF2 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -58,13 +58,11 @@ declare
     %test:setUp
 function analyze:setup() {
     let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"),
-        xmldb:create-collection("/db", "lucene-test"), xmldb:create-collection("/db/system/config/db", "lucene-test"))
-    let $testCol := xmldb:create-collection("/db/lucene-test", "analyzers")
-    let $testCol1 := xmldb:create-collection($testCol, "test1")
-    let $testCol2 := xmldb:create-collection($testCol, "test2")
-    let $confCol := xmldb:create-collection("/db/system/config/db/lucene-test", "analyzers")
-    let $confCol1 := xmldb:create-collection($confCol, "test1")
-    let $confCol2 := xmldb:create-collection($confCol, "test2")
+        xmldb:create-collection("/db", "lucene-test-analyzers"), xmldb:create-collection("/db/system/config/db", "lucene-test-analyzers"))
+    let $testCol1 := xmldb:create-collection($analyze:COLLECTION_PATH, "test1")
+    let $testCol2 := xmldb:create-collection($analyze:COLLECTION_PATH, "test2")
+    let $confCol1 := xmldb:create-collection($analyze:CONFIG_PATH, "test1")
+    let $confCol2 := xmldb:create-collection($analyze:CONFIG_PATH, "test2")
     return (
         xmldb:store($confCol1, "collection.xconf", $analyze:XCONF1),
         xmldb:store($testCol1, "test.xml",
