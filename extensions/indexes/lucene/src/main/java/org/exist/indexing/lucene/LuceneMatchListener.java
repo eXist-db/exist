@@ -23,6 +23,7 @@ package org.exist.indexing.lucene;
 
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NewArrayNodeSet;
@@ -67,6 +68,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private final LuceneIndex index;
     private LuceneConfig config;
     private DBBroker broker;
+    /** NodeId we already scanned in reset(); avoid double-scan in startElement. */
+    private NodeId scannedInResetForNodeId;
 
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
@@ -116,9 +119,23 @@ public class LuceneMatchListener extends AbstractMatchListener {
             nextMatch = nextMatch.getNextMatch();
         }
 
+        scannedInResetForNodeId = null;
         if (ancestors != null && !ancestors.isEmpty()) {
             for (final NodeProxy p : ancestors) {
                 scanMatches(p);
+            }
+        } else {
+            /* #4835: When proxy is the matching node (no ancestors), scan it directly.
+             * Otherwise nodesWithMatch stays empty until startElement, but when serializing
+             * multiple nodes the listener may be reused with stale state from a previous node. */
+            Match m = this.match;
+            while (m != null) {
+                if (m.getNodeId().equals(proxy.getNodeId())) {
+                    scanMatches(proxy);
+                    scannedInResetForNodeId = proxy.getNodeId();
+                    break;
+                }
+                m = m.getNextMatch();
             }
         }
     }
@@ -126,12 +143,15 @@ public class LuceneMatchListener extends AbstractMatchListener {
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
         Match nextMatch = match;
+        final NodeHandle current = getCurrentNode();
         // check if there are any matches in the current element
         // if yes, push a NodeOffset object to the stack to track
         // the node contents
-        while (nextMatch != null) {
-            if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
-                scanMatches(new NodeProxy(null, getCurrentNode()));
+        while (nextMatch != null && current != null) {
+            if (nextMatch.getNodeId().equals(current.getNodeId())) {
+                if (scannedInResetForNodeId == null || !scannedInResetForNodeId.equals(current.getNodeId())) {
+                    scanMatches(new NodeProxy(null, current));
+                }
                 break;
             }
             nextMatch = nextMatch.getNextMatch();
@@ -141,7 +161,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     @Override
     public void characters(final CharSequence seq) throws SAXException {
-        final NodeId nodeId = getCurrentNode().getNodeId();
+        final NodeHandle current = getCurrentNode();
+        if (current == null) {
+            super.characters(seq);
+            return;
+        }
+        final NodeId nodeId = current.getNodeId();
         Offset offset = nodesWithMatch.get(nodeId);
         if (offset == null) {
             super.characters(seq);
@@ -187,17 +212,23 @@ public class LuceneMatchListener extends AbstractMatchListener {
         int textOffset = 0;
         try {
             final IEmbeddedXMLStreamReader reader = broker.getXMLStreamReader(p, false);
+            scanLoop:
             while (reader.hasNext()) {
                 final int ev = reader.next();
                 switch (ev) {
 
                     case XMLStreamConstants.END_ELEMENT:
                         if (--level < 0) {
-                            break;
+                            break scanLoop;
                         }
                         // call extractor.endElement unless this is the root of the current fragment
                         if (level > 0) {
                             textOffset += extractor.endElement(reader.getQName());
+                        }
+                        /* #4835: Stop when we've closed the root element we're scanning.
+                         * The reader continues to siblings; without this we'd include the whole parent. */
+                        if (level == 0) {
+                            break scanLoop;
                         }
                         break;
 
