@@ -275,45 +275,17 @@ public class LuceneMatchListener extends AbstractMatchListener {
                             }
 
                             if (stateList.size() == terms.length) {
-                                // we indeed have a phrase match. record the offsets of its terms.
-                                int lastIdx = -1;
-                                for (int i = 0; i < terms.length; i++) {
-                                    stream.restoreState(stateList.get(i));
-
-                                    final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                                    final int idx = offsets.getIndex(offsetAttr.startOffset());
-
-                                    final NodeId nodeId = offsets.ids[idx];
-                                    final Offset offset = nodesWithMatch.get(nodeId);
-                                    if (offset != null) {
-                                        if (lastIdx == idx) {
-                                            offset.setEndOffset(offsetAttr.endOffset() - offsets.offsets[idx]);
-                                        } else {
-                                            offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                                                    offsetAttr.endOffset() - offsets.offsets[idx]);
-                                        }
-                                    } else {
-                                        nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                                offsetAttr.endOffset() - offsets.offsets[idx]));
-                                    }
-
-                                    lastIdx = idx;
-                                }
+                                // Phrase match: add one span from first to last term (may cross text nodes, #4584).
+                                stream.restoreState(stateList.get(0));
+                                final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
+                                stream.restoreState(stateList.get(terms.length - 1));
+                                final int end = stream.getAttribute(OffsetAttribute.class).endOffset();
+                                addMatchSpan(start, end, offsets, str.length());
                             }
                         } // End of phrase handling
                     } else {
-
                         final OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
-                        final int idx = offsets.getIndex(offsetAttr.startOffset());
-                        final NodeId nodeId = offsets.ids[idx];
-                        final Offset offset = nodesWithMatch.get(nodeId);
-                        if (offset != null) {
-                            offset.add(offsetAttr.startOffset() - offsets.offsets[idx],
-                                    offsetAttr.endOffset() - offsets.offsets[idx]);
-                        } else {
-                            nodesWithMatch.put(nodeId, new Offset(offsetAttr.startOffset() - offsets.offsets[idx],
-                                    offsetAttr.endOffset() - offsets.offsets[idx]));
-                        }
+                        addMatchSpan(offsetAttr.startOffset(), offsetAttr.endOffset(), offsets, str.length());
                     }
                 }
             }
@@ -406,6 +378,50 @@ public class LuceneMatchListener extends AbstractMatchListener {
             return -1;
         }
 
+        /**
+         * End offset of segment idx in the concatenated string.
+         * @param idx segment index (0-based)
+         * @param textLength total length of concatenated text
+         */
+        int getSegmentEnd(final int idx, final int textLength) {
+            return idx + 1 < len ? offsets[idx + 1] : textLength;
+        }
+
+    }
+
+    /**
+     * Add a match span [startOffset, endOffset) to all text nodes it intersects.
+     * Fixes #4584: when a Lucene hit spans inline elements (e.g. "ro&lt;vuji&gt;s&lt;/vuji&gt;e"),
+     * all portions must get exist:match, not just the first text node.
+     *
+     * @param startOffset inclusive start in concatenated string
+     * @param endOffset exclusive end in concatenated string
+     * @param offsets offset list mapping positions to text nodes
+     * @param textLength total length of concatenated text
+     */
+    private void addMatchSpan(final int startOffset, final int endOffset,
+            final OffsetList offsets, final int textLength) {
+        if (startOffset < 0 || endOffset <= startOffset) {
+            return;
+        }
+        final int idxStart = offsets.getIndex(startOffset);
+        final int idxEnd = offsets.getIndex(endOffset - 1);
+        if (idxStart < 0 || idxEnd < 0) {
+            return;
+        }
+        for (int idx = idxStart; idx <= idxEnd; idx++) {
+            final NodeId nodeId = offsets.ids[idx];
+            final int nodeStart = offsets.offsets[idx];
+            final int nodeEnd = offsets.getSegmentEnd(idx, textLength);
+            final int relStart = (idx == idxStart) ? startOffset - nodeStart : 0;
+            final int relEnd = (idx == idxEnd) ? endOffset - nodeStart : nodeEnd - nodeStart;
+            final Offset existing = nodesWithMatch.get(nodeId);
+            if (existing != null) {
+                existing.add(relStart, relEnd);
+            } else {
+                nodesWithMatch.put(nodeId, new Offset(relStart, relEnd));
+            }
+        }
     }
 
     private static class Offset {

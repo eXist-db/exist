@@ -270,7 +270,7 @@ public class LuceneMatchListenerTest {
             assertEquals(1, seq.getItemCount());
             String result = queryResult2String(broker, seq);
             XMLAssert.assertEquals("<p>Paragraphs with <s>" + MATCH_START + "mix" + MATCH_END +
-                    "</s><s>ed</s> content are <s>danger</s>ous.</p>", result);
+                    "</s><s>" + MATCH_START + "ed" + MATCH_END + "</s> content are <s>danger</s>ous.</p>", result);
 
             seq = xquery.execute(broker, "//p[ft:query(., 'ignored')]", null);
             assertNotNull(seq);
