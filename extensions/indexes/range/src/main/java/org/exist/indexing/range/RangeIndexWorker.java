@@ -1191,9 +1191,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 continue;
             }
             do {
-                if (map.size() >= max) {
-                    break;
-                }
                 BytesRef ref = termsIter.term();
                 String term;
                 try {
@@ -1207,7 +1204,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         include = false;
                 } else if (start != null && !term.startsWith(start))
                     include = false;
-                if (include) {
+                if (include && (map.size() < max || map.containsKey(term))) {
+                    /* Only skip when we've hit max and this would be a new term (#4805:
+                       must aggregate existing terms across all segments before limiting). */
                     PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
                     while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
                         if (liveDocs != null && !liveDocs.get(postings.docID())) {
@@ -1242,6 +1241,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             oc.addOccurrences(postings.freq());
                         }
                     }
+                } else if (include && map.size() >= max && !map.containsKey(term) && !map.isEmpty()
+                        && term.compareTo(map.lastKey()) > 0) {
+                    /* No remaining term in this leaf can be in map; terms are sorted. */
+                    break;
                 }
             } while(termsIter.next() != null);
         }

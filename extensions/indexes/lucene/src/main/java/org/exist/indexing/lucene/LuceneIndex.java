@@ -258,6 +258,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public <R> R withReader(FunctionE<IndexReader, R, IOException> fn) throws IOException {
+        /* Commit any pending writes so readers see up-to-date data for Lucene-backed
+           features (full-text, facets, util:index-keys, etc.). See #4805. */
+        commit();
         readerManager.maybeRefreshBlocking();
         final DirectoryReader reader = readerManager.acquire();
         try {
@@ -268,6 +271,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public <R> R withSearcher(final Function2E<SearcherTaxonomyManager.SearcherAndTaxonomy, R, IOException, XPathException> consumer) throws IOException, XPathException {
+        /* Commit any pending writes so searchers see up-to-date data for Lucene-backed
+           features (full-text, facets, util:index-keys, etc.). See #4805. */
+        commit();
         searcherManager.maybeRefreshBlocking();
         final SearcherTaxonomyManager.SearcherAndTaxonomy searcher = searcherManager.acquire();
         try {
