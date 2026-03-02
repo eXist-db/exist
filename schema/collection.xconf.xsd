@@ -97,7 +97,7 @@
         <xs:attributeGroup ref="cc:caseOpt"/>
         <xs:attributeGroup ref="cc:nestedOpt"/>
         <xs:attributeGroup ref="cc:whitespaceOpt"/>
-        <xs:attributeGroup ref="cc:typeReq"/>
+        <xs:attributeGroup ref="cc:typeOpt"/>
     </xs:complexType>
     
     <xs:element name="lucene" type="cc:luceneType"/>
