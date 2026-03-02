@@ -39,7 +39,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class FieldLookup extends Function implements Optimizable {
+public class FieldLookup extends Function implements Optimizable, IndexUseReporter {
 
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
         new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
@@ -427,5 +427,10 @@ public class FieldLookup extends Function implements Optimizable {
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    @Override
+    public boolean hasUsedIndex() {
+        return true; // FieldLookup is only used when range field optimization was applied
     }
 }
