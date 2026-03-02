@@ -118,7 +118,7 @@ jobs:
           enableCrossOsArchive: true
       - name: Archive build logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ runner.os }}-${{ matrix.test-type }}-java${{ matrix.java-version }}-build-logs
           retention-days: 5
