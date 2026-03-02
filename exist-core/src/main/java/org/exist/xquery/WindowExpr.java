@@ -538,7 +538,7 @@ public class WindowExpr extends BindingExpression {
             return null;
         }
 
-        final LocalVariable windowReturnVariable = createVariable(windowContextVariable.getQName());
+        final LocalVariable windowReturnVariable = new LocalVariable(windowContextVariable.getQName());
         windowReturnVariable.setSequenceType(windowContextVariable.getSequenceType());
         windowReturnVariable.setStaticType(windowContextVariable.getStaticType());
 
