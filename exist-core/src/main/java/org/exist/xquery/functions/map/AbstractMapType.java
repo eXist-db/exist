@@ -113,6 +113,11 @@ public abstract class AbstractMapType extends FunctionReference
     }
 
     @Override
+    public FunctionSignature getSignature() {
+        return ACCESSOR;
+    }
+
+    @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         getAccessorFunc().analyze(contextInfo);
     }

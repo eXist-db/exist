@@ -168,3 +168,43 @@ declare
 function hofs:type-constructor () {
     filter((0 to 1), xs:boolean(?))
 };
+
+(: https://github.com/eXist-db/exist/issues/4596 :)
+declare
+    %test:assertEquals(10, 50, 1)
+function hofs:for-each-with-map () {
+    for-each(
+        ("X", "L", "I"),
+        map { "M": 1000, "D": 500, "C": 100, "L": 50, "X": 10, "V": 5, "I": 1 }
+    )
+};
+
+(: https://github.com/eXist-db/exist/issues/4596 :)
+declare
+    %test:assertEquals("b", "c")
+function hofs:for-each-with-array () {
+    for-each(2 to 3, ["a","b","c","d"])
+};
+
+(: https://github.com/eXist-db/exist/issues/4596 :)
+declare
+    %test:assertEquals("a", "c")
+function hofs:filter-with-map () {
+    filter(("a", "b", "c", "d"),
+        map { "a": true(), "b": false(), "c": true(), "d": false() }
+    )
+};
+
+(: https://github.com/eXist-db/exist/issues/4596 :)
+declare
+    %test:assertEquals(1)
+function hofs:apply-with-map () {
+    apply(map { "x": 1, "y": 2 }, ["x"])
+};
+
+(: https://github.com/eXist-db/exist/issues/4596 :)
+declare
+    %test:assertEquals("b")
+function hofs:apply-with-array () {
+    apply(["a","b","c"], [2])
+};

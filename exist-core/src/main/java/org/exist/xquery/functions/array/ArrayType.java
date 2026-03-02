@@ -218,6 +218,11 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     }
 
     @Override
+    public FunctionSignature getSignature() {
+        return ACCESSOR;
+    }
+
+    @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         accessorFunc.analyze(contextInfo);
     }
