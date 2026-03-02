@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Lookup extends Function implements Optimizable {
+public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
@@ -529,5 +529,10 @@ public class Lookup extends Function implements Optimizable {
 
     public int returnsType() {
         return Type.NODE;
+    }
+
+    @Override
+    public boolean hasUsedIndex() {
+        return true; // Lookup is only used when range index optimization was applied
     }
 }
