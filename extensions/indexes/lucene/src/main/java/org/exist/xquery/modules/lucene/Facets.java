@@ -107,8 +107,13 @@ public class Facets extends BasicFunction {
         final String dimension = args[1].getStringValue();
 
         int count = Integer.MAX_VALUE;
-        if (getArgumentCount() == 3 && args[2].hasOne()) {
+        if (getArgumentCount() >= 3 && args[2].hasOne()) {
             count = ((IntegerValue) args[2].itemAt(0)).getInt();
+        }
+
+        // GitHub #6012: Allow count=0 for consistency with util:index-keys, range:index-keys-for-field
+        if (count <= 0) {
+            return new MapType(this, context);
         }
 
         String[] paths = null;
