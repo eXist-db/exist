@@ -3718,7 +3718,7 @@ throws PermissionDeniedException, EXistException, XPathException
             comment.setASTNode(t);
             step= comment;
         }
-        contentExpr=expr [elementContent]
+        (contentExpr=expr [elementContent])?
     )
     |
     #(
@@ -3730,7 +3730,7 @@ throws PermissionDeniedException, EXistException, XPathException
             doc.setASTNode(d);
             step= doc;
         }
-        contentExpr=expr [elementContent]
+        (contentExpr=expr [elementContent])?
     )
     |
     #(
