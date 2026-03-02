@@ -71,11 +71,12 @@ public class DynamicCommentConstructor extends NodeConstructor {
         Sequence result;
         try {
             final Sequence contentSeq = content.eval(contextSequence, contextItem);
-            if (contentSeq.isEmpty())
-                {result = Sequence.EMPTY_SEQUENCE;}
-            else {
-                final MemTreeBuilder builder = context.getDocumentBuilder();
-                context.proceed(this, builder);
+            final MemTreeBuilder builder = context.getDocumentBuilder();
+            context.proceed(this, builder);
+            if (contentSeq.isEmpty()) {
+                final int nodeNr = builder.comment("");
+                result = builder.getDocument().getNode(nodeNr);
+            } else {
                 final StringBuilder buf = new StringBuilder();
                 for(final SequenceIterator i = Atomize.atomize(contentSeq).iterate(); i.hasNext(); ) {
                     context.proceed(this, builder);
@@ -86,7 +87,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
                 }
                 if (buf.indexOf("--") != Constants.STRING_NOT_FOUND ||
                         buf.toString().endsWith("-")) {
-                    throw new XPathException(this, ErrorCodes.XQDY0072, 
+                    throw new XPathException(this, ErrorCodes.XQDY0072,
                         "'" + buf + "' is not a valid comment");
                 }
                 final int nodeNr = builder.comment(buf.toString());

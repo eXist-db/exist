@@ -1765,7 +1765,7 @@ compTextConstructor throws XPathException
 
 compDocumentConstructor throws XPathException
 :
-	"document" LCURLY! e:expr RCURLY!
+	"document" LCURLY! (e:expr)? RCURLY!
 	{ #compDocumentConstructor = #(#[COMP_DOC_CONSTRUCTOR, "document"], #e); }
 	;
 
@@ -1782,7 +1782,7 @@ compXmlPI throws XPathException
 
 compXmlComment throws XPathException
 :
-	"comment" LCURLY! e:expr RCURLY!
+	"comment" LCURLY! (e:expr)? RCURLY!
 	{ #compXmlComment = #(#[COMP_COMMENT_CONSTRUCTOR, "comment"], #e); }
 	;
 
