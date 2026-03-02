@@ -77,9 +77,6 @@ public class ParsingFunctions extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		}
 		final String xmlString = args[0].itemAt(0).getStringValue();
-		if (xmlString.isEmpty()) {
-			return Sequence.EMPTY_SEQUENCE;
-		}
 
         if (isCalledAs("parse-xml-fragment")) {
             return parseFragment(xmlString);

@@ -21,21 +21,21 @@
  :)
 xquery version "3.1";
 
-module namespace pxf="http://exist-db.org/xquery/test/parse-xml-fragment";
+module namespace px="http://exist-db.org/xquery/test/parse-xml";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
-    %test:args("") %test:assertTrue
-    %test:args(" ") %test:assertTrue
-    %test:args("He was <i>so</i> kind") %test:assertTrue
-    %test:args("<a>a</a><b>b</b>") %test:assertTrue
+    %test:args("") %test:assertFalse
+    %test:args(" ") %test:assertFalse
+    %test:args("He was <i>so</i> kind") %test:assertFalse
+    %test:args("<a>a</a><b>b</b>") %test:assertFalse
     %test:args('<a>no') %test:assertFalse
     %test:args('<?xml version="1.0" encoding="utf8"?><a/>') %test:assertTrue
-    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>') %test:assertFalse
-function pxf:return-type($in as xs:string) as xs:boolean {
+    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>') %test:assertTrue
+function px:return-type($in as xs:string) as xs:boolean {
     try {
-        fn:parse-xml-fragment($in) instance of document-node()
+        fn:parse-xml($in) instance of document-node()
     } catch err:FODC0006 {
         false()
     }
@@ -43,21 +43,21 @@ function pxf:return-type($in as xs:string) as xs:boolean {
 
 declare
     %test:assertTrue
-function pxf:empty-returns-empty() as xs:boolean {
-    fn:parse-xml-fragment(()) instance of empty-sequence()
+function px:empty-returns-empty() as xs:boolean {
+    fn:parse-xml(()) instance of empty-sequence()
 };
 
 declare
     %test:args("") %test:assertEquals(0)
-    %test:args(" ") %test:assertEquals(1)
-    %test:args("He was <i>so</i> kind") %test:assertEquals(3)
-    %test:args("<a>a</a><b>b</b>") %test:assertEquals(2)
+    %test:args(" ") %test:assertEquals(0)
+    %test:args("He was <i>so</i> kind") %test:assertEquals(0)
+    %test:args("<a>a</a><b>b</b>") %test:assertEquals(0)
     %test:args('<a>no') %test:assertEquals(0)
     %test:args('<?xml version="1.0" encoding="utf8"?><a/>') %test:assertEquals(1)
-    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>') %test:assertEquals(0)
-function pxf:node-count($in as xs:string) as xs:integer {
+    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>') %test:assertEquals(1)
+function px:node-count($in as xs:string) as xs:integer {
     try {
-        count(fn:parse-xml-fragment($in)/node())
+        count(fn:parse-xml($in)/node())
     } catch err:FODC0006 {
         0
     }
@@ -68,11 +68,11 @@ declare
     %test:assertEquals("VALID", 0, 0)
     %test:args('<a>no')
     %test:assertEquals("err:FODC0006", 75, 9)
-    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>')
-    %test:assertEquals("err:FODC0006", 75, 9)
-function pxf:error-code-and-location($in as xs:string) as xs:anyAtomicType* {
+    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a>VALID</a>')
+    %test:assertEquals("VALID", 0, 0)
+function px:error-code-and-location($in as xs:string) as xs:anyAtomicType* {
     try {
-        fn:parse-xml-fragment($in)/string(), 0, 0
+        fn:parse-xml($in)/string(), 0, 0
     } catch err:FODC0006 {
         $err:code, $err:line-number, $err:column-number
     }
@@ -82,12 +82,12 @@ declare
     %test:args('<text>Valid document</text>')
     %test:assertEquals("Valid document")
     %test:args('<a>no')
-    %test:assertEquals("String passed to fn:parse-xml is not a well-formed XML document. parse-xml-fragment failed with: The element type ""a"" must be terminated by the matching end-tag ""&lt;/a&gt;"".")
-    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a/>')
-    %test:assertEquals("String passed to fn:parse-xml is not a well-formed XML document. parse-xml-fragment failed with: Pseudo attribute ""standalone"" not allowed in input fragment")
-function pxf:error-description($in as xs:string) as xs:string {
+    %test:assertEquals("String passed to fn:parse-xml is not a well-formed XML document. parse-xml failed with: XML document structures must start and end within the same entity.")
+    %test:args('<?xml version="1.0" encoding="utf8" standalone="yes"?><a>Valid document</a>')
+    %test:assertEquals("Valid document")
+function px:error-description($in as xs:string) as xs:string {
     try {
-        fn:parse-xml-fragment($in)/string()
+        fn:parse-xml($in)/string()
     } catch err:FODC0006 {
         $err:description
     }
