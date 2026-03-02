@@ -38,13 +38,34 @@ public class ForceIndexUse extends AbstractPragma {
     @Override
     public void after(final XQueryContext context, final Expression expression) throws XPathException {
         expression.accept(new DefaultExpressionVisitor() {
-            public void visitGeneralComparison(final GeneralComparison expression) {
-                bailout = !expression.hasUsedIndex();
+            @Override
+            public void visit(final Expression expr) {
+                /* ExtensionExpression.accept() calls visit(inner) instead of inner.accept().
+                   Re-dispatch only for composite types; leaf types (LiteralValue, etc.) use
+                   AbstractExpression.accept -> visit(this), so expr.accept(this) would loop. */
+                if (expr instanceof PathExpr || expr instanceof LocationStep
+                        || expr instanceof Predicate || expr instanceof FunctionCall
+                        || expr instanceof InternalFunctionCall || expr instanceof FilteredExpression) {
+                    expr.accept(this);
+                }
             }
 
-            public void visitBuiltinFunction(final Function expression) {
-                if (expression instanceof IndexUseReporter) {
-                    bailout = !((IndexUseReporter) expression).hasUsedIndex();
+            @Override
+            public void visitGeneralComparison(final GeneralComparison expr) {
+                if (expr.hasUsedIndex()) {
+                    bailout = false;
+                }
+                expr.getLeft().accept(this);
+                expr.getRight().accept(this);
+            }
+
+            @Override
+            public void visitBuiltinFunction(final Function expr) {
+                if (expr instanceof IndexUseReporter && ((IndexUseReporter) expr).hasUsedIndex()) {
+                    bailout = false;
+                }
+                for (int i = 0; i < expr.getArgumentCount(); i++) {
+                    expr.getArgument(i).accept(this);
                 }
             }
         });
