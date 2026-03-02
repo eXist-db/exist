@@ -2036,6 +2036,26 @@ public class XQueryContext implements BinaryValueManager, Context {
         return null;
     }
 
+    /**
+     * Returns the first (earliest-declared) local variable currently in scope, or
+     * {@code null} if there are no local variables in scope.
+     *
+     * <p>Walks backward from {@code lastVar} to find the oldest variable declared in the
+     * current scope, stopping at the context-stack boundary.  Used by
+     * {@link OrderByClause#eval} to recover the true first active variable when
+     * {@link AbstractFLWORClause#getStartVariable()} returns a stale reference
+     * (e.g. in a FLWOR with two {@code order by} clauses where the inner one is
+     * evaluated during the outer one's {@code postEval} replay).</p>
+     */
+    LocalVariable getFirstLocalVariable() {
+        final LocalVariable end = contextStack.peek();
+        LocalVariable first = null;
+        for (LocalVariable var = lastVar; var != null && var != end; var = var.before) {
+            first = var;
+        }
+        return first;
+    }
+
     @Override
     public boolean isVarDeclared(final QName qname) {
         final Module[] modules = getModules(qname.getNamespaceURI());
