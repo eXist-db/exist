@@ -39,18 +39,6 @@ public class ForceIndexUse extends AbstractPragma {
     public void after(final XQueryContext context, final Expression expression) throws XPathException {
         expression.accept(new DefaultExpressionVisitor() {
             @Override
-            public void visit(final Expression expr) {
-                /* ExtensionExpression.accept() calls visit(inner) instead of inner.accept().
-                   Re-dispatch only for composite types; leaf types (LiteralValue, etc.) use
-                   AbstractExpression.accept -> visit(this), so expr.accept(this) would loop. */
-                if (expr instanceof PathExpr || expr instanceof LocationStep
-                        || expr instanceof Predicate || expr instanceof FunctionCall
-                        || expr instanceof InternalFunctionCall || expr instanceof FilteredExpression) {
-                    expr.accept(this);
-                }
-            }
-
-            @Override
             public void visitGeneralComparison(final GeneralComparison expr) {
                 if (expr.hasUsedIndex()) {
                     bailout = false;
