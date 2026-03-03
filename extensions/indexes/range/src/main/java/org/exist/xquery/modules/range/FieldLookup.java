@@ -175,7 +175,7 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
         for (int i = j; i < arguments.size(); i++) {
             Expression arg = arguments.get(i).simplify();
             arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, arg,
-                    new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, String.valueOf(i + 1), getSignature()));
+                    new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(i + 1), getSignature()));
             steps.add(arg);
         }
     }
@@ -240,15 +240,14 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+        final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
 
-        if (contextSequence != null && !contextSequence.isPersistentSet())
+        if (effectiveContextSequence != null && !effectiveContextSequence.isPersistentSet())
             // in-memory docs won't have an index
             if (fallback == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
-                return fallback.eval(contextSequence, contextItem);
+                return fallback.eval(effectiveContextSequence, contextItem);
             }
 
         NodeSet result;
@@ -256,18 +255,19 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
             long start = System.currentTimeMillis();
 
             DocumentSet docs;
-            if (contextSequence == null)
+            if (effectiveContextSequence == null)
                 docs = context.getStaticallyKnownDocuments();
             else
-                docs = contextSequence.getDocumentSet();
+                docs = effectiveContextSequence.getDocumentSet();
             NodeSet contextSet = null;
-            if (contextSequence != null)
-                contextSet = contextSequence.toNodeSet();
+            if (effectiveContextSequence != null)
+                contextSet = effectiveContextSequence.toNodeSet();
 
-            if (hasEmptyArgs(contextSequence)) {
+            // If any of the lookup arguments is the empty sequence, the overall result is empty.
+            if (hasEmptyArgs(effectiveContextSequence)) {
                 return Sequence.EMPTY_SEQUENCE;
             }
-            Sequence fields = getArgument(0).eval(contextSequence, null);
+            Sequence fields = getArgument(0).eval(effectiveContextSequence, null);
             RangeIndex.Operator[] operators = null;
             int j = 1;
             if (isCalledAs("field")) {

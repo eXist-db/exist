@@ -31,6 +31,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexConfig;
+import org.exist.indexing.range.XPathToLuceneRegexTranslator;
 import org.exist.indexing.range.RangeIndexConfigElement;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.storage.ElementValue;
@@ -39,6 +40,8 @@ import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
+
+import org.apache.lucene.util.automaton.RegExp;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -223,6 +226,9 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, arg,
                 new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
         steps.add(arg);
+        if (arguments.size() > 2) {
+            steps.add(arguments.get(2));
+        }
     }
 
     @Override
@@ -305,6 +311,12 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             return NodeSet.EMPTY_SET;
         }
 
+        if (requiresFallback(operator, keys)) {
+            return ((Optimizable) fallback).preSelect(contextSequence, useContext);
+        }
+
+        final int matchFlags = getMatchFlags(contextSequence);
+
         List<QName> qnames = null;
         if (contextQName != null) {
             qnames = new ArrayList<>(1);
@@ -312,7 +324,7 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         }
 
         try {
-            preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT);
+            preselectResult = index.query(getExpressionId(), docs, contextSequence.toNodeSet(), qnames, keys, operator, NodeSet.DESCENDANT, matchFlags);
         } catch (XPathException | IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
@@ -330,6 +342,31 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
     private RangeIndex.Operator getOperator() {
         final String calledAs = getSignature().getName().getLocalPart();
         return RangeIndexModule.OPERATOR_MAP.get(calledAs);
+    }
+
+    private int getMatchFlags(Sequence contextSequence) throws XPathException {
+        if (getArgumentCount() < 3 || !isCalledAs("matches")) {
+            return 0;
+        }
+        final String flags = getArgument(2).eval(contextSequence, null).getStringValue();
+        return flags.contains("i") ? RegExp.ASCII_CASE_INSENSITIVE : 0;
+    }
+
+    /**
+     * Decide if this lookup should delegate to the non-index fallback expression instead of using the range index.
+     * Used for {@link RangeIndex.Operator#MATCH} when the fn:matches pattern cannot be translated to a Lucene regexp.
+     */
+    private boolean requiresFallback(final RangeIndex.Operator operator, final AtomicValue[] keys) throws XPathException {
+        if (operator == RangeIndex.Operator.MATCH && fallback != null && keys.length > 0) {
+            final String pattern = keys[0].getStringValue();
+            if (!XPathToLuceneRegexTranslator.isTranslatable(pattern)) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("fn:matches pattern '{}' not translatable to Lucene; using fallback", pattern);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private AtomicValue[] getKeys(Sequence contextSequence) throws XPathException {
@@ -352,35 +389,37 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         if (!canOptimize && fallback != null) {
             return fallback.eval(contextSequence, contextItem);
         }
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+        final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
 
-        if (contextSequence != null && !contextSequence.isPersistentSet()) {
+        if (effectiveContextSequence != null && !effectiveContextSequence.isPersistentSet()) {
             // in-memory docs won't have an index
             if (fallback == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
-                return fallback.eval(contextSequence, contextItem);
+                return fallback.eval(effectiveContextSequence, contextItem);
             }
         }
         NodeSet result;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
-            Sequence input = getArgument(0).eval(contextSequence, null);
+            Sequence input = getArgument(0).eval(effectiveContextSequence, null);
             if (!(input instanceof VirtualNodeSet) && input.isEmpty())
                 result = NodeSet.EMPTY_SET;
             else {
                 RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
-                AtomicValue[] keys = getKeys(contextSequence);
+                AtomicValue[] keys = getKeys(effectiveContextSequence);
                 if (keys.length == 0) {
                     return NodeSet.EMPTY_SET;
+                }
+                final RangeIndex.Operator operator = getOperator();
+                if (requiresFallback(operator, keys)) {
+                    return ((Optimizable) fallback).preSelect(input.toNodeSet(), true);
                 }
                 List<QName> qnames = null;
                 if (contextQName != null) {
                     qnames = new ArrayList<>(1);
                     qnames.add(contextQName);
                 }
-                final RangeIndex.Operator operator = getOperator();
 
                 // throw an exception if substring match operation is applied to collated index
                 if (usesCollation && !operator.supportsCollation()) {
@@ -388,10 +427,11 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
                             "used with the '" + operator + "' operation.");
                 }
 
+                final int matchFlags = getMatchFlags(contextSequence);
                 try {
                     NodeSet inNodes = input.toNodeSet();
                     DocumentSet docs = inNodes.getDocumentSet();
-                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR);
+                    result = index.query(getExpressionId(), docs, inNodes, qnames, keys, operator, NodeSet.ANCESTOR, matchFlags);
                 } catch (IOException e) {
                     throw new XPathException(this, e.getMessage());
                 }

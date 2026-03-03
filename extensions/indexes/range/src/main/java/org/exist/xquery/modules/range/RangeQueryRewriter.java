@@ -21,22 +21,31 @@
  */
 package org.exist.xquery.modules.range;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+
+// static imports for Dependency.* intentionally removed: no longer used
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Query rewriter for the range index. May replace path expressions like a[b = "c"] or a[b = "c"][d = "e"]
  * with either a[range:equals(b, "c")] or range:field-equals(...).
  */
 public class RangeQueryRewriter extends QueryRewriter {
+
+    private static final Logger LOG = LogManager.getLogger(RangeQueryRewriter.class);
 
     public RangeQueryRewriter(XQueryContext context) {
         super(context);
@@ -109,17 +118,19 @@ public class RangeQueryRewriter extends QueryRewriter {
 
                             // innerExpr was already optimized, just update the contextPath if it is missing
                             if (lookup.getContextPath() == null) {
-                                lookup.setContextPath(path);;
+                                lookup.setContextPath(path);
                             }
 
                         } else {
                             // replace with call to lookup function
                             final Lookup func = rewrite(innerExpr, path);
-                            // preserve original comparison: may need it for in-memory lookups
-                            func.setFallback(innerExpr, axis);
-                            func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
+                            if (func != null) {
+                                // preserve original comparison: may need it for in-memory lookups
+                                func.setFallback(innerExpr, axis);
+                                func.setLocation(innerExpr.getLine(), innerExpr.getColumn());
 
-                            pred.replace(innerExpr, new InternalFunctionCall(func));
+                                pred.replace(innerExpr, new InternalFunctionCall(func));
+                            }
                         }
 
                         canOptimize = true;
@@ -146,10 +157,31 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             return lookup;
         } else if (expression instanceof final InternalFunctionCall fcall && fcall.getFunction() instanceof final org.exist.xquery.functions.fn.FunMatches funMatches) {
-            if (funMatches.getArgumentCount() > 2) {
+            final int argCount = funMatches.getArgumentCount();
+            if (argCount > 3) {
                 return null;
             }
-            final List<Expression> matchArgs = Arrays.asList(funMatches.getArgument(0), funMatches.getArgument(1));
+            if (argCount == 3) {
+                final Expression flagsExpr = funMatches.getArgument(2);
+                if (flagsExpr instanceof LiteralValue) {
+                    final String flags = ((LiteralValue) flagsExpr).getValue().getStringValue();
+                    for (int i = 0; i < flags.length(); i++) {
+                        if (flags.charAt(i) != 'i') {
+                            return null;
+                        }
+                    }
+                }
+            }
+            final String pattern = getConstantPattern(funMatches.getArgument(1));
+            if (pattern != null && !XPathToLuceneRegexTranslator.isTranslatable(pattern)) {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("fn:matches pattern '{}' not translatable to Lucene; skipping rewrite", pattern);
+                }
+                return null;
+            }
+            final List<Expression> matchArgs = argCount >= 3
+                    ? Arrays.asList(funMatches.getArgument(0), funMatches.getArgument(1), funMatches.getArgument(2))
+                    : Arrays.asList(funMatches.getArgument(0), funMatches.getArgument(1));
             final Lookup lookup = Lookup.create(funMatches.getContext(), RangeIndex.Operator.MATCH, path);
             if (lookup != null) {
                 lookup.setArguments(matchArgs);
@@ -186,17 +218,24 @@ public class RangeQueryRewriter extends QueryRewriter {
         return null;
     }
 
+    /**
+     * Infer the effective {@link RangeIndex.Operator} (EQ, NE, MATCH, etc.) from the given expression.
+     * Handles GeneralComparison, direct Lookup calls and fn:matches (including Lookup with a fallback expression).
+     */
     public static RangeIndex.Operator getOperator(Expression expr) {
+        Expression current = expr;
         if (expr instanceof final InternalFunctionCall fcall) {
             final Function function = fcall.getFunction();
             if (function instanceof final Lookup lookup) {
                 final Expression fallback = lookup.getFallback();
-                expr = Objects.requireNonNullElse(fallback, lookup);
+                current = Objects.requireNonNullElse(fallback, lookup);
+            } else {
+                current = function;
             }
         }
 
         RangeIndex.Operator operator = RangeIndex.Operator.EQ;
-        if (expr instanceof final GeneralComparison comparison) {
+        if (current instanceof final GeneralComparison comparison) {
             final Comparison relation = comparison.getRelation();
             operator = switch (relation) {
                 case LT -> RangeIndex.Operator.LT;
@@ -212,15 +251,49 @@ public class RangeQueryRewriter extends QueryRewriter {
                 case NEQ -> RangeIndex.Operator.NE;
                 default -> operator;
             };
-        } else if (expr instanceof final InternalFunctionCall fcall) {
-            expr = fcall.getFunction();
         }
 
-        if (expr instanceof org.exist.xquery.functions.fn.FunMatches || (expr instanceof final Lookup lookup && lookup.isCalledAs("matches"))) {
+        if (current instanceof org.exist.xquery.functions.fn.FunMatches || (current instanceof final Lookup lookup && lookup.isCalledAs("matches"))) {
             operator = RangeIndex.Operator.MATCH;
         }
 
         return operator;
+    }
+
+    /**
+     * Extract constant pattern string from an expression when it is effectively a literal.
+     * Returns null if the pattern is not a compile-time constant or depends on dynamic context.
+     */
+    private static @Nullable String getConstantPattern(final Expression expr) {
+        try {
+            Expression e = expr.simplify();
+            // Unwrap common check wrappers (DynamicCardinalityCheck, etc.); guard against cycles
+            final Set<Expression> seen = new HashSet<>();
+            while (e.getSubExpressionCount() == 1) {
+                final Expression next = e.getSubExpression(0);
+                if (!seen.add(next)) {
+                    return null;
+                }
+                e = next;
+            }
+            if (e instanceof LiteralValue literal) {
+                return literal.getValue().getStringValue();
+            }
+            if (e instanceof PathExpr path) {
+                final String v = path.getLiteralValue();
+                return v.isEmpty() ? null : v;
+            }
+            // Fallback: eval if expression has no context dependencies
+            if ((e.getDependencies() & (Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM | Dependency.VARS)) == 0) {
+                final Sequence seq = e.eval(null, null);
+                if (seq != null && !seq.isEmpty() && seq.getItemCount() == 1) {
+                    return seq.itemAt(0).getStringValue();
+                }
+            }
+        } catch (final XPathException ignored) {
+            // not a constant string
+        }
+        return null;
     }
 
     protected static NodePath toNodePath(List<LocationStep> steps) {
