@@ -24,6 +24,7 @@ package org.exist.indexing.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.exist.indexing.lucene.analyzers.MetaAnalyzer;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
@@ -84,9 +85,8 @@ public class FieldType {
             }
         }
 
-		final String storeAttr = config.getAttribute(STORE_ATTRIB);
-        if (!storeAttr.isEmpty()) {
-        	store = "yes".equalsIgnoreCase(storeAttr) ? Field.Store.YES : Field.Store.NO;
+		if (!config.getAttribute(STORE_ATTRIB).isEmpty()) {
+        	store = Configuration.parseBooleanAttribute(config, STORE_ATTRIB, false) ? Field.Store.YES : Field.Store.NO;
         }
     }
     

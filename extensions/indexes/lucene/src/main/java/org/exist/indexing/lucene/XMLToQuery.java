@@ -55,6 +55,7 @@ import org.apache.lucene.util.automaton.ByteRunAutomaton;
 import org.apache.lucene.util.automaton.LevenshteinAutomata;
 import org.apache.lucene.util.automaton.RunAutomaton;
 import org.apache.lucene.util.automaton.UTF32ToUTF8;
+import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.lucene.QueryOptions;
@@ -529,11 +530,7 @@ public class XMLToQuery {
 
     // Returns a Query that applies the rewrite lazily
     private Query setRewriteMethod(MultiTermQuery mtq, Element node, QueryOptions options) {
-        boolean doFilterRewrite = options.filterRewrite();
-        String option = node.getAttribute("filter-rewrite");
-        if (!option.isEmpty()) {
-            doFilterRewrite = "yes".equalsIgnoreCase(option);
-        }
+        boolean doFilterRewrite = Configuration.parseBooleanAttribute(node, "filter-rewrite", options.filterRewrite());
 
         if (doFilterRewrite) {
             return new LazyRewriteQuery(mtq, MultiTermQuery.CONSTANT_SCORE_REWRITE);

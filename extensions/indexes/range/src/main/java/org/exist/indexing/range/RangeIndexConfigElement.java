@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
@@ -93,8 +94,7 @@ public class RangeIndexConfigElement {
             analyzer.addCollation(collation);
             usesCollation = true;
         }
-        String nested = node.getAttribute("nested");
-        includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
+        includeNested = Configuration.parseBooleanAttribute(node, "nested", true);
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
@@ -106,10 +106,7 @@ public class RangeIndexConfigElement {
             }
         }
 
-        String caseStr = node.getAttribute("case");
-        if (!caseStr.isEmpty()) {
-            caseSensitive = "yes".equalsIgnoreCase(caseStr);
-        }
+        caseSensitive = Configuration.parseBooleanAttribute(node, "case", true);
         final String custom = node.getAttribute("converter");
         if (!custom.isEmpty()) {
             try {

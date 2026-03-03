@@ -29,6 +29,7 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.MultiTermQuery;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -219,7 +220,7 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_LEADING_WILDCARD:
-                allowLeadingWildcard = "yes".equalsIgnoreCase(value);
+                allowLeadingWildcard = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_PHRASE_SLOP:
                 try {
@@ -229,10 +230,10 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_FILTER_REWRITE:
-                filterRewrite = "yes".equalsIgnoreCase(value);
+                filterRewrite = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_LOWERCASE_EXPANDED_TERMS:
-                lowercaseExpandedTerms = "yes".equalsIgnoreCase(value);
+                lowercaseExpandedTerms = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_QUERY_ANALYZER_ID:
                 queryAnalyzerId = value;
