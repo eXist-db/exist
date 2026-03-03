@@ -119,6 +119,23 @@
                 </xsl:template>
             </xsl:stylesheet>
         </store>
+        <create-collection parent="/db/test" name="modules"/>
+        <store collection="/db/test/modules" name="test_relative_parent.xml"><![CDATA[
+            <book xmlns:xi="http://www.w3.org/2001/XInclude">
+                <title>Book Title</title>
+                <xi:include href="../include.xml">
+                    <xi:fallback><p>Not found</p></xi:fallback>
+                </xi:include>
+            </book>
+        ]]></store>
+        <store collection="/db/test/modules" name="xinclude_relative.xq" type="application/xquery"><![CDATA[
+            <book xmlns:xi="http://www.w3.org/2001/XInclude">
+                <title>Book Title</title>
+                <xi:include href="../include.xml">
+                    <xi:fallback><p>Not found</p></xi:fallback>
+                </xi:include>
+            </book>
+        ]]></store>
     </setup>
     <tearDown>
         <remove-collection collection="/db/test"/>
@@ -180,6 +197,16 @@
                 transform:transform(doc('/db/test/test1.xml'), $stylesheet, (), (),
                     "xinclude-path=xmldb:exist:///db/test")
         ]]></code>
+        <xpath>//para[. = 'Included paragraph']</xpath>
+    </test>
+    <test>
+        <task>XInclude with relative parent path from stored XML</task>
+        <code>util:expand(doc("/db/test/modules/test_relative_parent.xml"))</code>
+        <xpath>//para[. = 'Included paragraph']</xpath>
+    </test>
+    <test ignore="true">
+        <task>XInclude with relative parent path from XQuery (known limitation: util:expand does not propagate moduleLoadPath from util:eval context)</task>
+        <code>util:expand(util:eval(xs:anyURI("/db/test/modules/xinclude_relative.xq")))</code>
         <xpath>//para[. = 'Included paragraph']</xpath>
     </test>
     <test output="text">
