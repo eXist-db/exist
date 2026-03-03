@@ -161,7 +161,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     bytes.append((byte)'*');
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 case MATCH:
-                    return new RegexpQuery(new Term(field, content.getStringValue()));
+                    String pattern = content.getStringValue();
+                    // Lucene RegexpQuery matches whole terms; XPath ^b matches prefix. Translate ^b -> b.*
+                    if (pattern.length() > 1 && pattern.startsWith("^") && !pattern.contains("$")) {
+                        pattern = pattern.substring(1) + ".*";
+                    }
+                    return new RegexpQuery(new Term(field, pattern));
             }
         }
         // EQ/NE for numeric/date types: use Point queries (LongField.newExactQuery etc.), not TermQuery
