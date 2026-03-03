@@ -29,6 +29,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -92,10 +93,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             }
         }
 
-        final String storeStr = configElement.getAttribute(ATTR_STORE);
-        if (!storeStr.isEmpty()) {
-            this.store = "yes".equalsIgnoreCase(storeStr) || "true".equalsIgnoreCase(storeStr);
-        }
+        this.store = Configuration.parseBooleanAttribute(configElement, ATTR_STORE, true);
 
         final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);
         if (!analyzerOpt.isEmpty()) {
@@ -110,10 +108,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             this.condition = Optional.of(cond);
         }
 
-        final String binaryStr = configElement.getAttribute(ATTR_BINARY);
-        if (!binaryStr.isEmpty()) {
-            this.binary = "yes".equalsIgnoreCase(binaryStr) || "true".equalsIgnoreCase(binaryStr);
-        }
+        this.binary = Configuration.parseBooleanAttribute(configElement, ATTR_BINARY, false);
     }
 
     @Nonnull

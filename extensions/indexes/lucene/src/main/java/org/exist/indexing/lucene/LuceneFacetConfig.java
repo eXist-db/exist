@@ -27,6 +27,7 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
@@ -61,8 +62,7 @@ public class LuceneFacetConfig extends AbstractFieldConfig {
         if (dimension.isEmpty()) {
             throw new DatabaseConfigurationException("Attribute 'dimension' on facet configuration should not be empty");
         }
-        final String hierarchicalOpt = configElement.getAttribute(HIERARCHICAL);
-        isHierarchical = !hierarchicalOpt.isEmpty() && ("true".equalsIgnoreCase(hierarchicalOpt) || "yes".equalsIgnoreCase(hierarchicalOpt));
+        isHierarchical = Configuration.parseBooleanAttribute(configElement, HIERARCHICAL, false);
 
         config.facetsConfig.setHierarchical(dimension, isHierarchical);
         config.facetsConfig.setMultiValued(dimension, true);

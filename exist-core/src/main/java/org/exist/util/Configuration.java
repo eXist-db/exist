@@ -410,6 +410,23 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
+     * Parses an optional boolean attribute from an XML element. If the attribute is missing or empty, returns the default.
+     * Otherwise, returns true for &quot;yes&quot; or &quot;true&quot; (case-insensitive), false for anything else.
+     *
+     * @param elem         The element
+     * @param attrName     The attribute name
+     * @param defaultValue The value when the attribute is missing or empty
+     * @return The parsed boolean
+     */
+    public static boolean parseBooleanAttribute(final Element elem, final String attrName, final boolean defaultValue) {
+        final String value = elem.getAttribute(attrName);
+        if (value == null || value.isEmpty()) {
+            return defaultValue;
+        }
+        return parseBoolean(value, defaultValue);
+    }
+
+    /**
      * Takes the passed string and converts it to a non-null <code>Boolean</code> object. If value is null, the specified default value is used.
      * Otherwise, Boolean.TRUE is returned if and only if the passed string equals &quot;yes&quot; or &quot;true&quot;, ignoring case.
      *

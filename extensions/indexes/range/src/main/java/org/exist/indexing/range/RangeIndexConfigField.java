@@ -23,6 +23,7 @@ package org.exist.indexing.range;
 
 import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
@@ -90,8 +91,7 @@ public class RangeIndexConfigField {
                 RangeIndex.LOG.warn("Failed to initialize custom-type: {}", custom, e);
             }
         }
-        final String nested = elem.getAttribute("nested");
-        includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
+        includeNested = Configuration.parseBooleanAttribute(elem, "nested", true);
         path.setIncludeDescendants(includeNested);
 
         // normalize whitespace if whitespace="normalize"
@@ -104,10 +104,7 @@ public class RangeIndexConfigField {
             }
         }
 
-        String caseStr = elem.getAttribute("case");
-        if (!caseStr.isEmpty()) {
-            caseSensitive = "yes".equalsIgnoreCase(caseStr);
-        }
+        caseSensitive = Configuration.parseBooleanAttribute(elem, "case", true);
     }
 
     public String getName() {
