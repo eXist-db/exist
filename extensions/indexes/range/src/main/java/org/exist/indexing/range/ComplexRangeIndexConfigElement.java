@@ -69,7 +69,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
                         fields.put(field.getName(), field);
                     }
                     case CONDITION_ELEMENT ->
-                            conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path));
+                            conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path, namespaces));
                     case FILTER_ELEMENT -> analyzer.addFilter((Element) child);
                     case null, default ->
                             LOG.warn("Invalid element encountered for range index configuration: {}", child.getLocalName());
