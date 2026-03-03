@@ -147,9 +147,15 @@ public class FunHigherOrderFun extends BasicFunction {
                     final Item item = i.nextItem();
                     final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
 
-                    // call to effectiveBooleanValue is not spec compliant
-                    // spec: https://www.w3.org/TR/xpath-functions/#func-filter
-                    // two pending tests in exist-core/src/test/xquery/xquery3/fnHigherOrderFunctions.xql
+                    // W3C spec: fn:filter requires function to return xs:boolean
+                    // https://www.w3.org/TR/xpath-functions/#func-filter
+                    if (!r.hasOne() || !Type.subTypeOf(r.itemAt(0).getType(), Type.BOOLEAN)) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "fn:filter: the supplied function must return a single xs:boolean value"
+                                        + "; got: " + (r.isEmpty() ? "empty sequence"
+                                        : !r.hasOne() ? "sequence of " + r.getItemCount() + " items"
+                                        : Type.getTypeName(r.itemAt(0).getType())));
+                    }
                     if (r.effectiveBooleanValue()) {
                         result.add(item);
                     }
