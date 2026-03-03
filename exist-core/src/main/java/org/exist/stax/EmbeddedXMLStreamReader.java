@@ -355,7 +355,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
         readAttributes();
         for(int i = 0; i < attributes.getLength(); i++) {
             final org.exist.dom.QName qn = attributes.getQName(i);
-            if(qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalPart().equals(localName)) {
+            if((namespaceURI == null || qn.getNamespaceURI().equals(namespaceURI)) && qn.getLocalPart().equals(localName)) {
                 return attributes.getValue(i);
             }
         }
