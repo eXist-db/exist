@@ -246,3 +246,12 @@ declare
 function t:args-assert-element($arg as element()) as element() {
     $arg
 };
+
+(: https://github.com/eXist-db/exist/issues/4327 :)
+declare
+    %test:assertEquals('
+  <span type="xml">Success!</span>
+')
+function t:assertEquals-normalize-annotation-whitespace() as element(span) {
+    <span type="xml">Success!</span>
+};
