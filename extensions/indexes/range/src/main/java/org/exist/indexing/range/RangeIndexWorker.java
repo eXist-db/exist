@@ -43,7 +43,8 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.NumericUtils;
+import org.apache.lucene.util.automaton.Operations;
+import org.apache.lucene.util.automaton.RegExp;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -108,7 +109,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private final RangeIndex index;
     private final DBBroker broker;
-    private IndexController controller;
     private DocumentImpl currentDoc;
     private ReindexMode mode = ReindexMode.STORE;
     private List<RangeIndexDoc> nodesToWrite;
@@ -126,6 +126,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
+        return toQuery(field, qname, content, operator, docs, 0);
+    }
+
+    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs, int matchFlags) throws XPathException {
         final int type = content.getType();
         BytesRefBuilder bytes;
         BytesRef key = null;
@@ -162,9 +166,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
                 case MATCH:
                     String pattern = content.getStringValue();
-                    // Lucene RegexpQuery matches whole terms; XPath ^b matches prefix. Translate ^b -> b.*
-                    if (pattern.length() > 1 && pattern.startsWith("^") && !pattern.contains("$")) {
-                        pattern = pattern.substring(1) + ".*";
+                    pattern = XPathToLuceneRegexTranslator.translate(pattern);
+                    if (matchFlags != 0) {
+                        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
                     }
                     return new RegexpQuery(new Term(field, pattern));
             }
@@ -335,7 +339,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        this.controller = controller;
         LOG.debug("Configuring lucene index...");
         return new RangeIndexConfig(configNodes, namespaces);
     }
@@ -374,6 +377,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 break;
             case REMOVE_SOME_NODES:
                 nodesToRemove = new TreeSet<>();
+                break;
+            default:
                 break;
         }
     }
@@ -450,6 +455,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 break;
             case REMOVE_ALL_NODES:
                 removeDocument(currentDoc.getDocId());
+                break;
+            default:
                 break;
         }
     }
@@ -617,6 +624,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
+        return query(contextId, docs, contextSet, qnames, keys, operator, axis, 0);
+    }
+
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis, int matchFlags) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             List<QName> definedIndexes = getDefinedIndexes(qnames);
             NodeSet resultSet = new NewArrayNodeSet();
@@ -626,11 +637,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (keys.length > 1) {
                     BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     for (AtomicValue key : keys) {
-                        builder.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
+                        builder.add(toQuery(field, qname, key, operator, docs, matchFlags), BooleanClause.Occur.SHOULD);
                     }
                     query = builder.build();
                 } else {
-                    query = toQuery(field, qname, keys[0], operator, docs);
+                    query = toQuery(field, qname, keys[0], operator, docs, matchFlags);
                 }
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;
@@ -687,8 +698,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //    }
 
     private NodeSet doQuery(final int contextId, final DocumentSet docs, final NodeSet contextSet, final int axis,
-                            IndexSearcher searcher, final short nodeType, Query query) throws
-            IOException {
+                            IndexSearcher searcher, final short nodeType, Query query) throws IOException {
         if (System.getProperty("exist.range.diagnose") != null) {
             diagnoseQuery(searcher, query);
         }
@@ -701,8 +711,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     /**
-     * Diagnostic: dump Terms for the query's field and the search term.
-     * Enable with -Dexist.range.diagnose
+     * Diagnostic helper: dumps terms for the query's field and search term to stderr.
+     * Only runs when {@code -Dexist.range.diagnose} is enabled, to avoid overhead on normal queries.
      */
     private void diagnoseQuery(IndexSearcher searcher, Query query) {
         String field = null;
@@ -899,9 +909,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 for (FieldInfo info : context.reader().getFieldInfos()) {
                     if (!FIELD_DOC_ID.equals(info.name) && !FIELD_NODE_ID.equals(info.name) && !FIELD_ADDRESS.equals(info.name) && !FIELD_ID.equals(info.name)) {
                         QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                        if (name != null && (qname == null || matchQName(qname, name))) {
-                            if (!indexes.contains(name))
-                                indexes.add(name);
+                        if (name != null && (qname == null || matchQName(qname, name)) && !indexes.contains(name)) {
+                            indexes.add(name);
                         }
                     }
                 }
@@ -912,18 +921,16 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
         final Analyzer analyzer = getAnalyzer(qname, field, docs);
-        if (!isCaseSensitive(qname, field, docs)) {
-            data = data.toLowerCase();
-        }
+        final String content = !isCaseSensitive(qname, field, docs) ? data.toLowerCase() : data;
         if (LOG.isDebugEnabled()) {
             LOG.debug("ANALYZE field={} qname={} input={} analyzer={} caseSensitive={}",
-                    field, qname, data, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));
+                    field, qname, content, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));
         }
         if (analyzer == null) {
-            return new BytesRef(data);
+            return new BytesRef(content);
         }
         try {
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(data));
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(content));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
@@ -1135,8 +1142,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
             qnames = getDefinedIndexes(qnames);
-            //Expects a StringValue
-            String start = null, end = null;
+            // Hints (if present) may restrict the scan by start/end value and maximum number of terms.
+            String start = null;
+            String end = null;
             long max = Long.MAX_VALUE;
             if (hints != null) {
                 Object vstart = hints.get(START_VALUE);

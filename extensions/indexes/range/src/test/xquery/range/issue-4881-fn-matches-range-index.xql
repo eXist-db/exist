@@ -37,6 +37,7 @@ declare variable $i4881:DATA := document {
     <root>
         <foo bar="baz"/>
         <foo bar="bat"/>
+        <foo bar="Baz"/>
         <foo bar="qux"/>
     </root>
 };
@@ -79,6 +80,34 @@ function i4881:matches-result-correctness() {
     count(collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "^b")])
 };
 
+(: Case-insensitive: ^b with "i" matches baz, bat, Baz. :)
+declare
+    %test:assertEquals(3)
+function i4881:matches-result-correctness-case-insensitive() {
+    count(collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "^b", "i")])
+};
+
+(: Unanchored "b" matches baz, bat (substring), not qux. Fallback to FunMatches when not translatable. :)
+declare
+    %test:assertEquals(2)
+function i4881:matches-result-correctness-unanchored() {
+    count(collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "b")])
+};
+
+(: Suffix: bar ends with z matches baz, Baz. :)
+declare
+    %test:assertEquals(2)
+function i4881:matches-result-correctness-suffix() {
+    count(collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "z$")])
+};
+
+(: Exact: bar equals baz. :)
+declare
+    %test:assertEquals(1)
+function i4881:matches-result-correctness-exact() {
+    count(collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "^baz$")])
+};
+
 (: Baseline: eq uses new-range index. :)
 declare
     %test:stats
@@ -95,4 +124,38 @@ declare
     %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function i4881:matches-uses-index($pattern as xs:string) {
     collection($i4881:COLLECTION_PATH)//foo[matches(@bar, $pattern)]
+};
+
+(: Suffix pattern should use index. :)
+declare
+    %test:stats
+    %test:args("z$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function i4881:matches-suffix-uses-index($pattern as xs:string) {
+    collection($i4881:COLLECTION_PATH)//foo[matches(@bar, $pattern)]
+};
+
+(: Exact pattern should use index. :)
+declare
+    %test:stats
+    %test:args("^baz$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function i4881:matches-exact-uses-index($pattern as xs:string) {
+    collection($i4881:COLLECTION_PATH)//foo[matches(@bar, $pattern)]
+};
+
+(: Case-insensitive ^b with "i" should use index. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function i4881:matches-case-insensitive-uses-index() {
+    collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "^b", "i")]
+};
+
+(: Unanchored pattern should NOT use index (fallback to FunMatches). :)
+declare
+    %test:stats
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function i4881:matches-unanchored-no-index() {
+    collection($i4881:COLLECTION_PATH)//foo[matches(@bar, "b")]
 };
