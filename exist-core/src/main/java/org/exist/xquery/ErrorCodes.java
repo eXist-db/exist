@@ -129,6 +129,14 @@ public class ErrorCodes {
 
     public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
 
+    public static final ErrorCode XQST0097 = new W3CErrorCode("XQST0097",
+            """
+            It is a static error to have more than one decimal-format declaration with the same name, \
+            or more than one default decimal-format declaration, in the same module.""");
+    public static final ErrorCode XQST0098 = new W3CErrorCode("XQST0098",
+            """
+            It is a static error if the properties representing characters used in a picture string \
+            do not each have distinct values, or if a property value is not valid for its property.""");
     public static final ErrorCode XQST0118 = new W3CErrorCode("XQST0118", "It is a static error if an element constructor uses a name in the end tag that does not match the name in the start tag.");
     public static final ErrorCode XQST0125 = new W3CErrorCode("XQST0125", "It is a static error if an inline function expression is annotated as %public or %private.");
 

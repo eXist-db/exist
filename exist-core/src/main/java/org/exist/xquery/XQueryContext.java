@@ -2993,6 +2993,10 @@ public class XQueryContext implements BinaryValueManager, Context {
         staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
     }
 
+    public void setDefaultStaticDecimalFormat(final DecimalFormat decimalFormat) {
+        staticDecimalFormats.put(UNNAMED_DECIMAL_FORMAT, decimalFormat);
+    }
+
     public Map<String, Sequence> getCachedUriCollectionResults() {
         return cachedUriCollectionResults;
     }
