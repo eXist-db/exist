@@ -40,6 +40,11 @@ import java.util.stream.IntStream;
  */
 public class OrderByClause extends AbstractFLWORClause {
 
+    // Package-private instrumentation fields for memory benchmarking.
+    // Set in postEval() before sorting; zero-cost when not read.
+    static volatile int lastTupleCount;
+    static volatile int lastVarCount;
+
     private final List<OrderSpec> orderSpecs;
 
     /**
@@ -161,28 +166,38 @@ public class OrderByClause extends AbstractFLWORClause {
             walkStart = startVar;
         }
 
-        final Map<QName, Sequence> varValues = new LinkedHashMap<>();
-        LocalVariable nextVar = walkStart;
-        while (nextVar != null) {
-            varValues.put(nextVar.getQName(), nextVar.getValue());
-            if (!data.initialized) {
-                // First call: create template LocalVariables for reuse in postEval()
+        if (!data.initialized) {
+            // First call: count variables and create templates
+            final List<QName> names = new ArrayList<>();
+            final List<LocalVariable> templates = new ArrayList<>();
+            LocalVariable nextVar = walkStart;
+            while (nextVar != null) {
+                names.add(nextVar.getQName());
                 final LocalVariable templateVar = new LocalVariable(nextVar.getQName());
                 templateVar.setSequenceType(nextVar.getSequenceType());
                 templateVar.setStaticType(nextVar.getStaticType());
                 templateVar.setContextDocs(nextVar.getContextDocs());
-                data.variableTemplates.put(nextVar.getQName(), templateVar);
+                templates.add(templateVar);
+                nextVar = nextVar.after;
             }
+            data.variableNames = names.toArray(new QName[0]);
+            data.variableTemplates = templates.toArray(new LocalVariable[0]);
+            data.initialized = true;
+        }
+
+        // Capture variable values into a compact array (indexed parallel to data.variableNames)
+        final Sequence[] varValues = new Sequence[data.variableNames.length];
+        LocalVariable nextVar = walkStart;
+        for (int v = 0; v < varValues.length && nextVar != null; v++) {
+            varValues[v] = nextVar.getValue();
             nextVar = nextVar.after;
         }
-        data.initialized = true;
 
         // Evaluate sort keys for this tuple
-        final List<AtomicValue> sortKeys = new ArrayList<>(orderSpecs.size());
+        final AtomicValue[] sortKeys = new AtomicValue[orderSpecs.size()];
         for (int i = 0; i < orderSpecs.size(); i++) {
             final OrderSpec spec = orderSpecs.get(i);
             final Sequence keySeq = spec.getSortExpression().eval(contextSequence, null);
-            final AtomicValue value;
             if (keySeq.hasOne()) {
                 AtomicValue atomized = keySeq.itemAt(0).atomize();
                 // Cast xs:untypedAtomic to xs:string per W3C XQuery 3.1 §3.9.4
@@ -190,15 +205,14 @@ public class OrderByClause extends AbstractFLWORClause {
                     atomized = atomized.convertTo(Type.STRING);
                 }
                 data.encounteredPrimitiveTypes.get(i).set(Type.primitiveTypeOf(atomized.getType()));
-                value = atomized;
+                sortKeys[i] = atomized;
             } else if (keySeq.hasMany()) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Order by expression evaluates to more than one item: " +
                         ExpressionDumper.dump(spec.getSortExpression()));
             } else {
-                value = AtomicValue.EMPTY_VALUE;
+                sortKeys[i] = AtomicValue.EMPTY_VALUE;
             }
-            sortKeys.add(value);
         }
 
         data.tuples.add(new OrderByTuple(varValues, sortKeys, data.tuples.size()));
@@ -222,6 +236,10 @@ public class OrderByClause extends AbstractFLWORClause {
             return seq;
         }
 
+        // Record instrumentation for memory benchmarking
+        lastTupleCount = data.tuples.size();
+        lastVarCount = data.variableNames.length;
+
         // Apply W3C type coercion rules before sorting
         coerceSortKeys(data);
 
@@ -232,7 +250,7 @@ public class OrderByClause extends AbstractFLWORClause {
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             // Declare all variable templates in context (same pattern as GroupByClause.postEval())
-            for (final LocalVariable var : data.variableTemplates.values()) {
+            for (final LocalVariable var : data.variableTemplates) {
                 context.declareVariableBinding(var);
             }
 
@@ -240,12 +258,9 @@ public class OrderByClause extends AbstractFLWORClause {
             for (final OrderByTuple tuple : data.tuples) {
                 context.proceed(this);
 
-                // Restore variable bindings for this tuple
-                for (final Map.Entry<QName, Sequence> entry : tuple.variableValues.entrySet()) {
-                    final LocalVariable var = data.variableTemplates.get(entry.getKey());
-                    if (var != null) {
-                        var.setValue(entry.getValue());
-                    }
+                // Restore variable bindings for this tuple (indexed parallel to variableNames)
+                for (int v = 0; v < data.variableTemplates.length; v++) {
+                    data.variableTemplates[v].setValue(tuple.variableValues[v]);
                 }
 
                 // Evaluate downstream clauses (CountClause, WhereClause, LetExpr, return expr)
@@ -297,11 +312,10 @@ public class OrderByClause extends AbstractFLWORClause {
                 throw new XPathException(this, ErrorCodes.XPTY0004, message.toString());
             }
 
-            final int slotIndex = t;
             for (final OrderByTuple tuple : data.tuples) {
-                final AtomicValue value = tuple.sortKeys.get(slotIndex);
+                final AtomicValue value = tuple.sortKeys[t];
                 if (!value.isEmpty()) {
-                    tuple.sortKeys.set(slotIndex, value.convertTo(coerceToType));
+                    tuple.sortKeys[t] = value.convertTo(coerceToType);
                 }
             }
         }
@@ -325,9 +339,9 @@ public class OrderByClause extends AbstractFLWORClause {
     private static int compareTuples(final OrderByTuple a, final OrderByTuple b,
                                      final List<OrderSpec> orderSpecs) {
         int cmp = Constants.EQUAL;
-        for (int i = 0; i < a.sortKeys.size(); i++) {
-            final AtomicValue keyA = a.sortKeys.get(i);
-            final AtomicValue keyB = b.sortKeys.get(i);
+        for (int i = 0; i < a.sortKeys.length; i++) {
+            final AtomicValue keyA = a.sortKeys[i];
+            final AtomicValue keyB = b.sortKeys[i];
             final OrderSpec spec = orderSpecs.get(i);
 
             try {
@@ -426,8 +440,14 @@ public class OrderByClause extends AbstractFLWORClause {
         final List<OrderByTuple> tuples = new ArrayList<>();
         /** One BitSet per OrderSpec slot, tracking which primitive types appear in sort keys. */
         final List<BitSet> encounteredPrimitiveTypes;
-        /** Template LocalVariables declared in postEval(); keys = variable QNames. */
-        final Map<QName, LocalVariable> variableTemplates = new LinkedHashMap<>();
+        /**
+         * Variable names in declaration order, set on the first {@link #eval} call.
+         * Shared across all tuples — each tuple's {@code variableValues} array is indexed
+         * by the same positions.
+         */
+        QName[] variableNames;
+        /** Template LocalVariables for postEval() replay, parallel to {@link #variableNames}. */
+        LocalVariable[] variableTemplates;
         /**
          * The {@code lastVar} snapshot taken in {@link #preEval} — the last variable
          * in scope when preEval ran (equals {@code rootClause.getStartVariable()} in the
@@ -447,15 +467,19 @@ public class OrderByClause extends AbstractFLWORClause {
         }
     }
 
-    /** A snapshot of one tuple: all in-scope variable values and pre-evaluated sort keys. */
+    /**
+     * A snapshot of one tuple: all in-scope variable values and pre-evaluated sort keys.
+     * Uses parallel arrays instead of maps for minimal per-tuple memory overhead.
+     */
     private static class OrderByTuple {
-        final Map<QName, Sequence> variableValues;
-        final List<AtomicValue> sortKeys;
+        /** Variable values indexed by the same positions as {@link OrderByData#variableNames}. */
+        final Sequence[] variableValues;
+        final AtomicValue[] sortKeys;
         /** Original insertion position, used to guarantee a stable sort. */
         final int originalPos;
 
-        OrderByTuple(final Map<QName, Sequence> variableValues,
-                     final List<AtomicValue> sortKeys,
+        OrderByTuple(final Sequence[] variableValues,
+                     final AtomicValue[] sortKeys,
                      final int originalPos) {
             this.variableValues = variableValues;
             this.sortKeys = sortKeys;
