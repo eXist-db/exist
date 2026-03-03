@@ -2352,7 +2352,13 @@ throws PermissionDeniedException, EXistException, XPathException
                         (s.getTest().getType() == Type.ATTRIBUTE && s.getAxis() == Constants.CHILD_AXIS))
                         // combines descendant-or-self::node()/attribute:*
                         s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-                    else {
+                    else if (s.getAxis() <= Constants.PRECEDING_SIBLING_AXIS) {
+                        // Reverse axis: insert explicit descendant-or-self::node() step
+                        LocationStep descStep = new LocationStep(context, Constants.DESCENDANT_SELF_AXIS, new TypeTest(Type.NODE));
+                        descStep.setAbbreviated(true);
+                        path.replaceLastExpression(descStep);
+                        path.add(step);
+                    } else {
                         s.setAxis(Constants.DESCENDANT_SELF_AXIS);
                         s.setAbbreviated(true);
                     }
@@ -2982,6 +2988,13 @@ throws PermissionDeniedException, EXistException, XPathException
                         rs.setAxis(Constants.DESCENDANT_AXIS);
                     } else if (rs.getAxis() == Constants.SELF_AXIS) {
                         rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+                    } else if (rs.getAxis() <= Constants.PRECEDING_SIBLING_AXIS) {
+                        // Reverse axis: cannot merge with descendant-or-self,
+                        // insert explicit descendant-or-self::node() step before the reverse axis step
+                        LocationStep descStep = new LocationStep(context, Constants.DESCENDANT_SELF_AXIS, new TypeTest(Type.NODE));
+                        descStep.setAbbreviated(true);
+                        path.replaceLastExpression(descStep);
+                        path.add(rightStep);
                     } else {
                         rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
                         rs.setAbbreviated(true);
