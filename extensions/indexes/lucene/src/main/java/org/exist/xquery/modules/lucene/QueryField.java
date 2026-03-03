@@ -167,6 +167,14 @@ public class QueryField extends Query implements Optimizable {
 
     @Override
     public int getDependencies() {
+        // Check if any argument depends on local/context variables.
+        // If so, the expression cannot be bulk-evaluated during ForExpr preEval
+        // because the variable value changes per iteration. (GH-2204)
+        for (int i = 0; i < getArgumentCount(); i++) {
+            if (Dependency.dependsOnVar(getArgument(i))) {
+                return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            }
+        }
         return Dependency.CONTEXT_SET;
     }
 

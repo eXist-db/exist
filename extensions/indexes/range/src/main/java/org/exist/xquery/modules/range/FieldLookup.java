@@ -382,6 +382,14 @@ public class FieldLookup extends Function implements Optimizable {
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
         if (!Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
+            // Check if any other argument depends on local/context variables.
+            // If so, the expression cannot be bulk-evaluated during ForExpr preEval
+            // because the variable value changes per iteration. (GH-2204)
+            for (int i = 1; i < getArgumentCount(); i++) {
+                if (Dependency.dependsOnVar(getArgument(i))) {
+                    return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+                }
+            }
             return Dependency.CONTEXT_SET;
         } else {
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
