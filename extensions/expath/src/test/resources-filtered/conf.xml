@@ -743,8 +743,9 @@
 
         <builtin-modules>
 
-            <!-- Module under test -->
+            <!-- Modules under test -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
+            <module uri="http://expath.org/ns/file" class="org.expath.exist.file.ExpathFileModule"/>
 
 
             <!-- Needed for XQSuite! -->

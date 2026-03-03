@@ -75,7 +75,7 @@
 
         <dependency>
             <groupId>org.exist-db</groupId>
-            <artifactId>exist-file</artifactId>
+            <artifactId>exist-expath</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -112,8 +112,8 @@
                             </ignoredUsedUndeclaredDependencies>
 
                             <ignoredUnusedDeclaredDependencies>
-                                <!-- needed for running XQSuite tests that depend on file module -->
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-file:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <!-- needed for running XQSuite tests that depend on EXPath file module -->
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-expath:jar:${project.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
