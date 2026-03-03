@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import com.fasterxml.jackson.core.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
@@ -120,6 +121,12 @@ public class FunXmlToJson extends BasicFunction {
                 switch (status) {
                     case XMLStreamReader.START_ELEMENT:
                         tempStringBuilder.setLength(0);
+                        final String elementNamespaceURI = reader.getNamespaceURI();
+                        if (!Namespaces.XPATH_FUNCTIONS_NS.equals(elementNamespaceURI)) {
+                            throw new XPathException(this, ErrorCodes.FOJS0006,
+                                    "Invalid XML representation of JSON. Element '" + reader.getLocalName()
+                                    + "' is not in the required namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'.");
+                        }
                         final String elementAttributeEscapedValue = reader.getAttributeValue(null, "escaped");
                         elementValueIsEscaped = "true".equals(elementAttributeEscapedValue);
                         final String elementAttributeEscapedKeyValue = reader.getAttributeValue(null, "escaped-key");
