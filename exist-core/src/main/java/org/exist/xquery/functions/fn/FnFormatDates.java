@@ -175,6 +175,18 @@ public class FnFormatDates extends BasicFunction {
     private String formatDate(String pic, AbstractDateTimeValue dt, final String language,
             final Optional<String> place) throws XPathException {
 
+        // Per W3C spec: if $place is a recognized IANA timezone name, adjust the datetime
+        // to the applicable timezone offset before formatting. This adjustment takes
+        // daylight savings time into account where possible.
+        if (place.isPresent()) {
+            try {
+                final java.time.ZoneId placeZone = java.time.ZoneId.of(place.get());
+                dt = adjustToPlaceTimezone(dt, placeZone);
+            } catch (final java.time.DateTimeException e) {
+                // Not a recognized IANA timezone ID (e.g., country code "us") — no adjustment
+            }
+        }
+
         final boolean tzHMZNPictureHint = "[H00]:[M00] [ZN]".equals(pic);
 
         final StringBuilder sb = new StringBuilder();
@@ -392,6 +404,25 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
+    /**
+     * Adjust a datetime value to the timezone applicable at the given IANA place.
+     * Takes daylight savings time into account where possible (when the value includes a date).
+     */
+    private AbstractDateTimeValue adjustToPlaceTimezone(final AbstractDateTimeValue dt,
+            final java.time.ZoneId placeZone) throws XPathException {
+        // Convert the datetime to a java.time.Instant so we can query the zone rules
+        final Calendar cal = dt.toJavaObject(Calendar.class);
+        final java.time.Instant instant = cal.toInstant();
+
+        // Get the applicable offset at this instant (accounts for DST)
+        final java.time.ZoneOffset applicableOffset = placeZone.getRules().getOffset(instant);
+        final int offsetMinutes = applicableOffset.getTotalSeconds() / 60;
+
+        // Adjust using eXist's built-in timezone adjustment
+        final DayTimeDurationValue offset = new DayTimeDurationValue(dt.getExpression(), offsetMinutes * 60000L);
+        return dt.adjustedToTimezone(offset);
+    }
+
     private String formatTimeZone(final String timezonePicture, final int hour, final int minute,
             final TimeZone timeZone, final String language, final Optional<String> place) {
         final Locale locale = new Locale(language);
@@ -423,8 +454,18 @@ public class FnFormatDates extends BasicFunction {
                 break;
 
             case "N":
-                final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
-                return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
+            case "n":
+            case "Nn":
+                final String tzName = formatTimeZoneName(hour, minute, locale, place);
+                if ("n".equals(timezonePicture)) {
+                    return tzName.toLowerCase(locale);
+                } else if ("Nn".equals(timezonePicture)) {
+                    if (tzName.length() <= 1) {
+                        return tzName;
+                    }
+                    return tzName.substring(0, 1).toUpperCase(locale) + tzName.substring(1).toLowerCase(locale);
+                }
+                return tzName;
 
             case "Z":
                 return formatMilitaryTimeZone(hour, minute);
@@ -463,6 +504,100 @@ public class FnFormatDates extends BasicFunction {
         } else {
             return String.format("%+03d:%02d", hour, minute);
         }
+    }
+
+    private static final Pattern ALPHA_PATTERN = Pattern.compile("[A-Za-z]+");
+    /** Well-known legacy timezone abbreviation IDs that java.time does not recognize. */
+    private static final java.util.Set<String> KNOWN_TZ_ABBREVIATIONS = java.util.Set.of(
+            "EST", "CST", "MST", "PST", "HST", "AST",    // North America
+            "GMT", "UTC", "UCT", "WET", "CET", "EET",     // Europe/Universal
+            "IST", "JST", "KST", "SST",                    // Asia/Pacific
+            "CAT", "EAT", "WAT"                            // Africa
+    );
+    private static final java.time.format.DateTimeFormatter TZ_ABBREV_FORMATTER =
+            java.time.format.DateTimeFormatter.ofPattern("z");
+
+    /**
+     * Format a timezone as a name (e.g., "EST", "HST", "GMT") for the [ZN] modifier.
+     *
+     * If a valid IANA place is given, checks whether the offset matches that place's
+     * standard or DST offset; if so, returns the corresponding display name.
+     * Otherwise, does a generic lookup by offset milliseconds, preferring shorter
+     * alphabetic abbreviations (e.g., "HST" over "HAST").
+     * Falls back to numeric format (e.g., "+13:00") if no alphabetic name is found.
+     */
+    private String formatTimeZoneName(final int hour, final int minute,
+            final Locale locale, final Optional<String> place) {
+        final int offsetMs = (hour * 60 + (hour < 0 ? -minute : minute)) * 60 * 1000;
+
+        // Try place-based lookup first (IANA timezone ID like "America/New_York")
+        if (place.isPresent()) {
+            try {
+                final java.time.ZoneId placeZone = java.time.ZoneId.of(place.get());
+                final java.time.zone.ZoneRules rules = placeZone.getRules();
+                final int standardOffsetMs = rules.getStandardOffset(java.time.Instant.EPOCH).getTotalSeconds() * 1000;
+
+                if (offsetMs == standardOffsetMs) {
+                    // Standard time — format with a date in January
+                    final java.time.ZonedDateTime stdTime =
+                            java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, placeZone);
+                    final String name = stdTime.format(TZ_ABBREV_FORMATTER.withLocale(locale));
+                    if (ALPHA_PATTERN.matcher(name).matches()) {
+                        return name;
+                    }
+                } else if (!rules.isFixedOffset()) {
+                    // Check if offset matches the DST offset for this place
+                    final java.time.Instant summerInstant =
+                            java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone).toInstant();
+                    final int dstOffsetMs = rules.getOffset(summerInstant).getTotalSeconds() * 1000;
+                    if (offsetMs == dstOffsetMs && rules.isDaylightSavings(summerInstant)) {
+                        final java.time.ZonedDateTime dstTime =
+                                java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone);
+                        final String name = dstTime.format(TZ_ABBREV_FORMATTER.withLocale(locale));
+                        if (ALPHA_PATTERN.matcher(name).matches()) {
+                            return name;
+                        }
+                    }
+                }
+                // Offset doesn't match this place — fall through to generic lookup
+            } catch (final java.time.DateTimeException e) {
+                // Not a valid IANA timezone ID (e.g., country code "us") — fall through
+            }
+        }
+
+        // Generic offset-based lookup: find the shortest alphabetic timezone abbreviation
+        final String[] ids = TimeZone.getAvailableIDs(offsetMs);
+        String bestName = null;
+        String bestAbbrevId = null;
+        for (final String id : ids) {
+            try {
+                final java.time.ZoneId zid = java.time.ZoneId.of(id);
+                final java.time.ZonedDateTime zdt =
+                        java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, zid);
+                final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
+                if (ALPHA_PATTERN.matcher(name).matches()) {
+                    if (bestName == null || name.length() < bestName.length()) {
+                        bestName = name;
+                    }
+                }
+            } catch (final java.time.DateTimeException e) {
+                // Legacy 3-letter abbreviation IDs (like "IST", "HST") are not valid
+                // java.time ZoneIds, but the ID itself is a well-known timezone name
+                if (KNOWN_TZ_ABBREVIATIONS.contains(id)
+                        && (bestAbbrevId == null || id.length() < bestAbbrevId.length())) {
+                    bestAbbrevId = id;
+                }
+            }
+        }
+        if (bestName != null) {
+            return bestName;
+        }
+        if (bestAbbrevId != null) {
+            return bestAbbrevId;
+        }
+
+        // Fallback to numeric format
+        return String.format("%+03d:%02d", hour, minute);
     }
 
     private String getDefaultFormat(char specifier) {
