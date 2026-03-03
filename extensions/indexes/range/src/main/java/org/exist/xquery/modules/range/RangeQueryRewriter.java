@@ -145,6 +145,16 @@ public class RangeQueryRewriter extends QueryRewriter {
                 lookup.setArguments(eqArgs);
             }
             return lookup;
+        } else if (expression instanceof final InternalFunctionCall fcall && fcall.getFunction() instanceof final org.exist.xquery.functions.fn.FunMatches funMatches) {
+            if (funMatches.getArgumentCount() > 2) {
+                return null;
+            }
+            final List<Expression> matchArgs = Arrays.asList(funMatches.getArgument(0), funMatches.getArgument(1));
+            final Lookup lookup = Lookup.create(funMatches.getContext(), RangeIndex.Operator.MATCH, path);
+            if (lookup != null) {
+                lookup.setArguments(matchArgs);
+            }
+            return lookup;
         } else if (expression instanceof final InternalFunctionCall fcall) {
             final Function function = fcall.getFunction();
             if (function instanceof final Lookup lookup && lookup.getContextPath() == null) {
@@ -161,8 +171,10 @@ public class RangeQueryRewriter extends QueryRewriter {
             return BasicExpressionVisitor.findLocationSteps(comparison.getLeft());
         } else if (expr instanceof InternalFunctionCall fcall) {
             Function function = fcall.getFunction();
+            if (function instanceof org.exist.xquery.functions.fn.FunMatches funMatches) {
+                return BasicExpressionVisitor.findLocationSteps(funMatches.getArgument(0));
+            }
             if (function instanceof Lookup) {
-                // TODO(AR) is this check for range:matches needed here?
                 if (function.isCalledAs("matches")) {
                     return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
                 } else {
@@ -204,7 +216,7 @@ public class RangeQueryRewriter extends QueryRewriter {
             expr = fcall.getFunction();
         }
 
-        if (expr instanceof final Lookup lookup && lookup.isCalledAs("matches")) {
+        if (expr instanceof org.exist.xquery.functions.fn.FunMatches || (expr instanceof final Lookup lookup && lookup.isCalledAs("matches"))) {
             operator = RangeIndex.Operator.MATCH;
         }
 
@@ -219,13 +231,15 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             NodeTest test = step.getTest();
             if (test.isWildcardTest() && step.getAxis() == Constants.SELF_AXIS) {
-                //return path;
                 continue;
             }
             if (!test.isWildcardTest() && test.getName() != null) {
                 int axis = step.getAxis();
                 if (axis == Constants.DESCENDANT_AXIS || axis == Constants.DESCENDANT_SELF_AXIS) {
                     path.addComponent(NodePath.SKIP);
+                } else if (axis == Constants.SELF_AXIS) {
+                    // . or self::node() - path is context; no component to add
+                    continue;
                 } else if (axis != Constants.CHILD_AXIS && axis != Constants.ATTRIBUTE_AXIS) {
                     return null;  // not optimizable
                 }

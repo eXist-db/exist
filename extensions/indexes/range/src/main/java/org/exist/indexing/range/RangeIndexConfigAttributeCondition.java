@@ -211,7 +211,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     @Override
     public boolean find(final Predicate predicate) {
         final Expression inner = this.getInnerExpression(predicate);
-        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall)) {
+        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall
+                || inner instanceof org.exist.xquery.functions.fn.FunMatches)) {
             // predicate expression cannot be parsed as condition
             return false;
         }
@@ -227,8 +228,14 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             lhe = comparison.getLeft();
             rhe = comparison.getRight();
 
+        } else if (inner instanceof org.exist.xquery.functions.fn.FunMatches funMatches) {
+            // fn:matches (e.g. from Lookup fallback when predicate was rewritten)
+            rewrittenOperator = Operator.MATCH;
+            lhe = unwrapSubExpression(funMatches.getArgument(0));
+            rhe = unwrapSubExpression(funMatches.getArgument(1));
+
         } else {
-            // calls to matches() will not have been rewritten to a comparison, so check for function call
+            // calls to matches() via InternalFunctionCall (range:matches)
             final InternalFunctionCall funcCall = (InternalFunctionCall) inner;
             final Function func = funcCall.getFunction();
 
