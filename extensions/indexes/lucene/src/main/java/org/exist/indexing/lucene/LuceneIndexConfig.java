@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -114,10 +115,7 @@ public class LuceneIndexConfig {
             type = new FieldType(config, analyzers);
         }
 
-        String indexParam = config.getAttribute(INDEX_ATTR);
-        if (!indexParam.isEmpty()) {
-            doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
-        }
+        doIndex = Configuration.parseBooleanAttribute(config, INDEX_ATTR, true);
 
         parse(parent, config, namespaces, analyzers);
     }

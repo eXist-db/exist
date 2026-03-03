@@ -32,6 +32,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
 import org.exist.storage.NodePath2;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -457,11 +458,8 @@ public class LuceneConfig {
                                                 + "lucene index config: float expected, got " + value);
                                     }
                                 }
-                                if (elem.hasAttribute(DIACRITICS)) {
-                                    String value = elem.getAttribute(DIACRITICS);
-                                    if ("no".equalsIgnoreCase(value)) {
-                                        analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer());
-                                    }
+                                if (!Configuration.parseBooleanAttribute(elem, DIACRITICS, true)) {
+                                    analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer());
                                 }
                                 parseConfig(node.getChildNodes(), namespaces);
                                 break;

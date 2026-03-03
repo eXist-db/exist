@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.lucene.document.Field;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.util.Configuration;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -127,7 +128,7 @@ public class PlainTextIndexConfig {
                     attributeNode = nnm.getNamedItem("store");
                     if (attributeNode != null) {
                     	String val = attributeNode.getNodeValue();
-                        boolean store = "yes".equalsIgnoreCase(val);
+                        boolean store = Configuration.parseBoolean(val, false);
                         field.setStore(store);
                     }
 
