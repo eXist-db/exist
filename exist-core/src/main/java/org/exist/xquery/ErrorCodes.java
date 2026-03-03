@@ -127,6 +127,13 @@ public class ErrorCodes {
 
     public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
 
+    public static final ErrorCode XQST0097 = new W3CErrorCode("XQST0097",
+        "It is a static error to have more than one decimal-format declaration with the same name, " +
+        "or more than one default decimal-format declaration, in the same module.");
+    public static final ErrorCode XQST0098 = new W3CErrorCode("XQST0098",
+        "It is a static error if the properties representing characters used in a picture string " +
+        "do not each have distinct values, or if a property value is not valid for its property.");
+
     public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
             "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +
             "Bind a prefix other than xml to the namespace URI http://www.w3.org/XML/1998/namespace.\n" +
