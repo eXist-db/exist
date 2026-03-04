@@ -49,35 +49,69 @@ jobs:
           name: xqts-logs
           retention-days: 14
           path: /tmp/xqts-output
-      - name: Get Previous XQTS Logs Artifacts JSON
+      - name: Find Previous XQTS Logs Artifact from develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          HTTP_CODE=$(curl -s -o /tmp/previous-xqts-logs-artifacts.json -D /tmp/previous-xqts-logs-headers.txt -w "%{http_code}" \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs)
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "::error::Failed to fetch artifacts list (HTTP $HTTP_CODE)"
-            grep -i "x-ratelimit" /tmp/previous-xqts-logs-headers.txt || true
-            cat /tmp/previous-xqts-logs-artifacts.json
-            exit 1
-          fi
-      - name: Extract Previous XQTS Logs Artifact URL
-        run: |
-          # Check for API-level errors (rate limiting, auth issues) in the response
-          api_message=$(jq -r '.message // empty' /tmp/previous-xqts-logs-artifacts.json)
-          if [ -n "$api_message" ]; then
-            echo "::error::GitHub API error: $api_message"
-            cat /tmp/previous-xqts-logs-artifacts.json
-            exit 1
-          fi
-          total_count=$(jq -r '.total_count' /tmp/previous-xqts-logs-artifacts.json)
-          echo "Total xqts-logs artifacts found: $total_count"
-          develop_count=$(jq '[.artifacts[] | select(.workflow_run.head_branch == "develop")] | length' /tmp/previous-xqts-logs-artifacts.json)
+          # Paginate through artifacts to find at least 2 from the develop branch.
+          # The GitHub API returns 30 items per page by default; we request 100.
+          # Among those, only a few may be from 'develop', so we paginate until
+          # we find 2 (current + previous) or exhaust all pages.
+          develop_artifacts="[]"
+          page=1
+          max_pages=20
+          total_count=0
+
+          while [ "$page" -le "$max_pages" ]; do
+            HTTP_CODE=$(curl -s -o /tmp/artifacts-page.json -D /tmp/artifacts-headers.txt -w "%{http_code}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs&per_page=100&page=${page}")
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "::error::Failed to fetch artifacts list page $page (HTTP $HTTP_CODE)"
+              grep -i "x-ratelimit" /tmp/artifacts-headers.txt || true
+              cat /tmp/artifacts-page.json
+              exit 1
+            fi
+
+            api_message=$(jq -r '.message // empty' /tmp/artifacts-page.json)
+            if [ -n "$api_message" ]; then
+              echo "::error::GitHub API error on page $page: $api_message"
+              cat /tmp/artifacts-page.json
+              exit 1
+            fi
+
+            if [ "$page" -eq 1 ]; then
+              total_count=$(jq -r '.total_count' /tmp/artifacts-page.json)
+              echo "Total xqts-logs artifacts found: $total_count"
+            fi
+
+            page_count=$(jq '.artifacts | length' /tmp/artifacts-page.json)
+            if [ "$page_count" -eq 0 ]; then
+              echo "No more artifacts on page $page, stopping."
+              break
+            fi
+
+            # Extract develop-branch artifacts from this page and append them
+            page_develop=$(jq '[.artifacts[] | select(.workflow_run.head_branch == "develop")]' /tmp/artifacts-page.json)
+            develop_artifacts=$(jq -n --argjson existing "$develop_artifacts" --argjson new "$page_develop" '$existing + $new')
+
+            develop_count=$(echo "$develop_artifacts" | jq 'length')
+            echo "Page $page: found $page_count artifacts, $develop_count develop artifacts so far"
+
+            if [ "$develop_count" -ge 2 ]; then
+              echo "Found enough develop artifacts."
+              break
+            fi
+
+            page=$((page + 1))
+          done
+
+          develop_count=$(echo "$develop_artifacts" | jq 'length')
           echo "Artifacts from develop branch: $develop_count"
-          url=$(jq -r "[.artifacts[] | select(.workflow_run.head_branch == \"develop\")][1].archive_download_url" /tmp/previous-xqts-logs-artifacts.json)
+
+          url=$(echo "$develop_artifacts" | jq -r '.[1].archive_download_url')
           if [ "$url" = "null" ] || [ -z "$url" ]; then
             echo "::error::No previous XQTS artifact found for the develop branch (need at least 2 artifacts from develop, found $develop_count)"
             exit 1
