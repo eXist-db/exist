@@ -42,13 +42,6 @@ jobs:
           name: exist-xqts-runner-hprof
           retention-days: 1
           path: /tmp/*.hprof.zst
-      - name: Archive XQTS Logs
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: xqts-logs
-          retention-days: 14
-          path: /tmp/xqts-output
       - name: Get List of Previous XQTS Logs
         run: |
           curl \
@@ -84,3 +77,10 @@ jobs:
           xqts.current.junit-data-path=/tmp/xqts-output/junit/data
       - name: Show Comparison Results
         run: cat /tmp/comparison-results.xml
+      - name: Archive XQTS Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xqts-logs
+          retention-days: 14
+          path: /tmp/xqts-output
