@@ -50,13 +50,51 @@ jobs:
           retention-days: 14
           path: /tmp/xqts-output
       - name: Get Previous XQTS Logs Artifacts JSON
-        run: 'curl -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs > /tmp/previous-xqts-logs-artifacts.json'
-      - name: Extract Previous XQTS Logs Artifact JSON
-        run: cat /tmp/previous-xqts-logs-artifacts.json | jq -r "[.artifacts[] | select(.workflow_run.head_branch == \"develop\")][1].archive_download_url" > /tmp/previous-xqts-logs-artifact.json
-      - name: Get Previous XQTS Logs Artifact
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: 'cat /tmp/previous-xqts-logs-artifact.json | xargs curl -H "Authorization: Bearer ${GITHUB_TOKEN}" --location --output /tmp/previous-xqts-output.zip'
+        run: |
+          HTTP_CODE=$(curl -s -o /tmp/previous-xqts-logs-artifacts.json -D /tmp/previous-xqts-logs-headers.txt -w "%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/exist-db/exist/actions/artifacts?name=xqts-logs)
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::Failed to fetch artifacts list (HTTP $HTTP_CODE)"
+            grep -i "x-ratelimit" /tmp/previous-xqts-logs-headers.txt || true
+            cat /tmp/previous-xqts-logs-artifacts.json
+            exit 1
+          fi
+      - name: Extract Previous XQTS Logs Artifact URL
+        run: |
+          # Check for API-level errors (rate limiting, auth issues) in the response
+          api_message=$(jq -r '.message // empty' /tmp/previous-xqts-logs-artifacts.json)
+          if [ -n "$api_message" ]; then
+            echo "::error::GitHub API error: $api_message"
+            cat /tmp/previous-xqts-logs-artifacts.json
+            exit 1
+          fi
+          total_count=$(jq -r '.total_count' /tmp/previous-xqts-logs-artifacts.json)
+          echo "Total xqts-logs artifacts found: $total_count"
+          develop_count=$(jq '[.artifacts[] | select(.workflow_run.head_branch == "develop")] | length' /tmp/previous-xqts-logs-artifacts.json)
+          echo "Artifacts from develop branch: $develop_count"
+          url=$(jq -r "[.artifacts[] | select(.workflow_run.head_branch == \"develop\")][1].archive_download_url" /tmp/previous-xqts-logs-artifacts.json)
+          if [ "$url" = "null" ] || [ -z "$url" ]; then
+            echo "::error::No previous XQTS artifact found for the develop branch (need at least 2 artifacts from develop, found $develop_count)"
+            exit 1
+          fi
+          echo "$url" > /tmp/previous-xqts-logs-artifact.json
+      - name: Download Previous XQTS Logs Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DOWNLOAD_URL=$(cat /tmp/previous-xqts-logs-artifact.json)
+          HTTP_CODE=$(curl -s -o /tmp/previous-xqts-output.zip -w "%{http_code}" \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            --location "$DOWNLOAD_URL")
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::Failed to download artifact (HTTP $HTTP_CODE)"
+            exit 1
+          fi
       - name: Extract Previous XQTS Logs Artifact
         run: mkdir /tmp/previous-xqts-output && unzip /tmp/previous-xqts-output.zip -d /tmp/previous-xqts-output
       - name: Compare Previous and Current XQTS Logs
