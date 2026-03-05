@@ -47,6 +47,10 @@ public class DynamicCardinalityCheck extends AbstractExpression {
         setLocation(expression.getLine(), expression.getColumn());
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
