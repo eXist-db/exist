@@ -106,13 +106,16 @@ public class FunNot extends Function {
             (contextSequence == null || contextSequence.isPersistentSet()) &&
             !Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
 			if (contextSequence == null || contextSequence.isEmpty()) {
-				// TODO: special treatment if the context sequence is empty:
-				// within a predicate, we just return the empty sequence
-				// otherwise evaluate the argument and return a boolean result			    
-//				if (inPredicate && !inWhereClause)
-//                    result = Sequence.EMPTY_SEQUENCE;
-//				else
-                    result = evalBoolean(contextSequence, contextItem, arg);
+				if (inPredicate) {
+					// When used inside a predicate in NODE mode, the result is consumed
+					// as a node set by Predicate.selectByNodeSet(). An empty context
+					// means there are no nodes to filter — the set-difference result
+					// is always empty. Returning a boolean here would crash with
+					// "cannot convert xs:boolean to a node set" (GitHub #2159).
+					result = Sequence.EMPTY_SEQUENCE;
+				} else {
+					result = evalBoolean(contextSequence, contextItem, arg);
+				}
 			} else {
     			result = contextSequence.toNodeSet().copy();
 
