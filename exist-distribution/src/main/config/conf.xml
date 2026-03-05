@@ -1009,6 +1009,7 @@
             </module -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
             <module uri="http://expath.org/ns/zip" class="org.expath.exist.ZipModule"/>
+            <module uri="http://expath.org/ns/binary" class="org.expath.exist.BinaryModule"/>
             <module uri="http://exquery.org/ns/request" class="org.exist.extensions.exquery.modules.request.RequestModule"/>
             <module uri="http://exquery.org/ns/restxq" class="org.exist.extensions.exquery.restxq.impl.xquery.RestXqModule"/>
             <module uri="http://exquery.org/ns/restxq/exist" class="org.exist.extensions.exquery.restxq.impl.xquery.exist.ExistRestXqModule"/>

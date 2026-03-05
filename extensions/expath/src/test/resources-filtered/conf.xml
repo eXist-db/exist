@@ -745,6 +745,7 @@
 
             <!-- Module under test -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
+            <module uri="http://expath.org/ns/binary" class="org.expath.exist.BinaryModule"/>
 
 
             <!-- Needed for XQSuite! -->
