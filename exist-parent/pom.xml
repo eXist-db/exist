@@ -27,7 +27,7 @@
 
     <groupId>org.exist-db</groupId>
     <artifactId>exist-parent</artifactId>
-    <version>6.4.1</version>
+    <version>6.4.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>eXist-db Parent</name>
