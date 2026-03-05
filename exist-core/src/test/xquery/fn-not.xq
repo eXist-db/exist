@@ -24,6 +24,7 @@ xquery version "3.1";
 (:~
   Tests for fn:not() predicate handling.
   https://github.com/eXist-db/exist/issues/2159
+  https://github.com/eXist-db/exist/issues/2308
 ~:)
 module namespace fn-not="http://exist-db.org/xquery/test/fn-not";
 
@@ -97,4 +98,32 @@ declare
 function fn-not:persistent-not-self() {
     let $dom := doc('/db/' || $fn-not:collection || '/' || $fn-not:doc)
     return count($dom//item[not(@type = 'a')])
+};
+
+(: #2308 — not(.) on integer sequence :)
+declare
+    %test:assertEquals(1)
+function fn-not:not-dot-integers() {
+    count((0, 1, 2)[not(.)])
+};
+
+(: #2308 — not(.) on string sequence :)
+declare
+    %test:assertEquals(1)
+function fn-not:not-dot-strings() {
+    count(("", "a")[not(.)])
+};
+
+(: #2308 — not(.) on mixed booleans :)
+declare
+    %test:assertEquals(1)
+function fn-not:not-dot-booleans() {
+    count((true(), false())[not(.)])
+};
+
+(: not(.) on in-memory node sequence filters correctly :)
+declare
+    %test:assertEquals(0)
+function fn-not:not-dot-nodes() {
+    count((<a/>, <b/>)[not(.)])
 };
