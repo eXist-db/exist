@@ -26,8 +26,10 @@ import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
+import org.exist.xquery.LocationStep;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -81,7 +83,21 @@ public class FunNot extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_SET | getArgument(0).getDependencies();
+		final Expression arg = getArgument(0);
+		int deps = Dependency.CONTEXT_SET | arg.getDependencies();
+		// When the argument is the context item expression "." used inside a
+		// predicate on an atomic sequence (e.g., (0, 1, 2)[not(.)]), Predicate
+		// must iterate per-item. LocationStep.getDependencies() does not report
+		// CONTEXT_ITEM inside predicates (for the set-difference optimization),
+		// so we add it here to ensure correct per-item evaluation (GitHub #2308).
+		if (inPredicate && arg instanceof LocationStep) {
+			final LocationStep step = (LocationStep) arg;
+			if (step.getAxis() == Constants.SELF_AXIS
+					&& step.getTest().getType() == Type.NODE) {
+				deps = deps | Dependency.CONTEXT_ITEM;
+			}
+		}
+		return deps;
 	}
 	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
