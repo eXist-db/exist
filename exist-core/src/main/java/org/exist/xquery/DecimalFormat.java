@@ -24,7 +24,7 @@ package org.exist.xquery;
 /**
  * Data class for a Decimal Format.
  *
- * See https://www.w3.org/TR/xpath-31/#dt-static-decimal-formats
+ * See https://www.w3.org/TR/xquery-31/#id-decimal-format-decl
  *
  * NOTE: UTF-16 characters are stored as code-points!
  *
@@ -32,6 +32,11 @@ package org.exist.xquery;
  */
 public class DecimalFormat {
 
+    /**
+     * The default (unnamed) decimal format as defined by the XQuery 3.1 specification.
+     *
+     * @see <a href="https://www.w3.org/TR/xquery-31/#id-decimal-format-decl">XQuery 3.1 §4.10: Decimal Format Declaration</a>
+     */
     public static final DecimalFormat UNNAMED = new DecimalFormat(
             '.',
             'e',
