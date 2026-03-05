@@ -211,7 +211,7 @@ options {
         }
     }
 
-    private static String requireSingleChar(final AST node, final String propName, final String value) throws XPathException {
+    private static String dfRequireSingleChar(final AST node, final String propName, final String value) throws XPathException {
         if (value.codePointCount(0, value.length()) != 1) {
             throw new XPathException(node.getLine(), node.getColumn(), ErrorCodes.XQST0098,
                 "The value of decimal-format property '" + propName + "' must be a single character, but got: \"" + value + "\"");
@@ -219,7 +219,7 @@ options {
         return value;
     }
 
-    private static void validateZeroDigit(final AST node, final String value) throws XPathException {
+    private static void dfValidateZeroDigit(final AST node, final String value) throws XPathException {
         final int cp = value.codePointAt(0);
         if (Character.getType(cp) != Character.DECIMAL_DIGIT_NUMBER || Character.getNumericValue(cp) != 0) {
             throw new XPathException(node.getLine(), node.getColumn(), ErrorCodes.XQST0098,
@@ -227,7 +227,7 @@ options {
         }
     }
 
-    private static void validateDistinctPictureChars(final AST node, final DecimalFormat df) throws XPathException {
+    private static void dfValidateDistinctPictureChars(final AST node, final DecimalFormat df) throws XPathException {
         // The 8 single-character picture-string properties must all have distinct values
         final int[] chars = { df.decimalSeparator, df.groupingSeparator, df.percent, df.perMille,
                               df.zeroDigit, df.digit, df.patternSeparator, df.exponentSeparator };
@@ -270,46 +270,46 @@ options {
 
             switch (propName) {
                 case "decimal-separator":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     decimalSeparator = value.codePointAt(0);
                     break;
                 case "grouping-separator":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     groupingSeparator = value.codePointAt(0);
                     break;
                 case "infinity":
                     infinity = value;
                     break;
                 case "minus-sign":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     minusSign = value.codePointAt(0);
                     break;
                 case "NaN":
                     nan = value;
                     break;
                 case "percent":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     percent = value.codePointAt(0);
                     break;
                 case "per-mille":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     perMille = value.codePointAt(0);
                     break;
                 case "zero-digit":
-                    requireSingleChar(child, propName, value);
-                    validateZeroDigit(child, value);
+                    dfRequireSingleChar(child, propName, value);
+                    dfValidateZeroDigit(child, value);
                     zeroDigit = value.codePointAt(0);
                     break;
                 case "digit":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     digit = value.codePointAt(0);
                     break;
                 case "pattern-separator":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     patternSeparator = value.codePointAt(0);
                     break;
                 case "exponent-separator":
-                    requireSingleChar(child, propName, value);
+                    dfRequireSingleChar(child, propName, value);
                     exponentSeparator = value.codePointAt(0);
                     break;
                 default:
@@ -323,7 +323,7 @@ options {
             percent, perMille, zeroDigit, digit,
             patternSeparator, infinity, nan, minusSign
         );
-        validateDistinctPictureChars(parentNode, df);
+        dfValidateDistinctPictureChars(parentNode, df);
         return df;
     }
 }
