@@ -112,7 +112,7 @@ public class FunInScopePrefixes extends BasicFunction {
                     //Grab ancestors' NS
                     final Deque<Element> stack = new ArrayDeque<>();
                     do {
-                        stack.add((Element) node);
+                        stack.push((Element) node);
                         node = node.getParentNode();
                     } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
 
@@ -139,7 +139,7 @@ public class FunInScopePrefixes extends BasicFunction {
                     final Deque<Element> stack = new ArrayDeque<>();
                     do {
                         if (node.getParentNode() == null || node.getParentNode() instanceof DocumentImpl) {
-                            stack.add((Element) node);
+                            stack.push((Element) node);
                         }
                         node = node.getParentNode();
                     } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
@@ -159,7 +159,7 @@ public class FunInScopePrefixes extends BasicFunction {
                     final Deque<Element> stack = new ArrayDeque<>();
                     do {
                         if (node.getNodeType() == Node.ELEMENT_NODE) {
-                            stack.add((Element) node);
+                            stack.push((Element) node);
                         }
                         node = node.getParentNode();
                     } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
@@ -180,7 +180,7 @@ public class FunInScopePrefixes extends BasicFunction {
                     final Deque<Element> stack = new ArrayDeque<>();
                     do {
                         if (node.getParentNode() == null || node.getParentNode() instanceof org.exist.dom.memtree.DocumentImpl) {
-                            stack.add((Element) node);
+                            stack.push((Element) node);
                         }
                         node = node.getParentNode();
                     } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
@@ -192,17 +192,15 @@ public class FunInScopePrefixes extends BasicFunction {
             }
         }
 
-        //clean up
-        String key = null;
-        String value = null;
-        for (final Entry<String, String> entry : prefixes.entrySet()) {
-            key = entry.getKey();
-            value = entry.getValue();
-
+        //clean up — use iterator to avoid ConcurrentModificationException
+        final var it = prefixes.entrySet().iterator();
+        while (it.hasNext()) {
+            final Entry<String, String> entry = it.next();
+            final String key = entry.getKey();
+            final String value = entry.getValue();
             if ((key == null || key.isEmpty()) && (value == null || value.isEmpty())) {
-                prefixes.remove(key);
+                it.remove();
             }
-
         }
 
         return prefixes;

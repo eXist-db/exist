@@ -269,6 +269,9 @@ prolog throws XPathException
 			( "declare" "function" )
 			=> functionDeclUp { inSetters = false; }
 			|
+			( "declare" "updating" "function" )
+			=> updatingFunctionDeclUp { inSetters = false; }
+			|
 			( "declare" "variable" )
 			=> varDeclUp { inSetters = false; }
 			|
@@ -428,7 +431,7 @@ annotateDecl! throws XPathException
 :
 	decl:"declare"! ann:annotations!
 	(
-	    ("function") => f:functionDecl[#ann] { #annotateDecl = #f; }
+	    ("function") => f:functionDecl[#ann, false] { #annotateDecl = #f; }
 	    |
 	    ("variable") => v:varDecl[#decl, #ann] { #annotateDecl = #v; }
 	)
@@ -496,10 +499,15 @@ bracedUriLiteral returns [String uri]
 
 functionDeclUp! throws XPathException
 :
-	"declare"! f:functionDecl[null] { #functionDeclUp = #f; }
+	"declare"! f:functionDecl[null, false] { #functionDeclUp = #f; }
     ;
 
-functionDecl [XQueryAST ann] throws XPathException
+updatingFunctionDeclUp! throws XPathException
+:
+	"declare"! "updating"! f:functionDecl[null, true] { #updatingFunctionDeclUp = #f; }
+    ;
+
+functionDecl [XQueryAST ann, boolean updating] throws XPathException
 { String name= null; }
 :
 	"function"! name=eqName! lp:LPAREN! ( paramList )?
@@ -509,6 +517,9 @@ functionDecl [XQueryAST ann] throws XPathException
 	  	#functionDecl= #(#[FUNCTION_DECL, name, org.exist.xquery.parser.XQueryFunctionAST.class.getName()], #ann, #functionDecl);
 		#functionDecl.copyLexInfo(#lp);
 		#functionDecl.setDoc(getXQDoc());
+		if (updating) {
+			((XQueryFunctionAST) #functionDecl).setUpdating(true);
+		}
 	}
 	exception catch [RecognitionException e]
 	{
@@ -708,48 +719,63 @@ exprSingle throws XPathException
 	| ( "if" LPAREN ) => ifExpr
 	| ( "switch" LPAREN ) => switchExpr
 	| ( "typeswitch" LPAREN ) => typeswitchExpr
-	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
+	| ( "insert" ( "node" | "nodes" ) ) => xqufInsertExpr
+	| ( "delete" ( "node" | "nodes" ) ) => xqufDeleteExpr
+	| ( "replace" ( "node" | "value" ) ) => xqufReplaceExpr
+	| ( "rename" "node" ) => xqufRenameExpr
+	| ( "copy" DOLLAR ) => xqufTransformExpr
 	| orExpr
 	;
 
-// === Xupdate ===
+// === W3C XQuery Update Facility 3.0 ===
 
-updateExpr throws XPathException
+xqufInsertExpr throws XPathException
 :
-	"update"^
+	"insert"^ ( "node"! | "nodes"! ) exprSingle
 	(
-		replaceExpr
-		| updateValueExpr
-		| insertExpr
-		| deleteExpr
-		| ( "rename" . "as" ) => renameExpr
+		( "as" "first" "into" ) => "as"! "first" "into"! exprSingle
+		| ( "as" "last" "into" ) => "as"! "last" "into"! exprSingle
+		| "into" exprSingle
+		| "before" exprSingle
+		| "after" exprSingle
 	)
 	;
 
-replaceExpr throws XPathException
+xqufDeleteExpr throws XPathException
 :
-	"replace" expr "with"! exprSingle
+	"delete"^ ( "node"! | "nodes"! ) exprSingle
 	;
 
-updateValueExpr throws XPathException
+xqufReplaceExpr throws XPathException
 :
-	"value" expr "with"! exprSingle
+	"replace"^
+	(
+		( "value" "of" "node" ) => "value" "of"! "node"! exprSingle "with"! exprSingle
+		| "node"! exprSingle "with"! exprSingle
+	)
 	;
 
-insertExpr throws XPathException
+xqufRenameExpr throws XPathException
 :
-	"insert" exprSingle
-	( "into" | "preceding" | "following" ) exprSingle
+	"rename"^ "node"! exprSingle "as"! exprSingle
 	;
 
-deleteExpr throws XPathException
+xqufTransformExpr throws XPathException
 :
-	"delete" exprSingle
+	"copy"^
+	xqufCopyBinding ( COMMA! xqufCopyBinding )*
+	"modify"! exprSingle
+	"return"! exprSingle
 	;
 
-renameExpr throws XPathException
+xqufCopyBinding throws XPathException
+{ String varName; }
 :
-	"rename" exprSingle "as"! exprSingle
+	DOLLAR! varName=v:varName! COLON! EQ! exprSingle
+	{
+		#xqufCopyBinding = #(#[VARIABLE_BINDING, varName], #xqufCopyBinding);
+		#xqufCopyBinding.copyLexInfo(#v);
+	}
 	;
 
 // === try/catch ===
@@ -2304,6 +2330,48 @@ reservedKeywords returns [String name]
 	"next" { name = "next"; }
 	|
 	"when" { name = "when"; }
+	|
+	"copy" { name = "copy"; }
+	|
+	"modify" { name = "modify"; }
+	|
+	"nodes" { name = "nodes"; }
+	|
+	"before" { name = "before"; }
+	|
+	"after" { name = "after"; }
+	|
+	"first" { name = "first"; }
+	|
+	"last" { name = "last"; }
+	|
+	"updating" { name = "updating"; }
+	|
+	"ascending" { name = "ascending"; }
+	|
+	"descending" { name = "descending"; }
+	|
+	"greatest" { name = "greatest"; }
+	|
+	"least" { name = "least"; }
+	|
+	"satisfies" { name = "satisfies"; }
+	|
+	"schema-attribute" { name = "schema-attribute"; }
+	|
+	"revalidation" { name = "revalidation"; }
+	|
+	"skip" { name = "skip"; }
+	|
+	"strict" { name = "strict"; }
+	|
+	"lax" { name = "lax"; }
+	|
+	"castable" { name = "castable"; }
+	|
+	"idiv" { name = "idiv"; }
+	|
+	"processing-instruction" { name = "processing-instruction"; }
 	;
 
 
