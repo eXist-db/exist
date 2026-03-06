@@ -52,7 +52,6 @@ header {
     import org.exist.xquery.Constants.NodeComparisonOperator;
     import org.exist.xquery.value.*;
     import org.exist.xquery.functions.fn.*;
-    import org.exist.xquery.update.*;
     import org.exist.xquery.xquf.*;
     import org.exist.storage.ElementValue;
     import org.exist.xquery.functions.map.MapExpr;

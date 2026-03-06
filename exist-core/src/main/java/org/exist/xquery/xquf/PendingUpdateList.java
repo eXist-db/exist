@@ -44,6 +44,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
@@ -1608,6 +1609,54 @@ public class PendingUpdateList {
         final DocumentTrigger trigger = triggers.get(doc.getDocId());
         if (trigger != null) {
             trigger.afterUpdateDocument(broker, broker.getCurrentTransaction(), doc);
+        }
+    }
+
+    /**
+     * Check if any of the modified documents needs defragmentation.
+     *
+     * Uses the fragmentation limit configured in conf.xml.
+     *
+     * @param context current context
+     * @param docs document set to check
+     * @throws EXistException on general errors during defrag
+     * @throws LockException in case locking failed
+     */
+    public static void checkFragmentation(final XQueryContext context, final DocumentSet docs) throws EXistException, LockException {
+        int fragmentationLimit = -1;
+        final Object property = context.getBroker().getBrokerPool().getConfiguration().getProperty(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR);
+        if (property != null) {
+            fragmentationLimit = (Integer) property;
+        }
+        checkFragmentation(context, docs, fragmentationLimit);
+    }
+
+    /**
+     * Check if any of the modified documents needs defragmentation.
+     *
+     * Defragmentation will take place if the number of split pages in the
+     * document exceeds the limit defined in the configuration file.
+     *
+     * @param context current context
+     * @param docs document set to check
+     * @param splitCount number of page splits
+     * @throws EXistException on general errors during defrag
+     * @throws LockException in case locking failed
+     */
+    public static void checkFragmentation(final XQueryContext context, final DocumentSet docs, final int splitCount) throws EXistException, LockException {
+        final DBBroker broker = context.getBroker();
+        final LockManager lockManager = broker.getBrokerPool().getLockManager();
+        try (final Txn transaction = broker.continueOrBeginTransaction()) {
+            for (final Iterator<DocumentImpl> i = docs.getDocumentIterator(); i.hasNext(); ) {
+                final DocumentImpl next = i.next();
+                if (next.getSplitCount() > splitCount) {
+                    try (final ManagedDocumentLock nextLock = lockManager.acquireDocumentWriteLock(next.getURI())) {
+                        broker.defragXMLResource(transaction, next);
+                    }
+                }
+                broker.checkXMLResourceConsistency(next);
+            }
+            transaction.commit();
         }
     }
 }

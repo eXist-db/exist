@@ -33,7 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.update.Modification;
+import org.exist.xquery.xquf.PendingUpdateList;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -97,11 +97,11 @@ public class XMLDBDefragment extends BasicFunction {
             if (args.length > 1) {
                 // Use supplied parameter
                 final int splitCount = ((IntegerValue)args[1].itemAt(0)).getInt();
-                Modification.checkFragmentation(context, docs, splitCount);
+                PendingUpdateList.checkFragmentation(context, docs, splitCount);
 
             } else {
                 // Use conf.xml configured value or -1 if not existent
-                Modification.checkFragmentation(context, docs);
+                PendingUpdateList.checkFragmentation(context, docs);
             }
             
         } catch (final LockException | EXistException e) {

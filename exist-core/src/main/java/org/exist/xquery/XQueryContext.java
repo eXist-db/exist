@@ -91,7 +91,7 @@ import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
-import org.exist.xquery.update.Modification;
+import org.exist.xquery.xquf.PendingUpdateList;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.jgrapht.Graph;
@@ -1426,7 +1426,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (modifiedDocuments != null) {
             try {
-                Modification.checkFragmentation(this, modifiedDocuments);
+                PendingUpdateList.checkFragmentation(this, modifiedDocuments);
             } catch (final LockException | EXistException e) {
                 LOG.warn("Error while checking modified documents: {}", e.getMessage(), e);
             }
