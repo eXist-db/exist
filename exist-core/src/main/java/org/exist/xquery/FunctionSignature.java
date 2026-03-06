@@ -57,6 +57,7 @@ public class FunctionSignature {
     private SequenceType[] arguments;
     private SequenceType returnType;
     private boolean isVariadic;
+    private boolean isUpdating;
     private String description;
     private String deprecated = null;
     private Map<String, String> metadata = null;
@@ -67,6 +68,7 @@ public class FunctionSignature {
         this.returnType = other.returnType;
         this.annotations = other.annotations != null ? Arrays.copyOf(other.annotations, other.annotations.length) : null;
         this.isVariadic = other.isVariadic;
+        this.isUpdating = other.isUpdating;
         this.deprecated = other.deprecated;
         this.description = other.description;
         this.metadata = other.metadata != null ? new HashMap<>(other.metadata) : null;
@@ -125,6 +127,14 @@ public class FunctionSignature {
 
     public QName getName() {
         return name;
+    }
+
+    public boolean isUpdating() {
+        return isUpdating;
+    }
+
+    public void setUpdating(final boolean updating) {
+        this.isUpdating = updating;
     }
 
     public int getArgumentCount() {
