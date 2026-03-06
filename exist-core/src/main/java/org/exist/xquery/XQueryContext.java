@@ -287,6 +287,13 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected MutableDocumentSet modifiedDocuments = null;
 
     /**
+     * W3C XQuery Update Facility 3.0 Pending Update List.
+     * Accumulates update primitives during query evaluation and is applied
+     * at snapshot boundaries.
+     */
+    private org.exist.xquery.xquf.PendingUpdateList pendingUpdateList = new org.exist.xquery.xquf.PendingUpdateList();
+
+    /**
      * A general-purpose map to set attributes in the current query context.
      */
     protected Map<String, Object> attributes = new HashMap<>();
@@ -1407,6 +1414,25 @@ public class XQueryContext implements BinaryValueManager, Context {
         modifiedDocuments.add(document);
     }
 
+    /**
+     * Get the W3C XQuery Update Facility 3.0 Pending Update List for this context.
+     *
+     * @return the current pending update list
+     */
+    public org.exist.xquery.xquf.PendingUpdateList getPendingUpdateList() {
+        return pendingUpdateList;
+    }
+
+    /**
+     * Set the Pending Update List. Used by copy-modify expressions to create
+     * a nested PUL scope.
+     *
+     * @param pul the new pending update list
+     */
+    public void setPendingUpdateList(final org.exist.xquery.xquf.PendingUpdateList pul) {
+        this.pendingUpdateList = pul;
+    }
+
     @Override
     public void reset() {
         reset(false);
@@ -1439,6 +1465,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             modifiedDocuments = null;
         }
+
+        // Reset the W3C XQuery Update Facility PUL
+        pendingUpdateList = new org.exist.xquery.xquf.PendingUpdateList();
 
         calendar = null;
         implicitTimeZone = null;
