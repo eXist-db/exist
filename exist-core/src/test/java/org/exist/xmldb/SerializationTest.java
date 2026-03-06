@@ -151,13 +151,15 @@ public class SerializationTest {
 	@Test
 	public void xqueryUpdateNsTest() throws XMLDBException {
 		final XQueryService service = testCollection.getService(XQueryService.class);
+		// Under W3C XQuery Update, split update + read to avoid XUST0001.
+		service.query(
+				"declare namespace foo=\"http://foo.com\";" + EOL +
+				"insert node <entry xml:id='aargh'/> into doc('/db/" + TEST_COLLECTION_NAME + '/' + XML_DOC_NAME + "')/foo:root"
+		);
 		final ResourceSet result = service.query(
-				"xquery version \"1.0\";" + EOL +
 				"declare namespace foo=\"http://foo.com\";" + EOL +
 				"let $in-memory :=" + EOL + XML + EOL +
 				"let $on-disk := doc('/db/" + TEST_COLLECTION_NAME + '/' + XML_DOC_NAME + "')" + EOL +
-				"let $new-node := <entry xml:id='aargh'/>" + EOL +
-				"let $update := update insert $new-node into $on-disk/foo:root" + EOL +
 				"return" + EOL +
 				"    (" + EOL +
 				"        $in-memory," + EOL +

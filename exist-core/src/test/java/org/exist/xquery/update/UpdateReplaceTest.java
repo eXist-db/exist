@@ -46,13 +46,13 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final String updateQuery =
                 "let $content := doc('/db/test/" + testDocName + "')/Test/Content\n" +
-                        "    let $legacy := $content/A\n" +
-                        "    return\n" +
-                        "      update replace $legacy with <AA/>,\n" +
-                        "    doc('/db/test/" + testDocName + "')/Test";
+                        "let $legacy := $content/A\n" +
+                        "return replace node $legacy with <AA/>";
 
         final XQueryService xqueryService = storeXMLStringAndGetQueryService(testDocName, testDoc);
-        final ResourceSet result = xqueryService.query(updateQuery);
+        xqueryService.query(updateQuery);
+
+        final ResourceSet result = xqueryService.query("doc('/db/test/" + testDocName + "')/Test");
         assertNotNull(result);
         assertEquals(1, result.getSize());
 
@@ -80,13 +80,13 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final String updateQuery =
                 "let $content := doc('/db/test/" + testDocName + "')/Test/Content\n" +
-                        "    let $legacy := $content/A[1]\n" +
-                        "    return\n" +
-                        "      update replace $legacy with <AA/>,\n" +
-                        "    doc('/db/test/" + testDocName + "')/Test";
+                        "let $legacy := $content/A[1]\n" +
+                        "return replace node $legacy with <AA/>";
 
         final XQueryService xqueryService = storeXMLStringAndGetQueryService(testDocName, testDoc);
-        final ResourceSet result = xqueryService.query(updateQuery);
+        xqueryService.query(updateQuery);
+
+        final ResourceSet result = xqueryService.query("doc('/db/test/" + testDocName + "')/Test");
         assertNotNull(result);
         assertEquals(1, result.getSize());
 
@@ -114,13 +114,13 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final String updateQuery =
                 "let $content := doc('/db/test/" + testDocName + "')/Test/Content\n" +
-                "    let $legacy := $content/A\n" +
-                "    return\n" +
-                "      update replace $legacy with <AA/>,\n" +
-                "    doc('/db/test/" + testDocName + "')/Test";
+                "let $legacy := $content/A\n" +
+                "return replace node $legacy with <AA/>";
 
         final XQueryService xqueryService = storeXMLStringAndGetQueryService(testDocName, testDoc);
-        final ResourceSet result = xqueryService.query(updateQuery);
+        xqueryService.query(updateQuery);
+
+        final ResourceSet result = xqueryService.query("doc('/db/test/" + testDocName + "')/Test");
         assertNotNull(result);
         assertEquals(1, result.getSize());
 
@@ -148,13 +148,13 @@ public class UpdateReplaceTest extends AbstractTestUpdate {
 
         final String updateQuery =
                 "let $content := doc('/db/test/" + testDocName + "')/Test/Content\n" +
-                        "    let $legacy := $content/A[1]\n" +
-                        "    return\n" +
-                        "      update replace $legacy with <AA/>,\n" +
-                        "    doc('/db/test/" + testDocName + "')/Test";
+                        "let $legacy := $content/A[1]\n" +
+                        "return replace node $legacy with <AA/>";
 
         final XQueryService xqueryService = storeXMLStringAndGetQueryService(testDocName, testDoc);
-        final ResourceSet result = xqueryService.query(updateQuery);
+        xqueryService.query(updateQuery);
+
+        final ResourceSet result = xqueryService.query("doc('/db/test/" + testDocName + "')/Test");
         assertNotNull(result);
         assertEquals(1, result.getSize());
 

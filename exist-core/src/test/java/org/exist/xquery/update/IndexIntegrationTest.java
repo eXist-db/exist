@@ -121,7 +121,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 //flush
                 worker.flush(); expectLastCall();
             },
-            service -> queryResource(service, docName, "update insert <t xml:id=\"id1\"/> into /test", 0)
+            service -> queryResource(service, docName, "insert node <t xml:id=\"id1\"/> into /test", 0)
         );
     }
 
@@ -170,7 +170,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 //flush
                 worker.flush(); expectLastCall();
             },
-            service -> queryResource(service, docName, "update value //t/@xml:id with 'id2'", 0)
+            service -> queryResource(service, docName, "replace value of node //t/@xml:id with 'id2'", 0)
         );
     }
 
@@ -206,7 +206,7 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
                 //flush
                 worker.flush(); expectLastCall();
             },
-            service -> queryResource(service, docName, "update delete //t/@xml:id", 0)
+            service -> queryResource(service, docName, "delete node //t/@xml:id", 0)
         );
     }
 

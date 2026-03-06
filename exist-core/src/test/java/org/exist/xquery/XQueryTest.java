@@ -1690,7 +1690,7 @@ public class XQueryTest {
         query =
                 "declare function local:update-game($game) {\n" +
                 "local:update-frames($game),\n" +
-                "update insert\n" +
+                "insert node\n" +
                 "<stats>\n" +
                 "<strikes>4</strikes>\n" +
                 "<spares>\n" +
@@ -1701,9 +1701,9 @@ public class XQueryTest {
                 "};\n" +
                 "declare function local:update-frames($game) {\n" +
                 // Uncomment this, and it works:
-                //"for $frame in $game/frame return update insert <processed/> into $frame,\n" +
+                //"for $frame in $game/frame return insert node <processed/> into $frame,\n" +
                 "for $frame in $game/frame\n" +
-                "return update insert attribute points {4} into $frame\n" +
+                "return insert node attribute points {4} into $frame\n" +
                 "};\n" +
                 "let $series := doc('bowling.xml')/series\n" +
                 "let $nul1 := for $game in $series/game return local:update-game($game)\n" +
@@ -1782,7 +1782,7 @@ public class XQueryTest {
      */
     @Test
     public void attribute_1691177() throws XMLDBException {
-        String query = "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " + "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) " + "let $node := doc($uri)/element() " + "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* " + "return update insert $attrib into $node  ";
+        String query = "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; " + "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) " + "let $node := doc($uri)/element() " + "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* " + "return insert node $attrib into $node  ";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);

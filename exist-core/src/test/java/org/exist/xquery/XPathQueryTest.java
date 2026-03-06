@@ -1613,12 +1613,12 @@ public class XPathQueryTest {
         r = result.getResource(0);
         assertEquals("<name>two</name>", r.getContent().toString());
 
-        String update = "update insert <t xml:id=\"id3\">Hello</t> into /test";
+        String update = "insert node <t xml:id=\"id3\">Hello</t> into /test";
         queryResource(service, "ids.xml", update, 0);
 
         queryResource(service, "ids.xml", "/test/id('id3')", 1);
 
-        update = "update value //t/@xml:id with 'id4'";
+        update = "replace value of node //t/@xml:id with 'id4'";
         queryResource(service, "ids.xml", update, 0);
         queryResource(service, "ids.xml", "id('id4', /test)", 1);
     }

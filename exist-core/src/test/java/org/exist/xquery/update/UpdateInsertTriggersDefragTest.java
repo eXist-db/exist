@@ -70,7 +70,7 @@ public class UpdateInsertTriggersDefragTest {
 
     @Test
     public void triggerDefragAfterUpdate() throws Exception {
-        final String updateQuery = "update insert <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//list";
+        final String updateQuery = "insert node <item>new node</item> into doc('" + TestConstants.TEST_COLLECTION_URI + "/" + TestConstants.TEST_XML_URI + "')//list";
         assertQuery(updateQuery, updateResults ->
             assertTrue("Update expression returns an empty sequence", updateResults.isEmpty())
         );

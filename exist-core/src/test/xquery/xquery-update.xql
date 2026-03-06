@@ -30,7 +30,7 @@ declare
     %test:assertEquals('<root><child/></root>')
 function xqu:root() {
     let $f  := xmldb:store('/db', 'xupdate.xml', <root/>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };
 
@@ -39,7 +39,7 @@ declare
 function xqu:root_attribute() {
     let $r := xmldb:remove('/db', 'xupdate.xml')
     let $f  := xmldb:store('/db', 'xupdate.xml', <root attr="1"/>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };
 
@@ -48,7 +48,7 @@ declare
 function xqu:root_attribute_child() {
     let $r := xmldb:remove('/db', 'xupdate.xml')
     let $f  := xmldb:store('/db', 'xupdate.xml', <root attr="1"><foo/></root>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };
 
@@ -57,7 +57,7 @@ declare
 function xqu:root_attribute_child_attribute() {
     let $r := xmldb:remove('/db', 'xupdate.xml')
     let $f  := xmldb:store('/db', 'xupdate.xml', <root attr="1"><foo bar="2"/></root>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };
 
@@ -65,7 +65,7 @@ declare
 %test:assertEquals('<root><!-- foobar --><child/></root>')
 function xqu:root_comment() {
     let $f  := xmldb:store('/db', 'xupdate.xml', <root><!-- foobar --></root>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };
 
@@ -73,6 +73,6 @@ declare
 %test:assertEquals('<root attr="1"><!-- foobar --><child/></root>')
 function xqu:root_comment_attribute() {
     let $f  := xmldb:store('/db', 'xupdate.xml', <root attr="1"><!-- foobar --></root>)
-    let $u  := update insert <child/> into doc($f)/root
+    let $u  := util:eval("insert node <child/> into doc('" || $f || "')/root")
     return doc($f)
 };

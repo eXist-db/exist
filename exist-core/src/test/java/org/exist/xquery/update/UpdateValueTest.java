@@ -39,7 +39,7 @@ public class UpdateValueTest extends AbstractTestUpdate {
 
         queryResource(service, docName, "//t[@xml:id eq 'id1']", 1);
 
-        queryResource(service, docName, "update value //t/@xml:id with 'id2'", 0);
+        queryResource(service, docName, "replace value of node //t/@xml:id with 'id2'", 0);
 
         queryResource(service, docName, "//t[@xml:id eq 'id2']", 1);
         queryResource(service, docName, "id('id2', /test)", 1);
@@ -51,7 +51,7 @@ public class UpdateValueTest extends AbstractTestUpdate {
         final XQueryService service =
             storeXMLStringAndGetQueryService(docName, "<test xmlns=\"http://test.com\" id=\"id1\"/>");
 
-        queryResource(service, docName, "declare namespace t=\"http://test.com\"; update value /t:test/@id with " +
+        queryResource(service, docName, "declare namespace t=\"http://test.com\"; replace value of node /t:test/@id with " +
                 "'id2'", 0);
         queryResource(service, docName, "declare namespace t=\"http://test.com\"; /t:test[@id = 'id2']", 1);
     }

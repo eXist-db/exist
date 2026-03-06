@@ -95,22 +95,20 @@ public class DocumentUpdateTest {
         assertEquals(result, "1");
 
         //TEST 4: 'update insert' statement
+        // Under W3C XQuery Update, updating and non-updating expressions cannot
+        // be mixed in a comma expression (XUST0001). Split into update + read.
         query = imports +
-            "declare function local:xpath($collection as xs:string) {\n" +
-            "    collection($collection)\n" +
-            "};\n" +
             "let $col := xdb:create-collection('/db', 'testup')\n" +
             "let $path := '/db/testup'\n" +
-            "let $d1 := local:xpath($path)//n\n" +
             "let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" +
-            "return (\n" +
-            "	update insert <n>2</n> into collection($path)/test,\n" +
-            "	count(local:xpath($path)//n)\n" +
-            ")";
-        result = execQuery(query);
+            "return insert node <n>2</n> into collection($path)/test";
+        XQueryService service1 = testCollection.getService(XQueryService.class);
+        service1.query(query);
+        result = execQuery("count(collection('/db/testup')//n)");
         assertEquals(result, "2");
 
         //TEST 5: 'update replace' statement
+        // Under W3C XQuery Update, split update + read to avoid XUST0001.
         query = imports + "let $doc := xdb:store('/db', 'test1.xml', " +
             "<test> " +
                 "<link href=\"features\"/> " +
@@ -120,13 +118,10 @@ public class DocumentUpdateTest {
             "let $links := doc($doc)/test/link/@href " +
             "return " +
             "for $link in $links " +
-            "return ( " +
-                "update replace $link with \"123\", " +
-                "(: without the output on the next line, it works :) " +
-                "xs:string($link) " +
-            ")";
+            "return replace value of node $link with '123'";
         XQueryService service = testCollection.getService(XQueryService.class);
-        ResourceSet r = service.query(query);
+        service.query(query);
+        ResourceSet r = service.query("doc('/db/test1.xml')/test/link/@href/string()");
         assertEquals(r.getSize(), 2);
         assertEquals(r.getResource(0).getContent().toString(), "123");
         assertEquals(r.getResource(1).getContent().toString(), "123");
@@ -134,20 +129,21 @@ public class DocumentUpdateTest {
 
     @Test
     public void updateAttribute() throws XMLDBException {
-        String query1="let $content :="
+        // Under W3C XQuery Update, split update + read to avoid XUST0001.
+        String query1a ="let $content :="
                 +"<A><B><C d=\"xxx\">ccc1</C><C d=\"yyy\" e=\"zzz\">ccc2</C></B></A> "
                 +"let $uri := xmldb:store(\"/db/\", \"marktest7.xml\", $content) "
-                +"let $doc := doc($uri) "
-                +"let $xxx := update delete $doc//@*"
-                +"return $doc";
+                +"return delete node doc($uri)//@*";
+        XQueryService service2 = testCollection.getService(XQueryService.class);
+        service2.query(query1a);
+        String result1 = execQuery("doc(\"/db/marktest7.xml\")");
 
-        String query2="let $doc := doc(\"/db/marktest7.xml\") "
+        String query2a ="let $doc := doc(\"/db/marktest7.xml\") "
                 +"return "
-                +"( for $elem in $doc//* "
-                +"return update insert attribute AAA {\"BBB\"} into $elem, $doc) ";
-
-        String result1 = execQuery(query1);
-        String result2 = execQuery(query2);
+                +"for $elem in $doc//* "
+                +"return insert node attribute AAA {\"BBB\"} into $elem";
+        service2.query(query2a);
+        String result2 = execQuery("doc(\"/db/marktest7.xml\")");
 
     }
     

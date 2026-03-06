@@ -116,7 +116,7 @@ public class XQueryTrigger2Test {
         "let $log := util:log(\"INFO\", concat($type, ' ', $event, ' ', $objectType, ' ', $uri))" +
     	"let $isLoggedIn := xmldb:login('" + XmldbURI.DB.append(TEST_COLLECTION).append(EVENTS_COLLECTION) + "', '" + TestUtils.ADMIN_DB_USER + "', '" + TestUtils.ADMIN_DB_PWD + "') " +
         "return " +
-        "  update insert <event time='{current-dateTime()}' type='{$type}' event='{$event}' object-type='{$objectType}'><uri>{$uri}</uri></event> into doc('" +  XmldbURI.DB.append(TEST_COLLECTION).append(EVENTS_COLLECTION).append(LOG_NAME) + "')/events" +
+        "  util:eval(\"insert node <event time='{current-dateTime()}' type='{$type}' event='{$event}' object-type='{$objectType}'><uri>{$uri}</uri></event> into doc('" +  XmldbURI.DB.append(TEST_COLLECTION).append(EVENTS_COLLECTION).append(LOG_NAME) + "')/events\")" +
         "};" +
         "" +
         "declare function trigger:before-create-collection($uri as xs:anyURI) {" +

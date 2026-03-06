@@ -46,7 +46,7 @@ public class QueryPoolTest {
     public void differentQueries() throws XMLDBException {
         EXistXQueryService service = testCollection.getService(EXistXQueryService.class);
         for (int i = 0; i < 1000; i++) {
-            String query = "update insert <node id='id" + Integer.toHexString(i) + "'>" +
+            String query = "insert node <node id='id" + Integer.toHexString(i) + "'>" +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node. " +
                     "Some longer text <b>content</b> in this node. Some longer text <b>content</b> in this node." +
                     "</node> " +

@@ -42,13 +42,13 @@ public class UpdateInsertTest extends AbstractTestUpdate {
 
         queryResource(service, docName, "//t[@xml:id]", 0);
 
-        String update = "update insert <t xml:id=\"id1\"/> into /test";
+        String update = "insert node <t xml:id=\"id1\"/> into /test";
         queryResource(service, docName, update, 0);
 
         queryResource(service, docName, "//t[@xml:id eq 'id1']", 1);
         queryResource(service, docName, "/test/id('id1')", 1);
 
-        update = "update value //t/@xml:id with 'id2'";
+        update = "replace value of node //t/@xml:id with 'id2'";
         queryResource(service, docName, update, 0);
 
         queryResource(service, docName, "//t[@xml:id eq 'id2']", 1);
@@ -79,7 +79,9 @@ public class UpdateInsertTest extends AbstractTestUpdate {
 
         final String uuid = UUID.randomUUID().toString();
 
-        final String update = "update insert attribute id {'" + uuid + "'} preceding //annotation-item[@temp-id = '" + tempId + "']/@status";
+        // Under W3C XQuery Update, attributes can only be inserted "into"
+        // an element, not "before/after" another attribute.
+        final String update = "insert node attribute id {'" + uuid + "'} into //annotation-item[@temp-id = '" + tempId + "']";
         queryResource(service, docName, update, 0);
 
         queryResource(service, docName, "//annotation-item[@temp-id = '" + tempId + "']/@id", 1);
@@ -97,7 +99,7 @@ public class UpdateInsertTest extends AbstractTestUpdate {
 
         final String uuid = UUID.randomUUID().toString();
 
-        final String update = "update insert document { <uuid>" + uuid + "</uuid> } into /empty";
+        final String update = "insert node document { <uuid>" + uuid + "</uuid> } into /empty";
 
         queryResource(service, docName, update, 0);
 

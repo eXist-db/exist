@@ -998,7 +998,7 @@ public class GMLIndexTest {
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
                     "at 'java:org.exist.xquery.modules.spatial.SpatialModule'; " +
                     "declare namespace gml = 'http://www.opengis.net/gml'; " +
-                    "update value (//gml:Polygon)[1]/gml:outerBoundaryIs/gml:LinearRing/gml:coordinates " +
+                    "replace value of node (//gml:Polygon)[1]/gml:outerBoundaryIs/gml:LinearRing/gml:coordinates " +
                     "(: strip decimals :) " +
                     "with fn:replace((//gml:Polygon)[1], '(\\d+).(\\d+)', '$1')";
             seq = xquery.execute(broker, query, null);

@@ -106,16 +106,27 @@ public class ConcurrentTransactionsTest {
     public void getDeleteUpdate() throws ExecutionException, InterruptedException {
         final String documentUri = "/db/test/hamlet.xml";
 
-        final Tuple2<Void, Void> result = biSchedule()
-                .firstT1(getDocument(documentUri))
-                                                        .andThenT2(getDocument(documentUri))
-                .andThenT1(deleteDocument())
-                .andThenT1(commit())
-                                                        .andThenT2(updateDocument("update value /title[1] with 'updated by t2 in various test'"))
-                                                        .andThenT2(commit())
-                .build()
+        // T1 deletes the document, then T2 tries to update it.
+        // Under W3C XQUF, updating a node in a deleted document raises
+        // XUDY0027 (target is empty sequence), which is the correct behavior.
+        try {
+            final Tuple2<Void, Void> result = biSchedule()
+                    .firstT1(getDocument(documentUri))
+                                                            .andThenT2(getDocument(documentUri))
+                    .andThenT1(deleteDocument())
+                    .andThenT1(commit())
+                                                            .andThenT2(updateDocument("replace value of node /title[1] with 'updated by t2 in various test'"))
+                                                            .andThenT2(commit())
+                    .build()
 
-            .execute(existEmbeddedServer.getBrokerPool(), EXECUTION_LISTENER);
+                .execute(existEmbeddedServer.getBrokerPool(), EXECUTION_LISTENER);
+        } catch (final ExecutionException e) {
+            // Expected: T2's update targets a deleted document, so the XPath
+            // expression returns an empty sequence, causing an XPathException.
+            if (e.getCause() == null || !e.getCause().getMessage().contains("XUDY0027")) {
+                throw e;
+            }
+        }
     }
 
     @Test

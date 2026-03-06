@@ -54,16 +54,14 @@ public class NamespaceUpdateTest {
 	@Test
 	public void updateAttribute() throws XMLDBException {
 		XQueryService service = testCollection.getService(XQueryService.class);
-		String query =
+		// Under W3C XQuery Update, updating expressions cannot appear inside
+		// element constructors (XUST0001). Execute the update separately.
+		String updateQuery =
 				"declare namespace t='http://www.foo.com';\n" +
-						"<test xmlns='http://www.foo.com'>\n" +
-						"{\n" +
-						"	update insert attribute { 'ID' } { 'myid' } into /t:test\n" +
-						"}\n" +
-						"</test>";
-		service.query(query);
+						"insert node attribute { 'ID' } { 'myid' } into /t:test";
+		service.query(updateQuery);
 
-		query =
+		String query =
 				"declare namespace t='http://www.foo.com';\n" +
 						"/t:test/@ID/string(.)";
 		ResourceSet result = service.query(query);

@@ -217,10 +217,14 @@ public class PendingUpdateList {
      * @throws XPathException if conflicting primitives are found
      */
     public void checkConflicts() throws XPathException {
-        // Track nodes that have been targeted by rename, replaceNode, replaceValue
-        final Set<Node> renameTargets = new HashSet<>();
-        final Set<Node> replaceNodeTargets = new HashSet<>();
-        final Set<Node> replaceValueTargets = new HashSet<>();
+        // Track nodes that have been targeted by rename, replaceNode, replaceValue.
+        // Use nodeKey() string representation instead of Node identity because
+        // persistent StoredNode objects don't override equals()/hashCode(), so
+        // different wrapper objects for the same underlying node need to be
+        // detected as duplicates.
+        final Set<String> renameTargets = new HashSet<>();
+        final Set<String> replaceNodeTargets = new HashSet<>();
+        final Set<String> replaceValueTargets = new HashSet<>();
         final Set<String> putUris = new HashSet<>();
 
         for (final UpdatePrimitive p : primitives) {
@@ -228,21 +232,21 @@ public class PendingUpdateList {
 
             switch (p.getType()) {
                 case RENAME:
-                    if (!renameTargets.add(p.getTargetNode())) {
+                    if (!renameTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0015,
                                 "Multiple rename primitives applied to the same target node.");
                     }
                     break;
 
                 case REPLACE_NODE:
-                    if (!replaceNodeTargets.add(p.getTargetNode())) {
+                    if (!replaceNodeTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0016,
                                 "Multiple replace node primitives applied to the same target node.");
                     }
                     break;
 
                 case REPLACE_VALUE:
-                    if (!replaceValueTargets.add(p.getTargetNode())) {
+                    if (!replaceValueTargets.add(nodeKey(p.getTargetNode()))) {
                         throw new XPathException(expr, ErrorCodes.XUDY0017,
                                 "Multiple replace value primitives applied to the same target node.");
                     }
@@ -1053,7 +1057,6 @@ public class PendingUpdateList {
 
             // Apply within a transaction
             try (final Txn transaction = broker.continueOrBeginTransaction()) {
-                final NotificationService notifier = broker.getBrokerPool().getNotificationService();
 
                 // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
                 // Phase 1: inserts, replaceValue (non-element), renames
@@ -1118,13 +1121,13 @@ public class PendingUpdateList {
                             continue;
                         }
                     }
-                    applyPersistentInsert(context, transaction, p, modifiedDocuments, notifier);
+                    applyPersistentInsert(context, transaction, p, modifiedDocuments);
                 }
                 for (final UpdatePrimitive p : renames) {
-                    applyPersistentRename(context, transaction, p, modifiedDocuments, notifier);
+                    applyPersistentRename(context, transaction, p, modifiedDocuments);
                 }
                 for (final UpdatePrimitive p : replaceValues) {
-                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments, notifier);
+                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
                 }
                 // Phase 3: replaceNode — skip if the target's parent is targeted by
                 // replaceElementContent (which will replace ALL children anyway)
@@ -1139,18 +1142,27 @@ public class PendingUpdateList {
                             continue;
                         }
                     }
-                    applyPersistentReplaceNode(context, transaction, p, modifiedDocuments, notifier);
+                    applyPersistentReplaceNode(context, transaction, p, modifiedDocuments);
                 }
                 // Phase 4: replaceElementContent (after replaceNode)
                 for (final UpdatePrimitive p : replaceElementContents) {
-                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments, notifier);
+                    applyPersistentReplaceValue(context, transaction, p, modifiedDocuments);
                 }
                 // Delete in reverse document order
                 for (int i = deletes.size() - 1; i >= 0; i--) {
-                    applyPersistentDelete(context, transaction, deletes.get(i), modifiedDocuments, notifier);
+                    applyPersistentDelete(context, transaction, deletes.get(i), modifiedDocuments);
                 }
                 for (final UpdatePrimitive p : puts) {
                     applyPersistentPut(context, transaction, p);
+                }
+
+                // Store all modified documents and send notifications
+                final NotificationService notifier2 = broker.getBrokerPool().getNotificationService();
+                final Iterator<DocumentImpl> storeIter = modifiedDocuments.getDocumentIterator();
+                while (storeIter.hasNext()) {
+                    final DocumentImpl doc = storeIter.next();
+                    broker.storeXMLResource(transaction, doc);
+                    notifier2.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
 
                 // Finish triggers
@@ -1177,8 +1189,7 @@ public class PendingUpdateList {
     }
 
     private void applyPersistentInsert(final XQueryContext context, final Txn transaction,
-                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments,
-                                        final NotificationService notifier) throws XPathException {
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
@@ -1233,8 +1244,6 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
-            context.getBroker().storeXMLResource(transaction, doc);
-            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         } catch (final Exception e) {
             if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
@@ -1242,8 +1251,7 @@ public class PendingUpdateList {
     }
 
     private void applyPersistentRename(final XQueryContext context, final Txn transaction,
-                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments,
-                                        final NotificationService notifier) throws XPathException {
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
@@ -1271,8 +1279,6 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
-            context.getBroker().storeXMLResource(transaction, doc);
-            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         } catch (final Exception e) {
             if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
@@ -1280,8 +1286,7 @@ public class PendingUpdateList {
     }
 
     private void applyPersistentReplaceValue(final XQueryContext context, final Txn transaction,
-                                              final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments,
-                                              final NotificationService notifier) throws XPathException {
+                                              final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
@@ -1354,8 +1359,6 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
-            context.getBroker().storeXMLResource(transaction, doc);
-            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         } catch (final Exception e) {
             if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
@@ -1363,8 +1366,7 @@ public class PendingUpdateList {
     }
 
     private void applyPersistentReplaceNode(final XQueryContext context, final Txn transaction,
-                                             final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments,
-                                             final NotificationService notifier) throws XPathException {
+                                             final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
@@ -1419,8 +1421,6 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
-            context.getBroker().storeXMLResource(transaction, doc);
-            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         } catch (final Exception e) {
             if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
@@ -1428,8 +1428,7 @@ public class PendingUpdateList {
     }
 
     private void applyPersistentDelete(final XQueryContext context, final Txn transaction,
-                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments,
-                                        final NotificationService notifier) throws XPathException {
+                                        final UpdatePrimitive p, final MutableDocumentSet modifiedDocuments) throws XPathException {
         final StoredNode<?> node = (StoredNode<?>) p.getTargetNode();
         final DocumentImpl doc = node.getOwnerDocument();
         checkWritePermission(context, doc, p.getSourceExpression());
@@ -1459,8 +1458,6 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
-            context.getBroker().storeXMLResource(transaction, doc);
-            notifier.notifyUpdate(doc, UpdateListener.UPDATE);
         } catch (final Exception e) {
             if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);

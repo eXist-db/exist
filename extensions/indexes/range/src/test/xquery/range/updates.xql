@@ -29,12 +29,12 @@ declare namespace mods="http://www.loc.gov/mods/v3";
 
 declare variable $rt:COLLECTION := "/db/rangetest";
 
-declare variable $rt:COLLECTION_CONFIG := 
+declare variable $rt:COLLECTION_CONFIG :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:vra="http://www.vraweb.org/vracore4.htm" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mods="http://www.loc.gov/mods/v3">
             <lucene>
                 <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
-                
+
                 <!--MODS-->
                 <text qname="mods:title"/>
             </lucene>
@@ -53,7 +53,7 @@ declare variable $rt:COLLECTION_CONFIG :=
         </index>
     </collection>;
 
-declare variable $rt:DATA := 
+declare variable $rt:DATA :=
     <mods:modsCollection>
         <mods:mods ID="books/aw/Knuth86a">
             <mods:titleInfo>
@@ -108,146 +108,189 @@ function rt:t00_query() {
     count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")])
 };
 
-declare 
+declare
     %test:assertEquals(1, 1)
 function rt:t01_replaceTitle() {
-    update replace
-        collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "latex")]
+    let $u := util:eval("
+        replace node collection('/db/rangetest')//mods:mods[ft:query(mods:titleInfo/mods:title, 'latex')]
             /mods:titleInfo/mods:title
-    with
-        <mods:title>The best text processor ever</mods:title>,
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")])
+        with
+            <mods:title xmlns:mods='http://www.loc.gov/mods/v3'>The best text processor ever</mods:title>
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1)
 function rt:t02_insertName() {
-    update insert
-        <mods:name type="personal">
-            <mods:namePart>Hansi Reiher</mods:namePart>
-        </mods:name>
-    into
-        collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")],
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")])
+    let $u := util:eval("
+        insert node
+            <mods:name xmlns:mods='http://www.loc.gov/mods/v3' type='personal'>
+                <mods:namePart>Hansi Reiher</mods:namePart>
+            </mods:name>
+        into
+            collection('/db/rangetest')//mods:mods[ft:query(mods:titleInfo/mods:title, 'program')]
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1, 1)
 function rt:t03_insertAfter() {
-    update insert
-        <mods:name type="personal">
-            <mods:namePart>Gerda Schwan</mods:namePart>
-        </mods:name>
-    following
-        collection($rt:COLLECTION)//mods:mods/range:field-eq("name-part", "Donald E. Knuth"),
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Gerda Schwan")])
+    let $u := util:eval("
+        insert node
+            <mods:name xmlns:mods='http://www.loc.gov/mods/v3' type='personal'>
+                <mods:namePart>Gerda Schwan</mods:namePart>
+            </mods:name>
+        after
+            collection('/db/rangetest')//mods:mods/range:field-eq('name-part', 'Donald E. Knuth')
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Gerda Schwan")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1, 1, 1)
 function rt:t04_insertBefore() {
-    update insert
-        <mods:name type="personal">
-            <mods:namePart>Susi Spatz</mods:namePart>
-        </mods:name>
-    preceding
-        collection($rt:COLLECTION)//mods:mods/range:field-eq("name-part", "Donald E. Knuth"),
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Gerda Schwan")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Susi Spatz")])
+    let $u := util:eval("
+        insert node
+            <mods:name xmlns:mods='http://www.loc.gov/mods/v3' type='personal'>
+                <mods:namePart>Susi Spatz</mods:namePart>
+            </mods:name>
+        before
+            collection('/db/rangetest')//mods:mods/range:field-eq('name-part', 'Donald E. Knuth')
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Gerda Schwan")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Susi Spatz")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 0, 1)
 function rt:t05_replaceName() {
-    update replace
-        collection($rt:COLLECTION)//mods:mods/range:field-eq("name-part", "Susi Spatz")
-    with
-        <mods:name>
-            <mods:namePart>Manfred Specht</mods:namePart>
-        </mods:name>,
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Susi Spatz")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Manfred Specht")])
+    let $u := util:eval("
+        replace node
+            collection('/db/rangetest')//mods:mods/range:field-eq('name-part', 'Susi Spatz')
+        with
+            <mods:name xmlns:mods='http://www.loc.gov/mods/v3'>
+                <mods:namePart>Manfred Specht</mods:namePart>
+            </mods:name>
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Susi Spatz")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Manfred Specht")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 0)
 function rt:t06_replaceName() {
-    update replace
-        collection($rt:COLLECTION)//mods:mods/mods:name[mods:namePart = "Manfred Specht"]/mods:namePart
-    with
-        <mods:namePart>Doris Drossel</mods:namePart>,
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[mods:name[mods:namePart = "Doris Drossel"]]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Manfred Specht")])
+    let $u := util:eval("
+        replace node
+            collection('/db/rangetest')//mods:mods/mods:name[mods:namePart = 'Manfred Specht']/mods:namePart
+        with
+            <mods:namePart xmlns:mods='http://www.loc.gov/mods/v3'>Doris Drossel</mods:namePart>
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[mods:name[mods:namePart = "Doris Drossel"]]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Manfred Specht")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 0)
 function rt:t07_updateName() {
-    update value
-        collection($rt:COLLECTION)//mods:mods/mods:name[mods:namePart = "Doris Drossel"]/mods:namePart
-    with
-        "Adolf Adler",
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[mods:name[mods:namePart = "Adolf Adler"]]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Doris Drossel")])
+    let $u := util:eval("
+        replace value of node
+            collection('/db/rangetest')//mods:mods/mods:name[mods:namePart = 'Doris Drossel']/mods:namePart
+        with
+            'Adolf Adler'
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[mods:name[mods:namePart = "Adolf Adler"]]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Doris Drossel")])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1, 0)
 function rt:t08_updateIDAttrib() {
-    update value
-        collection($rt:COLLECTION)//mods:mods[@ID = "books/aw/Lamport86"]/@ID
-    with
-        "CHANGED_ID",
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_ID"]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "books/aw/Lamport86"])
+    let $u := util:eval("
+        replace value of node
+            collection('/db/rangetest')//mods:mods[@ID = 'books/aw/Lamport86']/@ID
+        with
+            'CHANGED_ID'
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_ID"]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "books/aw/Lamport86"])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1, 0)
 function rt:t09_replaceIDAttrib() {
-    update replace
-        collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_ID"]/@ID
-    with
-        attribute ID { "CHANGED_2" },
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_ID"])
+    let $u := util:eval("
+        replace node
+            collection('/db/rangetest')//mods:mods[@ID = 'CHANGED_ID']/@ID
+        with
+            attribute ID { 'CHANGED_2' }
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Leslie Lamport")]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_ID"])
+    )
 };
 
-declare 
+declare
     %test:assertEquals(1, 1, 1, 0)
 function rt:t10_updateYear() {
-    update replace
-        collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"]/mods:originInfo/mods:dateIssued
-    with
-        <mods:dateIssued>2014</mods:dateIssued>,
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][range:field-eq("name-part", "Leslie Lamport")]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][mods:originInfo/mods:dateIssued = "2014"]),
-    count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][mods:originInfo/mods:dateIssued = "1986"])
+    let $u := util:eval("
+        replace node
+            collection('/db/rangetest')//mods:mods[@ID = 'CHANGED_2']/mods:originInfo/mods:dateIssued
+        with
+            <mods:dateIssued xmlns:mods='http://www.loc.gov/mods/v3'>2014</mods:dateIssued>
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "'text processor'")]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][range:field-eq("name-part", "Leslie Lamport")]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][mods:originInfo/mods:dateIssued = "2014"]),
+        count(collection($rt:COLLECTION)//mods:mods[@ID = "CHANGED_2"][mods:originInfo/mods:dateIssued = "1986"])
+    )
 };
 
 declare
     %test:assertEquals(1, 1, 0)
 function rt:t11_deleteName() {
-    update delete
-        collection($rt:COLLECTION)//mods:mods/mods:name[mods:namePart = "Donald E. Knuth"],
-    count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
-    count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")])
+    let $u := util:eval("
+        delete node
+            collection('/db/rangetest')//mods:mods/mods:name[mods:namePart = 'Donald E. Knuth']
+    ")
+    return (
+        count(collection($rt:COLLECTION)//mods:mods[ft:query(mods:titleInfo/mods:title, "program")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Hansi Reiher")]),
+        count(collection($rt:COLLECTION)//mods:mods[range:field-eq("name-part", "Donald E. Knuth")])
+    )
 };

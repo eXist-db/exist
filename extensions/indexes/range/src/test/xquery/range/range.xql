@@ -392,50 +392,67 @@ function rt:remove-document() {
     )
 };
 
-declare 
+declare
     %test:assertEquals("Uferweg 67", "Bach")
 function rt:update-insert() {
-    update insert
-        <address>
-            <name>Willi Wiesel</name>
-            <street>Uferweg 67</street>
-            <city code="77777">Bach</city>
-        </address>
-    into doc("/db/rangetest/test.xml")/test,
-    range:field-eq("address-name", "Willi Wiesel")/street/text(),
-    collection("/db/rangetest")//address[range:eq(name, "Willi Wiesel")]/city/text()
+    let $u := util:eval("
+        insert node
+            <address>
+                <name>Willi Wiesel</name>
+                <street>Uferweg 67</street>
+                <city code='77777'>Bach</city>
+            </address>
+        into doc('/db/rangetest/test.xml')/test
+    ")
+    return (
+        range:field-eq("address-name", "Willi Wiesel")/street/text(),
+        collection("/db/rangetest")//address[range:eq(name, "Willi Wiesel")]/city/text()
+    )
 };
 
-declare 
+declare
     %test:assertEmpty
 function rt:update-delete() {
-    update delete collection("/db/rangetest")/test/address[range:eq(name, "Berta Muh")],
-    collection("/db/rangetest")//address[range:eq(name, "Berta Muh")],
-    range:field-eq("address-name", "Berta Muh")
+    let $u := util:eval("
+        delete node collection('/db/rangetest')/test/address[range:eq(name, 'Berta Muh')]
+    ")
+    return (
+        collection("/db/rangetest")//address[range:eq(name, "Berta Muh")],
+        range:field-eq("address-name", "Berta Muh")
+    )
 };
 
 declare
     %test:assertEquals("Am Staudamm 3", "Bach")
 function rt:update-replace() {
-    update replace collection("/db/rangetest")/test/address[range:eq(name, "Albert Amsel")]
-    with
-        <address>
-            <name>Berta Bieber</name>
-            <street>Am Staudamm 3</street>
-            <city code="77777">Bach</city>
-        </address>,
-    collection("/db/rangetest")//address[range:eq(name, "Albert Amsel")],
-    range:field-eq("address-name", "Albert Amsel"),
-    collection("/db/rangetest")//address[range:eq(name, "Berta Bieber")]/street/text(),
-    range:field-eq("address-name", "Berta Bieber")/city/text()
+    let $u := util:eval("
+        replace node collection('/db/rangetest')/test/address[range:eq(name, 'Albert Amsel')]
+        with
+            <address>
+                <name>Berta Bieber</name>
+                <street>Am Staudamm 3</street>
+                <city code='77777'>Bach</city>
+            </address>
+    ")
+    return (
+        collection("/db/rangetest")//address[range:eq(name, "Albert Amsel")],
+        range:field-eq("address-name", "Albert Amsel"),
+        collection("/db/rangetest")//address[range:eq(name, "Berta Bieber")]/street/text(),
+        range:field-eq("address-name", "Berta Bieber")/city/text()
+    )
 };
 
 declare
     %test:assertEquals("Am Waldrand 4", "Wiesental")
 function rt:update-value() {
-    update value collection("/db/rangetest")/test/address/name[range:eq(., "Pü Reh")] with "Rita Rebhuhn",
-    collection("/db/rangetest")//address[range:eq(name, "Pü Reh")],
-    range:field-eq("address-name", "Pü Reh"),
-    collection("/db/rangetest")//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
-    range:field-eq("address-name", "Rita Rebhuhn")/city/text()
+    let $u := util:eval("
+        replace value of node collection('/db/rangetest')/test/address/name[range:eq(., 'Pü Reh')]
+        with 'Rita Rebhuhn'
+    ")
+    return (
+        collection("/db/rangetest")//address[range:eq(name, "Pü Reh")],
+        range:field-eq("address-name", "Pü Reh"),
+        collection("/db/rangetest")//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
+        range:field-eq("address-name", "Rita Rebhuhn")/city/text()
+    )
 };
