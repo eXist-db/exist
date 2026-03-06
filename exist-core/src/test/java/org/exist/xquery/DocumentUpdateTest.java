@@ -136,14 +136,14 @@ public class DocumentUpdateTest {
                 +"return delete node doc($uri)//@*";
         XQueryService service2 = testCollection.getService(XQueryService.class);
         service2.query(query1a);
-        String result1 = execQuery("doc(\"/db/marktest7.xml\")");
+        execQuery("doc(\"/db/marktest7.xml\")");
 
         String query2a ="let $doc := doc(\"/db/marktest7.xml\") "
                 +"return "
                 +"for $elem in $doc//* "
                 +"return insert node attribute AAA {\"BBB\"} into $elem";
         service2.query(query2a);
-        String result2 = execQuery("doc(\"/db/marktest7.xml\")");
+        execQuery("doc(\"/db/marktest7.xml\")");
 
     }
     

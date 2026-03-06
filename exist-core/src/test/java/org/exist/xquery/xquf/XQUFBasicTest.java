@@ -545,7 +545,7 @@ public class XQUFBasicTest {
     // === Multi-step update + query tests (complex-deletes regression) ===
 
     @Test
-    public void deletePI_multiStep_precedingSiblingTextCount() throws Exception {
+    public void deletePIMultiStepPrecedingSiblingTextCount() throws Exception {
         // Simulates the XQTS multi-step pattern: update query mutates an in-memory doc,
         // then a separate verification query reads it.
         // This is the pattern that fails in complex-deletes-q3.
@@ -577,7 +577,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deletePI_multiStep_complexDeletesQ3() throws Exception {
+    public void deletePIMultiStepComplexDeletesQ3() throws Exception {
         // Full complex-deletes-q3 pattern with doc-level PIs,
         // using BrokerPool + XQuery service directly with context sequence (like the XQTS runner).
         final String xml =
@@ -680,7 +680,7 @@ public class XQUFBasicTest {
     // === Delete + axis traversal tests (single-query, copy-modify) ===
 
     @Test
-    public void deletePI_precedingSiblingTextCount() throws XMLDBException {
+    public void deletePIPrecedingSiblingTextCount() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         // Simulate complex-deletes-q3: delete PIs, then count preceding-sibling text nodes
@@ -696,7 +696,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteElement_childTextCount() throws XMLDBException {
+    public void deleteElementChildTextCount() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         // Simulate complex-deletes-q10: delete element, count remaining text children
@@ -712,7 +712,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deletePI_descendantAndPrecedingSibling() throws XMLDBException {
+    public void deletePIDescendantAndPrecedingSibling() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         // Full complex-deletes-q3 pattern: delete PIs, then use //child/preceding-sibling::text()
@@ -728,7 +728,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deletePI_complexDeletesQ3_pattern() throws XMLDBException {
+    public void deletePIComplexDeletesQ3Pattern() throws XMLDBException {
         // Exact pattern from complex-deletes-q3 using copy-modify
         final XQueryService service = testCollection.getService(XQueryService.class);
 
@@ -782,7 +782,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteAttributes_singleElement() throws XMLDBException {
+    public void deleteAttributesSingleElement() throws XMLDBException {
         // Simplest case: delete one attribute from one element
         final XQueryService service = testCollection.getService(XQueryService.class);
 
@@ -796,7 +796,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteAttributes_twoElements() throws XMLDBException {
+    public void deleteAttributesTwoElements() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         // Delete one attr from each of two elements
@@ -812,7 +812,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteAttributes_threeElements_explicit() throws XMLDBException {
+    public void deleteAttributesThreeElementsExplicit() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
 
         final String query =
@@ -855,7 +855,7 @@ public class XQUFBasicTest {
     }
 
     @Test(timeout = 10000)
-    public void insertMultipleGroupsBeforeSameTarget_inMemory() throws XMLDBException {
+    public void insertMultipleGroupsBeforeSameTargetInMemory() throws XMLDBException {
         final String docName = "dummy.xml";
         final XQueryService service = storeXMLStringAndGetQueryService(docName, "<dummy/>");
 
@@ -902,7 +902,7 @@ public class XQUFBasicTest {
     // === XQTS-style in-memory insert-after test (mimics id-insert-expr-021) ===
 
     @Test
-    public void inMemoryInsertAfter_twoElements() throws Exception {
+    public void inMemoryInsertAfterTwoElements() throws Exception {
         // Parse document using SAXAdapter (same as XQTS runner)
         final String xml = "<root><a>1</a><b>2</b><c>3</c></root>";
         final org.exist.dom.memtree.SAXAdapter adapter = new org.exist.dom.memtree.SAXAdapter();
@@ -940,7 +940,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void inMemoryInsertAttribute_namespacedElement() throws Exception {
+    public void inMemoryInsertAttributeNamespacedElement() throws Exception {
         // Test 094: insert attribute into element in default namespace
         // Use real books3.xml content with comments, PIs, entities
         final java.io.File books3 = new java.io.File(
@@ -1066,7 +1066,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void inMemoryInsertInto_ordering() throws Exception {
+    public void inMemoryInsertIntoOrdering() throws Exception {
         // Test 052: INSERT_INTO should go between INSERT_INTO_AS_FIRST and INSERT_INTO_AS_LAST
         final org.exist.storage.BrokerPool pool = org.exist.storage.BrokerPool.getInstance();
         try (final org.exist.storage.DBBroker broker = pool.getBroker()) {
@@ -1109,7 +1109,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void inMemoryInsertAfter_descendantAxis() throws Exception {
+    public void inMemoryInsertAfterDescendantAxis() throws Exception {
         // Test that //element finds inserted nodes (descendant axis traversal)
         final String xml = "<employee><hours>70</hours><hours>20</hours></employee>";
         final org.exist.dom.memtree.SAXAdapter adapter = new org.exist.dom.memtree.SAXAdapter();
@@ -1196,7 +1196,7 @@ public class XQUFBasicTest {
      * and that replace node correctly raises XUDY0009.
      */
     @Test
-    public void replaceNodeParentlessElement_XUDY0009() throws XMLDBException {
+    public void replaceNodeParentlessElementXUDY0009() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService("xudy0009.xml", "<dummy/>");
         final String query =
                 "let $var := <hours/> " +
@@ -1214,7 +1214,7 @@ public class XQUFBasicTest {
      * Verify XUTY0008 is raised when replace target is multiple nodes.
      */
     @Test
-    public void replaceNodeMultipleTargets_XUTY0008() throws XMLDBException {
+    public void replaceNodeMultipleTargetsXUTY0008() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService("xuty0008.xml", "<root><a/><b/></root>");
         final String query =
                 "let $doc := doc('/db/test/xuty0008.xml') " +
@@ -1231,7 +1231,7 @@ public class XQUFBasicTest {
     // === Compatibility tests: replaceNode + replaceElementContent interaction ===
 
     @Test
-    public void replaceValueOfElement_and_replaceNodeChild_persistent() throws XMLDBException {
+    public void replaceValueOfElementAndReplaceNodeChildPersistent() throws XMLDBException {
         // Matches compatibility-027: replace value of node + replace node on child
         final String docName = "compat027.xml";
         final XQueryService service = storeXMLStringAndGetQueryService(docName,
@@ -1254,7 +1254,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void replaceValueOfElement_and_insertChild_persistent() throws XMLDBException {
+    public void replaceValueOfElementAndInsertChildPersistent() throws XMLDBException {
         // Matches compatibility-029: replace value of node + insert into
         final String docName = "compat029.xml";
         final XQueryService service = storeXMLStringAndGetQueryService(docName,
@@ -1278,7 +1278,7 @@ public class XQUFBasicTest {
     // === Namespace propagation in copy-modify ===
 
     @Test
-    public void propagateNamespaces_insertInheritsFromCopiedParent() throws XMLDBException {
+    public void propagateNamespacesInsertInheritsFromCopiedParent() throws XMLDBException {
         // Simplified propagateNamespaces01: inserted nodes inherit namespaces from copied parent
         final XQueryService service = testCollection.getService(XQueryService.class);
 
@@ -1295,7 +1295,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void propagateNamespaces_full() throws XMLDBException {
+    public void propagateNamespacesFull() throws XMLDBException {
         // Full propagateNamespaces01 test
         final XQueryService service = testCollection.getService(XQueryService.class);
 
@@ -1329,7 +1329,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void propagateNamespaces01_xqts_exact() throws XMLDBException {
+    public void propagateNamespaces01XqtsExact() throws XMLDBException {
         // Exact XQTS propagateNamespaces01 query with boundary-space preserve
         final XQueryService service = testCollection.getService(XQueryService.class);
         final String query = "declare copy-namespaces preserve, inherit; " +
@@ -1355,7 +1355,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void applyUpdates001_inMemory_insert_then_delete() throws XMLDBException {
+    public void applyUpdates001InMemoryInsertThenDelete() throws XMLDBException {
         // applyUpdates-001 pattern but with copy-modify (in-memory path)
         final XQueryService service = testCollection.getService(XQueryService.class);
         final String query =
@@ -1378,7 +1378,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void applyUpdates013_inMemory_insert_delete_attribute_same_name() throws XMLDBException {
+    public void applyUpdates013InMemoryInsertDeleteAttributeSameName() throws XMLDBException {
         // applyUpdates-013: insert attribute name="Sylvia" and delete @name
         final XQueryService service = testCollection.getService(XQueryService.class);
         final String query =
@@ -1401,7 +1401,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void applyUpdates001_persistent_insert_then_delete() throws XMLDBException {
+    public void applyUpdates001PersistentInsertThenDelete() throws XMLDBException {
         // applyUpdates-001: insert comment into hours, delete hours/text()
         final XQueryService service = storeXMLStringAndGetQueryService("works-mod.xml",
                 "<employee name=\"Jane Doe 1\" gender=\"female\">\n" +
@@ -1429,7 +1429,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void transformExpr034_copyDocument_rename() throws XMLDBException {
+    public void transformExpr034CopyDocumentRename() throws XMLDBException {
         // id-transform-expr-034: copy a document, rename its root element
         final String query =
                 "let $doc := document { <works><employee name=\"Jane\"/></works> }\n" +
@@ -1444,7 +1444,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void transformExpr035_copyAttribute_replaceValue() throws XMLDBException {
+    public void transformExpr035CopyAttributeReplaceValue() throws XMLDBException {
         // id-transform-expr-035: copy an attribute, replace its value
         final String query =
                 "let $var := <employee name=\"Jane Doe 1\"/>\n" +
@@ -1458,7 +1458,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void transformExpr_XUDY0014_targetOutsideCopy() throws XMLDBException {
+    public void transformExprXUDY0014TargetOutsideCopy() throws XMLDBException {
         // XUDY0014: update target must be created by the copy clause
         final String query =
                 "let $outside := <root><a>1</a></root>\n" +
@@ -1474,7 +1474,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void commaExpr015_twoReplaceValues_snapshotIsolation() throws XMLDBException {
+    public void commaExpr015TwoReplaceValuesSnapshotIsolation() throws XMLDBException {
         // id-comma-expr-015: two replace value ops referencing each other's targets
         // Tests W3C snapshot semantics: content expressions evaluated BEFORE updates applied
         final String query =
@@ -1508,7 +1508,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void replaceNode029_replaceTextNodes() throws XMLDBException {
+    public void replaceNode029ReplaceTextNodes() throws XMLDBException {
         // id-replace-expr-029: replace text nodes
         final String query =
                 "copy $c := <employee name=\"Jane Doe 1\" gender=\"female\">\n" +
@@ -1529,7 +1529,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteMultipleAttributes_forLoop() throws XMLDBException {
+    public void deleteMultipleAttributesForLoop() throws XMLDBException {
         // Delete attributes on multiple elements using for loop (workaround for //(@attr) bug)
         final String query =
                 "let $doc := <root>\n" +
@@ -1554,7 +1554,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void deleteDocumentNode_isNoOp() throws XMLDBException {
+    public void deleteDocumentNodeIsNoOp() throws XMLDBException {
         // complex-deletes-q14: delete document node is a no-op
         final String query =
                 "let $doc := document { <root><a/><b/></root> }\n" +
@@ -1569,7 +1569,7 @@ public class XQUFBasicTest {
     }
 
     @Test
-    public void replaceValueOfElement_withMarkup() throws XMLDBException {
+    public void replaceValueOfElementWithMarkup() throws XMLDBException {
         // complex-replacevalues-q14: replace value with string that looks like markup
         final String query =
                 "copy $c := <root><target>old</target></root>\n" +
@@ -1591,7 +1591,7 @@ public class XQUFBasicTest {
      * Verifies that getFirstChildFor can find appended children when positional children are deleted.
      */
     @Test
-    public void applyUpdates001_insertComment_deleteText() throws XMLDBException {
+    public void applyUpdates001InsertCommentDeleteText() throws XMLDBException {
         final String query =
                 "copy $c := <employee><hours>40</hours></employee>\n" +
                 "modify (\n" +
@@ -1613,7 +1613,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS applyUpdates-002.
      */
     @Test
-    public void applyUpdates002_deleteText_insertComment() throws XMLDBException {
+    public void applyUpdates002DeleteTextInsertComment() throws XMLDBException {
         final String query =
                 "copy $c := <employee><hours>40</hours></employee>\n" +
                 "modify (\n" +
@@ -1634,7 +1634,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS complex-renames-q4: rename one of multiple matching elements.
      */
     @Test
-    public void rename_inMemoryElement_singleFromMultiple() throws XMLDBException {
+    public void renameInMemoryElementSingleFromMultiple() throws XMLDBException {
         final String query =
                 "copy $c := <root><a mark='1'/><a mark='2'/></root>\n" +
                 "modify rename node ($c//a)[1] as 'b'\n" +
@@ -1655,7 +1655,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS complex-replacevalues-q8 pattern.
      */
     @Test
-    public void replaceValue_inMemoryElements_forLoop() throws XMLDBException {
+    public void replaceValueInMemoryElementsForLoop() throws XMLDBException {
         final String query =
                 "copy $c := <root><item>old1</item><item>old2</item></root>\n" +
                 "modify for $a in $c//item return replace value of node $a with 'new'\n" +
@@ -1674,7 +1674,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS complex-deletes-q2: delete trailing comments.
      */
     @Test
-    public void deleteDocumentComments_followsOperator() throws XMLDBException {
+    public void deleteDocumentCommentsFollowsOperator() throws XMLDBException {
         // Simulates the structure: document has root element, then comments after it
         final String query =
                 "let $doc := <root/>\n" +
@@ -1696,7 +1696,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS complex-replacevalues-q8 on stored documents.
      */
     @Test
-    public void replaceValue_persistent_forLoop() throws XMLDBException {
+    public void replaceValuePersistentForLoop() throws XMLDBException {
         final XQueryService queryService = storeXMLStringAndGetQueryService(
                 "topMany.xml",
                 "<root><se mark='1se'/><se mark='2se'/></root>");
@@ -1727,7 +1727,7 @@ public class XQUFBasicTest {
      * This is a two-step query: first update, then verify in separate query.
      */
     @Test
-    public void replaceValue_topLevelPUL_inMemoryDoc() throws XMLDBException {
+    public void replaceValueTopLevelPULInMemoryDoc() throws XMLDBException {
         // Store the XML in the database first, so we can do a two-step update+verify
         final XQueryService queryService = storeXMLStringAndGetQueryService(
                 "inmem.xml",
@@ -1755,7 +1755,7 @@ public class XQUFBasicTest {
      * Reproduces XQTS complex-renames-q2 on stored documents.
      */
     @Test
-    public void rename_persistent_multipleElements() throws XMLDBException {
+    public void renamePersistentMultipleElements() throws XMLDBException {
         final XQueryService queryService = storeXMLStringAndGetQueryService(
                 "topMany.xml",
                 "<root><se mark='1se'/><se mark='2se'/></root>");
@@ -1804,7 +1804,7 @@ public class XQUFBasicTest {
      * XQTS propagateNamespaces01: namespace propagation in copy-modify insert.
      */
     @Test
-    public void propagateNamespaces_preserveInherit() throws XMLDBException {
+    public void propagateNamespacesPreserveInherit() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "declare copy-namespaces preserve, inherit;\n" +
                 "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/>\n" +
@@ -1835,7 +1835,7 @@ public class XQUFBasicTest {
      * empty elements, then verify with following-sibling axis and predicate filter.
      */
     @Test
-    public void replaceValueEmptyElements_followingSiblingAxis() throws XMLDBException {
+    public void replaceValueEmptyElementsFollowingSiblingAxis() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $doc := parse-xml('" +
                 "<center mark=\"c0\">" +

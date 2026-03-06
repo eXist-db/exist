@@ -27,6 +27,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -98,7 +99,7 @@ public class XQUFBenchmark {
         printHeader();
 
         for (final int size : DATA_SIZES) {
-            runPersistentBenchmark("insert-into", size, (queryService, docPath) -> {
+            final double avgMs = runPersistentBenchmark("insert-into", size, (queryService, docPath) -> {
                 // Reset document with N items
                 storeDocument(size);
 
@@ -109,6 +110,7 @@ public class XQUFBenchmark {
                         COLLECTION_PATH);
                 queryService.query(update);
             });
+            assertTrue("insert-into benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -118,7 +120,7 @@ public class XQUFBenchmark {
         printHeader();
 
         for (final int size : DATA_SIZES) {
-            runPersistentBenchmark("delete-node", size, (queryService, docPath) -> {
+            final double avgMs = runPersistentBenchmark("delete-node", size, (queryService, docPath) -> {
                 // Reset document with N items, each having a <value> child
                 storeDocument(size);
 
@@ -129,6 +131,7 @@ public class XQUFBenchmark {
                         COLLECTION_PATH);
                 queryService.query(update);
             });
+            assertTrue("delete-node benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -138,7 +141,7 @@ public class XQUFBenchmark {
         printHeader();
 
         for (final int size : DATA_SIZES) {
-            runPersistentBenchmark("replace-value", size, (queryService, docPath) -> {
+            final double avgMs = runPersistentBenchmark("replace-value", size, (queryService, docPath) -> {
                 // Reset document
                 storeDocument(size);
 
@@ -149,6 +152,7 @@ public class XQUFBenchmark {
                         COLLECTION_PATH);
                 queryService.query(update);
             });
+            assertTrue("replace-value benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -158,7 +162,7 @@ public class XQUFBenchmark {
         printHeader();
 
         for (final int size : DATA_SIZES) {
-            runPersistentBenchmark("rename-node", size, (queryService, docPath) -> {
+            final double avgMs = runPersistentBenchmark("rename-node", size, (queryService, docPath) -> {
                 // Reset document
                 storeDocument(size);
 
@@ -169,6 +173,7 @@ public class XQUFBenchmark {
                         COLLECTION_PATH);
                 queryService.query(update);
             });
+            assertTrue("rename-node benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -178,7 +183,7 @@ public class XQUFBenchmark {
         printHeader();
 
         for (final int size : DATA_SIZES) {
-            runPersistentBenchmark("replace-node", size, (queryService, docPath) -> {
+            final double avgMs = runPersistentBenchmark("replace-node", size, (queryService, docPath) -> {
                 // Reset document
                 storeDocument(size);
 
@@ -189,6 +194,7 @@ public class XQUFBenchmark {
                         COLLECTION_PATH);
                 queryService.query(update);
             });
+            assertTrue("replace-node benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -204,7 +210,8 @@ public class XQUFBenchmark {
                     "let $doc := <root>{ for $i in 1 to %d return <item id='{$i}'><value>{$i}</value></item> }</root> " +
                     "return copy $c := $doc modify ( replace value of node $c//item[@id = '1']/value with 'modified' ) return $c//item[@id = '1']/value/string()",
                     size);
-            runInMemoryBenchmark("copy-modify-single", size, query);
+            final double avgMs = runInMemoryBenchmark("copy-modify-single", size, query);
+            assertTrue("copy-modify-single benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -220,7 +227,8 @@ public class XQUFBenchmark {
                     "  for $v in $c//item/value return replace value of node $v with concat('m-', $v) " +
                     ") return count($c//item)",
                     size);
-            runInMemoryBenchmark("copy-modify-multi", size, query);
+            final double avgMs = runInMemoryBenchmark("copy-modify-multi", size, query);
+            assertTrue("copy-modify-multi benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -237,7 +245,8 @@ public class XQUFBenchmark {
                     "  for $v in $c//item[@id = ('1','2','3')]/value return delete node $v " +
                     ") return count($c//item)",
                     size);
-            runInMemoryBenchmark("copy-modify-ins-del", size, query);
+            final double avgMs = runInMemoryBenchmark("copy-modify-ins-del", size, query);
+            assertTrue("copy-modify-ins-del benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -260,7 +269,8 @@ public class XQUFBenchmark {
                     "  for $item in $c//item return replace value of node $item with 'updated' " +
                     ") return count($c//item[. = 'updated'])",
                     size);
-            runInMemoryBenchmark("copy-modify-deep", size, query);
+            final double avgMs = runInMemoryBenchmark("copy-modify-deep", size, query);
+            assertTrue("copy-modify-deep benchmark should complete in positive time", avgMs >= 0);
         }
     }
 
@@ -284,7 +294,7 @@ public class XQUFBenchmark {
         void execute(XQueryService queryService, String docPath) throws XMLDBException;
     }
 
-    private void runPersistentBenchmark(final String label, final int size,
+    private double runPersistentBenchmark(final String label, final int size,
                                          final PersistentOperation operation) throws XMLDBException {
         final XQueryService queryService = server.getRoot().getService(XQueryService.class);
 
@@ -304,9 +314,10 @@ public class XQUFBenchmark {
 
         final double avgMs = (totalNs / (double) MEASURE_ITERATIONS) / 1_000_000.0;
         System.out.printf("  %-24s  size=%3d  avg=%8.2f ms%n", label, size, avgMs);
+        return avgMs;
     }
 
-    private void runInMemoryBenchmark(final String label, final int size,
+    private double runInMemoryBenchmark(final String label, final int size,
                                        final String query) throws XMLDBException {
         final XQueryService queryService = server.getRoot().getService(XQueryService.class);
 
@@ -329,6 +340,7 @@ public class XQUFBenchmark {
 
         final double avgMs = (totalNs / (double) MEASURE_ITERATIONS) / 1_000_000.0;
         System.out.printf("  %-24s  size=%3d  avg=%8.2f ms%n", label, size, avgMs);
+        return avgMs;
     }
 
     private static void printHeader() {

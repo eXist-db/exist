@@ -110,7 +110,7 @@ public class ConcurrentTransactionsTest {
         // Under W3C XQUF, updating a node in a deleted document raises
         // XUDY0027 (target is empty sequence), which is the correct behavior.
         try {
-            final Tuple2<Void, Void> result = biSchedule()
+            biSchedule()
                     .firstT1(getDocument(documentUri))
                                                             .andThenT2(getDocument(documentUri))
                     .andThenT1(deleteDocument())

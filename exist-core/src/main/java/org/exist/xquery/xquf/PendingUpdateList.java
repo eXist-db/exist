@@ -139,7 +139,7 @@ public class PendingUpdateList {
         Node current = node;
         // For attribute nodes, start from the owner element
         if (current.getNodeType() == Node.ATTRIBUTE_NODE) {
-            current = ((org.w3c.dom.Attr) current).getOwnerElement();
+            current = ((Attr) current).getOwnerElement();
             if (current == null) {
                 return false;
             }
@@ -641,9 +641,9 @@ public class PendingUpdateList {
                 for (final Map.Entry<String, String> e : map.entrySet()) {
                     nsBindings.putIfAbsent(e.getKey(), e.getValue());
                 }
-            } else if (current instanceof org.exist.dom.persistent.ElementImpl) {
-                final org.exist.dom.persistent.ElementImpl elemImpl =
-                        (org.exist.dom.persistent.ElementImpl) current;
+            } else if (current instanceof ElementImpl) {
+                final ElementImpl elemImpl =
+                        (ElementImpl) current;
                 if (elemImpl.declaresNamespacePrefixes()) {
                     for (final Iterator<String> iter = elemImpl.getPrefixes(); iter.hasNext(); ) {
                         final String p = iter.next();
@@ -791,14 +791,14 @@ public class PendingUpdateList {
                     continue;
                 }
             }
-            applyInMemoryInsert(context, p);
+            applyInMemoryInsert(p);
         }
         // Phase 1: renames and non-element replaceValues
         for (final UpdatePrimitive p : renames) {
-            applyInMemoryRename(context, p);
+            applyInMemoryRename(p);
         }
         for (final UpdatePrimitive p : replaceValues) {
-            applyInMemoryReplaceValue(context, p);
+            applyInMemoryReplaceValue(p);
         }
         // Phase 3: replaceNode — skip if the target's parent is targeted by
         // replaceElementContent (which will replace ALL children anyway)
@@ -806,14 +806,14 @@ public class PendingUpdateList {
             if (!replaceElementContentTargets.isEmpty()) {
                 final Node replTarget = p.getTargetNode();
                 final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
-                        ? ((org.w3c.dom.Attr) replTarget).getOwnerElement()
+                        ? ((Attr) replTarget).getOwnerElement()
                         : replTarget.getParentNode();
                 if (parent != null && parent.getNodeType() == Node.ELEMENT_NODE
                         && replaceElementContentTargets.contains(nodeKey(parent))) {
                     continue;
                 }
             }
-            applyInMemoryReplaceNode(context, p);
+            applyInMemoryReplaceNode(p);
         }
         // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
         // Apply in reverse document order to prevent cross-contamination when
@@ -826,18 +826,18 @@ public class PendingUpdateList {
             return Integer.compare(bNum, aNum);  // reverse order
         });
         for (final UpdatePrimitive p : replaceElementContents) {
-            applyInMemoryReplaceValue(context, p);
+            applyInMemoryReplaceValue(p);
         }
         // Phase 5: deletes in reverse document order
         for (int i = deletes.size() - 1; i >= 0; i--) {
-            applyInMemoryDelete(context, deletes.get(i));
+            applyInMemoryDelete(deletes.get(i));
         }
 
         // Per W3C XQuery Update Facility spec: after applying all updates,
         // merge adjacent text nodes and remove empty text nodes.
         // Collect all affected documents, tracking which had structural changes.
-        final java.util.Set<org.exist.dom.memtree.DocumentImpl> affectedDocs = new java.util.HashSet<>();
-        final java.util.Set<org.exist.dom.memtree.DocumentImpl> structurallyChanged = new java.util.HashSet<>();
+        final Set<org.exist.dom.memtree.DocumentImpl> affectedDocs = new HashSet<>();
+        final Set<org.exist.dom.memtree.DocumentImpl> structurallyChanged = new HashSet<>();
         for (final UpdatePrimitive p : prims) {
             final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
             final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
@@ -862,7 +862,7 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryInsert(final XQueryContext context, final UpdatePrimitive p) throws XPathException {
+    private void applyInMemoryInsert(final UpdatePrimitive p) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         final Sequence content = p.getContent();
@@ -956,7 +956,7 @@ public class PendingUpdateList {
         return node.getOwnerDocument();
     }
 
-    private void applyInMemoryRename(final XQueryContext context, final UpdatePrimitive p) throws XPathException {
+    private void applyInMemoryRename(final UpdatePrimitive p) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -967,7 +967,7 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryReplaceValue(final XQueryContext context, final UpdatePrimitive p) throws XPathException {
+    private void applyInMemoryReplaceValue(final UpdatePrimitive p) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         // Per W3C spec: atomize content, join with single space separator
@@ -984,7 +984,7 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryReplaceNode(final XQueryContext context, final UpdatePrimitive p) throws XPathException {
+    private void applyInMemoryReplaceNode(final UpdatePrimitive p) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
         if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
@@ -1003,7 +1003,7 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryDelete(final XQueryContext context, final UpdatePrimitive p) throws XPathException {
+    private void applyInMemoryDelete(final UpdatePrimitive p) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         if (target instanceof org.exist.dom.memtree.DocumentImpl) {
             // Per W3C spec, deleting a parentless node (document node) is a no-op
@@ -1098,6 +1098,8 @@ public class PendingUpdateList {
                         case PUT:
                             puts.add(p);
                             break;
+                        default:
+                            break;
                     }
                 }
 
@@ -1136,7 +1138,7 @@ public class PendingUpdateList {
                     if (!replaceElementContentTargets.isEmpty()) {
                         final Node replTarget = p.getTargetNode();
                         final Node parent = replTarget.getNodeType() == Node.ATTRIBUTE_NODE
-                                ? ((org.w3c.dom.Attr) replTarget).getOwnerElement()
+                                ? ((Attr) replTarget).getOwnerElement()
                                 : replTarget.getParentNode();
                         if (parent != null && parent.getNodeType() == Node.ELEMENT_NODE
                                 && replaceElementContentTargets.contains(nodeKey(parent))) {
@@ -1246,7 +1248,6 @@ public class PendingUpdateList {
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
         } catch (final Exception e) {
-            if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
         }
     }
@@ -1258,14 +1259,14 @@ public class PendingUpdateList {
         checkWritePermission(context, doc, p.getSourceExpression());
 
         try {
-            final org.exist.dom.persistent.NamedNode newNode;
+            final NamedNode newNode;
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE:
                     newNode = new ElementImpl(node.getExpression(), (ElementImpl) node);
                     break;
                 case Node.ATTRIBUTE_NODE:
-                    newNode = new org.exist.dom.persistent.AttrImpl(node.getExpression(),
-                            (org.exist.dom.persistent.AttrImpl) node);
+                    newNode = new AttrImpl(node.getExpression(),
+                            (AttrImpl) node);
                     break;
                 default:
                     throw new XPathException(p.getSourceExpression(), ErrorCodes.XUTY0012,
@@ -1280,8 +1281,9 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
         }
     }
@@ -1303,25 +1305,25 @@ public class PendingUpdateList {
                 case Node.ELEMENT_NODE: {
                     // Replace all children of element with a single text node
                     final NodeListImpl content = new NodeListImpl();
-                    content.add(new org.exist.dom.persistent.TextImpl(node.getExpression(), newValue));
+                    content.add(new TextImpl(node.getExpression(), newValue));
                     ((ElementImpl) node).update(transaction, content);
                     break;
                 }
                 case Node.TEXT_NODE: {
                     final ElementImpl parent = (ElementImpl) node.getParentNode();
-                    final org.exist.dom.persistent.TextImpl text =
-                            new org.exist.dom.persistent.TextImpl(node.getExpression(), newValue);
+                    final TextImpl text =
+                            new TextImpl(node.getExpression(), newValue);
                     text.setOwnerDocument(doc);
                     parent.updateChild(transaction, node, text);
                     break;
                 }
                 case Node.ATTRIBUTE_NODE: {
-                    final org.exist.dom.persistent.AttrImpl oldAttr =
-                            (org.exist.dom.persistent.AttrImpl) node;
+                    final AttrImpl oldAttr =
+                            (AttrImpl) node;
                     final ElementImpl parent = (ElementImpl) ((Attr) node).getOwnerElement();
                     if (parent != null) {
-                        final org.exist.dom.persistent.AttrImpl newAttr =
-                                new org.exist.dom.persistent.AttrImpl(node.getExpression(),
+                        final AttrImpl newAttr =
+                                new AttrImpl(node.getExpression(),
                                         oldAttr.getQName(), newValue, context.getBroker().getBrokerPool().getSymbols());
                         newAttr.setOwnerDocument(doc);
                         parent.updateChild(transaction, node, newAttr);
@@ -1330,8 +1332,8 @@ public class PendingUpdateList {
                 }
                 case Node.COMMENT_NODE: {
                     final Node parent = node.getParentNode();
-                    final org.exist.dom.persistent.CommentImpl newComment =
-                            new org.exist.dom.persistent.CommentImpl(node.getExpression(), newValue);
+                    final CommentImpl newComment =
+                            new CommentImpl(node.getExpression(), newValue);
                     if (parent instanceof ElementImpl parentElem) {
                         parentElem.updateChild(transaction, node, newComment);
                     } else if (parent instanceof DocumentImpl parentDoc) {
@@ -1342,8 +1344,8 @@ public class PendingUpdateList {
                 }
                 case Node.PROCESSING_INSTRUCTION_NODE: {
                     final Node parent = node.getParentNode();
-                    final org.exist.dom.persistent.ProcessingInstructionImpl newPI =
-                            new org.exist.dom.persistent.ProcessingInstructionImpl(
+                    final ProcessingInstructionImpl newPI =
+                            new ProcessingInstructionImpl(
                                     node.getExpression(), node.getNodeName(), newValue);
                     if (parent instanceof ElementImpl parentElem) {
                         parentElem.updateChild(transaction, node, newPI);
@@ -1360,8 +1362,9 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
         }
     }
@@ -1393,8 +1396,8 @@ public class PendingUpdateList {
                     break;
                 }
                 case Node.TEXT_NODE: {
-                    final org.exist.dom.persistent.TextImpl text =
-                            new org.exist.dom.persistent.TextImpl(node.getExpression(), contentSeq.getStringValue());
+                    final TextImpl text =
+                            new TextImpl(node.getExpression(), contentSeq.getStringValue());
                     ((ElementImpl) parent).updateChild(transaction, node, text);
                     break;
                 }
@@ -1422,8 +1425,9 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
         }
     }
@@ -1459,8 +1463,9 @@ public class PendingUpdateList {
 
             doc.setLastModified(System.currentTimeMillis());
             modifiedDocuments.add(doc);
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException xpe) { throw xpe; }
             throw new XPathException(p.getSourceExpression(), e.getMessage(), e);
         }
     }
@@ -1469,7 +1474,8 @@ public class PendingUpdateList {
                                      final UpdatePrimitive p) throws XPathException {
         // fn:put implementation - store a document at the given URI
         // TODO: implement fn:put for persistent storage
-        LOG.warn("fn:put is not yet fully implemented for persistent storage");
+        LOG.warn("fn:put is not yet fully implemented for persistent storage. Target: {}",
+                p.getTargetNode());
     }
 
     /**
@@ -1580,20 +1586,6 @@ public class PendingUpdateList {
             }
         }
         return nl;
-    }
-
-    private static org.exist.dom.persistent.AttrImpl createPersistentAttr(
-            final XQueryContext context, final Attr attr, final ElementImpl parent) throws XPathException {
-        try {
-            final QName attrName = new QName(attr.getLocalName(),
-                    attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
-                    attr.getPrefix() != null ? attr.getPrefix() : "");
-            return new org.exist.dom.persistent.AttrImpl(
-                    context.getRootExpression(), attrName, attr.getValue(),
-                    context.getBroker().getBrokerPool().getSymbols());
-        } catch (final Exception e) {
-            throw new XPathException(context.getRootExpression(), e.getMessage(), e);
-        }
     }
 
     private static void prepareTrigger(final DBBroker broker, final Int2ObjectMap<DocumentTrigger> triggers,
