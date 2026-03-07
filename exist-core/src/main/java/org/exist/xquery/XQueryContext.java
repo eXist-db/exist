@@ -1422,6 +1422,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param root the compiled expression tree root
      */
     public void collectLockTargets(final Expression root) {
+        if (root == null) {
+            return;
+        }
         final org.exist.xquery.lock.LockTargetCollector collector =
                 new org.exist.xquery.lock.LockTargetCollector();
         collector.collect(root);

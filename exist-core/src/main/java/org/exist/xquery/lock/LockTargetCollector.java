@@ -151,7 +151,10 @@ public class LockTargetCollector extends BasicExpressionVisitor {
 
     @Override
     public void visitFilteredExpr(final FilteredExpression filtered) {
-        filtered.getExpression().accept(this);
+        final Expression inner = filtered.getExpression();
+        if (inner != null) {
+            inner.accept(this);
+        }
         traverseSubExpressions(filtered);
     }
 
