@@ -306,7 +306,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                             !Type.subTypeOf(result.getItemType(), Type.NODE)) {
                         gotAtomicResult = true;
                     }
-                    if (hasSlash) {
+                    if (hasSlash && !result.isEmpty()
+                            && Type.subTypeOf(result.getItemType(), Type.NODE)) {
                         // remove duplicate nodes if this is a path
                         // expression with more than one step
                         result.removeDuplicates();

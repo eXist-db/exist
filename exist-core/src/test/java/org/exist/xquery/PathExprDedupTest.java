@@ -102,6 +102,38 @@ public class PathExprDedupTest {
     }
 
     /**
+     * XQTS K2-Axes-48: path expression ending with integer literal.
+     * Must not NPE when removeDuplicates is called on atomic results.
+     */
+    @Test
+    public void pathEndingWithIntegerLiteral() throws XMLDBException {
+        final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
+        final ResourceSet result = xqs.query(
+                "declare variable $myVar := <e/>;\n" +
+                "$myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/3");
+        assertEquals(6, (int) result.getSize());
+        for (int i = 0; i < 6; i++) {
+            assertEquals("3", result.getResource(i).getContent().toString());
+        }
+    }
+
+    /**
+     * XQTS K2-Axes-49: path expression ending with number() function.
+     * Must not NPE when removeDuplicates is called on atomic results.
+     */
+    @Test
+    public void pathEndingWithNumberFunction() throws XMLDBException {
+        final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
+        final ResourceSet result = xqs.query(
+                "declare variable $myVar := <e/>;\n" +
+                "$myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/number()");
+        assertEquals(6, (int) result.getSize());
+        for (int i = 0; i < 6; i++) {
+            assertEquals("NaN", result.getResource(i).getContent().toString());
+        }
+    }
+
+    /**
      * Path with axis step followed by function call — dedup should apply.
      */
     @Test
