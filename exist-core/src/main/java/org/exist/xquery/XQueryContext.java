@@ -390,6 +390,12 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private LockedDocumentMap protectedDocuments = null;
 
+    // --- Preclaiming lock targets (BaseX-style two-phase locking) ---
+    private Set<XmldbURI> preclaimDocumentTargets;
+    private Set<XmldbURI> preclaimCollectionTargets;
+    private boolean preclaimRequiresGlobalLock = false;
+    private final List<AutoCloseable> preclaimedLocks = new ArrayList<>();
+
     /**
      * The profiler instance used by this context.
      */
@@ -1407,6 +1413,87 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public boolean lockDocumentsOnLoad() {
         return false;
+    }
+
+    /**
+     * Collect lock targets from the compiled expression tree using
+     * a {@link org.exist.xquery.lock.LockTargetCollector}.
+     *
+     * @param root the compiled expression tree root
+     */
+    public void collectLockTargets(final Expression root) {
+        final org.exist.xquery.lock.LockTargetCollector collector =
+                new org.exist.xquery.lock.LockTargetCollector();
+        collector.collect(root);
+        this.preclaimDocumentTargets = collector.getDocumentTargets();
+        this.preclaimCollectionTargets = collector.getCollectionTargets();
+        this.preclaimRequiresGlobalLock = collector.requiresGlobalLock();
+    }
+
+    /**
+     * Returns true if lock targets have been collected and preclaiming
+     * should be performed before evaluation.
+     */
+    public boolean hasPreclaimTargets() {
+        return preclaimDocumentTargets != null &&
+                (preclaimRequiresGlobalLock ||
+                 !preclaimDocumentTargets.isEmpty() ||
+                 !preclaimCollectionTargets.isEmpty());
+    }
+
+    /**
+     * Acquire preclaimed locks on all collected document and collection
+     * targets. If static analysis could not determine all targets,
+     * acquires a global collection write lock on /db as a safe fallback.
+     *
+     * <p>Locks are acquired in a consistent order (TreeSet natural ordering)
+     * to prevent deadlocks.</p>
+     *
+     * @throws LockException if lock acquisition fails
+     */
+    public void preclaimLocks() throws LockException {
+        if (preclaimDocumentTargets == null) {
+            return;
+        }
+        final org.exist.storage.lock.LockManager lockManager =
+                getBroker().getBrokerPool().getLockManager();
+
+        if (preclaimRequiresGlobalLock) {
+            // Fall back to global collection write lock on /db
+            preclaimedLocks.add(lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI));
+        } else {
+            // Acquire collection write locks first (sorted order)
+            for (final XmldbURI collectionUri : preclaimCollectionTargets) {
+                preclaimedLocks.add(lockManager.acquireCollectionWriteLock(collectionUri));
+            }
+            // Then acquire document write locks (sorted order)
+            for (final XmldbURI docUri : preclaimDocumentTargets) {
+                preclaimedLocks.add(lockManager.acquireDocumentWriteLock(docUri));
+            }
+        }
+    }
+
+    /**
+     * Release all preclaimed locks. Should be called in a finally block
+     * after query evaluation completes.
+     */
+    public void releasePreclaimedLocks() {
+        // Release in reverse order of acquisition
+        for (int i = preclaimedLocks.size() - 1; i >= 0; i--) {
+            try {
+                preclaimedLocks.get(i).close();
+            } catch (final Exception e) {
+                LOG.warn("Error releasing preclaimed lock", e);
+            }
+        }
+        preclaimedLocks.clear();
+    }
+
+    /**
+     * Returns true if preclaimed locks are currently held.
+     */
+    public boolean hasPreclaimedLocks() {
+        return !preclaimedLocks.isEmpty();
     }
 
     @Override
