@@ -221,14 +221,14 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public Node getParentNode() {
-        int next = document.next[nodeNumber];
-        while (next > nodeNumber) {
-            next = document.next[next];
-        }
-        if (next < 0) {
+        if (nodeNumber == 0) {
             return null;
         }
-        final NodeImpl parent = document.getNode(next);
+        final int parentNum = document.getParentNodeFor(nodeNumber);
+        if (parentNum < 0) {
+            return null;
+        }
+        final NodeImpl parent = document.getNode(parentNum);
         if (parent.getNodeType() == DOCUMENT_NODE && !((DocumentImpl) parent).isExplicitlyCreated()) {
             /*
                 All nodes in the MemTree will return an Owner document due to how the MemTree is implemented,
@@ -246,17 +246,14 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         if(nodeNumber == 0) {
             return null;
         }
-        int next = document.next[nodeNumber];
-        while(next > nodeNumber) {
-            next = document.next[next];
-        }
-        if(next < 0) { //Is this even possible ?
+        final int parentNum = document.getParentNodeFor(nodeNumber);
+        if(parentNum < 0) {
             return null;
         }
-        if(next == 0) {
+        if(parentNum == 0) {
             return this.document.explicitlyCreated ? this.document : null;
         }
-        return document.getNode(next);
+        return document.getNode(parentNum);
     }
 
     @Override
@@ -271,6 +268,11 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         }
         return document == o.document && nodeNumber == o.nodeNumber &&
             getNodeType() == o.getNodeType();
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(document) * 31 + nodeNumber;
     }
 
     @Override
@@ -361,8 +363,23 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
 
     @Override
     public Node getNextSibling() {
-        final int nextNr = document.next[nodeNumber];
-        return nextNr < nodeNumber ? null : document.getNode(nextNr);
+        int nextNr = document.next[nodeNumber];
+        // Skip deleted nodes (nodeKind == -1) in the sibling chain
+        while (nextNr >= 0 && document.nodeKind[nextNr] == -1) {
+            nextNr = document.next[nextNr];
+        }
+        if (nextNr < 0) {
+            return null;
+        }
+        if (nextNr < nodeNumber) {
+            // Backwards reference: check tree level to distinguish sibling from parent.
+            // After in-memory mutations, siblings may be at lower positions than this node.
+            if (document.treeLevel[nextNr] == document.treeLevel[nodeNumber]) {
+                return document.getNode(nextNr);
+            }
+            return null;  // lower level = parent, no next sibling
+        }
+        return document.getNode(nextNr);
     }
 
     @Override
