@@ -1468,7 +1468,7 @@ public class XQUFBasicTest {
         try {
             existEmbeddedServer.executeQuery(query);
             fail("Expected XUDY0014");
-        } catch (final org.xmldb.api.base.XMLDBException e) {
+        } catch (final XMLDBException e) {
             assertTrue("Should raise XUDY0014", e.getMessage().contains("XUDY0014"));
         }
     }
