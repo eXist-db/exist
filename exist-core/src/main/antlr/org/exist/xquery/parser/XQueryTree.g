@@ -4021,6 +4021,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( updateAST:"update"
         {
+            context.markLegacyUpdate(updateAST);
+
             PathExpr p1 = new PathExpr(context);
             p1.setASTNode(updateExpr_AST_in);
 
@@ -4078,6 +4080,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( insertAST:"insert"
         {
+            context.markXQUFUpdate(insertAST);
+
             PathExpr sourceExpr = new PathExpr(context);
             sourceExpr.setASTNode(xqufInsertExpr_AST_in);
 
@@ -4115,6 +4119,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( deleteAST:"delete"
         {
+            context.markXQUFUpdate(deleteAST);
+
             PathExpr targetExpr = new PathExpr(context);
             targetExpr.setASTNode(xqufDeleteExpr_AST_in);
         }
@@ -4135,6 +4141,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( replaceAST:"replace"
         {
+            context.markXQUFUpdate(replaceAST);
+
             PathExpr targetExpr = new PathExpr(context);
             targetExpr.setASTNode(xqufReplaceExpr_AST_in);
 
@@ -4169,6 +4177,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( renameAST:"rename"
         {
+            context.markXQUFUpdate(renameAST);
+
             PathExpr targetExpr = new PathExpr(context);
             targetExpr.setASTNode(xqufRenameExpr_AST_in);
 
@@ -4193,6 +4203,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( copyAST:"copy"
         {
+            context.markXQUFUpdate(copyAST);
+
             java.util.List copyBindings = new java.util.ArrayList();
 
             PathExpr modifyExpr = new PathExpr(context);

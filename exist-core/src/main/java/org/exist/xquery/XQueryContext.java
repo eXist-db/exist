@@ -294,6 +294,18 @@ public class XQueryContext implements BinaryValueManager, Context {
     private org.exist.xquery.xquf.PendingUpdateList pendingUpdateList = new org.exist.xquery.xquf.PendingUpdateList();
 
     /**
+     * Tracks whether the current module uses the legacy eXist-db update syntax
+     * (update insert/delete/replace/rename/value). Set during tree walking.
+     */
+    private boolean hasLegacyUpdate = false;
+
+    /**
+     * Tracks whether the current module uses W3C XQuery Update Facility 3.0 syntax
+     * (insert node, delete node, replace node, etc.). Set during tree walking.
+     */
+    private boolean hasXQUFUpdate = false;
+
+    /**
      * A general-purpose map to set attributes in the current query context.
      */
     protected Map<String, Object> attributes = new HashMap<>();
@@ -1433,6 +1445,40 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.pendingUpdateList = pul;
     }
 
+    /**
+     * Mark that the current module uses the legacy eXist-db update syntax.
+     * Called during tree walking when a legacy update expression is encountered.
+     *
+     * @param ast the AST node for error reporting
+     * @throws XPathException if this module already uses W3C XQUF syntax
+     */
+    public void markLegacyUpdate(final org.exist.xquery.parser.XQueryAST ast) throws XPathException {
+        if (hasXQUFUpdate) {
+            throw new XPathException(ast, ErrorCodes.XPST0003,
+                    "Cannot mix legacy 'update' syntax with W3C XQuery Update Facility expressions " +
+                    "in the same module. Migrate all updates to W3C syntax " +
+                    "(insert node, delete node, replace node, replace value of node, rename node).");
+        }
+        hasLegacyUpdate = true;
+    }
+
+    /**
+     * Mark that the current module uses W3C XQuery Update Facility 3.0 syntax.
+     * Called during tree walking when a XQUF expression is encountered.
+     *
+     * @param ast the AST node for error reporting
+     * @throws XPathException if this module already uses legacy update syntax
+     */
+    public void markXQUFUpdate(final org.exist.xquery.parser.XQueryAST ast) throws XPathException {
+        if (hasLegacyUpdate) {
+            throw new XPathException(ast, ErrorCodes.XPST0003,
+                    "Cannot mix W3C XQuery Update Facility expressions with legacy 'update' syntax " +
+                    "in the same module. Migrate all updates to W3C syntax " +
+                    "(insert node, delete node, replace node, replace value of node, rename node).");
+        }
+        hasXQUFUpdate = true;
+    }
+
     @Override
     public void reset() {
         reset(false);
@@ -1468,6 +1514,10 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         // Reset the W3C XQuery Update Facility PUL
         pendingUpdateList = new org.exist.xquery.xquf.PendingUpdateList();
+
+        // Reset update syntax tracking flags
+        hasLegacyUpdate = false;
+        hasXQUFUpdate = false;
 
         calendar = null;
         implicitTimeZone = null;
