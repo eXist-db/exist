@@ -49,6 +49,8 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -143,6 +145,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     protected int nextReferenceIdx = 0;
     // end reference nodes
 
+
+    // Override for first-child lookup after in-memory mutations.
+    // Maps parent node number -> first child node number when the first child
+    // is no longer at the positional (parent + 1) slot due to insertions.
+    private Map<Integer, Integer> firstChildOverride = null;
 
     protected XQueryContext context;
     protected final boolean explicitlyCreated;
@@ -605,41 +612,99 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     public int getChildCountFor(final int nr) {
         int count = 0;
+        final short childLevel = (short) (treeLevel[nr] + 1);
         int nextNode = getFirstChildFor(nr);
-        while(nextNode > nr) {
-            ++count;
-            nextNode = next[nextNode];
+        int steps = 0;
+        while (nextNode >= 0 && steps < size) {
+            if (nodeKind[nextNode] != -1 && treeLevel[nextNode] == childLevel) {
+                ++count;
+            }
+            final int following = getNextSiblingFor(nextNode);
+            if (following < 0) {
+                break;
+            }
+            nextNode = following;
+            steps++;
         }
         return count;
     }
 
     public int getFirstChildFor(final int nodeNumber) {
+        // Check for override from in-memory mutations (e.g. insert as first)
+        if (firstChildOverride != null) {
+            final Integer override = firstChildOverride.get(nodeNumber);
+            if (override != null) {
+                return override;
+            }
+        }
+
         if (nodeNumber == 0) {
             // optimisation for document-node
             if (size > 1) {
-                return 1;
+                // skip soft-deleted nodes, but remember first deleted child
+                int n = 1;
+                int firstDeleted = -1;
+                while (n < size && nodeKind[n] == -1) {
+                    if (firstDeleted < 0) {
+                        firstDeleted = n;
+                    }
+                    n++;
+                }
+                return n < size ? n : firstDeleted;
             } else {
                 return -1;
             }
         }
 
         final short level = treeLevel[nodeNumber];
-        final int nextNode = nodeNumber + 1;
-        if((nextNode < size) && (treeLevel[nextNode] > level)) {
-            return nextNode;
+        int nextNode = nodeNumber + 1;
+        int firstDeletedChild = -1;
+        // Scan positional children (nodes immediately after parent in the array at a deeper level)
+        while (nextNode < size && treeLevel[nextNode] > level) {
+            if (nodeKind[nextNode] != -1) {
+                return nextNode;  // found a non-deleted child
+            }
+            if (firstDeletedChild < 0) {
+                firstDeletedChild = nextNode;
+            }
+            nextNode++;
         }
-        return -1;
+        // No non-deleted positional child found. Return the first deleted child
+        // so callers can follow the next[] chain to find children that were
+        // appended beyond the positional range via insertChildren().
+        return firstDeletedChild;
     }
 
     public int getNextSiblingFor(final int nodeNumber) {
         final int nextNr = next[nodeNumber];
-        return nextNr < nodeNumber ? -1 : nextNr;
+        if (nextNr < 0) {
+            return -1;
+        }
+        if (nextNr < nodeNumber) {
+            // Backwards reference: after in-memory mutations, siblings may be at
+            // lower positions. Check tree level to distinguish sibling from parent.
+            if (treeLevel[nextNr] == treeLevel[nodeNumber]) {
+                return nextNr;
+            }
+            return -1;  // lower level = parent pointer, no next sibling
+        }
+        return nextNr;
     }
 
     public int getParentNodeFor(final int nodeNumber) {
+        if (nodeNumber == 0) {
+            return -1;
+        }
+        final short level = treeLevel[nodeNumber];
         int nextNode = next[nodeNumber];
-        while(nextNode > nodeNumber) {
+        int steps = 0;
+        while (nextNode >= 0 && steps < size) {
+            if (treeLevel[nextNode] < level) {
+                return nextNode;  // found a node at a lower level = parent
+            }
+            // same or higher level — keep walking the chain
             nextNode = next[nextNode];
+            steps++;
         }
         return nextNode;
     }
@@ -1634,5 +1699,960 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         throw unsupported();
+    }
+
+    // === W3C XQuery Update Facility 3.0 - In-memory mutation methods ===
+
+    /**
+     * Rename a node in this document.
+     *
+     * @param nodeNum the node number to rename
+     * @param newName the new QName
+     */
+    public void renameNode(final int nodeNum, final QName newName) {
+        final short kind = nodeKind[nodeNum];
+        switch (kind) {
+            case Node.ELEMENT_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                nodeName[nodeNum] = namePool.getSharedName(newName);
+                break;
+            default:
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                        "Cannot rename node of type " + kind);
+        }
+    }
+
+    /**
+     * Rename an attribute node. The attrNum parameter is an index into the
+     * attribute arrays (attrName, attrValue, etc.), NOT the main node arrays.
+     *
+     * @param attrNum the attribute index
+     * @param newName the new QName
+     */
+    public void renameAttribute(final int attrNum, final QName newName) {
+        attrName[attrNum] = namePool.getSharedName(newName);
+    }
+
+    /**
+     * Replace the string value of a node.
+     *
+     * @param nodeNum the node number
+     * @param value the new string value
+     */
+    public void replaceValue(final int nodeNum, final String value) {
+        final short kind = nodeKind[nodeNum];
+        switch (kind) {
+            case Node.TEXT_NODE:
+            case Node.COMMENT_NODE:
+            case Node.CDATA_SECTION_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE: {
+                // Replace the character content
+                final char[] chars = value.toCharArray();
+                if (characters == null) {
+                    characters = new char[chars.length > CHAR_BUF_SIZE ? chars.length : CHAR_BUF_SIZE];
+                } else if ((nextChar + chars.length) >= characters.length) {
+                    int newLen = (characters.length * 3) / 2;
+                    if (newLen < (nextChar + chars.length)) {
+                        newLen = nextChar + chars.length;
+                    }
+                    final char[] nc = new char[newLen];
+                    System.arraycopy(characters, 0, nc, 0, characters.length);
+                    characters = nc;
+                }
+                alpha[nodeNum] = nextChar;
+                alphaLen[nodeNum] = chars.length;
+                System.arraycopy(chars, 0, characters, nextChar, chars.length);
+                nextChar += chars.length;
+                break;
+            }
+            case Node.ELEMENT_NODE: {
+                // W3C replaceElementContent: replace all children with a single text node.
+                // We must be careful to only modify THIS element's children, not nodes
+                // belonging to sibling elements that happen to be adjacent in the array.
+                final short childLevel = (short) (treeLevel[nodeNum] + 1);
+
+                // Determine the boundary of this element's positional subtree.
+                // Only nodes at positions nodeNum+1..subtreeEnd (where subtreeEnd is the
+                // first position at the same or lower level) are this element's children.
+                int subtreeEnd = nodeNum + 1;
+                while (subtreeEnd < size && treeLevel[subtreeEnd] > treeLevel[nodeNum]) {
+                    subtreeEnd++;
+                }
+
+                // Find and modify/create a text child within the positional range
+                int firstTextChild = -1;
+                for (int c = nodeNum + 1; c < subtreeEnd; c++) {
+                    if (firstTextChild == -1 && treeLevel[c] == childLevel
+                            && nodeKind[c] == Node.TEXT_NODE) {
+                        firstTextChild = c;
+                    } else if (c != firstTextChild) {
+                        nodeKind[c] = -1;  // delete other children
+                    }
+                }
+
+                // Also delete any chain-linked children (from previous insertions)
+                if (firstChildOverride != null && firstChildOverride.containsKey(nodeNum)) {
+                    int chainChild = firstChildOverride.get(nodeNum);
+                    while (chainChild >= 0 && chainChild != nodeNum) {
+                        if (chainChild >= subtreeEnd && nodeKind[chainChild] != -1) {
+                            nodeKind[chainChild] = -1;  // delete appended children
+                        }
+                        final int nx = next[chainChild];
+                        if (nx < 0 || nx == nodeNum) break;
+                        chainChild = nx;
+                    }
+                    firstChildOverride.remove(nodeNum);
+                }
+
+                if (firstTextChild >= 0) {
+                    // Modify existing text child in place
+                    final char[] chars = value.toCharArray();
+                    if ((nextChar + chars.length) >= characters.length) {
+                        int newLen = (characters.length * 3) / 2;
+                        if (newLen < (nextChar + chars.length)) {
+                            newLen = nextChar + chars.length;
+                        }
+                        final char[] nc = new char[newLen];
+                        System.arraycopy(characters, 0, nc, 0, characters.length);
+                        characters = nc;
+                    }
+                    alpha[firstTextChild] = nextChar;
+                    alphaLen[firstTextChild] = chars.length;
+                    System.arraycopy(chars, 0, characters, nextChar, chars.length);
+                    nextChar += chars.length;
+                } else if (nodeNum + 1 < subtreeEnd) {
+                    // No text child but has positional children — convert first to text
+                    final int firstChild = nodeNum + 1;
+                    nodeKind[firstChild] = Node.TEXT_NODE;
+                    nodeName[firstChild] = null;
+                    final char[] chars = value.toCharArray();
+                    if ((nextChar + chars.length) >= characters.length) {
+                        int newLen = (characters.length * 3) / 2;
+                        if (newLen < (nextChar + chars.length)) {
+                            newLen = nextChar + chars.length;
+                        }
+                        final char[] nc = new char[newLen];
+                        System.arraycopy(characters, 0, nc, 0, characters.length);
+                        characters = nc;
+                    }
+                    alpha[firstChild] = nextChar;
+                    alphaLen[firstChild] = chars.length;
+                    System.arraycopy(chars, 0, characters, nextChar, chars.length);
+                    nextChar += chars.length;
+                    // Mark remaining positional children as deleted
+                    for (int c = firstChild + 1; c < subtreeEnd; c++) {
+                        nodeKind[c] = -1;
+                    }
+                } else if (value != null && !value.isEmpty()) {
+                    // Element has no positional children — insert via insertChildren
+                    try {
+                        final org.exist.xquery.value.StringValue textVal =
+                                new org.exist.xquery.value.StringValue(value);
+                        insertChildren(nodeNum, textVal, true);
+                    } catch (final org.exist.xquery.XPathException e) {
+                        throw new DOMException(DOMException.INVALID_STATE_ERR,
+                                "Failed to insert text child: " + e.getMessage());
+                    }
+                }
+                break;
+            }
+            default:
+                throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
+                        "Cannot replace value of node of type " + kind);
+        }
+    }
+
+    /**
+     * Replace the value of an attribute node. The attrNum parameter is an index
+     * into the attribute arrays (attrName, attrValue, etc.), NOT the main node arrays.
+     *
+     * @param attrNum the attribute index
+     * @param value the new value
+     */
+    public void replaceAttributeValue(final int attrNum, final String value) {
+        attrValue[attrNum] = value;
+    }
+
+    /**
+     * Remove an attribute from this document.
+     * Compacts the attribute arrays by shifting subsequent entries down.
+     * Also updates the alpha[] pointers for elements whose first attribute
+     * index is affected.
+     *
+     * @param attrNum the attribute index to remove
+     */
+    public void removeAttribute(final int attrNum) {
+        if (attrNum < 0 || attrNum >= nextAttr) {
+            return;
+        }
+
+        // Shift all attribute arrays down by one
+        final int remaining = nextAttr - attrNum - 1;
+        if (remaining > 0) {
+            System.arraycopy(attrName, attrNum + 1, attrName, attrNum, remaining);
+            System.arraycopy(attrNodeId, attrNum + 1, attrNodeId, attrNum, remaining);
+            System.arraycopy(attrParent, attrNum + 1, attrParent, attrNum, remaining);
+            System.arraycopy(attrValue, attrNum + 1, attrValue, attrNum, remaining);
+            System.arraycopy(attrType, attrNum + 1, attrType, attrNum, remaining);
+        }
+        nextAttr--;
+
+        // Update alpha[] pointers: alpha[nodeNum] stores the first attribute index
+        // for each element. If the removed attribute index is <= the element's
+        // first attribute, we need to adjust.
+        for (int i = 0; i < size; i++) {
+            if (nodeKind[i] == Node.ELEMENT_NODE && alpha[i] >= 0) {
+                if (alpha[i] > attrNum) {
+                    alpha[i]--;
+                } else if (alpha[i] == attrNum) {
+                    // Check if this element still has attributes
+                    if (attrNum < nextAttr && attrParent[attrNum] == i) {
+                        // Still has attributes at the same index (shifted down)
+                    } else {
+                        alpha[i] = -1; // No more attributes for this element
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Find any node whose next[] pointer targets the given node.
+     * After in-memory mutations, predecessors may be at any array position,
+     * so we must scan all nodes, not just those before targetNodeNum.
+     *
+     * @param targetNodeNum the node to find a predecessor for
+     * @return the predecessor node number, or -1 if not found
+     */
+    private int findPredecessor(final int targetNodeNum) {
+        final short targetLevel = treeLevel[targetNodeNum];
+        // Search backward first (most common case for unmutated trees)
+        for (int i = targetNodeNum - 1; i >= 0; i--) {
+            if (next[i] == targetNodeNum && nodeKind[i] != -1 && treeLevel[i] == targetLevel) {
+                return i;
+            }
+        }
+        // Search forward (for nodes inserted after targetNodeNum in array order)
+        for (int i = targetNodeNum + 1; i < size; i++) {
+            if (next[i] == targetNodeNum && nodeKind[i] != -1 && treeLevel[i] == targetLevel) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Remove a node from this document.
+     * This is a soft-delete: the node's kind is set to -1 to mark it as deleted.
+     * This is sufficient for the copy-modify pattern where the document is
+     * consumed once and not reused.
+     *
+     * @param nodeNum the node number to remove
+     */
+    public void removeNode(final int nodeNum) {
+        if (nodeNum <= 0 || nodeNum >= size) {
+            return;
+        }
+
+        // Find the parent and re-stitch the next[] chain to skip this node
+        final int origNext = next[nodeNum];
+        final short level = treeLevel[nodeNum];
+
+        // Find the previous node that points to nodeNum
+        final int prev = findPredecessor(nodeNum);
+
+        if (prev >= 0) {
+            // Find the next node after this node's subtree in the sibling chain.
+            // Walk the next[] chain from nodeNum to find the first node that's
+            // at the same or lower level (a sibling or the parent).
+            int chainNode = origNext;
+            int steps = 0;
+            while (chainNode >= 0 && steps < size) {
+                if (nodeKind[chainNode] == -1) {
+                    // skip deleted nodes in chain
+                    chainNode = next[chainNode];
+                    steps++;
+                    continue;
+                }
+                if (treeLevel[chainNode] <= level) {
+                    // Found a sibling or parent
+                    break;
+                }
+                chainNode = next[chainNode];
+                steps++;
+            }
+            next[prev] = chainNode >= 0 ? chainNode : origNext;
+        }
+
+        // Mark the node and its subtree as deleted
+        final short nodeLevel = treeLevel[nodeNum];
+        nodeKind[nodeNum] = -1;
+        for (int i = nodeNum + 1; i < size && treeLevel[i] > nodeLevel; i++) {
+            nodeKind[i] = -1;
+        }
+    }
+
+    /**
+     * Merge adjacent text nodes throughout the document.
+     * Per the W3C XQuery Update Facility spec, after applying updates,
+     * adjacent text nodes among children of any element or document node
+     * must be merged. Empty text nodes are removed.
+     *
+     * This walks all non-deleted nodes and for each parent (document or element),
+     * finds runs of consecutive text node children and merges them.
+     */
+    public void mergeAdjacentTextNodes() {
+        // Walk the document looking for parent nodes (document or element)
+        for (int parent = 0; parent < size; parent++) {
+            if (nodeKind[parent] == -1) {
+                continue;
+            }
+            if (nodeKind[parent] != Node.DOCUMENT_NODE && nodeKind[parent] != Node.ELEMENT_NODE) {
+                continue;
+            }
+
+            // Iterate through children of this parent using the next[] chain
+            final short childLevel = (short) (treeLevel[parent] + 1);
+            int child = getFirstChildFor(parent);
+            if (child < 0) {
+                continue;
+            }
+
+            int prevTextNode = -1;
+            while (child >= 0 && child < size && treeLevel[child] >= childLevel) {
+                if (nodeKind[child] == -1) {
+                    // Skip deleted nodes — follow next[] chain
+                    child = next[child];
+                    if (child <= parent) break;
+                    continue;
+                }
+                if (treeLevel[child] > childLevel) {
+                    // Descendant, not direct child — skip
+                    child = next[child];
+                    if (child <= parent) break;
+                    continue;
+                }
+
+                // Direct child at childLevel
+                if (nodeKind[child] == Node.TEXT_NODE) {
+                    if (prevTextNode >= 0) {
+                        // Merge this text node into prevTextNode
+                        final String prevText = new String(characters, alpha[prevTextNode], alphaLen[prevTextNode]);
+                        final String thisText = new String(characters, alpha[child], alphaLen[child]);
+                        final String merged = prevText + thisText;
+
+                        // Store merged text in prevTextNode
+                        final char[] chars = merged.toCharArray();
+                        if ((nextChar + chars.length) >= characters.length) {
+                            int newLen = (characters.length * 3) / 2;
+                            if (newLen < (nextChar + chars.length)) {
+                                newLen = nextChar + chars.length;
+                            }
+                            final char[] nc = new char[newLen];
+                            System.arraycopy(characters, 0, nc, 0, characters.length);
+                            characters = nc;
+                        }
+                        alpha[prevTextNode] = nextChar;
+                        alphaLen[prevTextNode] = chars.length;
+                        System.arraycopy(chars, 0, characters, nextChar, chars.length);
+                        nextChar += chars.length;
+
+                        // Soft-delete the merged text node and restitch
+                        removeNode(child);
+
+                        // Continue from prevTextNode's next (don't advance prevTextNode)
+                        child = next[prevTextNode];
+                        if (child <= parent) break;
+                    } else {
+                        // Check for empty text nodes
+                        if (alphaLen[child] == 0) {
+                            final int nextChild = next[child];
+                            removeNode(child);
+                            child = nextChild;
+                            if (child <= parent) break;
+                        } else {
+                            prevTextNode = child;
+                            child = next[child];
+                            if (child <= parent) break;
+                        }
+                    }
+                } else {
+                    prevTextNode = -1;
+                    child = next[child];
+                    if (child <= parent) break;
+                }
+            }
+        }
+
+        // Invalidate cached node IDs since the structure changed
+        if (nodeId != null) {
+            nodeId[0] = null;
+        }
+    }
+
+    /**
+     * Insert children into an element node.
+     * Uses the serialization rebuild approach for correctness.
+     *
+     * @param parentNodeNum the node number of the parent element
+     * @param content the content to insert
+     * @param asFirst if true, insert as first children; if false, as last
+     * @throws XPathException if the content cannot be processed
+     */
+    public void insertChildren(final int parentNodeNum, final Sequence content, final boolean asFirst)
+            throws XPathException {
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+
+        final short childLevel = (short) (treeLevel[parentNodeNum] + 1);
+
+        if (asFirst) {
+            // Insert as first children: find the current first child and link new nodes before it
+            final int firstChild = getFirstChildFor(parentNodeNum);
+
+            int lastInserted = -1;
+            int firstInserted = -1;
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
+                for (final int newNodeNum : inserted) {
+                    if (firstInserted == -1) {
+                        firstInserted = newNodeNum;
+                    }
+                    if (lastInserted >= 0) {
+                        next[lastInserted] = newNodeNum;
+                    }
+                    lastInserted = newNodeNum;
+                }
+            }
+            // Link last inserted to the old first child (or parent if no children)
+            if (lastInserted >= 0) {
+                next[lastInserted] = firstChild >= 0 ? firstChild : parentNodeNum;
+            }
+            // Override the first-child lookup so navigation finds the new nodes first
+            if (firstInserted >= 0) {
+                if (firstChildOverride == null) {
+                    firstChildOverride = new HashMap<>();
+                }
+                firstChildOverride.put(parentNodeNum, firstInserted);
+            }
+        } else {
+            // Insert as last children: find the last child and link after it
+            // Walk the sibling chain from first child to find the last one
+            int lastChild = -1;
+            final int firstChild = getFirstChildFor(parentNodeNum);
+            if (firstChild >= 0) {
+                lastChild = firstChild;
+                int nextSib = getNextSiblingFor(lastChild);
+                while (nextSib >= 0) {
+                    lastChild = nextSib;
+                    nextSib = getNextSiblingFor(lastChild);
+                }
+            }
+
+            int firstInsertedAsLast = -1;
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNodeNum, childLevel);
+                for (final int newNodeNum : inserted) {
+                    if (firstInsertedAsLast == -1) {
+                        firstInsertedAsLast = newNodeNum;
+                    }
+                    if (lastChild >= 0) {
+                        next[lastChild] = newNodeNum;
+                    }
+                    lastChild = newNodeNum;
+                }
+            }
+            // If the parent had no visible children, the appended nodes are beyond
+            // the positional scan range. Set firstChildOverride so they can be found.
+            if (firstChild < 0 && firstInsertedAsLast >= 0) {
+                if (firstChildOverride == null) {
+                    firstChildOverride = new HashMap<>();
+                }
+                firstChildOverride.put(parentNodeNum, firstInsertedAsLast);
+            }
+        }
+    }
+
+    /**
+     * Insert sibling nodes before or after a reference node.
+     *
+     * @param refNodeNum the reference node number
+     * @param content the content to insert
+     * @param before if true, insert before; if false, insert after
+     * @throws XPathException if the content cannot be processed
+     */
+    public void insertSiblings(final int refNodeNum, final Sequence content, final boolean before)
+            throws XPathException {
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+
+        final short level = treeLevel[refNodeNum];
+        // Find the parent using level-aware parent finding
+        final int parentNum = getParentNodeFor(refNodeNum);
+        if (parentNum < 0) {
+            // Cannot insert siblings of the document node (no parent)
+            return;
+        }
+
+        if (before) {
+            // Insert before: find the node whose next[] points to refNodeNum and re-link
+            final int prevNode = findPredecessor(refNodeNum);
+
+            int lastInserted = -1;
+            int firstInserted = -1;
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
+                for (final int newNodeNum : inserted) {
+                    if (firstInserted == -1) {
+                        firstInserted = newNodeNum;
+                    }
+                    if (prevNode >= 0 && lastInserted == -1) {
+                        next[prevNode] = newNodeNum;
+                    }
+                    if (lastInserted >= 0) {
+                        next[lastInserted] = newNodeNum;
+                    }
+                    lastInserted = newNodeNum;
+                }
+            }
+            // Link last inserted to refNode
+            if (lastInserted >= 0) {
+                next[lastInserted] = refNodeNum;
+            }
+            // If no predecessor found, refNode was the first child (found positionally).
+            // Set override so navigation finds the new nodes first.
+            if (prevNode < 0 && firstInserted >= 0 && parentNum >= 0) {
+                if (firstChildOverride == null) {
+                    firstChildOverride = new HashMap<>();
+                }
+                firstChildOverride.put(parentNum, firstInserted);
+            }
+        } else {
+            // Insert after: link new nodes after refNode
+            final int origNext = next[refNodeNum];
+            int lastInserted = refNodeNum;
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> inserted = copyItemIntoDocument(item, parentNum, level);
+                for (final int newNodeNum : inserted) {
+                    next[lastInserted] = newNodeNum;
+                    lastInserted = newNodeNum;
+                }
+            }
+            // Last inserted points to where refNode originally pointed
+            if (lastInserted != refNodeNum) {
+                next[lastInserted] = origNext;
+            }
+        }
+    }
+
+    /**
+     * Insert attributes into an element.
+     *
+     * @param elementNodeNum the element node number
+     * @param content the attribute nodes to insert
+     * @throws XPathException if the content cannot be processed
+     */
+    public void insertAttributes(final int elementNodeNum, final Sequence content) throws XPathException {
+        insertAttributes(elementNodeNum, content, true);
+    }
+
+    /**
+     * Insert attributes into an element.
+     *
+     * @param elementNodeNum the target element's node number
+     * @param content the attributes to insert
+     * @param replaceExisting if true, replace existing attributes with the same name;
+     *                        if false, always add as new attributes (for PUL application
+     *                        where a DELETE may separately remove the original)
+     */
+    public void insertAttributes(final int elementNodeNum, final Sequence content,
+                                  final boolean replaceExisting) throws XPathException {
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+
+        // Collect new attributes to insert
+        final java.util.List<Object[]> newAttrs = new java.util.ArrayList<>();
+        for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+            final org.exist.xquery.value.Item item = i.nextItem();
+            if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
+                final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
+                if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                    final Attr attr = (Attr) node;
+                    final QName qname = new QName(
+                            attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
+                            attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
+                            attr.getPrefix() != null ? attr.getPrefix() : "");
+                    newAttrs.add(new Object[]{qname, attr.getValue()});
+                }
+            }
+        }
+
+        if (newAttrs.isEmpty()) {
+            return;
+        }
+
+        // Check for duplicates and replace existing values (only when not in PUL mode)
+        if (replaceExisting) {
+            final java.util.Iterator<Object[]> it = newAttrs.iterator();
+            while (it.hasNext()) {
+                final Object[] entry = it.next();
+                final QName qname = (QName) entry[0];
+                final String value = (String) entry[1];
+                if (alpha[elementNodeNum] >= 0) {
+                    int a = alpha[elementNodeNum];
+                    while (a < nextAttr && attrParent[a] == elementNodeNum) {
+                        if (attrName[a].equals(qname)) {
+                            // Replace existing attribute value
+                            attrValue[a] = value;
+                            it.remove();
+                            break;
+                        }
+                        a++;
+                    }
+                }
+            }
+        }
+
+        if (newAttrs.isEmpty()) {
+            return;
+        }
+
+        final int count = newAttrs.size();
+
+        // Find insertion point: right after the last contiguous attribute of this element
+        int insertPos;
+        if (alpha[elementNodeNum] >= 0) {
+            insertPos = alpha[elementNodeNum];
+            while (insertPos < nextAttr && attrParent[insertPos] == elementNodeNum) {
+                insertPos++;
+            }
+        } else {
+            // Element has no attrs yet — insert at nextAttr (already contiguous)
+            insertPos = nextAttr;
+        }
+
+        // Ensure capacity
+        while (nextAttr + count > attrName.length) {
+            growAttributes();
+        }
+
+        // Shift everything from insertPos onwards to make room
+        if (insertPos < nextAttr) {
+            System.arraycopy(attrParent, insertPos, attrParent, insertPos + count, nextAttr - insertPos);
+            System.arraycopy(attrName, insertPos, attrName, insertPos + count, nextAttr - insertPos);
+            System.arraycopy(attrValue, insertPos, attrValue, insertPos + count, nextAttr - insertPos);
+            System.arraycopy(attrType, insertPos, attrType, insertPos + count, nextAttr - insertPos);
+
+            // Update alpha pointers for elements whose attrs shifted
+            for (int n = 0; n < size; n++) {
+                if (nodeKind[n] == Node.ELEMENT_NODE && alpha[n] >= insertPos && n != elementNodeNum) {
+                    alpha[n] += count;
+                }
+            }
+        }
+
+        // Insert new attributes at the contiguous position
+        for (int j = 0; j < count; j++) {
+            final Object[] entry = newAttrs.get(j);
+            final QName qname = (QName) entry[0];
+            final String value = (String) entry[1];
+            final QName attrQname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
+            attrParent[insertPos + j] = elementNodeNum;
+            this.attrName[insertPos + j] = namePool.getSharedName(attrQname);
+            attrValue[insertPos + j] = value;
+            attrType[insertPos + j] = AttrImpl.ATTR_CDATA_TYPE;
+        }
+
+        // Set alpha if element didn't have attrs before
+        if (alpha[elementNodeNum] < 0) {
+            alpha[elementNodeNum] = insertPos;
+        }
+
+        nextAttr += count;
+    }
+
+    /**
+     * Replace a node with new content.
+     *
+     * @param nodeNum the node number to replace
+     * @param content the replacement content
+     * @throws XPathException if the content cannot be processed
+     */
+    public void replaceNode(final int nodeNum, final Sequence content) throws XPathException {
+        if (content == null || content.isEmpty()) {
+            removeNode(nodeNum);
+            return;
+        }
+
+        final short level = treeLevel[nodeNum];
+        final int parentNum = getParentNodeFor(nodeNum);
+
+        // Find the predecessor that points to nodeNum
+        final int prev = findPredecessor(nodeNum);
+
+        // Find the next node after nodeNum's subtree (the node nodeNum's chain leads to
+        // at the same or lower level)
+        int afterNode = next[nodeNum];
+        int steps = 0;
+        while (afterNode >= 0 && steps < size) {
+            if (nodeKind[afterNode] != -1 && treeLevel[afterNode] <= level) {
+                break;
+            }
+            afterNode = next[afterNode];
+            steps++;
+        }
+
+        // Copy new content nodes and link them into the chain.
+        // Uses copyItemIntoDocument to handle document nodes and atomic values.
+        int firstNew = -1;
+        int lastNew = -1;
+        try {
+            for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
+                final org.exist.xquery.value.Item item = i.nextItem();
+                final java.util.List<Integer> newNodes = copyItemIntoDocument(item, parentNum, level);
+                for (final int newNodeNum : newNodes) {
+                    if (firstNew == -1) {
+                        firstNew = newNodeNum;
+                    }
+                    if (lastNew >= 0) {
+                        next[lastNew] = newNodeNum;
+                    }
+                    lastNew = newNodeNum;
+                }
+            }
+        } catch (final org.exist.xquery.XPathException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
+        }
+
+        // Link new nodes into the chain
+        if (prev >= 0 && firstNew >= 0) {
+            next[prev] = firstNew;
+        } else if (prev < 0 && firstNew >= 0 && parentNum >= 0) {
+            // No same-level predecessor: the replaced node was the first child.
+            // Set firstChildOverride so getFirstChildFor() can find the new nodes
+            // (they're appended at the end of the array, beyond positional scan).
+            if (firstChildOverride == null) {
+                firstChildOverride = new HashMap<>();
+            }
+            firstChildOverride.put(parentNum, firstNew);
+        }
+        if (lastNew >= 0) {
+            next[lastNew] = afterNode >= 0 ? afterNode : parentNum;
+        }
+
+        // Soft-delete the original node and its subtree
+        final short nodeLevel = treeLevel[nodeNum];
+        nodeKind[nodeNum] = -1;
+        for (int i = nodeNum + 1; i < size && treeLevel[i] > nodeLevel; i++) {
+            nodeKind[i] = -1;
+        }
+    }
+
+    /**
+     * Copy a DOM node into this document's arrays.
+     * This is a simplified version for the copy-modify pattern.
+     *
+     * @return the node number of the top-level copied node
+     */
+    /**
+     * Copy a content item into the document arrays, handling atomic values,
+     * document nodes, and regular nodes per the W3C XQuery Update Facility spec.
+     *
+     * @param item the content item to copy
+     * @param parentNodeNum the parent node number
+     * @param level the tree level for the new node(s)
+     * @return list of top-level node numbers that were inserted
+     */
+    private java.util.List<Integer> copyItemIntoDocument(final org.exist.xquery.value.Item item,
+                                                          final int parentNodeNum, final short level)
+            throws XPathException {
+        final java.util.List<Integer> result = new java.util.ArrayList<>();
+        if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
+            final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
+            if (node.getNodeType() == Node.DOCUMENT_NODE) {
+                // For document nodes: insert the document's children, not the document itself
+                Node child = node.getFirstChild();
+                while (child != null) {
+                    result.add(copyNodeIntoDocument(child, parentNodeNum, level));
+                    child = child.getNextSibling();
+                }
+            } else {
+                result.add(copyNodeIntoDocument(node, parentNodeNum, level));
+            }
+        } else {
+            // Atomic value: convert to text node per W3C spec
+            final String text = item.getStringValue();
+            if (!text.isEmpty()) {
+                final int nodeNum = addNode(Node.TEXT_NODE, level, null);
+                addChars(nodeNum, text.toCharArray(), 0, text.length());
+                next[nodeNum] = parentNodeNum;
+                result.add(nodeNum);
+            }
+        }
+        return result;
+    }
+
+    private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level) {
+        switch (node.getNodeType()) {
+            case Node.ELEMENT_NODE: {
+                final String localName = node.getLocalName() != null ? node.getLocalName() : node.getNodeName();
+                final String nsUri = node.getNamespaceURI() != null ? node.getNamespaceURI() : "";
+                final String prefix = node.getPrefix() != null ? node.getPrefix() : "";
+                final QName qname = new QName(localName, nsUri, prefix);
+                final int nodeNum = addNode(Node.ELEMENT_NODE, level, qname);
+                next[nodeNum] = parentNodeNum;
+
+                // Copy attributes (skip xmlns declarations — handled separately below)
+                final NamedNodeMap attrs = node.getAttributes();
+                if (attrs != null) {
+                    for (int i = 0; i < attrs.getLength(); i++) {
+                        final Attr attr = (Attr) attrs.item(i);
+                        // Skip namespace declarations
+                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                            continue;
+                        }
+                        final String attrLocal = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
+                        final String attrNs = attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "";
+                        final String attrPrefix = attr.getPrefix() != null ? attr.getPrefix() : "";
+                        addAttribute(nodeNum, new QName(attrLocal, attrNs, attrPrefix),
+                                attr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
+                    }
+                }
+
+                // Copy namespace declarations
+                if (node instanceof ElementImpl memElement) {
+                    // Memtree element: copy from namespace arrays
+                    final java.util.Map<String, String> nsMap = memElement.getNamespaceMap();
+                    for (final java.util.Map.Entry<String, String> e : nsMap.entrySet()) {
+                        final QName nsQName = new QName(e.getKey(), e.getValue(),
+                                javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                        addNamespace(nodeNum, nsQName);
+                    }
+                } else if (attrs != null) {
+                    // DOM element: extract xmlns attributes
+                    for (int i = 0; i < attrs.getLength(); i++) {
+                        final Attr attr = (Attr) attrs.item(i);
+                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                            final String nsPrefix = attr.getLocalName() != null
+                                    && !javax.xml.XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
+                                    ? attr.getLocalName() : "";
+                            final QName nsQName = new QName(nsPrefix, attr.getValue(),
+                                    javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                            addNamespace(nodeNum, nsQName);
+                        }
+                    }
+                }
+
+                // Copy children recursively, linking siblings together
+                int prevChild = -1;
+                Node child = node.getFirstChild();
+                while (child != null) {
+                    final int childNum = copyNodeIntoDocument(child, nodeNum, (short) (level + 1));
+                    if (prevChild >= 0) {
+                        next[prevChild] = childNum;
+                    }
+                    prevChild = childNum;
+                    child = child.getNextSibling();
+                }
+                return nodeNum;
+            }
+            case Node.TEXT_NODE: {
+                final String text = node.getTextContent();
+                final int nodeNum = addNode(Node.TEXT_NODE, level, null);
+                addChars(nodeNum, text.toCharArray(), 0, text.length());
+                next[nodeNum] = parentNodeNum;
+                return nodeNum;
+            }
+            case Node.COMMENT_NODE: {
+                final String text = node.getTextContent();
+                final int nodeNum = addNode(Node.COMMENT_NODE, level, null);
+                addChars(nodeNum, text.toCharArray(), 0, text.length());
+                next[nodeNum] = parentNodeNum;
+                return nodeNum;
+            }
+            case Node.PROCESSING_INSTRUCTION_NODE: {
+                final String target = node.getNodeName();
+                final String data = node.getNodeValue() != null ? node.getNodeValue() : "";
+                final QName qname = new QName(target, "", "");
+                final int nodeNum = addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qname);
+                addChars(nodeNum, data.toCharArray(), 0, data.length());
+                next[nodeNum] = parentNodeNum;
+                return nodeNum;
+            }
+            case Node.CDATA_SECTION_NODE: {
+                final String text = node.getTextContent();
+                final int nodeNum = addNode(Node.CDATA_SECTION_NODE, level, null);
+                addChars(nodeNum, text.toCharArray(), 0, text.length());
+                next[nodeNum] = parentNodeNum;
+                return nodeNum;
+            }
+            default:
+                return -1;
+        }
+    }
+
+    /**
+     * Compact the document by rebuilding all internal arrays from the logical
+     * tree structure. After in-memory mutations (insert, delete, replace),
+     * nodes may be appended at the end of the arrays, breaking the positional
+     * invariant that the XQuery engine relies on for document order. This method
+     * serializes the mutated tree into a fresh document and replaces the internal
+     * arrays, restoring correct positional ordering.
+     *
+     * Must be called after all mutations and text merging are complete.
+     */
+    public void compact() {
+        try {
+            final MemTreeBuilder builder = new MemTreeBuilder(context);
+            builder.startDocument();
+            final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder, true);
+            receiver.setSuppressWhitespace(false);
+
+            // Walk the document tree in logical order using chain-aware traversal
+            int child = getFirstChildFor(0);
+            while (child >= 0) {
+                if (nodeKind[child] != -1) {
+                    final NodeImpl node = getNode(child);
+                    copyTo(node, receiver, false);
+                }
+                child = getNextSiblingFor(child);
+            }
+
+            builder.endDocument();
+            final DocumentImpl newDoc = builder.getDocument();
+
+            // Replace internal arrays with the rebuilt document's arrays
+            this.nodeKind = newDoc.nodeKind;
+            this.treeLevel = newDoc.treeLevel;
+            this.next = newDoc.next;
+            this.nodeName = newDoc.nodeName;
+            this.nodeId = newDoc.nodeId;
+            this.alpha = newDoc.alpha;
+            this.alphaLen = newDoc.alphaLen;
+            this.characters = newDoc.characters;
+            this.nextChar = newDoc.nextChar;
+            this.attrName = newDoc.attrName;
+            this.attrType = newDoc.attrType;
+            this.attrNodeId = newDoc.attrNodeId;
+            this.attrParent = newDoc.attrParent;
+            this.attrValue = newDoc.attrValue;
+            this.nextAttr = newDoc.nextAttr;
+            this.namespaceParent = newDoc.namespaceParent;
+            this.namespaceCode = newDoc.namespaceCode;
+            this.nextNamespace = newDoc.nextNamespace;
+            this.size = newDoc.size;
+            this.references = newDoc.references;
+            this.nextReferenceIdx = newDoc.nextReferenceIdx;
+            this.firstChildOverride = null;
+        } catch (final SAXException e) {
+            throw new RuntimeException("Failed to compact document after mutations", e);
+        }
     }
 }
