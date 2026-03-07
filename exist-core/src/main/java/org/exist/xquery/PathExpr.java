@@ -53,6 +53,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     protected boolean inPredicate = false;
 
+    /**
+     * Set to true when this PathExpr represents an actual XPath path
+     * expression with '/' or '//' steps, as opposed to a generic expression
+     * container. When true, duplicate node elimination is applied per
+     * XPath 3.1 §3.3.1.1.
+     */
+    private boolean hasSlash = false;
+
     protected Expression parent;
 
     public PathExpr(final XQueryContext context) {
@@ -298,7 +306,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                             !Type.subTypeOf(result.getItemType(), Type.NODE)) {
                         gotAtomicResult = true;
                     }
-                    if (steps.size() > 1 && getLastExpression() instanceof Step) {
+                    if (hasSlash) {
                         // remove duplicate nodes if this is a path
                         // expression with more than one step
                         result.removeDuplicates();
@@ -373,6 +381,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
 
     public Expression getLastExpression() {
         return steps.isEmpty() ? null : steps.getLast();
+    }
+
+    /**
+     * Marks this PathExpr as containing a '/' or '//' path operator.
+     * Called from the grammar tree walker when SLASH or DSLASH is encountered.
+     */
+    public void setHasSlash() {
+        this.hasSlash = true;
     }
 
     /**
