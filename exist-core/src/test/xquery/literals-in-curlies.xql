@@ -32,15 +32,9 @@ module namespace litcurl="http://exist-db.org/xquery/test/literals-in-curlies";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare
-    %test:pending
     %test:assertEquals("<root a='a'/>")
 function litcurl:literalString() {
-(:
- : Since the line below raises a static error, it cannot be tested yet.
- : When the xquery parser is fixed, uncomment it and remove the zero.
- : <root a="{'a'}"/> 
- :)
-    0
+    <root a="{'a'}"/>
 };
 
 (:~ other literals ~:)
@@ -120,4 +114,22 @@ declare
     %test:assertEquals("<root a='a'/>")
 function litcurl:mapProperty() {
     <root a="{map{'a':'a'}?a}"/>
+};
+
+declare
+    %test:assertEquals("<root a='a'/>")
+function litcurl:doubleQuotedStringInSingleQuotedAttribute() {
+    <root a='{"a"}'/>
+};
+
+declare
+    %test:assertEquals("<root a='a' b='b'/>")
+function litcurl:multipleAttributesWithStringLiterals() {
+    <root a="{'a'}" b="{'b'}"/>
+};
+
+declare
+    %test:assertEquals("<root a='hello world'/>")
+function litcurl:stringConcatInAttribute() {
+    <root a="{'hello' || ' ' || 'world'}"/>
 };
