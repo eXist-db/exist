@@ -65,9 +65,13 @@ public class TreeUtils {
         final Node parent = node.getParentNode();
         if (parent == null) {
           final List<Integer> index = new ArrayList<>();
-          // The root element always index 0 within the document node.
-          // Some node implementations (e.g., org.exist.dom.memtree.NodeImpl) do not always have an associated document.
-          // In this case, the nodeIndex must get an extra 0 index to be valid for xdmDocument.
+          // The root element in an xdmDocument always has index 0 within the document node.
+          // org.exist.dom.memtree.NodeImpl.getParentNode() can return null for a non-document node,
+          // if it was constructed.
+          // This was introduced in 4ce606a08e719b9aabd730a9af6e05ea7485f38e to fix
+          // https://github.com/eXist-db/exist/issues/1463
+          // In this case, we initialize the nodeIndex with the missing index 0
+          // in order to construct a valid xdmDocument.
           if (! (node instanceof Document)) {
             index.add(0);
           }
