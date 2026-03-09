@@ -62,8 +62,7 @@ cygwin=false;
 darwin=false;
 case "$(uname)" in
   CYGWIN*) cygwin=true ;;
-  Darwin*) darwin=true
-           if [ -z "$JAVA_VERSION" ] ; then
+  Darwin*) if [ -z "$JAVA_VERSION" ] ; then
              JAVA_VERSION="CurrentJDK"
            else
              echo "Using Java version: $JAVA_VERSION"
@@ -151,6 +150,7 @@ fi
 
 # Dot not double quote variables below
 
+# shellcheck disable=SC2086
 exec "$JAVACMD" $_JAVA_OPTS $_EXIST_OPTS \
   -classpath "$CLASSPATH" \
   org.exist.start.Main $EXIST_COMMAND \
