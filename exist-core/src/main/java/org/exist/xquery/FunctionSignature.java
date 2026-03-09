@@ -31,6 +31,8 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
+
 /**
  * Describes the signature of a built-in or user-defined function, i.e.
  * its name, the type and cardinality of its arguments and its return type.
@@ -131,7 +133,10 @@ public class FunctionSignature {
         if (isVariadic) {
             return -1;
         }
-        return arguments != null ? arguments.length : 0;
+        if (arguments == null) {
+            return 0;
+        }
+        return arguments.length;
     }
 
     public FunctionId getFunctionId() {
@@ -172,6 +177,7 @@ public class FunctionSignature {
         metadata.put(key, newValue);
     }
 
+    @Nullable
     public String getMetadata(final String key) {
         if (metadata == null) {
             return null;
@@ -191,12 +197,12 @@ public class FunctionSignature {
         return deprecated != null;
     }
 
+    @Nullable
     public String getDeprecated() {
-        if (deprecated != null && !deprecated.isEmpty()) {
-            return deprecated + DEPRECATION_REMOVAL_MESSAGE;
-        } else {
+        if (deprecated == null || deprecated.length() == 0) {
             return null;
         }
+        return deprecated + DEPRECATION_REMOVAL_MESSAGE;
     }
 
     public final void setDeprecated(final String message) {
@@ -205,15 +211,18 @@ public class FunctionSignature {
 
     public boolean isPrivate() {
         final Annotation[] annotations = getAnnotations();
-        if (annotations != null) {
-            for (final Annotation annot : annotations) {
-                final QName qn = annot.getName();
-                if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalPart())) {
-                    return true;
-                }
+        if (annotations == null) {
+            return false; // function has no annotations; default is public
+        }
+
+        for (final Annotation annot : annotations) {
+            final QName qn = annot.getName();
+            if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS)
+                    && "private".equals(qn.getLocalPart())) {
+                return true; // function is annotated as private
             }
         }
-        return false;
+        return false; // no matching annotation found; default is public
     }
 
     @Override
