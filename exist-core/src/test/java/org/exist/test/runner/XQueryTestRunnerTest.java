@@ -46,7 +46,7 @@ class XQueryTestRunnerTest {
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertTrue(description.isSuite());
-        assertEquals(true, description.getAnnotations().isEmpty());
+        assertTrue(description.getAnnotations().isEmpty());
         assertEquals("xqts.org.exist-db.xquery.single-test-module", description.getDisplayName());
         assertEquals(1, description.testCount());
     }
@@ -58,7 +58,7 @@ class XQueryTestRunnerTest {
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertFalse(description.isSuite());
-        assertEquals(true, description.getAnnotations().isEmpty());
+        assertTrue(description.getAnnotations().isEmpty());
         assertEquals("no-tests.xqm", description.getDisplayName());
         assertEquals(1, description.testCount());
     }

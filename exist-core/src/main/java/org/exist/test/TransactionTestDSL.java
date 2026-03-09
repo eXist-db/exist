@@ -58,13 +58,13 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
 /**
  * A DSL for describing a schedule of
  * transaction operations upon the database.
- *
+ * <p>
  * A type-safe builder pattern is provided
  * for constructing the schedule. Once
  * the schedule is build a scheduler
  * can execute it upon the database
  * and return the results.
- *
+ * <p>
  * The DSL uses recursive types
  * in a similar way to a typed heterogeneous
  * list (such as Shapeless's HList) to ensure
@@ -74,10 +74,10 @@ import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
  * At the cost of complexity in implementing
  * the DSL, the recursive typing makes use of
  * the DSL by the user much simpler and safer.
- *
+ * <p>
  * The recursive type implementation was
  * inspired by <a href="https://apocalisp.wordpress.com/2008/10/23/heterogeneous-lists-and-the-limits-of-the-java-type-system/">https://apocalisp.wordpress.com/2008/10/23/heterogeneous-lists-and-the-limits-of-the-java-type-system/</a>.
- *
+ * <p>
  * Example usage for creating a schedule of
  * two transactions, where each will execute in
  * its own thread but operationally linear
@@ -116,7 +116,7 @@ public interface TransactionTestDSL {
 
     /**
      * A Transaction Schedule builder.
-     *
+     * <p>
      * Enables us to build a schedule of operations to be executed
      * within one or more transactions.
      *
@@ -146,7 +146,7 @@ public interface TransactionTestDSL {
 
     /**
      * A schedule builder factory for two transactions T1 and T2.
-     *
+     * <p>
      * Responsible for creating a Schedule Builder which is initialized
      * to the first transaction state.
      */
@@ -462,7 +462,7 @@ public interface TransactionTestDSL {
 
     /**
      * A schedule of two transactions T1 and T2.
-     *
+     * <p>
      * Which are executed concurrently, each in their
      * own thread, but linearly according to the schedule.
      *
@@ -551,7 +551,7 @@ public interface TransactionTestDSL {
 
     /**
      * A function which describes an operation on the database with a Transaction.
-     *
+     * <p>
      * You can think of this as a function <pre>f(T) -&gt; U</pre>
      * where the database and transaction are available to the
      * function <pre>f</pre>.
@@ -691,7 +691,7 @@ public interface TransactionTestDSL {
          * Executes this, and then the other Transaction Operation
          * on the input type {@code <T>} and returns
          * the results as a tuple.
-         *
+         * <p>
          * e.g. <pre>Tuple2(f(T) -&gt; U, other(T) -&gt; U2)</pre>
          *
          * @param <U2> thr result of the other operation.
@@ -707,7 +707,7 @@ public interface TransactionTestDSL {
         /**
          * Returns a composed function that first applies this function to
          * its input, and then applies the {@code after} function to the result.
-         *
+         * <p>
          * See {@link Function#andThen(Function)}
          *
          * @param <V> the result of the after operation.
@@ -723,7 +723,7 @@ public interface TransactionTestDSL {
         /**
          * Returns a composed function that first applies the {@code before}
          * function to its input, and then applies this function to the result.
-         *
+         * <p>
          * See {@link Function#compose(Function)}
          *
          * @param <V> the input type of the before operation.
@@ -739,7 +739,7 @@ public interface TransactionTestDSL {
 
         /**
          * Returns a function that always returns its input argument.
-         *
+         * <p>
          * See {@link Function#identity()}
          *
          * @param <T> the result of the identity operation.
@@ -754,7 +754,7 @@ public interface TransactionTestDSL {
     /**
      * A simple extension of {@link CountDownLatch}
      * which also provides a name for the latch.
-     *
+     * <p>
      * Useful for debugging latching ordering in
      * transaction schedules.
      */

@@ -23,7 +23,6 @@
 package org.exist.test.runner;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -59,7 +58,7 @@ public final class XQueryFailureLog {
                 Files.createDirectories(dir);
             }
             final Path file = dir.resolve(LOG_NAME);
-            Files.write(file, (firstLine + "\n").getBytes(StandardCharsets.UTF_8),
+            Files.writeString(file, firstLine + "\n",
                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         } catch (final IOException ignored) {
             // do not affect test execution

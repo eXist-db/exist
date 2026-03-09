@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -47,8 +48,7 @@ class XSuiteDebuggabilityTest {
             .filter(f -> f.getException() instanceof org.junit.ComparisonFailure)
             .findFirst()
             .orElse(null);
-        assertTrue(assertionFailure != null,
-            "expected one assertion failure (ComparisonFailure) from failing-both.xqm; collected failures: " + failures.size()
+        assertNotNull(assertionFailure, "expected one assertion failure (ComparisonFailure) from failing-both.xqm; collected failures: " + failures.size()
                 + " types: " + failures.stream().map(f -> f.getException() == null ? "null" : f.getException().getClass().getName()).toList());
 
         final Throwable t = assertionFailure.getException();
@@ -79,8 +79,7 @@ class XSuiteDebuggabilityTest {
             .filter(f -> f.getException() instanceof org.exist.xquery.XPathException)
             .findFirst()
             .orElse(null);
-        assertTrue(errorFailure != null,
-            "expected one error failure (XPathException) from failing-both.xqm throwsUnexpectedError; xqsuite runs only functions with assert* annotations");
+        assertNotNull(errorFailure, "expected one error failure (XPathException) from failing-both.xqm throwsUnexpectedError; xqsuite runs only functions with assert* annotations");
         final Throwable t = errorFailure.getException();
         final StackTraceElement[] stack = t.getStackTrace();
 

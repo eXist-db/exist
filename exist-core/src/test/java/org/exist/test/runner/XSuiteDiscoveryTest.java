@@ -53,10 +53,10 @@ public class XSuiteDiscoveryTest {
         final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final XQueryTestRunner.XQueryTestInfo info = XQueryTestRunner.runDiscovery(pool, path);
         assertNotNull("discovery XQuery should return test info", info);
-        assertEquals("namespace", "http://exist-db.org/xquery/single-test-module", info.getNamespace());
-        assertEquals("one test function", 1, info.getTestFunctions().size());
-        assertEquals("test name", "f1", info.getTestFunctions().get(0).getLocalName());
-        assertEquals("test arity", 0, info.getTestFunctions().get(0).getArity());
+        assertEquals("namespace", "http://exist-db.org/xquery/single-test-module", info.namespace());
+        assertEquals("one test function", 1, info.testFunctions().size());
+        assertEquals("test name", "f1", info.testFunctions().getFirst().localName());
+        assertEquals("test arity", 0, info.testFunctions().getFirst().arity());
     }
 
     /**
@@ -76,13 +76,13 @@ public class XSuiteDiscoveryTest {
             final XQueryTestRunner runner = new XQueryTestRunner(path, false);
             final Description description = runner.getDescription();
             final List<Description> children = description.getChildren();
-            assertEquals("runner should have same number of tests as discovery", discoveryInfo.getTestFunctions().size(), children.size());
+            assertEquals("runner should have same number of tests as discovery", discoveryInfo.testFunctions().size(), children.size());
             final List<String> childNames = new ArrayList<>();
             for (final Description d : children) {
                 childNames.add(d.getMethodName());
             }
-            for (int i = 0; i < discoveryInfo.getTestFunctions().size(); i++) {
-                assertEquals("test name from runner should match discovery", discoveryInfo.getTestFunctions().get(i).getLocalName(), childNames.get(i));
+            for (int i = 0; i < discoveryInfo.testFunctions().size(); i++) {
+                assertEquals("test name from runner should match discovery", discoveryInfo.testFunctions().get(i).localName(), childNames.get(i));
             }
         } finally {
             XSuite.EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = previous;

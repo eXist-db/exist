@@ -209,7 +209,7 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
             final String methodName = matcherAt.group(2);
             final String fileName = matcherAt.group(3);
             final String lineNumber = matcherAt.group(4);
-            return new StackTraceElement(declaringClass, methodName, fileName, Integer.valueOf(lineNumber));
+            return new StackTraceElement(declaringClass, methodName, fileName, Integer.parseInt(lineNumber));
         } else {
             return null;
         }
