@@ -53,7 +53,7 @@ public class FunctionSignature {
      */
     public static final SequenceType[] NO_ARGS = new SequenceType[0];
 
-    private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major release version.";
+    private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major version release!";
     private final QName name;
     private Annotation[] annotations;
     private SequenceType[] arguments;
