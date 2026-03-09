@@ -153,7 +153,12 @@ public class MapFunction extends BasicFunction {
         "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
         new SequenceType[] {
             new FunctionParameterSequenceType("input", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("action", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to be called for each entry")
+            new FunctionParameterFunctionSequenceType("action", Type.FUNCTION,
+                    new SequenceType[] {
+                            new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE),
+                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                    },
+                    Cardinality.EXACTLY_ONE, "The function to be called for each entry")
         },
         new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
     );

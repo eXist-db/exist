@@ -30,10 +30,7 @@ import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 
@@ -284,6 +281,10 @@ public abstract class Function extends PathExpr {
                 argument = new DynamicNameCheck(context,
                         new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
             }
+            if (argType instanceof FunctionParameterFunctionSequenceType) {
+                return new FunctionTypeCheck(context, (FunctionParameterFunctionSequenceType) argType, argument);
+            }
+
             return argument;
         }
 
@@ -310,15 +311,18 @@ public abstract class Function extends PathExpr {
             }
         }
 
-        if (!typeMatches && !context.isBackwardsCompatible()) {
-            if (argType.getNodeName() != null) {
-                argument = new DynamicNameCheck(context,
-                        new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
-            } else {
-                argument = new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
-            }
+        if (typeMatches || context.isBackwardsCompatible()) {
+            return argument;
         }
-        return argument;
+        if (argType.getNodeName() != null) {
+            argument = new DynamicNameCheck(context,
+                    new NameTest(argType.getPrimaryType(), argType.getNodeName()), argument);
+        }
+        if (argType instanceof FunctionParameterFunctionSequenceType) {
+            return new FunctionTypeCheck(context, (FunctionParameterFunctionSequenceType) argType, argument);
+        }
+
+        return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
     }
 
     protected boolean checkArgumentTypeCardinality(final Expression argument, @Nullable final SequenceType argType,
