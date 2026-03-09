@@ -290,12 +290,16 @@ public class Main {
                 }
                 case "launcher" -> className = "org.exist.launcher.LauncherWrapper";
                 case "shutdown" -> className = "org.exist.jetty.ServerShutdown";
+                case "export" -> className = "org.exist.backup.ExportMain";
+                case "export-gui" -> className = "org.exist.backup.ExportGUI";
+                case "jmxclient" -> className = "org.exist.management.client.JMXClient";
                 case null, default -> className = firstArgument;
             }
         }
 
         if (inDebugMode) {
             System.err.println("mode=" + getMode());
+            System.err.println("className=" + className);
         }
 
         return className;
