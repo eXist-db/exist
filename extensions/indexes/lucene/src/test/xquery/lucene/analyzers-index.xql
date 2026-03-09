@@ -49,6 +49,20 @@ declare variable $anix:XCONF as element(collection) :=
                     <field name="l_nostop" analyzer="de-nostop"/>
                 </text>
                 <text field="lineno" qname="@n" analyzer="keyword"/>
+                <text qname="p" analyzer="de-nostop"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $anix:XCONF_PL as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer id="pl-nostop" class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer">
+                    <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"/>
+                </analyzer>
+                <text qname="l" analyzer="pl-nostop"/>
             </lucene>
         </index>
     </collection>;
@@ -72,12 +86,36 @@ declare variable $anix:XML as document-node() :=
                     <l n="l1.11">Und sehe, daß wir nichts wissen können!</l>
                     <l n="l1.12">Das will mir schier das Herz verbrennen.</l>
                 </lg>
+                <p>Zwar bin ich gescheiter als all die Laffen,</p>
+            </body>
+        </text>
+    };
+
+declare variable $anix:XML_PL :=
+    document {
+        <text>
+            <body>
+                <lg>
+                    <l>Stoi na stacji lokomotywa,</l>
+                    <l>Ciężka, ogromna i pot z niej spływa:</l>
+                    <l>Tłusta oliwa.</l>
+                    <l>Stoi i sapie, dyszy i dmucha,</l>
+                    <l>Żar z rozgrzanego jej brzucha bucha:</l>
+                    <l>Buch - jak gorąco!</l>
+                    <l>Uch - jak gorąco!</l>
+                    <l>Puff - jak gorąco!</l>
+                    <l>Uff - jak gorąco!</l>
+                    <l>Już ledwo sapie, już ledwo zipie,</l>
+                    <l>A jeszcze palacz węgiel w nią sypie.</l>
+                </lg>
             </body>
         </text>
     };
 
 declare variable $anix:COLLECTION_NAME := "lucene-test-analyzers-index";
+declare variable $anix:COLLECTION_NAME_PL := "lucene-test-analyzers-index-pl";
 declare variable $anix:COLLECTION := "/db/" || $anix:COLLECTION_NAME;
+declare variable $anix:COLLECTION_PL := "/db/" || $anix:COLLECTION_NAME_PL;
 
 (:~ setUp: create collection, config, store doc, reindex.
  : @return empty sequence
@@ -88,9 +126,14 @@ function anix:setUp() {
     ( xmldb:create-collection("/db/system", "config"),
       xmldb:create-collection("/db/system/config", "db"),
       xmldb:create-collection("/db", $anix:COLLECTION_NAME),
+      xmldb:create-collection("/db", $anix:COLLECTION_NAME_PL),
       xmldb:create-collection("/db/system/config/db", $anix:COLLECTION_NAME),
+      xmldb:create-collection("/db/system/config/db", $anix:COLLECTION_NAME_PL),
       xmldb:store("/db/system/config/db/" || $anix:COLLECTION_NAME, "collection.xconf", $anix:XCONF),
+      xmldb:store("/db/system/config/db/" || $anix:COLLECTION_NAME_PL, "collection.xconf", $anix:XCONF_PL),
       xmldb:store($anix:COLLECTION, "text.xml", $anix:XML),
+      xmldb:store($anix:COLLECTION_PL, "text_pl.xml", $anix:XML_PL),
+      xmldb:reindex($anix:COLLECTION_PL),
       xmldb:reindex($anix:COLLECTION) )
 };
 
@@ -101,13 +144,45 @@ declare
     %test:tearDown
 function anix:tearDown() {
     xmldb:remove($anix:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME)
+    xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME),
+    xmldb:remove($anix:COLLECTION_PL),
+    xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME_PL)
 };
 
 (:~ German Analyzer: standard search. :)
 declare %test:assertTrue function anix:german-standard-search() {
     let $result := doc($anix:COLLECTION || "/text.xml")//l[ft:query(., 'philosophie')]
     return deep-equal($result, <l n="l1.1">Habe nun, ach! Philosophie,</l>)
+};
+
+(:~ German Analyzer: search on qname index, no field. :)
+declare %test:assertTrue function anix:german-standard-search-qname() {
+    let $result := doc($anix:COLLECTION || "/text.xml")//p[ft:query(., 'gescheit')]
+    return deep-equal($result, <p>Zwar bin ich gescheiter als all die Laffen,</p>)
+};
+
+(:~ German Analyzer: search on qname index, no field, no stopwords. :)
+declare %test:assertTrue function anix:german-standard-search-qname-nostop() {
+    let $result := doc($anix:COLLECTION || "/text.xml")//p[ft:query(., 'die')]
+    return deep-equal($result, <p>Zwar bin ich gescheiter als all die Laffen,</p>)
+};
+
+(:~ No Diacritics Standard Analyzer: search on qname index, no field. :)
+declare %test:assertTrue function anix:no-diacritics-standard-search-qname() {
+    let $result := doc($anix:COLLECTION_PL || "/text_pl.xml")//l[ft:query(., 'Ciezka spływa')]
+    return deep-equal($result, <l>Ciężka, ogromna i pot z niej spływa:</l>)
+};
+
+(:~ No Diacritics Standard Analyzer: search on qname index, no field, phrase search. :)
+declare %test:assertTrue function anix:no-diacritics-standard-search-qname-phrase() {
+    let $result := doc($anix:COLLECTION_PL || "/text_pl.xml")//l[ft:query(., '"wegiel w nia sypie"')]
+    return deep-equal($result, <l>A jeszcze palacz węgiel w nią sypie.</l>)
+};
+
+(:~ No Diacritics Standard Analyzer: search on qname index, no field, no stopwords. :)
+declare %test:assertTrue function anix:no-diacritics-standard-search-qname-nostop() {
+    let $result := doc($anix:COLLECTION_PL || "/text_pl.xml")//l[ft:query(., 'w')]
+    return deep-equal($result, <l>A jeszcze palacz węgiel w nią sypie.</l>)
 };
 
 (:~ German Analyzer: stemmed verb. :)
