@@ -2048,7 +2048,7 @@ enclosedExpr throws XPathException
 attributeEnclosedExpr throws XPathException
 :
     ( LCURLY RCURLY ) => LCURLY! RCURLY!
-    { lexer.inAttributeContent= true; }
+    { lexer.inAttributeContent= true; lexer.parseStringLiterals = false; }
     |
 	LCURLY^
 	{
@@ -2699,6 +2699,9 @@ options {
 	{ !inStringConstructor }?
 	LCURLY
 	{
+		if (inAttributeContent) {
+			parseStringLiterals = true;
+		}
 		inElementContent= false;
 		inAttributeContent= false;
 		$setType(LCURLY);
