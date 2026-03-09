@@ -29,8 +29,6 @@ import static org.exist.xquery.ErrorCodes.XPDY0002;
 
 public class ContextItemExpression extends LocationStep {
 
-    private int returnType = Type.ITEM;
-
     public ContextItemExpression(final XQueryContext context) {
         // TODO: create class AnyItemTest (one private implementation found in saxon)
         super(context, Constants.SELF_AXIS, new AnyNodeTest());
@@ -40,7 +38,7 @@ public class ContextItemExpression extends LocationStep {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.addFlag(DOT_TEST);
         // set return type to static type to allow for index use in optimization step
-        returnType = contextInfo.getStaticType();
+        staticReturnType = contextInfo.getStaticType();
 
         super.analyze(contextInfo);
     }
@@ -69,7 +67,8 @@ public class ContextItemExpression extends LocationStep {
 
     @Override
     public int returnsType() {
-        return returnType;
+        // "." will have the same type as the parent expression
+        return staticReturnType;
     }
 
     @Override
