@@ -90,7 +90,7 @@ public class Util {
 
     public static CompiledXQuery compileQuery(final DBBroker broker, final XQuery xqueryService, final XQueryPool xqueryPool, final Source query) throws PermissionDeniedException, XPathException, IOException {
         CompiledXQuery compiled = xqueryPool.borrowCompiledXQuery(broker, query);
-        XQueryContext context;
+        final XQueryContext context;
         if (compiled == null) {
             context = new XQueryContext(broker.getBrokerPool());
         } else {

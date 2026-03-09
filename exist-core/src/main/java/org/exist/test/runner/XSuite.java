@@ -55,10 +55,10 @@ import java.util.stream.Stream;
 /**
  * Using <code>XSuite</code> as a runner allows you to manually
  * build a suite containing tests from both:
- *
+ * <p>
  * 1. XQSuite - as defined in $EXIST_HOME/src/org/exist/xquery/lib/xqsuite/xqsuite.xql
  * 2. XML Test - as defined in $EXIST_HOME/src/org/exist/xquery/lib/test.xq
- *
+ * <p>
  * To use it, annotate a class
  * with <code>@RunWith(XSuite.class)</code> and <code>@XSuiteClasses({"extensions/my-extension/src/test/xquery", ...})</code>.
  * When you run this class, it will run all the tests in all the suite classes.
@@ -267,7 +267,7 @@ public class XSuite extends ParentRunner<Runner> {
                 if (Files.isDirectory(path)) {
                     // directory of files of test(s)
                     try (final Stream<Path> children = Files.list(path)) {
-                        for(final Path child : children.collect(Collectors.toList())) {
+                        for(final Path child : children.toList()) {
                             if(!Files.isDirectory(child)) {
                                 final Runner runner = getRunner(child, parallel);
                                 if(runner != null) {
