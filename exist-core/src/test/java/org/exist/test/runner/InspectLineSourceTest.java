@@ -44,6 +44,7 @@ import java.util.Collections;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -72,6 +73,6 @@ public class InspectLineSourceTest {
         final String lineStr = func.getAttribute("line");
         assertTrue("line should be a positive number", Integer.parseInt(lineStr) > 0);
         assertTrue("function element should have @source for UDF", func.hasAttribute("source"));
-        assertTrue("source should be non-empty", !func.getAttribute("source").isEmpty());
+        assertFalse("source should be non-empty", func.getAttribute("source").isEmpty());
     }
 }
