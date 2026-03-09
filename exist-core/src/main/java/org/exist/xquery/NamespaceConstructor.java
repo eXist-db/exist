@@ -47,7 +47,7 @@ public class NamespaceConstructor extends NodeConstructor {
 
     public void setContentExpr(final PathExpr path) {
         path.setUseStaticContext(true);
-        final Expression expr = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, path,
+        final Expression expr = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, path,
                 new Error(Error.FUNC_PARAM_CARDINALITY));
         this.content = expr;
     }
