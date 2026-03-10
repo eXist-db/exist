@@ -48,6 +48,7 @@ public class LuceneIndexConfig {
     private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
     private final static String FACET_ELEMENT = "facet";
     private final static String FIELD_ELEMENT = "field";
+    private final static String VECTOR_FIELD_ELEMENT = "vector-field";
 
     public static final String QNAME_ATTR = "qname";
     public static final String MATCH_ATTR = "match";
@@ -139,6 +140,10 @@ public class LuceneIndexConfig {
                             if (fieldConfig.getAnalyzer() != null) {
                                 type.addAnalzer(fieldConfig.getName(), fieldConfig.getAnalyzer());
                             }
+                            break;
+                        }
+                        case VECTOR_FIELD_ELEMENT: {
+                            facetsAndFields.add(new LuceneVectorFieldConfig(parent, configElement, namespaces));
                             break;
                         }
                         case IGNORE_ELEMENT: {

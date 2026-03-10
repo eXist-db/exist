@@ -51,6 +51,8 @@ import javax.xml.XMLConstants;
 public class LuceneUtil {
 
     public static final String FIELD_NODE_ID = "nodeId";
+    /** DocValues-only field for nodeId; avoids conflict with indexed Field of same name (LUCENE-6019). */
+    public static final String FIELD_NODE_ID_DV = "nodeId_dv";
 
     public static final String FIELD_DOC_ID = "docId";
     public static final String FIELD_DOC_URI = "docUri";
