@@ -33,9 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implements the XQuery extension for maps as proposed by Michael Kay:
- *
- * http://dev.saxonica.com/blog/mike/2012/01/#000188
+ * Implement the
+ * <a href="https://www.w3.org/TR/xpath-functions-31/#map-functions">function that operate on maps</a>
  */
 public class MapModule extends AbstractInternalModule {
 

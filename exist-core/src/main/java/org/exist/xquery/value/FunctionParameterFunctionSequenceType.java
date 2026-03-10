@@ -44,7 +44,7 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
      * @param description       A description of the parameter in the <strong>FunctionSignature</strong>.
      * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
      */
-    public FunctionParameterFunctionSequenceType(final String attributeName, final int primaryType, final SequenceType[] parameterTypes, final SequenceType returnType, final Cardinality cardinality, final String description) {
+    public FunctionParameterFunctionSequenceType(final String attributeName, final int primaryType, final FunctionParameterSequenceType[] parameterTypes, final SequenceType returnType, final Cardinality cardinality, final String description) {
         // use for Type.MAP_TYPE and Type.ARRAY_TYPE as well
         super(attributeName, primaryType, cardinality, description);
         this.parameters = parameterTypes;

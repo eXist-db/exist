@@ -75,8 +75,8 @@ public class FunHigherOrderFun extends BasicFunction {
             new SequenceType[]{
                     new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "the sequence to filter"),
                     new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
-                            new SequenceType[] {
-                                    new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+                            new FunctionParameterSequenceType[] {
+                                    new FunctionParameterSequenceType("asdf", Type.ITEM, Cardinality.EXACTLY_ONE, "asdf")
                             },
                             new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
                             Cardinality.EXACTLY_ONE, "The function called on each item, only items that yield true() will be returned")
