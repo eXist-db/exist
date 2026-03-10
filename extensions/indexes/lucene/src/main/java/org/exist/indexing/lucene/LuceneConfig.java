@@ -275,7 +275,19 @@ public class LuceneConfig {
         return idxConf;
     }
 
+    /**
+     * Returns all index configurations (for iterating searchable fields etc.).
+     *
+     * @return collection of index configs
+     */
+    public java.util.Collection<LuceneIndexConfig> getIndexConfigurations() {
+        return paths.values();
+    }
+
     public Analyzer getAnalyzer(QName qname) {
+        if (qname == null) {
+            return analyzers.getDefaultAnalyzer();
+        }
         LuceneIndexConfig idxConf = getIndexConfigForQName(qname);
         if (idxConf != null) {
             final Analyzer analyzer = idxConf.getAnalyzer();

@@ -151,8 +151,35 @@
             <xs:element name="match-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="cc:matchAttrBoostType"/>
             <xs:element name="has-attribute" minOccurs="0" maxOccurs="unbounded" type="cc:hasAttrBoostType"/>
             <xs:element name="has-sibling-attribute" minOccurs="0" maxOccurs="unbounded" type="cc:hasAttrBoostType"/>
+            <xs:element name="vector-field" minOccurs="0" maxOccurs="unbounded" type="cc:vectorFieldAttrType"/>
         </xs:all>
     </xs:group>
+
+    <xs:complexType name="vectorFieldAttrType">
+        <xs:annotation>
+            <xs:documentation>Vector field for KNN/semantic search. Dense float vectors; dimension fixed per field.</xs:documentation>
+        </xs:annotation>
+        <xs:attributeGroup ref="cc:nameReq"/>
+        <xs:attributeGroup ref="cc:expressionReq"/>
+        <xs:attribute name="dimension" type="xs:positiveInteger" use="required"/>
+        <xs:attribute name="similarity" use="optional" default="cosine">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="cosine"/>
+                    <xs:enumeration value="euclidean"/>
+                    <xs:enumeration value="dot_product"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="encoding" use="optional" default="base64">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="base64"/>
+                    <xs:enumeration value="text"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
 
     <xs:element name="text" type="cc:textType"/>
 

@@ -59,6 +59,8 @@ public class QueryOptions {
     public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
     public static final String OPTION_FACETS = "facets";
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
+    public static final String OPTION_FILTER_QUERY = "filter-query";
+    public static final String OPTION_FILTER = "filter";
 
     protected enum DefaultOperator {
         OR,
@@ -74,6 +76,9 @@ public class QueryOptions {
     protected boolean lowercaseExpandedTerms = false;
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
     protected Set<String> fields = null;
+    protected String filterQuery = null;
+    protected String filterField = null;
+    protected Object filterValue = null;
 
     public QueryOptions() {
         // default options
@@ -125,10 +130,34 @@ public class QueryOptions {
                     tf.put(facet.key().getStringValue(), values);
                 }
                 facets = Optional.of(tf);
+            } else if (key.equals(OPTION_FILTER) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
+                final AbstractMapType filterMap = (AbstractMapType) entry.value().itemAt(0);
+                filterField = getMapString(filterMap, "field");
+                filterValue = getMapValue(filterMap, "value");
             } else {
                 set(key, entry.value().getStringValue());
             }
         }
+    }
+
+    private static String getMapString(final AbstractMapType map, final String key) throws XPathException {
+        final Sequence seq = map.get(new org.exist.xquery.value.StringValue(key));
+        return seq != null && !seq.isEmpty() ? seq.getStringValue() : null;
+    }
+
+    private static Object getMapValue(final AbstractMapType map, final String key) throws XPathException {
+        final Sequence seq = map.get(new org.exist.xquery.value.StringValue(key));
+        if (seq == null || seq.isEmpty()) {
+            return null;
+        }
+        final org.exist.xquery.value.Item item = seq.itemAt(0);
+        if (item instanceof org.exist.xquery.value.IntegerValue iv) {
+            return iv.getLong();
+        }
+        if (item instanceof org.exist.xquery.value.DecimalValue dv) {
+            return dv.getDouble();
+        }
+        return item.getStringValue();
     }
 
     /**
@@ -204,6 +233,18 @@ public class QueryOptions {
         return facets;
     }
 
+    public @Nullable String getFilterQuery() {
+        return filterQuery;
+    }
+
+    public @Nullable String getFilterField() {
+        return filterField;
+    }
+
+    public @Nullable Object getFilterValue() {
+        return filterValue;
+    }
+
     public @Nullable Set<String> getFields() {
         return fields;
     }
@@ -237,6 +278,10 @@ public class QueryOptions {
                 break;
             case OPTION_QUERY_ANALYZER_ID:
                 queryAnalyzerId = value;
+                break;
+            case OPTION_FILTER_QUERY:
+                filterQuery = value;
+                break;
             default:
                 // unknown option, ignore
                 break;
