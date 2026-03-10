@@ -230,30 +230,43 @@ public class FunctionSignature {
         final StringBuilder buf = new StringBuilder();
         buf.append(name.getStringValue());
         buf.append('(');
-        if (arguments != null) {
-            final char ANON_VAR = 'a';
-            for (int i = 0; i < arguments.length; i++) {
-                if (i > 0) {
-                    buf.append(", ");
-                }
-                buf.append('$');
-                if (arguments[i] instanceof FunctionParameterSequenceType) {
-                    buf.append(((FunctionParameterSequenceType) arguments[i]).getAttributeName());
-                } else {
-                    buf.append((char) (ANON_VAR + i));
-                }
-                buf.append(" as ");
-                buf.append(arguments[i].toString());
-            }
 
-            if (isVariadic) {
-                buf.append(", ...");
-            }
-        }
+        argumentsToString(buf);
+
         buf.append(") as ");
         buf.append(returnType.toString());
 
         return buf.toString();
+    }
+
+    private void argumentsToString(final StringBuilder buf) {
+        if (arguments == null) {
+            return;
+        }
+
+        for (int i = 0; i < arguments.length; i++) {
+            if (i > 0) {
+                buf.append(", ");
+            }
+            argumentToString(buf, i);
+        }
+
+        if (isVariadic) {
+            buf.append(", ...");
+        }
+    }
+
+    private void argumentToString(final StringBuilder buf, final int i) {
+        final char ANON_VAR = 'a';
+        buf.append('$');
+        if (arguments[i] instanceof final FunctionParameterSequenceType argumentType) {
+            buf.append(argumentType.getAttributeName());
+        } else {
+            // render argument name placeholder a1, a2, ...
+            buf.append((char) (ANON_VAR + i));
+        }
+        buf.append(" as ");
+        buf.append(arguments[i].toString());
     }
 
     @Override

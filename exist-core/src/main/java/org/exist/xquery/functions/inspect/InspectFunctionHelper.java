@@ -102,7 +102,7 @@ public class InspectFunctionHelper {
         writeAnnotations(sig, builder);
         if (sig.getDescription() != null) {
             builder.startElement(DESCRIPTION_QNAME, null);
-            builder.characters(sig.getDescription());
+            builder.characters(sig.toString());
             builder.endElement();
         }
         final Map<String, String> metadata = sig.getMetadata();

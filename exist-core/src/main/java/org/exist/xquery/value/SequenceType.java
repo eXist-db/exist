@@ -242,6 +242,12 @@ public class SequenceType {
             str = "document-node(" + nodeName.getStringValue() + ")";
         } else if (primaryType == Type.ELEMENT && nodeName != null) {
             str = "element(" + nodeName.getStringValue() + ")";
+//        } else if (primaryType == Type.MAP) {
+//            str = "map(" + + ")";
+//        } else if (primaryType == Type.ARRAY) {
+//            str = "array(" + + ")";
+//        } else if (primaryType == Type.FUNCTION_REFERENCE) {
+//            str = "function(" + + ")";
         } else {
             str = Type.getTypeName(primaryType);
         }
