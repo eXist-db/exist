@@ -217,6 +217,11 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         return vector.length();
     }
 
+    public FunctionSignature getSignature() {
+        return ACCESSOR;
+    };
+
+
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         accessorFunc.analyze(contextInfo);

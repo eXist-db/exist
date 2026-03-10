@@ -181,3 +181,22 @@ declare
 function hofs:reference-to-overloaded-function-arity-mismatch () {
     for-each-pair((), (), concat#3)
 };
+
+declare
+    %test:assertEquals("true", "true", "false")
+function hofs:array-for-each-from-map () {
+    array:for-each(
+        ["Monday", "Friday", "Tuesday"],
+        map{"Monday":true(), "Tuesday":false(), "Wednesday":true(), "Thursday":4, "Friday":true()}
+    )?*
+};
+
+declare
+    %test:assertEquals("true", "true", "false")
+function hofs:array-for-each-from-array () {
+    array:for-each(
+        [1, 5, 2],
+        [true(), false(), true(), 4, true()]
+    )?*
+};
+
