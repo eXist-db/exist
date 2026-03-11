@@ -268,10 +268,12 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
 
 	@Override
 	public void backupToArchive(final RawDataBackup backup) throws IOException {
+        // Do not use try-with-resources: closing the OutputStream would close the entire backup
         final Path directory = getDataDir();
         final List<Path> files = FileUtils.list(directory, path -> FileUtils.fileName(path).startsWith(db_file_name_prefix));
         for (final Path file : files) {
-			try(final OutputStream os = backup.newEntry(FileUtils.fileName(file))) {
+            try {
+                final OutputStream os = backup.newEntry(FileUtils.fileName(file));
                 Files.copy(file, os);
             } finally {
                 backup.closeEntry();
