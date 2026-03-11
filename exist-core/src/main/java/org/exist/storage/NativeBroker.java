@@ -2041,6 +2041,9 @@ public class NativeBroker implements DBBroker {
 
         final XmldbURI fqUri = prepend(collectionUri.toCollectionPathURI());
         final long start = System.currentTimeMillis();
+        // Invalidate collection cache so we load fresh from disk; otherwise a cached collection
+        // may have a stale document list when store+reindex run in separate broker transactions.
+        pool.getCollectionsCache().invalidate(fqUri);
         try(final Collection collection = openCollection(fqUri, LockMode.READ_LOCK)) {
             if (collection == null) {
                 LOG.warn("Collection {} not found!", fqUri);
@@ -2072,10 +2075,14 @@ public class NativeBroker implements DBBroker {
 
         // reindex documents
         try {
+            int docCount = 0;
             for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
                 final DocumentImpl next = i.next();
+                docCount++;
+                LOG.debug("Reindex doc #{}: {}", docCount, next.getFileURI());
                 reindexXMLResource(transaction, next, mode);
             }
+            LOG.info("Reindex collection {}: iterated {} documents", collection.getURI(), docCount);
         } catch(final LockException e) {
             LOG.error("LockException while reindexing documents of collection '{}'. Skipping...", collection.getURI(), e);
         }
@@ -2517,7 +2524,8 @@ public class NativeBroker implements DBBroker {
             final Value key = new CollectionStore.DocumentKey(collectionInternalAccess.getId());
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
 
-            collectionsDb.query(query, new DocumentCallback(collectionInternalAccess));
+            final DocumentCallback callback = new DocumentCallback(collectionInternalAccess);
+            collectionsDb.query(query, callback);
         } catch(final LockException e) {
             LOG.error("Failed to acquire lock on {}", FileUtils.fileName(collectionsDb.getFile()));
         } catch(final IOException | BTreeException | TerminatedException e) {
@@ -4324,15 +4332,21 @@ public class NativeBroker implements DBBroker {
     private final class DocumentCallback implements BTreeCallback {
 
         private final Collection.InternalAccess collectionInternalAccess;
+        private int documentCount = 0;
 
         private DocumentCallback(final Collection.InternalAccess collectionInternalAccess) {
             this.collectionInternalAccess = collectionInternalAccess;
+        }
+
+        int getDocumentCount() {
+            return documentCount;
         }
 
         @Override
         public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
 
             try {
+                final int docId = CollectionStore.DocumentKey.getDocumentId(key);
                 final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 final VariableByteInput is = collectionsDb.getAsStream(pointer);
 
@@ -4344,6 +4358,7 @@ public class NativeBroker implements DBBroker {
                 }
 
                 collectionInternalAccess.addDocument(doc);
+                documentCount++;
             } catch(final EXistException | IOException e) {
                 LOG.error("Exception while reading document data", e);
             }

@@ -179,6 +179,15 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="embedding" use="optional">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="local"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="model" use="optional" type="xs:token"/>
+        <xs:attribute name="model-path" use="optional" type="xs:token"/>
     </xs:complexType>
 
     <xs:element name="text" type="cc:textType"/>

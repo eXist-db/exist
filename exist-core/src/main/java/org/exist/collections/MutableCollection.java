@@ -945,6 +945,7 @@ public class MutableCollection implements Collection {
                 }
             });
 
+            LOG.debug("loadCollection {}: collectionId={} loaded {} documents into cache", path, collectionId, documents.size());
             return collection;
 //        }
     }

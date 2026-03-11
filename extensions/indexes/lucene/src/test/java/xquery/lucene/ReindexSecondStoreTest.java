@@ -24,16 +24,9 @@ package xquery.lucene;
 import org.exist.test.runner.XSuite;
 import org.junit.runner.RunWith;
 
-/**
- * Runs only the vector search XQSuite tests.
- * Use for TDD when implementing Lucene 10 vector search:
- *
- * mvn -q test -Dtest=VectorSearchTests -pl extensions/indexes/lucene -DfailIfNoTests=false -Denforcer.skip=true ...
- */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/lucene/vector-search.xqm",
-    "src/test/xquery/lucene/vector-embed.xqm"
+    "src/test/xquery/lucene/reindex-second-store.xqm"
 })
-public class VectorSearchTests {
+public class ReindexSecondStoreTest {
 }
