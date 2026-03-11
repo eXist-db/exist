@@ -112,7 +112,7 @@ public class InspectModuleTest {
 
     @Ignore("https://github.com/eXist-db/exist/issues/1386")
     @Test
-    public void xqDoc_withAtSignInline() throws PermissionDeniedException, XPathException, EXistException {
+    public void withAtSignInline() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun1";
         final String expectedDescription = "Some description.";
         final String[] expectedAnnotations = {};
@@ -124,7 +124,7 @@ public class InspectModuleTest {
     }
 
     @Test
-    public void xqDoc_withParamsAndReturn() throws PermissionDeniedException, XPathException, EXistException {
+    public void withParamsAndReturn() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun2";
         final String expectedDescription = "Some other description.";
         final String[] expectedAnnotations = {};
@@ -136,7 +136,7 @@ public class InspectModuleTest {
     }
 
     @Test
-    public void xqDoc_multilineDescription() throws PermissionDeniedException, XPathException, EXistException {
+    public void multilineDescription() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun3";
         final String expectedDescription = "This is a multiline description and therefore\n spans multiple\n lines.";
         final String[] expectedAnnotations = {};
@@ -148,7 +148,7 @@ public class InspectModuleTest {
     }
 
     @Test
-    public void xqDoc_onAnnotatedFunction() throws PermissionDeniedException, XPathException, EXistException {
+    public void onAnnotatedFunction() throws PermissionDeniedException, XPathException, EXistException {
         final String functionName = "x:fun4";
         final String expectedDescription = "An annotated function.";
         final String[] expectedAnnotations = { "public", "x:path" };
