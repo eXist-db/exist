@@ -33,9 +33,8 @@ import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.array.ArrayModule.functionSignature;
 
 /**
- * Functions on arrays, see http://www.w3.org/TR/xpath-functions-31/#array-functions.
- *
- * @author Wolf
+ * Implement functions operating on arrays as described in
+ * <a href="http://www.w3.org/TR/xpath-functions-31/#array-functions">Xquery 3.1 §17.3</a>.
  */
 public class ArrayFunction extends BasicFunction {
 
