@@ -113,7 +113,9 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void backupToArchive(final RawDataBackup backup) throws IOException {
-        try (final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()))) {
+        // Do not use try-with-resources: closing the OutputStream would close the entire backup
+        try {
+            final OutputStream os = backup.newEntry(FileUtils.fileName(btree.getFile()));
             btree.backupToStream(os);
         } finally {
             backup.closeEntry();
