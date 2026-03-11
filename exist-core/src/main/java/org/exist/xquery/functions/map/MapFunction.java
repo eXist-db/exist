@@ -229,7 +229,7 @@ public class MapFunction extends BasicFunction {
         return map.put((AtomicValue) args[1].itemAt(0), args[2]);
     }
 
-    private Sequence entry(final Sequence[] args) throws XPathException {
+    private Sequence entry(final Sequence[] args)  {
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
         return new SingleKeyMapType(this, this.context, null, key, args[1]);
     }

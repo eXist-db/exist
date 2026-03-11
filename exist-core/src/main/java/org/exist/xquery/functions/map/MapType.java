@@ -64,7 +64,7 @@ public class MapType extends AbstractMapType {
      * The type of the keys in the map,
      * if not all keys have the same type
      * then this is set to {@link #MIXED_KEY_TYPES}.
-     *
+     * <p>
      * Uses integer values from {@link org.exist.xquery.value.Type}.
      */
     private int keyType = UNKNOWN_KEY_TYPE;
@@ -75,7 +75,7 @@ public class MapType extends AbstractMapType {
 
     /**
      * Construct a new Bifurcan mutable-map for use with AtomicValue keys.
-     * 
+     * <p>
      * This function is predominantly for pre-building a Map of key/values
      * for passing to {@link #MapType(XQueryContext, IMap, Integer)}.
      *
