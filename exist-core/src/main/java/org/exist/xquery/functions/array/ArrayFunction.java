@@ -60,6 +60,8 @@ public class ArrayFunction extends BasicFunction {
         SORT("sort");
 
         final static Map<String, Fn> fnMap = new HashMap<>();
+        private final String fname;
+
         static {
             for (Fn fn: Fn.values()) {
                 fnMap.put(fn.fname, fn);
@@ -69,8 +71,6 @@ public class ArrayFunction extends BasicFunction {
         static Fn get(String name) {
             return fnMap.get(name);
         }
-
-        private final String fname;
 
         Fn(String name) {
             this.fname = name;

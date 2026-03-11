@@ -26,7 +26,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.*;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static org.exist.xquery.FunctionDSL.*;
@@ -47,9 +46,11 @@ public class MapFunction extends BasicFunction {
         KEYS("keys"),
         REMOVE("remove"),
         FOR_EACH("for-each"),
-        FIND("find")
-;
+        FIND("find");
+
         final static Map<String, MapFunction.Fn> fnMap = new HashMap<>();
+        private final String fname;
+
         static {
             for (MapFunction.Fn fn: MapFunction.Fn.values()) {
                 fnMap.put(fn.fname, fn);
@@ -59,8 +60,6 @@ public class MapFunction extends BasicFunction {
         static MapFunction.Fn get(String name) {
             return fnMap.get(name);
         }
-
-        private final String fname;
 
         Fn(String name) {
             this.fname = name;
@@ -354,7 +353,7 @@ public class MapFunction extends BasicFunction {
 
     /**
      * Recursive helper for find
-     *
+     * <p>
      * Recursively find map members in a sequence
      * By searching each of the individual items in the sequence
      *
@@ -370,7 +369,7 @@ public class MapFunction extends BasicFunction {
 
     /**
      * Recursive helper for find
-     *
+     * <p>
      * Recursively find map members in items, which can only be maps or arrays
      * (They may be other types, but these are not containers)
      *
