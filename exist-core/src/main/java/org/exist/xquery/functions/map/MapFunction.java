@@ -246,38 +246,23 @@ public class MapFunction extends BasicFunction {
             return new MapType(this, this.context);
         }
 
-        final MergeDuplicates mergeDuplicates;
-        if (args.length == 2) {
-            final MapType map = (MapType) args[1];
-            final StringValue key = new StringValue(this, "duplicates");
-            if (map.contains(key)) {
-                final Sequence mapValue = map.get(key);
-                mergeDuplicates = MergeDuplicates.fromDuplicatesValue(mapValue.getStringValue());
-                if (mergeDuplicates == null) {
-                    throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
-                }
-            } else {
-                mergeDuplicates = MergeDuplicates.USE_FIRST;
-            }
-        } else {
-            mergeDuplicates = MergeDuplicates.USE_FIRST;
-        }
-
+        final DuplicateMergeStrategy mergeDuplicates = getMergeStrategy(args);
         final Sequence maps = args[0];
+
+
         final int totalMaps = maps.getItemCount();
         final AbstractMapType head;
         final List<AbstractMapType> tail = new ArrayList<>(totalMaps - 1);
 
-        if (mergeDuplicates == MergeDuplicates.USE_LAST || mergeDuplicates == MergeDuplicates.COMBINE) {
+        // USE_LAST will pick the item from the last map containing a duplicate item
+        // COMBINE will combine duplicate items in head-first order
+        if (mergeDuplicates == DuplicateMergeStrategy.USE_LAST || mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
             // head is the first map
-            // USE_LAST will pick the item from the last map containing a duplicate item
-            // COMBINE will combine duplicate items in head-first order
             head = (AbstractMapType) maps.itemAt(0);
             for (int i = 1; i < totalMaps; i++) {
                 final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
                 tail.add(other);
             }
-
         } else {
             // head is the last map
             // USE_FIRST will pick the item from the first map containing a duplicate item
@@ -287,44 +272,71 @@ public class MapFunction extends BasicFunction {
                 tail.add(other);
             }
         }
-
-        if (mergeDuplicates == MergeDuplicates.COMBINE) {
-            // Provide a callback function for merging items which share a key
-            // Call merge variant
-            final List<XPathException> mergeExceptions = new ArrayList<>();
-            final AbstractMapType merged
-                    = head.merge(tail, (first, second) -> {
-                try {
-                    final ValueSequence sequence = new ValueSequence(first);
-                    sequence.addAll(second);
-                    return sequence;
-                } catch (final XPathException e) {
-                    //We cannot throw out of the MapType - pass exceptions here.
-                    mergeExceptions.add(e);
-                }
-                return Sequence.EMPTY_SEQUENCE;
-            });
-            if (!mergeExceptions.isEmpty()) {
-                throw mergeExceptions.getFirst();
-            }
-            return merged;
+        if (mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
+            return combineDuplicates(head, tail);
+        }
+        if (mergeDuplicates == DuplicateMergeStrategy.REJECT) {
+            return rejectDuplicates(head, tail);
         }
 
-        final AbstractMapType result = head.merge(tail);
+        return head.merge(tail);
+    }
 
-        if (mergeDuplicates == MergeDuplicates.REJECT) {
+    // COMBINE will combine duplicate items in head-first order
+    private AbstractMapType rejectDuplicates(final AbstractMapType head, final List<AbstractMapType> tail) throws XPathException {
+        // Provide a callback function for merging items which share a key
+        // Call merge variant
+        final List<Sequence> mergeExceptions = new ArrayList<>();
+        final AbstractMapType merged = head.merge(tail, (first, second) -> {
+            mergeExceptions.add(first);
+            return Sequence.EMPTY_SEQUENCE;
+        });
 
-            int inputItemsSize = head.size();
-            for (final AbstractMapType other : tail) {
-                inputItemsSize += other.size();
+        if (!mergeExceptions.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOJS0003, "At least one duplicate key encountered with merge strategy being \"reject\".");
+        }
+        return merged;
+    }
+
+    // COMBINE will combine duplicate items in head-first order
+    private AbstractMapType combineDuplicates(final AbstractMapType head, final List<AbstractMapType> tail) throws XPathException {
+        // Provide a callback function for merging items which share a key
+        // Call merge variant
+        final List<XPathException> mergeExceptions = new ArrayList<>();
+        final AbstractMapType merged = head.merge(tail, (first, second) -> {
+            try {
+                final ValueSequence sequence = new ValueSequence(first);
+                sequence.addAll(second);
+                return sequence;
+            } catch (final XPathException e) {
+                //We cannot throw out of the MapType - pass exceptions here.
+                mergeExceptions.add(e);
             }
-            if (inputItemsSize > result.size()) {
-                // no duplicates, so we don't need to consider the duplicates
-                throw new XPathException(this, ErrorCodes.FOJS0003, "map { \"duplicates\": \"reject\" } maps had duplicate entry");
-            }
+            return Sequence.EMPTY_SEQUENCE;
+        });
+
+        if (!mergeExceptions.isEmpty()) {
+            throw mergeExceptions.getFirst();
+        }
+        return merged;
+    }
+
+    private DuplicateMergeStrategy getMergeStrategy(Sequence[] args) throws XPathException {
+        if (args.length == 1) {
+            return DuplicateMergeStrategy.USE_FIRST;
+        }
+        final MapType map = (MapType) args[1];
+        final StringValue key = new StringValue(this, "duplicates");
+        final Sequence mapValue = map.get(key);
+        if (mapValue.isEmpty()) {
+            return DuplicateMergeStrategy.USE_FIRST;
         }
 
-        return result;
+        final DuplicateMergeStrategy mergeDuplicates = DuplicateMergeStrategy.get(mapValue.getStringValue());
+        if (mergeDuplicates == null) {
+            throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
+        }
+        return mergeDuplicates;
     }
 
     private Sequence forEach(final Sequence[] args) throws XPathException {
@@ -391,21 +403,27 @@ public class MapFunction extends BasicFunction {
         return result;
     }
 
-    private enum MergeDuplicates {
-        REJECT,
-        USE_FIRST,
-        USE_LAST,
-        USE_ANY,
-        COMBINE;
+    private enum DuplicateMergeStrategy {
+        REJECT("reject"),
+        USE_FIRST("use-first"),
+        USE_LAST("use-last"),
+        USE_ANY("use-any"),
+        COMBINE("combine");
+        final static Map<String, MapFunction.DuplicateMergeStrategy> dmsMap = new HashMap<>();
+        private final String key;
 
-        public static @Nullable MergeDuplicates fromDuplicatesValue(final String duplicatesValue) {
-            for (final MergeDuplicates mergeDuplicates : values()) {
-                if (mergeDuplicates.name().toLowerCase().replace('_', '-').equals(duplicatesValue)) {
-                    return mergeDuplicates;
-                }
+        static {
+            for (MapFunction.DuplicateMergeStrategy dms: MapFunction.DuplicateMergeStrategy.values()) {
+                dmsMap.put(dms.key, dms);
             }
+        }
 
-            return null;
+        static MapFunction.DuplicateMergeStrategy get(String key) {
+            return dmsMap.get(key);
+        }
+
+        DuplicateMergeStrategy(String key) {
+            this.key = key;
         }
     }
 }

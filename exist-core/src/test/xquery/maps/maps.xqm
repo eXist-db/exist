@@ -327,6 +327,12 @@ function mt:merge-duplicate-keys-combine-has-duplicates-empty-third() {
 };
 
 declare
+    %test:assertEquals(1)
+function mt:merge-duplicate-keys-empty-sequence() {
+    map:merge((map{1: 1},map{1: 3}), map{"duplicates": ()})
+};
+
+declare
     %test:assertEmpty
 function mt:mapEmptyValue() {
     let $map := $mt:mapOfSequences

@@ -257,8 +257,7 @@ public class MapType extends AbstractMapType {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        final Sequence result = map.get(key, null);
-        return result == null ? Sequence.EMPTY_SEQUENCE : result;
+        return map.get(key, Sequence.EMPTY_SEQUENCE);
     }
 
     @Override
