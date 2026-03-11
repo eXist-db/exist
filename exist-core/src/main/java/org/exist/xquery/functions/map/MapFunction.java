@@ -31,7 +31,6 @@ import java.util.*;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.map.MapModule.functionSignature;
-import static org.exist.xquery.functions.map.MapModule.functionSignatures;
 
 /**
  * Implements all functions of the map module.
@@ -68,97 +67,96 @@ public class MapFunction extends BasicFunction {
         }
     }
 
-    private static final FunctionParameterSequenceType INPUT_MAP = param("map", Type.MAP_ITEM, "The input map");
-    private static final FunctionParameterSequenceType FS_PARAM_MAPS = optManyParam("maps", Type.MAP_ITEM, "Existing maps to merge to create a new map.");
-    private static final FunctionParameterSequenceType FS_PARAM_KEY = param("key", Type.ANY_ATOMIC_TYPE, "The key");
-    private static final FunctionParameterSequenceType FS_PARAM_REMOVE_KEYS = param("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The keys to remove");
-    private static final FunctionParameterSequenceType FS_PARAM_VALUE = param("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value");
+    private static final FunctionParameterSequenceType PARAM_INPUT_MAP = param("map", Type.MAP_ITEM, "The input map");
+    private static final FunctionParameterSequenceType PARAM_MERGE_MAPS = optManyParam("maps", Type.MAP_ITEM, "Existing maps to merge to create a new map.");
+    private static final FunctionParameterSequenceType PARAM_KEY = param("key", Type.ANY_ATOMIC_TYPE, "The key");
+    private static final FunctionParameterSequenceType PARAM_REMOVE_KEYS = param("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The keys to remove");
+    private static final FunctionParameterSequenceType PARAM_VALUE = param("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value");
 
-    public static final FunctionSignature[] FS_MERGE = functionSignatures(
+    public static final FunctionSignature MERGE_1 = functionSignature(
             Fn.MERGE.fname,
             "Returns a map that combines the entries from a number of existing maps.",
             returns(Type.MAP_ITEM, "A new map which is the result of merging the maps"),
-            arities(
-                    arity(
-                            FS_PARAM_MAPS
-                    ),
-                    arity(
-                            FS_PARAM_MAPS,
-                            param("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
-                    )
-            )
+            PARAM_MERGE_MAPS
+    );
+    public static final FunctionSignature MERGE_2 = functionSignature(
+            Fn.MERGE.fname,
+            "Returns a map that combines the entries from a number of existing maps.",
+            returns(Type.MAP_ITEM, "A new map which is the result of merging the maps"),
+            PARAM_MERGE_MAPS,
+            param("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
     );
 
-    public static final FunctionSignature FS_FIND = functionSignature(
+    public static final FunctionSignature FIND = functionSignature(
             Fn.FIND.fname,
             "Searches the supplied input sequence and any contained maps and arrays for a map entry with the supplied key, " +
                     "and returns the corresponding values.",
             returns(Type.ARRAY_ITEM, "An array containing the found values with the input key"),
             optManyParam("input", Type.ITEM, "The sequence of maps to search"),
-            FS_PARAM_KEY
+            PARAM_KEY
     );
 
-    public static final FunctionSignature FNS_SIZE = functionSignature(
+    public static final FunctionSignature SIZE = functionSignature(
             Fn.SIZE.fname,
             "Returns the number of entries in the supplied map.",
             returns(Type.INTEGER, "The number of key value pairs in the map"),
-            INPUT_MAP
+            PARAM_INPUT_MAP
     );
 
-    public final static FunctionSignature FNS_KEYS = functionSignature(
+    public final static FunctionSignature KEYS = functionSignature(
             Fn.KEYS.fname,
             "Returns a sequence containing all the key values present in a map.",
             returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
-            INPUT_MAP
+            PARAM_INPUT_MAP
     );
 
-    public final static FunctionSignature FNS_CONTAINS = functionSignature(
+    public final static FunctionSignature CONTAINS = functionSignature(
             Fn.CONTAINS.fname,
             "Tests whether a supplied map contains an entry for a given key.",
             returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
-            INPUT_MAP,
-            FS_PARAM_KEY
+            PARAM_INPUT_MAP,
+            PARAM_KEY
     );
 
-    public final static FunctionSignature FNS_GET = functionSignature(
+    public final static FunctionSignature GET = functionSignature(
             Fn.GET.fname,
             "Returns the value associated with a supplied key in a given map.",
             returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
-            INPUT_MAP,
-            FS_PARAM_KEY
+            PARAM_INPUT_MAP,
+            PARAM_KEY
     );
 
-    public final static FunctionSignature FNS_PUT = functionSignature(
+    public final static FunctionSignature PUT = functionSignature(
             Fn.PUT.fname,
             "Returns a map containing all the contents of the supplied map, but with an additional entry, which replaces any existing entry for the same key.",
             returns(Type.MAP_ITEM, Cardinality.EXACTLY_ONE),
-            INPUT_MAP,
-            FS_PARAM_KEY,
-            FS_PARAM_VALUE
+            PARAM_INPUT_MAP,
+            PARAM_KEY,
+            PARAM_VALUE
     );
 
-    public final static FunctionSignature FNS_ENTRY = functionSignature(
+    public final static FunctionSignature ENTRY = functionSignature(
             Fn.ENTRY.fname,
             "Creates a map that contains a single entry (a key-value pair).",
             returns(Type.MAP_ITEM, Cardinality.EXACTLY_ONE),
-            FS_PARAM_KEY,
-            FS_PARAM_VALUE
+            PARAM_KEY,
+            PARAM_VALUE
     );
 
-    public final static FunctionSignature FNS_REMOVE = functionSignature(
+    public final static FunctionSignature REMOVE = functionSignature(
             Fn.REMOVE.fname,
             "Constructs a new map by removing an entry from an existing map.",
             returns(Type.MAP_ITEM, Cardinality.EXACTLY_ONE),
-            INPUT_MAP,
-            FS_PARAM_REMOVE_KEYS
+            PARAM_INPUT_MAP,
+            PARAM_REMOVE_KEYS
     );
 
-    public final static FunctionSignature FNS_FOR_EACH = functionSignature(
+    public final static FunctionSignature FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
             "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
                 "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
             returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
-            INPUT_MAP,
+            PARAM_INPUT_MAP,
             funParam(
                 "action", Type.FUNCTION,
                 params(

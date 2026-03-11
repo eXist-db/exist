@@ -32,6 +32,8 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import java.util.List;
 import java.util.Map;
 
+import static org.exist.xquery.FunctionDSL.functionDefs;
+
 /**
  * Implement the
  * <a href="https://www.w3.org/TR/xpath-functions-31/#map-functions">function that operate on maps</a>
@@ -41,19 +43,20 @@ public class MapModule extends AbstractInternalModule {
     public static final String NAMESPACE_URI = "http://www.w3.org/2005/xpath-functions/map";
     public static final String PREFIX = "map";
 
-    private static final FunctionDef[] functions = {
-            new FunctionDef(MapFunction.FS_MERGE[0], MapFunction.class),
-            new FunctionDef(MapFunction.FS_MERGE[1], MapFunction.class),
-            new FunctionDef(MapFunction.FS_FIND, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_SIZE, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_KEYS, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_CONTAINS, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_GET, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_PUT, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_ENTRY, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_REMOVE, MapFunction.class),
-            new FunctionDef(MapFunction.FNS_FOR_EACH, MapFunction.class)
-    };
+    private static final FunctionDef[] functions = functionDefs(
+            MapFunction.class,
+            MapFunction.MERGE_1,
+            MapFunction.MERGE_2,
+            MapFunction.FIND,
+            MapFunction.SIZE,
+            MapFunction.KEYS,
+            MapFunction.CONTAINS,
+            MapFunction.GET,
+            MapFunction.PUT,
+            MapFunction.ENTRY,
+            MapFunction.REMOVE,
+            MapFunction.FOR_EACH
+    );
 
     public MapModule(Map<String, List<?>> parameters) {
         super(functions, parameters, false);
@@ -77,9 +80,5 @@ public class MapModule extends AbstractInternalModule {
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
         return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
-    }
-
-    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 }
