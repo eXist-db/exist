@@ -107,7 +107,7 @@ public class Optimize extends AbstractPragma {
                 if (optimizables != null) {
                     for (final Optimizable optimizable : optimizables) {
                         final Sequence canBeOptimized = optimizable.canOptimizeSequence(contextSequence);
-                        if (canBeOptimized == null) {
+                        if (canBeOptimized == null || canBeOptimized.isEmpty()) {
                             optimize = false;
                             break;  // exit for-each loop
                         }
