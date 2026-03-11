@@ -19,24 +19,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.backup;
+package org.exist.storage.vector;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
+import javax.annotation.Nullable;
 
 /**
- * Callback interface, mainly used by the {@link org.exist.storage.DataBackup} system task to write the raw data files to an archive.
- *
- * <p><strong>Important:</strong> The {@link OutputStream} returned by {@link #newEntry(String)} is the underlying
- * archive stream (e.g. a {@link java.util.zip.ZipOutputStream}). Callers must <em>not</em> close it, as that would
- * close the entire backup. Write the entry data, then call {@link #closeEntry()} to finish the entry. Do not use
- * try-with-resources on the returned stream.</p>
+ * Broker Pool Service for the Vector Store.
  */
-public interface RawDataBackup
-{
-    OutputStream newEntry( String name ) throws IOException;
+public interface VectorStoreService {
 
-
-    void closeEntry() throws IOException;
+    /**
+     * Returns the Vector Store.
+     *
+     * @return the Vector Store, or null if the service is not prepared
+     */
+    @Nullable
+    VectorStore getVectorStore();
 }
