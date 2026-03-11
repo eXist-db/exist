@@ -19,21 +19,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package xquery.lucene;
-
-import org.exist.test.runner.XSuite;
-import org.junit.runner.RunWith;
+package org.exist.vector;
 
 /**
- * Runs only the vector search XQSuite tests.
- * Use for TDD when implementing Lucene 10 vector search:
- *
- * mvn -q test -Dtest=VectorSearchTests -pl extensions/indexes/lucene -DfailIfNoTests=false -Denforcer.skip=true ...
+ * Provider of vector embeddings from text. Implementations may use ONNX, HTTP APIs, etc.
  */
-@RunWith(XSuite.class)
-@XSuite.XSuiteFiles({
-    "src/test/xquery/lucene/vector-search.xqm",
-    "src/test/xquery/lucene/vector-embed.xqm"
-})
-public class VectorSearchTests {
+public interface VectorEmbeddingProvider {
+
+  /**
+   * Returns the embedding dimension for this provider.
+   *
+   * @return dimension (e.g. 384 for all-MiniLM-L6-v2)
+   */
+  int getDimension();
+
+  /**
+   * Embeds the given text into a dense float vector.
+   *
+   * @param text input text (non-null, may be empty)
+   * @return embedding vector of length {@link #getDimension()}, or null if embedding failed
+   */
+  float[] embed(String text);
 }

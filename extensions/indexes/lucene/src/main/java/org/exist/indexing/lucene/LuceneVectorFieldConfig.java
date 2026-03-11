@@ -36,7 +36,12 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Element;
 
+import org.exist.storage.txn.Txn;
+import org.exist.vector.VectorEmbeddingProvider;
+import org.exist.vector.VectorEmbeddingService;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -58,9 +63,13 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     private static final String ATTR_DIMENSION = "dimension";
     private static final String ATTR_SIMILARITY = "similarity";
     private static final String ATTR_ENCODING = "encoding";
+    private static final String ATTR_EMBEDDING = "embedding";
+    private static final String ATTR_MODEL = "model";
+    private static final String ATTR_MODEL_PATH = "model-path";
 
     private static final String ENCODING_BASE64 = "base64";
     private static final String ENCODING_TEXT = "text";
+    private static final String EMBEDDING_LOCAL = "local";
 
     private static final Pattern WS = Pattern.compile("\\s+");
 
@@ -72,6 +81,12 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     protected final VectorSimilarityFunction similarity;
     /** True if encoding is base64, false for text. */
     protected final boolean useBase64;
+    /** True when embedding="local" (compute via ONNX). */
+    protected final boolean embeddingLocal;
+    /** Model ID when embedding=local (e.g. all-MiniLM-L6-v2). */
+    @Nullable protected final String modelId;
+    /** Model path or HuggingFace URL when embedding=local. */
+    @Nullable protected final String modelPathOrUrl;
 
     /**
      * Creates a vector field config from the given XML element.
@@ -115,6 +130,25 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         if (!useBase64 && !ENCODING_TEXT.equalsIgnoreCase(encStr)) {
             throw new org.exist.util.DatabaseConfigurationException(
                     "vector-field '" + fieldName + "': encoding must be 'base64' or 'text', got '" + encStr + "'");
+        }
+
+        final String embStr = configElement.getAttribute(ATTR_EMBEDDING);
+        embeddingLocal = EMBEDDING_LOCAL.equalsIgnoreCase(embStr);
+        if (embeddingLocal) {
+            modelId = configElement.getAttribute(ATTR_MODEL).trim();
+            if (modelId.isEmpty()) {
+                throw new org.exist.util.DatabaseConfigurationException(
+                        "vector-field '" + fieldName + "': embedding=\"local\" requires attribute 'model'");
+            }
+            final String pathStr = configElement.getAttribute(ATTR_MODEL_PATH).trim();
+            if (pathStr.isEmpty()) {
+                throw new org.exist.util.DatabaseConfigurationException(
+                        "vector-field '" + fieldName + "': embedding=\"local\" requires attribute 'model-path'");
+            }
+            modelPathOrUrl = pathStr;
+        } else {
+            modelId = null;
+            modelPathOrUrl = null;
         }
     }
 
@@ -160,9 +194,13 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         return similarity;
     }
 
-    /** Evaluates the expression, parses vectors, and adds them to the Lucene document. */
+    /** Evaluates the expression, parses vectors (or embeds text when embedding=local), and adds to the Lucene document. */
     @Override
     protected void processResult(final Sequence result, final Document luceneDoc) throws XPathException {
+        if (embeddingLocal) {
+            processResultEmbedding(result, luceneDoc);
+            return;
+        }
         final List<float[]> vectors = new ArrayList<>();
         for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
             final String content = i.nextItem().getStringValue().trim();
@@ -183,10 +221,47 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
     }
 
+    private void processResultEmbedding(final Sequence result, final Document luceneDoc) throws XPathException {
+        final VectorEmbeddingProvider provider = getEmbeddingProvider();
+        if (provider == null) {
+            return;
+        }
+        final List<float[]> vectors = new ArrayList<>();
+        for (SequenceIterator i = result.unorderedIterator(); i.hasNext(); ) {
+            final String content = i.nextItem().getStringValue().trim();
+            if (content.isEmpty()) {
+                continue;
+            }
+            final float[] vec = provider.embed(content);
+            if (vec != null) {
+                vectors.add(vec);
+            }
+        }
+        if (vectors.isEmpty()) {
+            return;
+        }
+        final float[] combined = vectors.size() == 1 ? vectors.get(0) : meanPool(vectors);
+        if (combined != null) {
+            luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
+            storeVectorIfLocal(combined);
+        }
+    }
+
     @Override
     protected void processText(final CharSequence text, final Document luceneDoc) {
         final String content = text.toString().trim();
         if (content.isEmpty()) {
+            return;
+        }
+        if (embeddingLocal) {
+            final VectorEmbeddingProvider provider = getEmbeddingProvider();
+            if (provider != null) {
+                final float[] vec = provider.embed(content);
+                if (vec != null) {
+                    luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                    storeVectorIfLocal(vec);
+                }
+            }
             return;
         }
         final float[] vec = parseVector(content);
@@ -195,23 +270,86 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
     }
 
+    @Nullable
+    private VectorEmbeddingProvider getEmbeddingProvider() {
+        if (!embeddingLocal || modelId == null || modelPathOrUrl == null) {
+            return null;
+        }
+        try {
+            return VectorEmbeddingService.getInstance().getProvider(modelId, modelPathOrUrl, dimension);
+        } catch (NoClassDefFoundError e) {
+            LOG.warn("vector-field '{}': embedding=\"local\" requires exist-vector extension: {}", fieldName, e.getMessage());
+            return null;
+        }
+    }
+
+    /** Per-invocation context for storing computed vectors in vector.dbx. */
+    private static final ThreadLocal<StoreContext> STORE_CONTEXT = new ThreadLocal<>();
+
+    private static final class StoreContext {
+        final DBBroker broker;
+        final String docPath;
+        final NodeId nodeId;
+
+        StoreContext(final DBBroker broker, final DocumentImpl document, final NodeId nodeId) {
+            this.broker = broker;
+            this.docPath = document.getURI().toString();
+            this.nodeId = nodeId;
+        }
+    }
+
+    private void storeVectorIfLocal(final float[] vec) {
+        final StoreContext ctx = STORE_CONTEXT.get();
+        if (ctx == null) {
+            return;
+        }
+        try {
+            final VectorStore vectorStore = ctx.broker.getBrokerPool().getVectorStore();
+            if (vectorStore != null) {
+                final Txn txn = ctx.broker.getCurrentTransaction();
+                if (txn != null) {
+                    final byte[] bytes = floatsToBytes(vec);
+                    vectorStore.put(txn, ctx.docPath, ctx.nodeId, bytes);
+                }
+            }
+        } catch (IOException e) {
+            LOG.debug("Failed to store vector in vector.dbx: {}", e.getMessage());
+        }
+    }
+
+    private static byte[] floatsToBytes(final float[] vec) {
+        final java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(vec.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        buf.asFloatBuffer().put(vec);
+        return buf.array();
+    }
+
     @Override
     protected void build(final DBBroker broker, final DocumentImpl document, final NodeId nodeId,
             final Document luceneDoc, final CharSequence text) {
         try {
-            final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
-            if (vectorStore != null) {
-                final String docPath = document.getURI().toString();
-                final byte[] stored = vectorStore.get(docPath, nodeId);
-                if (stored != null && stored.length == dimension * 4) {
-                    final float[] vec = bytesToFloats(stored);
-                    if (vec != null && allFinite(vec)) {
-                        luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
-                        return;
+            if (!embeddingLocal) {
+                final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+                if (vectorStore != null) {
+                    final String docPath = document.getURI().toString();
+                    final byte[] stored = vectorStore.get(docPath, nodeId);
+                    if (stored != null && stored.length == dimension * 4) {
+                        final float[] vec = bytesToFloats(stored);
+                        if (vec != null && allFinite(vec)) {
+                            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                            return;
+                        }
                     }
                 }
+            } else {
+                STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
-            doBuild(broker, document, nodeId, luceneDoc, text);
+            try {
+                doBuild(broker, document, nodeId, luceneDoc, text);
+            } finally {
+                if (embeddingLocal) {
+                    STORE_CONTEXT.remove();
+                }
+            }
         } catch (IOException e) {
             LOG.debug("vector.dbx read failed, falling back to XML: {}", e.getMessage());
             try {
@@ -251,7 +389,8 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         try {
             final byte[] bytes = Base64.getDecoder().decode(content);
             if (bytes == null || bytes.length != dimension * 4) {
-                LOG.debug("vector-field '{}': base64 length {} != dimension*4 ({}), skipping", fieldName, bytes != null ? bytes.length : 0, dimension * 4);
+                LOG.debug("vector-field '{}': base64 decoded {} bytes (expected {} for dim={}), content len={}, skipping",
+                    fieldName, bytes != null ? bytes.length : 0, dimension * 4, dimension, content != null ? content.length() : 0);
                 return null;
             }
             final float[] vec = new float[dimension];
@@ -262,7 +401,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
             }
             return vec;
         } catch (IllegalArgumentException e) {
-            LOG.debug("vector-field '{}': invalid base64, skipping: {}", fieldName, e.getMessage());
+            LOG.debug("vector-field '{}': invalid base64 (content len={}), skipping: {}", fieldName, content != null ? content.length() : 0, e.getMessage());
             return null;
         }
     }
@@ -271,7 +410,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     private float[] parseText(final String content) {
         final String[] parts = WS.split(content.trim());
         if (parts.length != dimension) {
-            LOG.debug("vector-field '{}': text has {} values, expected {}, skipping", fieldName, parts.length, dimension);
+            LOG.debug("vector-field '{}': text has {} values (expected {}), skipping", fieldName, parts.length, dimension);
             return null;
         }
         final float[] vec = new float[dimension];

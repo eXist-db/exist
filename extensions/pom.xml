@@ -54,6 +54,7 @@
         <!-- module>images</module -->  <!-- Not used -->
         <module>indexes</module>
         <module>modules</module>
+        <module>vector</module>
         <module>security</module>
         <module>webdav</module>
         <module>xqdoc</module>

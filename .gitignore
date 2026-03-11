@@ -25,3 +25,6 @@ work/
 
 # Claude planning files
 plans/
+
+# Debug logs (e.g. from reindex investigation)
+reindex-dbg.log

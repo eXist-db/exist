@@ -29,6 +29,7 @@
         </Console>
     </Appenders>
     <Loggers>
+        <Logger name="org.exist.storage.NativeBroker" level="INFO"/>
         <Root level="OFF">
             <AppenderRef ref="Console"/>
         </Root>

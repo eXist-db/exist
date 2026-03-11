@@ -889,6 +889,7 @@
 
             <!-- Module under test! -->
             <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule"/>
+            <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule"/>
 
             <!-- dependencies needed for tests -->
             <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>

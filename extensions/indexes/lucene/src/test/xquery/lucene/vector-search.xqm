@@ -26,16 +26,29 @@ module namespace vs="http://exist-db.org/xquery/vector-search/test";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 (:~
- : Test data for vector search. dimension=4, base64 little-endian float32.
- : v1=[1,0,0,0], v2=[0.9,0.1,0,0], v3=[0,0,1,0].
+ : Test data for vector search. dimension=4.
+ : Base64: little-endian float32, 24 chars each. Text: space-separated floats.
+ : v1=[1,0,0,0], v2=[0.9,0.1,0,0], v3=[0,0,1,0], v4=[0,0,0,1].
  :)
- 
+
+(:~ Shared base64 embeddings (dim=4, 24 chars each). Use to avoid duplication and typos. :)
+declare variable $vs:EMB_BASE64_A := "AACAPwAAAAAAAAAAAAAAAA==";   (: [1,0,0,0] :)
+declare variable $vs:EMB_BASE64_B := "ZmZmP83MzD0AAAAAAAAAAA==";   (: [0.1,0.1,0.1,0] :)
+declare variable $vs:EMB_BASE64_C := "AAAAAAAAAAAAAIA/AAAAAA==";   (: [0,0,1,0] gamma :)
+declare variable $vs:EMB_BASE64_D := "AAAAAAAAAAAAAAAAAACAPw==";   (: [0,0,0,1] delta :)
+
+(:~ Shared text embeddings (dim=4, space-separated floats). :)
+declare variable $vs:EMB_TEXT_A := "1.0 0.0 0.0 0.0";   (: [1,0,0,0] :)
+declare variable $vs:EMB_TEXT_B := "0.9 0.1 0.0 0.0";   (: [0.1,0.1,0.1,0] :)
+declare variable $vs:EMB_TEXT_C := "0.0 0.0 1.0 0.0";   (: [0,0,1,0] gamma :)
+declare variable $vs:EMB_TEXT_D := "0.0 0.0 0.0 1.0";   (: [0,0,0,1] delta :)
+
 (:~ Same data with text encoding (space-separated floats). :)
 declare variable $vs:DATA_TEXT :=
     <articles>
-        <article><title>Doc 1</title><embedding>1.0 0.0 0.0 0.0</embedding></article>
-        <article><title>Doc 2</title><embedding>0.9 0.1 0.0 0.0</embedding></article>
-        <article><title>Doc 3</title><embedding>0.0 0.0 1.0 0.0</embedding></article>
+        <article><title>Doc 1</title><embedding>{$vs:EMB_TEXT_A}</embedding></article>
+        <article><title>Doc 2</title><embedding>{$vs:EMB_TEXT_B}</embedding></article>
+        <article><title>Doc 3</title><embedding>{$vs:EMB_TEXT_C}</embedding></article>
     </articles>;
 
 (:~ Collection config with vector-field (text encoding). :)
@@ -53,9 +66,9 @@ declare variable $vs:XCONF_TEXT :=
 (:~ Data with range field for filter tests. Includes one doc without embedding (for empty-embedding test). :)
 declare variable $vs:DATA_WITH_YEAR :=
     <articles>
-        <article><title>A</title><year>2020</year><embedding>AACAPwAAAAAAAAAAAAAAAA==</embedding></article>
-        <article><title>B</title><year>2021</year><embedding>ZmZmP83MzD0AAAAAAAAAAA==</embedding></article>
-        <article><title>C</title><year>2022</year><embedding>AAAAAAAAAAAAAIA/AAAAAA==</embedding></article>
+        <article><title>A</title><year>2020</year><embedding>{$vs:EMB_BASE64_A}</embedding></article>
+        <article><title>B</title><year>2021</year><embedding>{$vs:EMB_BASE64_B}</embedding></article>
+        <article><title>C</title><year>2022</year><embedding>{$vs:EMB_BASE64_C}</embedding></article>
         <article><title>NoEmbed</title><year>2023</year></article>
     </articles>;
 
@@ -76,23 +89,24 @@ declare variable $vs:XCONF_WITH_RANGE :=
 (:~ Data for dimension-mismatch test: 2 valid (4 dims), 1 invalid (3 dims when config expects 4). :)
 declare variable $vs:DATA_DIM_MISMATCH :=
     <articles>
-        <article><title>Valid1</title><embedding>1.0 0.0 0.0 0.0</embedding></article>
-        <article><title>Valid2</title><embedding>0.9 0.1 0.0 0.0</embedding></article>
+        <article><title>Valid1</title><embedding>{$vs:EMB_TEXT_A}</embedding></article>
+        <article><title>Valid2</title><embedding>{$vs:EMB_TEXT_B}</embedding></article>
         <article><title>BadDim</title><embedding>1.0 0.0 0.0</embedding></article>
     </articles>;
 
 (:~ Data for base64 dimension-mismatch: 2 valid (16 bytes), 1 invalid (12 bytes when config expects 16). :)
 declare variable $vs:DATA_DIM_MISMATCH_BASE64 :=
     <articles>
-        <article><title>Valid1</title><embedding>AACAPwAAAAAAAAAAAAAAAA==</embedding></article>
-        <article><title>Valid2</title><embedding>ZmZmP83MzD0AAAAAAAAAAA==</embedding></article>
+        <article><title>Valid1</title><embedding>{$vs:EMB_BASE64_A}</embedding></article>
+        <article><title>Valid2</title><embedding>{$vs:EMB_BASE64_B}</embedding></article>
+        (: BadDimBase64: invalid 12 bytes (truncated), config expects 16 :)
         <article><title>BadDimBase64</title><embedding>AACAPwAAAAAAAAAAA</embedding></article>
     </articles>;
 
 (:~ Data with non-finite (NaN) embedding — skips at index time. :)
 declare variable $vs:DATA_NON_FINITE :=
     <articles>
-        <article><title>Valid1</title><embedding>1.0 0.0 0.0 0.0</embedding></article>
+        <article><title>Valid1</title><embedding>{$vs:EMB_TEXT_A}</embedding></article>
         <article><title>NonFinite</title><embedding>1.0 0.0 NaN 0.0</embedding></article>
     </articles>;
 
@@ -143,9 +157,65 @@ declare variable $vs:COLLECTION_DIM_MISMATCH_BASE64 := "/db/" || $vs:COLLECTION_
 declare variable $vs:COLLECTION_NON_FINITE_NAME := "lucene-test-vector-non-finite";
 declare variable $vs:COLLECTION_NON_FINITE := "/db/" || $vs:COLLECTION_NON_FINITE_NAME;
 
+(:~ Data for embedding=local tests. Text to embed in title; no pre-computed embedding. :)
+declare variable $vs:DATA_EMBEDDING_LOCAL :=
+    <articles>
+        <article><title>Hello world</title></article>
+        <article><title>Machine learning</title></article>
+    </articles>;
+
+(:~ Config with embedding=local. model-path resolves via ConfigurationHelper.lookup (relative to exist.home). :)
+declare variable $vs:XCONF_EMBEDDING_LOCAL :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <field name="title" expression="title"/>
+                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                        embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+(:~ Config with embedding=local but model-path to non-existent dir (graceful degradation). :)
+declare variable $vs:XCONF_EMBEDDING_LOCAL_NO_MODEL :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <field name="title" expression="title"/>
+                    <vector-field name="embedding" expression="title" dimension="384" similarity="cosine"
+                        embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/nonexistent-model-12345"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $vs:COLLECTION_EMBEDDING_LOCAL_NAME := "lucene-test-vector-embedding-local";
+declare variable $vs:COLLECTION_EMBEDDING_LOCAL := "/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NAME;
+declare variable $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME := "lucene-test-vector-embedding-no-model";
+declare variable $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL := "/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME;
+
+(:~ Data for lifecycle tests (US-I4 reindex, US-U1 update, US-U3 removal). Two separate docs for removal test. :)
+declare variable $vs:DATA_LIFECYCLE_A := <articles><article><title>Lifecycle A</title><year>2020</year><embedding>{$vs:EMB_BASE64_A}</embedding></article></articles>;
+declare variable $vs:DATA_LIFECYCLE_B := <articles><article><title>Lifecycle B</title><year>2021</year><embedding>{$vs:EMB_BASE64_B}</embedding></article></articles>;
+
+(:~ Extra document for US-I4 reindex test (store to LIFECYCLE, reindex, verify indexed). :)
+declare variable $vs:DATA_LIFECYCLE_C := <articles><article><title>Lifecycle C</title><year>2022</year><embedding>{$vs:EMB_BASE64_C}</embedding></article></articles>;
+(:~ For reindex-document test: fourth doc. :)
+declare variable $vs:DATA_LIFECYCLE_D := <articles><article><title>Lifecycle D</title><year>2023</year><embedding>{$vs:EMB_BASE64_D}</embedding></article></articles>;
+
+declare variable $vs:COLLECTION_LIFECYCLE_NAME := "lucene-test-vector-lifecycle";
+declare variable $vs:COLLECTION_LIFECYCLE := "/db/" || $vs:COLLECTION_LIFECYCLE_NAME;
+
+(:~ Dedicated collection for reindex baseline tests (store + reindex in same session). :)
+declare variable $vs:COLLECTION_REINDEX_BASELINE_NAME := "lucene-test-vector-reindex-baseline";
+declare variable $vs:COLLECTION_REINDEX_BASELINE := "/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME;
+
 (:~
  : setUp: create config chain, main collection (base64 + range for filters), text collection,
- : dim-mismatch collection, reindex.
+ : dim-mismatch collection, embedding=local collections, reindex.
  :)
 declare
     %test:setUp
@@ -176,7 +246,29 @@ function vs:setup() {
       xmldb:create-collection("/db", $vs:COLLECTION_NON_FINITE_NAME),
       xmldb:store($vs:COLLECTION_NON_FINITE, "test.xml", $vs:DATA_NON_FINITE),
       xmldb:store("/db/system/config/db/" || $vs:COLLECTION_NON_FINITE_NAME, "collection.xconf", $vs:XCONF_NON_FINITE),
-      xmldb:reindex($vs:COLLECTION_NON_FINITE) )
+      xmldb:reindex($vs:COLLECTION_NON_FINITE),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_EMBEDDING_LOCAL_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_EMBEDDING_LOCAL_NAME),
+      xmldb:store($vs:COLLECTION_EMBEDDING_LOCAL, "test.xml", $vs:DATA_EMBEDDING_LOCAL),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NAME, "collection.xconf", $vs:XCONF_EMBEDDING_LOCAL),
+      xmldb:reindex($vs:COLLECTION_EMBEDDING_LOCAL),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME),
+      xmldb:store($vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL, "test.xml", $vs:DATA_EMBEDDING_LOCAL),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME, "collection.xconf", $vs:XCONF_EMBEDDING_LOCAL_NO_MODEL),
+      xmldb:reindex($vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_LIFECYCLE_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_LIFECYCLE_NAME),
+      xmldb:store($vs:COLLECTION_LIFECYCLE, "a.xml", $vs:DATA_LIFECYCLE_A),
+      xmldb:store($vs:COLLECTION_LIFECYCLE, "b.xml", $vs:DATA_LIFECYCLE_B),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_LIFECYCLE_NAME, "collection.xconf", $vs:XCONF_WITH_RANGE),
+      xmldb:reindex($vs:COLLECTION_LIFECYCLE),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_REINDEX_BASELINE_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_REINDEX_BASELINE_NAME),
+      xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "a.xml", $vs:DATA_LIFECYCLE_A),
+      xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "b.xml", $vs:DATA_LIFECYCLE_B),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME, "collection.xconf", $vs:XCONF_WITH_RANGE),
+      xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE) )
 };
 
 (:~
@@ -194,7 +286,15 @@ function vs:tearDown() {
     xmldb:remove($vs:COLLECTION_DIM_MISMATCH_BASE64),
     xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_DIM_MISMATCH_BASE64_NAME),
     xmldb:remove($vs:COLLECTION_NON_FINITE),
-    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_NON_FINITE_NAME)
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_NON_FINITE_NAME),
+    xmldb:remove($vs:COLLECTION_EMBEDDING_LOCAL),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NAME),
+    xmldb:remove($vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL_NAME),
+    xmldb:remove($vs:COLLECTION_LIFECYCLE),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_LIFECYCLE_NAME),
+    xmldb:remove($vs:COLLECTION_REINDEX_BASELINE),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME)
 };
 
 (:~
@@ -348,4 +448,125 @@ declare
 function vs:score-higher-for-more-similar() {
     let $hits := collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2)]
     return count($hits) eq 2 and ft:score($hits[1]) ge ft:score($hits[2])
+};
+
+(:~
+ : embedding=local with model-path to non-existent dir: no crash, text indexing still works.
+ : TDD: graceful degradation when ONNX model is not available.
+ :)
+declare
+    %test:assertEquals(1)
+function vs:embedding-local-no-model-text-still-searchable() {
+    count(collection($vs:COLLECTION_EMBEDDING_LOCAL_NO_MODEL)//article[ft:query(., "Hello")])
+};
+
+(:~
+ : embedding=local with real model: text embedded at index time, vector search finds hits.
+ : Run via VectorSearchEmbeddingTest (Java) with assumeTrue when model exists.
+ : XQSuite: pending so it does not fail when model is absent.
+ :)
+declare
+    %test:pending("Run via VectorSearchEmbeddingTest when model at target/onnx-models/all-MiniLM-L6-v2")
+    %test:assertEquals(2)
+function vs:embedding-local-indexed-and-queried() {
+    let $query-vec := vector:embed("Hello world", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
+    return count(collection($vs:COLLECTION_EMBEDDING_LOCAL)//article[ft:query-vector(., $query-vec, 2)])
+};
+
+(:~
+ : Reindex baseline: store new doc, reindex collection, vector search finds it.
+ : REINDEX_BASELINE has a.xml, b.xml from setUp. We add c.xml, reindex(collection), expect 3.
+ : Reset c,d first (XQSuite setUp/tearDown are per-module, not per-test).
+ :)
+declare
+    %test:assertEquals(3)
+function vs:reindex-collection-includes-new-doc() {
+    let $_ := (if (doc-available($vs:COLLECTION_REINDEX_BASELINE || "/c.xml")) then xmldb:remove($vs:COLLECTION_REINDEX_BASELINE, "c.xml") else (),
+               if (doc-available($vs:COLLECTION_REINDEX_BASELINE || "/d.xml")) then xmldb:remove($vs:COLLECTION_REINDEX_BASELINE, "d.xml") else ())[1]
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "c.xml", $vs:DATA_LIFECYCLE_C)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE)
+    return count(collection($vs:COLLECTION_REINDEX_BASELINE)//article[ft:query-vector(., [0.0, 0.0, 1.0, 0.0], 5)])
+};
+
+(:~
+ : Reindex baseline: store second new doc, reindex(collection), vector search finds it.
+ :)
+declare
+    %test:assertEquals(4)
+function vs:reindex-collection-includes-second-new-doc() {
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "d.xml", $vs:DATA_LIFECYCLE_D)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE)
+    return count(collection($vs:COLLECTION_REINDEX_BASELINE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 5)])
+};
+
+(:~
+ : Diagnostic: both store+reindex in ONE XQuery execution.
+ :)
+declare
+    %test:assertEquals(4)
+function vs:reindex-both-store-reindex-in-one-execution() {
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "c.xml", $vs:DATA_LIFECYCLE_C)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE)
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "d.xml", $vs:DATA_LIFECYCLE_D)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE)
+    return count(collection($vs:COLLECTION_REINDEX_BASELINE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 5)])
+};
+
+(:~
+ : Diagnostic: store both c and d, then reindex once.
+ :)
+declare
+    %test:assertEquals(4)
+function vs:reindex-store-both-then-reindex-once() {
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "c.xml", $vs:DATA_LIFECYCLE_C)
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "d.xml", $vs:DATA_LIFECYCLE_D)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE)
+    return count(collection($vs:COLLECTION_REINDEX_BASELINE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 5)])
+};
+
+(:~
+ : Reindex document-level: store new doc, reindex(collection, doc), vector search finds it.
+ :)
+declare
+    %test:assertEquals(4)
+function vs:reindex-document-includes-new-doc() {
+    let $_ := xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "d.xml", $vs:DATA_LIFECYCLE_D)
+    let $_ := xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE, "d.xml")
+    return count(collection($vs:COLLECTION_REINDEX_BASELINE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 5)])
+};
+
+(:~
+ : US-I4: Store new document, reindex(collection), vector search finds it.
+ : Reset LIFECYCLE to a,b first (document-removal/update may have modified it; XQSuite setUp/tearDown are per-module).
+ :)
+declare
+    %test:assertEquals(3)
+function vs:z-reindex-updates-vectors() {
+    let $_ := (xmldb:store($vs:COLLECTION_LIFECYCLE, "a.xml", $vs:DATA_LIFECYCLE_A),
+               xmldb:store($vs:COLLECTION_LIFECYCLE, "b.xml", $vs:DATA_LIFECYCLE_B),
+               if (doc-available($vs:COLLECTION_LIFECYCLE || "/c.xml")) then xmldb:remove($vs:COLLECTION_LIFECYCLE, "c.xml") else ())[1]
+    let $_ := xmldb:store($vs:COLLECTION_LIFECYCLE, "c.xml", $vs:DATA_LIFECYCLE_C)
+    let $_ := xmldb:reindex($vs:COLLECTION_LIFECYCLE)
+    return count(collection($vs:COLLECTION_LIFECYCLE)//article[ft:query-vector(., [0.0, 0.0, 1.0, 0.0], 5)])
+};
+
+(:~
+ : US-U3: Remove document, vector index entry removed.
+ :)
+declare
+    %test:assertEquals(1)
+function vs:document-removal-removes-from-index() {
+    let $_ := xmldb:remove($vs:COLLECTION_LIFECYCLE, "a.xml")
+    return count(collection($vs:COLLECTION_LIFECYCLE)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 5)])
+};
+
+(:~
+ : US-U1: Update document embedding, vector index reflects change.
+ :)
+declare
+    %test:assertEquals(1)
+function vs:document-update-updates-vector() {
+    let $updated := <articles><article><title>Lifecycle A</title><year>2020</year><embedding>{$vs:EMB_TEXT_D}</embedding></article></articles>
+    let $_ := xmldb:store($vs:COLLECTION_LIFECYCLE, "a.xml", $updated)
+    return count(collection($vs:COLLECTION_LIFECYCLE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 2)])
 };
