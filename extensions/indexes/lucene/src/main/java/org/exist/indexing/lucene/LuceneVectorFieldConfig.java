@@ -30,12 +30,14 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.vector.VectorStore;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Element;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -197,12 +199,40 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     protected void build(final DBBroker broker, final DocumentImpl document, final NodeId nodeId,
             final Document luceneDoc, final CharSequence text) {
         try {
+            final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+            if (vectorStore != null) {
+                final String docPath = document.getURI().toString();
+                final byte[] stored = vectorStore.get(docPath, nodeId);
+                if (stored != null && stored.length == dimension * 4) {
+                    final float[] vec = bytesToFloats(stored);
+                    if (vec != null && allFinite(vec)) {
+                        luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                        return;
+                    }
+                }
+            }
             doBuild(broker, document, nodeId, luceneDoc, text);
+        } catch (IOException e) {
+            LOG.debug("vector.dbx read failed, falling back to XML: {}", e.getMessage());
+            try {
+                doBuild(broker, document, nodeId, luceneDoc, text);
+            } catch (PermissionDeniedException | XPathException ex) {
+                LOG.warn("Error evaluating expression for vector field '{}': {}", fieldName, ex.getMessage());
+            }
         } catch (PermissionDeniedException e) {
             LOG.warn("Permission denied while evaluating expression for vector field '{}': {}", fieldName, e.getMessage());
         } catch (XPathException e) {
             LOG.warn("XPath error while evaluating expression for vector field '{}': {}", fieldName, e.getMessage());
         }
+    }
+
+    private static float[] bytesToFloats(final byte[] bytes) {
+        if (bytes.length % 4 != 0) {
+            return null;
+        }
+        final float[] vec = new float[bytes.length / 4];
+        ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().get(vec);
+        return vec;
     }
 
     /**

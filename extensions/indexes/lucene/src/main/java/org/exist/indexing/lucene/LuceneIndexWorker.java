@@ -55,6 +55,7 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.btree.DBException;
+import org.exist.storage.vector.VectorStore;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
@@ -76,6 +77,7 @@ import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.*;
+import java.util.Set;
 
 
 /**
@@ -310,6 +312,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removeDocument(int docId) {
+        removeVectorStoreForDocument(currentDoc.getURI().toString());
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -320,6 +323,40 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         } finally {
             index.releaseWriter(writer);
             mode = ReindexMode.STORE;
+        }
+    }
+
+    private void removeVectorStoreForDocument(String docPath) {
+        final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+        if (vectorStore == null) {
+            return;
+        }
+        final Txn txn = broker.getCurrentTransaction();
+        if (txn == null) {
+            return;
+        }
+        try {
+            vectorStore.removeByDocument(txn, docPath);
+        } catch (IOException e) {
+            LOG.debug("Failed to remove vectors for document {}: {}", docPath, e.getMessage());
+        }
+    }
+
+    private void removeVectorStoreForNodes(String docPath, Set<NodeId> nodeIds) {
+        final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+        if (vectorStore == null || nodeIds == null || nodeIds.isEmpty()) {
+            return;
+        }
+        final Txn txn = broker.getCurrentTransaction();
+        if (txn == null) {
+            return;
+        }
+        try {
+            for (NodeId nodeId : nodeIds) {
+                vectorStore.remove(txn, docPath, nodeId);
+            }
+        } catch (IOException e) {
+            LOG.debug("Failed to remove vectors for nodes: {}", e.getMessage());
         }
     }
 
@@ -342,6 +379,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
         if (LOG.isDebugEnabled())
             LOG.debug("Removing collection {}", collection.getURI());
+        final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+        final Txn txn = broker.getCurrentTransaction();
+        if (vectorStore != null && txn != null) {
+            try {
+                for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
+                    DocumentImpl doc = i.next();
+                    vectorStore.removeByDocument(txn, doc.getURI().toString());
+                }
+            } catch (IOException | PermissionDeniedException | LockException e) {
+                LOG.debug("Failed to remove vectors for collection: {}", e.getMessage());
+            }
+        }
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -374,6 +423,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     protected void removeNodes() {
     	if (nodesToRemove == null)
             return;
+        removeVectorStoreForNodes(currentDoc.getURI().toString(), nodesToRemove);
         IndexWriter writer = null;
         try {
             writer = index.getWriter();

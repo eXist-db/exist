@@ -591,6 +591,10 @@ public class NativeBroker implements DBBroker {
         }
         pool.getSymbols().backupToArchive(backup);
         pool.getBlobStore().backupToArchive(backup);
+        final org.exist.storage.vector.VectorStore vectorStore = pool.getVectorStore();
+        if (vectorStore != null) {
+            vectorStore.backupToArchive(backup);
+        }
         pool.getIndexManager().backupToArchive(backup);
         //TODO backup counters
         //TODO USE zip64 or tar to create snapshots larger then 4Gb
