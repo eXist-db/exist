@@ -38,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * ONNX-based vector embedding provider. Uses HuggingFace tokenizer and ONNX Runtime.
@@ -51,6 +52,7 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
 
   private static final String INPUT_IDS = "input_ids";
   private static final String ATTENTION_MASK = "attention_mask";
+  private static final String TOKEN_TYPE_IDS = "token_type_ids";
   private static final String LAST_HIDDEN_STATE = "last_hidden_state";
   private static final String SENTENCE_EMBEDDING = "sentence_embedding";
   private static final String TOKEN_EMBEDDINGS = "token_embeddings";
@@ -60,14 +62,17 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   private final HuggingFaceTokenizer tokenizer;
   private final int dimension;
   private final String outputName;
+  private final String tokenTypeIdsInputName;
 
   private OnnxVectorProvider(final OrtEnvironment env, final OrtSession session,
-      final HuggingFaceTokenizer tokenizer, final int dimension, final String outputName) {
+      final HuggingFaceTokenizer tokenizer, final int dimension, final String outputName,
+      final String tokenTypeIdsInputName) {
     this.env = env;
     this.session = session;
     this.tokenizer = tokenizer;
     this.dimension = dimension;
     this.outputName = outputName;
+    this.tokenTypeIdsInputName = tokenTypeIdsInputName;
   }
 
   @Override
@@ -98,6 +103,10 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       final Map<String, OnnxTensor> inputs = new HashMap<>();
       inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, inputIds));
       inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, attentionMask));
+      if (tokenTypeIdsInputName != null) {
+        final long[][] tokenTypeIds = new long[][] { createTokenTypeIds(ids.length) };
+        inputs.put(tokenTypeIdsInputName, OnnxTensor.createTensor(env, tokenTypeIds));
+      }
 
       try (Result result = session.run(inputs)) {
         if (SENTENCE_EMBEDDING.equals(outputName)) {
@@ -132,6 +141,14 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       mask[i] = 1;
     }
     return mask;
+  }
+
+  private static long[] createTokenTypeIds(final int len) {
+    final long[] ids = new long[len];
+    for (int i = 0; i < len; i++) {
+      ids[i] = 0;
+    }
+    return ids;
   }
 
   private float[] meanPool(final Result result, final int seqLen, final long[] attentionMask) throws Exception {
@@ -192,7 +209,29 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       final HuggingFaceTokenizer tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
 
       final OrtEnvironment env = OrtEnvironment.getEnvironment();
-      final OrtSession session = env.createSession(modelFile.toString(), new OrtSession.SessionOptions());
+      final OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
+      try {
+        opts.addCUDA(0);
+        LOG.info("Using CUDA execution provider for embedding (device 0)");
+      } catch (final Throwable t) {
+        LOG.debug("CUDA not available, using CPU: {}", t.getMessage());
+      }
+      final OrtSession session = env.createSession(modelFile.toString(), opts);
+
+      String tokenTypeIdsInputName = null;
+      final Set<String> inputNames = session.getInputNames();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("ONNX model input names: {}", inputNames);
+      }
+      for (final String name : inputNames) {
+        if (TOKEN_TYPE_IDS.equals(name) || (name != null && name.endsWith("token_type_ids"))) {
+          tokenTypeIdsInputName = name;
+          break;
+        }
+      }
+      if (tokenTypeIdsInputName == null && inputNames.size() >= 3) {
+        tokenTypeIdsInputName = TOKEN_TYPE_IDS;
+      }
 
       String outputName = SENTENCE_EMBEDDING;
       for (final String name : session.getOutputNames()) {
@@ -206,7 +245,7 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
         }
       }
 
-      return new OnnxVectorProvider(env, session, tokenizer, dimension, outputName);
+      return new OnnxVectorProvider(env, session, tokenizer, dimension, outputName, tokenTypeIdsInputName);
     } catch (final Exception e) {
       LOG.warn("Failed to create OnnxVectorProvider: {}", e.getMessage());
       return null;

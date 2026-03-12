@@ -51,11 +51,16 @@ public class VectorModule extends AbstractInternalModule {
   private static final FunctionParameterSequenceType FS_PARAM_MODEL = param("model", org.exist.xquery.value.Type.STRING,
       "Model identifier (e.g. 'all-MiniLM-L6-v2').");
   private static final FunctionParameterSequenceType FS_PARAM_MODEL_PATH = optParam("model-path", org.exist.xquery.value.Type.STRING,
-      "Optional path to model directory. If omitted, resolves via onnx-models/{model} relative to exist.home.");
+      "Optional path to model directory. If omitted, resolves via conf.xml registry or onnx-models/{model}.");
 
   public static final FunctionDef[] functions = {
       new FunctionDef(Embed.signatures[0], Embed.class),
-      new FunctionDef(Embed.signatures[1], Embed.class)
+      new FunctionDef(Embed.signatures[1], Embed.class),
+      new FunctionDef(Embed.signatures[2], Embed.class),
+      new FunctionDef(EmbedBatch.signatures[0], EmbedBatch.class),
+      new FunctionDef(EmbedBatch.signatures[1], EmbedBatch.class),
+      new FunctionDef(EmbedBatch.signatures[2], EmbedBatch.class),
+      new FunctionDef(Models.signatures[0], Models.class)
   };
 
   public VectorModule(final Map<String, List<? extends Object>> parameters) {

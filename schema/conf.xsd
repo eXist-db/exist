@@ -1380,6 +1380,38 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="vector-models" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Global vector embedding model registry. When vector-field or vector:embed
+                            omits model-path, the registry supplies path and dimension. Add models
+                            here to use custom or additional embedding models.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="model" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="id" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>Model identifier (e.g. all-MiniLM-L6-v2)</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="path" type="xs:string" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation>Local path or HuggingFace/API URL</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute name="dimension" type="xs:integer" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>Embedding dimension (default 384)</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

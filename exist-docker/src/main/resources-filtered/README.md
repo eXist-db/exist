@@ -22,9 +22,14 @@ The images are based on Google Cloud Platform's ["Distroless" Docker Images](htt
 
 ## How to use
 Pre-build images are available on [DockerHub](https://hub.docker.com/r/existdb/existdb/). 
-There are two continuously updated channels:
-*   `release` for the stable releases based on the [`master` branch](https://github.com/eXist-db/exist/tree/master)
-*   `latest` for the latest commit to the [`develop` branch](https://github.com/eXist-db/exist/tree/develop).
+There are two image variants:
+
+*   **`existdb/existdb:latest`** (and **`existdb/existdb:release`**) — minimal image based on [Distroless](https://github.com/GoogleContainerTools/distroless) Java 21. No shell; smallest footprint.
+*   **`existdb/existdb:debug`** — based on Eclipse Temurin JDK 21, with a shell and JDWP port 5005 for debugging. See `Dockerfile-DEBUG`; a FIXME there notes how to enable `jdk.incubator.vector` for vector search SIMD if you build a custom image or pass options at run time.
+
+Channels:
+*   `release` for stable releases (from [`master`](https://github.com/eXist-db/exist/tree/master))
+*   `latest` for the latest commit on [`develop`](https://github.com/eXist-db/exist/tree/develop)
 
 To download the image run:
 ```bash
@@ -303,3 +308,6 @@ and [string deduplication](http://openjdk.java.net/jeps/192) `-XX:+UseStringDedu
 To disable or further tweak these features edit the relevant parts of the `Dockerfile`, or when running the image. 
 As always when using the latest and greatest, YMMV. 
 Feedback about real world experiences with these features in connection with eXist-db is very much welcome.
+
+**Vector search (SIMD)**  
+Neither the default image nor the debug image set `--add-modules jdk.incubator.vector` in `JAVA_TOOL_OPTIONS` (see FIXME in `Dockerfile-DEBUG`). To use vector search with SIMD acceleration, build a custom image that adds that option to a JDK 16+ base, or pass it when running the container (e.g. `docker run -e JAVA_TOOL_OPTIONS="--add-modules jdk.incubator.vector ..." existdb/existdb:debug`).

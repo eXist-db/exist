@@ -33,11 +33,15 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 /**
  * Resolves model path or HuggingFace URL to a local directory.
  * When pathOrUrl is an http(s) URL, downloads model.onnx and tokenizer.json on first use.
+ * Local paths are resolved against a single, explicit base (exist.home or user.dir) and
+ * validated so failures are clear and environment-dependent behaviour is reduced.
  */
 public final class ModelPathResolver {
 
@@ -45,8 +49,19 @@ public final class ModelPathResolver {
 
   private static final String MODEL_FILE = "model.onnx";
   private static final String TOKENIZER_FILE = "tokenizer.json";
+  private static final String DEFAULT_ONNX_SUBDIR = "onnx-models";
 
   private ModelPathResolver() {
+  }
+
+  /**
+   * Base directory for resolving relative model paths and for the ONNX cache.
+   * Uses BrokerPool exist home if available, then exist.home, then user.dir.
+   */
+  @Nonnull
+  static Path getVectorBase() {
+    final Optional<Path> home = ConfigurationHelper.getExistHome();
+    return home.orElse(Paths.get(System.getProperty("user.dir", "."))).normalize().toAbsolutePath();
   }
 
   /**
@@ -69,12 +84,35 @@ public final class ModelPathResolver {
   }
 
   private static Path resolveLocal(final String pathStr) {
+    final Path base = getVectorBase();
+    Path resolved;
     try {
-      return ConfigurationHelper.lookup(pathStr);
+      resolved = base.resolve(pathStr).normalize().toAbsolutePath();
     } catch (final Exception e) {
-      LOG.warn("Failed to resolve model path {}: {}", pathStr, e.getMessage());
+      LOG.warn("Invalid model path '{}' (base={}): {}", pathStr, base, e.getMessage());
       return null;
     }
+    if (hasModelFiles(resolved)) {
+      LOG.debug("Resolved model path '{}' to {}", pathStr, resolved);
+      return resolved;
+    }
+    LOG.warn("Model directory not found at {} (resolved from '{}'; base={}). Directory must contain {} and {}.",
+        resolved, pathStr, base, MODEL_FILE, TOKENIZER_FILE);
+    if (pathStr.startsWith(DEFAULT_ONNX_SUBDIR + "/") || pathStr.equals(DEFAULT_ONNX_SUBDIR)) {
+      final Path fallback = base.resolve("target").resolve(pathStr);
+      if (hasModelFiles(fallback)) {
+        LOG.info("Using fallback path for tests/build layout: {}", fallback);
+        return fallback;
+      }
+    }
+    return null;
+  }
+
+  private static boolean hasModelFiles(final Path dir) {
+    return dir != null
+        && Files.isDirectory(dir)
+        && Files.isRegularFile(dir.resolve(MODEL_FILE))
+        && Files.isRegularFile(dir.resolve(TOKENIZER_FILE));
   }
 
   private static Path resolveUrl(final String modelId, final String baseUrl) {
@@ -103,11 +141,14 @@ public final class ModelPathResolver {
   }
 
   private static Path getCacheDir(final String modelId) {
+    final Path base = getVectorBase();
+    final Path root = base.resolve(DEFAULT_ONNX_SUBDIR);
+    final Path cacheDir = root.resolve(sanitizeDirName(modelId));
     try {
-      final Path root = ConfigurationHelper.lookup("onnx-models");
-      return root.resolve(sanitizeDirName(modelId));
-    } catch (final Exception e) {
-      LOG.warn("Failed to resolve cache root: {}", e.getMessage());
+      Files.createDirectories(cacheDir);
+      return cacheDir;
+    } catch (final IOException e) {
+      LOG.warn("Failed to create ONNX cache dir {} (base={}): {}", cacheDir, base, e.getMessage());
       return null;
     }
   }

@@ -63,23 +63,62 @@ public final class VectorEmbeddingService {
   }
 
   /**
-   * Returns a provider for the given model ID. Resolves path or URL (downloads from
+   * Returns a provider for the given model ID. Delegates to
+   * {@link #getProvider(String, String, int, String)} with null apiKey.
+   */
+  @Nullable
+  public VectorEmbeddingProvider getProvider(@Nonnull final String modelId,
+      @Nullable final String pathOrUrl,
+      final int dimension) {
+    return getProvider(modelId, pathOrUrl, dimension, null);
+  }
+
+  /**
+   * Returns a provider for the given model ID. For HTTP API URLs (OpenAI, Cohere),
+   * creates an HttpVectorProvider. Otherwise resolves path or URL (downloads from
    * HuggingFace on first use) and creates an ONNX provider.
    *
-   * @param modelId    model identifier (e.g. "all-MiniLM-L6-v2")
-   * @param pathOrUrl  local path (relative to exist.home) or HuggingFace base URL
+   * @param modelId    model identifier (e.g. "all-MiniLM-L6-v2", "text-embedding-3-small")
+   * @param pathOrUrl  local path, HuggingFace base URL, or API base URL; null or empty to use
+   *                   conf.xml registry or default "onnx-models/{modelId}"
    * @param dimension  expected embedding dimension (for validation)
+   * @param apiKey     optional API key for HTTP APIs; when non-null, used instead of env vars
+   *                   (provider is not cached for security)
    * @return provider, or null if the model could not be loaded
    */
   @Nullable
   public VectorEmbeddingProvider getProvider(@Nonnull final String modelId,
-      @Nonnull final String pathOrUrl,
-      final int dimension) {
-    final Path modelPath = ModelPathResolver.resolve(modelId, pathOrUrl);
-    if (modelPath == null) {
+      @Nullable final String pathOrUrl,
+      final int dimension,
+      @Nullable final String apiKey) {
+    final ModelRegistry.Resolved resolved = ModelRegistry.getInstance().resolve(modelId, pathOrUrl, dimension);
+    final String path = resolved.path;
+    final int dim = resolved.dimension;
+    if (HttpVectorProvider.isHttpApiUrl(path)) {
+      final boolean useCache = apiKey == null || apiKey.isEmpty();
+      if (useCache) {
+        final String cacheKey = "http:" + modelId + ":" + path;
+        final VectorEmbeddingProvider cached = cache.get(cacheKey);
+        if (cached != null) return cached;
+      }
+      final VectorEmbeddingProvider p = HttpVectorProvider.create(modelId, path, apiKey, dim);
+      if (p != null) {
+        if (useCache) {
+          final String cacheKey = "http:" + modelId + ":" + path;
+          cache.put(cacheKey, p);
+          LOG.info("Loaded HTTP embedding provider: {} from {}", modelId, path);
+        }
+        return p;
+      }
       return null;
     }
-    return getProviderByPath(modelId, modelPath, dimension);
+    final Path modelPath = ModelPathResolver.resolve(modelId, path);
+    if (modelPath == null) {
+      LOG.warn("Model '{}' could not be resolved (path='{}'). Ensure the directory exists under exist.home and contains model.onnx and tokenizer.json, or configure <vector-models> in conf.xml, or use an absolute path or URL.",
+          modelId, path);
+      return null;
+    }
+    return getProviderByPath(modelId, modelPath, dim);
   }
 
   /**

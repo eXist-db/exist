@@ -31,6 +31,8 @@
                 builtin-modules
                     module
             xupdate
+            vector-models (optional)
+                model
     
     Any unique attributes specified can also be overridden using a Java system 
     property, typically specified on the command line, of the form:
@@ -1154,4 +1156,15 @@
         -->
         <content-file-pool size="10" max-idle="5"/>
     </rpc-server>
+
+    <!--
+    Global vector embedding model registry. When vector-field or vector:embed
+    omits model-path, the registry supplies path and dimension. Add models here
+    to use custom or additional embedding models; they appear in vector:models().
+    -->
+    <!--
+    <vector-models>
+        <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
+    </vector-models>
+    -->
 </exist>

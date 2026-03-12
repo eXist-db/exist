@@ -26,11 +26,12 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.vector.VectorEmbeddingProvider;
 import org.exist.vector.VectorEmbeddingService;
@@ -45,12 +46,13 @@ import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
 
 /**
- * vector:embed($text, $model, $model-path?) — Embed text at query time for ft:query-vector.
+ * vector:embed-batch($texts, $model, $model-path?) — Embed multiple texts at query time.
+ * Returns array of arrays (one embedding per input text) for use with ft:query-vector.
  */
-public class Embed extends BasicFunction {
+public class EmbedBatch extends BasicFunction {
 
-  private static final FunctionParameterSequenceType FS_PARAM_TEXT = param("text", Type.STRING,
-      "Text to embed (e.g. user search query).");
+  private static final FunctionParameterSequenceType FS_PARAM_TEXTS = param("texts", Type.STRING, Cardinality.ZERO_OR_MORE,
+      "Texts to embed (e.g. document titles for batch indexing).");
   private static final FunctionParameterSequenceType FS_PARAM_MODEL = param("model", Type.STRING,
       "Model identifier (e.g. 'all-MiniLM-L6-v2').");
   private static final FunctionParameterSequenceType FS_PARAM_MODEL_PATH = optParam("model-path", Type.STRING,
@@ -58,34 +60,34 @@ public class Embed extends BasicFunction {
   private static final FunctionParameterSequenceType FS_PARAM_API_KEY = optParam("api-key", Type.STRING,
       "Optional API key for HTTP APIs (OpenAI, Cohere). Alternative to OPENAI_API_KEY/COHERE_API_KEY env vars.");
 
-  final static FunctionSignature[] signatures = {
-      functionSignature("embed",
-          "Embed text for vector search. Returns array of floats for use with ft:query-vector.",
-          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding floats"),
-          FS_PARAM_TEXT,
+  static final FunctionSignature[] signatures = {
+      functionSignature("embed-batch",
+          "Embed multiple texts for vector search. Returns array of arrays (one embedding per input).",
+          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding arrays"),
+          FS_PARAM_TEXTS,
           FS_PARAM_MODEL),
-      functionSignature("embed",
-          "Embed text with explicit model path.",
-          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding floats"),
-          FS_PARAM_TEXT,
+      functionSignature("embed-batch",
+          "Embed multiple texts with explicit model path.",
+          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding arrays"),
+          FS_PARAM_TEXTS,
           FS_PARAM_MODEL,
           FS_PARAM_MODEL_PATH),
-      functionSignature("embed",
-          "Embed text with model path and optional API key (alternative to env vars).",
-          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding floats"),
-          FS_PARAM_TEXT,
+      functionSignature("embed-batch",
+          "Embed multiple texts with model path and optional API key (alternative to env vars).",
+          new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding arrays"),
+          FS_PARAM_TEXTS,
           FS_PARAM_MODEL,
           FS_PARAM_MODEL_PATH,
           FS_PARAM_API_KEY)
   };
 
-  public Embed(final XQueryContext context, final FunctionSignature signature) {
+  public EmbedBatch(final XQueryContext context, final FunctionSignature signature) {
     super(context, signature);
   }
 
   @Override
   public Sequence eval(final Sequence[] args, @Nullable final Sequence contextSequence) throws XPathException {
-    final String text = args[0].getStringValue();
+    final Sequence textsSeq = args[0];
     final String model = args[1].getStringValue().trim();
     if (model.isEmpty()) {
       throw new XPathException(this, "Model parameter must not be empty");
@@ -112,16 +114,21 @@ public class Embed extends BasicFunction {
       if (provider == null) {
         throw new XPathException(this, "Failed to load embedding model: " + model);
       }
-      final float[] vec = provider.embed(text, true);
-      if (vec == null || vec.length == 0) {
-        throw new XPathException(this, "Embedding returned empty result");
-      }
 
-      final List<Sequence> items = new ArrayList<>(vec.length);
-      for (final float v : vec) {
-        items.add(new DoubleValue(this, v).toSequence());
+      final List<Sequence> resultArrays = new ArrayList<>();
+      for (final SequenceIterator it = textsSeq.iterate(); it.hasNext(); ) {
+        final String text = it.nextItem().getStringValue();
+        final float[] vec = provider.embed(text, true);
+        if (vec == null || vec.length == 0) {
+          throw new XPathException(this, "Embedding returned empty result for text: " + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
+        }
+        final List<Sequence> items = new ArrayList<>(vec.length);
+        for (final float v : vec) {
+          items.add(new DoubleValue(this, v).toSequence());
+        }
+        resultArrays.add(new ArrayType(this, context, items).toSequence());
       }
-      return new ArrayType(this, context, items);
+      return new ArrayType(this, context, resultArrays);
     } catch (final NoClassDefFoundError e) {
       throw new XPathException(this, "Vector embedding module not available: " + e.getMessage());
     }

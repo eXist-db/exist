@@ -27,6 +27,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.KnnFloatVectorField;
 import org.apache.lucene.index.VectorSimilarityFunction;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.indexing.ReindexScope;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -37,6 +38,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Element;
 
 import org.exist.storage.txn.Txn;
+import org.exist.vector.HttpVectorProvider;
 import org.exist.vector.VectorEmbeddingProvider;
 import org.exist.vector.VectorEmbeddingService;
 
@@ -70,6 +72,8 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     private static final String ENCODING_BASE64 = "base64";
     private static final String ENCODING_TEXT = "text";
     private static final String EMBEDDING_LOCAL = "local";
+    private static final String EMBEDDING_HTTP = "http";
+    private static final String VECTOR_STORE_DB = "db";
 
     private static final Pattern WS = Pattern.compile("\\s+");
 
@@ -81,12 +85,14 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     protected final VectorSimilarityFunction similarity;
     /** True if encoding is base64, false for text. */
     protected final boolean useBase64;
-    /** True when embedding="local" (compute via ONNX). */
+    /** True when embedding="local" or embedding="http" (compute via ONNX or HTTP API). */
     protected final boolean embeddingLocal;
     /** Model ID when embedding=local (e.g. all-MiniLM-L6-v2). */
     @Nullable protected final String modelId;
     /** Model path or HuggingFace URL when embedding=local. */
     @Nullable protected final String modelPathOrUrl;
+    /** Parent Lucene config (for vector-store setting). */
+    private final LuceneConfig luceneConfig;
 
     /**
      * Creates a vector field config from the given XML element.
@@ -99,6 +105,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     public LuceneVectorFieldConfig(final LuceneConfig config, final Element configElement,
             final Map<String, String> namespaces) throws org.exist.util.DatabaseConfigurationException {
         super(config, configElement, namespaces);
+        luceneConfig = config;
 
         fieldName = configElement.getAttribute(ATTR_NAME);
         if (fieldName.isEmpty()) {
@@ -133,19 +140,27 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
 
         final String embStr = configElement.getAttribute(ATTR_EMBEDDING);
-        embeddingLocal = EMBEDDING_LOCAL.equalsIgnoreCase(embStr);
+        final boolean isLocal = EMBEDDING_LOCAL.equalsIgnoreCase(embStr);
+        final boolean isHttp = EMBEDDING_HTTP.equalsIgnoreCase(embStr);
+        embeddingLocal = isLocal || isHttp;
         if (embeddingLocal) {
             modelId = configElement.getAttribute(ATTR_MODEL).trim();
             if (modelId.isEmpty()) {
                 throw new org.exist.util.DatabaseConfigurationException(
-                        "vector-field '" + fieldName + "': embedding=\"local\" requires attribute 'model'");
+                        "vector-field '" + fieldName + "': embedding=\"" + embStr + "\" requires attribute 'model'");
             }
             final String pathStr = configElement.getAttribute(ATTR_MODEL_PATH).trim();
-            if (pathStr.isEmpty()) {
-                throw new org.exist.util.DatabaseConfigurationException(
-                        "vector-field '" + fieldName + "': embedding=\"local\" requires attribute 'model-path'");
+            if (isHttp) {
+                if (pathStr.isEmpty()) {
+                    throw new org.exist.util.DatabaseConfigurationException(
+                            "vector-field '" + fieldName + "': embedding=\"http\" requires model-path (e.g. https://api.openai.com/v1)");
+                }
+                if (!HttpVectorProvider.isHttpApiUrl(pathStr)) {
+                    throw new org.exist.util.DatabaseConfigurationException(
+                            "vector-field '" + fieldName + "': embedding=\"http\" requires model-path to be API URL (OpenAI or Cohere)");
+                }
             }
-            modelPathOrUrl = pathStr;
+            modelPathOrUrl = pathStr.isEmpty() ? "" : pathStr;
         } else {
             modelId = null;
             modelPathOrUrl = null;
@@ -272,7 +287,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
 
     @Nullable
     private VectorEmbeddingProvider getEmbeddingProvider() {
-        if (!embeddingLocal || modelId == null || modelPathOrUrl == null) {
+        if (!embeddingLocal || modelId == null) {
             return null;
         }
         try {
@@ -299,6 +314,9 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     private void storeVectorIfLocal(final float[] vec) {
+        if (!VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
+            return;
+        }
         final StoreContext ctx = STORE_CONTEXT.get();
         if (ctx == null) {
             return;
@@ -326,8 +344,10 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     @Override
     protected void build(final DBBroker broker, final DocumentImpl document, final NodeId nodeId,
             final Document luceneDoc, final CharSequence text) {
+        final ReindexScope scope = broker.getIndexController().getReindexScope();
         try {
-            if (!embeddingLocal) {
+            if (scope == ReindexScope.FULLTEXT && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
+                // Fulltext-only: read from vector.dbx only; skip vector computation.
                 final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
                 if (vectorStore != null) {
                     final String docPath = document.getURI().toString();
@@ -340,7 +360,25 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
                         }
                     }
                 }
-            } else {
+                // No vector in vector.dbx; skip (do not compute).
+                return;
+            }
+            // vector-store="lucene": fulltext-only reindex not supported; fall through to full build (doBuild).
+            // See LuceneConfig.getVectorStore() javadoc.
+            if (!embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
+                final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+                if (vectorStore != null) {
+                    final String docPath = document.getURI().toString();
+                    final byte[] stored = vectorStore.get(docPath, nodeId);
+                    if (stored != null && stored.length == dimension * 4) {
+                        final float[] vec = bytesToFloats(stored);
+                        if (vec != null && allFinite(vec)) {
+                            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+                            return;
+                        }
+                    }
+                }
+            } else if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
             }
             try {
