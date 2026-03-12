@@ -11,6 +11,9 @@ dependency-reduced-pom.xml
 # Maven generated
 effective-pom.xml
 
+# XQTS test artefacts
+work/
+
 # IDE specific files
 .idea/*
 !/.idea/runConfigurations
@@ -20,4 +23,5 @@ effective-pom.xml
 # OS specific files
 .DS_Store
 
+# Claude planning files
 plans/
