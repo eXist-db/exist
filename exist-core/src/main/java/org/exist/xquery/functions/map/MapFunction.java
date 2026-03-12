@@ -152,19 +152,21 @@ public class MapFunction extends BasicFunction {
 
     public final static FunctionSignature FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
-            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
-                "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
+            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; " +
+                    "the result is the sequence obtained by concatenating the results of these function calls. " +
+                    "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, " +
+                    "and the associated value as the second argument.",
             returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
             PARAM_INPUT_MAP,
             funParam(
                 "action", Type.FUNCTION,
                 params(
-                        param("asdf", Type.ANY_ATOMIC_TYPE,"asdf"),
-                        optManyParam("asdf", Type.ITEM, "asdf")
+                        param("key", Type.ANY_ATOMIC_TYPE, "the next key"),
+                        optManyParam("value", Type.ITEM, "the next value")
                 ),
-                returns(Type.ITEM, Cardinality.ZERO_OR_MORE
-            ),
-            Cardinality.EXACTLY_ONE, "The function to be called for each entry")
+                returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                Cardinality.EXACTLY_ONE, "The function to be called for each entry"
+            )
     );
 
     private AnalyzeContextInfo cachedContextInfo;
