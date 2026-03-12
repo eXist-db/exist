@@ -610,6 +610,79 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         return count;
     }
 
+    /**
+     * Strip unused namespace declarations from an element and all its descendants.
+     * A namespace declaration is "unused" if its prefix is not used by the element's
+     * own name or any of its attribute names.
+     *
+     * <p>This implements the W3C copy-namespaces {@code no-preserve} semantics:
+     * only namespace bindings that are used by element/attribute names are preserved.</p>
+     *
+     * <p>Works by invalidating unused namespace array entries (setting parent to -2)
+     * and re-adding only used ones. The invalidated entries are dead space that
+     * is cleaned up on the next {@link #compact()} call.</p>
+     *
+     * @param rootNodeNum the root element node number of the subtree to process
+     */
+    public void stripUnusedNamespacesInSubtree(final int rootNodeNum) {
+        if (namespaceCode == null) {
+            return;
+        }
+        // Walk the subtree: process rootNodeNum and all descendants at deeper levels
+        final short rootLevel = treeLevel[rootNodeNum];
+        for (int i = rootNodeNum; i < size; i++) {
+            if (i > rootNodeNum && treeLevel[i] <= rootLevel) {
+                break; // past the subtree
+            }
+            if (nodeKind[i] != Node.ELEMENT_NODE) {
+                continue;
+            }
+            stripUnusedNamespacesForElement(i);
+        }
+    }
+
+    private void stripUnusedNamespacesForElement(final int nodeNum) {
+        int ns = alphaLen[nodeNum];
+        if (ns < 0) {
+            return; // no namespace declarations
+        }
+
+        // Collect used prefixes: element name + attribute names
+        final java.util.Set<String> usedPrefixes = new java.util.HashSet<>();
+        final QName elemName = nodeName[nodeNum];
+        usedPrefixes.add(elemName.getPrefix() != null ? elemName.getPrefix() : "");
+        int attr = alpha[nodeNum];
+        if (attr >= 0) {
+            while (attr < nextAttr && attrParent[attr] == nodeNum) {
+                final QName aName = attrName[attr];
+                if (aName.getPrefix() != null && !aName.getPrefix().isEmpty()) {
+                    usedPrefixes.add(aName.getPrefix());
+                }
+                attr++;
+            }
+        }
+
+        // Collect used namespace declarations (to re-add later)
+        final java.util.List<QName> usedNs = new java.util.ArrayList<>();
+        while (ns < nextNamespace && namespaceParent[ns] == nodeNum) {
+            final QName nsQName = namespaceCode[ns];
+            if (usedPrefixes.contains(nsQName.getLocalPart())) {
+                usedNs.add(nsQName);
+            }
+            // Invalidate the old entry
+            namespaceParent[ns] = -2;
+            ns++;
+        }
+
+        // Reset alphaLen so addNamespace can set it fresh
+        alphaLen[nodeNum] = -1;
+
+        // Re-add only used namespace declarations
+        for (final QName nsQName : usedNs) {
+            addNamespace(nodeNum, nsQName);
+        }
+    }
+
     public int getChildCountFor(final int nr) {
         int count = 0;
         final short childLevel = (short) (treeLevel[nr] + 1);
@@ -1881,6 +1954,28 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      *
      * @param attrNum the attribute index to remove
      */
+    /**
+     * Find an attribute index by QName on a given element.
+     *
+     * @param elementNodeNum the element node number
+     * @param qname the attribute QName to find
+     * @return the attribute index, or -1 if not found
+     */
+    public int findAttribute(final int elementNodeNum, final QName qname) {
+        int a = alpha[elementNodeNum];
+        if (a < 0) {
+            return -1;
+        }
+        while (a < nextAttr && attrParent[a] == elementNodeNum) {
+            if (attrName[a].getLocalPart().equals(qname.getLocalPart())
+                    && attrName[a].getNamespaceURI().equals(qname.getNamespaceURI())) {
+                return a;
+            }
+            a++;
+        }
+        return -1;
+    }
+
     public void removeAttribute(final int attrNum) {
         if (attrNum < 0 || attrNum >= nextAttr) {
             return;
@@ -2473,6 +2568,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     private java.util.List<Integer> copyItemIntoDocument(final org.exist.xquery.value.Item item,
                                                           final int parentNodeNum, final short level)
             throws XPathException {
+        // When no-inherit is active, pass an empty scope map to materialize namespaces
+        // within inserted subtrees (so FunInScopePrefixes self-only mode still finds them)
+        final java.util.Map<String, String> scopeNs =
+                (context != null && !context.inheritNamespaces())
+                        ? new java.util.LinkedHashMap<>() : null;
+
         final java.util.List<Integer> result = new java.util.ArrayList<>();
         if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
             final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
@@ -2480,11 +2581,11 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 // For document nodes: insert the document's children, not the document itself
                 Node child = node.getFirstChild();
                 while (child != null) {
-                    result.add(copyNodeIntoDocument(child, parentNodeNum, level));
+                    result.add(copyNodeIntoDocument(child, parentNodeNum, level, scopeNs));
                     child = child.getNextSibling();
                 }
             } else {
-                result.add(copyNodeIntoDocument(node, parentNodeNum, level));
+                result.add(copyNodeIntoDocument(node, parentNodeNum, level, scopeNs));
             }
         } else {
             // Atomic value: convert to text node per W3C spec
@@ -2500,6 +2601,22 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level) {
+        return copyNodeIntoDocument(node, parentNodeNum, level, null);
+    }
+
+    /**
+     * Copy a node into this document.
+     *
+     * @param node the source node
+     * @param parentNodeNum the parent in this document
+     * @param level tree level for the new node
+     * @param scopeNamespaces when non-null, namespace bindings accumulated from ancestors
+     *        within the current subtree (for no-inherit materialization). Each element gets
+     *        explicit declarations for ancestor bindings not already declared on self.
+     *        Pass null to skip materialization (normal copy behavior).
+     */
+    private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level,
+                                      final java.util.Map<String, String> scopeNamespaces) {
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE: {
                 final String localName = node.getLocalName() != null ? node.getLocalName() : node.getNodeName();
@@ -2509,8 +2626,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 final int nodeNum = addNode(Node.ELEMENT_NODE, level, qname);
                 next[nodeNum] = parentNodeNum;
 
-                // Copy attributes (skip xmlns declarations — handled separately below)
+                // Collect attribute prefixes (needed for no-preserve filtering)
                 final NamedNodeMap attrs = node.getAttributes();
+                final java.util.Set<String> usedPrefixes = new java.util.HashSet<>();
+                usedPrefixes.add(prefix); // element prefix is always "used"
+
+                // Copy attributes (skip xmlns declarations — handled separately below)
                 if (attrs != null) {
                     for (int i = 0; i < attrs.getLength(); i++) {
                         final Attr attr = (Attr) attrs.item(i);
@@ -2521,16 +2642,27 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                         final String attrLocal = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
                         final String attrNs = attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "";
                         final String attrPrefix = attr.getPrefix() != null ? attr.getPrefix() : "";
+                        usedPrefixes.add(attrPrefix);
                         addAttribute(nodeNum, new QName(attrLocal, attrNs, attrPrefix),
                                 attr.getValue(), AttrImpl.ATTR_CDATA_TYPE);
                     }
                 }
 
-                // Copy namespace declarations
+                // Check if no-preserve mode should strip unused namespace declarations
+                final boolean noPreserve = context != null && !context.preserveNamespaces();
+
+                // Collect this element's own namespace declarations
+                final java.util.Map<String, String> selfNsDecls = new java.util.LinkedHashMap<>();
+
+                // Copy namespace declarations (filtered by no-preserve if applicable)
                 if (node instanceof ElementImpl memElement) {
                     // Memtree element: copy from namespace arrays
                     final java.util.Map<String, String> nsMap = memElement.getNamespaceMap();
                     for (final java.util.Map.Entry<String, String> e : nsMap.entrySet()) {
+                        if (noPreserve && !usedPrefixes.contains(e.getKey())) {
+                            continue; // strip unused namespace declaration
+                        }
+                        selfNsDecls.put(e.getKey(), e.getValue());
                         final QName nsQName = new QName(e.getKey(), e.getValue(),
                                 javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
                         addNamespace(nodeNum, nsQName);
@@ -2543,6 +2675,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                             final String nsPrefix = attr.getLocalName() != null
                                     && !javax.xml.XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
                                     ? attr.getLocalName() : "";
+                            if (noPreserve && !usedPrefixes.contains(nsPrefix)) {
+                                continue; // strip unused namespace declaration
+                            }
+                            selfNsDecls.put(nsPrefix, attr.getValue());
                             final QName nsQName = new QName(nsPrefix, attr.getValue(),
                                     javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
                             addNamespace(nodeNum, nsQName);
@@ -2550,11 +2686,35 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                     }
                 }
 
+                // No-inherit materialization: add ancestor namespace bindings from within
+                // the subtree that are not already declared on this element
+                if (scopeNamespaces != null) {
+                    for (final java.util.Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
+                        if (!selfNsDecls.containsKey(e.getKey())) {
+                            if (!noPreserve || usedPrefixes.contains(e.getKey())) {
+                                final QName nsQName = new QName(e.getKey(), e.getValue(),
+                                        javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                                addNamespace(nodeNum, nsQName);
+                                selfNsDecls.put(e.getKey(), e.getValue());
+                            }
+                        }
+                    }
+                }
+
+                // Build effective namespace scope for children
+                final java.util.Map<String, String> childScope;
+                if (scopeNamespaces != null) {
+                    childScope = new java.util.LinkedHashMap<>(scopeNamespaces);
+                    childScope.putAll(selfNsDecls);
+                } else {
+                    childScope = null;
+                }
+
                 // Copy children recursively, linking siblings together
                 int prevChild = -1;
                 Node child = node.getFirstChild();
                 while (child != null) {
-                    final int childNum = copyNodeIntoDocument(child, nodeNum, (short) (level + 1));
+                    final int childNum = copyNodeIntoDocument(child, nodeNum, (short) (level + 1), childScope);
                     if (prevChild >= 0) {
                         next[prevChild] = childNum;
                     }

@@ -1970,4 +1970,258 @@ public class XQUFBasicTest {
         queryService.query("update insert <b/> into doc('/db/test/test-legacy.xml')/root");
     }
 
+    // === Namespace propagation diagnostic tests ===
+
+    /**
+     * XQTS propagateNamespaces01: preserve, inherit.
+     * After inserting content into a copied element, namespace bindings
+     * from the parent should propagate to the inserted children.
+     */
+    @Test
+    public void propagateNamespaces01PreserveInherit() throws XMLDBException {
+        final String query =
+                "declare copy-namespaces preserve, inherit; " +
+                "declare boundary-space preserve; " +
+                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
+                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
+                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
+                "return <result> " +
+                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
+                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
+                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
+                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
+                "</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        System.err.println("propagateNS01 (preserve,inherit): " + xml);
+        // Expected: <w>a-one b-one</w> <x>a-two b-one</x> <y>a-two b-two</y> <z>a-two b-two</z>
+        assertTrue("w should inherit a-one", xml.contains("<w>a-one b-one</w>"));
+        assertTrue("x should have a-two and inherit b-one", xml.contains("<x>a-two b-one</x>"));
+        assertTrue("y should have a-two b-two", xml.contains("<y>a-two b-two</y>"));
+        assertTrue("z should have a-two b-two", xml.contains("<z>a-two b-two</z>"));
+    }
+
+    /**
+     * XQTS propagateNamespaces02: preserve, no-inherit.
+     * Inserted children should NOT inherit ns from insertion target,
+     * but internal ns scoping within inserted content should still work.
+     */
+    @Test
+    public void propagateNamespaces02PreserveNoInherit() throws XMLDBException {
+        final String query =
+                "declare copy-namespaces preserve, no-inherit; " +
+                "declare boundary-space preserve; " +
+                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
+                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
+                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
+                "return <result> " +
+                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
+                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
+                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
+                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
+                "</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        System.err.println("propagateNS02 (preserve,no-inherit): " + xml);
+        // Expected: <w/> <x>a-two</x> <y>a-two b-two</y> <z>a-two b-two</z>
+        assertTrue("w should be empty (no-inherit blocks parent ns)", xml.contains("<w/>"));
+        assertTrue("x should have own a-two only", xml.contains("<x>a-two</x>"));
+        assertTrue("y should see a-two from x and own b-two", xml.contains("<y>a-two b-two</y>"));
+        assertTrue("z should see a-two b-two from ancestors", xml.contains("<z>a-two b-two</z>"));
+    }
+
+    /**
+     * XQTS propagateNamespaces03: no-preserve, inherit.
+     * Copy strips unused ns from copied element; inserted content
+     * is also deep-copied with no-preserve stripping.
+     */
+    @Test
+    public void propagateNamespaces03NoPreserveInherit() throws XMLDBException {
+        final String query =
+                "declare copy-namespaces no-preserve, inherit; " +
+                "declare boundary-space preserve; " +
+                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
+                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
+                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
+                "return <result> " +
+                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
+                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
+                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
+                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
+                "</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        System.err.println("propagateNS03 (no-preserve,inherit): " + xml);
+        // Expected: all empty — no-preserve strips unused ns, nothing to propagate
+        assertTrue("w should be empty", xml.contains("<w/>"));
+        assertTrue("x should be empty", xml.contains("<x/>") || xml.contains("<x></x>"));
+        assertTrue("y should be empty", xml.contains("<y/>") || xml.contains("<y></y>"));
+        assertTrue("z should be empty", xml.contains("<z/>") || xml.contains("<z></z>"));
+    }
+
+    /**
+     * XQTS propagateNamespaces04: no-preserve, no-inherit.
+     * Both modes strip — all elements should have no namespace bindings.
+     */
+    @Test
+    public void propagateNamespaces04NoPreserveNoInherit() throws XMLDBException {
+        final String query =
+                "declare copy-namespaces no-preserve, no-inherit; " +
+                "declare boundary-space preserve; " +
+                "copy $data := <v xmlns:a=\"a-one\" xmlns:b=\"b-one\"/> " +
+                "modify insert node <w> <x xmlns:a=\"a-two\"> <y xmlns:b=\"b-two\"><z/></y> </x> </w> into $data " +
+                "return let $w := $data/w let $x := $w/x let $y := $x/y let $z := $y/z " +
+                "return <result> " +
+                "  <w>{namespace-uri-for-prefix('a', $w), namespace-uri-for-prefix('b',$w)}</w> " +
+                "  <x>{namespace-uri-for-prefix('a', $x), namespace-uri-for-prefix('b',$x)}</x> " +
+                "  <y>{namespace-uri-for-prefix('a', $y), namespace-uri-for-prefix('b',$y)}</y> " +
+                "  <z>{namespace-uri-for-prefix('a', $z), namespace-uri-for-prefix('b',$z)}</z> " +
+                "</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        System.err.println("propagateNS04 (no-preserve,no-inherit): " + xml);
+        // Expected: all empty
+        assertTrue("w should be empty", xml.contains("<w/>"));
+        assertTrue("x should be empty", xml.contains("<x/>") || xml.contains("<x></x>"));
+        assertTrue("y should be empty", xml.contains("<y/>") || xml.contains("<y></y>"));
+        assertTrue("z should be empty", xml.contains("<z/>") || xml.contains("<z></z>"));
+    }
+
+    /**
+     * XQTS attribute-errors-q14: Simultaneous attribute replacements
+     * where one replaces @name with @salary and another replaces @gender with @name.
+     */
+    @Test
+    public void attributeReplaceSwap() throws XMLDBException {
+        final String query =
+                "copy $in := <employee name=\"Jane Doe 1\" gender=\"female\">" +
+                "  <empnum>E1</empnum><pnum>P1</pnum>" +
+                "</employee> " +
+                "modify (" +
+                "  replace node $in/@name with attribute {'salary'} {'10'}," +
+                "  replace node $in/@gender with attribute {'name'} {'Blodwyn Jones'}" +
+                ") " +
+                "return $in";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        System.err.println("attrReplaceSwap: " + xml);
+        assertTrue("Should have salary attr", xml.contains("salary=\"10\""));
+        assertTrue("Should have name attr with new value", xml.contains("name=\"Blodwyn Jones\""));
+        assertFalse("Should NOT have gender attr", xml.contains("gender="));
+    }
+
+    // ======================== FullAxis tests ========================
+
+    /**
+     * Baseline: following axis from document element (no updates).
+     */
+    @Test
+    public void followingAxisFromDocElementBaseline() throws XMLDBException {
+        final String query =
+                "let $doc := document { " +
+                "  <!--Comment-1-->, <?a-pi pi-1?>, " +
+                "  <root><child/></root>, " +
+                "  <!--Comment-2-->, <?b-pi pi-2?> " +
+                "} " +
+                "return let $a := $doc/*/following::node() " +
+                "return <result count=\"{count($a)}\">{$a}</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        assertTrue("Should have count 2, got: " + xml, xml.contains("count=\"2\""));
+    }
+
+    /**
+     * Following axis from document element after deleting trailing comments.
+     * Based on XQTS upd-FullAxis/complex-deletes-q2.
+     */
+    @Test
+    public void followingAxisAfterDeleteTrailingComments() throws XMLDBException {
+        final String query =
+                "let $doc := document { " +
+                "  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->, " +
+                "  <root><child/></root>, " +
+                "  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4--> " +
+                "} " +
+                "return copy $d := $doc " +
+                "modify delete nodes $d/comment()[. >> $d/*] " +
+                "return let $a := $d/*/following::node() " +
+                "return <result count=\"{count($a)}\">{$a}</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        // After deleting trailing comments, only PI-2 should remain as following
+        assertTrue("Should have count 1, got: " + xml, xml.contains("count=\"1\""));
+        assertTrue("Should contain the PI", xml.contains("pi-2"));
+    }
+
+    /**
+     * Following axis from document element after replacing trailing comment values.
+     * Based on XQTS upd-FullAxis/complex-replacevalues-q2.
+     */
+    @Test
+    public void followingAxisAfterReplaceTrailingCommentValues() throws XMLDBException {
+        final String query =
+                "let $doc := document { " +
+                "  <!--Comment-1-->, <?a-pi pi-1?>, <!--Comment-2-->, " +
+                "  <root><child/></root>, " +
+                "  <!--Comment-3-->, <?b-pi pi-2?>, <!--Comment-4--> " +
+                "} " +
+                "return copy $d := $doc " +
+                "modify ( " +
+                "  for $c in $d/comment()[. >> $d/*] " +
+                "  return replace value of node $c with 'Replaced' " +
+                ") " +
+                "return let $a := $d/*/following::node() " +
+                "return <result count=\"{count($a)}\">{$a}</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        // Trailing comments replaced + PI = 3 following nodes
+        assertTrue("Should have count 3", xml.contains("count=\"3\""));
+        assertTrue("Should contain replaced comment", xml.contains("Replaced"));
+        assertTrue("Should contain the PI", xml.contains("pi-2"));
+    }
+
+    /**
+     * Preceding axis after replacing text nodes with empty strings.
+     * Based on XQTS upd-FullAxis/complex-replacevalues-q7.
+     * Verifies that soft-deleted nodes from mergeAdjacentTextNodes don't crash selectPreceding.
+     */
+    @Test
+    public void precedingAxisAfterReplaceTextWithEmpty() throws XMLDBException {
+        final String query =
+                "let $doc := document { " +
+                "  <root>" +
+                "    <a>text-a</a>" +
+                "    <!--comment-1-->" +
+                "    text-after-comment" +
+                "    <b>" +
+                "      <c>text-c</c>" +
+                "      <?pi-1 data?>" +
+                "      text-after-pi" +
+                "      <target/>" +
+                "    </b>" +
+                "  </root> " +
+                "} " +
+                "return copy $d := $doc " +
+                "modify ( " +
+                "  for $t in $d//text()[preceding-sibling::node()[1]/(self::comment() | self::processing-instruction())] " +
+                "  return replace value of node $t with '' " +
+                ") " +
+                "return let $a := $d//target/preceding::text() " +
+                "return <result count=\"{count($a)}\">{for $t in $a return <t>{$t}</t>}</result>";
+        final ResourceSet result = existEmbeddedServer.executeQuery(query);
+        assertEquals(1L, result.getSize());
+        final String xml = result.getResource(0).getContent().toString();
+        // Should not crash with "node not found"
+        assertTrue("Should have text-a in preceding", xml.contains("text-a"));
+        assertTrue("Should have text-c in preceding", xml.contains("text-c"));
+    }
+
 }

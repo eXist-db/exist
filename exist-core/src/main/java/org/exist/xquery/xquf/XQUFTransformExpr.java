@@ -206,14 +206,24 @@ public class XQUFTransformExpr extends AbstractExpression {
                 Item item = i.nextItem();
                 final boolean isDocument = item.getType() == Type.DOCUMENT;
                 if (isDocument) {
-                    // For document nodes, copy the document element but return
-                    // the wrapping document node to preserve the node type
+                    // For document nodes, copy ALL children (comments, PIs, elements)
+                    // to preserve the complete document structure
                     if (((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        final NodeHandle root = (NodeHandle) ((NodeProxy) item).getOwnerDocument().getDocumentElement();
-                        item = new NodeProxy(this, root);
+                        final NodeProxy docProxy = (NodeProxy) item;
+                        serializer.toReceiver(docProxy, false, false);
                     } else {
-                        item = (Item) ((Document) item).getDocumentElement();
+                        final Document docNode = (Document) item;
+                        Node child = docNode.getFirstChild();
+                        while (child != null) {
+                            if (child instanceof org.exist.dom.memtree.NodeImpl) {
+                                ((org.exist.dom.memtree.NodeImpl) child).copyTo(context.getBroker(), receiver);
+                            }
+                            child = child.getNextSibling();
+                        }
                     }
+                    item = builder.getDocument();
+                    out.add(item);
+                    continue;
                 }
                 if (Type.subTypeOf(item.getType(), Type.NODE)) {
                     // Collect inherited namespace bindings from the source node's ancestors
@@ -237,10 +247,7 @@ public class XQUFTransformExpr extends AbstractExpression {
                         final org.exist.dom.memtree.NodeImpl memNode = (org.exist.dom.memtree.NodeImpl) item;
                         memNode.copyTo(context.getBroker(), receiver);
                     }
-                    if (isDocument) {
-                        // Return the document node wrapping the copied element
-                        item = builder.getDocument();
-                    } else if (item.getType() == Type.ATTRIBUTE) {
+                    if (item.getType() == Type.ATTRIBUTE) {
                         item = builder.getDocument().getLastAttr();
                     } else {
                         item = builder.getDocument().getNode(last + 1);
@@ -251,6 +258,15 @@ public class XQUFTransformExpr extends AbstractExpression {
                             && item instanceof org.exist.dom.memtree.NodeImpl) {
                         addInheritedNamespaces(builder.getDocument(),
                                 ((org.exist.dom.memtree.NodeImpl) item).getNodeNumber(), inheritedNs);
+                    }
+
+                    // W3C copy-namespaces no-preserve: strip namespace declarations
+                    // not used by element/attribute names from the copied subtree
+                    if (!context.preserveNamespaces()
+                            && item instanceof org.exist.dom.memtree.NodeImpl
+                            && ((org.exist.dom.memtree.NodeImpl) item).getNode().getNodeType() == Node.ELEMENT_NODE) {
+                        builder.getDocument().stripUnusedNamespacesInSubtree(
+                                ((org.exist.dom.memtree.NodeImpl) item).getNodeNumber());
                     }
                 }
                 out.add(item);
