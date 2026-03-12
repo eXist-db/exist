@@ -148,7 +148,7 @@ public class FileWrite extends BasicFunction {
         ExpathFileModuleHelper.checkDbaRole(context, this);
 
         final String pathStr = args[0].getStringValue();
-        final Path path = ExpathFileModuleHelper.getPath(pathStr, this);
+        final Path path = ExpathFileModuleHelper.getPath(pathStr, this, context);
 
         checkParentDir(path);
 
@@ -250,6 +250,13 @@ public class FileWrite extends BasicFunction {
                 if (offset < 0) {
                     throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
                             "Offset must not be negative: " + offset);
+                }
+                if (Files.exists(path)) {
+                    final long fileSize = Files.size(path);
+                    if (offset > fileSize) {
+                        throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
+                                "Offset " + offset + " exceeds file size " + fileSize);
+                    }
                 }
                 try (final RandomAccessFile raf = new RandomAccessFile(path.toFile(), "rw");
                      final InputStream is = binaryValue.getInputStream()) {

@@ -36,7 +36,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
+import org.exist.xquery.value.BinaryValueFromBinaryString;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
@@ -88,6 +88,24 @@ public class FileIO extends BasicFunction {
                     new SequenceType[]{FILE_PARAM, ENCODING_PARAM},
                     new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the lines of the file.")
             ),
+            // file:read-text($file as xs:string, $encoding as xs:string?, $fallback as xs:boolean) as xs:string
+            new FunctionSignature(
+                    new QName("read-text", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
+                    "Reads the contents of a file as text. If $fallback is true, invalid characters are replaced.",
+                    new SequenceType[]{FILE_PARAM, ENCODING_PARAM,
+                            new FunctionParameterSequenceType("fallback", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                                    "If true, replace invalid characters with the Unicode replacement character.")},
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the file contents as string.")
+            ),
+            // file:read-text-lines($file as xs:string, $encoding as xs:string?, $fallback as xs:boolean) as xs:string*
+            new FunctionSignature(
+                    new QName("read-text-lines", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
+                    "Reads the contents of a file as a sequence of lines. If $fallback is true, invalid characters are replaced.",
+                    new SequenceType[]{FILE_PARAM, ENCODING_PARAM,
+                            new FunctionParameterSequenceType("fallback", Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                                    "If true, replace invalid characters with the Unicode replacement character.")},
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the lines of the file.")
+            ),
             // file:read-binary($file as xs:string) as xs:base64Binary
             new FunctionSignature(
                     new QName("read-binary", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
@@ -130,7 +148,7 @@ public class FileIO extends BasicFunction {
         ExpathFileModuleHelper.checkDbaRole(context, this);
 
         final String pathStr = args[0].getStringValue();
-        final Path path = ExpathFileModuleHelper.getPath(pathStr, this);
+        final Path path = ExpathFileModuleHelper.getPath(pathStr, this, context);
 
         if (!Files.exists(path)) {
             throw new XPathException(this, ExpathFileErrorCode.NOT_FOUND,
@@ -154,11 +172,16 @@ public class FileIO extends BasicFunction {
 
     private Sequence readText(final Path path, final Sequence[] args) throws XPathException {
         final Charset encoding = getEncoding(args, 1);
+        final boolean fallback = args.length > 2 && !args[2].isEmpty()
+                && args[2].itemAt(0).toJavaObject(Boolean.class);
         try {
-            final String content = Files.readString(path, encoding);
+            final String content = readFileText(path, encoding, fallback);
             // Normalize newlines per spec: CR or CRLF -> LF
             final String normalized = content.replace("\r\n", "\n").replace("\r", "\n");
             return new StringValue(this, normalized);
+        } catch (final java.nio.charset.MalformedInputException e) {
+            throw new XPathException(this, ExpathFileErrorCode.IO_ERROR,
+                    "Invalid characters in file for encoding " + encoding.name());
         } catch (final IOException e) {
             throw new XPathException(this, ExpathFileErrorCode.IO_ERROR, e.getMessage());
         }
@@ -166,8 +189,10 @@ public class FileIO extends BasicFunction {
 
     private Sequence readTextLines(final Path path, final Sequence[] args) throws XPathException {
         final Charset encoding = getEncoding(args, 1);
+        final boolean fallback = args.length > 2 && !args[2].isEmpty()
+                && args[2].itemAt(0).toJavaObject(Boolean.class);
         try {
-            final String content = Files.readString(path, encoding);
+            final String content = readFileText(path, encoding, fallback);
             // Split at newline boundaries per spec
             final String[] lines = content.split("\r\n|\r|\n", -1);
             final ValueSequence result = new ValueSequence(lines.length);
@@ -177,6 +202,9 @@ public class FileIO extends BasicFunction {
                 result.add(new StringValue(this, lines[i]));
             }
             return result;
+        } catch (final java.nio.charset.MalformedInputException e) {
+            throw new XPathException(this, ExpathFileErrorCode.IO_ERROR,
+                    "Invalid characters in file for encoding " + encoding.name());
         } catch (final IOException e) {
             throw new XPathException(this, ExpathFileErrorCode.IO_ERROR, e.getMessage());
         }
@@ -184,41 +212,106 @@ public class FileIO extends BasicFunction {
 
     private Sequence readBinary(final Path path, final Sequence[] args) throws XPathException {
         final long offset = args.length > 1 && !args[1].isEmpty() ? args[1].itemAt(0).toJavaObject(Long.class) : 0;
-        final long length = args.length > 2 && !args[2].isEmpty() ? args[2].itemAt(0).toJavaObject(Long.class) : -1;
+        final boolean hasLength = args.length > 2 && !args[2].isEmpty();
+        final long length = hasLength ? args[2].itemAt(0).toJavaObject(Long.class) : -1;
 
         try {
             final long fileSize = Files.size(path);
-            if (offset < 0 || offset > fileSize) {
-                throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
-                        "Offset " + offset + " is out of range for file of size " + fileSize);
-            }
-            if (length < -1) {
-                throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
-                        "Length must not be negative: " + length);
-            }
-            if (length >= 0 && offset + length > fileSize) {
-                throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
-                        "Offset + length exceeds file size: " + (offset + length) + " > " + fileSize);
-            }
+            validateBinaryRange(offset, length, hasLength, fileSize);
 
-            if (offset == 0 && length < 0) {
-                // Read entire file
-                final InputStream is = Files.newInputStream(path);
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), is, this);
-            }
-
-            // Partial read
-            try (final RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
-                raf.seek(offset);
-                final int readLen = length >= 0 ? (int) length : (int) (fileSize - offset);
-                final byte[] data = new byte[readLen];
-                raf.readFully(data);
-                final InputStream bis = new java.io.ByteArrayInputStream(data);
-                return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis, this);
-            }
+            final byte[] data = readBinaryData(path, offset, hasLength, length, fileSize);
+            final String base64 = java.util.Base64.getEncoder().encodeToString(data);
+            return new BinaryValueFromBinaryString(this, new Base64BinaryValueType(), base64);
         } catch (final IOException e) {
             throw new XPathException(this, ExpathFileErrorCode.IO_ERROR, e.getMessage());
         }
+    }
+
+    private void validateBinaryRange(final long offset, final long length, final boolean hasLength, final long fileSize) throws XPathException {
+        if (offset < 0 || offset > fileSize) {
+            throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
+                    "Offset " + offset + " is out of range for file of size " + fileSize);
+        }
+        if (hasLength && length < 0) {
+            throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
+                    "Length must not be negative: " + length);
+        }
+        if (hasLength && offset + length > fileSize) {
+            throw new XPathException(this, ExpathFileErrorCode.OUT_OF_RANGE,
+                    "Offset + length exceeds file size: " + (offset + length) + " > " + fileSize);
+        }
+    }
+
+    private byte[] readBinaryData(final Path path, final long offset, final boolean hasLength, final long length, final long fileSize) throws IOException {
+        if (offset == 0 && !hasLength) {
+            return Files.readAllBytes(path);
+        }
+        try (final RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            raf.seek(offset);
+            final int readLen = hasLength ? (int) length : (int) (fileSize - offset);
+            final byte[] data = new byte[readLen];
+            raf.readFully(data);
+            return data;
+        }
+    }
+
+    /**
+     * Reads a file as text with the given encoding.
+     * If fallback is true, malformed byte sequences and XML-illegal characters
+     * are replaced with U+FFFD. Otherwise, an IOException is thrown if the file
+     * contains malformed bytes or XML-illegal characters.
+     */
+    private String readFileText(final Path path, final Charset encoding, final boolean fallback) throws IOException {
+        final String content;
+        if (fallback) {
+            final java.nio.charset.CharsetDecoder decoder = encoding.newDecoder()
+                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPLACE)
+                    .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPLACE)
+                    .replaceWith("\uFFFD");
+            final byte[] bytes = Files.readAllBytes(path);
+            content = decoder.decode(java.nio.ByteBuffer.wrap(bytes)).toString();
+            // Replace XML-illegal characters with U+FFFD
+            return replaceXmlIllegalChars(content);
+        } else {
+            content = Files.readString(path, encoding);
+            // Check for XML-illegal characters
+            checkXmlIllegalChars(content);
+            return content;
+        }
+    }
+
+    /**
+     * Check if a string contains characters illegal in XML 1.0 and throw IOException if so.
+     * XML 1.0 allows: #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+     */
+    private void checkXmlIllegalChars(final String text) throws IOException {
+        for (int i = 0; i < text.length(); i++) {
+            final char c = text.charAt(i);
+            if (c < 0x20 && c != 0x9 && c != 0xA && c != 0xD) {
+                throw new IOException("File contains XML-illegal character U+" +
+                        String.format("%04X", (int) c) + " at position " + i);
+            }
+            if (c >= 0xFFFE) {
+                throw new IOException("File contains XML-illegal character U+" +
+                        String.format("%04X", (int) c) + " at position " + i);
+            }
+        }
+    }
+
+    /**
+     * Replace characters illegal in XML 1.0 with U+FFFD.
+     */
+    private String replaceXmlIllegalChars(final String text) {
+        final StringBuilder sb = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); i++) {
+            final char c = text.charAt(i);
+            if ((c < 0x20 && c != 0x9 && c != 0xA && c != 0xD) || c >= 0xFFFE) {
+                sb.append('\uFFFD');
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     private Charset getEncoding(final Sequence[] args, final int index) throws XPathException {

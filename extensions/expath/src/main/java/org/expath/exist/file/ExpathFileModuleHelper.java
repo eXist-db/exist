@@ -58,6 +58,7 @@ public class ExpathFileModuleHelper {
 
     /**
      * Resolve a path string (file: URI or native path) to a {@link Path}.
+     * Relative paths are resolved against the JVM working directory.
      *
      * @param path the path string or file: URI
      * @param expression the calling expression (for error reporting)
@@ -65,12 +66,49 @@ public class ExpathFileModuleHelper {
      * @throws XPathException if the path is invalid
      */
     public static Path getPath(final String path, final Expression expression) throws XPathException {
+        return getPath(path, expression, null);
+    }
+
+    /**
+     * Resolve a path string (file: URI or native path) to a {@link Path}.
+     * Relative paths are resolved against the XQuery static base URI if it is a
+     * file: URI, otherwise against the JVM working directory.
+     *
+     * @param path the path string or file: URI
+     * @param expression the calling expression (for error reporting)
+     * @param context the XQuery context (may be null)
+     * @return the resolved Path
+     * @throws XPathException if the path is invalid
+     */
+    public static Path getPath(final String path, final Expression expression, final XQueryContext context) throws XPathException {
         try {
             if (path.startsWith("file:")) {
                 return Paths.get(new URI(path));
-            } else {
-                return Paths.get(path);
             }
+
+            final Path p = Paths.get(path);
+            if (p.isAbsolute()) {
+                return p;
+            }
+
+            // Resolve relative paths against static base URI if available
+            if (context != null) {
+                try {
+                    final String baseUri = context.getBaseURI().getStringValue();
+                    if (baseUri != null && baseUri.startsWith("file:")) {
+                        final Path basePath = Paths.get(new URI(baseUri));
+                        // Base URI may point to a file; resolve against its parent directory
+                        final Path baseDir = java.nio.file.Files.isDirectory(basePath) ? basePath : basePath.getParent();
+                        if (baseDir != null) {
+                            return baseDir.resolve(p);
+                        }
+                    }
+                } catch (final Exception ignored) {
+                    // Fall through to default resolution
+                }
+            }
+
+            return p;
         } catch (final InvalidPathException e) {
             throw new XPathException(expression, ExpathFileErrorCode.INVALID_PATH,
                     "Invalid path: " + path + " - " + e.getMessage());

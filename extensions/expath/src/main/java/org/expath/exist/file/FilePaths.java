@@ -101,7 +101,7 @@ public class FilePaths extends BasicFunction {
         ExpathFileModuleHelper.checkDbaRole(context, this);
 
         final String pathStr = args[0].getStringValue();
-        final Path path = ExpathFileModuleHelper.getPath(pathStr, this);
+        final Path path = ExpathFileModuleHelper.getPath(pathStr, this, context);
 
         if (isCalledAs("name")) {
             final Path fileName = path.getFileName();
@@ -128,7 +128,7 @@ public class FilePaths extends BasicFunction {
             return new AnyURIValue(this, abs.toUri().toString());
         } else if (isCalledAs("resolve-path")) {
             if (args.length > 1 && !args[1].isEmpty()) {
-                final Path base = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this);
+                final Path base = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this, context);
                 return new StringValue(this, base.resolve(path).toAbsolutePath().normalize().toString());
             }
             return new StringValue(this, path.toAbsolutePath().normalize().toString());

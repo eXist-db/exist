@@ -50,6 +50,7 @@ public class ExpathFileModule extends AbstractInternalModule {
             new FunctionDef(FileProperties.signatures[6], FileProperties.class),
 
             // FileIO: read-text(1), read-text(2), read-text-lines(1), read-text-lines(2),
+            //         read-text(3-fallback), read-text-lines(3-fallback),
             //         read-binary(1), read-binary(2), read-binary(3)
             new FunctionDef(FileIO.signatures[0], FileIO.class),
             new FunctionDef(FileIO.signatures[1], FileIO.class),
@@ -58,6 +59,8 @@ public class ExpathFileModule extends AbstractInternalModule {
             new FunctionDef(FileIO.signatures[4], FileIO.class),
             new FunctionDef(FileIO.signatures[5], FileIO.class),
             new FunctionDef(FileIO.signatures[6], FileIO.class),
+            new FunctionDef(FileIO.signatures[7], FileIO.class),
+            new FunctionDef(FileIO.signatures[8], FileIO.class),
 
             // FileWrite: write(2), write(3), write-text(2), write-text(3),
             //            write-text-lines(2), write-text-lines(3), write-binary(2), write-binary(3)
@@ -81,7 +84,9 @@ public class ExpathFileModule extends AbstractInternalModule {
             new FunctionDef(FileAppend.signatures[6], FileAppend.class),
 
             // FileManipulation: copy, move, delete(1), delete(2), create-dir,
-            //                   create-temp-dir, create-temp-file, list(1), list(2), list(3),
+            //                   create-temp-dir(2), create-temp-dir(3),
+            //                   create-temp-file(2), create-temp-file(3),
+            //                   list(1), list(2), list(3),
             //                   children, descendants, list-roots
             new FunctionDef(FileManipulation.signatures[0], FileManipulation.class),
             new FunctionDef(FileManipulation.signatures[1], FileManipulation.class),
@@ -96,6 +101,8 @@ public class ExpathFileModule extends AbstractInternalModule {
             new FunctionDef(FileManipulation.signatures[10], FileManipulation.class),
             new FunctionDef(FileManipulation.signatures[11], FileManipulation.class),
             new FunctionDef(FileManipulation.signatures[12], FileManipulation.class),
+            new FunctionDef(FileManipulation.signatures[13], FileManipulation.class),
+            new FunctionDef(FileManipulation.signatures[14], FileManipulation.class),
 
             // FilePaths: name, parent, path-to-native, path-to-uri, resolve-path(1), resolve-path(2)
             new FunctionDef(FilePaths.signatures[0], FilePaths.class),

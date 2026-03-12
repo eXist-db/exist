@@ -122,6 +122,19 @@ public class FileSystemProperties extends BasicFunction {
             }
             return Sequence.EMPTY_SEQUENCE;
         } else if (isCalledAs("current-dir")) {
+            // If a file: base URI is set (e.g., sandpit), use its directory as the working directory
+            try {
+                final String baseURI = context.getBaseURI().getStringValue();
+                if (baseURI != null && !baseURI.isEmpty() && baseURI.startsWith("file:")) {
+                    final Path basePath = Paths.get(new URI(baseURI));
+                    final Path dir = java.nio.file.Files.isDirectory(basePath) ? basePath : basePath.getParent();
+                    if (dir != null) {
+                        return new StringValue(this, dir.toString() + File.separator);
+                    }
+                }
+            } catch (final Exception ignored) {
+                // Fall through to JVM CWD
+            }
             return new StringValue(this, System.getProperty("user.dir") + File.separator);
         }
 

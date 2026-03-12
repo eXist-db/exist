@@ -97,6 +97,16 @@ public class FileManipulation extends BasicFunction {
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.EMPTY_SEQUENCE, "empty sequence.")
             ),
+            // file:create-temp-dir($prefix, $suffix)
+            new FunctionSignature(
+                    new QName("create-temp-dir", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
+                    "Creates a temporary directory in the system default temp directory.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "Prefix for the directory name."),
+                            new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "Suffix for the directory name.")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The path of the created temporary directory.")
+            ),
             // file:create-temp-dir($prefix, $suffix, $dir)
             new FunctionSignature(
                     new QName("create-temp-dir", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
@@ -107,6 +117,16 @@ public class FileManipulation extends BasicFunction {
                             new FunctionParameterSequenceType("dir", Type.STRING, Cardinality.ZERO_OR_ONE, "The parent directory. Default: system temp dir.")
                     },
                     new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The path of the created temporary directory.")
+            ),
+            // file:create-temp-file($prefix, $suffix)
+            new FunctionSignature(
+                    new QName("create-temp-file", ExpathFileModule.NAMESPACE_URI, ExpathFileModule.PREFIX),
+                    "Creates a temporary file in the system default temp directory.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "Prefix for the file name."),
+                            new FunctionParameterSequenceType("suffix", Type.STRING, Cardinality.ZERO_OR_ONE, "Suffix for the file name.")
+                    },
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The path of the created temporary file.")
             ),
             // file:create-temp-file($prefix, $suffix, $dir)
             new FunctionSignature(
@@ -185,7 +205,7 @@ public class FileManipulation extends BasicFunction {
         }
 
         final String pathStr = args[0].getStringValue();
-        final Path path = ExpathFileModuleHelper.getPath(pathStr, this);
+        final Path path = ExpathFileModuleHelper.getPath(pathStr, this, context);
 
         if (isCalledAs("copy")) {
             return copy(path, args);
@@ -215,7 +235,15 @@ public class FileManipulation extends BasicFunction {
             throw new XPathException(this, ExpathFileErrorCode.NOT_FOUND,
                     "Source does not exist: " + source.toAbsolutePath());
         }
-        final Path target = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this);
+        final Path target = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this, context);
+
+        // Check target parent directory exists
+        final Path targetParent = target.toAbsolutePath().getParent();
+        if (targetParent != null && !Files.isDirectory(targetParent)) {
+            throw new XPathException(this, ExpathFileErrorCode.NO_DIR,
+                    "Target parent directory does not exist: " + targetParent);
+        }
+
         try {
             if (Files.isDirectory(source)) {
                 copyDirectory(source, target);
@@ -252,7 +280,15 @@ public class FileManipulation extends BasicFunction {
             throw new XPathException(this, ExpathFileErrorCode.NOT_FOUND,
                     "Source does not exist: " + source.toAbsolutePath());
         }
-        final Path target = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this);
+        final Path target = ExpathFileModuleHelper.getPath(args[1].getStringValue(), this, context);
+
+        // Check target parent directory exists
+        final Path targetParent = target.toAbsolutePath().getParent();
+        if (targetParent != null && !Files.isDirectory(targetParent)) {
+            throw new XPathException(this, ExpathFileErrorCode.NO_DIR,
+                    "Target parent directory does not exist: " + targetParent);
+        }
+
         try {
             // If target is an existing directory, move into it
             final Path actualTarget = Files.isDirectory(target) ? target.resolve(source.getFileName()) : target;
@@ -305,9 +341,14 @@ public class FileManipulation extends BasicFunction {
     }
 
     private Sequence createDir(final Path path) throws XPathException {
-        if (Files.exists(path) && !Files.isDirectory(path)) {
-            throw new XPathException(this, ExpathFileErrorCode.EXISTS,
-                    "Path exists and is not a directory: " + path.toAbsolutePath());
+        // Check if the path itself or any ancestor is an existing non-directory file
+        Path check = path.toAbsolutePath().normalize();
+        while (check != null) {
+            if (Files.exists(check) && !Files.isDirectory(check)) {
+                throw new XPathException(this, ExpathFileErrorCode.EXISTS,
+                        "Path exists and is not a directory: " + check);
+            }
+            check = check.getParent();
         }
         try {
             Files.createDirectories(path);
@@ -321,7 +362,7 @@ public class FileManipulation extends BasicFunction {
         final String prefix = args.length > 0 && !args[0].isEmpty() ? args[0].getStringValue() : "";
         final String suffix = args.length > 1 && !args[1].isEmpty() ? args[1].getStringValue() : "";
         final Path dir = args.length > 2 && !args[2].isEmpty()
-                ? ExpathFileModuleHelper.getPath(args[2].getStringValue(), this)
+                ? ExpathFileModuleHelper.getPath(args[2].getStringValue(), this, context)
                 : Paths.get(System.getProperty("java.io.tmpdir"));
 
         if (!Files.isDirectory(dir)) {
@@ -347,7 +388,7 @@ public class FileManipulation extends BasicFunction {
         final String prefix = args.length > 0 && !args[0].isEmpty() ? args[0].getStringValue() : "";
         final String suffix = args.length > 1 && !args[1].isEmpty() ? args[1].getStringValue() : "";
         final Path dir = args.length > 2 && !args[2].isEmpty()
-                ? ExpathFileModuleHelper.getPath(args[2].getStringValue(), this)
+                ? ExpathFileModuleHelper.getPath(args[2].getStringValue(), this, context)
                 : Paths.get(System.getProperty("java.io.tmpdir"));
 
         if (!Files.isDirectory(dir)) {
