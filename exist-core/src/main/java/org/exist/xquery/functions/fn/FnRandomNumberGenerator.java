@@ -68,25 +68,34 @@ public class FnRandomNumberGenerator extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        Optional<Long> seed;
+        final Optional<Long> seed = getSeed(args, contextSequence);
+        final XORShiftRandom random = seed.map(XORShiftRandom::new).orElseGet(XORShiftRandom::new);
+        return buildResult(context, random);
+    }
+
+    private Optional<Long> getSeed(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args.length < 1) {
-            seed = Optional.empty();
-        } else {
-            final Sequence seedArg = getArgument(0).eval(contextSequence, null);
-            if (seedArg.isEmpty()) {
-                seed = Optional.empty();
-            } else {
-                try {
-                    seed = Optional.of(seedArg.convertTo(Type.LONG).toJavaObject(long.class));
-                } catch(final XPathException e) {
-                    seed = Optional.empty();
-                }
-            }
+            return Optional.empty();
         }
 
-        final XORShiftRandom random = seed.map(XORShiftRandom::new).orElseGet(XORShiftRandom::new);
+        final Sequence seedArg = getArgument(0).eval(contextSequence, null);
+        if (seedArg.isEmpty()) {
+            return Optional.empty();
+        }
 
-        return buildResult(context, random);
+        try {
+            return Optional.of(hash(seedArg.getStringValue()));
+        } catch(final XPathException e) {
+            return Optional.empty();
+        }
+    }
+
+    public static long hash(String s) {
+        long hash = 5381;
+        for(int i = 0; i < s.length(); ++i) {
+            hash = ((hash << 5) + hash) + s.charAt(i);
+        }
+        return hash;
     }
 
     private static MapType buildResult(final XQueryContext context, XORShiftRandom random) {
