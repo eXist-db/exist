@@ -186,3 +186,14 @@ function ftt:slop-string-vs-xml-equality() {
         return $match-count
     return ($results[1], $results[2])
 };
+
+(:~
+ : xmldb:reindex($col, "fulltext") — fulltext-only mode; fulltext search still works.
+ : @see plans/lucene10-semantic-vector-search-design.md
+ :)
+declare
+    %test:assertEquals(1)
+function ftt:reindex-mode-fulltext-still-searchable() {
+    let $_ := xmldb:reindex($ftt:COLLECTION, "fulltext")
+    return count(collection($ftt:COLLECTION)//div[ft:query(., "Introduction")])
+};

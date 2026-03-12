@@ -48,6 +48,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
+import org.exist.indexing.ReindexScope;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.PlainTextHighlighter.Offset;
 import org.exist.indexing.lucene.PlainTextIndexConfig.PlainTextField;
@@ -1820,9 +1821,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
 
                 List<AbstractFieldConfig> facetConfigs = pending.idxConf.getFacetsAndFields();
-                facetConfigs.forEach(config ->
-                    config.build(broker, currentDoc, pending.nodeId, doc, pending.text)
-                );
+                final ReindexScope scope = broker.getIndexController().getReindexScope();
+                facetConfigs.forEach(config -> {
+                    if (scope == ReindexScope.VECTOR && !(config instanceof LuceneVectorFieldConfig)) {
+                        return; // Vector-only: skip fulltext fields and facets
+                    }
+                    config.build(broker, currentDoc, pending.nodeId, doc, pending.text);
+                });
                 // register field analyzers so indexing uses the same analyzer as querying
                 final LuceneConfig luceneConfig = pending.idxConf.getParent();
                 for (AbstractFieldConfig config : facetConfigs) {
@@ -1853,7 +1858,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(fNodeIdIdx);
 
                 String contentField = null;
-                if (pending.idxConf.doIndex()) {
+                final boolean indexFulltext = scope != ReindexScope.VECTOR && pending.idxConf.doIndex();
+                if (indexFulltext) {
                     // the text content is indexed in a field using either
                     // the qname of the element or attribute or the field
                     // name defined in the configuration

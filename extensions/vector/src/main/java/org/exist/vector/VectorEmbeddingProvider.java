@@ -40,4 +40,17 @@ public interface VectorEmbeddingProvider {
    * @return embedding vector of length {@link #getDimension()}, or null if embedding failed
    */
   float[] embed(String text);
+
+  /**
+   * Embeds the given text, with optional hint for query vs document context.
+   * Some APIs (e.g. Cohere) use different input types for search queries vs documents.
+   * Default implementation ignores the hint and delegates to {@link #embed(String)}.
+   *
+   * @param text input text (non-null, may be empty)
+   * @param forQuery true when embedding a search query (e.g. vector:embed for ft:query-vector)
+   * @return embedding vector of length {@link #getDimension()}, or null if embedding failed
+   */
+  default float[] embed(String text, boolean forQuery) {
+    return embed(text);
+  }
 }

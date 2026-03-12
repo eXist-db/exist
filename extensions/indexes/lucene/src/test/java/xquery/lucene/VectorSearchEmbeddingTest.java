@@ -25,6 +25,10 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+
+import org.exist.util.ConfigurationHelper;
+
+import java.util.Optional;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -43,8 +47,8 @@ import static org.junit.Assume.assumeTrue;
  * Embedding test with ONNX model. Skips when model is not available (e.g. CI).
  * Pattern: same as {@link org.expath.exist.HttpClientTest} with assumeTrue for optional resources.
  *
- * Run with model: mvn test -Dtest=VectorSearchEmbeddingTest -pl extensions/indexes/lucene
- * -Dexist.home=&lt;repo-root&gt; (model at target/onnx-models/all-MiniLM-L6-v2).
+ * Run with model: mvn test -Dtest=VectorSearchEmbeddingTest -pl extensions/indexes/lucene -Ponnx-model
+ * (profile sets exist.home to project.basedir and downloads model to target/onnx-models/all-MiniLM-L6-v2).
  */
 public class VectorSearchEmbeddingTest {
 
@@ -94,14 +98,15 @@ public class VectorSearchEmbeddingTest {
     private Sequence executeQuery(final String query) throws EXistException, PermissionDeniedException, XPathException {
         final BrokerPool brokerPool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = brokerPool.getXQueryService();
-        try (final DBBroker broker = brokerPool.getBroker()) {
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
             return xquery.execute(broker, query, null);
         }
     }
 
     private boolean hasEmbeddingModel() {
-        final String base = System.getProperty("exist.home", System.getProperty("user.dir"));
-        final Path modelDir = Paths.get(base).resolve("target/onnx-models/all-MiniLM-L6-v2");
+        final Path base = ConfigurationHelper.getExistHome()
+            .orElse(Paths.get(System.getProperty("user.dir", ".")));
+        final Path modelDir = base.resolve("target/onnx-models/all-MiniLM-L6-v2");
         return Files.isRegularFile(modelDir.resolve("model.onnx"))
             && Files.isRegularFile(modelDir.resolve("tokenizer.json"));
     }

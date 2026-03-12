@@ -53,6 +53,9 @@ public class LuceneConfig {
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
+    private static final String VECTOR_STORE = "vector-store";
+    private static final String VECTOR_STORE_LUCENE = "lucene";
+    private static final String VECTOR_STORE_DB = "db";
     private static final String MODULE_ELEMENT = "module";
     private static final String ATTR_MODULE_URI = "uri";
     private static final String ATTR_MODULE_PREFIX = "prefix";
@@ -70,6 +73,9 @@ public class LuceneConfig {
     private final PathIterator iterator = new PathIterator();
     
     private float boost = -1;
+
+    /** "lucene" = Lucene only (US-I6); "db" = Lucene + vector.dbx (default). */
+    private String vectorStore = VECTOR_STORE_DB;
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
@@ -100,8 +106,21 @@ public class LuceneConfig {
     	this.inlineNodes = other.inlineNodes;
     	this.ignoreNodes = other.ignoreNodes;
     	this.boost = other.boost;
+    	this.vectorStore = other.vectorStore;
     	this.analyzers = other.analyzers;
     	this.facetsConfig = other.facetsConfig;
+    }
+
+    /**
+     * Returns vector-store mode: "lucene" (Lucene only, reindex recomputes) or "db" (Lucene + vector.dbx, default).
+     * <p>
+     * When {@code xmldb:reindex($col, "fulltext")} is used: with {@code vector-store="db"}, vectors are read from
+     * vector.dbx (no recomputation). With {@code vector-store="lucene"}, fulltext-only is not supported and the
+     * reindex behaves as "all" (recomputes vectors from source text).
+     * </p>
+     */
+    public String getVectorStore() {
+        return vectorStore;
     }
 
     /**
@@ -472,6 +491,14 @@ public class LuceneConfig {
                                 }
                                 if (!Configuration.parseBooleanAttribute(elem, DIACRITICS, true)) {
                                     analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer());
+                                }
+                                final String vs = elem.getAttribute(VECTOR_STORE).trim();
+                                if (!vs.isEmpty()) {
+                                    if (VECTOR_STORE_LUCENE.equalsIgnoreCase(vs) || VECTOR_STORE_DB.equalsIgnoreCase(vs)) {
+                                        vectorStore = vs.toLowerCase();
+                                    } else {
+                                        throw new DatabaseConfigurationException("lucene vector-store must be 'lucene' or 'db', got: " + vs);
+                                    }
                                 }
                                 parseConfig(node.getChildNodes(), namespaces);
                                 break;

@@ -2035,6 +2035,12 @@ public class NativeBroker implements DBBroker {
 
     @Override
     public void reindexCollection(final Txn transaction, final XmldbURI collectionUri) throws PermissionDeniedException, IOException, LockException {
+        reindexCollection(transaction, collectionUri, org.exist.indexing.ReindexScope.ALL);
+    }
+
+    @Override
+    public void reindexCollection(final Txn transaction, final XmldbURI collectionUri, final org.exist.indexing.ReindexScope scope)
+            throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
         }
@@ -2052,7 +2058,7 @@ public class NativeBroker implements DBBroker {
 
             LOG.info("Start indexing collection {}", collection.getURI().toString());
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
-            reindexCollection(transaction, collection, IndexMode.STORE);
+            reindexCollection(transaction, collection, IndexMode.STORE, scope);
         } catch(final PermissionDeniedException | IOException e) {
             LOG.error("An error occurred during reindex: {}", e.getMessage(), e);
         } finally {
@@ -2063,6 +2069,13 @@ public class NativeBroker implements DBBroker {
 
     private void reindexCollection(final Txn transaction,
             @EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection, final IndexMode mode)
+            throws PermissionDeniedException, IOException, LockException {
+        reindexCollection(transaction, collection, mode, org.exist.indexing.ReindexScope.ALL);
+    }
+
+    private void reindexCollection(final Txn transaction,
+            @EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection, final IndexMode mode,
+            final org.exist.indexing.ReindexScope scope)
             throws PermissionDeniedException, IOException, LockException {
         if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
@@ -2080,7 +2093,7 @@ public class NativeBroker implements DBBroker {
                 final DocumentImpl next = i.next();
                 docCount++;
                 LOG.debug("Reindex doc #{}: {}", docCount, next.getFileURI());
-                reindexXMLResource(transaction, next, mode);
+                reindexXMLResource(transaction, next, mode, scope);
             }
             LOG.info("Reindex collection {}: iterated {} documents", collection.getURI(), docCount);
         } catch(final LockException e) {
@@ -2096,7 +2109,7 @@ public class NativeBroker implements DBBroker {
                     if (child == null) {
                         throw new IOException("Collection '" + childUri + "' not found");
                     } else {
-                        reindexCollection(transaction, child, mode);
+                        reindexCollection(transaction, child, mode, scope);
                     }
                 }
             }
@@ -3143,6 +3156,12 @@ public class NativeBroker implements DBBroker {
      */
     @Override
     public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode) {
+        reindexXMLResource(transaction, doc, mode, org.exist.indexing.ReindexScope.ALL);
+    }
+
+    @Override
+    public void reindexXMLResource(final Txn transaction, final DocumentImpl doc, final IndexMode mode,
+            final org.exist.indexing.ReindexScope scope) {
         getIndexController().runWithReindexing(() -> {
             final StreamListener listener = getIndexController().getStreamListener(doc, ReindexMode.STORE);
             getIndexController().startIndexDocument(transaction, listener);
@@ -3161,7 +3180,7 @@ public class NativeBroker implements DBBroker {
                 getIndexController().endIndexDocument(transaction, listener);
             }
             flush();
-        });
+        }, scope);
     }
 
     @Override

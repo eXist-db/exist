@@ -110,6 +110,17 @@
             <xs:group ref="cc:textInstruction"/>
         </xs:all>
         <xs:attributeGroup ref="cc:diacriticsOpt"/>
+        <xs:attribute name="vector-store" use="optional" default="db">
+            <xs:annotation>
+                <xs:documentation>Where to store vectors for embedding=local: 'db' = Lucene + vector.dbx (default, reindex reads from db); 'lucene' = Lucene only (US-I6, reindex recomputes from source text).</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="lucene"/>
+                    <xs:enumeration value="db"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:element name="analyzer" type="cc:analyzerType"/>
@@ -180,9 +191,13 @@
             </xs:simpleType>
         </xs:attribute>
         <xs:attribute name="embedding" use="optional">
+            <xs:annotation>
+                <xs:documentation>local = ONNX or HTTP (model-path determines); http = external API (model-path required, e.g. https://api.openai.com/v1). Set OPENAI_API_KEY or COHERE_API_KEY env var.</xs:documentation>
+            </xs:annotation>
             <xs:simpleType>
                 <xs:restriction base="xs:token">
                     <xs:enumeration value="local"/>
+                    <xs:enumeration value="http"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
