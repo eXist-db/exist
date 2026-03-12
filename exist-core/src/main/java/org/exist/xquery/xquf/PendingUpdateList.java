@@ -801,6 +801,21 @@ public class PendingUpdateList {
         }
         // Phase 3: replaceNode — skip if the target's parent is targeted by
         // replaceElementContent (which will replace ALL children anyway)
+        //
+        // For attribute replaceNode: capture QNames BEFORE any removals, because
+        // removeAttribute shifts the attr arrays and invalidates stored node indices.
+        // Pre-capture into a parallel list so applyInMemoryReplaceNode can use fresh QNames.
+        final Map<UpdatePrimitive, QName> attrReplaceQNames = new HashMap<>();
+        for (final UpdatePrimitive p : replaceNodes) {
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                final org.exist.dom.memtree.AttrImpl attr =
+                        (org.exist.dom.memtree.AttrImpl) p.getTargetNode();
+                attrReplaceQNames.put(p, new QName(
+                        attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
+                        attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
+                        attr.getPrefix() != null ? attr.getPrefix() : ""));
+            }
+        }
         for (final UpdatePrimitive p : replaceNodes) {
             if (!replaceElementContentTargets.isEmpty()) {
                 final Node replTarget = p.getTargetNode();
@@ -812,7 +827,7 @@ public class PendingUpdateList {
                     continue;
                 }
             }
-            applyInMemoryReplaceNode(p);
+            applyInMemoryReplaceNode(p, attrReplaceQNames.get(p));
         }
         // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
         // Apply in reverse document order to prevent cross-contamination when
@@ -983,16 +998,24 @@ public class PendingUpdateList {
         }
     }
 
-    private void applyInMemoryReplaceNode(final UpdatePrimitive p) throws XPathException {
+    /**
+     * @param preCapQName for attribute targets, the QName captured before any removals
+     *                    (to avoid stale array indices); null for non-attribute targets
+     */
+    private void applyInMemoryReplaceNode(final UpdatePrimitive p, final QName preCapQName) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
-        if (target.getNodeType() == Node.ATTRIBUTE_NODE) {
-            // For attribute nodes: remove old attribute, insert new attribute(s) into parent
-            final int attrNum = target.getNodeNumber();
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE && preCapQName != null) {
+            // For attribute nodes: look up by pre-captured QName since removeAttribute
+            // shifts the attr arrays and invalidates stored node indices.
+            final org.exist.dom.memtree.AttrImpl attrTarget = (org.exist.dom.memtree.AttrImpl) target;
             final org.exist.dom.memtree.NodeImpl parentElement =
-                    (org.exist.dom.memtree.NodeImpl) ((org.exist.dom.memtree.AttrImpl) target).getOwnerElement();
+                    (org.exist.dom.memtree.NodeImpl) attrTarget.getOwnerElement();
             final int parentElementNum = parentElement.getNodeNumber();
-            doc.removeAttribute(attrNum);
+            final int currentAttrNum = doc.findAttribute(parentElementNum, preCapQName);
+            if (currentAttrNum >= 0) {
+                doc.removeAttribute(currentAttrNum);
+            }
             final Sequence content = p.getContent();
             if (content != null && !content.isEmpty()) {
                 doc.insertAttributes(parentElementNum, content);

@@ -772,6 +772,10 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         int count = 0;
 
         for(int i = nodeNumber - 1; i > 0; i--) {
+            // Skip deleted nodes (soft-deleted by removeNode, nodeKind set to -1)
+            if(document.nodeKind[i] == -1) {
+                continue;
+            }
             final NodeImpl n = document.getNode(i);
             if(!myNodeId.isDescendantOf(n.getNodeId()) && test.matches(n)) {
                 if((position < 0) || (++count == position)) {
@@ -801,17 +805,15 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         throws XPathException {
         final int parent = document.getParentNodeFor(nodeNumber);
         if(parent == 0) {
-            // parent is the document node
-            if(getNodeType() == Node.ELEMENT_NODE) {
-                return;
-            }
+            // parent is the document node — walk document-level siblings after this node
+            final boolean isDocElement = (getNodeType() == Node.ELEMENT_NODE);
             NodeImpl next = (NodeImpl) getNextSibling();
             while(next != null) {
-                if(test.matches(next)) {
+                if(!isDocElement && next.getNodeType() == Node.ELEMENT_NODE) {
+                    // Context is before the doc element — include element and its descendants
                     next.selectDescendants(true, test, result);
-                }
-                if(next.getNodeType() == Node.ELEMENT_NODE) {
-                    break;
+                } else if(next.getNodeType() != Node.ELEMENT_NODE && test.matches(next)) {
+                    result.add(next);
                 }
                 next = (NodeImpl) next.getNextSibling();
             }
@@ -820,6 +822,11 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
             int count = 0;
             int nextNode = nodeNumber + 1;
             while(nextNode < document.size) {
+                // Skip deleted nodes (soft-deleted by removeNode, nodeKind set to -1)
+                if(document.nodeKind[nextNode] == -1) {
+                    nextNode++;
+                    continue;
+                }
                 final NodeImpl n = document.getNode(nextNode);
                 if(!n.getNodeId().isDescendantOf(myNodeId) && test.matches(n)) {
                     if((position < 0) || (++count == position)) {
