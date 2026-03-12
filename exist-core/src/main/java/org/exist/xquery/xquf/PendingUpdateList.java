@@ -792,6 +792,16 @@ public class PendingUpdateList {
             }
             applyInMemoryInsert(p);
         }
+        // Pre-capture original attr indices for Phase 3 replaceNode BEFORE Phase 1
+        // renames, which can change attribute QNames and create ambiguity.
+        // We capture the index here (before any renames or removals).
+        final Map<UpdatePrimitive, Integer> attrReplaceIndices = new HashMap<>();
+        for (final UpdatePrimitive p : replaceNodes) {
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                attrReplaceIndices.put(p, ((org.exist.dom.memtree.AttrImpl) p.getTargetNode()).getNodeNumber());
+            }
+        }
+
         // Phase 1: renames and non-element replaceValues
         for (final UpdatePrimitive p : renames) {
             applyInMemoryRename(p);
@@ -802,20 +812,16 @@ public class PendingUpdateList {
         // Phase 3: replaceNode — skip if the target's parent is targeted by
         // replaceElementContent (which will replace ALL children anyway)
         //
-        // For attribute replaceNode: capture QNames BEFORE any removals, because
-        // removeAttribute shifts the attr arrays and invalidates stored node indices.
-        // Pre-capture into a parallel list so applyInMemoryReplaceNode can use fresh QNames.
-        final Map<UpdatePrimitive, QName> attrReplaceQNames = new HashMap<>();
-        for (final UpdatePrimitive p : replaceNodes) {
-            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
-                final org.exist.dom.memtree.AttrImpl attr =
-                        (org.exist.dom.memtree.AttrImpl) p.getTargetNode();
-                attrReplaceQNames.put(p, new QName(
-                        attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
-                        attr.getNamespaceURI() != null ? attr.getNamespaceURI() : "",
-                        attr.getPrefix() != null ? attr.getPrefix() : ""));
-            }
-        }
+        // For attribute replaceNode: use pre-captured original indices and process
+        // in descending index order. This handles two problems:
+        // 1. Phase 1 renames can change attribute QNames, making name-based lookup ambiguous
+        // 2. removeAttribute shifts the attr arrays, invalidating stored indices
+        // By processing highest index first, each removal only shifts indices above
+        // the removed position, which we've already processed.
+
+        // Separate attribute and non-attribute replaceNodes
+        final List<UpdatePrimitive> attrReplaceNodes = new java.util.ArrayList<>();
+        final List<UpdatePrimitive> nonAttrReplaceNodes = new java.util.ArrayList<>();
         for (final UpdatePrimitive p : replaceNodes) {
             if (!replaceElementContentTargets.isEmpty()) {
                 final Node replTarget = p.getTargetNode();
@@ -827,7 +833,21 @@ public class PendingUpdateList {
                     continue;
                 }
             }
-            applyInMemoryReplaceNode(p, attrReplaceQNames.get(p));
+            if (p.getTargetNode().getNodeType() == Node.ATTRIBUTE_NODE) {
+                attrReplaceNodes.add(p);
+            } else {
+                nonAttrReplaceNodes.add(p);
+            }
+        }
+        // Sort attribute replaces by descending original index
+        attrReplaceNodes.sort((a, b) -> Integer.compare(
+                attrReplaceIndices.getOrDefault(b, 0),
+                attrReplaceIndices.getOrDefault(a, 0)));
+        for (final UpdatePrimitive p : attrReplaceNodes) {
+            applyInMemoryReplaceNode(p, attrReplaceIndices.get(p));
+        }
+        for (final UpdatePrimitive p : nonAttrReplaceNodes) {
+            applyInMemoryReplaceNode(p, null);
         }
         // Phase 4: replaceElementContent (after replaceNode, so node references are still valid)
         // Apply in reverse document order to prevent cross-contamination when
@@ -999,26 +1019,27 @@ public class PendingUpdateList {
     }
 
     /**
-     * @param preCapQName for attribute targets, the QName captured before any removals
-     *                    (to avoid stale array indices); null for non-attribute targets
+     * @param preCapIndex for attribute targets, the original attr array index captured
+     *                    before Phase 1 renames. Attribute replaces are processed in
+     *                    descending index order so each removeAttribute only shifts
+     *                    indices above the removed position (already processed).
+     *                    null for non-attribute targets.
      */
-    private void applyInMemoryReplaceNode(final UpdatePrimitive p, final QName preCapQName) throws XPathException {
+    private void applyInMemoryReplaceNode(final UpdatePrimitive p, final Integer preCapIndex) throws XPathException {
         final org.exist.dom.memtree.NodeImpl target = (org.exist.dom.memtree.NodeImpl) p.getTargetNode();
         final org.exist.dom.memtree.DocumentImpl doc = getDocument(target);
-        if (target.getNodeType() == Node.ATTRIBUTE_NODE && preCapQName != null) {
-            // For attribute nodes: look up by pre-captured QName since removeAttribute
-            // shifts the attr arrays and invalidates stored node indices.
+        if (target.getNodeType() == Node.ATTRIBUTE_NODE && preCapIndex != null) {
+            // For attribute nodes: use pre-captured index directly.
+            // Attribute replaces are sorted by descending index, so removeAttribute
+            // on this index won't affect any remaining (lower) indices.
             final org.exist.dom.memtree.AttrImpl attrTarget = (org.exist.dom.memtree.AttrImpl) target;
             final org.exist.dom.memtree.NodeImpl parentElement =
                     (org.exist.dom.memtree.NodeImpl) attrTarget.getOwnerElement();
             final int parentElementNum = parentElement.getNodeNumber();
-            final int currentAttrNum = doc.findAttribute(parentElementNum, preCapQName);
-            if (currentAttrNum >= 0) {
-                doc.removeAttribute(currentAttrNum);
-            }
+            doc.removeAttribute(preCapIndex);
             final Sequence content = p.getContent();
             if (content != null && !content.isEmpty()) {
-                doc.insertAttributes(parentElementNum, content);
+                doc.insertAttributes(parentElementNum, content, false);
             }
         } else {
             doc.replaceNode(target.getNodeNumber(), p.getContent());
