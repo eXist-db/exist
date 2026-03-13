@@ -92,6 +92,10 @@ public final class ModelPathResolver {
       LOG.warn("Invalid model path '{}' (base={}): {}", pathStr, base, e.getMessage());
       return null;
     }
+    if (!resolved.startsWith(base)) {
+      LOG.warn("Model path '{}' resolved outside exist.home base {} (resolved={}); refusing to load model.", pathStr, base, resolved);
+      return null;
+    }
     if (hasModelFiles(resolved)) {
       LOG.debug("Resolved model path '{}' to {}", pathStr, resolved);
       return resolved;

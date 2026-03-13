@@ -457,6 +457,104 @@
                         </configuration>
                     </execution>
 
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${assemble.dir}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>delete-jetty-dest-before-rename</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
+                                <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy files</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- create required directories-->
+                                <mkdir dir="${assemble.dir}/etc"/>
+                                <mkdir dir="${assemble.dir}/bin"/>
+                                <mkdir dir="${assemble.dir}/logs"/>
+
+                                <!-- copy configuration files -->
+                                <copy todir="${assemble.dir}/etc">
+                                    <fileset dir="${project.basedir}/src/main/config"/>
+                                </copy>
+
+                                <macrodef name="copy-script">
+                                    <attribute name="src"/>
+                                    <attribute name="dest"/>
+                                    <attribute name="cmd"/>
+                                    <sequential>
+                                        <copy file="@{src}" tofile="@{dest}">
+                                            <filterset>
+                                                <filter token="PLACEHOLDER" value="@{cmd}"/>
+                                            </filterset>
+                                        </copy>
+                                    </sequential>
+                                </macrodef>
+
+                                <!-- windows -->
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"/>
+                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"/>
+
+                                <!-- unix -->
+                                <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
+
+                                <symlink link="${assemble.dir}/bin/backup.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/client.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/export.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/export-gui.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/jmxclient.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/shutdown.sh" resource="launcher.sh"/>
+                                <symlink link="${assemble.dir}/bin/startup.sh" resource="launcher.sh"/>
+
+                                <!-- copy apache daemon files -->
+                                <copy todir="${assemble.dir}/bin/">
+                                    <fileset dir="src/main/templates">
+                                        <include name="prunsrv*"/>
+                                        <include name="jsvc*"/>
+                                    </fileset>
+                                </copy>
+
+                                <!-- set permissions -->
+                                <chmod dir="${assemble.dir}/bin" perm="755" includes="*.sh,jsvc*"/>
+
+                            </target>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -640,32 +738,6 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>
-                            <ignoreNonCompile>true</ignoreNonCompile>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${assemble.dir}/lib</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
                     <execution>
@@ -801,80 +873,6 @@
                                     <replaceExisting>true</replaceExisting>
                                 </resource>
                             </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>copy files</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <!-- create required directories-->
-                                <mkdir dir="${assemble.dir}/etc"/> d
-                                <mkdir dir="${assemble.dir}/bin"/>
-                                <mkdir dir="${assemble.dir}/logs"/>
-
-                                <!-- copy configuration files -->
-                                <copy todir="${assemble.dir}/etc">
-                                    <fileset dir="${project.basedir}/src/main/config"/>
-                                </copy>
-
-                                <macrodef name="copy-script">
-                                    <attribute name="src"/>
-                                    <attribute name="dest"/>
-                                    <attribute name="cmd"/>
-                                    <sequential>
-                                        <copy file="@{src}" tofile="@{dest}">
-                                            <filterset>
-                                                <filter token="PLACEHOLDER" value="@{cmd}"/>
-                                            </filterset>
-                                        </copy>
-                                    </sequential>
-                                </macrodef>
-
-                                <!-- windows -->
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/launcher.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/backup.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/client.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export-gui.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/export.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/jmxclient.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/shutdown.bat"/>
-                                <copy file="src/main/templates/template.bat" tofile="${assemble.dir}/bin/startup.bat"/>
-
-                                <!-- unix -->
-                                <copy file="src/main/templates/template.sh" tofile="${assemble.dir}/bin/launcher.sh"/>
-
-                                <symlink link="${assemble.dir}/bin/backup.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/client.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/export.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/export-gui.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/jmxclient.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/shutdown.sh" resource="launcher.sh"/>
-                                <symlink link="${assemble.dir}/bin/startup.sh" resource="launcher.sh"/>
-
-                                <!-- copy apache daemon files -->
-                                <copy todir="${assemble.dir}/bin/">
-                                    <fileset dir="src/main/templates">
-                                        <include name="prunsrv*"/>
-                                        <include name="jsvc*"/>
-                                    </fileset>
-                                </copy>
-
-                                <!-- set permissions -->
-                                <chmod dir="${assemble.dir}/bin" perm="755" includes="*.sh,jsvc*"/>
-
-                            </target>
                         </configuration>
                     </execution>
                 </executions>

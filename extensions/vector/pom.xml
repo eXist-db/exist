@@ -39,7 +39,7 @@
     <description>eXist-db Vector Embedding Extension (ONNX local models)</description>
 
     <properties>
-        <onnxruntime.version>1.22.0</onnxruntime.version>
+        <onnxruntime.version>1.24.3</onnxruntime.version>
         <onnxruntime.artifact>onnxruntime</onnxruntime.artifact>
         <djl.tokenizers.version>0.33.0</djl.tokenizers.version>
     </properties>

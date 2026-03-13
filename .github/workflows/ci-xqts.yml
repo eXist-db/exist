@@ -13,7 +13,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
-          distribution: liberica
+          distribution: temurin
           java-version: '21'
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings

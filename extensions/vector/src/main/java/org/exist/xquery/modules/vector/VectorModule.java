@@ -60,7 +60,8 @@ public class VectorModule extends AbstractInternalModule {
       new FunctionDef(EmbedBatch.signatures[0], EmbedBatch.class),
       new FunctionDef(EmbedBatch.signatures[1], EmbedBatch.class),
       new FunctionDef(EmbedBatch.signatures[2], EmbedBatch.class),
-      new FunctionDef(Models.signatures[0], Models.class)
+      new FunctionDef(Models.signatures[0], Models.class),
+      new FunctionDef(Diagnostics.signatures[0], Diagnostics.class)
   };
 
   public VectorModule(final Map<String, List<? extends Object>> parameters) {
