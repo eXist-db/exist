@@ -683,7 +683,7 @@ public class StringValue extends AtomicValue {
             }
         }
 
-        if (Type.subTypeOf(other.getType(), Type.STRING)) {
+        if (Type.subTypeOf(other.getType(), Type.STRING) || Type.subTypeOf(other.getType(), Type.ANY_URI)) {
             try {
                 return Collations.compare(collator, value, other.getStringValue());
             } catch (final UnsupportedOperationException e) {
