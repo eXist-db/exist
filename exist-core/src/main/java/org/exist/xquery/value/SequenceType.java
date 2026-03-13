@@ -135,10 +135,9 @@ public class SequenceType {
      * @return true, if item is a subtype of primaryType
      */
     public boolean checkType(final Item item) {
-        Node realNode = null;
         int type = item.getType();
         if (type == Type.NODE) {
-            realNode = ((NodeValue) item).getNode();
+            final Node realNode = ((NodeValue) item).getNode();
             type = realNode.getNodeType();
         }
         if (!Type.subTypeOf(type, primaryType)) {
