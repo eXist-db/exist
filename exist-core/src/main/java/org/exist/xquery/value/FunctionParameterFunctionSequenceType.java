@@ -26,6 +26,9 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.FunctionSignature;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * This class is used to specify the name and description of an XQuery function parameter of type function.
  */
@@ -154,5 +157,15 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
                                 + "; got: " + Type.getTypeName(argumentType));
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        final int T = getPrimaryType();
+        return  Type.getTypeName(T) + "(" +
+                    Arrays.stream(parameters)
+                            .map(SequenceType::toString)
+                            .collect(Collectors.joining(",")) +
+                ")" + (T == Type.FUNCTION ?  " as " + returnType.toString() : "");
     }
 }
