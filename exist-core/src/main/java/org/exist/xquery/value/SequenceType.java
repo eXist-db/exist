@@ -115,19 +115,17 @@ public class SequenceType {
      * @throws XPathException if check fails for one item in the sequence
      * @return true, if all items of the sequence have the same type as or a subtype of primaryType
      */
-    public boolean checkType(Sequence seq) throws XPathException {
-        if (nodeName != null) {
-            Item next;
-            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                next = i.nextItem();
-                if (!checkType(next)) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
+    public boolean checkType(final Sequence seq) throws XPathException {
+        if (nodeName == null) {
             return Type.subTypeOf(seq.getItemType(), primaryType);
         }
+
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            if (!checkType(i.nextItem())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -136,7 +134,7 @@ public class SequenceType {
      * @param item the item to check
      * @return true, if item is a subtype of primaryType
      */
-    public boolean checkType(Item item) {
+    public boolean checkType(final Item item) {
         Node realNode = null;
         int type = item.getType();
         if (type == Type.NODE) {
@@ -146,45 +144,46 @@ public class SequenceType {
         if (!Type.subTypeOf(type, primaryType)) {
             return false;
         }
-        if (nodeName != null) {
+        if (nodeName == null) {
+            return true;
+        }
+        //TODO : how to improve performance ?
+        final QName realName = getRealName(item);
 
-            //TODO : how to improve performance ?
-
-            final NodeValue nvItem = (NodeValue) item;
-            QName realName = null;
-            if (item.getType() == Type.DOCUMENT) {
-                // it's a document... we need to get the document element's name
-                final Document doc;
-                if (nvItem instanceof Document) {
-                    doc = (Document) nvItem;
-                } else {
-                    doc = nvItem.getOwnerDocument();
-                }
-                if (doc != null) {
-                    final Element elem = doc.getDocumentElement();
-                    if (elem != null) {
-                        realName = new QName(elem.getLocalName(), elem.getNamespaceURI());
-                    }
-                }
-            } else {
-                // get the name of the element/attribute
-                realName = nvItem.getQName();
-            }
-
-            if (realName == null) {
-                return false;
-            }
-
-            if (nodeName.getNamespaceURI() != null) {
-                if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
-                    return false;
-                }
-            }
-            if (nodeName.getLocalPart() != null) {
-                return nodeName.getLocalPart().equals(realName.getLocalPart());
-            }
+        if (realName == null) {
+            return false;
+        }
+        if (nodeName.getNamespaceURI() != null &&
+                !nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
+            return false;
+        }
+        if (nodeName.getLocalPart() != null) {
+            return nodeName.getLocalPart().equals(realName.getLocalPart());
         }
         return true;
+    }
+
+    private static QName getRealName(final Item item) {
+        final NodeValue nvItem = (NodeValue) item;
+        if (item.getType() != Type.DOCUMENT) {
+            // get the name of the element/attribute
+            return nvItem.getQName();
+        }
+        // it's a document... we need to get the document element's name
+        final Document doc;
+        if (nvItem instanceof Document) {
+            doc = (Document) nvItem;
+        } else {
+            doc = nvItem.getOwnerDocument();
+        }
+        if (doc == null) {
+            return null;
+        }
+        final Element elem = doc.getDocumentElement();
+        if (elem == null) {
+            return null;
+        }
+        return new QName(elem.getLocalName(), elem.getNamespaceURI());
     }
 
     /**
@@ -199,17 +198,14 @@ public class SequenceType {
             return;
         }
 
-        //Although xs:anyURI is not a subtype of xs:string, both types are compatible
+        // Although xs:anyURI is not a subtype of xs:string, both types are compatible
         if (type == Type.ANY_URI && primaryType == Type.STRING) {
             return;
         }
 
         if (!Type.subTypeOf(type, primaryType)) {
             throw new XPathException((Expression) null, ErrorCodes.XPTY0004,
-                    "Type error: expected type: "
-                            + Type.getTypeName(primaryType)
-                            + "; got: "
-                            + Type.getTypeName(type));
+                    "Type error: expected type: " + Type.getTypeName(primaryType) + "; got: " + Type.getTypeName(type));
         }
     }
 
@@ -231,6 +227,11 @@ public class SequenceType {
         }
     }
 
+    /**
+     * Used to serialize SequenceTypes, when building stack traces, for example.
+     *
+     * @return The serialized SequenceType
+     */
     @Override
     public String toString() {
         if (cardinality == Cardinality.EMPTY_SEQUENCE) {
@@ -242,12 +243,12 @@ public class SequenceType {
             str = "document-node(" + nodeName.getStringValue() + ")";
         } else if (primaryType == Type.ELEMENT && nodeName != null) {
             str = "element(" + nodeName.getStringValue() + ")";
-//        } else if (primaryType == Type.MAP) {
-//            str = "map(" + + ")";
-//        } else if (primaryType == Type.ARRAY) {
-//            str = "array(" + + ")";
-//        } else if (primaryType == Type.FUNCTION_REFERENCE) {
-//            str = "function(" + + ")";
+        } else if (primaryType == Type.MAP_ITEM) {
+            str = "map(*)";
+        } else if (primaryType == Type.ARRAY_ITEM) {
+            str = "array(*)";
+        } else if (primaryType == Type.FUNCTION) {
+            str = "function(*)";
         } else {
             str = Type.getTypeName(primaryType);
         }
