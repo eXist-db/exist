@@ -423,7 +423,10 @@ public final class Journal implements Closeable {
                 sync();
                 lastSyncLsn = currentLsn;
             }
-        } catch (final IOException e) {
+        } catch (final Exception e) {
+            // In some edge cases (e.g. during startup or after errors), the underlying FileChannel
+            // implementation may be in a broken state and throw a RuntimeException (such as NPE)
+            // from force(). Log and continue instead of bringing the whole instance down.
             LOG.error("Could not sync Journal to disk: {}", e.getMessage(), e);
         }
 
@@ -437,6 +440,10 @@ public final class Journal implements Closeable {
     }
 
     private void sync() throws IOException {
+        if (channel == null) {
+            // Journal has not been fully initialised or is already closed; nothing to sync.
+            return;
+        }
         channel.force(true);
     }
 

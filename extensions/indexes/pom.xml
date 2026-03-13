@@ -52,6 +52,7 @@
         <module>sort</module>
         <module>spatial</module>
         <module>indexes-integration-tests</module>
+        <module>vector-it</module>
     </modules>
 
 </project>

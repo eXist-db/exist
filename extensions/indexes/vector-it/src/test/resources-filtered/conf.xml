@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<!--
+    This is the central configuration file for the database. If the database
+    is running in a servlet-context, the configuration file will be read from
+    the WEB-INF directory of the web application. Otherwise, the configuration
+    is read from the directory specified by the exist.home system property.
+-->
+<exist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/conf.xsd">
+
+    <!-- Database backend and files directory for tests (copied from indexes-integration-tests) -->
+    <db-connection cacheSize="256M" checkMaxCacheSize="true" collectionCache="64M" database="native"
+        files="${basedir}/target/test-data" pageSize="4096" nodesBuffer="1000" cacheShrinkThreshold="10000"
+        minDiskSpace="1024M" posix-chown-restricted="true" preserve-on-copy="false">
+
+        <startup>
+            <triggers>
+                <trigger class="org.exist.security.BouncyCastleJceProviderStartupTrigger"/>
+                <trigger class="org.exist.protocolhandler.URLStreamHandlerStartupTrigger">
+                    <parameter name="mode" value="disk"/>
+                    <parameter name="mode" value="memory"/>
+                </trigger>
+            </triggers>
+        </startup>
+
+        <pool min="1" max="10" sync-period="30000" wait-before-shutdown="-1"/>
+
+        <query-pool max="20"/>
+
+        <recovery enabled="true" lease-timeout="600000"/>
+
+        <watchdog delay="30000"/>
+
+    </db-connection>
+
+    <indexer caseSensitive="yes" index-depth="5" preserve-whitespace-mixed-content="no"
+        suppress-whitespace="none">
+        <modules>
+            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex" />
+        </modules>
+    </indexer>
+
+    <!-- Vector model registry for tests: path resolved under exist.home -->
+    <vector-models>
+        <model id="all-MiniLM-L6-v2" path="target/onnx-models/all-MiniLM-L6-v2" dimension="384"/>
+    </vector-models>
+
+    <!-- XQuery builtin modules required for vector IT (import ft: and vector:) -->
+    <xquery enable-java-binding="no" disable-deprecated-functions="no"
+            enable-query-rewriting="yes" backwardCompatible="no">
+        <builtin-modules>
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule"/>
+            <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule"/>
+            <module uri="http://exist-db.org/xquery/xmldb" class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
+        </builtin-modules>
+    </xquery>
+
+</exist>
+

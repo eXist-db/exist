@@ -68,7 +68,7 @@ public class Models extends BasicFunction {
     for (final String model : registryIds) {
       result.add(new StringValue(this, model));
     }
-    for (final String model : VectorModelConstants.KNOWN_MODEL_IDS) {
+    for (final String model : VectorModelConstants.getKnownModelIds()) {
       if (!registryIds.contains(model)) {
         result.add(new StringValue(this, model));
       }
