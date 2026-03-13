@@ -84,13 +84,12 @@ public class ArrayFunction extends BasicFunction {
             optManyParam("member", Type.ITEM, "The member to insert")
     );
 
-    static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("function", Type.FUNCTION,
+    static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("function",
             params(
                 optManyParam("acc", Type.ITEM, "the accumulated result"),
                 optManyParam("next", Type.ITEM, "the next item")
             ),
             returnsMany(Type.ITEM),
-            Cardinality.EXACTLY_ONE,
             "The folding function called on each member of the array"
     );
 
@@ -186,12 +185,11 @@ public class ArrayFunction extends BasicFunction {
                 "$function to the corresponding member of $array.",
             RESULT_ARRAY,
             INPUT_ARRAY,
-            funParam("action", Type.FUNCTION,
+            funParam("action",
                     params(
                             optManyParam("next", Type.ITEM, "the next member")
                     ),
                     returnsOptMany(Type.ITEM),
-                    Cardinality.EXACTLY_ONE,
                     "The action called on each member of the array"
             )
     );
@@ -200,12 +198,11 @@ public class ArrayFunction extends BasicFunction {
             "Returns an array containing those members of the $array for which $function returns true.",
             RESULT_ARRAY,
             INPUT_ARRAY,
-            funParam("action", Type.FUNCTION,
+            funParam("action",
                     params(
                             optManyParam("next", Type.ITEM, "the next member")
                     ),
                     returns(Type.BOOLEAN),
-                    Cardinality.EXACTLY_ONE,
                     "The filter function called on each member of the array"
             )
     );
@@ -232,13 +229,12 @@ public class ArrayFunction extends BasicFunction {
             RESULT_ARRAY,
             INPUT_ARRAY,
             param("array2", Type.ARRAY_ITEM, "The second array to process"),
-            funParam("action", Type.FUNCTION,
+            funParam("action",
                     params(
                             optManyParam("a", Type.ITEM, "the current member of array 1"),
                             optManyParam("b", Type.ITEM, "the current member of array 2")
                     ),
                     returnsOptMany(Type.ITEM),
-                    Cardinality.EXACTLY_ONE,
                     "The function to call for each pair"
             )
     );
@@ -267,12 +263,11 @@ public class ArrayFunction extends BasicFunction {
             SORTED_ARRAY,
             INPUT_ARRAY,
             optParam("collation", Type.STRING, "The collation to use for sorting"),
-            funParam("key", Type.FUNCTION,
+            funParam("key",
                     params(
                         optManyParam("next", Type.ITEM, "the next member")
                     ),
                     returns(Type.ANY_ATOMIC_TYPE),
-                    Cardinality.EXACTLY_ONE,
                     "A function called for each array member which produces a sort key"
             )
     );

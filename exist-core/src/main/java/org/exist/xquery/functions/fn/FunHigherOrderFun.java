@@ -73,13 +73,12 @@ public class FunHigherOrderFun extends BasicFunction {
     private static final FunctionParameterSequenceType[] FOLDING_PARAMS = params(
             optManyParam("sequence", Type.ITEM, "the sequence to iterate over"),
             optManyParam("zero", Type.ITEM, "initial value to start with"),
-            funParam("function", Type.FUNCTION,
+            funParam("function",
                     params(
                             optManyParam("accumulator", Type.ITEM, "the current accumulated result"),
                             param("next", Type.ITEM, "the next item in the sequence")
                     ),
                     returnsOptMany(Type.ITEM),
-                    Cardinality.EXACTLY_ONE,
                     "The folding function"
             )
     );
@@ -90,12 +89,11 @@ public class FunHigherOrderFun extends BasicFunction {
                     "$sequence in turn, returning the concatenation of the resulting sequences in order.",
             returnsOptMany(Type.ITEM, "result of applying the function to each item of the sequence"),
             optManyParam("sequence", Type.ITEM, "the sequence on which to apply the function"),
-            funParam("function", Type.FUNCTION,
+            funParam("function",
                     params(
                             param("item", Type.ITEM, "the next item in the sequence")
                     ),
                     returnsOptMany(Type.ITEM),
-                    Cardinality.EXACTLY_ONE,
                     "The function called on each item in the sequence"
             )
     );
@@ -107,13 +105,12 @@ public class FunHigherOrderFun extends BasicFunction {
             returnsOptMany(Type.ITEM, "concatenation of resulting sequences"),
             optManyParam("seq1", Type.ITEM, "first sequence to take items from"),
             optManyParam("seq2", Type.ITEM, "second sequence to take items from"),
-            funParam("function", Type.FUNCTION,
+            funParam("function",
                     params(
                             param("a", Type.ITEM, "the next item from the first sequence"),
                             param("b", Type.ITEM, "the next item from the first sequence")
                     ),
                     returnsOptMany(Type.ITEM),
-                    Cardinality.EXACTLY_ONE,
                     "The function called on each pair of items"
             )
     );
@@ -124,12 +121,11 @@ public class FunHigherOrderFun extends BasicFunction {
             returnsOptMany(Type.ITEM, "result of filtering the sequence"),
 
             optManyParam("sequence", Type.ITEM, "the sequence to filter"),
-            funParam("function", Type.FUNCTION,
+            funParam("function",
                     params(
                            param("next", Type.ITEM, "the next item to filter")
                     ),
                     returns(Type.BOOLEAN,"include items for which the filter function evaluates to true()"),
-                    Cardinality.EXACTLY_ONE,
                     "The function called on each item, only items that yield true() will be returned"
             )
     );

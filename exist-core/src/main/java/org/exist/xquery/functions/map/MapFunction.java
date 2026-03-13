@@ -159,13 +159,13 @@ public class MapFunction extends BasicFunction {
             returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
             PARAM_INPUT_MAP,
             funParam(
-                "action", Type.FUNCTION,
+                "action",
                 params(
                         param("key", Type.ANY_ATOMIC_TYPE, "the next key"),
                         optManyParam("value", Type.ITEM, "the next value")
                 ),
                 returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
-                Cardinality.EXACTLY_ONE, "The function to be called for each entry"
+                "The function to be called for each entry"
             )
     );
 

@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 /**
  * A small DSL which makes defining Functions in Java code
  * much simpler and more readable.
- *
+ * <p>
  * It allows you to define functions signatures by using a DSL like:
  *
  * <pre>
@@ -324,25 +324,61 @@ public class FunctionDSL {
     }
 
     /**
-     * Creates a Function Parameter that expects a Function
+     * Creates a required function parameter, that is a function
      *
      * @param name The name of the function parameter
-     * @param type The XDM type of the parameter, Type.FUNCTION {@link org.exist.xquery.value.Type}
      * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
      * @param description A description of function parameter
      *
      * @return The function parameter object
      */
     public static FunctionParameterFunctionSequenceType funParam(
             final String name,
-            final int type,
             final FunctionParameterSequenceType[] parameters,
             final FunctionReturnSequenceType returnType,
-            final Cardinality cardinality,
-            final String description) {
-        return new FunctionParameterFunctionSequenceType(name, type, parameters, returnType, cardinality, description);
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, description);
     }
 
+    /**
+     * Creates an optional function parameter, that is a function
+     *
+     * @param name The name of the function parameter
+     * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
+     * @param description A description of function parameter
+     *
+     * @return The function parameter object
+     */
+    public static FunctionParameterFunctionSequenceType optFunParam(
+            final String name,
+            final FunctionParameterSequenceType[] parameters,
+            final FunctionReturnSequenceType returnType,
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, Cardinality.ZERO_OR_ONE, description);
+    }
+
+    /**
+     * Creates an optional function parameter of sequences of functions
+     *
+     * @param name The name of the function parameter
+     * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
+     * @param description A description of function parameter
+     *
+     * @return The function parameter object
+     */
+    public static FunctionParameterFunctionSequenceType optManyFunParam(
+            final String name,
+            final FunctionParameterSequenceType[] parameters,
+            final FunctionReturnSequenceType returnType,
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, Cardinality.ZERO_OR_MORE, description);
+    }
 
     /**
      * Creates a Function Return Type which has a cardinality of {@link Cardinality#ZERO_OR_ONE}
