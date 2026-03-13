@@ -101,7 +101,22 @@ public class UserDefinedFunction extends Function implements Cloneable {
                 newContextInfo.setParent(this);
                 if (!bodyAnalyzed) {
                     if (body != null) {
+                        if (!getSignature().isUpdating()) {
+                            // Non-updating function body: updating expressions not allowed
+                            newContextInfo.addFlag(NON_UPDATING_CONTEXT);
+                        } else {
+                            // Updating function body: updating expressions are allowed
+                            newContextInfo.removeFlag(NON_UPDATING_CONTEXT);
+                        }
                         body.analyze(newContextInfo);
+
+                        // XUST0002: updating function body must be updating (or vacuous)
+                        if (getSignature().isUpdating() && !body.isUpdating()
+                                && !body.isVacuous()) {
+                            throw new XPathException(this, ErrorCodes.XUST0002,
+                                    "body of updating function " + getName() +
+                                    " must be an updating expression or an empty sequence");
+                        }
                     }
                     bodyAnalyzed = true;
                 }

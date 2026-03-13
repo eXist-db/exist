@@ -406,6 +406,7 @@ public abstract class Function extends PathExpr {
             if (arg != null) {
                 // call analyze for each argument
                 final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+                argContextInfo.addFlag(NON_UPDATING_CONTEXT);
                 arg.analyze(argContextInfo);
 
                 if (!argumentsChecked) {

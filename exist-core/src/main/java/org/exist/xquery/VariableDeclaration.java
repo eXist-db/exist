@@ -120,7 +120,10 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
      */
     public void analyzeExpression(final AnalyzeContextInfo contextInfo) throws XPathException {
         if (expression.isPresent()) {
-            expression.get().analyze(contextInfo);
+            // Variable initializers are non-updating contexts
+            final AnalyzeContextInfo exprInfo = new AnalyzeContextInfo(contextInfo);
+            exprInfo.addFlag(NON_UPDATING_CONTEXT);
+            expression.get().analyze(exprInfo);
         }
     }
 

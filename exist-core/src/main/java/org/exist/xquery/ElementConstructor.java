@@ -168,6 +168,7 @@ public class ElementConstructor extends NodeConstructor {
         final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
         newContextInfo.setParent(this);
         newContextInfo.addFlag(IN_NODE_CONSTRUCTOR);
+        newContextInfo.addFlag(NON_UPDATING_CONTEXT);
         qnameExpr.analyze(newContextInfo);
         if(attributes != null) {
             for (AttributeConstructor attribute : attributes) {
