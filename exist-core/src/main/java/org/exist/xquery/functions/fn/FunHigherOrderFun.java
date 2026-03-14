@@ -22,7 +22,15 @@
 package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionDSL;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.RangeSequence;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
@@ -36,53 +44,14 @@ import org.exist.xquery.value.ValueSequence;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.funParam;
+import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.params;
+import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.FunctionDSL.returnsOptMany;
 
 public class FunHigherOrderFun extends BasicFunction {
-    private enum Fn {
-        FOR_EACH("for-each"),
-        FOR_EACH_PAIR("for-each-pair"),
-        FILTER("filter"),
-        FOLD_LEFT("fold-left"),
-        FOLD_RIGHT("fold-right"),
-        APPLY("apply")
-    ;
-
-        final static Map<String, FunHigherOrderFun.Fn> fnMap = new HashMap<>();
-        private final String fname;
-
-        static {
-            for (FunHigherOrderFun.Fn fn: FunHigherOrderFun.Fn.values()) {
-                fnMap.put(fn.fname, fn);
-            }
-        }
-
-        static FunHigherOrderFun.Fn get(String name) {
-            return fnMap.get(name);
-        }
-
-        Fn(String name) {
-            this.fname = name;
-        }
-    }
-
-    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
-        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, paramTypes);
-    }
-
-    private static final FunctionParameterSequenceType[] FOLDING_PARAMS = params(
-            optManyParam("sequence", Type.ITEM, "the sequence to iterate over"),
-            optManyParam("zero", Type.ITEM, "initial value to start with"),
-            funParam("function",
-                    params(
-                            optManyParam("accumulator", Type.ITEM, "the current accumulated result"),
-                            param("next", Type.ITEM, "the next item in the sequence")
-                    ),
-                    returnsOptMany(Type.ITEM),
-                    "The folding function"
-            )
-    );
-
     public final static FunctionSignature FN_FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
             "Applies the function item $function to every item from the sequence " +
@@ -97,7 +66,6 @@ public class FunHigherOrderFun extends BasicFunction {
                     "The function called on each item in the sequence"
             )
     );
-
     public final static FunctionSignature FN_FOR_EACH_PAIR = functionSignature(
             Fn.FOR_EACH_PAIR.fname,
             "Applies the function item $f to successive pairs of items taken one from $seq1 and one from $seq2, " +
@@ -114,7 +82,6 @@ public class FunHigherOrderFun extends BasicFunction {
                     "The function called on each pair of items"
             )
     );
-
     public final static FunctionSignature FN_FILTER = functionSignature(
             Fn.FILTER.fname,
             "Returns those items from the sequence $sequence for which the supplied function $function returns true.",
@@ -123,29 +90,12 @@ public class FunHigherOrderFun extends BasicFunction {
             optManyParam("sequence", Type.ITEM, "the sequence to filter"),
             funParam("function",
                     params(
-                           param("next", Type.ITEM, "the next item to filter")
+                            param("next", Type.ITEM, "the next item to filter")
                     ),
-                    returns(Type.BOOLEAN,"include items for which the filter function evaluates to true()"),
+                    returns(Type.BOOLEAN, "include items for which the filter function evaluates to true()"),
                     "The function called on each item, only items that yield true() will be returned"
             )
     );
-
-    public final static FunctionSignature FN_FOLD_LEFT = functionSignature(
-            Fn.FOLD_LEFT.fname,
-            "Processes the supplied sequence from left to right, applying the supplied function repeatedly to each " +
-                    "item in turn, together with an accumulated result value.",
-            returnsOptMany(Type.ITEM, "result of the fold-left operation"),
-            FOLDING_PARAMS
-    );
-
-    public final static FunctionSignature FN_FOLD_RIGHT = functionSignature(
-            Fn.FOLD_RIGHT.fname,
-            "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
-                    "item in turn, together with an accumulated result value.",
-            returnsOptMany(Type.ITEM, "result of the fold-right operation"),
-            FOLDING_PARAMS
-    );
-
     public final static FunctionSignature FN_APPLY = functionSignature(
             Fn.APPLY.fname,
             "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
@@ -155,15 +105,44 @@ public class FunHigherOrderFun extends BasicFunction {
             param("function", Type.FUNCTION, "the function to call"),
             param("array", Type.ARRAY_ITEM, "an array containing the arguments to pass to the function")
     );
-
+    private static final FunctionParameterSequenceType[] FOLDING_PARAMS = params(
+            optManyParam("sequence", Type.ITEM, "the sequence to iterate over"),
+            optManyParam("zero", Type.ITEM, "initial value to start with"),
+            funParam("function",
+                    params(
+                            optManyParam("accumulator", Type.ITEM, "the current accumulated result"),
+                            param("next", Type.ITEM, "the next item in the sequence")
+                    ),
+                    returnsOptMany(Type.ITEM),
+                    "The folding function"
+            )
+    );
+    public final static FunctionSignature FN_FOLD_LEFT = functionSignature(
+            Fn.FOLD_LEFT.fname,
+            "Processes the supplied sequence from left to right, applying the supplied function repeatedly to each " +
+                    "item in turn, together with an accumulated result value.",
+            returnsOptMany(Type.ITEM, "result of the fold-left operation"),
+            FOLDING_PARAMS
+    );
+    public final static FunctionSignature FN_FOLD_RIGHT = functionSignature(
+            Fn.FOLD_RIGHT.fname,
+            "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
+                    "item in turn, together with an accumulated result value.",
+            returnsOptMany(Type.ITEM, "result of the fold-right operation"),
+            FOLDING_PARAMS
+    );
     private AnalyzeContextInfo cachedContextInfo;
 
-    public FunHigherOrderFun(XQueryContext context, FunctionSignature signature) {
+    public FunHigherOrderFun(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, Function.BUILTIN_FUNCTION_NS), description, returnType, paramTypes);
+    }
+
     @Override
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         cachedContextInfo = new AnalyzeContextInfo(contextInfo);
         super.analyze(cachedContextInfo);
     }
@@ -175,13 +154,13 @@ public class FunHigherOrderFun extends BasicFunction {
             case FOR_EACH -> forEach(args);
             case FOR_EACH_PAIR -> forEachPair(args);
             case FILTER -> filter(args);
-            case FOLD_LEFT ->  foldLeft(args);
+            case FOLD_LEFT -> foldLeft(args);
             case FOLD_RIGHT -> foldRight(args);
             case APPLY -> apply(args);
         };
     }
 
-    private Sequence apply(Sequence[] args) throws XPathException {
+    private Sequence apply(final Sequence[] args) throws XPathException {
         try (final FunctionReference ref = (FunctionReference) args[0].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             final ArrayType array = (ArrayType) args[1].itemAt(0);
@@ -195,8 +174,8 @@ public class FunHigherOrderFun extends BasicFunction {
         }
     }
 
-    private Sequence forEachPair(Sequence[] args) throws XPathException {
-        Sequence result = new ValueSequence();
+    private Sequence forEachPair(final Sequence[] args) throws XPathException {
+        final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             final SequenceIterator i1 = args[0].iterate();
@@ -210,8 +189,8 @@ public class FunHigherOrderFun extends BasicFunction {
         return result;
     }
 
-    private Sequence foldRight(Sequence[] args) throws XPathException {
-        Sequence result;
+    private Sequence foldRight(final Sequence[] args) throws XPathException {
+        final Sequence result;
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             final Sequence zero = args[1];
@@ -227,8 +206,8 @@ public class FunHigherOrderFun extends BasicFunction {
         return result;
     }
 
-    private Sequence foldLeft(Sequence[] args) throws XPathException {
-        Sequence result;
+    private Sequence foldLeft(final Sequence[] args) throws XPathException {
+        final Sequence result;
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             final Sequence seq = args[0];
@@ -238,8 +217,8 @@ public class FunHigherOrderFun extends BasicFunction {
         return result;
     }
 
-    private Sequence filter(Sequence[] args) throws XPathException {
-        Sequence result = new ValueSequence();
+    private Sequence filter(final Sequence[] args) throws XPathException {
+        final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
 
@@ -250,7 +229,7 @@ public class FunHigherOrderFun extends BasicFunction {
 
                 if (r.getItemType() != Type.BOOLEAN) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "The function returned " + r.toString() + "of type" + Type.getTypeName(r.getItemType()) + ", only xs:boolean is allowed");
+                            "The function returned " + r + "of type" + Type.getTypeName(r.getItemType()) + ", only xs:boolean is allowed");
                 }
                 if (r.effectiveBooleanValue()) {
                     result.add(item);
@@ -260,8 +239,8 @@ public class FunHigherOrderFun extends BasicFunction {
         return result;
     }
 
-    private Sequence forEach(Sequence[] args) throws XPathException {
-        Sequence result = new ValueSequence();
+    private Sequence forEach(final Sequence[] args) throws XPathException {
+        final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
@@ -311,5 +290,32 @@ public class FunHigherOrderFun extends BasicFunction {
     private boolean arityMatches(final FunctionReference ref, final int n) {
         return (ref.getSignature().isVariadic() ||
                 ref.getSignature().getArgumentCount() == n);
+    }
+
+    private enum Fn {
+        FOR_EACH("for-each"),
+        FOR_EACH_PAIR("for-each-pair"),
+        FILTER("filter"),
+        FOLD_LEFT("fold-left"),
+        FOLD_RIGHT("fold-right"),
+        APPLY("apply");
+
+        final static Map<String, FunHigherOrderFun.Fn> fnMap = new HashMap<>();
+
+        static {
+            for (final FunHigherOrderFun.Fn fn : FunHigherOrderFun.Fn.values()) {
+                fnMap.put(fn.fname, fn);
+            }
+        }
+
+        private final String fname;
+
+        Fn(final String name) {
+            this.fname = name;
+        }
+
+        static FunHigherOrderFun.Fn get(final String name) {
+            return fnMap.get(name);
+        }
     }
 }
