@@ -128,7 +128,7 @@
                         </goals>
                         <configuration>
                             <archiveBaseDirectory>
-                                ${project.basedir}/../exist-distribution/target/exist-distribution-${project.version}-dir</archiveBaseDirectory>
+                                ${project.basedir}/../exist-distribution/target/exist-distribution-dir</archiveBaseDirectory>
                             <attach>false</attach>
                             <descriptors>
                                 <descriptor>src/assembly/dist-assembly-docker.xml</descriptor>
