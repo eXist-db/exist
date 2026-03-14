@@ -47,7 +47,7 @@
     </scm>
 
     <properties>
-        <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
+        <assemble.dir>${project.build.directory}/${project.artifactId}-dir</assemble.dir>
         <public.xar.repo.uri>http://exist-db.org/exist/apps/public-repo</public.xar.repo.uri>
         <expath.pkg.dir>${project.build.directory}/expath-pkgs</expath.pkg.dir>
         <mac.bundle.dir>${project.build.directory}/${project.artifactId}-${project.version}.app</mac.bundle.dir>
