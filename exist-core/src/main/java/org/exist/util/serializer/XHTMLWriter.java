@@ -42,6 +42,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         EMPTY_TAGS.add("base");
         EMPTY_TAGS.add("br");
         EMPTY_TAGS.add("col");
+        EMPTY_TAGS.add("embed");
         EMPTY_TAGS.add("hr");
         EMPTY_TAGS.add("img");
         EMPTY_TAGS.add("input");
