@@ -46,7 +46,7 @@
   </scm>
 
     <properties>
-        <assemble.dir>${project.build.directory}/${project.artifactId}-${project.version}-dir</assemble.dir>
+        <assemble.dir>${project.build.directory}/${project.artifactId}-dir</assemble.dir>
     </properties>
 
     <dependencies>
