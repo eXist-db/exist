@@ -190,10 +190,15 @@ public class AdaptiveWriter extends IndentingXMLWriter {
     }
 
     private void writeDouble(final DoubleValue item) throws SAXException {
-        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
-        symbols.setExponentSeparator("e");
-        final DecimalFormat df = new DecimalFormat("0.0##########################E0", symbols);
-        writeText(df.format(item.getDouble()));
+        final double d = item.getDouble();
+        if (Double.isInfinite(d) || Double.isNaN(d)) {
+            writeText(item.getStringValue());
+        } else {
+            final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.US);
+            symbols.setExponentSeparator("e");
+            final DecimalFormat df = new DecimalFormat("0.0##########################E0", symbols);
+            writeText(df.format(d));
+        }
     }
 
     private void writeArray(final ArrayType array) throws XPathException, SAXException, TransformerException {
@@ -215,8 +220,6 @@ public class AdaptiveWriter extends IndentingXMLWriter {
 
     private void writeMap(final AbstractMapType map) throws SAXException, XPathException, TransformerException {
         try {
-            writer.write("map");
-            addSpaceIfIndent();
             writer.write('{');
             addIndent();
             indent();
