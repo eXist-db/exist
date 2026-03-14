@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -124,15 +125,30 @@ public class JSON extends BasicFunction {
         // TODO: jackson does not allow access to raw string, so option "unescape" is not supported
         boolean liberal = false;
         String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
-        if (getArgumentCount() == 2) {
-            final MapType options = (MapType)args[1].itemAt(0);
+        if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+            final Item optItem = args[1].itemAt(0);
+            if (optItem.getType() != Type.MAP_ITEM) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Expected map for options parameter, got " + Type.getTypeName(optItem.getType()));
+            }
+            final MapType options = (MapType) optItem;
             final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
             if (liberalOpt.hasOne()) {
-                liberal = liberalOpt.itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+                final Item liberalItem = liberalOpt.itemAt(0);
+                if (liberalItem.getType() != Type.BOOLEAN) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'liberal' must be a boolean, got " + Type.getTypeName(liberalItem.getType()));
+                }
+                liberal = ((BooleanValue) liberalItem).effectiveBooleanValue();
             }
             final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
             if (duplicateOpt.hasOne()) {
-                handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
+                final Item dupItem = duplicateOpt.itemAt(0);
+                if (!Type.subTypeOf(dupItem.getType(), Type.STRING)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'duplicates' must be a string, got " + Type.getTypeName(dupItem.getType()));
+                }
+                handleDuplicates = dupItem.getStringValue();
             }
         }
 

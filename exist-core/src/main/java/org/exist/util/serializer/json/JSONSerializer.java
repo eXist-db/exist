@@ -23,10 +23,12 @@ package org.exist.util.serializer.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import io.lacuna.bifurcan.IEntry;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
@@ -36,12 +38,16 @@ import org.xml.sax.SAXException;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * Called by {@link org.exist.util.serializer.XQuerySerializer} to serialize an XQuery sequence
  * to JSON. The JSON serializer differs from other serialization methods because it maps XQuery
  * data items to JSON.
+ *
+ * Per W3C XSLT and XQuery Serialization 3.1 Section 10 (JSON Output Method).
  *
  * @author Wolf
  */
@@ -49,26 +55,28 @@ public class JSONSerializer {
 
     private final DBBroker broker;
     private final Properties outputProperties;
+    private final boolean allowDuplicateNames;
 
     public JSONSerializer(DBBroker broker, Properties outputProperties) {
         super();
         this.broker = broker;
         this.outputProperties = outputProperties;
+        this.allowDuplicateNames = "yes".equals(
+                outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "yes"));
     }
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
-        JsonFactory factory = new JsonFactory();
+        JsonFactory factory = JsonFactory.builder()
+                .enable(JsonWriteFeature.ESCAPE_FORWARD_SLASHES)
+                .build();
         try {
             JsonGenerator generator = factory.createGenerator(writer);
             generator.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
             if ("yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"))) {
                 generator.useDefaultPrettyPrinter();
             }
-            if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "yes"))) {
-                generator.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
-            } else {
-                generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
-            }
+            // Duplicate detection is handled manually in serializeMap for proper SERE0022 errors
+            generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
             serializeSequence(sequence, generator);
             if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
                 generator.writeRaw('\n');
@@ -99,20 +107,37 @@ public class JSONSerializer {
         } else if (item.getType() == Type.MAP_ITEM) {
             serializeMap((MapType) item, generator);
         } else if (Type.subTypeOf(item.getType(), Type.ANY_ATOMIC_TYPE)) {
-            if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
-                generator.writeNumber(item.getStringValue());
-            } else {
-                switch (item.getType()) {
-                    case Type.BOOLEAN:
-                        generator.writeBoolean(((AtomicValue)item).effectiveBooleanValue());
-                        break;
-                    default:
-                        generator.writeString(item.getStringValue());
-                        break;
-                }
-            }
+            serializeAtomicValue(item, generator);
         } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
             serializeNode(item, generator);
+        } else if (Type.subTypeOf(item.getType(), Type.FUNCTION)) {
+            throw new SAXException("err:SERE0021 Sequence contains a function item, which cannot be serialized as JSON");
+        }
+    }
+
+    private void serializeAtomicValue(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
+        if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
+            final String stringValue = item.getStringValue();
+            // Handle special float/double values per W3C Serialization
+            if ("NaN".equals(stringValue)) {
+                // QT4: NaN serializes as JSON null
+                generator.writeNull();
+            } else if ("INF".equals(stringValue)) {
+                // QT4: +INF serializes as 1e9999
+                generator.writeRawValue("1e9999");
+            } else if ("-INF".equals(stringValue)) {
+                // QT4: -INF serializes as -1e9999
+                generator.writeRawValue("-1e9999");
+            } else if ("-0".equals(stringValue)) {
+                // Negative zero: write as 0 (QT4 allows either 0 or -0)
+                generator.writeNumber(stringValue);
+            } else {
+                generator.writeNumber(stringValue);
+            }
+        } else if (item.getType() == Type.BOOLEAN) {
+            generator.writeBoolean(((AtomicValue) item).effectiveBooleanValue());
+        } else {
+            generator.writeString(item.getStringValue());
         }
     }
 
@@ -143,8 +168,13 @@ public class JSONSerializer {
 
     private void serializeMap(MapType map, JsonGenerator generator) throws IOException, XPathException, SAXException {
         generator.writeStartObject();
+        final Set<String> seenKeys = allowDuplicateNames ? null : new HashSet<>();
         for (final IEntry<AtomicValue, Sequence> entry: map) {
-            generator.writeFieldName(entry.key().getStringValue());
+            final String key = entry.key().getStringValue();
+            if (seenKeys != null && !seenKeys.add(key)) {
+                throw new SAXException("err:SERE0022 Duplicate key '" + key + "' in map and allow-duplicate-names is 'no'");
+            }
+            generator.writeFieldName(key);
             serializeSequence(entry.value(), generator);
         }
         generator.writeEndObject();
