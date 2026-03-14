@@ -32,6 +32,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 import javax.xml.transform.OutputKeys;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Properties;
 
@@ -83,6 +84,17 @@ public class XQuerySerializer {
     }
 
     private void serializeXML(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
+        final String itemSeparator = outputProperties.getProperty(EXistOutputKeys.ITEM_SEPARATOR);
+        // If item-separator is set and sequence has multiple items, serialize items individually
+        // with separator between them (the internal Serializer doesn't handle item-separator)
+        if (itemSeparator != null && sequence.getItemCount() > 1 && !wrap) {
+            serializeXMLWithItemSeparator(sequence, start, howmany, typed, itemSeparator);
+        } else {
+            serializeXMLDirect(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
+        }
+    }
+
+    private void serializeXMLDirect(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
         final Serializer serializer = broker.borrowSerializer();
         SAXSerializer sax = null;
         try {
@@ -102,15 +114,38 @@ public class XQuerySerializer {
         }
     }
 
-    private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        // backwards compatibility: if the sequence contains a single element, we assume
-        // it should be transformed to JSON following the rules of the old JSON writer
-        if (sequence.hasOne() && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
-            serializeXML(sequence, 1, 1, false, false, compilationTime, executionTime);
-        } else {
-            JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
-            serializer.serialize(sequence, writer);
+    private void serializeXMLWithItemSeparator(final Sequence sequence, final int start, final int howmany, final boolean typed, final String itemSeparator) throws SAXException, XPathException {
+        final int actualStart = start - 1; // convert 1-based to 0-based
+        final int end = Math.min(actualStart + howmany, sequence.getItemCount());
+        for (int i = actualStart; i < end; i++) {
+            if (i > actualStart) {
+                try {
+                    writer.write(itemSeparator);
+                } catch (IOException e) {
+                    throw new SAXException(e.getMessage(), e);
+                }
+            }
+            final Item item = sequence.itemAt(i);
+            if (item == null) {
+                continue;
+            }
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                final ValueSequence singleItem = new ValueSequence(1);
+                singleItem.add(item);
+                serializeXMLDirect(singleItem, 1, 1, false, typed, 0, 0);
+            } else {
+                try {
+                    writer.write(item.getStringValue());
+                } catch (IOException e) {
+                    throw new SAXException(e.getMessage(), e);
+                }
+            }
         }
+    }
+
+    private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
+        JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
+        serializer.serialize(sequence, writer);
     }
 
     private void serializeAdaptive(final Sequence sequence) throws SAXException, XPathException {

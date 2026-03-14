@@ -373,10 +373,33 @@ public class XMLWriter implements SerializerWriter {
             if(tagIsOpen) {
                 closeStartTag(false);
             }
-            writeChars(chars, false);
+            // When xdmSerialization is active and current element is in cdata-section-elements,
+            // wrap text content in CDATA instead of escaping it (per W3C Serialization 3.1)
+            if (xdmSerialization && !elementName.isEmpty()
+                    && cdataSectionElements.get().contains(elementName.peek())) {
+                writeCdataContent(chars);
+            } else {
+                writeChars(chars, false);
+            }
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
+    }
+
+    private void writeCdataContent(final CharSequence chars) throws IOException {
+        // CDATA sections cannot contain "]]>", so split at those boundaries
+        final String s = chars.toString();
+        int start = 0;
+        int idx;
+        while ((idx = s.indexOf("]]>", start)) != -1) {
+            writer.write("<![CDATA[");
+            writer.write(s, start, idx + 2); // include the "]]" part
+            writer.write("]]>");
+            start = idx + 2; // continue from ">"
+        }
+        writer.write("<![CDATA[");
+        writer.write(s, start, s.length());
+        writer.write("]]>");
     }
 
     public void characters(final char[] ch, final int start, final int len) throws TransformerException {
@@ -545,11 +568,13 @@ public class XMLWriter implements SerializerWriter {
         }
 
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if ("no".equals(omitXmlDecl)) {
+        @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
+        // Per W3C Serialization 3.1: output declaration if omit-xml-declaration=no,
+        // or if standalone is explicitly set (the declaration is required to carry standalone)
+        if ("no".equals(omitXmlDecl) || standalone != null) {
             // get the fields of the declaration from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
-            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
 
             writeDeclaration(version, encoding, standalone);
         }
