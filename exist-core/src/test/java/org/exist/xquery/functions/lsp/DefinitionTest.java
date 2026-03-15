@@ -22,12 +22,17 @@
 package org.exist.xquery.functions.lsp;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistResource;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -41,6 +46,23 @@ public class DefinitionTest {
 
     private static final String LSP_IMPORT =
             "import module namespace lsp = 'http://exist-db.org/xquery/lsp';\n";
+
+    private static final String LIB_MODULE =
+            "xquery version '3.1';\n" +
+            "module namespace utils = 'http://example.com/utils';\n" +
+            "\n" +
+            "declare function utils:hello($name as xs:string) as xs:string {\n" +
+            "    'Hello ' || $name\n" +
+            "};\n";
+
+    @BeforeClass
+    public static void storeLibraryModule() throws XMLDBException {
+        final Collection root = existEmbeddedServer.getRoot();
+        final BinaryResource resource = root.createResource("utils.xqm", BinaryResource.class);
+        resource.setContent(LIB_MODULE);
+        ((EXistResource) resource).setMimeType("application/xquery");
+        root.storeResource(resource);
+    }
 
     @Test
     public void emptyExpressionReturnsEmpty() throws XMLDBException {
@@ -150,5 +172,56 @@ public class DefinitionTest {
                 "let $def := lsp:definition('" + xquery + "', 1, 5, '/db')\n" +
                 "return $def?kind");
         assertEquals("function", result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void localDefinitionHasNoUri() throws XMLDBException {
+        final String xquery =
+                "declare function local:greet() { 42 };&#10;local:greet()";
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                LSP_IMPORT +
+                "let $def := lsp:definition('" + xquery + "', 1, 5)\n" +
+                "return empty($def?uri)");
+        assertEquals("true", result.getResource(0).getContent().toString());
+    }
+
+    /**
+     * Inner query that imports utils.xqm and calls utils:hello.
+     * Uses double quotes inside so it can be wrapped in single quotes
+     * in the outer XQuery: lsp:definition('...this...', line, col).
+     */
+    private static final String CROSS_MODULE_QUERY =
+            "import module namespace utils = \"http://example.com/utils\" " +
+            "at \"xmldb:exist:///db/utils.xqm\";&#10;" +
+            "utils:hello(\"world\")";
+
+    @Test
+    public void crossModuleDefinitionHasUri() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                LSP_IMPORT +
+                "let $def := lsp:definition('" + CROSS_MODULE_QUERY + "', 1, 5, '/db')\n" +
+                "return $def?uri");
+        final String uri = result.getResource(0).getContent().toString();
+        assertNotNull("cross-module definition should include uri", uri);
+        assertTrue("uri should point to utils.xqm, got: " + uri,
+                uri.contains("utils.xqm"));
+    }
+
+    @Test
+    public void crossModuleDefinitionHasKind() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                LSP_IMPORT +
+                "let $def := lsp:definition('" + CROSS_MODULE_QUERY + "', 1, 5, '/db')\n" +
+                "return $def?kind");
+        assertEquals("function", result.getResource(0).getContent().toString());
+    }
+
+    @Test
+    public void crossModuleDefinitionHasLineAndColumn() throws XMLDBException {
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                LSP_IMPORT +
+                "let $def := lsp:definition('" + CROSS_MODULE_QUERY + "', 1, 5, '/db')\n" +
+                "return $def?line >= 0");
+        assertEquals("true", result.getResource(0).getContent().toString());
     }
 }

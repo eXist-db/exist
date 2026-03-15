@@ -23,9 +23,12 @@ package org.exist.xquery.functions.lsp;
 
 import java.io.StringReader;
 
+import javax.annotation.Nullable;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.source.Source;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Expression;
@@ -61,6 +64,9 @@ import static org.exist.xquery.FunctionDSL.*;
  *   <li>{@code column} — 0-based column of the definition</li>
  *   <li>{@code name} — name of the defined symbol</li>
  *   <li>{@code kind} — what was found: "function" or "variable"</li>
+ *   <li>{@code uri} — (optional) source path of the module containing the
+ *       definition, present only when the definition is in a different module
+ *       than the input expression (i.e., an imported library module)</li>
  * </ul>
  *
  * <p>Returns an empty sequence if the symbol at the position is not a
@@ -76,8 +82,10 @@ public class Definition extends BasicFunction {
     private static final String FS_DEFINITION_DESCRIPTION = """
             Returns the definition location of the symbol at the given \
             position. Returns a map with keys: line (xs:integer, 0-based), \
-            column (xs:integer, 0-based), name (xs:string), and kind \
-            (xs:string, "function" or "variable"). Returns an empty \
+            column (xs:integer, 0-based), name (xs:string), kind \
+            (xs:string, "function" or "variable"), and optionally uri \
+            (xs:string, source path of the module containing the definition, \
+            present only for cross-module definitions). Returns an empty \
             sequence if no user-declared definition is found.""";
 
     public static final FunctionSignature[] FS_DEFINITION = functionSignatures(
@@ -144,8 +152,9 @@ public class Definition extends BasicFunction {
                 }
 
                 // Resolve to definition
+                final Source mainSource = pContext.getSource();
                 if (found instanceof final FunctionCall call) {
-                    return resolveFunctionDefinition(call);
+                    return resolveFunctionDefinition(call, mainSource);
                 } else if (found instanceof final VariableReference varRef) {
                     return resolveVariableDefinition(varRef, path);
                 }
@@ -186,7 +195,8 @@ public class Definition extends BasicFunction {
         }
     }
 
-    private Sequence resolveFunctionDefinition(final FunctionCall call) throws XPathException {
+    private Sequence resolveFunctionDefinition(final FunctionCall call,
+            @Nullable final Source mainSource) throws XPathException {
         final UserDefinedFunction func = call.getFunction();
         if (func == null) {
             return Sequence.EMPTY_SEQUENCE;
@@ -202,7 +212,18 @@ public class Definition extends BasicFunction {
         final QName name = func.getSignature().getName();
         final String displayName = formatQName(name) + "#" + func.getSignature().getArgumentCount();
 
-        return buildResult(line - 1, Math.max(column - 1, 0), displayName, "function");
+        // Check if the function is defined in a different module.
+        // mainSource is null when the input is a string (not a stored query),
+        // so any function with a non-null source path must be from an import.
+        final Source funcSource = func.getSource();
+        String uri = null;
+        if (funcSource != null && funcSource.path() != null) {
+            if (mainSource == null || !funcSource.equals(mainSource)) {
+                uri = funcSource.path();
+            }
+        }
+
+        return buildResult(line - 1, Math.max(column - 1, 0), displayName, "function", uri);
     }
 
     private Sequence resolveVariableDefinition(final VariableReference varRef,
@@ -220,7 +241,7 @@ public class Definition extends BasicFunction {
                     }
                     final String displayName = "$" + formatQName(varDecl.getName());
                     return buildResult(line - 1, Math.max(varDecl.getColumn() - 1, 0),
-                            displayName, "variable");
+                            displayName, "variable", null);
                 }
             }
         }
@@ -229,12 +250,16 @@ public class Definition extends BasicFunction {
     }
 
     private Sequence buildResult(final int line, final int column,
-            final String name, final String kind) throws XPathException {
+            final String name, final String kind,
+            @Nullable final String uri) throws XPathException {
         final MapType result = new MapType(this, context);
         result.add(new StringValue(this, "line"), new IntegerValue(this, line));
         result.add(new StringValue(this, "column"), new IntegerValue(this, column));
         result.add(new StringValue(this, "name"), new StringValue(this, name));
         result.add(new StringValue(this, "kind"), new StringValue(this, kind));
+        if (uri != null) {
+            result.add(new StringValue(this, "uri"), new StringValue(this, uri));
+        }
         return result;
     }
 
