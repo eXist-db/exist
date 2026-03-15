@@ -149,7 +149,14 @@ public class Diagnostics extends BasicFunction {
             parser.xpath();
             if (parser.foundErrors()) {
                 logger.debug(parser.getErrorMessage());
-                addDiagnostic(diagnostics, -1, -1, null, parser.getErrorMessage());
+                final Exception lastEx = parser.getLastException();
+                if (lastEx instanceof final RecognitionException re) {
+                    addDiagnostic(diagnostics, re.getLine(), re.getColumn(), null, parser.getErrorMessage());
+                } else if (lastEx instanceof final XPathException xpe) {
+                    addDiagnostic(diagnostics, xpe.getLine(), xpe.getColumn(), xpe.getCode(), parser.getErrorMessage());
+                } else {
+                    addDiagnostic(diagnostics, -1, -1, null, parser.getErrorMessage());
+                }
                 return;
             }
 
