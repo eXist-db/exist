@@ -99,13 +99,13 @@ public class DocUtils {
         Sequence doc = getFromDynamicallyAvailableDocuments(context, path, expression);
         if (doc == null) {
             if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
-                /* URL */
-                doc = getDocumentByPathFromURL(context, path, expression);
+                /* URL — use SourceFactory (has security checks) */
+                doc = getDocumentByPathFromURL(context, path, expression, false);
             } else if (!PTN_PROTOCOL_PREFIX.matcher(path).matches()) {
                 // Relative URI: resolve against static base URI per XQuery spec §2.1.2
                 final String resolved = resolveAgainstBaseUri(context, path);
                 if (resolved != null && resolved.startsWith("file:")) {
-                    doc = getDocumentByPathFromURL(context, resolved, expression);
+                    doc = getDocumentByPathFromURL(context, resolved, expression, true);
                 } else {
                     /* Database documents */
                     doc = getDocumentByPathFromDB(context, path, expression);
@@ -166,13 +166,15 @@ public class DocUtils {
     }
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        return getDocumentByPathFromURL(context, path, null);
+        return getDocumentByPathFromURL(context, path, null, false);
     }
 
-    private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
+    private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path, final Expression expression, final boolean resolvedFromBaseUri) throws XPathException, PermissionDeniedException {
         try {
-            // Handle file: URIs directly to avoid SourceFactory path stripping issues
-            if (path.startsWith("file:")) {
+            // Only use direct file: access for URIs resolved from a relative path
+            // against a file: base URI. Absolute file: URIs go through SourceFactory
+            // which enforces security checks (e.g., blocking file:///etc/passwd).
+            if (resolvedFromBaseUri && path.startsWith("file:")) {
                 final String filePath = path.replaceFirst("^file:(?://[^/]*)?", "");
                 final java.nio.file.Path nioPath = java.nio.file.Paths.get(filePath);
                 if (java.nio.file.Files.isReadable(nioPath)) {

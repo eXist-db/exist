@@ -199,7 +199,8 @@ public class FunCompare extends CollatingFunction {
             return ((org.exist.xquery.value.DecimalValue) v).getValue();
         }
         if (v instanceof IntegerValue) {
-            return new BigDecimal(((IntegerValue) v).getValue());
+            // Use string representation — getValue() truncates to long for big integers
+            return new BigDecimal(v.getStringValue());
         }
         // Double or Float — use exact decimal representation (no rounding)
         return new BigDecimal(v.getDouble());

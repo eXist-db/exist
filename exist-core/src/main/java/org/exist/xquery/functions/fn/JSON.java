@@ -212,17 +212,20 @@ public class JSON extends BasicFunction {
         }
         try {
             String url = href.getStringValue();
+            boolean resolvedFromBaseUri = false;
             if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
                 // Relative URI: resolve against static base URI
                 final String resolved = resolveAgainstBaseUri(url);
                 if (resolved != null && resolved.startsWith("file:")) {
                     url = resolved;
+                    resolvedFromBaseUri = true;
                 } else {
                     url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
                 }
             }
-            // Handle file: URIs directly to avoid SourceFactory path stripping issues
-            if (url.startsWith("file:")) {
+            // Only use direct file: access for URIs resolved from a relative path.
+            // Absolute file: URIs go through SourceFactory for security.
+            if (resolvedFromBaseUri && url.startsWith("file:")) {
                 // Extract path from file: URI: file:/path, file://host/path, file:///path
                 final String filePath = url.replaceFirst("^file:(?://[^/]*)?", "");
                 final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
