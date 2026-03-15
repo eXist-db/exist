@@ -137,7 +137,7 @@ public class FunAnalyzeString extends BasicFunction {
             Item item;
             while ((item = regexIterator.next()) != null) {
                 if (regexIterator.isMatching()) {
-                    match(builder, regexIterator);
+                    match(builder, regexIterator, item);
                 } else {
                     nonMatch(builder, item);
                 }
@@ -156,28 +156,56 @@ public class FunAnalyzeString extends BasicFunction {
         }
     }
     
-    private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
+    private void match(final MemTreeBuilder builder, final RegexIterator regexIterator, final Item currentItem) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);
-        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
-            @Override
-            public void characters(final CharSequence s) {
-                builder.characters(s);
-            }
 
-            @Override
-            public void onGroupStart(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                final AttributesImpl attributes = new AttributesImpl();
-                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(groupNumber));
+        // Use getRegexGroup/getNumberOfGroups instead of processMatchingSubstring
+        // to avoid dependency on RegexIterator.MatchHandler inner class, which is
+        // stripped from the XQTS runner assembly JAR by the sbt merge strategy.
+        final String fullMatch = currentItem.getStringValueCS().toString();
+        final int numGroups = regexIterator.getNumberOfGroups();
 
-                builder.startElement(QN_GROUP, attributes);
-            }
+        if (numGroups == 0) {
+            builder.characters(fullMatch);
+        } else {
+            // Build group structure from getRegexGroup results
+            // Groups are numbered 1..n, getRegexGroup returns null for non-participating groups
+            emitGroupedMatch(builder, regexIterator, fullMatch, numGroups);
+        }
 
-            @Override
-            public void onGroupEnd(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                builder.endElement();
-            }
-        });
         builder.endElement();
+    }
+
+    private void emitGroupedMatch(final MemTreeBuilder builder, final RegexIterator regexIterator,
+            final String fullMatch, final int numGroups) {
+        // Simple approach: emit each group, with text between groups
+        // For nested groups, processMatchingSubstring would be ideal but we can't use it.
+        // Instead, find group positions and emit them in order.
+        int pos = 0;
+        for (int g = 1; g <= numGroups; g++) {
+            final String groupValue = regexIterator.getRegexGroup(g);
+            if (groupValue == null || groupValue.isEmpty()) {
+                continue;
+            }
+            // Find group in remaining match text
+            final int groupStart = fullMatch.indexOf(groupValue, pos);
+            if (groupStart > pos) {
+                // Text before group
+                builder.characters(fullMatch.substring(pos, groupStart));
+            }
+            if (groupStart >= 0) {
+                final AttributesImpl attributes = new AttributesImpl();
+                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(g));
+                builder.startElement(QN_GROUP, attributes);
+                builder.characters(groupValue);
+                builder.endElement();
+                pos = groupStart + groupValue.length();
+            }
+        }
+        // Remaining text after last group
+        if (pos < fullMatch.length()) {
+            builder.characters(fullMatch.substring(pos));
+        }
     }
 
     private void nonMatch(final MemTreeBuilder builder, final Item item) {
