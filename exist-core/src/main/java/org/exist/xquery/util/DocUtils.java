@@ -101,13 +101,45 @@ public class DocUtils {
             if (PTN_PROTOCOL_PREFIX.matcher(path).matches() && !path.startsWith("xmldb:")) {
                 /* URL */
                 doc = getDocumentByPathFromURL(context, path, expression);
+            } else if (!PTN_PROTOCOL_PREFIX.matcher(path).matches()) {
+                // Relative URI: resolve against static base URI per XQuery spec §2.1.2
+                final String resolved = resolveAgainstBaseUri(context, path);
+                if (resolved != null && resolved.startsWith("file:")) {
+                    doc = getDocumentByPathFromURL(context, resolved, expression);
+                } else {
+                    /* Database documents */
+                    doc = getDocumentByPathFromDB(context, path, expression);
+                }
             } else {
-                /* Database documents */
+                /* Database documents (xmldb: prefix) */
                 doc = getDocumentByPathFromDB(context, path, expression);
             }
         }
 
         return doc;
+    }
+
+    /**
+     * Resolve a relative URI against the static base URI.
+     *
+     * @return the resolved URI string, or null if resolution is not possible
+     */
+    private static @Nullable String resolveAgainstBaseUri(final XQueryContext context, final String relativePath) {
+        try {
+            final AnyURIValue baseXdmUri = context.getBaseURI();
+            if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                String baseStr = baseXdmUri.toURI().toString();
+                // Strip filename to get directory URI
+                final int lastSlash = baseStr.lastIndexOf('/');
+                if (lastSlash >= 0) {
+                    baseStr = baseStr.substring(0, lastSlash + 1);
+                }
+                return new URI(baseStr).resolve(relativePath).toString();
+            }
+        } catch (final URISyntaxException | XPathException e) {
+            // fall through
+        }
+        return null;
     }
 
     private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path) throws XPathException {
@@ -139,6 +171,21 @@ public class DocUtils {
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
         try {
+            // Handle file: URIs directly to avoid SourceFactory path stripping issues
+            if (path.startsWith("file:")) {
+                final String filePath = path.replaceFirst("^file:(?://[^/]*)?", "");
+                final java.nio.file.Path nioPath = java.nio.file.Paths.get(filePath);
+                if (java.nio.file.Files.isReadable(nioPath)) {
+                    try (final java.io.InputStream fis = java.nio.file.Files.newInputStream(nioPath)) {
+                        final org.exist.dom.memtree.DocumentImpl memtreeDoc = parse(
+                                context.getBroker().getBrokerPool(), context, fis, expression);
+                        memtreeDoc.setDocumentURI(path);
+                        return memtreeDoc;
+                    }
+                }
+                return Sequence.EMPTY_SEQUENCE;
+            }
+
             final Source source = SourceFactory.getSource(context.getBroker(), "", path, false);
             if (source == null) {
                 return Sequence.EMPTY_SEQUENCE;
