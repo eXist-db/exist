@@ -23,6 +23,8 @@ package org.exist.xquery.functions.fn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
@@ -30,9 +32,12 @@ import net.sf.saxon.regex.RegularExpression;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;
@@ -72,7 +77,9 @@ public class FunReplace extends BasicFunction {
 
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern to match");
-	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_REPLACEMENT = param("replacement", Type.STRING, "The string to replace the pattern with");
+	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_REPLACEMENT =
+			new FunctionParameterSequenceType("replacement", Type.ITEM, Cardinality.ZERO_OR_ONE,
+					"The replacement string, function, or empty sequence");
 
 	static final FunctionSignature [] FS_REPLACE = functionSignatures(
 			FS_REPLACE_NAME,
@@ -88,7 +95,7 @@ public class FunReplace extends BasicFunction {
 							FS_TOKENIZE_PARAM_INPUT,
 							FS_TOKENIZE_PARAM_PATTERN,
 							FS_TOKENIZE_PARAM_REPLACEMENT,
-							param("flags", Type.STRING, Cardinality.EXACTLY_ONE, "The flags")
+							param("flags", Type.STRING, Cardinality.ZERO_OR_ONE, "The flags")
 					)
 			)
 	);
@@ -104,36 +111,64 @@ public class FunReplace extends BasicFunction {
 		if (stringArg.isEmpty()) {
 			result = StringValue.EMPTY_STRING;
 		} else {
-			final String flags;
-			if (args.length == 4) {
+			String flags;
+			if (args.length == 4 && !args[3].isEmpty()) {
 				flags =	args[3].itemAt(0).getStringValue();
 			} else {
 				flags = "";
 			}
+
+			// XQ4: 'c' flag — strip regex comments (#...#) before compilation
+			// When 'q' (literal) flag is present, 'c' is ignored
+			final boolean hasCommentFlag = flags.indexOf('c') >= 0 && flags.indexOf('q') < 0;
+			if (flags.indexOf('c') >= 0) {
+				flags = flags.replace("c", "");
+			}
+
     		final String string = stringArg.getStringValue();
-    		final String pattern = args[1].itemAt(0).getStringValue();
-			final String replace = args[2].itemAt(0).getStringValue();
+    		String pattern = args[1].itemAt(0).getStringValue();
+
+			if (hasCommentFlag) {
+				pattern = stripRegexComments(pattern);
+			}
+
+			// XQ4: 3rd arg can be empty sequence (treated as empty string) or a function
+			final Sequence replacementArg = args[2];
+			final boolean isFunctionReplacement = !replacementArg.isEmpty()
+					&& Type.subTypeOf(replacementArg.itemAt(0).getType(), Type.FUNCTION);
+			final String replace;
+			if (isFunctionReplacement) {
+				replace = null; // handled below
+			} else if (replacementArg.isEmpty()) {
+				replace = "";
+			} else {
+				replace = replacementArg.itemAt(0).getStringValue();
+			}
 
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
-
 			final List<String> warnings = new ArrayList<>(1);
 
 			try {
 				final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
-				if (regularExpression.matches("")) {
-					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-				}
+				final boolean canMatchEmpty = regularExpression.matches("");
 
-				//TODO(AR) cache the regular expression... might be possible through Saxon config
-
-				if (!hasLiteral(flags)) {
-					final String msg = Replace.checkReplacement(replace);
-					if (msg != null) {
-						throw new XPathException(this, ErrorCodes.FORX0004, msg);
+				if (isFunctionReplacement) {
+					result = evalFunctionReplacement(string, pattern, flags,
+							(FunctionReference) replacementArg.itemAt(0));
+				} else if (canMatchEmpty) {
+					// XQ4: empty-matching regex allowed — use Java regex fallback
+					// since Saxon's replace() doesn't handle empty matches well
+					result = evalEmptyMatchReplace(string, pattern, replace, flags);
+				} else {
+					if (!hasLiteral(flags)) {
+						final String msg = Replace.checkReplacement(replace);
+						if (msg != null) {
+							throw new XPathException(this, ErrorCodes.FORX0004, msg);
+						}
 					}
+					final CharSequence res = regularExpression.replace(string, replace);
+					result = new StringValue(this, res.toString());
 				}
-				final CharSequence res = regularExpression.replace(string, replace);
-				result = new StringValue(this, res.toString());
 
 			} catch (final net.sf.saxon.trans.XPathException e) {
 				switch (e.getErrorCodeLocalPart()) {
@@ -145,7 +180,183 @@ public class FunReplace extends BasicFunction {
 				}
 			}
         }
-        
+
         return result;
+	}
+
+	/**
+	 * XQ4: Handle replacement when the regex can match the empty string.
+	 * Uses Java regex with XPath-to-Java translation for proper empty-match handling.
+	 */
+	private Sequence evalEmptyMatchReplace(final String input, final String pattern,
+			final String replace, final String flags) throws XPathException {
+		final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+				this, pattern, hasIgnoreWhitespace(flags), hasCaseInsensitive(flags));
+		final int javaFlags = parseFlags(this, flags);
+		final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
+		final Matcher matcher = compiled.matcher(input);
+
+		final StringBuilder sb = new StringBuilder();
+		int lastEnd = 0;
+		while (matcher.find()) {
+			sb.append(input, lastEnd, matcher.start());
+
+			// Apply XPath-style replacement ($0, $1, etc.)
+			sb.append(applyXPathReplacement(replace, matcher));
+
+			lastEnd = matcher.end();
+
+			// Advance past empty match to prevent infinite loop
+			if (matcher.start() == matcher.end()) {
+				if (lastEnd < input.length()) {
+					sb.append(input.charAt(lastEnd));
+					lastEnd++;
+					matcher.region(lastEnd, input.length());
+				} else {
+					break;
+				}
+			}
+		}
+		sb.append(input, lastEnd, input.length());
+		return new StringValue(this, sb.toString());
+	}
+
+	/**
+	 * Apply XPath-style replacement string ($0, $1, etc.) using a Java Matcher.
+	 */
+	private static String applyXPathReplacement(final String replacement, final Matcher matcher) {
+		final StringBuilder result = new StringBuilder();
+		for (int i = 0; i < replacement.length(); i++) {
+			final char ch = replacement.charAt(i);
+			if (ch == '$' && i + 1 < replacement.length()) {
+				i++;
+				int groupNum = 0;
+				boolean hasDigit = false;
+				while (i < replacement.length() && Character.isDigit(replacement.charAt(i))) {
+					groupNum = groupNum * 10 + (replacement.charAt(i) - '0');
+					hasDigit = true;
+					i++;
+				}
+				i--; // back up one
+				if (hasDigit && groupNum <= matcher.groupCount()) {
+					final String g = matcher.group(groupNum);
+					if (g != null) {
+						result.append(g);
+					}
+				} else if (hasDigit) {
+					// Group doesn't exist, output empty
+				}
+			} else if (ch == '\\' && i + 1 < replacement.length()) {
+				i++;
+				result.append(replacement.charAt(i));
+			} else {
+				result.append(ch);
+			}
+		}
+		return result.toString();
+	}
+
+	/**
+	 * XQ4: Evaluate fn:replace with a function replacement parameter.
+	 * The function receives (match, groups*) and returns the replacement string.
+	 */
+	private Sequence evalFunctionReplacement(final String input, final String pattern,
+			final String flags, final FunctionReference func) throws XPathException {
+		// Use Java regex for function replacement since Saxon's replace() only accepts strings
+		final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+				this, pattern, hasIgnoreWhitespace(flags), hasCaseInsensitive(flags));
+		int javaFlags = parseFlags(this, flags);
+		final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
+		final Matcher matcher = compiled.matcher(input);
+
+		final StringBuilder sb = new StringBuilder();
+		int lastEnd = 0;
+		while (matcher.find()) {
+			sb.append(input, lastEnd, matcher.start());
+
+			// Build arguments: (match, group1, group2, ...)
+			final int groupCount = matcher.groupCount();
+			final Sequence[] funcArgs = new Sequence[2];
+			funcArgs[0] = new StringValue(this, matcher.group());
+			final ValueSequence groups = new ValueSequence(groupCount);
+			for (int i = 1; i <= groupCount; i++) {
+				final String g = matcher.group(i);
+				groups.add(g != null ? new StringValue(this, g) : StringValue.EMPTY_STRING);
+			}
+			funcArgs[1] = groups;
+
+			final Sequence replacement = func.evalFunction(null, null, funcArgs);
+			if (!replacement.isEmpty()) {
+				sb.append(replacement.getStringValue());
+			}
+
+			lastEnd = matcher.end();
+
+			// Prevent infinite loop on empty match
+			if (matcher.start() == matcher.end()) {
+				if (lastEnd < input.length()) {
+					sb.append(input.charAt(lastEnd));
+					lastEnd++;
+					// Reset matcher position
+					matcher.region(lastEnd, input.length());
+				} else {
+					break;
+				}
+			}
+		}
+		sb.append(input, lastEnd, input.length());
+		return new StringValue(this, sb.toString());
+	}
+
+	/**
+	 * XQ4: Strip regex comments (c flag).
+	 * Removes text between # markers: #comment# becomes empty.
+	 * A # at end of pattern (no closing #) is treated as end-of-line comment.
+	 * Escaped \# is preserved.
+	 */
+	static String stripRegexComments(final String pattern) {
+		final StringBuilder result = new StringBuilder(pattern.length());
+		boolean inComment = false;
+		boolean inCharClass = false;
+		for (int i = 0; i < pattern.length(); i++) {
+			final char ch = pattern.charAt(i);
+			if (ch == '\\' && i + 1 < pattern.length()) {
+				final char next = pattern.charAt(i + 1);
+				if (!inComment) {
+					if (next == '#') {
+						// \# in c-flag mode is a literal # — output just #
+						result.append('#');
+					} else {
+						result.append(ch);
+						result.append(next);
+					}
+				}
+				i++; // skip escaped character
+			} else if (inCharClass) {
+				// Inside [...] character class, # is literal
+				if (ch == ']') {
+					inCharClass = false;
+				}
+				if (!inComment) {
+					result.append(ch);
+				}
+			} else if (ch == '[' && !inComment) {
+				inCharClass = true;
+				result.append(ch);
+			} else if (ch == '#' && !inCharClass) {
+				inComment = !inComment;
+			} else if (!inComment) {
+				result.append(ch);
+			}
+		}
+		return result.toString();
+	}
+
+	private static boolean hasCaseInsensitive(final String flags) {
+		return flags.contains("i");
+	}
+
+	private static boolean hasIgnoreWhitespace(final String flags) {
+		return flags.contains("x");
 	}
 }
