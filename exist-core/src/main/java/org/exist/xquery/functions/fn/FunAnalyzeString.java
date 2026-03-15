@@ -137,7 +137,7 @@ public class FunAnalyzeString extends BasicFunction {
             Item item;
             while ((item = regexIterator.next()) != null) {
                 if (regexIterator.isMatching()) {
-                    match(builder, regexIterator, item);
+                    match(builder, regexIterator);
                 } else {
                     nonMatch(builder, item);
                 }
@@ -156,90 +156,28 @@ public class FunAnalyzeString extends BasicFunction {
         }
     }
     
-    /**
-     * Try to use processMatchingSubstring via reflection to avoid compile-time
-     * dependency on RegexIterator.MatchHandler (which is stripped from the XQTS
-     * runner assembly JAR). Falls back to simple group extraction if the inner
-     * class is not available at runtime.
-     */
-    private void match(final MemTreeBuilder builder, final RegexIterator regexIterator, final Item currentItem) throws net.sf.saxon.trans.XPathException {
+    private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);
-
-        try {
-            // Dynamically load MatchHandler and create proxy
-            final Class<?> handlerClass = Class.forName("net.sf.saxon.regex.RegexIterator$MatchHandler");
-            final Object handler = java.lang.reflect.Proxy.newProxyInstance(
-                    handlerClass.getClassLoader(),
-                    new Class<?>[]{ handlerClass },
-                    (proxy, method, args) -> {
-                        switch (method.getName()) {
-                            case "characters":
-                                builder.characters((CharSequence) args[0]);
-                                break;
-                            case "onGroupStart":
-                                final int startGroup = (Integer) args[0];
-                                final AttributesImpl startAttrs = new AttributesImpl();
-                                startAttrs.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(startGroup));
-                                builder.startElement(QN_GROUP, startAttrs);
-                                break;
-                            case "onGroupEnd":
-                                builder.endElement();
-                                break;
-                        }
-                        return null;
-                    });
-
-            final java.lang.reflect.Method processMethod = regexIterator.getClass().getMethod(
-                    "processMatchingSubstring", handlerClass);
-            processMethod.invoke(regexIterator, handler);
-
-        } catch (final ClassNotFoundException | NoSuchMethodException e) {
-            // MatchHandler not available — fall back to simple group output
-            matchFallback(builder, regexIterator, currentItem);
-        } catch (final java.lang.reflect.InvocationTargetException e) {
-            if (e.getCause() instanceof net.sf.saxon.trans.XPathException) {
-                throw (net.sf.saxon.trans.XPathException) e.getCause();
+        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
+            @Override
+            public void characters(final CharSequence s) {
+                builder.characters(s);
             }
-            matchFallback(builder, regexIterator, currentItem);
-        } catch (final Exception e) {
-            matchFallback(builder, regexIterator, currentItem);
-        }
 
+            @Override
+            public void onGroupStart(final int groupNumber) throws net.sf.saxon.trans.XPathException {
+                final AttributesImpl attributes = new AttributesImpl();
+                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(groupNumber));
+
+                builder.startElement(QN_GROUP, attributes);
+            }
+
+            @Override
+            public void onGroupEnd(final int groupNumber) throws net.sf.saxon.trans.XPathException {
+                builder.endElement();
+            }
+        });
         builder.endElement();
-    }
-
-    private void matchFallback(final MemTreeBuilder builder, final RegexIterator regexIterator, final Item currentItem) {
-        // Simple fallback: output the entire match as text with flat group elements
-        final String fullMatch = currentItem.getStringValueCS().toString();
-        final int numGroups = regexIterator.getNumberOfGroups();
-
-        if (numGroups == 0) {
-            builder.characters(fullMatch);
-        } else {
-            // Emit groups sequentially without nesting (best-effort)
-            int pos = 0;
-            for (int g = 1; g <= numGroups; g++) {
-                final String groupValue = regexIterator.getRegexGroup(g);
-                if (groupValue == null || groupValue.isEmpty()) {
-                    continue;
-                }
-                final int groupStart = fullMatch.indexOf(groupValue, pos);
-                if (groupStart > pos) {
-                    builder.characters(fullMatch.substring(pos, groupStart));
-                }
-                if (groupStart >= 0) {
-                    final AttributesImpl attributes = new AttributesImpl();
-                    attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(g));
-                    builder.startElement(QN_GROUP, attributes);
-                    builder.characters(groupValue);
-                    builder.endElement();
-                    pos = groupStart + groupValue.length();
-                }
-            }
-            if (pos < fullMatch.length()) {
-                builder.characters(fullMatch.substring(pos));
-            }
-        }
     }
 
     private void nonMatch(final MemTreeBuilder builder, final Item item) {
