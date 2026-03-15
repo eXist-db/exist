@@ -390,30 +390,37 @@ public class ArrayFunction extends BasicFunction {
                     case FOR_EACH_PAIR:
                         return getFunction(args[2], ref -> array.forEachPair((ArrayType) args[1].itemAt(0), ref));
                     case SORT:
-                        if(args.length < 3) {
-                            final Collator collator;
-                            if (args.length == 2 && !args[1].isEmpty()) {
-                                final String collationURI = args[1].getStringValue();
-                                collator = context.getCollator(collationURI);
-                            } else {
-                                collator = context.getDefaultCollator();
+                        try {
+                            if(args.length < 3) {
+                                final Collator collator;
+                                if (args.length == 2 && !args[1].isEmpty()) {
+                                    final String collationURI = args[1].getStringValue();
+                                    collator = context.getCollator(collationURI);
+                                } else {
+                                    collator = context.getDefaultCollator();
+                                }
+
+                                //by default use fn:data#1 as the key function
+                                final FunctionReference keyFun = new FunctionReference(this, NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
+                                return array.sort(collator, keyFun);
+
+                            } else if (args.length == 3) {
+                                final Collator collator;
+                                if (!args[1].isEmpty()) {
+                                    final String collationURI = args[1].getStringValue();
+                                    collator = context.getCollator(collationURI);
+                                } else {
+                                    collator = context.getDefaultCollator();
+                                }
+
+                                //user specified key function
+                                return getFunction(args[2], ref -> array.sort(collator, ref));
                             }
-
-                            //by default use fn:data#1 as the key function
-                            final FunctionReference keyFun = new FunctionReference(this, NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
-                            return array.sort(collator, keyFun);
-
-                        } else if (args.length == 3) {
-                            final Collator collator;
-                            if (!args[1].isEmpty()) {
-                                final String collationURI = args[1].getStringValue();
-                                collator = context.getCollator(collationURI);
-                            } else {
-                                collator = context.getDefaultCollator();
+                        } catch (final ClassCastException e) {
+                            if (e.getCause() instanceof XPathException) {
+                                throw (XPathException) e.getCause();
                             }
-
-                            //user specified key function
-                            return getFunction(args[2], ref -> array.sort(collator, ref));
+                            throw e;
                         }
                 }
         }

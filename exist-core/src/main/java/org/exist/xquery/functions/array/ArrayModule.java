@@ -56,7 +56,15 @@ public class ArrayModule extends AbstractInternalModule {
             new FunctionDef(ArrayFunction.signatures[17], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[18], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[19], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[20], ArrayFunction.class)
+            new FunctionDef(ArrayFunction.signatures[20], ArrayFunction.class),
+            // XQuery 4.0 array functions
+            new FunctionDef(ArraySlice.signatures[0], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[1], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[2], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[3], ArraySlice.class),
+            new FunctionDef(ArrayIndexWhere.signatures[0], ArrayIndexWhere.class),
+            new FunctionDef(ArraySortWith.signatures[0], ArraySortWith.class),
+            new FunctionDef(ArraySortBy.signatures[0], ArraySortBy.class)
     };
 
     public ArrayModule(Map<String, List<?>> parameters) {
