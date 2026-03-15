@@ -1,0 +1,5 @@
+Entity ID,Source path,Client class,Target service,Client type,Protocol,Base URL
+external:org.exist.management.JmxRemoteTest,exist-core/src/test/java/org/exist/management/JmxRemoteTest.java,org.exist.management.JmxRemoteTest,Jmx Remote Test Service,Apache HttpClient,,
+external:org.exist.http.AbstractHttpTest,exist-core/src/test/java/org/exist/http/AbstractHttpTest.java,org.exist.http.AbstractHttpTest,Abstract Http Test Service,Apache HttpClient,,
+external:org.exist.xmlrpc.MoveResourceTest$CheckThread,exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java,org.exist.xmlrpc.MoveResourceTest$CheckThread,Move Resource Test$ Check Thread Service,Apache HttpClient,,
+external:org.exist.xquery.modules.persistentlogin.LoginModuleIT,extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java,org.exist.xquery.modules.persistentlogin.LoginModuleIT,Login Module I T Service,Apache HttpClient,,
