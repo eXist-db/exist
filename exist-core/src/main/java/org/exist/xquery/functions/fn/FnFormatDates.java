@@ -712,8 +712,7 @@ public class FnFormatDates extends BasicFunction {
                 name = name + ws;
 
                 if(name.length() > max) {
-                    // Truncate to min for recognizable abbreviation
-                    name = name.substring(0, Math.max(min, 1));
+                    name = name.substring(0, max);
                 }
             }
 
