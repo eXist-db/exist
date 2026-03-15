@@ -74,7 +74,9 @@ public class AtomicValueComparator implements Comparator<AtomicValue> {
             return o1.compareTo(collator, o2);
         } catch (final XPathException e) {
             LOG.error(e.getMessage(), e);
-            throw new ClassCastException(e.getMessage());
+            final ClassCastException cce = new ClassCastException(e.getMessage());
+            cce.initCause(e);
+            throw cce;
         }
     }
 }
