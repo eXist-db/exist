@@ -70,6 +70,9 @@ import java.io.StringReader;
  */
 public class FnInvisibleXml extends BasicFunction {
 
+    // Blitz.generateFromXml() is not thread-safe — synchronize XML grammar compilation
+    private static final Object BLITZ_XML_LOCK = new Object();
+
     private static final FunctionParameterSequenceType PARAM_GRAMMAR =
             new FunctionParameterSequenceType("grammar", Type.ITEM,
                     Cardinality.ZERO_OR_ONE, "The ixml grammar (string or element node)");
@@ -144,10 +147,13 @@ public class FnInvisibleXml extends BasicFunction {
 
                 if (Type.subTypeOf(grammarType, Type.ELEMENT)) {
                     // Element node — serialize to XML string and use generateFromXml
+                    // Synchronized: Blitz.generateFromXml() is not thread-safe
                     final String xmlGrammar = serializeItem(grammarItem);
-                    parser = failOnError
-                            ? Blitz.generateFromXml(xmlGrammar, Blitz.Option.FAIL_ON_ERROR)
-                            : Blitz.generateFromXml(xmlGrammar);
+                    synchronized (BLITZ_XML_LOCK) {
+                        parser = failOnError
+                                ? Blitz.generateFromXml(xmlGrammar, Blitz.Option.FAIL_ON_ERROR)
+                                : Blitz.generateFromXml(xmlGrammar);
+                    }
                 } else if (Type.subTypeOf(grammarType, Type.STRING) ||
                         grammarType == Type.UNTYPED_ATOMIC) {
                     // String grammar
@@ -203,6 +209,7 @@ public class FnInvisibleXml extends BasicFunction {
                     context.getBroker().borrowSerializer();
             try {
                 serializer.setProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+                serializer.setProperty(javax.xml.transform.OutputKeys.INDENT, "no");
                 return serializer.serialize((NodeValue) item);
             } finally {
                 context.getBroker().returnSerializer(serializer);
