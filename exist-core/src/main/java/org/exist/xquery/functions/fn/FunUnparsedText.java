@@ -230,25 +230,28 @@ public class FunUnparsedText extends BasicFunction {
             }
 
             // Resolve relative URIs against file: base URI directory
+            boolean resolvedFromBaseUri = false;
             if (!uri.isAbsolute()) {
                 final AnyURIValue baseXdmUri = context.getBaseURI();
                 if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
                     String baseStr = baseXdmUri.toURI().toString();
                     if (baseStr.startsWith("file:")) {
-                        // Strip filename to get directory URI
                         final int lastSlash = baseStr.lastIndexOf('/');
                         if (lastSlash >= 0) {
                             baseStr = baseStr.substring(0, lastSlash + 1);
                         }
                         uri = new URI(baseStr).resolve(uri);
+                        resolvedFromBaseUri = true;
                     }
                 }
             }
 
             final String resolvedUri = uri.toASCIIString();
 
-            // Handle file: URIs directly to avoid SourceFactory path stripping
-            if (resolvedUri.startsWith("file:")) {
+            // Only use direct file: access for URIs resolved from a relative path
+            // against a file: base URI. Absolute file: URIs (e.g., file:///etc/passwd)
+            // must go through SourceFactory which enforces security checks.
+            if (resolvedFromBaseUri && resolvedUri.startsWith("file:")) {
                 final String filePath = resolvedUri.replaceFirst("^file:(?://[^/]*)?", "");
                 final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
                 if (java.nio.file.Files.isReadable(path)) {

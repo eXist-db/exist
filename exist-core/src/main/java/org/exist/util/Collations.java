@@ -388,10 +388,16 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first() == 0;
+            } else {
+                // Fallback for non-RuleBasedCollator (e.g., HtmlAsciiCaseInsensitiveCollator)
+                if (s1.length() >= s2.length()) {
+                    return collator.compare(s1.substring(0, s2.length()), s2) == 0;
+                }
+                return false;
             }
         }
     }
@@ -415,9 +421,9 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 int lastPos = SearchIterator.DONE;
                 int lastLen = 0;
                 for (int pos = searchIterator.first(); pos != SearchIterator.DONE;
@@ -427,6 +433,12 @@ public class Collations {
                 }
 
                 return lastPos > SearchIterator.DONE && lastPos + lastLen == s1.length();
+            } else {
+                // Fallback for non-RuleBasedCollator
+                if (s1.length() >= s2.length()) {
+                    return collator.compare(s1.substring(s1.length() - s2.length()), s2) == 0;
+                }
+                return false;
             }
         }
     }
@@ -450,10 +462,18 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first() >= 0;
+            } else {
+                // Fallback for non-RuleBasedCollator
+                for (int i = 0; i <= s1.length() - s2.length(); i++) {
+                    if (collator.compare(s1.substring(i, i + s2.length()), s2) == 0) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
     }
@@ -476,10 +496,18 @@ public class Collations {
                 return 0;
             } else if (s1.isEmpty()) {
                 return -1;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first();
+            } else {
+                // Fallback for non-RuleBasedCollator
+                for (int i = 0; i <= s1.length() - s2.length(); i++) {
+                    if (collator.compare(s1.substring(i, i + s2.length()), s2) == 0) {
+                        return i;
+                    }
+                }
+                return -1;
             }
         }
     }
