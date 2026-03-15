@@ -69,7 +69,7 @@ public class DiagnosticsTest {
     }
 
     @Test
-    public void syntaxErrorHasLineZero() throws XMLDBException {
+    public void syntaxErrorHasCorrectLine() throws XMLDBException {
         // Single-line expression: error should be on line 0
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
@@ -78,6 +78,17 @@ public class DiagnosticsTest {
         final int line = Integer.parseInt(result.getResource(0).getContent().toString());
         assertTrue("Error in single-line expression should be on line 0 or 1, got: " + line,
                 line >= 0 && line <= 1);
+    }
+
+    @Test
+    public void multiLineErrorHasCorrectLine() throws XMLDBException {
+        // Error on line 3 (0-based: line 2): the "retrun" typo
+        final ResourceSet result = existEmbeddedServer.executeQuery(
+                LSP_IMPORT +
+                "let $result := lsp:diagnostics('xquery version \"3.1\";\n\nlet $x := 1 retrun $x')\n" +
+                "return $result(1)?line");
+        final int line = Integer.parseInt(result.getResource(0).getContent().toString());
+        assertEquals("Error on line 3 should report 0-based line 2", 2, line);
     }
 
     @Test
