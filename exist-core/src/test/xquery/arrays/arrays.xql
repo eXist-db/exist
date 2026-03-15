@@ -163,7 +163,6 @@ function arr:get-item-out-of-bounds-negative() {
 };
 
 declare
-    %test:pending("eXist-db does not correctly detect the type error. This is likely a larger issue than just arrays.")
     %test:assertError("XPTY0004")
 function arr:get-invalid-type() {
     let $a := [13, 10, 14]
