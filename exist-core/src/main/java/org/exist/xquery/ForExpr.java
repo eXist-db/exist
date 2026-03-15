@@ -37,6 +37,7 @@ import java.util.Set;
 public class ForExpr extends BindingExpression {
 
     private QName positionalVariable = null;
+    private QName scoreVariable = null;
     private boolean allowEmpty = false;
     private boolean isOuterFor = true;
 
@@ -58,6 +59,17 @@ public class ForExpr extends BindingExpression {
      */
     public void setPositionalVariable(final QName variable) {
         positionalVariable = variable;
+    }
+
+    /**
+     * XQFT 3.0 §2.3: A "for" expression may have an optional score variable
+     * whose QName can be set via this method. The score variable is bound to
+     * an xs:double value representing the relevance score for each item.
+     *
+     * @param variable the name of the score variable
+     */
+    public void setScoreVariable(final QName variable) {
+        scoreVariable = variable;
     }
 
 	/* (non-Javadoc)
@@ -82,6 +94,13 @@ public class ForExpr extends BindingExpression {
                 posVar.setSequenceType(POSITIONAL_VAR_TYPE);
                 posVar.setStaticType(Type.INTEGER);
                 context.declareVariableBinding(posVar);
+            }
+            // Declare score variable (XQFT 3.0 §2.3)
+            if (scoreVariable != null) {
+                final LocalVariable scoreVar = new LocalVariable(scoreVariable);
+                scoreVar.setSequenceType(new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE));
+                scoreVar.setStaticType(Type.DOUBLE);
+                context.declareVariableBinding(scoreVar);
             }
 
             final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
@@ -134,6 +153,15 @@ public class ForExpr extends BindingExpression {
                 at = new LocalVariable(positionalVariable);
                 at.setSequenceType(POSITIONAL_VAR_TYPE);
                 context.declareVariableBinding(at);
+            }
+            // Declare score variable (XQFT 3.0 §2.3)
+            LocalVariable score = null;
+            if (scoreVariable != null) {
+                score = new LocalVariable(scoreVariable);
+                score.setSequenceType(new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE));
+                context.declareVariableBinding(score);
+                // Naive implementation: always bind score to 1.0
+                score.setValue(new DoubleValue(this, 1.0));
             }
             // Assign the whole input sequence to the bound variable.
             // This is required if we process the "where" or "order by" clause
@@ -288,6 +316,8 @@ public class ForExpr extends BindingExpression {
         }
         if (positionalVariable != null)
             {dumper.display(" at ").display(positionalVariable);}
+        if (scoreVariable != null)
+            {dumper.display(" score ").display(scoreVariable);}
         dumper.display(" in ");
         inputSequence.dump(dumper);
         dumper.endIndent().nl();
@@ -314,6 +344,9 @@ public class ForExpr extends BindingExpression {
         if (positionalVariable != null) {
             result.append(" at ").append(positionalVariable);
         }
+        if (scoreVariable != null) {
+            result.append(" score ").append(scoreVariable);
+        }
         result.append(" in ");
         result.append(inputSequence.toString());
         result.append(" ");
@@ -336,6 +369,9 @@ public class ForExpr extends BindingExpression {
         final Set<QName> variables = new HashSet<>();
         if (positionalVariable != null) {
             variables.add(positionalVariable);
+        }
+        if (scoreVariable != null) {
+            variables.add(scoreVariable);
         }
 
         final QName variable = getVariable();
