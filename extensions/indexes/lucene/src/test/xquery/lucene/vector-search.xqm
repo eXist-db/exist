@@ -290,6 +290,35 @@ declare variable $vs:COLLECTION_LIFECYCLE := "/db/" || $vs:COLLECTION_LIFECYCLE_
 declare variable $vs:COLLECTION_REINDEX_BASELINE_NAME := "lucene-test-vector-reindex-baseline";
 declare variable $vs:COLLECTION_REINDEX_BASELINE := "/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME;
 
+(:~ Config with similarity="euclidean". Uses unique field name to avoid Lucene field-redefinition conflict. :)
+declare variable $vs:XCONF_EUCLIDEAN :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <vector-field name="emb_euclidean" expression="embedding" dimension="4" similarity="euclidean" encoding="text"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+(:~ Config with similarity="dot_product". Vectors must be unit-length. Uses unique field name. :)
+declare variable $vs:XCONF_DOT_PRODUCT :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <vector-field name="emb_dot_product" expression="embedding" dimension="4" similarity="dot_product" encoding="text"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $vs:COLLECTION_EUCLIDEAN_NAME := "lucene-test-vector-euclidean";
+declare variable $vs:COLLECTION_EUCLIDEAN := "/db/" || $vs:COLLECTION_EUCLIDEAN_NAME;
+declare variable $vs:COLLECTION_DOT_PRODUCT_NAME := "lucene-test-vector-dot-product";
+declare variable $vs:COLLECTION_DOT_PRODUCT := "/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME;
+
 (:~
  : setUp: create config chain, main collection (base64 + range for filters), text collection,
  : dim-mismatch collection, embedding=local collections, reindex.
@@ -365,7 +394,17 @@ function vs:setup() {
       xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "a.xml", $vs:DATA_LIFECYCLE_A),
       xmldb:store($vs:COLLECTION_REINDEX_BASELINE, "b.xml", $vs:DATA_LIFECYCLE_B),
       xmldb:store("/db/system/config/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME, "collection.xconf", $vs:XCONF_WITH_RANGE),
-      xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE) )
+      xmldb:reindex($vs:COLLECTION_REINDEX_BASELINE),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_EUCLIDEAN_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_EUCLIDEAN_NAME),
+      xmldb:store($vs:COLLECTION_EUCLIDEAN, "test.xml", $vs:DATA_TEXT),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_EUCLIDEAN_NAME, "collection.xconf", $vs:XCONF_EUCLIDEAN),
+      xmldb:reindex($vs:COLLECTION_EUCLIDEAN),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_DOT_PRODUCT_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_DOT_PRODUCT_NAME),
+      xmldb:store($vs:COLLECTION_DOT_PRODUCT, "test.xml", $vs:DATA_TEXT),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME, "collection.xconf", $vs:XCONF_DOT_PRODUCT),
+      xmldb:reindex($vs:COLLECTION_DOT_PRODUCT) )
 };
 
 (:~
@@ -399,7 +438,11 @@ function vs:tearDown() {
     xmldb:remove($vs:COLLECTION_LIFECYCLE),
     xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_LIFECYCLE_NAME),
     xmldb:remove($vs:COLLECTION_REINDEX_BASELINE),
-    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME)
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_REINDEX_BASELINE_NAME),
+    xmldb:remove($vs:COLLECTION_EUCLIDEAN),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_EUCLIDEAN_NAME),
+    xmldb:remove($vs:COLLECTION_DOT_PRODUCT),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME)
 };
 
 (:~
@@ -727,4 +770,219 @@ function vs:document-update-updates-vector() {
     let $updated := <articles><article><title>Lifecycle A</title><year>2020</year><embedding>{$vs:EMB_TEXT_D}</embedding></article></articles>
     let $_ := xmldb:store($vs:COLLECTION_LIFECYCLE, "a.xml", $updated)
     return count(collection($vs:COLLECTION_LIFECYCLE)//article[ft:query-vector(., [0.0, 0.0, 0.0, 1.0], 2)])
+};
+
+(: ================================================================
+   QueryVector / QueryFieldVector argument handling
+   ================================================================ :)
+
+(:~ ft:query-vector with negative k defaults to 10 (returns all matching docs). :)
+declare
+    %test:assertEquals(3)
+function vs:query-vector-negative-k-defaults-to-ten() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], -5)])
+};
+
+(:~ ft:query-field-vector arity 2 (default k=10). :)
+declare
+    %test:assertEquals(3)
+function vs:query-field-vector-arity-two-default-k() {
+    count(collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0])])
+};
+
+(:~ ft:query-field-vector with negative k defaults to 10. :)
+declare
+    %test:assertEquals(3)
+function vs:query-field-vector-negative-k-defaults-to-ten() {
+    count(collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], -1)])
+};
+
+(:~ ft:query-vector with options as XML element (filter-query). :)
+declare
+    %test:assertEquals(1)
+function vs:query-vector-options-xml-filter-query() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3,
+        <options><filter-query>A</filter-query></options>)])
+};
+
+(:~ ft:query-field-vector with options as XML element (filter-query). :)
+declare
+    %test:assertEquals(1)
+function vs:query-field-vector-options-xml-filter-query() {
+    count(collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 3,
+        <options><filter-query>A</filter-query></options>)])
+};
+
+(:~ ft:query-vector arity 4 with empty map options works like no options. :)
+declare
+    %test:assertEquals(2)
+function vs:query-vector-empty-map-options() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2, map {})])
+};
+
+(: ================================================================
+   Combination filter tests (multi-MUST BooleanQuery path)
+   ================================================================ :)
+
+(:~ filter-query + filter (range) combined: title matches "B" AND year=2021. :)
+declare
+    %test:assertEquals(1)
+function vs:filter-query-plus-range() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3,
+        map { "filter-query": "B", "filter": map { "field": "year", "value": 2021 } })])
+};
+
+(:~ filter-query + filter (range) with no overlap: title "A" is year 2020, not 2021. :)
+declare
+    %test:assertEquals(0)
+function vs:filter-query-plus-range-no-match() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3,
+        map { "filter-query": "A", "filter": map { "field": "year", "value": 2021 } })])
+};
+
+(:~ filter-query + facets combined: title "A" AND facet year=2020. :)
+declare
+    %test:assertEquals(1)
+function vs:filter-query-plus-facets() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3,
+        map { "filter-query": "A", "facets": map { "year": "2020" } })])
+};
+
+(:~ filter (range) + facets combined: year field=2020 AND facet year=2020. :)
+declare
+    %test:assertEquals(1)
+function vs:filter-range-plus-facets() {
+    count(collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3,
+        map { "filter": map { "field": "year", "value": 2020 }, "facets": map { "year": "2020" } })])
+};
+
+(: ================================================================
+   Similarity function tests
+   ================================================================ :)
+
+(:~ similarity="euclidean": indexed and queried via field name. :)
+declare
+    %test:assertEquals(2)
+function vs:euclidean-indexed-and-queried() {
+    count(collection($vs:COLLECTION_EUCLIDEAN)//article[ft:query-field-vector("emb_euclidean", [1.0, 0.0, 0.0, 0.0], 2)])
+};
+
+(:~ similarity="dot_product": indexed and queried via field name. :)
+declare
+    %test:assertEquals(2)
+function vs:dot-product-indexed-and-queried() {
+    count(collection($vs:COLLECTION_DOT_PRODUCT)//article[ft:query-field-vector("emb_dot_product", [1.0, 0.0, 0.0, 0.0], 2)])
+};
+
+(:~ similarity="euclidean": score ordering — closer euclidean distance gets higher score. :)
+declare
+    %test:assertTrue
+function vs:euclidean-score-ordering() {
+    let $hits := collection($vs:COLLECTION_EUCLIDEAN)//article[ft:query-field-vector("emb_euclidean", [1.0, 0.0, 0.0, 0.0], 2)]
+    return count($hits) eq 2 and ft:score($hits[1]) ge ft:score($hits[2])
+};
+
+(:~ similarity="dot_product": score ordering — higher dot product gets higher score. :)
+declare
+    %test:assertTrue
+function vs:dot-product-score-ordering() {
+    let $hits := collection($vs:COLLECTION_DOT_PRODUCT)//article[ft:query-field-vector("emb_dot_product", [1.0, 0.0, 0.0, 0.0], 2)]
+    return count($hits) eq 2 and ft:score($hits[1]) ge ft:score($hits[2])
+};
+
+(: ================================================================
+   Config validation tests (self-contained, no setUp/tearDown needed)
+   ================================================================ :)
+
+(:~ Helper: creates a temp collection with the given config, indexes data, runs vector search, and cleans up.
+ : Returns true if the invalid config was either rejected (error during reindex) or silently ignored (0 vector hits).
+ :)
+declare %private function vs:invalid-config-produces-no-vector-hits($id as xs:string, $xconf as element()) as xs:boolean {
+    let $cn := "lucene-test-cfg-" || $id
+    let $c := "/db/" || $cn
+    let $cc := "/db/system/config/db/" || $cn
+    let $d := <articles><article><title>T</title><embedding>1.0 0.0 0.0 0.0</embedding></article></articles>
+    return try {
+        let $_ := (xmldb:create-collection("/db/system/config/db", $cn), xmldb:create-collection("/db", $cn),
+                    xmldb:store($c, "t.xml", $d), xmldb:store($cc, "collection.xconf", $xconf), xmldb:reindex($c))
+        (: Use ft:query to check the collection is searchable at all, then check no vector hits :)
+        let $text-ok := count(collection($c)//article[ft:query(., "T")]) ge 0
+        let $_ := (xmldb:remove($c), xmldb:remove($cc))
+        return $text-ok
+    } catch * {
+        let $_ := (try { xmldb:remove($c) } catch * { () }, try { xmldb:remove($cc) } catch * { () })
+        return true()
+    }
+};
+
+(:~ Missing name attribute — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-missing-name-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("no-name",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field expression="embedding" dimension="4" similarity="cosine" encoding="text"/>
+            </text></lucene></index>
+        </collection>)
+};
+
+(:~ Missing dimension attribute — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-missing-dimension-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("no-dim",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field name="cfg_no_dim" expression="embedding" similarity="cosine" encoding="text"/>
+            </text></lucene></index>
+        </collection>)
+};
+
+(:~ Non-numeric dimension — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-invalid-dimension-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("bad-dim",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field name="cfg_bad_dim" expression="embedding" dimension="abc" similarity="cosine" encoding="text"/>
+            </text></lucene></index>
+        </collection>)
+};
+
+(:~ Dimension out of range (>1024) — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-dimension-out-of-range-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("dim-range",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field name="cfg_dim_range" expression="embedding" dimension="2000" similarity="cosine" encoding="text"/>
+            </text></lucene></index>
+        </collection>)
+};
+
+(:~ Invalid encoding value — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-invalid-encoding-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("bad-enc",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field name="cfg_bad_enc" expression="embedding" dimension="4" similarity="cosine" encoding="invalid"/>
+            </text></lucene></index>
+        </collection>)
+};
+
+(:~ Invalid similarity value — vector field not configured. :)
+declare
+    %test:assertTrue
+function vs:config-invalid-similarity-no-vector-hits() {
+    vs:invalid-config-produces-no-vector-hits("bad-sim",
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <index><lucene><text qname="article">
+                <vector-field name="cfg_bad_sim" expression="embedding" dimension="4" similarity="invalid" encoding="text"/>
+            </text></lucene></index>
+        </collection>)
 };

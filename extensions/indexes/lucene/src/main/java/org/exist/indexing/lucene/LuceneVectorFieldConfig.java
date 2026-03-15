@@ -94,6 +94,9 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     /** Parent Lucene config (for vector-store setting). */
     private final LuceneConfig luceneConfig;
 
+    /** Per-invocation context for storing computed vectors in vector.dbx. */
+    private static final ThreadLocal<StoreContext> STORE_CONTEXT = new ThreadLocal<>();
+
     /**
      * Creates a vector field config from the given XML element.
      *
@@ -113,58 +116,72 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
                     "vector-field: attribute 'name' is required");
         }
 
-        final String dimStr = configElement.getAttribute(ATTR_DIMENSION);
-        if (dimStr.isEmpty()) {
-            throw new org.exist.util.DatabaseConfigurationException(
-                    "vector-field '" + fieldName + "': attribute 'dimension' is required");
-        }
-        try {
-            dimension = Integer.parseInt(dimStr);
-            if (dimension <= 0 || dimension > 1024) {
-                throw new org.exist.util.DatabaseConfigurationException(
-                        "vector-field '" + fieldName + "': dimension must be 1-1024, got " + dimension);
-            }
-        } catch (NumberFormatException e) {
-            throw new org.exist.util.DatabaseConfigurationException(
-                    "vector-field '" + fieldName + "': invalid dimension '" + dimStr + "'");
-        }
-
-        final String simStr = configElement.getAttribute(ATTR_SIMILARITY);
-        similarity = parseSimilarity(simStr);
-
-        final String encStr = configElement.getAttribute(ATTR_ENCODING);
-        useBase64 = encStr.isEmpty() || ENCODING_BASE64.equalsIgnoreCase(encStr);
-        if (!useBase64 && !ENCODING_TEXT.equalsIgnoreCase(encStr)) {
-            throw new org.exist.util.DatabaseConfigurationException(
-                    "vector-field '" + fieldName + "': encoding must be 'base64' or 'text', got '" + encStr + "'");
-        }
+        dimension = parseDimension(configElement);
+        similarity = parseSimilarity(configElement.getAttribute(ATTR_SIMILARITY));
+        useBase64 = parseEncoding(configElement);
 
         final String embStr = configElement.getAttribute(ATTR_EMBEDDING);
         final boolean isLocal = EMBEDDING_LOCAL.equalsIgnoreCase(embStr);
         final boolean isHttp = EMBEDDING_HTTP.equalsIgnoreCase(embStr);
         embeddingLocal = isLocal || isHttp;
         if (embeddingLocal) {
-            modelId = configElement.getAttribute(ATTR_MODEL).trim();
-            if (modelId.isEmpty()) {
-                throw new org.exist.util.DatabaseConfigurationException(
-                        "vector-field '" + fieldName + "': embedding=\"" + embStr + "\" requires attribute 'model'");
-            }
-            final String pathStr = configElement.getAttribute(ATTR_MODEL_PATH).trim();
-            if (isHttp) {
-                if (pathStr.isEmpty()) {
-                    throw new org.exist.util.DatabaseConfigurationException(
-                            "vector-field '" + fieldName + "': embedding=\"http\" requires model-path (e.g. https://api.openai.com/v1)");
-                }
-                if (!HttpVectorProvider.isHttpApiUrl(pathStr)) {
-                    throw new org.exist.util.DatabaseConfigurationException(
-                            "vector-field '" + fieldName + "': embedding=\"http\" requires model-path to be API URL (OpenAI or Cohere)");
-                }
-            }
-            modelPathOrUrl = pathStr.isEmpty() ? "" : pathStr;
+            final String[] embCfg = parseEmbeddingConfig(configElement, embStr, isHttp);
+            modelId = embCfg[0];
+            modelPathOrUrl = embCfg[1];
         } else {
             modelId = null;
             modelPathOrUrl = null;
         }
+    }
+
+    private int parseDimension(final Element el) throws org.exist.util.DatabaseConfigurationException {
+        final String dimStr = el.getAttribute(ATTR_DIMENSION);
+        if (dimStr.isEmpty()) {
+            throw new org.exist.util.DatabaseConfigurationException(
+                    "vector-field '" + fieldName + "': attribute 'dimension' is required");
+        }
+        try {
+            final int dim = Integer.parseInt(dimStr);
+            if (dim <= 0 || dim > 1024) {
+                throw new org.exist.util.DatabaseConfigurationException(
+                        "vector-field '" + fieldName + "': dimension must be 1-1024, got " + dim);
+            }
+            return dim;
+        } catch (NumberFormatException e) {
+            throw new org.exist.util.DatabaseConfigurationException(
+                    "vector-field '" + fieldName + "': invalid dimension '" + dimStr + "'");
+        }
+    }
+
+    private boolean parseEncoding(final Element el) throws org.exist.util.DatabaseConfigurationException {
+        final String encStr = el.getAttribute(ATTR_ENCODING);
+        final boolean base64 = encStr.isEmpty() || ENCODING_BASE64.equalsIgnoreCase(encStr);
+        if (!base64 && !ENCODING_TEXT.equalsIgnoreCase(encStr)) {
+            throw new org.exist.util.DatabaseConfigurationException(
+                    "vector-field '" + fieldName + "': encoding must be 'base64' or 'text', got '" + encStr + "'");
+        }
+        return base64;
+    }
+
+    private String[] parseEmbeddingConfig(final Element el, final String embStr, final boolean isHttp)
+            throws org.exist.util.DatabaseConfigurationException {
+        final String model = el.getAttribute(ATTR_MODEL).trim();
+        if (model.isEmpty()) {
+            throw new org.exist.util.DatabaseConfigurationException(
+                    "vector-field '" + fieldName + "': embedding=\"" + embStr + "\" requires attribute 'model'");
+        }
+        final String pathStr = el.getAttribute(ATTR_MODEL_PATH).trim();
+        if (isHttp) {
+            if (pathStr.isEmpty()) {
+                throw new org.exist.util.DatabaseConfigurationException(
+                        "vector-field '" + fieldName + "': embedding=\"http\" requires model-path (e.g. https://api.openai.com/v1)");
+            }
+            if (!HttpVectorProvider.isHttpApiUrl(pathStr)) {
+                throw new org.exist.util.DatabaseConfigurationException(
+                        "vector-field '" + fieldName + "': embedding=\"http\" requires model-path to be API URL (OpenAI or Cohere)");
+            }
+        }
+        return new String[] { model, pathStr.isEmpty() ? "" : pathStr };
     }
 
     /** Parses similarity attribute to Lucene enum. */
@@ -298,9 +315,6 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
     }
 
-    /** Per-invocation context for storing computed vectors in vector.dbx. */
-    private static final ThreadLocal<StoreContext> STORE_CONTEXT = new ThreadLocal<>();
-
     private static final class StoreContext {
         final DBBroker broker;
         final String docPath;
@@ -336,7 +350,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     }
 
     private static byte[] floatsToBytes(final float[] vec) {
-        final java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(vec.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        final ByteBuffer buf = ByteBuffer.allocate(vec.length * 4).order(ByteOrder.LITTLE_ENDIAN);
         buf.asFloatBuffer().put(vec);
         return buf.array();
     }
@@ -347,36 +361,12 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         final ReindexScope scope = broker.getIndexController().getReindexScope();
         try {
             if (scope == ReindexScope.FULLTEXT && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                // Fulltext-only: read from vector.dbx only; skip vector computation.
-                final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
-                if (vectorStore != null) {
-                    final String docPath = document.getURI().toString();
-                    final byte[] stored = vectorStore.get(docPath, nodeId);
-                    if (stored != null && stored.length == dimension * 4) {
-                        final float[] vec = bytesToFloats(stored);
-                        if (vec != null && allFinite(vec)) {
-                            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
-                            return;
-                        }
-                    }
-                }
-                // No vector in vector.dbx; skip (do not compute).
+                tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc);
                 return;
             }
-            // vector-store="lucene": fulltext-only reindex not supported; fall through to full build (doBuild).
-            // See LuceneConfig.getVectorStore() javadoc.
             if (!embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
-                final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
-                if (vectorStore != null) {
-                    final String docPath = document.getURI().toString();
-                    final byte[] stored = vectorStore.get(docPath, nodeId);
-                    if (stored != null && stored.length == dimension * 4) {
-                        final float[] vec = bytesToFloats(stored);
-                        if (vec != null && allFinite(vec)) {
-                            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
-                            return;
-                        }
-                    }
+                if (tryRestoreVectorFromStore(broker, document, nodeId, luceneDoc)) {
+                    return;
                 }
             } else if (embeddingLocal && VECTOR_STORE_DB.equals(luceneConfig.getVectorStore())) {
                 STORE_CONTEXT.set(new StoreContext(broker, document, nodeId));
@@ -402,6 +392,29 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
     }
 
+    /**
+     * Tries to restore a previously stored vector from vector.dbx and add it to the Lucene document.
+     *
+     * @return true if a valid vector was restored, false otherwise
+     */
+    private boolean tryRestoreVectorFromStore(final DBBroker broker, final DocumentImpl document,
+            final NodeId nodeId, final Document luceneDoc) throws IOException {
+        final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
+        if (vectorStore == null) {
+            return false;
+        }
+        final byte[] stored = vectorStore.get(document.getURI().toString(), nodeId);
+        if (stored == null || stored.length != dimension * 4) {
+            return false;
+        }
+        final float[] vec = bytesToFloats(stored);
+        if (vec != null && allFinite(vec)) {
+            luceneDoc.add(new KnnFloatVectorField(fieldName, vec, similarity));
+            return true;
+        }
+        return false;
+    }
+
     private static float[] bytesToFloats(final byte[] bytes) {
         if (bytes.length % 4 != 0) {
             return null;
@@ -414,7 +427,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
     /**
      * Parse embedding content to float[]. Returns null if invalid (skip, log and continue).
      */
-    @javax.annotation.Nullable
+    @Nullable
     private float[] parseVector(final String content) {
         if (useBase64) {
             return parseBase64(content);
@@ -422,7 +435,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         return parseText(content);
     }
 
-    @javax.annotation.Nullable
+    @Nullable
     private float[] parseBase64(final String content) {
         try {
             final byte[] bytes = Base64.getDecoder().decode(content);
@@ -444,7 +457,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         }
     }
 
-    @javax.annotation.Nullable
+    @Nullable
     private float[] parseText(final String content) {
         final String[] parts = WS.split(content.trim());
         if (parts.length != dimension) {

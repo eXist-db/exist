@@ -212,6 +212,8 @@ public class LuceneIndexConfig {
                             matchAttrs.put(qname, new MatchAttrData(qname, value, boost, onSibling));
                             break;
                         }
+                        default:
+                            break;
                     }
                 }
             }
@@ -375,16 +377,17 @@ public class LuceneIndexConfig {
         return parseQName(name, namespaces);
     }
 
-    protected static QName parseQName(String name, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    protected static QName parseQName(final String name, Map<String, String> namespaces) throws DatabaseConfigurationException {
         boolean isAttribute = false;
-        if (name.startsWith("@")) {
+        String qnameStr = name;
+        if (qnameStr.startsWith("@")) {
             isAttribute = true;
-            name = name.substring(1);
+            qnameStr = qnameStr.substring(1);
         }
 
         try {
-            String prefix = QName.extractPrefix(name);
-            String localName = QName.extractLocalName(name);
+            String prefix = QName.extractPrefix(qnameStr);
+            String localName = QName.extractLocalName(qnameStr);
             String namespaceURI = "";
             if (prefix != null) {
                 namespaceURI = namespaces.get(prefix);

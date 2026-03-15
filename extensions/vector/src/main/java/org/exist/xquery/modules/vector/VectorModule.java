@@ -32,8 +32,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
-import static org.exist.xquery.FunctionDSL.optParam;
-import static org.exist.xquery.FunctionDSL.param;
 
 /**
  * XQuery module for vector embedding operations.
@@ -45,13 +43,6 @@ public class VectorModule extends AbstractInternalModule {
   public static final String PREFIX = "vector";
   public static final String INCLUSION_DATE = "2025-01-01";
   public static final String RELEASED_IN_VERSION = "eXist-7.0";
-
-  private static final FunctionParameterSequenceType FS_PARAM_TEXT = param("text", org.exist.xquery.value.Type.STRING,
-      "Text to embed (e.g. user search query).");
-  private static final FunctionParameterSequenceType FS_PARAM_MODEL = param("model", org.exist.xquery.value.Type.STRING,
-      "Model identifier (e.g. 'all-MiniLM-L6-v2').");
-  private static final FunctionParameterSequenceType FS_PARAM_MODEL_PATH = optParam("model-path", org.exist.xquery.value.Type.STRING,
-      "Optional path to model directory. If omitted, resolves via conf.xml registry or onnx-models/{model}.");
 
   public static final FunctionDef[] functions = {
       new FunctionDef(Embed.signatures[0], Embed.class),

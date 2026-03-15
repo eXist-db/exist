@@ -38,6 +38,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.annotation.Nullable;
+
 public class LuceneConfig {
 
     public final static LuceneConfig DEFAULT_CONFIG = new LuceneConfig();
@@ -252,46 +254,50 @@ public class LuceneConfig {
      */
     public LuceneIndexConfig getIndexConfigForQName(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
-        boolean foundByFallback = false;
         if (idxConf == null && qname != null) {
-            final String local = qname.getLocalPart();
-            final String ns = qname.getNamespaceURI();
-            if (local != null && !local.equals(QName.WILDCARD)) {
-                for (LuceneIndexConfig config : paths.values()) {
-                    LuceneIndexConfig c = config;
-                    while (c != null) {
-                        if (!c.isNamed()) {
-                            QName pathQName = c.getNodePathPattern().getLastComponent();
-                            if (pathQName == null) {
-                                c = c.getNext();
-                                continue;
-                            }
-                            String pathNs = pathQName.getNamespaceURI();
-                            boolean nsMatch = (ns == null || ns.isEmpty())
-                                    ? (pathNs == null || pathNs.isEmpty())
-                                    : ns.equals(pathNs);
-                            if (pathQName != null
-                                    && local.equals(pathQName.getLocalPart())
-                                    && nsMatch) {
-                                idxConf = c;
-                                foundByFallback = true;
-                                break;
-                            }
-                        }
-                        c = c.getNext();
-                    }
-                    if (idxConf != null) break;
-                }
+            idxConf = findByFallback(qname);
+            if (idxConf != null) {
+                return idxConf;
             }
         }
-        if (!foundByFallback) {
-            while (idxConf != null) {
-                if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname))
-                    break;
-                idxConf = idxConf.getNext();
+        while (idxConf != null) {
+            if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname)) {
+                break;
             }
+            idxConf = idxConf.getNext();
         }
         return idxConf;
+    }
+
+    @Nullable
+    private LuceneIndexConfig findByFallback(final QName qname) {
+        final String local = qname.getLocalPart();
+        final String ns = qname.getNamespaceURI();
+        if (local == null || local.equals(QName.WILDCARD)) {
+            return null;
+        }
+        for (LuceneIndexConfig config : paths.values()) {
+            LuceneIndexConfig c = config;
+            while (c != null) {
+                if (!c.isNamed()) {
+                    QName pathQName = c.getNodePathPattern().getLastComponent();
+                    if (pathQName != null
+                            && local.equals(pathQName.getLocalPart())
+                            && namespaceMatches(ns, pathQName.getNamespaceURI())) {
+                        return c;
+                    }
+                }
+                c = c.getNext();
+            }
+        }
+        return null;
+    }
+
+    private static boolean namespaceMatches(@Nullable final String ns, @Nullable final String pathNs) {
+        if (ns == null || ns.isEmpty()) {
+            return pathNs == null || pathNs.isEmpty();
+        }
+        return ns.equals(pathNs);
     }
 
     /**
@@ -299,7 +305,7 @@ public class LuceneConfig {
      *
      * @return collection of index configs
      */
-    public java.util.Collection<LuceneIndexConfig> getIndexConfigurations() {
+    public Collection<LuceneIndexConfig> getIndexConfigurations() {
         return paths.values();
     }
 
@@ -318,8 +324,9 @@ public class LuceneConfig {
     }
 
     public Analyzer getAnalyzer(NodePath nodePath) {
-        if (nodePath.length() == 0)
-            throw new RuntimeException();
+        if (nodePath.length() == 0) {
+            throw new IllegalArgumentException("NodePath must not be empty");
+        }
         LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
         while (idxConf != null) {
             if (!idxConf.isNamed() && idxConf.match(nodePath))
@@ -557,6 +564,8 @@ public class LuceneConfig {
                                 ignoreNodes.add(qname);
                                 break;
                             }
+                            default:
+                                break;
                         }
                     }
                     

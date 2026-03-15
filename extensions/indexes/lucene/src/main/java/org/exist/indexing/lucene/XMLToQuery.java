@@ -319,9 +319,9 @@ public class XMLToQuery {
             }
         }
         final String regex = sb.toString();
-        final org.apache.lucene.util.automaton.Automaton wildcardAutomaton =
+        final Automaton wildcardAutomaton =
                 new org.apache.lucene.util.automaton.RegExp(regex).toAutomaton();
-        return new org.apache.lucene.util.automaton.ByteRunAutomaton(wildcardAutomaton);
+        return new ByteRunAutomaton(wildcardAutomaton);
     }
 
     // Extracted to simplify expandTerms loop body

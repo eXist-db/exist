@@ -73,37 +73,43 @@ public final class AnalyzingQueryRewriter {
             return new BoostQuery(rewriteQuery(boost.getQuery(), analyzer), boost.getBoost());
         }
         if (query instanceof TermQuery tq) {
-            Term t = tq.getTerm();
-            String norm = normalizeTerm(t.field(), t.text(), analyzer);
-            if (norm != null) {
-                return new TermQuery(new Term(t.field(), norm));
-            }
-            return query;
+            return rewriteTermQuery(tq, analyzer);
         }
         if (query instanceof PrefixQuery pq) {
-            Term t = pq.getPrefix();
-            String norm = normalizeTerm(t.field(), t.text(), analyzer);
-            if (norm != null) {
-                return new PrefixQuery(new Term(t.field(), norm));
-            }
-            return query;
+            return rewritePrefixQuery(pq, analyzer);
         }
         if (query instanceof WildcardQuery wq) {
-            Term t = wq.getTerm();
-            String pattern = t.text();
-            int lastStar = pattern.lastIndexOf('*');
-            int lastQ = pattern.lastIndexOf('?');
-            boolean simplePrefix = lastStar == pattern.length() - 1 && lastQ < 0 && pattern.indexOf('*') == lastStar;
-            if (simplePrefix) {
-                String stem = pattern.substring(0, lastStar);
-                String norm = normalizeTerm(t.field(), stem, analyzer);
-                if (norm != null) {
-                    return new WildcardQuery(new Term(t.field(), norm + "*"));
-                }
-            }
-            return query;
+            return rewriteWildcardQuery(wq, analyzer);
         }
         return query;
+    }
+
+    private static Query rewriteTermQuery(TermQuery tq, Analyzer analyzer) {
+        Term t = tq.getTerm();
+        String norm = normalizeTerm(t.field(), t.text(), analyzer);
+        return norm != null ? new TermQuery(new Term(t.field(), norm)) : tq;
+    }
+
+    private static Query rewritePrefixQuery(PrefixQuery pq, Analyzer analyzer) {
+        Term t = pq.getPrefix();
+        String norm = normalizeTerm(t.field(), t.text(), analyzer);
+        return norm != null ? new PrefixQuery(new Term(t.field(), norm)) : pq;
+    }
+
+    private static Query rewriteWildcardQuery(WildcardQuery wq, Analyzer analyzer) {
+        Term t = wq.getTerm();
+        String pattern = t.text();
+        int lastStar = pattern.lastIndexOf('*');
+        int lastQ = pattern.lastIndexOf('?');
+        boolean simplePrefix = lastStar == pattern.length() - 1 && lastQ < 0 && pattern.indexOf('*') == lastStar;
+        if (simplePrefix) {
+            String stem = pattern.substring(0, lastStar);
+            String norm = normalizeTerm(t.field(), stem, analyzer);
+            if (norm != null) {
+                return new WildcardQuery(new Term(t.field(), norm + "*"));
+            }
+        }
+        return wq;
     }
 
     static String normalizeTerm(String field, String text, Analyzer analyzer) {

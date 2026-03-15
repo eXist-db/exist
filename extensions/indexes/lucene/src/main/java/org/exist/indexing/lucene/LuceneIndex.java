@@ -79,6 +79,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected SearcherTaxonomyManager searcherManager = null;
     protected ReaderManager readerManager = null;
 
+    protected boolean needsCommit = false;
+
     public String getDirName() {
         return DIR_NAME;
     }
@@ -206,8 +208,6 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
     }
-    
-    protected boolean needsCommit = false;
 
     /**
      * Register a field-specific analyzer for indexing. Used when indexing documents

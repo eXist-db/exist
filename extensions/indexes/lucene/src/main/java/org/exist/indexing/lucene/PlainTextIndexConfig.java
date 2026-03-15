@@ -146,16 +146,8 @@ public class PlainTextIndexConfig {
         return solrFields;
     }
 
-    private void setFields(ArrayList<PlainTextField> solrField) {
-        this.solrFields = solrField;
-    }
-    
     PlainTextDoc getDoc(){
         return solrDoc;
-    }
-    
-    private void setDoc(PlainTextDoc doc){
-        this.solrDoc = doc;
     }
     
     /**
