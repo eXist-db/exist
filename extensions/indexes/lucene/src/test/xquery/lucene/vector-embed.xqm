@@ -117,6 +117,24 @@ function ve:vector-embed-http-api-with-api-key-param-errors() {
 };
 
 (:~
+ : vector:embed with whitespace-only model raises error.
+ :)
+declare
+    %test:assertError
+function ve:vector-embed-whitespace-model-errors() {
+    vector:embed("hello", "   ")
+};
+
+(:~
+ : vector:embed-batch with whitespace-only model raises error.
+ :)
+declare
+    %test:assertError
+function ve:vector-embed-batch-whitespace-model-errors() {
+    vector:embed-batch(("hello", "world"), "   ")
+};
+
+(:~
  : vector:models() returns sequence of known model names.
  :)
 declare

@@ -86,25 +86,9 @@ public class Embed extends BasicFunction {
   @Override
   public Sequence eval(final Sequence[] args, @Nullable final Sequence contextSequence) throws XPathException {
     final String text = args[0].getStringValue();
-    final String model = args[1].getStringValue().trim();
-    if (model.isEmpty()) {
-      throw new XPathException(this, "Model parameter must not be empty");
-    }
-
-    final String pathOrUrl;
-    if (args.length >= 3 && !args[2].isEmpty()) {
-      pathOrUrl = args[2].getStringValue().trim();
-    } else {
-      pathOrUrl = null;
-    }
-
-    final String apiKey;
-    if (args.length >= 4 && !args[3].isEmpty()) {
-      apiKey = args[3].getStringValue().trim();
-    } else {
-      apiKey = null;
-    }
-
+    final String model = requireModel(args[1]);
+    final String pathOrUrl = optionalArg(args, 2);
+    final String apiKey = optionalArg(args, 3);
     final int dimension = VectorModelConstants.getDefaultDimension(model);
 
     try {
@@ -116,14 +100,33 @@ public class Embed extends BasicFunction {
       if (vec == null || vec.length == 0) {
         throw new XPathException(this, "Embedding returned empty result");
       }
-
-      final List<Sequence> items = new ArrayList<>(vec.length);
-      for (final float v : vec) {
-        items.add(new DoubleValue(this, v).toSequence());
-      }
-      return new ArrayType(this, context, items);
+      return floatsToArray(vec);
     } catch (final NoClassDefFoundError e) {
       throw new XPathException(this, "Vector embedding module not available: " + e.getMessage());
     }
+  }
+
+  private String requireModel(final Sequence arg) throws XPathException {
+    final String model = arg.getStringValue().trim();
+    if (model.isEmpty()) {
+      throw new XPathException(this, "Model parameter must not be empty");
+    }
+    return model;
+  }
+
+  @Nullable
+  private static String optionalArg(final Sequence[] args, final int index) throws XPathException {
+    if (args.length > index && !args[index].isEmpty()) {
+      return args[index].getStringValue().trim();
+    }
+    return null;
+  }
+
+  private ArrayType floatsToArray(final float[] vec) throws XPathException {
+    final List<Sequence> items = new ArrayList<>(vec.length);
+    for (final float v : vec) {
+      items.add(new DoubleValue(this, v).toSequence());
+    }
+    return new ArrayType(this, context, items);
   }
 }

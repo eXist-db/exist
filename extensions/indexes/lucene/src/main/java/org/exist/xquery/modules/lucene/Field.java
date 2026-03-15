@@ -118,6 +118,10 @@ public class Field extends BasicFunction {
             return evalHighlightFieldMatches(args);
         }
 
+        return evalFieldLookup(args, called);
+    }
+
+    private Sequence evalFieldLookup(final Sequence[] args, final String called) throws XPathException {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -127,13 +131,7 @@ public class Field extends BasicFunction {
         }
 
         final String fieldName = args[1].itemAt(0).getStringValue();
-
-        int type = Type.STRING;
-        // When type is omitted (empty sequence), use Type.STRING for raw/untyped values.
-        if (getArgumentCount() == 3 && !args[2].isEmpty()) {
-            final String typeStr = args[2].itemAt(0).getStringValue();
-            type = Type.getType(typeStr);
-        }
+        final int type = resolveFieldType(args);
 
         final NodeProxy proxy = (NodeProxy) nodeValue;
         final LuceneMatch match = getMatch(proxy);
@@ -155,6 +153,13 @@ public class Field extends BasicFunction {
         } catch (final IOException e) {
             throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
         }
+    }
+
+    private int resolveFieldType(final Sequence[] args) throws XPathException {
+        if (getArgumentCount() == 3 && !args[2].isEmpty()) {
+            return Type.getType(args[2].itemAt(0).getStringValue());
+        }
+        return Type.STRING;
     }
 
     private Sequence evalHighlightFieldMatches(final Sequence[] args) throws XPathException {

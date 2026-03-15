@@ -95,24 +95,15 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       if (ids == null || ids.length == 0) {
         return null;
       }
-      final long[][] inputIds = new long[][] { ids };
-      final long[] attnMask = encoding.getAttentionMask();
-      final long[][] attentionMask = attnMask != null ? new long[][] { attnMask } : new long[][] { createAttentionMask(ids.length) };
-      final int seqLen = ids.length;
 
-      final Map<String, OnnxTensor> inputs = new HashMap<>();
-      inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, inputIds));
-      inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, attentionMask));
-      if (tokenTypeIdsInputName != null) {
-        final long[][] tokenTypeIds = new long[][] { createTokenTypeIds(ids.length) };
-        inputs.put(tokenTypeIdsInputName, OnnxTensor.createTensor(env, tokenTypeIds));
-      }
-
+      final Map<String, OnnxTensor> inputs = prepareInputs(encoding);
       try (Result result = session.run(inputs)) {
         if (SENTENCE_EMBEDDING.equals(outputName)) {
           return extractSentenceEmbedding(result);
         }
-        return meanPool(result, seqLen, attentionMask[0]);
+        final long[] attnMask = encoding.getAttentionMask();
+        final long[] mask = attnMask != null ? attnMask : createAttentionMask(ids.length);
+        return meanPool(result, ids.length, mask);
       } finally {
         inputs.values().forEach(OnnxTensor::close);
       }
@@ -120,6 +111,20 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
       LOG.debug("Embedding failed: {}", e.getMessage());
       return null;
     }
+  }
+
+  private Map<String, OnnxTensor> prepareInputs(final Encoding encoding) throws ai.onnxruntime.OrtException {
+    final long[] ids = encoding.getIds();
+    final long[] attnMask = encoding.getAttentionMask();
+    final long[][] attentionMask = attnMask != null ? new long[][] { attnMask } : new long[][] { createAttentionMask(ids.length) };
+
+    final Map<String, OnnxTensor> inputs = new HashMap<>();
+    inputs.put(INPUT_IDS, OnnxTensor.createTensor(env, new long[][] { ids }));
+    inputs.put(ATTENTION_MASK, OnnxTensor.createTensor(env, attentionMask));
+    if (tokenTypeIdsInputName != null) {
+      inputs.put(tokenTypeIdsInputName, OnnxTensor.createTensor(env, new long[][] { createTokenTypeIds(ids.length) }));
+    }
+    return inputs;
   }
 
   private float[] extractSentenceEmbedding(final Result result) throws Exception {
@@ -152,41 +157,46 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   }
 
   private float[] meanPool(final Result result, final int seqLen, final long[] attentionMask) throws Exception {
-    OnnxTensor tensor = null;
-    for (final Map.Entry<String, OnnxValue> entry : result) {
-      if (LAST_HIDDEN_STATE.equals(entry.getKey()) || TOKEN_EMBEDDINGS.equals(entry.getKey())) {
-        tensor = (OnnxTensor) entry.getValue();
-        break;
-      }
-    }
-    if (tensor == null) {
-      tensor = (OnnxTensor) result.get(0);
-    }
+    final OnnxTensor tensor = findHiddenStateTensor(result);
     try {
       final float[][][] hidden = (float[][][]) tensor.getValue();
       if (hidden == null || hidden.length == 0 || hidden[0].length == 0 || hidden[0][0].length != dimension) {
         return null;
       }
-      final float[] sum = new float[dimension];
-      int count = 0;
-      for (int t = 0; t < seqLen && t < hidden[0].length; t++) {
-        if (t < attentionMask.length && attentionMask[t] == 1) {
-          for (int d = 0; d < dimension; d++) {
-            sum[d] += hidden[0][t][d];
-          }
-          count++;
-        }
-      }
-      if (count == 0) {
-        return null;
-      }
-      for (int d = 0; d < dimension; d++) {
-        sum[d] /= count;
-      }
-      return sum;
+      return computeMeanPool(hidden[0], seqLen, attentionMask);
     } finally {
       tensor.close();
     }
+  }
+
+  private OnnxTensor findHiddenStateTensor(final Result result) {
+    for (final Map.Entry<String, OnnxValue> entry : result) {
+      if (LAST_HIDDEN_STATE.equals(entry.getKey()) || TOKEN_EMBEDDINGS.equals(entry.getKey())) {
+        return (OnnxTensor) entry.getValue();
+      }
+    }
+    return (OnnxTensor) result.get(0);
+  }
+
+  @Nullable
+  private float[] computeMeanPool(final float[][] tokenEmbeddings, final int seqLen, final long[] attentionMask) {
+    final float[] sum = new float[dimension];
+    int count = 0;
+    for (int t = 0; t < seqLen && t < tokenEmbeddings.length; t++) {
+      if (t < attentionMask.length && attentionMask[t] == 1) {
+        for (int d = 0; d < dimension; d++) {
+          sum[d] += tokenEmbeddings[t][d];
+        }
+        count++;
+      }
+    }
+    if (count == 0) {
+      return null;
+    }
+    for (int d = 0; d < dimension; d++) {
+      sum[d] /= count;
+    }
+    return sum;
   }
 
   /**
@@ -207,48 +217,52 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
 
     try {
       final HuggingFaceTokenizer tokenizer = HuggingFaceTokenizer.newInstance(tokenizerFile);
-
       final OrtEnvironment env = OrtEnvironment.getEnvironment();
-      final OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
-      try {
-        opts.addCUDA(0);
-        LOG.info("Using CUDA execution provider for embedding (device 0)");
-      } catch (final Throwable t) {
-        LOG.debug("CUDA not available, using CPU: {}", t.getMessage());
-      }
-      final OrtSession session = env.createSession(modelFile.toString(), opts);
-
-      String tokenTypeIdsInputName = null;
-      final Set<String> inputNames = session.getInputNames();
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("ONNX model input names: {}", inputNames);
-      }
-      for (final String name : inputNames) {
-        if (TOKEN_TYPE_IDS.equals(name) || (name != null && name.endsWith("token_type_ids"))) {
-          tokenTypeIdsInputName = name;
-          break;
-        }
-      }
-      if (tokenTypeIdsInputName == null && inputNames.size() >= 3) {
-        tokenTypeIdsInputName = TOKEN_TYPE_IDS;
-      }
-
-      String outputName = SENTENCE_EMBEDDING;
-      for (final String name : session.getOutputNames()) {
-        if (SENTENCE_EMBEDDING.equals(name) || TOKEN_EMBEDDINGS.equals(name)) {
-          outputName = name;
-          break;
-        }
-        if (LAST_HIDDEN_STATE.equals(name)) {
-          outputName = LAST_HIDDEN_STATE;
-          break;
-        }
-      }
+      final OrtSession session = createSession(env, modelFile);
+      final String tokenTypeIdsInputName = resolveTokenTypeIdsInput(session);
+      final String outputName = resolveOutputName(session);
 
       return new OnnxVectorProvider(env, session, tokenizer, dimension, outputName, tokenTypeIdsInputName);
     } catch (final Exception e) {
       LOG.warn("Failed to create OnnxVectorProvider: {}", e.getMessage());
       return null;
     }
+  }
+
+  private static OrtSession createSession(final OrtEnvironment env, final Path modelFile) throws Exception {
+    final OrtSession.SessionOptions opts = new OrtSession.SessionOptions();
+    try {
+      opts.addCUDA(0);
+      LOG.info("Using CUDA execution provider for embedding (device 0)");
+    } catch (final Throwable t) {
+      LOG.debug("CUDA not available, using CPU: {}", t.getMessage());
+    }
+    return env.createSession(modelFile.toString(), opts);
+  }
+
+  @Nullable
+  private static String resolveTokenTypeIdsInput(final OrtSession session) throws Exception {
+    final Set<String> inputNames = session.getInputNames();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("ONNX model input names: {}", inputNames);
+    }
+    for (final String name : inputNames) {
+      if (TOKEN_TYPE_IDS.equals(name) || (name != null && name.endsWith("token_type_ids"))) {
+        return name;
+      }
+    }
+    return inputNames.size() >= 3 ? TOKEN_TYPE_IDS : null;
+  }
+
+  private static String resolveOutputName(final OrtSession session) throws Exception {
+    for (final String name : session.getOutputNames()) {
+      if (SENTENCE_EMBEDDING.equals(name) || TOKEN_EMBEDDINGS.equals(name)) {
+        return name;
+      }
+      if (LAST_HIDDEN_STATE.equals(name)) {
+        return LAST_HIDDEN_STATE;
+      }
+    }
+    return SENTENCE_EMBEDDING;
   }
 }

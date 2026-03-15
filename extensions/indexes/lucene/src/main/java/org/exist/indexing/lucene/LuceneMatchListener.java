@@ -249,6 +249,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
                             textOffset += consumed;
                         }
                         break;
+                    default:
+                        break;
                 }
             }
         } catch (final IOException | XMLStreamException e) {

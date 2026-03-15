@@ -25,6 +25,7 @@ work/
 
 # Claude planning files
 plans/
+.codacy/
 
 # Debug logs (e.g. from reindex investigation)
 reindex-dbg.log

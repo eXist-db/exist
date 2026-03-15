@@ -184,6 +184,65 @@ public class VectorSearchEmbeddingIT {
     }
 
     @Test
+    public void embedEmptyTextErrors() throws EXistException, PermissionDeniedException {
+        try {
+            executeQuery(
+                "xquery version \"3.1\";\n"
+                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+                + "vector:embed(\"\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
+            assertTrue("Expected XPathException for empty text", false);
+        } catch (XPathException e) {
+            assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
+        }
+    }
+
+    @Test
+    public void embedBlankTextErrors() throws EXistException, PermissionDeniedException {
+        try {
+            executeQuery(
+                "xquery version \"3.1\";\n"
+                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+                + "vector:embed(\"   \", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
+            assertTrue("Expected XPathException for blank text", false);
+        } catch (XPathException e) {
+            assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
+        }
+    }
+
+    @Test
+    public void embedBatchEmptySequenceReturnsEmptyArray() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(
+            "xquery version \"3.1\";\n"
+            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+            + "count(vector:embed-batch((), \"" + MODEL + "\", \"" + MODEL_PATH + "\")?*)");
+        assertEquals(0, result.itemAt(0).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void embedBatchSingleTextReturnsOneArray() throws XPathException, PermissionDeniedException, EXistException {
+        final Sequence result = executeQuery(
+            "xquery version \"3.1\";\n"
+            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+            + "let $b := vector:embed-batch(\"Hello\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
+            + "return (count($b?*), count($b(1)?*))");
+        assertEquals(2, result.getItemCount());
+        assertEquals(1, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        assertEquals(384, result.itemAt(1).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void queryVectorWithKZeroDefaultsToTen() throws XPathException, PermissionDeniedException, EXistException {
+        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
+        final Sequence result = executeQuery(
+            "xquery version \"3.1\";\n"
+            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
+            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
+            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 0)])");
+        assertEquals("k=0 should default to 10, returning all 3 docs", 3, result.itemAt(0).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
     public void inlineElementsDoNotPolluteVectors() throws XPathException, PermissionDeniedException, EXistException {
         final String inlineCol = "/db/lucene-test-vector-inline-it";
         final String inlineColName = "lucene-test-vector-inline-it";

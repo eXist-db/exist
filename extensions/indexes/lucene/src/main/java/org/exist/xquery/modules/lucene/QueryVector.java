@@ -34,7 +34,6 @@ import org.exist.xquery.value.*;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -102,35 +101,39 @@ public class QueryVector extends BasicFunction {
             throw new XPathException(this, "Second argument must be an array of numbers");
         }
 
-        int k = 10;
-        QueryOptions options = new QueryOptions();
-        if (args.length >= 3 && !args[2].isEmpty()) {
-            k = args[2].itemAt(0).toJavaObject(Integer.class);
-            if (k <= 0) {
-                k = 10;
-            }
-        }
-        if (args.length >= 4 && !args[3].isEmpty()) {
-            options = parseOptions(args[3]);
-        }
+        final int k = parseK(args);
+        final QueryOptions options = args.length >= 4 && !args[3].isEmpty()
+                ? parseOptions(args[3]) : new QueryOptions();
 
         final NodeSet nodes = nodesSeq.toNodeSet();
         final DocumentSet docs = nodes.getDocumentSet();
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-
-        List<QName> qnames = getQNamesFromNodes(nodes);
-        if (qnames.isEmpty()) {
-            try {
-                qnames = index.getDefinedIndexes(null);
-            } catch (IOException e) {
-                throw new XPathException(this, "Failed to get index config: " + e.getMessage(), e);
-            }
-        }
+        final List<QName> qnames = resolveQNames(nodes, index);
 
         try {
             return index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options);
         } catch (IOException e) {
             throw new XPathException(this, "Vector search failed: " + e.getMessage(), e);
+        }
+    }
+
+    private static int parseK(final Sequence[] args) throws XPathException {
+        if (args.length >= 3 && !args[2].isEmpty()) {
+            final int k = args[2].itemAt(0).toJavaObject(Integer.class);
+            return k > 0 ? k : 10;
+        }
+        return 10;
+    }
+
+    private List<QName> resolveQNames(final NodeSet nodes, final LuceneIndexWorker index) throws XPathException {
+        final List<QName> qnames = getQNamesFromNodes(nodes);
+        if (!qnames.isEmpty()) {
+            return qnames;
+        }
+        try {
+            return index.getDefinedIndexes(null);
+        } catch (IOException e) {
+            throw new XPathException(this, "Failed to get index config: " + e.getMessage(), e);
         }
     }
 

@@ -31,9 +31,6 @@ import java.util.Set;
  */
 public final class VectorModelConstants {
 
-  private VectorModelConstants() {
-  }
-
   /** OpenAI embedding models. */
   private static final Map<String, Integer> OPENAI_DIMENSIONS = Map.of(
       "text-embedding-ada-002", 1536,
@@ -76,6 +73,9 @@ public final class VectorModelConstants {
       "embed-english-light-v3.0",
       "embed-multilingual-light-v3.0"
   };
+
+  private VectorModelConstants() {
+  }
 
   /**
    * Returns the default dimension for a model ID, or 384 if unknown.

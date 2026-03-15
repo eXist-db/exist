@@ -169,6 +169,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             case REMOVE_BINARY:
             	removePlainTextIndexes();
             	break;
+            default:
+                break;
         }
     }
 
@@ -208,6 +210,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 break;
             case REMOVE_SOME_NODES:
                 nodesToRemove = new TreeSet<>();
+                break;
+            default:
                 break;
         }
     }
@@ -779,50 +783,95 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Nullable
     private Query buildVectorFilterQuery(final QueryOptions options, @Nullable final LuceneConfig config,
             final DocumentSet docs) throws XPathException {
-        final List<Query> filters = new ArrayList<>();
-        final Query docsFilter = buildDocsFilterQuery(docs);
-        if (docsFilter != null) {
-            filters.add(docsFilter);
+        final List<Query> filters = new ArrayList<>(4);
+        addIfNotNull(filters, buildDocsFilterQuery(docs));
+        addIfNotNull(filters, buildKeywordFilter(options, config, docs));
+        addIfNotNull(filters, buildRangeFilter(options));
+        addIfNotNull(filters, buildFacetFilter(options, config));
+        return combineFilters(filters);
+    }
+
+    private static void addIfNotNull(final List<Query> list, @Nullable final Query q) {
+        if (q != null) {
+            list.add(q);
         }
-        if (options != null && options.getFilterQuery() != null && !options.getFilterQuery().isEmpty()) {
-            final String filterStr = options.getFilterQuery();
-            final LuceneConfig cfg = config != null ? config : getLuceneConfig(broker, docs);
-            final String[] fields = cfg != null ? getSearchableFieldsForFilter(cfg, docs) : new String[0];
-            if (fields.length > 0 && cfg != null) {
-                final Analyzer a = cfg.getAnalyzer((QName) null);
-                if (a != null) {
-                    final QueryParserWrapper parser = fields.length == 1
-                            ? new ClassicQueryParserWrapper(fields[0], a)
-                            : new MultiFieldQueryParserWrapper(fields, a);
-                    try {
-                        final Query parsed = parser.parse(filterStr);
-                        if (parsed != null) {
-                            filters.add(parsed);
-                        }
-                    } catch (XPathException e) {
-                        LOG.warn("Failed to parse filter-query '{}': {}", filterStr, e.getMessage());
-                    }
-                }
-            }
+    }
+
+    @Nullable
+    private Query buildKeywordFilter(final QueryOptions options, @Nullable final LuceneConfig config,
+            final DocumentSet docs) {
+        if (options == null) {
+            return null;
         }
-        if (options != null && options.getFilterField() != null && options.getFilterValue() != null) {
-            final String field = options.getFilterField();
-            final Object val = options.getFilterValue();
-            if (val instanceof Number n) {
-                filters.add(LongField.newExactQuery(field, n.longValue()));
-            } else {
-                filters.add(new TermQuery(new Term(field, val.toString())));
-            }
+        final String filterStr = options.getFilterQuery();
+        if (filterStr == null || filterStr.isEmpty()) {
+            return null;
         }
-        final Optional<Map<String, QueryOptions.FacetQuery>> facets = options != null ? options.getFacets() : Optional.empty();
-        if (facets.isPresent() && config != null && config.facetsConfig != null) {
-            filters.add(drilldown(facets.get(), new MatchAllDocsQuery(), config));
+        final QueryParserWrapper parser = resolveFilterQueryParser(config, docs);
+        if (parser == null) {
+            return null;
         }
+        try {
+            return parser.parse(filterStr);
+        } catch (XPathException e) {
+            LOG.warn("Failed to parse filter-query '{}': {}", filterStr, e.getMessage());
+            return null;
+        }
+    }
+
+    @Nullable
+    private QueryParserWrapper resolveFilterQueryParser(@Nullable final LuceneConfig config, final DocumentSet docs) {
+        final LuceneConfig cfg = config != null ? config : getLuceneConfig(broker, docs);
+        if (cfg == null) {
+            return null;
+        }
+        final String[] fields = getSearchableFieldsForFilter(cfg, docs);
+        if (fields.length == 0) {
+            return null;
+        }
+        final Analyzer a = cfg.getAnalyzer((QName) null);
+        if (a == null) {
+            return null;
+        }
+        return fields.length == 1
+                ? new ClassicQueryParserWrapper(fields[0], a)
+                : new MultiFieldQueryParserWrapper(fields, a);
+    }
+
+    @Nullable
+    private static Query buildRangeFilter(final QueryOptions options) {
+        if (options == null) {
+            return null;
+        }
+        final String field = options.getFilterField();
+        final Object val = options.getFilterValue();
+        if (field == null || val == null) {
+            return null;
+        }
+        return val instanceof Number n
+                ? LongField.newExactQuery(field, n.longValue())
+                : new TermQuery(new Term(field, val.toString()));
+    }
+
+    @Nullable
+    private Query buildFacetFilter(final QueryOptions options, @Nullable final LuceneConfig config) {
+        if (options == null || config == null || config.facetsConfig == null) {
+            return null;
+        }
+        final Optional<Map<String, QueryOptions.FacetQuery>> facets = options.getFacets();
+        if (facets.isEmpty()) {
+            return null;
+        }
+        return drilldown(facets.get(), new MatchAllDocsQuery(), config);
+    }
+
+    @Nullable
+    private static Query combineFilters(final List<Query> filters) {
         if (filters.isEmpty()) {
             return null;
         }
         if (filters.size() == 1) {
-            return filters.get(0);
+            return filters.getFirst();
         }
         final BooleanQuery.Builder b = new BooleanQuery.Builder();
         for (final Query q : filters) {
@@ -1315,61 +1364,72 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     docId = reader.storedFields().document(doc).getField(FIELD_DOC_ID).numericValue().intValue();
                 }
                 DocumentImpl storedDocument = docs.getDoc(docId);
-                if (storedDocument == null)
+                if (storedDocument == null) {
                     return;
+                }
                 if (nodeIdValues != null && nodeIdValues.advanceExact(doc)) {
-                        final BytesRef ref = nodeIdValues.binaryValue();
-                        int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
-                        NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+                    final BytesRef ref = nodeIdValues.binaryValue();
+                    int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
+                    NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
 
-                        NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
-                        if (qname != null) {
-                            storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
-                        }
+                    NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
+                    if (qname != null) {
+                        storedNode.setNodeType(qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                    }
+                    LuceneMatch match = createMatch(doc, score, nodeId, docBase);
+                    processHit(doc, storedDocument, storedNode, match);
+                }
+            }
 
-                        if (contextSet != null) {
-                            int sizeHint = contextSet.getSizeHint(storedDocument);
-                            if (returnAncestor) {
-                                NodeProxy parentNode = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                if (parentNode != null) {
-                                    LuceneMatch match = createMatch(doc, score, nodeId, docBase);
-                                    parentNode.addMatch(match);
-                                    resultSet.add(parentNode, sizeHint);
-                                    if (Expression.NO_CONTEXT_ID != contextId) {
-                                        parentNode.deepCopyContext(storedNode, contextId);
-                                    } else
-                                        parentNode.copyContext(storedNode);
-                                    if (chainedLeafCollector != null) {
-                                        chainedLeafCollector.collect(doc);
-                                    }
-                                }
-                            } else {
-                                LuceneMatch match = createMatch(doc, score, nodeId, docBase);
-                                storedNode.addMatch(match);
-                                NodeProxy fromContext = contextSet.get(storedNode);
-                                if (fromContext == null) {
-                                    fromContext = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                }
-                                if (fromContext != null) {
-                                    if (Expression.NO_CONTEXT_ID != contextId) {
-                                        storedNode.deepCopyContext(fromContext, contextId);
-                                    } else {
-                                        storedNode.copyContext(fromContext);
-                                    }
-                                }
-                                resultSet.add(storedNode, sizeHint);
-                                if (chainedLeafCollector != null) {
-                                    chainedLeafCollector.collect(doc);
-                                }
-                            }
-                        } else {
-                            LuceneMatch match = createMatch(doc, score, nodeId, docBase);
-                            storedNode.addMatch(match);
-                            resultSet.add(storedNode);
-                            if (chainedLeafCollector != null) {
-                                chainedLeafCollector.collect(doc);
-                            }
-                        }
+            private void processHit(int doc, DocumentImpl storedDocument, NodeProxy storedNode, LuceneMatch match) throws IOException {
+                if (contextSet != null) {
+                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                    if (returnAncestor) {
+                        processAncestorHit(doc, storedNode, match, sizeHint);
+                    } else {
+                        processDirectHit(doc, storedNode, match, sizeHint);
+                    }
+                } else {
+                    storedNode.addMatch(match);
+                    resultSet.add(storedNode);
+                    chainCollect(doc);
+                }
+            }
+
+            private void processAncestorHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
+                NodeProxy parentNode = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                if (parentNode != null) {
+                    parentNode.addMatch(match);
+                    resultSet.add(parentNode, sizeHint);
+                    if (Expression.NO_CONTEXT_ID != contextId) {
+                        parentNode.deepCopyContext(storedNode, contextId);
+                    } else {
+                        parentNode.copyContext(storedNode);
+                    }
+                    chainCollect(doc);
+                }
+            }
+
+            private void processDirectHit(int doc, NodeProxy storedNode, LuceneMatch match, int sizeHint) throws IOException {
+                storedNode.addMatch(match);
+                NodeProxy fromContext = contextSet.get(storedNode);
+                if (fromContext == null) {
+                    fromContext = contextSet.parentWithChild(storedNode, true, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                }
+                if (fromContext != null) {
+                    if (Expression.NO_CONTEXT_ID != contextId) {
+                        storedNode.deepCopyContext(fromContext, contextId);
+                    } else {
+                        storedNode.copyContext(fromContext);
+                    }
+                }
+                resultSet.add(storedNode, sizeHint);
+                chainCollect(doc);
+            }
+
+            private void chainCollect(int doc) throws IOException {
+                if (chainedLeafCollector != null) {
+                    chainedLeafCollector.collect(doc);
                 }
             }
 
@@ -1415,10 +1475,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     if (!FIELD_DOC_ID.equals(info.name)) {
                         final QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
                         if (name != null && name.getLocalPart() != null && !name.getLocalPart().isEmpty()
-                                && (qname == null || matchQName(qname, name))) {
-                            if (!indexes.contains(name)) {
-                                indexes.add(name);
-                            }
+                                && (qname == null || matchQName(qname, name))
+                                && !indexes.contains(name)) {
+                            indexes.add(name);
                         }
                     }
                 }

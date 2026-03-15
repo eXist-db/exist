@@ -73,7 +73,6 @@ public class PlainTextHighlighter {
         //Token token;
         List<Offset> offsets = null;
         try {
-            int lastOffset = 0;
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query termQuery = termMap.get(text);
