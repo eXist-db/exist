@@ -245,6 +245,10 @@ public class ErrorCodes {
     public static final ErrorCode FOXT0004 = new W3CErrorCode("FOXT0004", "XSLT transformation has been disabled");
     public static final ErrorCode FOXT0006 = new W3CErrorCode("FOXT0006", "XSLT output contains non-accepted characters");
 
+    // Invisible XML errors
+    public static final ErrorCode FOIX0001 = new W3CErrorCode("FOIX0001", "Invalid ixml grammar");
+    public static final ErrorCode FOIX0002 = new W3CErrorCode("FOIX0002", "ixml parse error");
+
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 
     /* eXist specific XQuery and XPath errors

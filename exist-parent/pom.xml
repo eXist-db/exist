@@ -597,6 +597,11 @@
                 <version>${objenesis.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>de.bottlecaps</groupId>
+                <artifactId>markup-blitz</artifactId>
+                <version>1.10</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

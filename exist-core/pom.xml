@@ -391,6 +391,11 @@
         </dependency>
 
         <dependency>
+            <groupId>de.bottlecaps</groupId>
+            <artifactId>markup-blitz</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-saxon-regex</artifactId>
             <version>9.4.0-9.e1</version>

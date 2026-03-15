@@ -377,7 +377,12 @@ public class FnModule extends AbstractInternalModule {
         // XQuery 4.0 functions — batch 7: transitive-closure, element-to-map
         new FunctionDef(FnTransitiveClosure.FN_TRANSITIVE_CLOSURE, FnTransitiveClosure.class),
         new FunctionDef(FnElementToMap.FN_ELEMENT_TO_MAP[0], FnElementToMap.class),
-        new FunctionDef(FnElementToMap.FN_ELEMENT_TO_MAP[1], FnElementToMap.class)
+        new FunctionDef(FnElementToMap.FN_ELEMENT_TO_MAP[1], FnElementToMap.class),
+
+        // --- Invisible XML (feature/fn-invisible-xml) ---
+        new FunctionDef(FnInvisibleXml.SIGNATURES[0], FnInvisibleXml.class),
+        new FunctionDef(FnInvisibleXml.SIGNATURES[1], FnInvisibleXml.class)
+        // --- End Invisible XML ---
     };
 
     static {
