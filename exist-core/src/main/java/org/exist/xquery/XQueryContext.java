@@ -308,6 +308,18 @@ public class XQueryContext implements BinaryValueManager, Context {
     private String defaultCollation = Collations.UNICODE_CODEPOINT_COLLATION_URI;
 
     /**
+     * XQFT 3.0: default full-text match options declared via "declare ft-option".
+     */
+    private org.exist.xquery.ft.FTMatchOptions defaultFTMatchOptions;
+
+    /**
+     * XQFT 3.0: thesaurus URI-to-file mapping.
+     * Maps thesaurus URIs (e.g., "http://bstore1.example.com/UsabilityThesaurus.xml")
+     * to local file paths.
+     */
+    private final java.util.Map<String, java.nio.file.Path> thesaurusRegistry = new java.util.HashMap<>();
+
+    /**
      * The default language
      */
     private static final String DefaultLanguage = Locale.getDefault().getLanguage();
@@ -1088,6 +1100,22 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public String getDefaultCollation() {
         return defaultCollation;
+    }
+
+    public void setDefaultFTMatchOptions(final org.exist.xquery.ft.FTMatchOptions opts) {
+        this.defaultFTMatchOptions = opts;
+    }
+
+    public org.exist.xquery.ft.FTMatchOptions getDefaultFTMatchOptions() {
+        return defaultFTMatchOptions;
+    }
+
+    public void registerThesaurus(final String uri, final java.nio.file.Path file) {
+        thesaurusRegistry.put(uri, file);
+    }
+
+    public java.nio.file.Path resolveThesaurusURI(final String uri) {
+        return thesaurusRegistry.get(uri);
     }
 
     @Override
