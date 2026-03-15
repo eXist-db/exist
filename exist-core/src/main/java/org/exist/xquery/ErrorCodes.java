@@ -176,6 +176,9 @@ public class ErrorCodes {
     public static final ErrorCode FORX0002 = new W3CErrorCode("FORX0002", "Invalid regular expression.");
     public static final ErrorCode FORX0003 = new W3CErrorCode("FORX0003", "Regular expression matches zero-length string.");
     public static final ErrorCode FORX0004 = new W3CErrorCode("FORX0004", "Invalid replacement string.");
+    public static final ErrorCode FOCV0001 = new W3CErrorCode("FOCV0001", "CSV quote error.");
+    public static final ErrorCode FOCV0002 = new W3CErrorCode("FOCV0002", "Invalid CSV delimiter.");
+    public static final ErrorCode FOCV0003 = new W3CErrorCode("FOCV0003", "Conflicting CSV delimiters.");
     public static final ErrorCode FOTY0012 = new W3CErrorCode("FOTY0012", "Argument node does not have a typed value.");
     public static final ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
 
@@ -211,6 +214,7 @@ public class ErrorCodes {
 	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
 
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
+	public static final ErrorCode FODC0011 = new W3CErrorCode("FODC0011", "HTML parsing error.");
 
 	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
 
