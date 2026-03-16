@@ -35,8 +35,8 @@ import java.util.Map;
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
- * Implement the
- * <a href="https://www.w3.org/TR/xpath-functions-31/#map-functions">function that operate on maps</a>
+ * Register the
+ * <a href="https://www.w3.org/TR/xpath-functions-31/#map-functions">functions that operate on maps</a>
  */
 public class MapModule extends AbstractInternalModule {
 
@@ -47,11 +47,11 @@ public class MapModule extends AbstractInternalModule {
             MapFunction.class,
             MapFunction.MERGE_1,
             MapFunction.MERGE_2,
-            MapFunction.FIND,
             MapFunction.SIZE,
             MapFunction.KEYS,
             MapFunction.CONTAINS,
             MapFunction.GET,
+            MapFunction.FIND,
             MapFunction.PUT,
             MapFunction.ENTRY,
             MapFunction.REMOVE,

@@ -35,7 +35,7 @@ import java.util.Map;
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
- * Module implementing functions that operate on arrays.
+ * Module registering functions that operate on arrays.
  */
 public class ArrayModule extends AbstractInternalModule {
 
@@ -46,14 +46,14 @@ public class ArrayModule extends AbstractInternalModule {
             ArrayFunction.class,
             ArrayFunction.SIZE,
             ArrayFunction.GET,
+            ArrayFunction.PUT,
             ArrayFunction.APPEND,
-            ArrayFunction.HEAD,
-            ArrayFunction.TAIL,
             ArrayFunction.SUBARRAY_1,
             ArrayFunction.SUBARRAY_2,
             ArrayFunction.REMOVE,
             ArrayFunction.INSERT_BEFORE,
-            ArrayFunction.PUT,
+            ArrayFunction.HEAD,
+            ArrayFunction.TAIL,
             ArrayFunction.REVERSE,
             ArrayFunction.JOIN,
             ArrayFunction.FOR_EACH,
@@ -61,10 +61,10 @@ public class ArrayModule extends AbstractInternalModule {
             ArrayFunction.FOLD_LEFT,
             ArrayFunction.FOLD_RIGHT,
             ArrayFunction.FOR_EACH_PAIR,
-            ArrayFunction.FLATTEN,
             ArrayFunction.SORT_1,
             ArrayFunction.SORT_2,
-            ArrayFunction.SORT_3
+            ArrayFunction.SORT_3,
+            ArrayFunction.FLATTEN
     );
 
     public ArrayModule(Map<String, List<?>> parameters) {

@@ -23,68 +23,68 @@ package org.exist.xquery.functions.array;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
 import com.ibm.icu.text.Collator;
-import org.exist.xquery.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.NamedFunctionReference;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.fn.FunData;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.funParam;
+import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.params;
+import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.FunctionDSL.returnsMany;
+import static org.exist.xquery.FunctionDSL.returnsOptMany;
 import static org.exist.xquery.functions.array.ArrayModule.functionSignature;
 
 /**
  * Implement functions operating on arrays as described in
  * <a href="http://www.w3.org/TR/xpath-functions-31/#array-functions">Xquery 3.1 §17.3</a>.
+ * <p>
+ * 17.3.1 array:size
+ * 17.3.2 array:get
+ * 17.3.3 array:put
+ * 17.3.4 array:append
+ * 17.3.5 array:subarray
+ * 17.3.6 array:remove
+ * 17.3.7 array:insert-before
+ * 17.3.8 array:head
+ * 17.3.9 array:tail
+ * 17.3.10 array:reverse
+ * 17.3.11 array:join
+ * 17.3.12 array:for-each
+ * 17.3.13 array:filter
+ * 17.3.14 array:fold-left
+ * 17.3.15 array:fold-right
+ * 17.3.16 array:for-each-pair
+ * 17.3.17 array:sort
+ * 17.3.18 array:flatten
  */
 public class ArrayFunction extends BasicFunction {
+    private static final FunctionParameterSequenceType INPUT_ARRAY = param("array", Type.ARRAY_ITEM, "The input array");
+    private static final FunctionParameterSequenceType START_INDEX = param("start", Type.INTEGER, "The start index");
 
-    private enum Fn {
-        SIZE("size"),
-        GET("get"),
-        APPEND("append"),
-        HEAD("head"),
-        TAIL("tail"),
-        SUBARRAY("subarray"),
-        REMOVE("remove"),
-        INSERT_BEFORE("insert-before"),
-        REVERSE("reverse"),
-        JOIN("join"),
-        FOR_EACH("for-each"),
-        FILTER("filter"),
-        FOLD_LEFT("fold-left"),
-        FOLD_RIGHT("fold-right"),
-        FOR_EACH_PAIR("for-each-pair"),
-        FLATTEN("flatten"),
-        PUT("put"),
-        SORT("sort");
-
-        final static Map<String, Fn> fnMap = new HashMap<>();
-        private final String fname;
-
-        static {
-            for (Fn fn: Fn.values()) {
-                fnMap.put(fn.fname, fn);
-            }
-        }
-
-        static Fn get(String name) {
-            return fnMap.get(name);
-        }
-
-        Fn(String name) {
-            this.fname = name;
-        }
-    }
-
-    static final FunctionParameterSequenceType INPUT_ARRAY = param("array", Type.ARRAY_ITEM, "The input array");
-    static final FunctionParameterSequenceType START_INDEX = param("start", Type.INTEGER, "The start index");
-    static final FunctionParameterSequenceType[] INSERT_PUT_PARAMETERS = params(
-            INPUT_ARRAY,
-            param("position", Type.INTEGER, "Position at which the new member is inserted"),
-            optManyParam("member", Type.ITEM, "The member to insert")
-    );
-
-    static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("function",
+    private static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("function",
             params(
                 optManyParam("acc", Type.ITEM, "the accumulated result"),
                 optManyParam("next", Type.ITEM, "the next item")
@@ -93,10 +93,10 @@ public class ArrayFunction extends BasicFunction {
             "The folding function called on each member of the array"
     );
 
-    static final FunctionReturnSequenceType RESULT_ARRAY = returns(Type.ARRAY_ITEM, "The resulting array");
-    static final FunctionReturnSequenceType SORTED_ARRAY = returns(Type.ARRAY_ITEM, "The sorted array");
+    private static final FunctionReturnSequenceType RESULT_ARRAY = returns(Type.ARRAY_ITEM, "The resulting array");
+    private static final FunctionReturnSequenceType SORTED_ARRAY = returns(Type.ARRAY_ITEM, "The sorted array");
 
-    static final FunctionParameterSequenceType ZERO_ITEM = optManyParam("zero", Type.ITEM, "The initial value");
+    private static final FunctionParameterSequenceType ZERO_ITEM = optManyParam("zero", Type.ITEM, "The initial value");
 
     public static final FunctionSignature SIZE = functionSignature(
             Fn.SIZE.fname,
@@ -159,13 +159,17 @@ public class ArrayFunction extends BasicFunction {
             Fn.INSERT_BEFORE.fname,
             "Returns an array containing all the members of the supplied array, with one additional member at a specified position.",
             RESULT_ARRAY,
-            INSERT_PUT_PARAMETERS
+            INPUT_ARRAY,
+            param("position", Type.INTEGER, "Position at which the new member is inserted"),
+            optManyParam("member", Type.ITEM, "The new member to be insert before the member at the specified position")
     );
     public static final FunctionSignature PUT = functionSignature(
             Fn.PUT.fname,
-            "Returns an array containing all the members of the supplied array, with one additional member at the specified position.",
+            "Returns an array containing all the members of the supplied array, with the member at the specified position replaced.",
             RESULT_ARRAY,
-            INSERT_PUT_PARAMETERS
+            INPUT_ARRAY,
+            param("position", Type.INTEGER, "Position at which the member is replaced"),
+            optManyParam("member", Type.ITEM, "The new member to put at the specified position")
     );
     public static final FunctionSignature REVERSE = functionSignature(
             Fn.REVERSE.fname,
@@ -292,95 +296,70 @@ public class ArrayFunction extends BasicFunction {
         }
         final Fn called = Fn.get(getSignature().getName().getLocalPart());
         return switch (called) {
-            case JOIN -> join(args);
-            case FLATTEN -> flatten(args);
             case SIZE -> size(args);
             case GET -> get(args);
+            case PUT -> put(args);
             case APPEND -> append(args);
-            case HEAD -> head(args);
-            case TAIL -> tail(args);
             case SUBARRAY -> subArray(args);
             case REMOVE -> remove(args);
             case INSERT_BEFORE -> insertBefore(args);
-            case PUT -> put(args);
+            case HEAD -> head(args);
+            case TAIL -> tail(args);
             case REVERSE -> reverse(args);
+            case JOIN -> join(args);
             case FOR_EACH -> forEach(args);
             case FILTER -> filter(args);
             case FOLD_LEFT -> foldLeft(args);
             case FOLD_RIGHT -> foldRight(args);
             case FOR_EACH_PAIR -> forEachPair(args);
             case SORT -> sort(args);
+            case FLATTEN -> flatten(args);
         };
     }
 
-    private Sequence sort(Sequence[] args) throws XPathException {
+    private IntegerValue size(Sequence[] args) {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        if (args.length == 3) {
-            final Collator collator;
-            if (!args[1].isEmpty()) {
-                final String collationURI = args[1].getStringValue();
-                collator = context.getCollator(collationURI);
-            } else {
-                collator = context.getDefaultCollator();
-            }
-
-            //user specified key function
-            return getFunction(args[2], ref -> array.sort(collator, ref));
-        }
-        final Collator collator;
-        if (args.length == 2 && !args[1].isEmpty()) {
-            final String collationURI = args[1].getStringValue();
-            collator = context.getCollator(collationURI);
-        } else {
-            collator = context.getDefaultCollator();
-        }
-
-        //by default use fn:data#1 as the key function
-        final FunctionReference keyFun = new FunctionReference(this, NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
-        return array.sort(collator, keyFun);
+        return new IntegerValue(this, array.getSize());
     }
 
-    private Sequence forEachPair(Sequence[] args) throws XPathException {
+    private static Sequence get(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[2], ref -> array.forEachPair((ArrayType) args[1].itemAt(0), ref));
-    }
-
-    private Sequence foldRight(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[2], ref -> array.foldRight(ref, args[1]));
-    }
-
-    private Sequence foldLeft(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[2], ref -> array.foldLeft(ref, args[1]));
-    }
-
-    private Sequence filter(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[1], array::filter);
-    }
-
-    private Sequence forEach(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[1], array::forEach);
+        final IntegerValue index = (IntegerValue) args[1].itemAt(0);
+        return array.get(index);
     }
 
     private ArrayType put(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        final int ppos = ((IntegerValue) args[1].itemAt(0)).getInt();
-        if (ppos  < 1 || ppos  > array.getSize() ) {
-            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + ppos + ") is out of bounds");
+        final int pos = ((IntegerValue) args[1].itemAt(0)).getInt();
+        if (pos  < 1 || pos  > array.getSize() ) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + pos + ") is out of bounds");
         }
-        return array.put(ppos - 1, args[2]);
+        return array.put(pos - 1, args[2]);
     }
 
-    private ArrayType insertBefore(Sequence[] args) throws XPathException {
+    private static ArrayType append(Sequence[] args) {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        final int ipos = ((IntegerValue) args[1].itemAt(0)).getInt();
-        if (ipos < 1 || ipos > array.getSize() + 1) {
-            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + ipos + ") is out of bounds");
+        return array.append(args[1]);
+    }
+
+    private ArrayType subArray(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        final int start = ((IntegerValue) args[1].itemAt(0)).getInt();
+        int end = array.getSize();
+        if (getArgumentCount() == 3) {
+            final int length = ((IntegerValue) args[2].itemAt(0)).getInt();
+            if (start + length > array.getSize() + 1) {
+                throw new XPathException(this, ErrorCodes.FOAY0001, "Array index out of bounds: " + (start + length - 1));
+            }
+            if (length < 0) {
+                throw new XPathException(this, ErrorCodes.FOAY0002, "Specified length < 0");
+            }
+            end = start + length - 1;
         }
-        return array.insertBefore(ipos - 1, args[2]);
+        if (start < 1) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Start index into array is < 1");
+        }
+        return array.subarray(start - 1, end);
     }
 
     private ArrayType remove(Sequence[] args) throws XPathException {
@@ -412,32 +391,13 @@ public class ArrayFunction extends BasicFunction {
         return resultArray;
     }
 
-    private ArrayType subArray(Sequence[] args) throws XPathException {
+    private ArrayType insertBefore(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        final int start = ((IntegerValue) args[1].itemAt(0)).getInt();
-        int end = array.getSize();
-        if (getArgumentCount() == 3) {
-            final int length = ((IntegerValue) args[2].itemAt(0)).getInt();
-            if (start + length > array.getSize() + 1) {
-                throw new XPathException(this, ErrorCodes.FOAY0001, "Array index out of bounds: " + (start + length - 1));
-            }
-            if (length < 0) {
-                throw new XPathException(this, ErrorCodes.FOAY0002, "Specified length < 0");
-            }
-            end = start + length - 1;
+        final int ipos = ((IntegerValue) args[1].itemAt(0)).getInt();
+        if (ipos < 1 || ipos > array.getSize() + 1) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Index of item to insert (" + ipos + ") is out of bounds");
         }
-        if (start < 1) {
-            throw new XPathException(this, ErrorCodes.FOAY0001, "Start index into array is < 1");
-        }
-        return array.subarray(start - 1, end);
-    }
-
-    private Sequence tail(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        if (array.getSize() == 0) {
-            throw new XPathException(this, ErrorCodes.FOAY0001, "Array is empty");
-        }
-        return array.tail();
+        return array.insertBefore(ipos - 1, args[2]);
     }
 
     private Sequence head(Sequence[] args) throws XPathException {
@@ -448,31 +408,17 @@ public class ArrayFunction extends BasicFunction {
         return array.get(0);
     }
 
-    private IntegerValue size(Sequence[] args) {
+    private Sequence tail(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return new IntegerValue(this, array.getSize());
+        if (array.getSize() == 0) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Array is empty");
+        }
+        return array.tail();
     }
 
     private static ArrayType reverse(Sequence[] args) {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
         return array.reverse();
-    }
-
-    private static ArrayType append(Sequence[] args) {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return array.append(args[1]);
-    }
-
-    private static Sequence get(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        final IntegerValue index = (IntegerValue) args[1].itemAt(0);
-        return array.get(index);
-    }
-
-    private static ValueSequence flatten(Sequence[] args) throws XPathException {
-        final ValueSequence result = new ValueSequence(args[0].getItemCount());
-        ArrayType.flatten(args[0], result);
-        return result;
     }
 
     private ArrayType join(Sequence[] args) throws XPathException {
@@ -483,10 +429,105 @@ public class ArrayFunction extends BasicFunction {
         return ArrayType.join(context, arrays);
     }
 
+    private Sequence forEach(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return getFunction(args[1], array::forEach);
+    }
+
+    private Sequence filter(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return getFunction(args[1], array::filter);
+    }
+
+    private Sequence foldLeft(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return getFunction(args[2], ref -> array.foldLeft(ref, args[1]));
+    }
+
+    private Sequence foldRight(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return getFunction(args[2], ref -> array.foldRight(ref, args[1]));
+    }
+
+    private Sequence forEachPair(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return getFunction(args[2], ref -> array.forEachPair((ArrayType) args[1].itemAt(0), ref));
+    }
+
+    private Sequence sort(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        final Collator collator;
+        if (args.length == 3) {
+            if (!args[1].isEmpty()) {
+                final String collationURI = args[1].getStringValue();
+                collator = context.getCollator(collationURI);
+            } else {
+                collator = context.getDefaultCollator();
+            }
+
+            // user specified key function
+            return getFunction(args[2], ref -> array.sort(collator, ref));
+        }
+        if (args.length == 2 && !args[1].isEmpty()) {
+            final String collationURI = args[1].getStringValue();
+            collator = context.getCollator(collationURI);
+        } else {
+            collator = context.getDefaultCollator();
+        }
+
+        // by default use fn:data#1 as the key function
+        final FunctionReference keyFun = new FunctionReference(this, NamedFunctionReference.lookupFunction(this, context, FunData.qnData, 1));
+        return array.sort(collator, keyFun);
+    }
+
+    private static ValueSequence flatten(Sequence[] args) throws XPathException {
+        final ValueSequence result = new ValueSequence(args[0].getItemCount());
+        ArrayType.flatten(args[0], result);
+        return result;
+    }
+
     private Sequence getFunction(Sequence arg, FunctionE<FunctionReference, Sequence, XPathException> action) throws XPathException {
         try (final FunctionReference ref = (FunctionReference) arg.itemAt(0)) {
             ref.analyze(cachedContextInfo);
             return action.apply(ref);
+        }
+    }
+
+    private enum Fn {
+        SIZE("size"),
+        GET("get"),
+        PUT("put"),
+        APPEND("append"),
+        SUBARRAY("subarray"),
+        REMOVE("remove"),
+        INSERT_BEFORE("insert-before"),
+        HEAD("head"),
+        TAIL("tail"),
+        REVERSE("reverse"),
+        JOIN("join"),
+        FOR_EACH("for-each"),
+        FILTER("filter"),
+        FOLD_LEFT("fold-left"),
+        FOLD_RIGHT("fold-right"),
+        FOR_EACH_PAIR("for-each-pair"),
+        SORT("sort"),
+        FLATTEN("flatten");
+
+        final static Map<String, Fn> fnMap = new HashMap<>();
+        private final String fname;
+
+        static {
+            for (Fn fn: Fn.values()) {
+                fnMap.put(fn.fname, fn);
+            }
+        }
+
+        static Fn get(String name) {
+            return fnMap.get(name);
+        }
+
+        Fn(String name) {
+            this.fname = name;
         }
     }
 }
