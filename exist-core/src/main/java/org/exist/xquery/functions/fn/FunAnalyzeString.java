@@ -28,9 +28,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import net.sf.saxon.Configuration;
-import net.sf.saxon.om.Item;
 import net.sf.saxon.regex.RegexIterator;
+import net.sf.saxon.regex.RegexMatchHandler;
 import net.sf.saxon.regex.RegularExpression;
+import net.sf.saxon.str.StringView;
+import net.sf.saxon.str.UnicodeString;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
@@ -131,15 +133,15 @@ public class FunAnalyzeString extends BasicFunction {
         final List<String> warnings = new ArrayList<>(1);
 
         try {
-            final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
-            if (regularExpression.matches("")) {
+            final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP30", warnings);
+            if (regularExpression.matches(StringView.of(""))) {
                 throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
             }
 
             //TODO(AR) cache the regular expression... might be possible through Saxon config
 
-            final RegexIterator regexIterator = regularExpression.analyze(input);
-            Item item;
+            final RegexIterator regexIterator = regularExpression.analyze(StringView.of(input));
+            net.sf.saxon.value.StringValue item;
             while ((item = regexIterator.next()) != null) {
                 if (regexIterator.isMatching()) {
                     match(builder, regexIterator);
@@ -154,7 +156,7 @@ public class FunAnalyzeString extends BasicFunction {
         } catch (final net.sf.saxon.trans.XPathException e) {
             // Saxon's XP30 regex translator rejects some valid patterns.
             // Fall back to Java regex before giving up.
-            if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
+            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
                 try {
                     analyzeStringJavaRegex(builder, input, pattern, flags);
                     return;
@@ -162,7 +164,7 @@ public class FunAnalyzeString extends BasicFunction {
                     // Java regex fallback also failed — throw original Saxon error below
                 }
             }
-            switch (e.getErrorCodeLocalPart()) {
+            switch (e.getErrorCodeQName().getLocalPart()) {
                 case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
                 case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
                 case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
@@ -236,10 +238,10 @@ public class FunAnalyzeString extends BasicFunction {
 
     private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);
-        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
+        regexIterator.processMatchingSubstring(new RegexMatchHandler() {
             @Override
-            public void characters(final CharSequence s) {
-                builder.characters(s);
+            public void characters(final UnicodeString s) {
+                builder.characters(s.toString());
             }
 
             @Override
@@ -258,9 +260,9 @@ public class FunAnalyzeString extends BasicFunction {
         builder.endElement();
     }
 
-    private void nonMatch(final MemTreeBuilder builder, final Item item) {
+    private void nonMatch(final MemTreeBuilder builder, final net.sf.saxon.value.StringValue item) {
         builder.startElement(QN_NON_MATCH, null);
-        builder.characters(item.getStringValueCS());
+        builder.characters(item.getStringValue());
         builder.endElement();
     }
 }

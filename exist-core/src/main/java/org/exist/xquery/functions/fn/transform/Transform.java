@@ -138,7 +138,13 @@ public class Transform {
 
                 final Xslt30Transformer xslt30Transformer = xsltExecutable.load30();
 
-                options.initialMode.ifPresent(qNameValue -> xslt30Transformer.setInitialMode(Convert.ToSaxon.of(qNameValue.getQName())));
+                if (options.initialMode.isPresent()) {
+                    try {
+                        xslt30Transformer.setInitialMode(Convert.ToSaxon.of(options.initialMode.get().getQName()));
+                    } catch (final SaxonApiException e) {
+                        throw new XPathException(fnTransform, ErrorCodes.FOXT0003, "Unable to set initial mode: " + e.getMessage(), e);
+                    }
+                }
                 xslt30Transformer.setInitialTemplateParameters(options.templateParams, false);
                 xslt30Transformer.setInitialTemplateParameters(options.tunnelParams, true);
                 if (options.baseOutputURI.isPresent()) {
@@ -426,7 +432,10 @@ public class Transform {
     }
 
     private static Optional<Source> getSourceNode(final Optional<NodeValue> sourceNode, final AnyURIValue baseURI) {
-        return sourceNode.map(NodeValue::getNode).map(node -> new DOMSource(node, baseURI.getStringValue()));
+        // Saxon 12 rejects duplicate document-URIs in the document pool.
+        // Don't set a system ID on the source DOMSource to avoid collisions
+        // with the stylesheet or other documents sharing the same base URI.
+        return sourceNode.map(NodeValue::getNode).map(node -> new DOMSource(node));
     }
 
     private static class ErrorListenerLog4jAdapter implements ErrorListener {
