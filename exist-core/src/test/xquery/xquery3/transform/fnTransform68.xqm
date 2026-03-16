@@ -36,7 +36,7 @@ declare variable $testTransform:transform-68-xsl-text := document { <xsl:stylesh
                 </xsl:stylesheet> };
 
 declare
-    %test:assertError("FOXT0001")
+    %test:assertTrue
 function testTransform:transform-68-supports-dynamic-evaluation() {
     let $xsl := $testTransform:transform-68-xsl-text
     let $result := fn:transform(map{

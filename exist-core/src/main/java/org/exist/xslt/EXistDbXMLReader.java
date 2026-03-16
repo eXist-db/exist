@@ -90,9 +90,13 @@ public class EXistDbXMLReader implements XMLReader, Locator {
 
         final Serializer serializer = source.getBroker().borrowSerializer();
         try {
-            this.source = input;  
+            this.source = input;
             this.contentHandler.setDocumentLocator(this);
-            serializer.setSAXHandlers(this.contentHandler, null);
+            // Filter out the implicit xml namespace that eXist's persistent DOM
+            // stores in its namespace mappings. Saxon 12 rejects SAX events
+            // declaring the XML namespace URI (http://www.w3.org/XML/1998/namespace).
+            final ContentHandler filtered = new org.exist.util.XMLBackwardsCompatHandler(this.contentHandler);
+            serializer.setSAXHandlers(filtered, null);
             serializer.toSAX(source.getDocument());
     
             this.contentHandler.endDocument();

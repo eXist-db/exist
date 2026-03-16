@@ -31,9 +31,8 @@ import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.exist.thirdparty.net.sf.saxon.functions.regex.JDK15RegexTranslator;
-import org.exist.thirdparty.net.sf.saxon.functions.regex.RegexSyntaxException;
-import org.exist.thirdparty.net.sf.saxon.functions.regex.RegularExpression;
+import net.sf.saxon.regex.JavaRegularExpression;
+import net.sf.saxon.str.StringView;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -272,16 +271,13 @@ public class RewriteConfig {
 
         private Mapping(String regex, final URLRewrite action) throws ServletException {
             try {
-                final int options = RegularExpression.XML11 | RegularExpression.XPATH30;
-                int flagbits = 0;
-
-                final List<RegexSyntaxException> warnings = new ArrayList<>();
-                regex = JDK15RegexTranslator.translate(regex, options, flagbits, warnings);
+                final JavaRegularExpression javaRegex = new JavaRegularExpression(StringView.of(regex), "");
+                regex = javaRegex.getJavaRegularExpression();
 
                 this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
                 this.matcher = pattern.matcher("");
-            } catch (final RegexSyntaxException e) {
+            } catch (final net.sf.saxon.trans.XPathException e) {
                 throw new ServletException("Syntax error in regular expression specified for path. " +
                         e.getMessage(), e);
             }
