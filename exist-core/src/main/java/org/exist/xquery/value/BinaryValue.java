@@ -195,7 +195,7 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     //TODO still needed? Added trim() since it looks like a new line character is added
                         new StringValue(getExpression(), getStringValue());
                 default ->
-                        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+                        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
             };
         }
         return result;

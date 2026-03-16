@@ -172,7 +172,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "Type error: cannot cast xs:dateTime to "
                                 + Type.getTypeName(requiredType));
         }

@@ -186,6 +186,29 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                     implicitCalendar.setMonth(12);
                     implicitCalendar.setDay(31);
                     break;
+                case Type.G_YEAR:
+                    implicitCalendar.setMonth(1);
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                    break;
+                case Type.G_YEAR_MONTH:
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                    break;
+                case Type.G_MONTH:
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                    break;
+                case Type.G_MONTH_DAY:
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setTime(0, 0, 0);
+                    break;
+                case Type.G_DAY:
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setMonth(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                    break;
                 default:
             }
             implicitCalendar = implicitCalendar.normalize();    // the comparison routines will normalize it anyway, just do it once here

@@ -177,7 +177,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
         if (requiredType == Type.FUNCTION) {
             return this;
         }
-        throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot convert function reference to " + Type.getTypeName(requiredType));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot convert function reference to " + Type.getTypeName(requiredType));
     }
 
     public boolean effectiveBooleanValue() throws XPathException {

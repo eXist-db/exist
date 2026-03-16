@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.util.io.Base64OutputStream;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
@@ -50,7 +51,7 @@ public class Base64BinaryValueType extends BinaryValueType<Base64OutputStream> {
     @Override
     public void verifyString(String str) throws XPathException {
         if (!getMatcher(str).matches()) {
-            throw new XPathException((Expression) null, "FORG0001: Invalid base64 data");
+            throw new XPathException((Expression) null, ErrorCodes.FORG0001, "Invalid base64 data");
         }
     }
 

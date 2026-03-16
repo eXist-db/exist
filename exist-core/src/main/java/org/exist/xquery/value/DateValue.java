@@ -122,7 +122,7 @@ public class DateValue extends AbstractDateTimeValue {
                 return new StringValue(getExpression(), dv.getStringValue());
             }
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert " +
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "can not convert " +
                         Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
                         Type.getTypeName(requiredType));
         }
