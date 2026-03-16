@@ -50,6 +50,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.functions.array.ArrayType;
 
 import antlr.collections.AST;
 
@@ -114,7 +115,7 @@ public class References extends BasicFunction {
         final int targetColumn = ((IntegerValue) args[2].itemAt(0)).getInt() + 1;
 
         if (expr.trim().isEmpty()) {
-            return new ValueSequence();
+            return new ArrayType(this, context, new ArrayList<>());
         }
 
         final XQueryContext pContext = new XQueryContext(context.getBroker().getBrokerPool());
@@ -127,7 +128,7 @@ public class References extends BasicFunction {
             try {
                 final PathExpr path = compile(pContext, expr);
                 if (path == null) {
-                    return new ValueSequence();
+                    return new ArrayType(this, context, new ArrayList<>());
                 }
 
                 // Step 1: Find the symbol at the cursor position
@@ -141,7 +142,7 @@ public class References extends BasicFunction {
 
                 final Expression found = finder.foundExpression;
                 if (found == null) {
-                    return new ValueSequence();
+                    return new ArrayType(this, context, new ArrayList<>());
                 }
 
                 // Step 2: Determine what we're looking for
@@ -191,7 +192,7 @@ public class References extends BasicFunction {
             final XQueryContext pContext) throws XPathException {
         final UserDefinedFunction targetFunc = call.getFunction();
         if (targetFunc == null) {
-            return new ValueSequence();
+            return new ArrayType(this, context, new ArrayList<>());
         }
 
         final QName targetName = targetFunc.getSignature().getName();
@@ -248,16 +249,16 @@ public class References extends BasicFunction {
     }
 
     private Sequence buildResult(final List<RefLocation> locations) throws XPathException {
-        final ValueSequence result = new ValueSequence();
+        final List<Sequence> items = new ArrayList<>();
         for (final RefLocation loc : locations) {
             final MapType map = new MapType(this, context);
             map.add(new StringValue(this, "line"), new IntegerValue(this, loc.line));
             map.add(new StringValue(this, "column"), new IntegerValue(this, loc.column));
             map.add(new StringValue(this, "name"), new StringValue(this, loc.name));
             map.add(new StringValue(this, "kind"), new StringValue(this, loc.kind));
-            result.add(map);
+            items.add(map);
         }
-        return result;
+        return new ArrayType(this, context, items);
     }
 
     private static String formatQName(final QName name) {
