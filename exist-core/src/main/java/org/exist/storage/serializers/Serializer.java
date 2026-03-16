@@ -825,7 +825,8 @@ public abstract class Serializer implements XMLReader {
 
             // restore handlers
             receiver = oldReceiver;
-            factory.get().setURIResolver(null);
+            // Saxon 12 rejects null URIResolver; reset to default identity resolver
+            factory.get().setURIResolver((href, base) -> null);
         }
         LOG.debug("compiling stylesheet took {}", System.currentTimeMillis() - start);
         if (templates != null) {

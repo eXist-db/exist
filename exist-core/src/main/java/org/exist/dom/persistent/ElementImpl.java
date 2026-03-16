@@ -822,6 +822,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     @Override
     public NamedNodeMap getAttributes() {
         final org.exist.dom.NamedNodeMapImpl map = new NamedNodeMapImpl(ownerDocument, true);
+
         if(hasAttributes()) {
             try(final DBBroker broker = ownerDocument.getBrokerPool().getBroker();
                 final INodeIterator iterator = broker.getNodeIterator(this)) {
@@ -837,6 +838,14 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
                     if(next.getNodeType() != Node.ATTRIBUTE_NODE) {
                         break;
                     }
+                    // Skip namespace declarations for the XML namespace — the xml prefix
+                    // is always implicitly bound and Saxon 12 rejects any explicit
+                    // declaration involving http://www.w3.org/XML/1998/namespace
+                    if (next.getNodeType() == Node.ATTRIBUTE_NODE
+                            && Namespaces.XMLNS_NS.equals(next.getNamespaceURI())
+                            && XMLConstants.XML_NS_URI.equals(next.getNodeValue())) {
+                        continue;
+                    }
                     map.setNamedItem(next);
                 }
             } catch(final EXistException | IOException e) {
@@ -847,6 +856,13 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
             for (final Map.Entry<String, String> entry : namespaceMappings.entrySet()) {
                 final String prefix = entry.getKey();
                 final String ns = entry.getValue();
+                // Skip namespace declarations involving the XML namespace URI —
+                // Saxon 12 rejects any explicit declaration of the xml prefix
+                // or binding of the XML namespace to a non-xml prefix
+                if (XMLConstants.XML_NS_PREFIX.equals(prefix)
+                        || XMLConstants.XML_NS_URI.equals(ns)) {
+                    continue;
+                }
                 final QName attrName = new QName(prefix, Namespaces.XMLNS_NS, XMLConstants.XMLNS_ATTRIBUTE);
                 final AttrImpl attr = new AttrImpl(getExpression(), attrName, ns, null);
                 attr.setOwnerDocument(ownerDocument);

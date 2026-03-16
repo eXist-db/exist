@@ -632,7 +632,21 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             //2) gmlPrefix
             //3) other stuff...
             //This will possibly require some changes in GeometryTransformer
-            gmlString = gmlTransformer.transform(geometry);
+            // Force the JDK's built-in TransformerFactory for GeoTools.
+            // Saxon 12's IdentityTransformer rejects SAXSources whose XMLReader
+            // does not support the lexical-handler property, which GeoTools' reader doesn't.
+            final String savedFactory = System.getProperty("javax.xml.transform.TransformerFactory");
+            try {
+                System.setProperty("javax.xml.transform.TransformerFactory",
+                        "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
+                gmlString = gmlTransformer.transform(geometry);
+            } finally {
+                if (savedFactory != null) {
+                    System.setProperty("javax.xml.transform.TransformerFactory", savedFactory);
+                } else {
+                    System.clearProperty("javax.xml.transform.TransformerFactory");
+                }
+            }
         } catch (final TransformerException e) {
             throw new SpatialIndexException(e);
         }
