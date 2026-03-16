@@ -31,6 +31,8 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
+
 /**
  * Describes the signature of a built-in or user-defined function, i.e.
  * its name, the type and cardinality of its arguments and its return type.
@@ -51,7 +53,7 @@ public class FunctionSignature {
      */
     public static final SequenceType[] NO_ARGS = new SequenceType[0];
 
-    private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major release version.";
+    private static final String DEPRECATION_REMOVAL_MESSAGE = "\nThis function could be removed in the next major version release!";
     private final QName name;
     private Annotation[] annotations;
     private SequenceType[] arguments;
@@ -131,7 +133,10 @@ public class FunctionSignature {
         if (isVariadic) {
             return -1;
         }
-        return arguments != null ? arguments.length : 0;
+        if (arguments == null) {
+            return 0;
+        }
+        return arguments.length;
     }
 
     public FunctionId getFunctionId() {
@@ -172,6 +177,7 @@ public class FunctionSignature {
         metadata.put(key, newValue);
     }
 
+    @Nullable
     public String getMetadata(final String key) {
         if (metadata == null) {
             return null;
@@ -191,12 +197,12 @@ public class FunctionSignature {
         return deprecated != null;
     }
 
+    @Nullable
     public String getDeprecated() {
-        if (deprecated != null && !deprecated.isEmpty()) {
-            return deprecated + DEPRECATION_REMOVAL_MESSAGE;
-        } else {
+        if (deprecated == null || deprecated.length() == 0) {
             return null;
         }
+        return deprecated + DEPRECATION_REMOVAL_MESSAGE;
     }
 
     public final void setDeprecated(final String message) {
@@ -205,15 +211,18 @@ public class FunctionSignature {
 
     public boolean isPrivate() {
         final Annotation[] annotations = getAnnotations();
-        if (annotations != null) {
-            for (final Annotation annot : annotations) {
-                final QName qn = annot.getName();
-                if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS) && "private".equals(qn.getLocalPart())) {
-                    return true;
-                }
+        if (annotations == null) {
+            return false; // function has no annotations; default is public
+        }
+
+        for (final Annotation annot : annotations) {
+            final QName qn = annot.getName();
+            if (qn.getNamespaceURI().equals(Namespaces.XPATH_FUNCTIONS_NS)
+                    && "private".equals(qn.getLocalPart())) {
+                return true; // function is annotated as private
             }
         }
-        return false;
+        return false; // no matching annotation found; default is public
     }
 
     @Override
@@ -221,30 +230,43 @@ public class FunctionSignature {
         final StringBuilder buf = new StringBuilder();
         buf.append(name.getStringValue());
         buf.append('(');
-        if (arguments != null) {
-            final char ANON_VAR = 'a';
-            for (int i = 0; i < arguments.length; i++) {
-                if (i > 0) {
-                    buf.append(", ");
-                }
-                buf.append('$');
-                if (arguments[i] instanceof FunctionParameterSequenceType) {
-                    buf.append(((FunctionParameterSequenceType) arguments[i]).getAttributeName());
-                } else {
-                    buf.append((char) (ANON_VAR + i));
-                }
-                buf.append(" as ");
-                buf.append(arguments[i].toString());
-            }
 
-            if (isVariadic) {
-                buf.append(", ...");
-            }
-        }
+        argumentsToString(buf);
+
         buf.append(") as ");
         buf.append(returnType.toString());
 
         return buf.toString();
+    }
+
+    private void argumentsToString(final StringBuilder buf) {
+        if (arguments == null) {
+            return;
+        }
+
+        for (int i = 0; i < arguments.length; i++) {
+            if (i > 0) {
+                buf.append(", ");
+            }
+            argumentToString(buf, i);
+        }
+
+        if (isVariadic) {
+            buf.append(", ...");
+        }
+    }
+
+    private void argumentToString(final StringBuilder buf, final int i) {
+        final char ANON_VAR = 'a';
+        buf.append('$');
+        if (arguments[i] instanceof final FunctionParameterSequenceType argumentType) {
+            buf.append(argumentType.getAttributeName());
+        } else {
+            // render argument name placeholder a1, a2, ...
+            buf.append((char) (ANON_VAR + i));
+        }
+        buf.append(" as ");
+        buf.append(arguments[i].toString());
     }
 
     @Override

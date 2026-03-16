@@ -46,7 +46,11 @@ public interface Constants {
 					    "following-sibling",
 					    "namespace",
 					    "self",
-					    "attribute-descendant"
+					    "attribute-descendant",
+					    "following-or-self",
+					    "preceding-or-self",
+					    "following-sibling-or-self",
+					    "preceding-sibling-or-self"
 	};    
     
     /**
@@ -72,6 +76,12 @@ public interface Constants {
     int SELF_AXIS = 12;
     //combines /descendant-or-self::node()/attribute:*
 	int DESCENDANT_ATTRIBUTE_AXIS = 13;
+
+    /** XQuery 4.0 axes */
+    int FOLLOWING_OR_SELF_AXIS = 14;
+    int PRECEDING_OR_SELF_AXIS = 15;
+    int FOLLOWING_SIBLING_OR_SELF_AXIS = 16;
+    int PRECEDING_SIBLING_OR_SELF_AXIS = 17;
 
     /**
      * Node types
