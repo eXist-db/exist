@@ -56,7 +56,25 @@ public class ArrayModule extends AbstractInternalModule {
             new FunctionDef(ArrayFunction.signatures[17], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[18], ArrayFunction.class),
             new FunctionDef(ArrayFunction.signatures[19], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[20], ArrayFunction.class)
+            new FunctionDef(ArrayFunction.signatures[20], ArrayFunction.class),
+            // XQuery 4.0 array functions
+            new FunctionDef(ArraySlice.signatures[0], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[1], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[2], ArraySlice.class),
+            new FunctionDef(ArraySlice.signatures[3], ArraySlice.class),
+            new FunctionDef(ArrayIndexWhere.signatures[0], ArrayIndexWhere.class),
+            new FunctionDef(ArraySortWith.signatures[0], ArraySortWith.class),
+            new FunctionDef(ArraySortBy.signatures[0], ArraySortBy.class),
+            new FunctionDef(ArrayFunction.signatures[21], ArrayFunction.class),  // empty
+            new FunctionDef(ArrayFunction.signatures[22], ArrayFunction.class),  // foot
+            new FunctionDef(ArrayFunction.signatures[23], ArrayFunction.class),  // trunk
+            new FunctionDef(ArrayFunction.signatures[24], ArrayFunction.class),  // items
+            new FunctionDef(ArrayFunction.signatures[25], ArrayFunction.class),  // members
+            new FunctionDef(ArrayBuild.signatures[0], ArrayBuild.class),
+            new FunctionDef(ArrayBuild.signatures[1], ArrayBuild.class),
+            new FunctionDef(ArrayIndexOf.signatures[0], ArrayIndexOf.class),
+            new FunctionDef(ArrayOfMembers.signatures[0], ArrayOfMembers.class),
+            new FunctionDef(ArraySplit.signatures[0], ArraySplit.class)
     };
 
     public ArrayModule(Map<String, List<?>> parameters) {
