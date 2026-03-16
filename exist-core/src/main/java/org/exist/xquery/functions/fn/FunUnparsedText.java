@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
@@ -96,7 +97,7 @@ public class FunUnparsedText extends BasicFunction {
     private boolean contentAvailable(final String uri, final String encoding) {
         final Charset charset;
         try {
-            charset = encoding != null ? Charset.forName(encoding) : UTF_8;
+            charset = encoding != null ? resolveCharset(encoding) : UTF_8;
         } catch (final IllegalArgumentException e) {
             return false;
         }
@@ -120,7 +121,7 @@ public class FunUnparsedText extends BasicFunction {
     private String readContent(final String uri, final String encoding) throws XPathException {
         final Charset charset;
         try {
-            charset = encoding != null ? Charset.forName(encoding) : UTF_8;
+            charset = encoding != null ? resolveCharset(encoding) : UTF_8;
         } catch (final IllegalArgumentException e) {
             throw new XPathException(this, ErrorCodes.FOUT1190, e.getMessage());
         }
@@ -199,7 +200,7 @@ public class FunUnparsedText extends BasicFunction {
             }
         } else {
             try {
-                charset = Charset.forName(encoding);
+                charset = resolveCharset(encoding);
             } catch (final IllegalArgumentException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1190, e.getMessage());
             }
@@ -207,14 +208,59 @@ public class FunUnparsedText extends BasicFunction {
         return charset;
     }
 
+    /**
+     * Resolve a charset name, mapping common aliases that Java doesn't recognize.
+     */
+    private static Charset resolveCharset(final String encoding) {
+        try {
+            return Charset.forName(encoding);
+        } catch (final UnsupportedCharsetException e) {
+            if ("iso-8859".equalsIgnoreCase(encoding)) {
+                return Charset.forName("iso-8859-1");
+            }
+            throw e;
+        }
+    }
+
     private Source getSource(final String uriParam) throws XPathException {
         try {
-            final URI uri = new URI(uriParam);
+            URI uri = new URI(uriParam);
             if (uri.getFragment() != null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "href argument may not contain fragment identifier");
             }
 
-            final Source source = SourceFactory.getSource(context.getBroker(), "", uri.toASCIIString(), false);
+            // Resolve relative URIs against file: base URI directory
+            boolean resolvedFromBaseUri = false;
+            if (!uri.isAbsolute()) {
+                final AnyURIValue baseXdmUri = context.getBaseURI();
+                if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                    String baseStr = baseXdmUri.toURI().toString();
+                    if (baseStr.startsWith("file:")) {
+                        final int lastSlash = baseStr.lastIndexOf('/');
+                        if (lastSlash >= 0) {
+                            baseStr = baseStr.substring(0, lastSlash + 1);
+                        }
+                        uri = new URI(baseStr).resolve(uri);
+                        resolvedFromBaseUri = true;
+                    }
+                }
+            }
+
+            final String resolvedUri = uri.toASCIIString();
+
+            // Only use direct file: access for URIs resolved from a relative path
+            // against a file: base URI. Absolute file: URIs (e.g., file:///etc/passwd)
+            // must go through SourceFactory which enforces security checks.
+            if (resolvedFromBaseUri && resolvedUri.startsWith("file:")) {
+                final String filePath = resolvedUri.replaceFirst("^file:(?://[^/]*)?", "");
+                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                if (java.nio.file.Files.isReadable(path)) {
+                    return new FileSource(path, false);
+                }
+                throw new XPathException(this, ErrorCodes.FOUT1170, "Could not find source for: " + uriParam);
+            }
+
+            final Source source = SourceFactory.getSource(context.getBroker(), "", resolvedUri, false);
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "Could not find source for: " + uriParam);
             }
