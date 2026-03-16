@@ -56,6 +56,8 @@ public class LspModule extends AbstractInternalModule {
                     Diagnostics.FS_DIAGNOSTICS),
             functionDefs(Hover.class,
                     Hover.FS_HOVER),
+            functionDefs(References.class,
+                    References.FS_REFERENCES),
             functionDefs(Symbols.class,
                     Symbols.FS_SYMBOLS)
     );
