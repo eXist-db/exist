@@ -35,8 +35,8 @@ declare
     %test:args("(.*)")
     %test:assertEquals("")
 function rt:empty-match-allowed($p as xs:string) {
-    (: XQ4: empty-matching regex no longer raises FORX0003 :)
-    replace("",$p,"")
+    (: XQ4: empty-matching regex no longer raises FORX0003 when ! flag is used :)
+    replace("",$p,"","!")
 };
 
 declare

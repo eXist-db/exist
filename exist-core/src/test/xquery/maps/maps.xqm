@@ -989,7 +989,7 @@ function mt:map-merge-2-empty-options-map() {
 
 (: test for issue https://github.com/eXist-db/exist/issues/5685 :)
 declare
-    %test:assertEquals("<ul><li>Scotland<ul><li>Highlands<ul><li>Fort William</li><li>Inverness</li></ul></li><li>Lowlands<ul><li>Glasgow</li></ul></li></ul></li></ul>")
+    %test:assertEquals("<ul><li>Scotland<ul><li>Highlands<ul><li>Inverness</li><li>Fort William</li></ul></li><li>Lowlands<ul><li>Glasgow</li></ul></li></ul></li></ul>")
 function mt:nested-map-for-each() {
     <ul>{
         map:for-each($mt:places, function($country-key, $region-map) {
