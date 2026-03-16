@@ -44,7 +44,7 @@ public class FunElementWithId extends BasicFunction {
                     "matching the value of one or more of the IDREF values supplied in $idrefs. " +
                     "If none is matching or $idrefs is the empty sequence, returns the empty sequence.";
     private static final FunctionReturnSequenceType FN_RETURN = returnsOptMany(Type.STRING, "the elements with IDs matching IDREFs from $idref-sequence");
-    private static final FunctionParameterSequenceType PARAM_ID_REFS_STRING = optManyParam("idrefs", Type.STRING, "The IDREF sequence");
+    private static final FunctionParameterSequenceType PARAM_ID_REFS_STRING = optManyParam("values", Type.STRING, "The IDREF sequence");
     public static final FunctionSignature[] FS_ELEMENT_WITH_ID_SIGNATURES = functionSignatures(
             FN_NAME,
             FN_DESCRIPTION,

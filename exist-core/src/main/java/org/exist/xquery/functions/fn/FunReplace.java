@@ -118,6 +118,13 @@ public class FunReplace extends BasicFunction {
 				flags = "";
 			}
 
+			// XQ4: '!' flag — XPath mode (allows empty matches, etc.)
+			// Strip before passing to regex engine which doesn't recognize it
+			final boolean hasXPathFlag = flags.contains("!");
+			if (hasXPathFlag) {
+				flags = flags.replace("!", "");
+			}
+
 			// XQ4: 'c' flag — strip regex comments (#...#) before compilation
 			// When 'q' (literal) flag is present, 'c' is ignored
 			final boolean hasCommentFlag = flags.indexOf('c') >= 0 && flags.indexOf('q') < 0;
@@ -151,6 +158,12 @@ public class FunReplace extends BasicFunction {
 			try {
 				final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
 				final boolean canMatchEmpty = regularExpression.matches("");
+				final boolean allowEmptyMatch = hasXPathFlag || context.getXQueryVersion() >= 40;
+
+				if (canMatchEmpty && !allowEmptyMatch) {
+					throw new XPathException(this, ErrorCodes.FORX0003,
+							"Regular expression matches zero-length string");
+				}
 
 				if (isFunctionReplacement) {
 					result = evalFunctionReplacement(string, pattern, flags,

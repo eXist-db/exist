@@ -90,17 +90,22 @@ public class SingleKeyMapType extends AbstractMapType {
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final IMap<AtomicValue, Sequence> map = newLinearMap(collator);
+        final java.util.List<AtomicValue> keyOrder = new java.util.ArrayList<>(2);
         int keyType = UNKNOWN_KEY_TYPE;
         if (this.key != null) {
             map.put(this.key, this.value);
+            keyOrder.add(this.key);
             keyType = this.key.getType();
+        }
+        if (!map.contains(key)) {
+            keyOrder.add(key);
         }
         map.put(key, value);
         if (keyType != key.getType()) {
             keyType = MIXED_KEY_TYPES;
         }
 
-        return new MapType(getExpression(), context, map.forked(), keyType);
+        return new MapType(getExpression(), context, map.forked(), keyType, keyOrder);
     }
 
     @Override

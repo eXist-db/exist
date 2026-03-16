@@ -48,7 +48,7 @@ public class FunBoolean extends Function {
             new QName("boolean", Function.BUILTIN_FUNCTION_NS),
             "Computes the xs:boolean value of the sequence items.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("items", Type.ITEM,
+                new FunctionParameterSequenceType("input", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The items")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,

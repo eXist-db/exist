@@ -34,6 +34,7 @@ import java.util.List;
 
 import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
+
 /**
  * Implements the literal syntax for creating maps.
  */
@@ -69,6 +70,7 @@ public class MapExpr extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
+        final List<AtomicValue> keyOrder = new ArrayList<>(this.mappings.size());
 
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
@@ -84,6 +86,7 @@ public class MapExpr extends AbstractExpression {
                 throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
             }
             map.put(atomic, value);
+            keyOrder.add(atomic);
 
             final int thisType = atomic.getType();
             if (firstType) {
@@ -96,7 +99,7 @@ public class MapExpr extends AbstractExpression {
             }
         }
 
-        return new MapType(this, context, map.forked(), prevType);
+        return new MapType(this, context, map.forked(), prevType, keyOrder);
     }
 
     @Override

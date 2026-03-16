@@ -59,7 +59,7 @@ public class ExtCollection extends BasicFunction {
             arities(
                     arity(),
                     arity(
-                            optParam("collection-uri", Type.STRING,"The Collection URI")
+                            optParam("source", Type.STRING,"The Collection URI")
                     )
             )
     );

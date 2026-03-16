@@ -43,14 +43,14 @@ import java.util.*;
 public class ArrayType extends FunctionReference implements Lookup.LookupSupport {
 
     // the signature of the function which is evaluated if the map is called as a function item
-    private static final FunctionSignature ACCESSOR =
-            new FunctionSignature(
-                    new QName("get", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
-                    "Internal accessor function for arrays.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
-                    },
-                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+    private static final FunctionSignature ACCESSOR = new FunctionSignature(
+            new QName("get", ArrayModule.NAMESPACE_URI, ArrayModule.PREFIX),
+            "Internal accessor function for arrays.",
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    );
 
     private final InternalFunctionCall accessorFunc;
 
@@ -103,11 +103,22 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     @Override
     public Sequence get(final AtomicValue key) throws XPathException {
-        if (!Type.subTypeOf(key.getType(), Type.INTEGER)) {
+        final int pos;
+        if (Type.subTypeOf(key.getType(), Type.INTEGER)) {
+            pos = ((IntegerValue) key).getInt();
+        } else if (Type.subTypeOf(key.getType(), Type.DECIMAL) || key.getType() == Type.DOUBLE || key.getType() == Type.FLOAT) {
+            // XQ4: numeric types (decimal, double, float) are accepted if they are whole numbers
+            final NumericValue numVal = (NumericValue) key;
+            if (!numVal.hasFractionalPart()) {
+                pos = numVal.getInt();
+            } else {
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "Position argument for array lookup must be a whole number, got: " + key.getStringValue());
+            }
+        } else {
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Position argument for array lookup must be a positive integer");
         }
-        final int pos = ((IntegerValue) key).getInt();
         if (pos <= 0 || pos > getSize()) {
             final String startIdx = vector.length() == 0 ? "0" : "1";
             final String endIdx = String.valueOf(vector.length());
@@ -216,6 +227,11 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
     public int getSize() {
         return vector.length();
     }
+
+    public FunctionSignature getSignature() {
+        return ACCESSOR;
+    };
+
 
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {

@@ -61,7 +61,7 @@ import static org.exist.xquery.regex.RegexUtil.*;
  */
 public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
-    private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
     private static final FunctionParameterSequenceType FS_PARAM_FLAGS =
             new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.ZERO_OR_ONE, "The flags");

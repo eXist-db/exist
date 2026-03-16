@@ -68,7 +68,7 @@ public class FunResolveURI extends Function {
 		"is raised [err:FORG0002].\n\n" +
 		"If $relative is the empty sequence, the empty sequence is returned.";
 	
-	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("relative", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
+	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
 	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the absolute URI");
 	

@@ -44,8 +44,8 @@ import static org.exist.xquery.FunctionDSL.*;
 
 public class FunUnparsedText extends BasicFunction {
 
-    private final static FunctionParameterSequenceType PARAM_HREF = optParam("href", Type.STRING, "the URI to load text from");
-    private final static FunctionParameterSequenceType PARAM_ENCODING = param("encoding", Type.STRING, "character encoding of the resource");
+    private final static FunctionParameterSequenceType PARAM_HREF = optParam("source", Type.STRING, "the URI to load text from");
+    private final static FunctionParameterSequenceType PARAM_ENCODING = param("options", Type.STRING, "character encoding of the resource");
 
     static final FunctionSignature [] FS_UNPARSED_TEXT = functionSignatures(
         new QName("unparsed-text", Function.BUILTIN_FUNCTION_NS),

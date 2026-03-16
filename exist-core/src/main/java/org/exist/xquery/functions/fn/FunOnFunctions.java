@@ -24,6 +24,8 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
+import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -31,7 +33,9 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 public class FunOnFunctions extends BasicFunction {
 
@@ -59,8 +63,25 @@ public class FunOnFunctions extends BasicFunction {
             new SequenceType[] {
                 new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function item")
             },
-            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, 
-            		"The arity of the function."))
+            new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE,
+            		"The arity of the function.")),
+        new FunctionSignature(
+            new QName("function-annotations", Function.BUILTIN_FUNCTION_NS),
+            "Returns the annotations of the function identified by a function item, " +
+            "as a sequence of single-entry maps.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function item")
+            },
+            new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
+                    "A sequence of single-entry maps, each associating an annotation name (xs:QName) with its value(s).")),
+        new FunctionSignature(
+            new QName("function-identity", Function.BUILTIN_FUNCTION_NS),
+            "Returns a string that uniquely identifies the function item within the current execution scope.",
+            new SequenceType[] {
+                new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function item")
+            },
+            new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
+                    "A string uniquely identifying the function."))
     };
 	
 	public FunOnFunctions(XQueryContext context, FunctionSignature signature) {
@@ -102,10 +123,14 @@ public class FunOnFunctions extends BasicFunction {
 					{return Sequence.EMPTY_SEQUENCE;}
 				else
 					{return new QNameValue(this, context, qname);}
-			} else {
-				// isCalledAs("function-arity")
+			} else if (isCalledAs("function-arity")) {
 				final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
 				return new IntegerValue(this, ref.getSignature().getArgumentCount());
+			} else if (isCalledAs("function-annotations")) {
+				return evalFunctionAnnotations(args);
+			} else {
+				// isCalledAs("function-identity")
+				return evalFunctionIdentity(args);
 			}
 		} catch (final Exception e) {
 			if (e instanceof XPathException)
@@ -113,6 +138,71 @@ public class FunOnFunctions extends BasicFunction {
 			else
 				{throw new XPathException(this, ErrorCodes.XPST0017, e.getMessage());}
 		}
+	}
+
+	private Sequence evalFunctionAnnotations(final Sequence[] args) throws XPathException {
+		final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+
+		// Try to find annotations from various paths through the function reference
+		Annotation[] annotations = ref.getSignature().getAnnotations();
+
+		// Fallback: check the underlying UserDefinedFunction's signature
+		if ((annotations == null || annotations.length == 0) && ref.getCall() != null) {
+			final Function func = ref.getCall().getFunction();
+			if (func != null) {
+				annotations = func.getSignature().getAnnotations();
+			}
+		}
+
+		if (annotations == null || annotations.length == 0) {
+			return Sequence.EMPTY_SEQUENCE;
+		}
+
+		return buildAnnotationMaps(annotations);
+	}
+
+	private Sequence buildAnnotationMaps(final Annotation[] annotations) throws XPathException {
+		final ValueSequence result = new ValueSequence(annotations.length);
+		for (final Annotation annot : annotations) {
+			final QName annotName = annot.getName();
+			final QNameValue qnameKey = new QNameValue(this, context, annotName);
+
+			// Build the value sequence from annotation literal values
+			final LiteralValue[] literals = annot.getValue();
+			final Sequence annotValues;
+			if (literals == null || literals.length == 0) {
+				annotValues = Sequence.EMPTY_SEQUENCE;
+			} else {
+				final ValueSequence vals = new ValueSequence(literals.length);
+				for (final LiteralValue lv : literals) {
+					vals.add((AtomicValue) lv.getValue());
+				}
+				annotValues = vals;
+			}
+
+			// Create a single-entry map: { annotName: values }
+			final MapType map = new MapType(this, context);
+			map.add(qnameKey, annotValues);
+			result.add(map);
+		}
+		return result;
+	}
+
+	private Sequence evalFunctionIdentity(final Sequence[] args) throws XPathException {
+		final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
+		final FunctionSignature sig = ref.getSignature();
+		final QName qname = sig.getName();
+
+		final String identity;
+		if (qname != null && qname != InlineFunction.INLINE_FUNCTION_QNAME) {
+			// Named function: use namespace + local name + arity for stable identity
+			identity = "Q{" + (qname.getNamespaceURI() != null ? qname.getNamespaceURI() : "") +
+					"}" + qname.getLocalPart() + "#" + sig.getArgumentCount();
+		} else {
+			// Anonymous function / inline / partial application: use object identity
+			identity = "anon#" + System.identityHashCode(ref.getCall());
+		}
+		return new StringValue(this, identity);
 	}
 
 	public static FunctionCall lookupFunction(final Expression parent, final QName qname, final int arity) {

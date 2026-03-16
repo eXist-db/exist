@@ -45,8 +45,8 @@ public class FunCollationKey extends BasicFunction {
                     "keys reflects the matching and ordering of strings " +
                     "under the specified collation.";
     private static final FunctionReturnSequenceType FN_RETURN = returnsOpt(Type.BASE64_BINARY, "the collation key");
-    private static final FunctionParameterSequenceType PARAM_VALUE_STRING = param("value-string", Type.STRING, "The value string");
-    private static final FunctionParameterSequenceType PARAM_COLLATION_STRING = param("collation-string", Type.STRING, "The collation string");
+    private static final FunctionParameterSequenceType PARAM_VALUE_STRING = param("value", Type.STRING, "The value string");
+    private static final FunctionParameterSequenceType PARAM_COLLATION_STRING = param("collation", Type.STRING, "The collation string");
     public static final FunctionSignature[] FS_COLLATION_KEY_SIGNATURES = functionSignatures(
             FN_NAME,
             FN_DESCRIPTION,

@@ -57,10 +57,10 @@ public class FunTranslate extends Function {
 			"string $arg is returned.\n\nIf a character occurs more than once in $map, then the first occurrence determines " +
 			"the replacement character. If $trans is longer than $map, the excess characters are ignored.\n\n" +
 			"i.e. fn:translate(\"bar\",\"abc\",\"ABC\") returns \"BAr\"",
-			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
-				new FunctionParameterSequenceType("map", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
-				new FunctionParameterSequenceType("trans", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
+			new SequenceType[] {
+				new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
+				new FunctionParameterSequenceType("replace", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
+				new FunctionParameterSequenceType("with", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the translated string"));
 

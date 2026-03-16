@@ -95,7 +95,7 @@ public class ArrayFunction extends BasicFunction {
                     "as calling $array($index).",
                     new SequenceType[] {
                         new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
-                        new FunctionParameterSequenceType("index", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
+                        new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "The index")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The value at $index")
             ),
@@ -105,7 +105,7 @@ public class ArrayFunction extends BasicFunction {
                     "member at the end.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array"),
-                            new FunctionParameterSequenceType("appendage", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
+                            new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A copy of $array with the new member attached")
             ),
@@ -195,7 +195,11 @@ public class ArrayFunction extends BasicFunction {
                     "$function to the corresponding member of $array.",
                     new SequenceType[] {
                         new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
-                        new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
+                        new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
+                                new SequenceType[] {
+                                        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                                },
+                                Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
@@ -204,7 +208,12 @@ public class ArrayFunction extends BasicFunction {
                     "Returns an array containing those members of the $array for which $function returns true.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function called on each member of the array")
+                            new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
+                                    new SequenceType[] {
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                                    },
+                                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+                                    Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),
@@ -214,7 +223,12 @@ public class ArrayFunction extends BasicFunction {
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call")
+                            new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
+                                    new SequenceType[] {
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                                    },
+                                    Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The result of the cumulative function call")
             ),
@@ -224,7 +238,12 @@ public class ArrayFunction extends BasicFunction {
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The array to process"),
                             new FunctionParameterSequenceType("zero", Type.ITEM, Cardinality.ZERO_OR_MORE, "Start value"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call")
+                            new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
+                                    new SequenceType[] {
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                                    },
+                                    Cardinality.EXACTLY_ONE, "The function called on each member of the array")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The result of the cumulative function call")
             ),
@@ -235,7 +254,12 @@ public class ArrayFunction extends BasicFunction {
                     new SequenceType[] {
                             new FunctionParameterSequenceType("array1", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The first array to process"),
                             new FunctionParameterSequenceType("array2", Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The second array to process"),
-                            new FunctionParameterSequenceType("function", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to call for each pair")
+                            new FunctionParameterFunctionSequenceType("function", Type.FUNCTION,
+                                    new SequenceType[] {
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+                                    },
+                                    Cardinality.EXACTLY_ONE,"The function to call for each pair")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array")
             ),

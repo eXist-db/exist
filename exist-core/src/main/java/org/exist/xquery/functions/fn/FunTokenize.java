@@ -44,7 +44,7 @@ public class FunTokenize extends BasicFunction {
 
     private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
-    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
     private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN =
             new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ZERO_OR_ONE, "The tokenization pattern");
 
@@ -104,6 +104,12 @@ public class FunTokenize extends BasicFunction {
                         flagsStr = args[2].itemAt(0).getStringValue();
                     }
 
+                    // XQ4: '!' flag — XPath mode (allows empty matches, etc.)
+                    final boolean hasXPathFlag = flagsStr.contains("!");
+                    if (hasXPathFlag) {
+                        flagsStr = flagsStr.replace("!", "");
+                    }
+
                     // XQ4: 'c' flag — strip regex comments
                     final boolean hasCommentFlag = flagsStr.indexOf('c') >= 0 && flagsStr.indexOf('q') < 0;
                     if (flagsStr.indexOf('c') >= 0) {
@@ -126,8 +132,15 @@ public class FunTokenize extends BasicFunction {
 
                     try {
                         final Pattern pat = PatternFactory.getInstance().getPattern(pattern, flags);
+                        final boolean canMatchEmpty = pat.matcher("").matches();
+                        final boolean allowEmptyMatch = hasXPathFlag || context.getXQueryVersion() >= 40;
 
-                        if (pat.matcher("").matches()) {
+                        if (canMatchEmpty && !allowEmptyMatch) {
+                            throw new XPathException(this, ErrorCodes.FORX0003,
+                                    "Regular expression matches zero-length string");
+                        }
+
+                        if (canMatchEmpty) {
                             // XQ4: empty-matching regex allowed — tokenize between each character
                             result = tokenizeEmptyMatch(string, pat);
                         } else {

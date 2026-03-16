@@ -48,7 +48,7 @@ public class FunAbs extends Function {
             "Returns the absolute value of the argument $number." +
             "If the argument is negative returns -$number otherwise returns $number.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMERIC,
+                new FunctionParameterSequenceType("value", Type.NUMERIC,
                     Cardinality.ZERO_OR_ONE, "The number")
             },
             new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE,

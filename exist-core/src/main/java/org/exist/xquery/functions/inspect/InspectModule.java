@@ -127,13 +127,21 @@ public class InspectModule extends BasicFunction {
                         builder.endElement();
                     }
                 }
+
                 // functions
-                for (final FunctionSignature sig : module.listFunctions()) {
-                    if (!sig.isPrivate()) {
-                        UserDefinedFunction func = null;
-                        if (!module.isInternalModule()) {
-                            func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
+                if (module.isInternalModule()) {
+                    for (final FunctionSignature sig : module.listFunctions()) {
+                        if (sig.isPrivate()) {
+                            continue;
                         }
+                        InspectFunctionHelper.generateDocs(sig, null, builder);
+                    }
+                } else {
+                    for (final FunctionSignature sig : module.listFunctions()) {
+                        if (sig.isPrivate()) {
+                            continue;
+                        }
+                        final UserDefinedFunction func = ((ExternalModule) module).getFunction(sig.getName(), sig.getArgumentCount(), null);
                         InspectFunctionHelper.generateDocs(sig, func, builder);
                     }
                 }

@@ -52,7 +52,7 @@ public class FunId extends Function {
 				"matching the value of one or more of the IDREF values supplied in $idrefs. " +
 				"If none is matching or $idrefs is the empty sequence, returns the empty sequence.",
 				new SequenceType[] {
-                    new FunctionParameterSequenceType("idrefs", Type.STRING, Cardinality.ZERO_OR_MORE, "The IDREF sequence")
+                    new FunctionParameterSequenceType("values", Type.STRING, Cardinality.ZERO_OR_MORE, "The IDREF sequence")
                 },
 				new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE, "the elements with IDs  matching IDREFs from $idref-sequence")),
             new FunctionSignature(
@@ -61,8 +61,8 @@ public class FunId extends Function {
                     "matching the value of one or more of the IDREF values supplied in $idrefs and is in the same document as $node-in-document. " +
                     "If none is matching or $idrefs is the empty sequence, returns the empty sequence.",
                     new SequenceType[] {
-                        new FunctionParameterSequenceType("idrefs", Type.STRING, Cardinality.ZERO_OR_MORE, "The IDREF sequence"),
-                        new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
+                        new FunctionParameterSequenceType("values", Type.STRING, Cardinality.ZERO_OR_MORE, "The IDREF sequence"),
+                        new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
                     },
                     new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE, "the elements with IDs matching IDREFs from $idrefs in the same document as $node-in-document"))
     };

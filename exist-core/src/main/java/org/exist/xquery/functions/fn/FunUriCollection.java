@@ -48,7 +48,7 @@ public class FunUriCollection extends BasicFunction {
     private static final FunctionReturnSequenceType FN_RETURN = returnsOptMany(Type.ANY_URI,
             "the default URI collection, if $arg is not specified or is an empty sequence, " +
                     "or the sequence of URIs that correspond to the supplied URI");
-    private static final FunctionParameterSequenceType ARG = optParam("arg", Type.STRING,
+    private static final FunctionParameterSequenceType ARG = optParam("source", Type.STRING,
             "An xs:string identifying a URI Collection. " +
                     "The argument is interpreted as either an absolute xs:anyURI, or a relative xs:anyURI resolved " +
                     "against the base-URI property from the static context. In eXist-db this function consults the " +
