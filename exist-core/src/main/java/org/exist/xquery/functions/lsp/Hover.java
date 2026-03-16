@@ -143,6 +143,9 @@ public class Hover extends BasicFunction {
                 context.popNamespaceContext();
                 pContext.reset(false);
             }
+        } catch (final Exception e) {
+            // Gracefully return empty for any position that can't be resolved
+            logger.debug("Error during hover lookup: {}", e.getMessage());
         } finally {
             pContext.runCleanupTasks();
         }
