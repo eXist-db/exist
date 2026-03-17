@@ -144,8 +144,16 @@ public class XQuerySerializer {
     }
 
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
-        serializer.serialize(sequence, writer);
+        // Backwards compatibility: if the sequence contains a single element or document,
+        // use the legacy XML-to-JSON writer (which converts XML structure to JSON properties).
+        // This is needed for RESTXQ and REST API which return XML documents with method=json.
+        // Maps, arrays, atomics, and multi-item sequences go through the W3C-compliant JSONSerializer.
+        if (sequence.hasOne() && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
+            serializeXMLDirect(sequence, 1, 1, false, false, compilationTime, executionTime);
+        } else {
+            JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
+            serializer.serialize(sequence, writer);
+        }
     }
 
     private void serializeAdaptive(final Sequence sequence) throws SAXException, XPathException {
