@@ -1591,6 +1591,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs,
             QName qname, LuceneConfig luceneConfig, String queryStr) {
+        field = field != null ? field : "";
         /* Use MultiFieldQueryParser only for index="no" with nested fields. Fixes #4389
          * (regex in multiple fields). For index="yes", keep single-field parser to avoid
          * regressions (e.g. facets query-field-no-expression). */

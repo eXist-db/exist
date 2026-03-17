@@ -52,8 +52,14 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
 
     private QueryParserBase parser = null;
 
+    /** Non-null default field for Lucene (avoids NPE per LUCENE-1418). */
+    private static String defaultField(final String field) {
+        return field != null ? field : "";
+    }
+
     public ClassicQueryParserWrapper(final String className, final String field, final Analyzer analyzer) {
-        super(field, analyzer);
+        super(defaultField(field), analyzer);
+        final String safeField = defaultField(field);
         try {
             final Class<?> clazz = Class.forName(className);
             if (QueryParserBase.class.isAssignableFrom(clazz)) {
@@ -64,7 +70,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
                                 LOOKUP, "apply", methodType(BiFunction.class),
                                 methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
-                parser = constructor.apply(field, analyzer);
+                parser = constructor.apply(safeField, analyzer);
             }
 
         } catch (final Throwable e) {
@@ -75,11 +81,14 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
 
             LOG.warn("Failed to instantiate lucene query parser class: {}: {}", className, e.getMessage(), e);
         }
+        if (parser == null) {
+            parser = new QueryParser(safeField, analyzer);
+        }
     }
 
     public ClassicQueryParserWrapper(final String field, final Analyzer analyzer) {
-        super(field, analyzer);
-        parser = new QueryParser(field, analyzer);
+        super(defaultField(field), analyzer);
+        parser = new QueryParser(defaultField(field), analyzer);
     }
 
     public Query parse(final String query) throws XPathException {
