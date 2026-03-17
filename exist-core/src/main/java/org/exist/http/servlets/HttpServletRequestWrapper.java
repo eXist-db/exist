@@ -441,11 +441,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         return request.isRequestedSessionIdFromURL();
     }
 
-    @Override
-    @Deprecated
-    public boolean isRequestedSessionIdFromUrl() {
-        return request.isRequestedSessionIdFromUrl();
-    }
+    // isRequestedSessionIdFromUrl() removed in Servlet 6.0
 
     @Override
     public boolean authenticate(final HttpServletResponse httpServletResponse) throws IOException, ServletException {
@@ -572,11 +568,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         return request.getRequestDispatcher(name);
     }
 
-    @Override
-    @Deprecated
-    public String getRealPath(final String path) {
-        return request.getSession().getServletContext().getRealPath(path);
-    }
+    // getRealPath(String) removed in Servlet 6.0 — use ServletContext.getRealPath() instead
 
     @Override
     public int getRemotePort() {
@@ -631,6 +623,21 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     @Override
     public DispatcherType getDispatcherType() {
         return request.getDispatcherType();
+    }
+
+    @Override
+    public String getRequestId() {
+        return request.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return request.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return request.getServletConnection();
     }
 
     @Override
