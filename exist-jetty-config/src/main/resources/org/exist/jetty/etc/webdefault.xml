@@ -2,9 +2,9 @@
 <web-app 
    xmlns="https://jakarta.ee/xml/ns/jakartaee"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+   xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
    metadata-complete="false"
-   version="5.0">
+   version="6.0">
 
   <!-- ===================================================================== -->
   <!-- This file contains the default descriptor for web applications.       -->
@@ -30,19 +30,14 @@
   </description>
 
   <!-- ==================================================================== -->
-  <!-- Removes static references to beans from javax.el.BeanELResolver to   -->
-  <!-- ensure webapp classloader can be released on undeploy                -->
-  <!-- ==================================================================== -->
-  <listener>
-   <listener-class>org.eclipse.jetty.servlet.listener.ELContextCleaner</listener-class>
-  </listener>
-  
+  <!-- ELContextCleaner removed in Jetty 12 (no longer needed) -->
+
   <!-- ==================================================================== -->
   <!-- Removes static cache of Methods from java.beans.Introspector to      -->
   <!-- ensure webapp classloader can be released on undeploy                -->
-  <!-- ==================================================================== -->  
+  <!-- ==================================================================== -->
   <listener>
-   <listener-class>org.eclipse.jetty.servlet.listener.IntrospectorCleaner</listener-class>
+   <listener-class>org.eclipse.jetty.ee10.servlet.listener.IntrospectorCleaner</listener-class>
   </listener>
   
 
@@ -159,7 +154,7 @@
  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
   <servlet>
     <servlet-name>default</servlet-name>
-    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
+    <servlet-class>org.eclipse.jetty.ee10.servlet.DefaultServlet</servlet-class>
     <init-param>
       <param-name>acceptRanges</param-name>
       <param-value>true</param-value>
