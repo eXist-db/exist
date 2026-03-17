@@ -908,6 +908,8 @@
                 <parameter name="evalDisabled" value="false"/>
             </module>
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
+            <module uri="http://exist-db.org/xquery/websocket"  class="org.exist.xquery.functions.websocket.WebSocketModule"/>
+            <module uri="http://exist-db.org/xquery/console"    class="org.exist.xquery.functions.websocket.ConsoleCompatModule"/>
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
 
         </builtin-modules>
