@@ -1222,6 +1222,14 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <configuration>
                     <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <excludes>
+
+                        <!-- NOTE: these can still exhibit deadlocks during BrokerPool initialization
+                                 see https://github.com/eXist-db/exist/issues/4140
+                                 see https://github.com/eXist-db/exist/issues/3685 -->
+                        <exclude>org.exist.storage.lock.DeadlockIT</exclude>
+                        <exclude>org.exist.storage.RemoveCollectionIT</exclude>
+                    </excludes>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
