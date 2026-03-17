@@ -328,7 +328,7 @@ public class EvalTest {
                 "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
-        assertEquals("map{\"key\":\"value\"}", r.getContent());
+        assertEquals("{\"key\":\"value\"}", r.getContent());
     }
 
     @Test

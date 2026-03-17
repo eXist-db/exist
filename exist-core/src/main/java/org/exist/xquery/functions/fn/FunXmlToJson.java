@@ -148,14 +148,21 @@ public class FunXmlToJson extends BasicFunction {
             case "map":
                 gen.writeStartObject();
                 final org.w3c.dom.NodeList mapChildren = element.getChildNodes();
+                final java.util.Set<String> seenKeys = new java.util.HashSet<>();
                 for (int i = 0; i < mapChildren.getLength(); i++) {
                     final org.w3c.dom.Node child = mapChildren.item(i);
                     if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                         final org.w3c.dom.Element childElem = (org.w3c.dom.Element) child;
                         final String keyValue = getKeyAttribute(childElem);
-                        if (keyValue != null) {
-                            gen.writeFieldName(keyValue);
+                        if (keyValue == null) {
+                            throw new XPathException(this, ErrorCodes.FOJS0006,
+                                    "Invalid XML representation of JSON. Map entry missing 'key' attribute.");
                         }
+                        if (!seenKeys.add(keyValue)) {
+                            throw new XPathException(this, ErrorCodes.FOJS0006,
+                                    "Invalid XML representation of JSON. Duplicate key '" + keyValue + "' in map.");
+                        }
+                        gen.writeFieldName(keyValue);
                         writeJsonElement(childElem, gen);
                     }
                 }
@@ -216,10 +223,11 @@ public class FunXmlToJson extends BasicFunction {
 
     private String getKeyAttribute(final org.w3c.dom.Element element) throws XPathException {
         final String escapedKey = element.getAttribute("escaped-key");
-        final String key = element.getAttribute("key");
-        if (key == null || key.isEmpty()) {
+        // getAttribute returns "" for missing attributes, so check hasAttribute
+        if (!element.hasAttribute("key")) {
             return null;
         }
+        final String key = element.getAttribute("key");
         if ("true".equals(escapedKey)) {
             try {
                 return unescapeEscapedJsonString(key);

@@ -402,13 +402,13 @@ function ser:adaptive-array-map-params() {
 };
 
 declare
-    %test:assertEquals('map{"k1":(1,2,3),"k2":map{"k3":a="abc","k4":[1,2]}}')
+    %test:assertEquals('{"k1":(1,2,3),"k2":{"k3":a="abc","k4":[1,2]}}')
 function ser:adaptive-map() {
     serialize($ser:nested-map, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
-    %test:assertEquals('map{"k1":(1,2,3),"k2":map{"k3":a="abc","k4":[1,2]}}')
+    %test:assertEquals('{"k1":(1,2,3),"k2":{"k3":a="abc","k4":[1,2]}}')
 function ser:adaptive-map-map-params() {
     serialize($ser:nested-map, $ser:opt-map-adaptive-no-indent)
 };
@@ -437,7 +437,7 @@ math:pi#0
 "hello"
 """quoted"""
 true()
-map{"k":()}')
+{"k":()}')
 function ser:adaptive-mixed() {
     serialize($ser:mixed, $ser:opt-xml-adaptive-no-indent)
 };
@@ -450,7 +450,7 @@ math:pi#0
 "hello"
 """quoted"""
 true()
-map{"k":()}')
+{"k":()}')
 function ser:adaptive-mixed-map-params() {
     serialize($ser:mixed, $ser:opt-map-adaptive-no-indent)
 };
@@ -468,13 +468,13 @@ function ser:adaptive-empty-array-map-params() {
 };
 
 declare
-    %test:assertEquals("map{}")
+    %test:assertEquals("{}")
 function ser:adaptive-empty-map() {
     serialize(map {}, $ser:opt-xml-adaptive-no-indent)
 };
 
 declare
-    %test:assertEquals("map{}")
+    %test:assertEquals("{}")
 function ser:adaptive-empty-map-map-params() {
     serialize(map {}, $ser:opt-map-adaptive-no-indent)
 };
@@ -576,13 +576,13 @@ function ser:adaptive-seq-with-item-separator2-map-params() {
 };
 
 declare
-    %test:assertEquals('map{"a":("quotes ("")","apos (&apos;)")}')
+    %test:assertEquals('{"a":("quotes ("")","apos (&apos;)")}')
 function ser:adaptive-map-with-itemsep-no-quotes() {
     serialize(map{ "a":("quotes ("")", "apos (')") }, ser:opt-xml-with-separator(","))
 };
 
 declare
-    %test:assertEquals('map{"a":("quotes ("")","apos (&apos;)")}')
+    %test:assertEquals('{"a":("quotes ("")","apos (&apos;)")}')
 function ser:adaptive-map-with-itemsep-no-quotes-map-params() {
     serialize(map{ "a":("quotes ("")", "apos (')") }, ser:opt-map-with-separator(","))
 };
@@ -890,7 +890,7 @@ function ser:serialize-html-5-raw-text-elements-head() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><title>XML &amp;gt; JSON</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
     <html>
         <head>
