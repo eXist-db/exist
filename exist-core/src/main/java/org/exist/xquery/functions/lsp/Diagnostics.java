@@ -194,8 +194,9 @@ public class Diagnostics extends BasicFunction {
     private void addDiagnostic(final List<Sequence> diagnostics, final int line, final int column,
             final ErrorCodes.ErrorCode code, final String message) throws XPathException {
         final MapType diagnostic = new MapType(this, context);
-        diagnostic.add(new StringValue(this, "line"), new IntegerValue(this, Math.max(line, 0)));
-        diagnostic.add(new StringValue(this, "column"), new IntegerValue(this, Math.max(column, 0)));
+        // Parser reports 1-indexed lines/columns; convert to 0-indexed for LSP
+        diagnostic.add(new StringValue(this, "line"), new IntegerValue(this, Math.max(line - 1, 0)));
+        diagnostic.add(new StringValue(this, "column"), new IntegerValue(this, Math.max(column - 1, 0)));
         diagnostic.add(new StringValue(this, "severity"), new IntegerValue(this, SEVERITY_ERROR));
         diagnostic.add(new StringValue(this, "code"),
                 new StringValue(this, code == null ? "" : code.toString()));

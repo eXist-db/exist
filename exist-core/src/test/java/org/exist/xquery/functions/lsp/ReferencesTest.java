@@ -45,7 +45,7 @@ public class ReferencesTest {
     @Test
     public void emptyExpressionReturnsEmpty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                LSP_IMPORT + "count(lsp:references('', 0, 0))");
+                LSP_IMPORT + "array:size(lsp:references('', 0, 0))");
         assertEquals("0", result.getResource(0).getContent().toString());
     }
 
@@ -59,7 +59,7 @@ public class ReferencesTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
                 "let $refs := lsp:references('" + xquery + "', 1, 5)\n" +
-                "return count($refs)");
+                "return array:size($refs)");
         // Should find: declaration + 2 calls = 3
         final int count = Integer.parseInt(result.getResource(0).getContent().toString());
         assertTrue("expected at least 2 references, got " + count, count >= 2);
@@ -72,7 +72,7 @@ public class ReferencesTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
                 "let $refs := lsp:references('" + xquery + "', 1, 5)\n" +
-                "return $refs[1]?kind");
+                "return $refs(1)?kind");
         assertEquals("function", result.getResource(0).getContent().toString());
     }
 
@@ -86,7 +86,7 @@ public class ReferencesTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
                 "let $refs := lsp:references('" + xquery + "', 1, 3)\n" +
-                "return count($refs)");
+                "return array:size($refs)");
         final int count = Integer.parseInt(result.getResource(0).getContent().toString());
         assertTrue("expected at least 2 references, got " + count, count >= 2);
     }
@@ -98,14 +98,14 @@ public class ReferencesTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
                 "let $refs := lsp:references('" + xquery + "', 1, 3)\n" +
-                "return $refs[1]?kind");
+                "return $refs(1)?kind");
         assertEquals("variable", result.getResource(0).getContent().toString());
     }
 
     @Test
     public void noSymbolReturnsEmpty() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
-                LSP_IMPORT + "count(lsp:references('1 + 2', 0, 2))");
+                LSP_IMPORT + "array:size(lsp:references('1 + 2', 0, 2))");
         assertEquals("0", result.getResource(0).getContent().toString());
     }
 
@@ -118,7 +118,7 @@ public class ReferencesTest {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 LSP_IMPORT +
                 "let $refs := lsp:references('" + xquery + "', 1, 5, '/db')\n" +
-                "return count($refs)");
+                "return array:size($refs)");
         final int count = Integer.parseInt(result.getResource(0).getContent().toString());
         assertTrue("expected at least 2 references, got " + count, count >= 2);
     }
