@@ -1380,11 +1380,7 @@ public class XQueryURLRewrite extends HttpServlet {
             super.setStatus(i);
         }
 
-        @Override
-        public void setStatus(final int i, final String msg) {
-            this.status = i;
-            super.setStatus(i, msg);
-        }
+        // setStatus(int, String) removed in Servlet 6.0
 
         @Override
         public void sendError(final int i, final String msg) throws IOException {
