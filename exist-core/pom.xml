@@ -1221,6 +1221,13 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
+                    <excludes>
+                        <!-- Pre-existing deadlocks during BrokerPool initialization -->
+                        <!-- see https://github.com/eXist-db/exist/issues/4140 -->
+                        <!-- see https://github.com/eXist-db/exist/issues/3685 -->
+                        <exclude>org.exist.storage.lock.DeadlockIT</exclude>
+                        <exclude>org.exist.xmldb.RemoveCollectionIT</exclude>
+                    </excludes>
                     <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
