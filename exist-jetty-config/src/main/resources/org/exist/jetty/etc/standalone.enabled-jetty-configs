@@ -41,9 +41,9 @@ jetty-ssl-context.xml
 jetty-https.xml
 
 
+### Annotation support
+jetty-annotations.xml
+
+
 ### Webapp deployment
 standalone-jetty-deploy.xml
-
-
-### Annotation support 
-jetty-annotations.xml

@@ -49,10 +49,10 @@
     <Call name="addCustomizer">
       <Arg>
         <New class="org.eclipse.jetty.server.SecureRequestCustomizer">
-          <Arg name="sniRequired" type="boolean"><Property name="jetty.ssl.sniRequired" default="false"/></Arg>
-          <Arg name="sniHostCheck" type="boolean"><Property name="jetty.ssl.sniHostCheck" default="true"/></Arg>
-          <Arg name="stsMaxAgeSeconds" type="int"><Property name="jetty.ssl.stsMaxAgeSeconds" default="-1"/></Arg>
-          <Arg name="stsIncludeSubdomains" type="boolean"><Property name="jetty.ssl.stsIncludeSubdomains" default="false"/></Arg>
+          <Set name="sniRequired"><Property name="jetty.ssl.sniRequired" default="false"/></Set>
+          <Set name="sniHostCheck"><Property name="jetty.ssl.sniHostCheck" default="true"/></Set>
+          <Set name="stsMaxAge"><Property name="jetty.ssl.stsMaxAgeSeconds" default="-1"/></Set>
+          <Set name="stsIncludeSubDomains"><Property name="jetty.ssl.stsIncludeSubdomains" default="false"/></Set>
         </New>
       </Arg>
     </Call>
