@@ -83,8 +83,9 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- TODO: republish under org.exist-db.thirdparty groupId -->
         <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
+            <groupId>com.evolvedbinary.thirdparty.com.ettrema</groupId>
             <artifactId>milton-servlet</artifactId>
             <exclusions>
                 <exclusion>
