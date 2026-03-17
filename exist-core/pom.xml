@@ -630,6 +630,17 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-xml</artifactId>
         </dependency>
+        <!-- Jakarta WebSocket API for @ServerEndpoint -->
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
