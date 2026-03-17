@@ -1205,10 +1205,11 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <excludes>
 
-                        <!-- NOTE: these can still exhibit deadlocks 
-                                 see https://github.com/eXist-db/exist/issues/4140 
+                        <!-- NOTE: these can still exhibit deadlocks
+                                 see https://github.com/eXist-db/exist/issues/4140
                                  see https://github.com/eXist-db/exist/issues/3685 -->
                         <exclude>org.exist.collections.ConcurrencyTest</exclude>
                         <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
@@ -1219,6 +1220,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
