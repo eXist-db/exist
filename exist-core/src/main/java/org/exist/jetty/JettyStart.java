@@ -266,6 +266,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 last = configuration;
             }
 
+            // configure WebSocket on any ServletContextHandler
+            configureWebSocket(configuredObjects);
+
             // start Jetty
             final Optional<Server> maybeServer = startJetty(configuredObjects);
             if(maybeServer.isEmpty()) {
@@ -356,6 +359,30 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             logger.fatal("An unexpected error occurred, web server can not be started: {}", e.getMessage(), e);
             setChanged();
             notifyObservers(SIGNAL_ERROR);
+        }
+    }
+
+    private void configureWebSocket(final List<Object> configuredObjects) {
+        for (final Object obj : configuredObjects) {
+            if (obj instanceof Server server) {
+                final List<Handler> handlers = getAllHandlers(server.getHandler());
+                for (final Handler handler : handlers) {
+                    if (handler instanceof ServletContextHandler sch) {
+                        try {
+                            org.eclipse.jetty.ee10.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer
+                                    .configure(sch, (servletContext, serverContainer) -> {
+                                        serverContainer.addEndpoint(
+                                                org.exist.xquery.functions.websocket.WebSocketEndpoint.class);
+                                        logger.info("[WebSocket endpoint registered: /ws]");
+                                    });
+                            org.exist.xquery.functions.websocket.WebSocketEndpoint.initialize();
+                            return; // only need to configure once
+                        } catch (final Exception e) {
+                            logger.warn("Failed to configure WebSocket endpoint: {}", e.getMessage(), e);
+                        }
+                    }
+                }
+            }
         }
     }
 

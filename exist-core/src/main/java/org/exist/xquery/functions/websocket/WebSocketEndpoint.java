@@ -62,14 +62,33 @@ public class WebSocketEndpoint {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private static final Map<Session, String> sessions = new ConcurrentHashMap<>();
 
+    private static volatile boolean initialized = false;
+
     public WebSocketEndpoint() {
-        WebSocketModule.setAdapter(new WebSocketAdapter(this::sendAll, WebSocketEndpoint::sendAll));
+        // endpoint instances are created per-connection by the container
     }
 
-    static {
-        final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
-                runnable -> ThreadUtils.newGlobalThread("ws-heartbeat", runnable));
-        service.scheduleAtFixedRate(WebSocketEndpoint::pingAll, 500, 500, TimeUnit.MILLISECONDS);
+    /**
+     * Initialize the WebSocket subsystem. Called once during Jetty startup.
+     */
+    public static synchronized void initialize() {
+        if (!initialized) {
+            WebSocketModule.setAdapter(new WebSocketAdapter(
+                    WebSocketEndpoint::sendAllMap, WebSocketEndpoint::sendAll));
+
+            final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
+                    runnable -> ThreadUtils.newGlobalThread("ws-heartbeat", runnable));
+            service.scheduleAtFixedRate(WebSocketEndpoint::pingAll, 500, 500, TimeUnit.MILLISECONDS);
+
+            initialized = true;
+        }
+    }
+
+    /**
+     * Send a map as JSON to all clients subscribed to the channel.
+     */
+    static void sendAllMap(final String toChannel, final Map<String, Object> data) {
+        new WebSocketEndpoint().sendAll(toChannel, data);
     }
 
     @OnOpen
