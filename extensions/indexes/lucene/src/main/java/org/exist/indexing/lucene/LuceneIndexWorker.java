@@ -1591,7 +1591,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     protected QueryParserWrapper getQueryParser(String field, Analyzer analyzer, DocumentSet docs,
             QName qname, LuceneConfig luceneConfig, String queryStr) {
-        field = field != null ? field : "";
+        final String safeField = field != null ? field : "";
         /* Use MultiFieldQueryParser only for index="no" with nested fields. Fixes #4389
          * (regex in multiple fields). For index="yes", keep single-field parser to avoid
          * regressions (e.g. facets query-field-no-expression). */
@@ -1615,7 +1615,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 if (idxConf != null) {
                     LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);
                     if (config != null) {
-                        QueryParserWrapper parser = config.getQueryParser(field, analyzer);
+                        QueryParserWrapper parser = config.getQueryParser(safeField, analyzer);
                         if (parser != null) {
                             return parser;
                         }
@@ -1623,7 +1623,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
         }
-        return new ClassicQueryParserWrapper(field, analyzer);
+        return new ClassicQueryParserWrapper(safeField, analyzer);
     }
 
     public boolean checkIndex(DBBroker broker) {
