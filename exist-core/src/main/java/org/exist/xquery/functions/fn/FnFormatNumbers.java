@@ -715,11 +715,17 @@ public class FnFormatNumbers extends BasicFunction {
         if (minimumExponentSize > 0) {
             formatted.append(decimalFormat.exponentSeparator);
 
-            final CodePointString expStr = new CodePointString(String.valueOf(exp));
+            // Handle negative exponents: pad the absolute value, then prepend sign
+            final boolean negativeExp = exp < 0;
+            final CodePointString expStr = new CodePointString(String.valueOf(Math.abs(exp)));
 
             final int expPadLen = subPicture.getMinimumExponentSize() - expStr.length();
             if (expPadLen > 0) {
                 expStr.leftPad(decimalFormat.zeroDigit, expPadLen);
+            }
+
+            if (negativeExp) {
+                expStr.insert(0, decimalFormat.minusSign);
             }
 
             formatted.append(expStr);
