@@ -6,6 +6,21 @@ FINOS CALM (Common Architecture Language Model) architecture diagram showing ser
 
 ## Data Tables
 
+### Data assets
+
+**File:** [`data-assets.csv`](data-assets.csv)
+
+Data entities, DTOs, and records that represent the application's data model.
+
+| Column | Description |
+|--------|-------------|
+| Source path | The path to the source file containing the data asset. |
+| Class name | The fully qualified name of the data asset class. |
+| Simple name | The simple class name for display. |
+| Asset type | The type of data asset (Entity, Record, DTO, Document, etc.). |
+| Description | A description of the data asset based on its fields. |
+| Fields | Comma-separated list of field names. |
+
 ### External service calls
 
 **File:** [`external-service-calls.csv`](external-service-calls.csv)
@@ -38,19 +53,4 @@ Project-level identity and structure for each build module. Includes Maven GAV c
 | Version | The project's version. |
 | Parent project | The parent project coordinates (e.g., groupId:artifactId:version for Maven). |
 | Module count | The number of declared submodules for aggregator projects. |
-
-### Data assets
-
-**File:** [`data-assets.csv`](data-assets.csv)
-
-Data entities, DTOs, and records that represent the application's data model.
-
-| Column | Description |
-|--------|-------------|
-| Source path | The path to the source file containing the data asset. |
-| Class name | The fully qualified name of the data asset class. |
-| Simple name | The simple class name for display. |
-| Asset type | The type of data asset (Entity, Record, DTO, Document, etc.). |
-| Description | A description of the data asset based on its fields. |
-| Fields | Comma-separated list of field names. |
 

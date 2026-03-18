@@ -5,24 +5,9 @@
     "name" : "eXist-db Parent",
     "description" : "eXist-db NoSQL Database"
   }, {
-    "unique-id" : "jmx-remote-test-service",
-    "node-type" : "service",
-    "name" : "Jmx Remote Test Service",
-    "description" : "External Apache HttpClient service"
-  }, {
-    "unique-id" : "abstract-http-test-service",
-    "node-type" : "service",
-    "name" : "Abstract Http Test Service",
-    "description" : "External Apache HttpClient service"
-  }, {
     "unique-id" : "move-resource-test$-check-thread-service",
     "node-type" : "service",
     "name" : "Move Resource Test$ Check Thread Service",
-    "description" : "External Apache HttpClient service"
-  }, {
-    "unique-id" : "login-module-i-t-service",
-    "node-type" : "service",
-    "name" : "Login Module I T Service",
     "description" : "External Apache HttpClient service"
   } ],
   "relationships" : [ ],

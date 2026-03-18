@@ -2,7 +2,7 @@
 
 ## Maps test methods to implementation methods they verify
 
-Maps test methods to the implementation methods they exercise. Use this to find existing tests for code you're modifying, understand what behaviors are already tested, and identify gaps in test coverage.
+Maps test methods to the implementation methods they exercise. Use this to find existing tests for code you're modifying, understand what behaviors are already tested, and identify gaps in test coverage. When an LLM provider is configured, includes AI-generated summaries of what each test verifies.
 
 ## Data Tables
 
