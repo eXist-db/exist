@@ -169,9 +169,17 @@ eXist-db uses the [exist-xqts-runner](https://github.com/eXist-db/exist-xqts-run
 
 ## Reference Repositories
 
-- **BaseX**: `~/workspace/basex` — reference for XQUF, ixml implementations
-- **W3C qt3 specs**: `~/workspace/qtspecs` — XQuery 3.1 and Full Text specs
-- **QT4CG qt4 specs**: `~/workspace/qt4specs` — XQuery 4.0 family specs
+### W3C / QT4CG Specifications
+- [w3c/qtspecs](https://github.com/w3c/qtspecs) — XQuery 3.1 and Full Text specifications
+- [qt4cg/qtspecs](https://github.com/qt4cg/qtspecs) — XQuery 4.0 family specifications
+
+### W3C / QT4CG Test Suites
+- [w3c/qt3tests](https://github.com/w3c/qt3tests) — XQuery 3.1 conformance test suite (XQTS)
+- [qt4cg/qt4tests](https://github.com/qt4cg/qt4tests) — XQuery 4.0 conformance test suite
+
+### XQuery 4.0 Reference Implementations
+- **BaseX**: reference implementation for XQuery 4.0 features including XQUF and ixml
+- **Saxon**: reference implementation for XQuery 4.0, XPath 4.0, and XSLT 4.0
 
 ## Known Issues
 
