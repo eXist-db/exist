@@ -41,7 +41,7 @@ declare variable $anix:XCONF as element(collection) :=
                 <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                 <analyzer id="de" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
                 <analyzer id="de-nostop" class="org.apache.lucene.analysis.de.GermanAnalyzer">
-                    <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"/>
+                    <param name="stopwords" type="org.apache.lucene.analysis.CharArraySet"/>
                 </analyzer>
                 <text qname="l" field="line"/>
                 <text qname="l" analyzer="de">
@@ -60,7 +60,7 @@ declare variable $anix:XCONF_PL as element(collection) :=
             <lucene>
                 <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
                 <analyzer id="pl-nostop" class="org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer">
-                    <param name="stopwords" type="org.apache.lucene.analysis.util.CharArraySet"/>
+                    <param name="stopwords" type="org.apache.lucene.analysis.CharArraySet"/>
                 </analyzer>
                 <text qname="l" analyzer="pl-nostop"/>
             </lucene>
