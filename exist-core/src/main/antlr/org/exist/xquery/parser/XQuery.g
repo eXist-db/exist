@@ -715,7 +715,7 @@ anyFunctionTest throws XPathException
 
 typedFunctionTest throws XPathException
 :
-	"function"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
+	"function"! LPAREN! (fnShorthandParam (COMMA! fnShorthandParam)*)? RPAREN! "as" sequenceType
 	{ #typedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #typedFunctionTest); }
 	;
 
@@ -735,8 +735,16 @@ fnShorthandAnyFunctionTest throws XPathException
 
 fnShorthandTypedFunctionTest throws XPathException
 :
-	"fn"! LPAREN! (sequenceType (COMMA! sequenceType)*)? RPAREN! "as" sequenceType
+	"fn"! LPAREN! (fnShorthandParam (COMMA! fnShorthandParam)*)? RPAREN! "as" sequenceType
 	{ #fnShorthandTypedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #fnShorthandTypedFunctionTest); }
+	;
+
+// XQ4: fn() type parameters can optionally have names: fn($name as type, ...)
+fnShorthandParam throws XPathException
+:
+	( DOLLAR ) => DOLLAR! eqName! "as"! sequenceType
+	|
+	sequenceType
 	;
 
 mapType throws XPathException
