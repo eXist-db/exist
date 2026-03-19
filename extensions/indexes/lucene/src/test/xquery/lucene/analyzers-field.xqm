@@ -24,8 +24,10 @@ xquery version "3.1";
 (:~
  : XQSuite tests for Lucene analyzers (German, Whitespace, Keyword, query-analyzer-id, fields).
  : Refactored from analyzers.xml (TestSet).
+ : Includes #2781 diacritics+truncation with German/Whitespace/Standard.
  :
  : @author Wolfgang Meier
+ : @see https://github.com/eXist-db/exist/issues/2781
  :)
 module namespace anix="http://exist-db.org/xquery/lucene/analyzers-index/test";
 
@@ -114,8 +116,29 @@ declare variable $anix:XML_PL :=
 
 declare variable $anix:COLLECTION_NAME := "lucene-test-analyzers-index";
 declare variable $anix:COLLECTION_NAME_PL := "lucene-test-analyzers-index-pl";
+declare variable $anix:COLLECTION_NAME_2781 := "lucene-test-analyzers-2781";
 declare variable $anix:COLLECTION := "/db/" || $anix:COLLECTION_NAME;
 declare variable $anix:COLLECTION_PL := "/db/" || $anix:COLLECTION_NAME_PL;
+declare variable $anix:COLLECTION_2781 := "/db/" || $anix:COLLECTION_NAME_2781;
+
+(: #2781: default, german, ws fields on p. :)
+declare variable $anix:XCONF_2781 as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <fulltext default="none" attributes="false"/>
+            <lucene>
+                <analyzer id="german" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
+                <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                <text field="default" qname="p"/>
+                <text field="german" qname="p" analyzer="german"/>
+                <text field="ws" qname="p" analyzer="ws"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $anix:XML_2781 as document-node() := document {
+    <doc><p>Röntgenbilder der Handschriften angefertigt.</p></doc>
+};
 
 (:~ setUp: create collection, config, store doc, reindex.
  : @return empty sequence
@@ -127,14 +150,19 @@ function anix:setUp() {
       xmldb:create-collection("/db/system/config", "db"),
       xmldb:create-collection("/db", $anix:COLLECTION_NAME),
       xmldb:create-collection("/db", $anix:COLLECTION_NAME_PL),
+      xmldb:create-collection("/db", $anix:COLLECTION_NAME_2781),
       xmldb:create-collection("/db/system/config/db", $anix:COLLECTION_NAME),
       xmldb:create-collection("/db/system/config/db", $anix:COLLECTION_NAME_PL),
+      xmldb:create-collection("/db/system/config/db", $anix:COLLECTION_NAME_2781),
       xmldb:store("/db/system/config/db/" || $anix:COLLECTION_NAME, "collection.xconf", $anix:XCONF),
       xmldb:store("/db/system/config/db/" || $anix:COLLECTION_NAME_PL, "collection.xconf", $anix:XCONF_PL),
+      xmldb:store("/db/system/config/db/" || $anix:COLLECTION_NAME_2781, "collection.xconf", $anix:XCONF_2781),
       xmldb:store($anix:COLLECTION, "text.xml", $anix:XML),
       xmldb:store($anix:COLLECTION_PL, "text_pl.xml", $anix:XML_PL),
+      xmldb:store($anix:COLLECTION_2781, "test.xml", $anix:XML_2781),
       xmldb:reindex($anix:COLLECTION_PL),
-      xmldb:reindex($anix:COLLECTION) )
+      xmldb:reindex($anix:COLLECTION),
+      xmldb:reindex($anix:COLLECTION_2781) )
 };
 
 (:~ tearDown: remove data and config collections.
@@ -143,10 +171,12 @@ function anix:setUp() {
 declare
     %test:tearDown
 function anix:tearDown() {
-    xmldb:remove($anix:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME),
-    xmldb:remove($anix:COLLECTION_PL),
-    xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME_PL)
+    ( xmldb:remove($anix:COLLECTION),
+      xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME),
+      xmldb:remove($anix:COLLECTION_PL),
+      xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME_PL),
+      xmldb:remove($anix:COLLECTION_2781),
+      xmldb:remove("/db/system/config/db/" || $anix:COLLECTION_NAME_2781) )
 };
 
 (:~ German Analyzer: standard search. :)
@@ -300,4 +330,41 @@ declare %test:assertTrue function anix:query-field-lineno-with-context() {
     let $result := doc($anix:COLLECTION || "/text.xml")//l[ft:query-field("lineno", "l1.10")],
         $expected := doc($anix:COLLECTION || "/text.xml")//l[@n = "l1.10"]
     return count($result) eq 1 and deep-equal($result, $expected)
+};
+
+(: --- #2781: Diacritics and truncation with German/Whitespace/Standard --- :)
+declare %test:assertExists function anix:diacritics-trunc-default() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("default", "Röntgen*")]
+};
+
+declare %test:assertExists function anix:diacritics-trunc-german() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("german", "Röntgen*")]
+};
+
+declare %test:assertExists function anix:diacritics-trunc-ws() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("ws", "Röntgen*")]
+};
+
+declare %test:assertExists function anix:diacritics-exact-default() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("default", "Röntgenbilder")]
+};
+
+declare %test:assertExists function anix:diacritics-exact-german() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("german", "Röntgenbilder")]
+};
+
+declare %test:assertExists function anix:diacritics-exact-ws() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("ws", "Röntgenbilder")]
+};
+
+declare %test:assertExists function anix:ascii-trunc-default() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("default", "Hand*")]
+};
+
+declare %test:assertExists function anix:ascii-trunc-german() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("german", "Hand*")]
+};
+
+declare %test:assertExists function anix:ascii-trunc-ws() {
+    collection($anix:COLLECTION_2781)//p[ft:query-field("ws", "Hand*")]
 };

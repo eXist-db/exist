@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/lucene/lucene-indexing-field.xql"
+    "src/test/xquery/lucene/ft-query-field.xqm"
 })
 public class LuceneIndexingTests {
 }

@@ -33,9 +33,6 @@ declare variable $analyze:XCONF1 :=
                 <text qname="p"/>
             </lucene>
         </index>
-        <triggers>
-            <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
-        </triggers>
     </collection>;
 
 (: Flat collection for isolation; no shared /db/lucene-test parent. :)
@@ -49,9 +46,6 @@ declare variable $analyze:XCONF2 :=
                 <text qname="p"/>
             </lucene>
         </index>
-        <triggers>
-            <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
-        </triggers>
     </collection>;
 
 declare

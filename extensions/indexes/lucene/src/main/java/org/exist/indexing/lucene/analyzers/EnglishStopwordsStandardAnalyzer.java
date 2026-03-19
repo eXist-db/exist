@@ -39,7 +39,7 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
  * directly. Example config:
  *   &lt;analyzer class="org.apache.lucene.analysis.en.EnglishAnalyzer"/&gt;
  * EnglishAnalyzer filters stopwords and stems (Porter); it has a no-arg constructor.
- * See lucene-native-english.xql for a cleanroom test of that approach.
+ * See analyzers-english.xql for a cleanroom test of that approach.
  */
 public class EnglishStopwordsStandardAnalyzer extends StopwordAnalyzerBase {
 

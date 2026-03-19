@@ -37,7 +37,7 @@ declare namespace exist="http://exist.sourceforge.net/NS/exist";
 declare namespace stats="http://exist-db.org/xquery/profiling";
 
 (:~
- : Collection config: p, tt:p, tei:p, id, para, b, tt:note, z, LINE, @type.
+ : Collection config: p, tei:p, id, para, b, tt:note, z, LINE, @type.
  :)
 declare variable $qrys:XCONF as element(collection) :=
     <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:tt="urn:test">
@@ -47,8 +47,11 @@ declare variable $qrys:XCONF as element(collection) :=
                 <analyzer id="stop" class="org.exist.indexing.lucene.analyzers.EnglishStopwordsStandardAnalyzer"/>
                 <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
                 <text qname="p"/>
-                <text qname="tt:p"/>
                 <text qname="tei:p"/>
+                <text qname="tei:fs" index="no">
+                    <field name="lemma" expression="tei:f[@name='lemma']" analyzer="keyword"/>
+                    <field name="pos" expression="tei:f[@name='pos']" analyzer="keyword"/>
+                </text>
                 <text qname="id" field="id" analyzer="keyword"/>
                 <text qname="para" analyzer="stop"/>
                 <text qname="b"/>
@@ -102,6 +105,17 @@ declare variable $qrys:TEXT2 as element(test) :=
     </test>;
 
 (:~
+ : Fixture for GitHub #4389: tei:fs with Lucene fields lemma + pos.
+ :)
+declare variable $qrys:FS_DATA as document-node() :=
+    document {
+        <tei:fs>
+            <tei:f name="lemma">test</tei:f>
+            <tei:f name="pos">N</tei:f>
+        </tei:fs>
+    };
+
+(:~
  : Self-contained sample play (PLAY/SCENE/SPEECH/SPEAKER/LINE) for LINE/field tests.
  : 10 SCENEs; 29 SPEECHes with LINE containing "king" (matches fields-line-king-count, query-field-lines-king, fields-descendant-scene-count).
  : SPEAKER has no LINE child so query-field-wrong-parent returns empty.
@@ -148,6 +162,7 @@ function qrys:setUp() {
       xmldb:store($qrys:COLLECTION, "r_and_j.xml", $qrys:SAMPLE_PLAY),
       xmldb:store($qrys:COLLECTION, "text1.xml", document { $qrys:TEXT1 }),
       xmldb:store($qrys:COLLECTION, "text2.xml", document { $qrys:TEXT2 }),
+      xmldb:store($qrys:COLLECTION, "fs.xml", $qrys:FS_DATA),
       xmldb:reindex($qrys:COLLECTION) )
 };
 
@@ -381,17 +396,6 @@ function qrys:wildcard-context-acht() {
     doc($qrys:COLLECTION || "/text1.xml")/test[ft:query(*, "acht")]
 };
 
-(:~
- : Wildcard context ft:query(*, "should"): query all children of test; "should" appears in para.
- : test[ft:query(*, "should")] must return the test element whose child matches.
- : New test for Lucene 10; counterpart: qrys:wildcard-context-should.
- :)
-declare
-    %test:assertXPath("exists($result/p)")
-function qrys:wildcard-context-should-has-p() {
-    doc($qrys:COLLECTION || "/text1.xml")/test[ft:query(*, "should")]
-};
-
 (:~ Wildcard context: test[ft:query(*, "should")] -> result has p :)
 declare
     %test:assertXPath("exists($result/p)")
@@ -553,14 +557,6 @@ declare
 function qrys:phrase-highlighting-3() {
     let $result := for $hit in doc($qrys:COLLECTION || "/text1.xml")//p[ft:query(., '"zwei fünf"')] return util:expand($hit)
     return deep-equal($result, <p>Eins zwei drei vier <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">zwei fünf</exist:match> sechs.</p>)
-};
-
-(:~ Phrase highlighting 4: "eins zwei" (duplicate of 2) :)
-declare
-    %test:assertTrue
-function qrys:phrase-highlighting-4() {
-    let $result := for $hit in doc($qrys:COLLECTION || "/text1.xml")//p[ft:query(., '"eins zwei"')] return util:expand($hit)
-    return deep-equal($result, <p><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">Eins zwei</exist:match> drei vier zwei fünf sechs.</p>)
 };
 
 (:~ Phrase highlighting 5: "acht neun" on b :)
@@ -969,4 +965,125 @@ function qrys:fields-remove-document() {
     xmldb:remove($qrys:COLLECTION, "text1.xml"),
     let $result := ft:query-field("id", "a11.b22.c33.d44")
     return ( xmldb:store($qrys:COLLECTION, "text1.xml", document { $qrys:TEXT1 }), $result )
+};
+
+(: --- GitHub #4389: multi-field regex in ft:query string/query nodes --- :)
+
+(:
+ : No regex: lemma:test AND pos:N - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-no-regex-lucene-query-string() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., "lemma:test AND pos:N")]
+    return count($results) eq 1
+};
+
+(:
+ : No regex: XML query form - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-no-regex-lucene-query-node() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., <query>
+            <bool>
+                <term occur="must" field="lemma">test</term>
+                <term occur="must" field="pos">N</term>
+            </bool>
+        </query>)]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in first field only: lemma:/test/ AND pos:N - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-single-regex-lucene-query-string-first-field() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., "lemma:/test/ AND pos:N")]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in first field: XML form (regex lemma, term pos) - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-single-regex-lucene-query-node-first-field() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., <query>
+            <bool>
+                <regex occur="must" field="lemma">test</regex>
+                <term occur="must" field="pos">N</term>
+            </bool>
+        </query>)]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in second field: lemma:test AND pos:/N/ - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-single-regex-lucene-query-string-second-field() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., "lemma:test AND pos:/N/")]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in second field: XML form (term lemma, regex pos) - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-single-regex-lucene-query-node-second-field() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., <query>
+            <bool>
+                <term occur="must" field="lemma">test</term>
+                <regex occur="must" field="pos">N</regex>
+            </bool>
+        </query>)]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in both fields: lemma:/test/ AND pos:/N/ - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-multi-regex-lucene-query-string() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., "lemma:/test/ AND pos:/N/")]
+    return count($results) eq 1
+};
+
+(:
+ : Regex in both fields: XML form - should pass.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-multi-regex-lucene-query-node() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., <query>
+            <bool>
+                <regex occur="must" field="lemma">test</regex>
+                <regex occur="must" field="pos">N</regex>
+            </bool>
+        </query>)]
+    return count($results) eq 1
+};
+
+(:
+ : Regex with no match returns empty - should return 0.
+ :)
+declare
+    %test:assertTrue
+function qrys:issue4389-regex-no-match-returns-empty() {
+    let $results :=
+        doc($qrys:COLLECTION || "/fs.xml")//tei:fs[ft:query(., "lemma:/nomatch/ AND pos:/N/")]
+    return count($results) eq 0
 };
