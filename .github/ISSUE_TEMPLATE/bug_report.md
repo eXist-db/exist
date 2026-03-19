@@ -19,19 +19,24 @@ A clear and concise description of what you expected to happen.
 **To Reproduce**
 > The *best* way is to provide an [SSCCE (Short, Self Contained, Correct (Compilable), Example)](http://sscce.org/). One type of SSCCE could be a small test which reproduces the issue and can be run without dependencies. The [XQSuite - Annotation-based Test Framework for XQuery](http://exist-db.org/exist/apps/doc/xqsuite.xml) makes it very easy for you to create tests. These tests can be executed from the [eXide editor](http://exist-db.org/exist/apps/eXide/index.html) (XQuery - Run as Test)
 
-```Xquery
+```xquery
 xquery version "3.1";
 
 module namespace t="http://exist-db.org/xquery/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 
-<!--  replace root with your data -->
+(:~
+ : Replace with minimal data that reproduces your issue.
+ :)
 declare variable $t:XML := document {
 <root/>
 };
 
-<!--  replace index config if needed -->
+(:~
+ : Replace index config if needed for the reported bug.
+ :)
 declare variable $t:xconf :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
     <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -39,35 +44,49 @@ declare variable $t:xconf :=
     </index>
 </collection>;
 
-<!--  collections and indexes can be configured here  -->
+(:~
+ : Use a unique collection name to avoid collisions with other test runs.
+ : Keep tests self-contained and avoid mutating shared collections.
+ :)
+declare variable $t:COLL := "/db/test-" || translate(string(current-dateTime()), "-:TZ.+", "");
+declare variable $t:CONF_COLL := "/db/system/config/db/" || substring-after($t:COLL, "/db/");
+
+(:~
+ : setUp should be idempotent and safe to run repeatedly.
+ :)
 declare
     %test:setUp
 function t:setup() {
-    let $testCol := xmldb:create-collection("/db", "test")
-    let $indexCol := xmldb:create-collection("/db/system/config/db", "test")
+    let $_ := xmldb:create-collection("/db/system", "config")
+    let $_ := xmldb:create-collection("/db/system/config", "db")
+    let $_ := xmldb:create-collection("/db", substring-after($t:COLL, "/db/"))
+    let $_ := xmldb:create-collection("/db/system/config/db", substring-after($t:COLL, "/db/"))
     return
         (
-            xmldb:store("/db/test", "test.xml", $t:XML),
-            xmldb:store("/db/system/config/db/test", "collection.xconf", $t:xconf),
-            xmldb:reindex("/db/test")
+            xmldb:store($t:COLL, "test.xml", $t:XML),
+            xmldb:store($t:CONF_COLL, "collection.xconf", $t:xconf),
+            xmldb:reindex($t:COLL)
         )
 };
 
+(:~
+ : tearDown should be idempotent: guard removals so partial setup does not fail cleanup.
+ :)
 declare
     %test:tearDown
 function t:tearDown() {
-    xmldb:remove("/db/test"),
-    xmldb:remove("/db/system/config/db/test")
+    if (xmldb:collection-available($t:COLL)) then xmldb:remove($t:COLL) else (),
+    if (xmldb:collection-available($t:CONF_COLL)) then xmldb:remove($t:CONF_COLL) else ()
 };
 
-<-- Adjust to your reported issue -->
+(:~
+ : Adjust this test body to your reported issue.
+ : Prefer exact assertions (assertEquals/assertEqualsPermutation) over broad assertTrue when possible.
+ :)
 declare
-    %test:assertTrue
+    %test:assertEquals(1)
 function t:test() {
-    let $test-data := collection('/db/test')
-    for $result in $test-data//root
-    return
-       count($result) eq 1
+    count(collection($t:COLL)//root)
 };
 ```
 
@@ -83,9 +102,9 @@ If applicable, add screenshots to help explain your problem.
 **Context (please always complete the following information)**
 One option is to use [xst](https://www.npmjs.com/package/@existdb/xst), and copy and paste the output produced by running `xst info` here:**
 
- - Build: [eXist-6.1.0]
- - Java: [1.8.0_352]
- - OS: [Mac OS X 12.6.2]
+ - Build: [eXist-6.4.1]
+ - Java: [11.0.30+7]
+ - OS: [Mac OS X 26.3.1]
 
 **Additional context**
 - How is eXist-db installed? [e.g. JAR installer, DMG, … ]

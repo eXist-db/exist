@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(XSuite.class)
 @XSuite.XSuiteFiles({
-    "src/test/xquery/lucene/analyzers.xql"
+    "src/test/xquery/lucene/analyzers-diacritics.xql"
 })
 public class LuceneAnalyzersTests {
 }

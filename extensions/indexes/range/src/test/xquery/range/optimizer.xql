@@ -63,6 +63,10 @@ declare variable $ot:COLLECTION_CONFIG :=
                 </create>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
+                <!-- Extra indices for remaining range optimizer issues -->
+                <create qname="@bar" type="xs:string"/>
+                <create qname="@lemma" type="xs:string"/>
+                <create qname="@ID" type="xs:string"/>
             </range>
         </index>
     </collection>;
@@ -129,6 +133,13 @@ declare variable $ot:DATA :=
                 <email>pü@wildsau.net</email>
             </contact>
         </address>
+        <!-- GitHub #4881: fn:matches on simple range index qname(@bar) -->
+        <foo bar="baz"/>
+        <foo bar="bat"/>
+        <foo bar="Baz"/>
+        <foo bar="qux"/>
+        <!-- GitHub #4942: exists:force-index-use on range-indexed attribute qname(@ID) -->
+        <root><a ID="123"/></root>
     </test>;
 
 declare variable $ot:DATA_SR_WITH_DIACRITICS :=
@@ -152,6 +163,15 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
                         </form>
                     </entryFree>
                 </div>
+                <corpus>
+                    <div>
+                        <w lemma="test">test</w>
+                        <w lemma="word">word</w>
+                    </div>
+                    <section>
+                        <w lemma="test">test</w>
+                    </section>
+                </corpus>
             </body>
         </text>
     </TEI>;
@@ -798,4 +818,131 @@ function ot:nested-element-rewrite-bug() {
         </dita>
     return
       count($dita/topic/prolog//data[@name eq 'topicType']/@value)
+};
+
+(: --- Remaining range optimizer issues --- :)
+
+(: GitHub #4881: fn:matches with simple range index on @bar :)
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^b")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:issue4881-matches-result-correctness-case-insensitive() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^b", "i")])
+};
+
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness-unanchored() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "b")])
+};
+
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness-suffix() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "z$")])
+};
+
+declare
+    %test:assertEquals(1)
+function ot:issue4881-matches-result-correctness-exact() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^baz$")])
+};
+
+declare
+    %test:stats
+    %test:args("baz")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-eq-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//foo[@bar eq $term]
+};
+
+declare
+    %test:stats
+    %test:args("^b")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:args("z$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-suffix-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:args("^baz$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-exact-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-case-insensitive-uses-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "^b", "i")]
+};
+
+declare
+    %test:stats
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function ot:issue4881-matches-unanchored-no-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "b")]
+};
+
+(: GitHub #5043: wildcard path should use index :)
+declare
+    %test:stats
+    %test:args("test")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue5043-direct-path-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//tei:w[@lemma eq $term]
+};
+
+declare
+    %test:stats
+    %test:args("test")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue5043-wildcard-path-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//*/tei:w[@lemma eq $term]
+};
+
+(: GitHub #4942: exist:force-index-use on range-index expressions :)
+declare
+    %test:assertTrue
+function ot:issue4942-test-without-force-index-use() {
+    let $test-data := collection($ot:COLLECTION)
+    for $result in $test-data//root
+    return
+        count($result/a[@ID = "123"]) eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-with-pragma-variable() {
+    let $test-data := collection($ot:COLLECTION)
+    for $result in $test-data//root
+    return
+        (# exist:force-index-use #) { count($result/a[@ID = "123"]) } eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-with-pragma-direct() {
+    (# exist:force-index-use #) { count(collection($ot:COLLECTION)//root/a[@ID = "123"]) } eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-direct-without-pragma() {
+    count(collection($ot:COLLECTION)//root/a[@ID = "123"]) eq 1
 };

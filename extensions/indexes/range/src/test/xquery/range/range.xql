@@ -24,6 +24,11 @@ xquery version "3.0";
 module namespace rt="http://exist-db.org/xquery/range/test/range";
 
 import module namespace test="http://exist-db.org/xquery/xqsuite" at "resource:org/exist/xquery/lib/xqsuite/xqsuite.xql";
+import module namespace ft="http://exist-db.org/xquery/lucene";
+
+(: IDE linter: ensure common prefixes are resolvable statically :)
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace range="http://exist-db.org/xquery/range";
 
 declare variable $rt:COLLECTION_CONFIG := 
     <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -47,6 +52,19 @@ declare variable $rt:COLLECTION_CONFIG :=
                 <create match="/test/address/city" type="xs:string" collation="?lang=de-DE&amp;strength=primary"/>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
+                <!-- GitHub #4110: case-insensitive range index on @lemma -->
+                <create qname="@lemma" type="xs:string" case="no"/>
+                <create qname="@lemma-strict" type="xs:string" case="yes"/>
+                <!-- GitHub #4016: range:field-eq with empty key arguments -->
+                <create qname="@effectiveDate" type="xs:string"/>
+                <create qname="dataset">
+                    <field name="dataset-id" match="@id" type="xs:string"/>
+                    <field name="dataset-effectiveDate" match="@effectiveDate" type="xs:string"/>
+                </create>
+                <!-- GitHub #1353: nested mixed content indexing on qname(def) -->
+                <create qname="def">
+                    <field name="textcontent" type="xs:string" case="no" nested="yes"/>
+                </create>
             </range>
         </index>
     </collection>;
@@ -94,6 +112,23 @@ declare variable $rt:DATA :=
             <street>Am Waldrand 4</street>
             <city code="89283">Wiesental</city>
         </address>
+        <debug>
+            <a lemma="Aaa" lemma-strict="OnlyThis"/>
+            <a lemma="AAA" lemma-strict="OnlyThis"/>
+            <a lemma="aaa" lemma-strict="OnlyThis"/>
+        </debug>
+        <decor>
+            <datasets>
+                <dataset id="2.16.840.1.113883.3.1937.99.62.3.1.1" effectiveDate="2012-05-30T11:32:36">
+                    <name language="en-US">Demo dataset</name>
+                </dataset>
+            </datasets>
+        </decor>
+        <!-- GitHub #1353 fixture -->
+        <root>
+            <def> abc <x>def</x> ghi </def>
+            <def> jklmnopqr </def>
+        </root>
     </test>;
 
 declare variable $rt:DATA2 :=
@@ -103,6 +138,44 @@ declare variable $rt:DATA2 :=
             <value>value1</value>
         </parameter>
     </object>;
+
+(: --- GitHub #3114: Lucene+range interaction with ft:query predicate --- :)
+declare variable $rt:I3114_DATA as document-node() := document {
+    <root>
+        <record id="1">
+            <field name="name">Named Artist</field>
+            <field name="desc">Artist #1</field>
+        </record>
+        <record id="2">
+            <field name="name">Someone else</field>
+            <field name="desc">Artist #2</field>
+        </record>
+    </root>
+};
+
+declare variable $rt:I3114_FTQUERY as element(phrase) := <phrase>Artist</phrase>;
+
+declare variable $rt:I3114_XCONF_NO_RANGE as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index>
+            <lucene>
+                <text qname="field"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $rt:I3114_XCONF_WITH_RANGE as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index>
+            <lucene>
+                <text qname="field"/>
+            </lucene>
+            <create qname="@name" type="xs:string"/>
+        </index>
+    </collection>;
+
+declare variable $rt:I3114_COLL_NO_RANGE := "i3114-no-range";
+declare variable $rt:I3114_COLL_WITH_RANGE := "i3114-with-range";
 
 (:~ Test collection name (no path). :)
 declare variable $rt:COLLECTION_NAME := "range-test-range";
@@ -124,7 +197,20 @@ function rt:setup() {
      xmldb:store("/db/system/config/db/" || $rt:COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
      xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA),
      xmldb:store($rt:COLLECTION, "nested.xml", $rt:DATA_NESTED),
-     xmldb:reindex($rt:COLLECTION))
+     xmldb:reindex($rt:COLLECTION),
+
+     (: GitHub #3114: dual collections (Lucene-only vs Lucene+range) :)
+     xmldb:create-collection("/db", $rt:I3114_COLL_NO_RANGE),
+     xmldb:create-collection("/db/system/config/db", $rt:I3114_COLL_NO_RANGE),
+     xmldb:store("/db/system/config/db/" || $rt:I3114_COLL_NO_RANGE, "collection.xconf", $rt:I3114_XCONF_NO_RANGE),
+     xmldb:store("/db/" || $rt:I3114_COLL_NO_RANGE, "data.xml", $rt:I3114_DATA),
+     xmldb:reindex("/db/" || $rt:I3114_COLL_NO_RANGE),
+
+     xmldb:create-collection("/db", $rt:I3114_COLL_WITH_RANGE),
+     xmldb:create-collection("/db/system/config/db", $rt:I3114_COLL_WITH_RANGE),
+     xmldb:store("/db/system/config/db/" || $rt:I3114_COLL_WITH_RANGE, "collection.xconf", $rt:I3114_XCONF_WITH_RANGE),
+     xmldb:store("/db/" || $rt:I3114_COLL_WITH_RANGE, "data.xml", $rt:I3114_DATA),
+     xmldb:reindex("/db/" || $rt:I3114_COLL_WITH_RANGE))
 };
 
 (:~
@@ -134,7 +220,13 @@ declare
     %test:tearDown
 function rt:cleanup() {
     xmldb:remove($rt:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $rt:COLLECTION_NAME)
+    xmldb:remove("/db/system/config/db/" || $rt:COLLECTION_NAME),
+
+    xmldb:remove("/db/" || $rt:I3114_COLL_NO_RANGE),
+    xmldb:remove("/db/system/config/db/" || $rt:I3114_COLL_NO_RANGE),
+
+    xmldb:remove("/db/" || $rt:I3114_COLL_WITH_RANGE),
+    xmldb:remove("/db/system/config/db/" || $rt:I3114_COLL_WITH_RANGE)
 };
 
 declare
@@ -453,4 +545,123 @@ function rt:update-value() {
     range:field-eq("address-name", "Pü Reh"),
     collection($rt:COLLECTION)//address[range:eq(name, "Rita Rebhuhn")]/street/text(),
     range:field-eq("address-name", "Rita Rebhuhn")/city/text()
+};
+
+(: --- GitHub #4110: case-insensitive range index on attributes --- :)
+
+declare
+    %test:assertEquals(3)
+function rt:attr-case-insensitive-lower() {
+    count(collection($rt:COLLECTION)//a[@lemma = "aaa"])
+};
+
+declare
+    %test:assertEquals(3)
+function rt:attr-case-insensitive-mixed() {
+    count(collection($rt:COLLECTION)//a[@lemma = "AaA"])
+};
+
+declare
+    %test:assertEquals(3)
+function rt:attr-case-insensitive-upper() {
+    count(collection($rt:COLLECTION)//a[@lemma = "AAA"])
+};
+
+declare
+    %test:assertEquals(0)
+function rt:attr-case-insensitive-no-match() {
+    count(collection($rt:COLLECTION)//a[@lemma = "different"])
+};
+
+declare
+    %test:assertEquals(3)
+function rt:attr-case-sensitive-exact-match() {
+    count(collection($rt:COLLECTION)//a[@lemma-strict = "OnlyThis"])
+};
+
+declare
+    %test:assertEquals(0)
+function rt:attr-case-sensitive-lower-no-match() {
+    count(collection($rt:COLLECTION)//a[@lemma-strict = "onlythis"])
+};
+
+(: --- GitHub #4016: empty key arguments for range:field-eq --- :)
+
+declare
+    %test:assertEquals(0)
+function rt:empty-keys-no-error() {
+    let $id := ()
+    let $effectiveDate := ()
+    return
+        count(collection($rt:COLLECTION)//dataset[@id = $id][@effectiveDate = $effectiveDate])
+};
+
+declare
+    %test:assertEquals(1)
+function rt:non-empty-keys-match() {
+    let $id := "2.16.840.1.113883.3.1937.99.62.3.1.1"
+    let $effectiveDate := "2012-05-30T11:32:36"
+    return count(collection($rt:COLLECTION)//dataset[@id = $id][@effectiveDate = $effectiveDate])
+};
+
+declare
+    %test:assertEquals(0)
+function rt:explicit-empty-field-eq() {
+    count(collection($rt:COLLECTION)//range:field-eq(("dataset-id", "dataset-effectiveDate"), (), ()))
+};
+
+(: --- GitHub #3114: range index + ft:query predicate interaction --- :)
+
+declare
+    %test:arg("col", "/db/i3114-no-range") %test:assertEquals(1)
+    %test:arg("col", "/db/i3114-with-range") %test:assertEquals(1)
+function rt:issue3114-query-name-field($col as xs:string) {
+    count(collection($col)/ft:query(.//field[@name = "name"], $rt:I3114_FTQUERY))
+};
+
+declare
+    %test:arg("col", "/db/i3114-no-range") %test:assertEquals(1)
+    %test:arg("col", "/db/i3114-with-range") %test:assertEquals(1)
+function rt:issue3114-query-name-field-alternate($col as xs:string) {
+    count(collection($col)//record/field[@name = "name"][ft:query(., $rt:I3114_FTQUERY)])
+};
+
+declare
+    %test:arg("col", "/db/i3114-no-range") %test:assertEquals(1)
+    %test:arg("col", "/db/i3114-with-range") %test:assertEquals(1)
+function rt:issue3114-query-record-with-name-field($col as xs:string) {
+    count(collection($col)//record[ft:query(.//field[@name = "name"], $rt:I3114_FTQUERY)])
+};
+
+declare
+    %test:arg("col", "/db/i3114-no-range") %test:assertEquals(1)
+    %test:arg("col", "/db/i3114-with-range") %test:assertEquals(1)
+function rt:issue3114-query-record-with-name-field-alternate($col as xs:string) {
+    count(collection($col)//record[.//field[@name = "name"][ft:query(., $rt:I3114_FTQUERY)]])
+};
+
+(: --- GitHub #1353: range index on nested mixed content --- :)
+
+declare
+    %test:assertEquals(1)
+function rt:issue1353-contains-abc-works() {
+    count(collection($rt:COLLECTION)//def[contains(., 'abc')])
+};
+
+declare
+    %test:assertEquals(1)
+function rt:issue1353-contains-abc-def-works() {
+    count(collection($rt:COLLECTION)//def[contains(., 'abc def')])
+};
+
+declare
+    %test:assertEquals(1)
+function rt:issue1353-contains-ghi() {
+    count(collection($rt:COLLECTION)//def[contains(., 'ghi')])
+};
+
+declare
+    %test:assertEquals(1)
+function rt:issue1353-contains-def-ghi() {
+    count(collection($rt:COLLECTION)//def[contains(., 'def ghi')])
 };

@@ -157,6 +157,77 @@ declare variable $facet:MULTI_LANGUAGE :=
 
 declare variable $facet:RECORDS := 10;
 
+(: Lucene facet issue consolidation: remaining standalone specs :)
+
+(: Issue #3977: facet counts should not inflate on doc-level reindex :)
+declare variable $facet:ISSUE3977_TEST1_FILE := "issue-3977-test1.xml";
+declare variable $facet:ISSUE3977_TEST2_FILE := "issue-3977-test2.xml";
+declare variable $facet:ISSUE3977_TEST3_FILE := "issue-3977-test3.xml";
+declare variable $facet:ISSUE3977_TEST1 as document-node() :=
+    document { <root id="1">LuceneTest1</root> };
+declare variable $facet:ISSUE3977_TEST2 as document-node() :=
+    document { <root id="2"><child/>LuceneTest2</root> };
+declare variable $facet:ISSUE3977_TEST3 as document-node() :=
+    document { <root><foo>bar</foo></root> };
+
+(: Issue #4190: ft:facets third argument (limit) correctness :)
+declare variable $facet:ISSUE4190_DATA_FILE := "issue-4190-data.xml";
+declare variable $facet:ISSUE4190_DATA as document-node() :=
+    document {
+        <items>{
+            ( for $i in 1 to 5 return <item publisher="Alpha">text {$i}</item>,
+              for $i in 1 to 3 return <item publisher="Beta">text {$i}</item>,
+              for $i in 1 to 2 return <item publisher="Gamma">text {$i}</item>,
+              for $p in ("Delta", "Epsilon", "Phi", "Rho", "Sigma", "Tau", "Psi", "Omega", "Xi", "Nu", "Mu", "Lambda", "Kappa", "Iota", "Theta", "Eta", "Zeta")
+              return <item publisher="{$p}">text</item> )
+        }</items>
+    };
+
+(: Issue #6012: ft:facets(count=0) should return empty map :)
+declare variable $facet:ISSUE6012_DATA_FILE := "issue-6012-data.xml";
+declare variable $facet:ISSUE6012_DATA as document-node() :=
+    document {
+        <items>
+            <item publisher="Alpha">text 1</item>
+            <item publisher="Beta">text 2</item>
+        </items>
+    };
+
+(: Issue #4455: facet merging for consecutive ft:query calls :)
+declare variable $facet:ISSUE4455_DOCS_FILE := "issue-4455-documents.xml";
+declare variable $facet:ISSUE4455_IMGS_FILE := "issue-4455-images.xml";
+declare variable $facet:ISSUE4455_DOCUMENTS as element(documents) :=
+    <documents>
+        <document id="D-37/2">
+            <title>Ruhe im Wald</title>
+            <abstract>Es zwitschern die Vögel im Walde</abstract>
+            <abstract>Über dem Walde weht ein Wind</abstract>
+            <category>nature</category>
+        </document>
+        <document id="D-37/2">
+            <title>Birne im Wald</title>
+            <abstract>Es zwitschern die Vögel im Walde</abstract>
+            <abstract>Über dem Walde weht ein Wind</abstract>
+            <category>nature</category>
+        </document>
+        <document id="Z-49/2">
+            <title>Streiten und Hoffen</title>
+            <abstract>Da nun einmal der Himmel zerrissen und die Götter sich streiten</abstract>
+            <category>philosophy</category>
+        </document>
+    </documents>;
+declare variable $facet:ISSUE4455_IMAGES as element(images) :=
+    <images>
+        <image>
+            <title>Wanderer im Wald</title>
+            <category>nature</category>
+        </image>
+        <image>
+            <title>Stilleben mit Birne</title>
+            <category>food</category>
+        </image>
+    </images>;
+
 declare variable $facet:CITIES :=
     <cities>{
         for $id in 1 to $facet:RECORDS
@@ -252,6 +323,18 @@ declare variable $facet:XCONF1 :=
                     <field name="ident" expression="@id/string()" analyzer="keyword"/>
                     <facet dimension="cat" expression="category"/>
                 </text>
+                <text qname="root">
+                    <facet dimension="testFacet" expression="empty(./*)"/>
+                    <facet dimension="test-facet" expression="string(./foo)"/>
+                </text>
+                <text qname="item">
+                    <field name="publisher" expression="string(@publisher)"/>
+                    <facet dimension="publisher" expression="string(@publisher)"/>
+                </text>
+                <text qname="image">
+                    <facet dimension="cat" expression="category"/>
+                    <field name="title" expression="title"/>
+                </text>
                 <text match="//document/abstract">
                     <field name="german" analyzer="german"/>
                     <facet dimension="cat" expression="../category"/>
@@ -285,9 +368,107 @@ declare variable $facet:XCONF1 :=
 declare variable $facet:COLLECTION_PATH := "/db/lucene-test-facets";
 declare variable $facet:CONFIG_PATH := "/db/system/config/db/lucene-test-facets";
 
+(: Dedicated collections for issue consolidation: avoid polluting the shared lucene-test-facets dataset. :)
+declare variable $facet:ISSUE3977_COLLECTION_PATH := "/db/lucene-test-facets-issue-3977";
+declare variable $facet:ISSUE3977_CONFIG_PATH := "/db/system/config/db/lucene-test-facets-issue-3977";
+declare variable $facet:ISSUE4190_6012_COLLECTION_PATH := "/db/lucene-test-facets-issue-4190-6012";
+declare variable $facet:ISSUE4190_6012_CONFIG_PATH := "/db/system/config/db/lucene-test-facets-issue-4190-6012";
+declare variable $facet:ISSUE4455_COLLECTION_PATH := "/db/lucene-test-facets-issue-4455";
+declare variable $facet:ISSUE4455_CONFIG_PATH := "/db/system/config/db/lucene-test-facets-issue-4455";
+
+declare variable $facet:XCONF_ISSUE3977 as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <text qname="root">
+                    <facet dimension="testFacet" expression="empty(./*)"/>
+                    <facet dimension="test-facet" expression="string(./foo)"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $facet:XCONF_ISSUE4190_6012 as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <text qname="item">
+                    <field name="publisher" expression="string(@publisher)"/>
+                    <facet dimension="publisher" expression="string(@publisher)"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $facet:XCONF_ISSUE4455 as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <analyzer id="keyword" class="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+                <analyzer id="german" class="org.apache.lucene.analysis.de.GermanAnalyzer"/>
+                <text qname="document">
+                    <field name="title" expression="title"/>
+                    <field name="abstract" expression="abstract" analyzer="german"/>
+                    <field name="ident" expression="@id/string()" analyzer="keyword"/>
+                    <facet dimension="cat" expression="category"/>
+                </text>
+                <text qname="image">
+                    <facet dimension="cat" expression="category"/>
+                    <field name="title" expression="title"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
 declare
     %test:setUp
 function facet:setup() {
+    let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
+    let $testCol := xmldb:create-collection("/db", "lucene-test-facets")
+    let $personsCol := xmldb:create-collection($testCol, "persons")
+    let $confCol := xmldb:create-collection("/db/system/config/db", "lucene-test-facets")
+    let $issue3977Col := xmldb:create-collection("/db", "lucene-test-facets-issue-3977")
+    let $issue3977ConfCol := xmldb:create-collection("/db/system/config/db", "lucene-test-facets-issue-3977")
+    let $issue4190_6012Col := xmldb:create-collection("/db", "lucene-test-facets-issue-4190-6012")
+    let $issue4190_6012ConfCol := xmldb:create-collection("/db/system/config/db", "lucene-test-facets-issue-4190-6012")
+    let $issue4455Col := xmldb:create-collection("/db", "lucene-test-facets-issue-4455")
+    let $issue4455ConfCol := xmldb:create-collection("/db/system/config/db", "lucene-test-facets-issue-4455")
+    return (
+        xmldb:store($testCol, "module.xql", $facet:MODULE, "application/xquery"),
+        xmldb:store($confCol, "collection.xconf", $facet:XCONF1),
+        xmldb:store($testCol, "places.xml", $facet:TAXONOMY),
+        xmldb:store($testCol, "subjects.xml", $facet:SUBJECT),
+        xmldb:store($testCol, "test.xml", $facet:XML),
+        xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS),
+        xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE),
+        $facet:PERSONS ! xmldb:store($personsCol, ./id || ".xml", .),
+        xmldb:store($testCol, "cities.xml", $facet:CITIES),
+        xmldb:reindex($testCol),
+        xmldb:reindex($personsCol),
+
+        xmldb:store($issue3977ConfCol, "collection.xconf", $facet:XCONF_ISSUE3977),
+        xmldb:store($issue3977Col, $facet:ISSUE3977_TEST1_FILE, $facet:ISSUE3977_TEST1),
+        xmldb:store($issue3977Col, $facet:ISSUE3977_TEST2_FILE, $facet:ISSUE3977_TEST2),
+        xmldb:store($issue3977Col, $facet:ISSUE3977_TEST3_FILE, $facet:ISSUE3977_TEST3),
+        xmldb:reindex($issue3977Col),
+
+        xmldb:store($issue4190_6012ConfCol, "collection.xconf", $facet:XCONF_ISSUE4190_6012),
+        xmldb:store($issue4190_6012Col, $facet:ISSUE4190_DATA_FILE, $facet:ISSUE4190_DATA),
+        xmldb:store($issue4190_6012Col, $facet:ISSUE6012_DATA_FILE, $facet:ISSUE6012_DATA),
+        xmldb:reindex($issue4190_6012Col),
+
+        xmldb:store($issue4455ConfCol, "collection.xconf", $facet:XCONF_ISSUE4455),
+        xmldb:store($issue4455Col, $facet:ISSUE4455_DOCS_FILE, $facet:ISSUE4455_DOCUMENTS),
+        xmldb:store($issue4455Col, $facet:ISSUE4455_IMGS_FILE, $facet:ISSUE4455_IMAGES),
+        xmldb:reindex($issue4455Col)
+    )
+};
+
+(: Stores the main shared lucene-test-facets dataset without reindexing.
+   This is useful for diagnosing whether failures originate at store-time or reindex-time. :)
+declare function facet:store() {
     let $_ := (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db"))
     let $testCol := xmldb:create-collection("/db", "lucene-test-facets")
     let $personsCol := xmldb:create-collection($testCol, "persons")
@@ -301,17 +482,26 @@ function facet:setup() {
         xmldb:store($testCol, "documents.xml", $facet:DOCUMENTS),
         xmldb:store($testCol, "multi-lang.xml", $facet:MULTI_LANGUAGE),
         $facet:PERSONS ! xmldb:store($personsCol, ./id || ".xml", .),
-        xmldb:store($testCol, "cities.xml", $facet:CITIES),
-        xmldb:reindex($testCol),
-        xmldb:reindex($personsCol)
+        xmldb:store($testCol, "cities.xml", $facet:CITIES)
     )
 };
 
 declare
     %test:tearDown
+(:~
+ : Shared teardown for both XQSuite module tests and external Java reproducers.
+ : Some callers (e.g., store-only setups) do not create all issue-specific collections,
+ : so removals are guarded with collection-available checks to keep teardown idempotent.
+ :)
 function facet:tearDown() {
-    xmldb:remove($facet:COLLECTION_PATH),
-    xmldb:remove($facet:CONFIG_PATH)
+    if (xmldb:collection-available($facet:COLLECTION_PATH)) then xmldb:remove($facet:COLLECTION_PATH) else (),
+    if (xmldb:collection-available($facet:CONFIG_PATH)) then xmldb:remove($facet:CONFIG_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE3977_COLLECTION_PATH)) then xmldb:remove($facet:ISSUE3977_COLLECTION_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE3977_CONFIG_PATH)) then xmldb:remove($facet:ISSUE3977_CONFIG_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE4190_6012_COLLECTION_PATH)) then xmldb:remove($facet:ISSUE4190_6012_COLLECTION_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE4190_6012_CONFIG_PATH)) then xmldb:remove($facet:ISSUE4190_6012_CONFIG_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE4455_COLLECTION_PATH)) then xmldb:remove($facet:ISSUE4455_COLLECTION_PATH) else (),
+    if (xmldb:collection-available($facet:ISSUE4455_CONFIG_PATH)) then xmldb:remove($facet:ISSUE4455_CONFIG_PATH) else ()
 };
 
 declare
@@ -1102,4 +1292,138 @@ function facet:query-no-default-index-bracketed-two-elements-count-and-facets() 
     let $result := doc("/db/lucene-test-facets/multi-lang.xml")//(div|span)[ft:query(., "english:* OR english2:*", map { "leading-wildcard": "yes" })]
     return
         count($result) || " " || ft:facets($result, "language")?en
+};
+
+(: Issue consolidation: remaining facet regression specs :)
+
+(: #3977: reindex(collection, doc-uri) must update facets, not add :)
+declare
+    %test:assertEquals(1, 2)
+function facet:issue3977-reindex-doc-updates-not-adds() {
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH)
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH, $facet:ISSUE3977_TEST1_FILE)
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH, $facet:ISSUE3977_TEST1_FILE)
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH, $facet:ISSUE3977_TEST2_FILE)
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH, $facet:ISSUE3977_TEST2_FILE)
+    let $options := map { "facets": map { "testFacet": () } }
+    let $results := collection($facet:ISSUE3977_COLLECTION_PATH)//root[ft:query(., (), $options)]
+    let $testFacet := ft:facets($results, "testFacet", ())
+    return (
+        $testFacet?true,
+        $testFacet?false
+    )
+};
+
+declare
+    %test:assertEquals(1, 1, 1, 1, 1)
+function facet:issue3977-facets-after-reindex-arity-2-joewiz() {
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH)
+    for $i in (1 to 5)
+    let $hits := collection($facet:ISSUE3977_COLLECTION_PATH)//root[ft:query(., ())]
+    let $facets := ft:facets($hits, "test-facet", ())
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH, $facet:ISSUE3977_TEST3_FILE)
+    return $facets?bar
+};
+
+declare
+    %test:assertEquals(1, 1, 1, 1, 1)
+function facet:issue3977-facets-after-reindex-arity-1-joewiz() {
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH)
+    for $i in (1 to 5)
+    let $hits := collection($facet:ISSUE3977_COLLECTION_PATH)//root[ft:query(., ())]
+    let $facets := ft:facets($hits, "test-facet", ())
+    let $_ := xmldb:reindex($facet:ISSUE3977_COLLECTION_PATH)
+    return $facets?bar
+};
+
+(: #4190: ft:facets(..., limit) must be correct for variable-provided hits :)
+declare
+    %test:assertEquals(20)
+function facet:issue4190-facets-no-limit() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item[ft:query(., ())]
+    return count(map:keys(ft:facets($hits, "publisher")))
+};
+
+declare
+    %test:assertEquals(10)
+function facet:issue4190-facets-limit-10-via-variable() {
+    let $articles := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item
+    let $hits := $articles[ft:query(., (), map { "fields": "publisher" })]
+    return count(map:keys(ft:facets($hits, "publisher", 10)))
+};
+
+declare
+    %test:assertEquals(1)
+function facet:issue4190-facets-limit-1-via-variable() {
+    let $articles := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item
+    let $hits := $articles[ft:query(., (), map { "fields": "publisher" })]
+    return count(map:keys(ft:facets($hits, "publisher", 1)))
+};
+
+declare
+    %test:assertEquals(10)
+function facet:issue4190-facets-limit-10-direct-path() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item[ft:query(., ())]
+    return count(map:keys(ft:facets($hits, "publisher", 10)))
+};
+
+declare
+    %test:assertEquals(5)
+function facet:issue4190-facets-limit-5-direct-path() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item[ft:query(., ())]
+    return count(map:keys(ft:facets($hits, "publisher", 5)))
+};
+
+declare
+    %test:assertTrue
+function facet:issue4190-facets-limit-1-content-via-variable() {
+    let $articles := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item
+    let $hits := $articles[ft:query(., (), map { "fields": "publisher" })]
+    let $facets := ft:facets($hits, "publisher", 1)
+    return count(map:keys($facets)) eq 1 and $facets?Alpha eq 5
+};
+
+declare
+    %test:assertTrue
+function facet:issue4190-facets-limit-3-content-direct-path() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE4190_DATA_FILE)//item[ft:query(., ())]
+    let $facets := ft:facets($hits, "publisher", 3)
+    return count(map:keys($facets)) eq 3
+        and $facets?Alpha eq 5 and $facets?Beta eq 3 and $facets?Gamma eq 2
+};
+
+(: #6012: ft:facets(..., 0) must return an empty map (not empty entries / not error) :)
+declare
+    %test:assertEquals(0)
+function facet:issue6012-facets-zero-limit-returns-empty() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE6012_DATA_FILE)//item[ft:query(., ())]
+    return count(map:keys(ft:facets($hits, "publisher", 0)))
+};
+
+declare
+    %test:assertTrue
+function facet:issue6012-facets-zero-limit-returns-map() {
+    let $hits := doc($facet:ISSUE4190_6012_COLLECTION_PATH || "/" || $facet:ISSUE6012_DATA_FILE)//item[ft:query(., ())]
+    let $result := ft:facets($hits, "publisher", 0)
+    return $result instance of map(*)
+};
+
+(: #4455: facet merging must not inflate counts for chained ft:query on same nodes :)
+declare
+    %test:pending("GitHub #4455 – facet merge for chained ft:query not yet implemented")
+    %test:assertEquals(1)
+function facet:issue4455-facets-same-nodes-chained-predicates() {
+    let $results :=
+        doc($facet:ISSUE4455_COLLECTION_PATH || "/" || $facet:ISSUE4455_DOCS_FILE)//document
+        [ft:query(., "vögel")][ft:query(., "title:Ruhe")]
+    return ft:facets($results, "cat")?nature
+};
+
+declare
+    %test:assertEquals(3)
+function facet:issue4455-facets-different-nodes-union() {
+    let $results :=
+        doc($facet:ISSUE4455_COLLECTION_PATH || "/" || $facet:ISSUE4455_DOCS_FILE)//document[ft:query(., "wald")]
+        | doc($facet:ISSUE4455_COLLECTION_PATH || "/" || $facet:ISSUE4455_IMGS_FILE)//image[ft:query(., "wald")]
+    return ft:facets($results, "cat")?nature
 };
