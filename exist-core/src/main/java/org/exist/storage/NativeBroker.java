@@ -2089,8 +2089,14 @@ public class NativeBroker implements DBBroker {
         // reindex documents
         try {
             int docCount = 0;
+            // Deterministic reindex order is important for doc()-based indexing expressions:
+            // dependent documents must see fully materialized external documents.
+            final java.util.List<DocumentImpl> docs = new java.util.ArrayList<>();
             for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-                final DocumentImpl next = i.next();
+                docs.add(i.next());
+            }
+            docs.sort(java.util.Comparator.comparing(d -> d.getFileURI().toString()));
+            for (final DocumentImpl next : docs) {
                 docCount++;
                 LOG.debug("Reindex doc #{}: {}", docCount, next.getFileURI());
                 reindexXMLResource(transaction, next, mode, scope);
