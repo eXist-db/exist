@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import FTMatchOptions;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -310,14 +311,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * XQFT 3.0: default full-text match options declared via "declare ft-option".
      */
-    private org.exist.xquery.ft.FTMatchOptions defaultFTMatchOptions;
+    private FTMatchOptions defaultFTMatchOptions;
 
     /**
      * XQFT 3.0: thesaurus URI-to-file mapping.
      * Maps thesaurus URIs (e.g., "http://bstore1.example.com/UsabilityThesaurus.xml")
      * to local file paths.
      */
-    private final java.util.Map<String, java.nio.file.Path> thesaurusRegistry = new java.util.HashMap<>();
+    private final Map<String, Path> thesaurusRegistry = new HashMap<>();
 
     /**
      * The default language
@@ -1102,19 +1103,19 @@ public class XQueryContext implements BinaryValueManager, Context {
         return defaultCollation;
     }
 
-    public void setDefaultFTMatchOptions(final org.exist.xquery.ft.FTMatchOptions opts) {
+    public void setDefaultFTMatchOptions(final FTMatchOptions opts) {
         this.defaultFTMatchOptions = opts;
     }
 
-    public org.exist.xquery.ft.FTMatchOptions getDefaultFTMatchOptions() {
+    public FTMatchOptions getDefaultFTMatchOptions() {
         return defaultFTMatchOptions;
     }
 
-    public void registerThesaurus(final String uri, final java.nio.file.Path file) {
+    public void registerThesaurus(final String uri, final Path file) {
         thesaurusRegistry.put(uri, file);
     }
 
-    public java.nio.file.Path resolveThesaurusURI(final String uri) {
+    public Path resolveThesaurusURI(final String uri) {
         return thesaurusRegistry.get(uri);
     }
 

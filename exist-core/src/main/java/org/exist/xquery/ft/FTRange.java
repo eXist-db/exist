@@ -105,6 +105,8 @@ public class FTRange extends FTAbstractExpr {
                 dumper.display(" to ");
                 expr2.dump(dumper);
                 break;
+            default:
+                break;
         }
     }
 

@@ -45,6 +45,14 @@ public class FTMatchOptions {
     private Boolean noThesaurus;
     private final List<String> thesaurusURIs = new ArrayList<>();
     private final List<ThesaurusID> thesaurusIDs = new ArrayList<>();
+    private Boolean noStopWords;
+    private boolean useDefaultStopWords;
+    private final List<String> stopWordURIs = new ArrayList<>();
+    private final List<String> inlineStopWords = new ArrayList<>();
+    private final List<String> exceptStopWordURIs = new ArrayList<>();
+    private final List<String> exceptInlineStopWords = new ArrayList<>();
+    private boolean hasConflict;
+    private String conflictDescription;
 
     /**
      * A thesaurus reference with URI, optional relationship, and optional level range.
@@ -69,14 +77,6 @@ public class FTMatchOptions {
         public int getMaxLevels() { return maxLevels; }
         public boolean isDefault() { return uri == null; }
     }
-    private Boolean noStopWords;
-    private boolean useDefaultStopWords;
-    private final List<String> stopWordURIs = new ArrayList<>();
-    private final List<String> inlineStopWords = new ArrayList<>();
-    private final List<String> exceptStopWordURIs = new ArrayList<>();
-    private final List<String> exceptInlineStopWords = new ArrayList<>();
-    private boolean hasConflict;
-    private String conflictDescription;
 
     public boolean hasConflict() { return hasConflict; }
     public String getConflictDescription() { return conflictDescription; }

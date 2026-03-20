@@ -107,13 +107,15 @@ public class FTContainsExpr extends AbstractExpression {
     }
 
     @Override
-    public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
+    @SuppressWarnings("PMD.NPathComplexity")
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        Sequence effectiveContext = contextSequence;
         if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
+            effectiveContext = contextItem.toSequence();
         }
 
         // Evaluate source expression to get the search context
-        final Sequence sourceSeq = source.eval(contextSequence, null);
+        final Sequence sourceSeq = source.eval(effectiveContext, null);
 
         // Per XQFT 3.0 §2.1: if the source evaluates to an empty sequence,
         // there is no text to search — return false immediately.
@@ -124,7 +126,7 @@ public class FTContainsExpr extends AbstractExpression {
         // Collect ignored nodes if FTIgnoreOption is present
         Set<Node> ignoredNodes = null;
         if (ignoreExpr != null) {
-            final Sequence ignoredSeq = ignoreExpr.eval(contextSequence, null);
+            final Sequence ignoredSeq = ignoreExpr.eval(effectiveContext, null);
             if (!ignoredSeq.isEmpty()) {
                 // XQFT 3.0 §3.7: FTIgnoreOption must evaluate to a node sequence.
                 // Non-node values raise XPTY0004.

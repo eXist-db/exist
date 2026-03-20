@@ -60,6 +60,7 @@ public class FTContent extends FTAbstractExpr {
             case AT_START: dumper.display("at start"); break;
             case AT_END: dumper.display("at end"); break;
             case ENTIRE_CONTENT: dumper.display("entire content"); break;
+            default: break;
         }
     }
 

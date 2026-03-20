@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
  *
  * @see <a href="https://www.w3.org/TR/xpath-full-text-30/#ftcontains">XQFT 3.0 §2</a>
  */
+@SuppressWarnings("PMD.NPathComplexity")
 public class FTEvaluator {
 
     // --- Instance fields (declared before inner classes per Java convention) ---
@@ -819,10 +820,9 @@ public class FTEvaluator {
                 if (!sourceToken.equals(sourceToken.toLowerCase(Locale.ROOT))) {
                     return false;
                 }
-            } else if (currentCaseMode == FTMatchOptions.CaseMode.UPPERCASE) {
-                if (!sourceToken.equals(sourceToken.toUpperCase(Locale.ROOT))) {
-                    return false;
-                }
+            } else if (currentCaseMode == FTMatchOptions.CaseMode.UPPERCASE
+                    && !sourceToken.equals(sourceToken.toUpperCase(Locale.ROOT))) {
+                return false;
             }
             return src.equalsIgnoreCase(search);
         }
