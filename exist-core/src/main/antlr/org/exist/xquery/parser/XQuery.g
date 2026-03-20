@@ -2933,6 +2933,28 @@ options {
 				newline();
 		}
 	}
+
+	/**
+	 * Disambiguate (# as pragma vs ( + #QName literal.
+	 * Scans past (# and the QName. Returns true (pragma) if the QName
+	 * is followed by whitespace or #). Returns false (QName literal)
+	 * if followed by , or ).
+	 */
+	private boolean isPragmaContext() throws CharStreamException {
+		// LA(1)='(' LA(2)='#' -- start scanning from LA(3)
+		int i = 3;
+		// Skip the QName (letters, digits, -, ., _, :)
+		while (Character.isLetterOrDigit(LA(i)) || LA(i) == '-' || LA(i) == '.' || LA(i) == '_' || LA(i) == ':') {
+			i++;
+		}
+		char afterQName = LA(i);
+		// If followed by , or ) it's a QName literal argument
+		if (afterQName == ',' || afterQName == ')') {
+			return false;
+		}
+		// Otherwise it's a pragma (whitespace, #), or other pragma content)
+		return true;
+	}
 }
 
 protected SLASH options { paraphrase="single slash '/'"; }: '/' ;
@@ -3539,6 +3561,7 @@ options {
 	|
 	XML_CDATA_END { $setType(XML_CDATA_END); }
 	|
+	{ LA(1) == '(' && LA(2) == '#' && isPragmaContext() }?
 	PRAGMA_START
 	{
 		$setType(PRAGMA_START);
