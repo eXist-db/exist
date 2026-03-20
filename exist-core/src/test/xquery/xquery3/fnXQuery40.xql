@@ -2523,3 +2523,19 @@ function t:load-xquery-module-content() {
     let $hello := $mod?functions(QName('http://example.com/test', 'hello'))
     return $hello?0()
 };
+
+(: ==================== QName literal disambiguation from pragma ==================== :)
+
+declare
+    %test:assertExists
+function t:qname-literal-in-function-call() {
+    (: #math:e is a QName literal, not a pragma start :)
+    function-lookup(#math:e, 0)()
+};
+
+declare
+    %test:assertEquals(3)
+function t:qname-literal-as-argument() {
+    let $f := function($q as xs:QName) { string-length(local-name-from-QName($q)) }
+    return $f(#abc)
+};

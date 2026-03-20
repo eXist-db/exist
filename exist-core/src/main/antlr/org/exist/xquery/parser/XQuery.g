@@ -2933,6 +2933,7 @@ options {
 				newline();
 		}
 	}
+
 }
 
 protected SLASH options { paraphrase="single slash '/'"; }: '/' ;
@@ -3229,7 +3230,7 @@ protected S
 
 protected PRAGMA_START
 :
-	"(#" ( WS )?
+	"(#" WS
 	{ inPragma = true; }
 	;
 
@@ -3539,6 +3540,7 @@ options {
 	|
 	XML_CDATA_END { $setType(XML_CDATA_END); }
 	|
+	{ LA(1) == '(' && LA(2) == '#' && (LA(3) == ' ' || LA(3) == '\t' || LA(3) == '\n' || LA(3) == '\r') }?
 	PRAGMA_START
 	{
 		$setType(PRAGMA_START);
