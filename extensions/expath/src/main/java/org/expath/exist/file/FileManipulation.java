@@ -404,6 +404,7 @@ public class FileManipulation extends BasicFunction {
         }
     }
 
+    @SuppressWarnings("PMD.NPathComplexity")
     private Sequence list(final Path dir, final Sequence[] args) throws XPathException {
         if (!Files.exists(dir)) {
             throw new XPathException(this, ExpathFileErrorCode.NOT_FOUND,
