@@ -354,14 +354,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             notifyObservers(SIGNAL_ERROR);
 
         } catch (final Exception e) {
-            if (e instanceof java.net.BindException) {
-                logger.error("----------------------------------------------------------");
-                logger.error("ERROR: Could not bind to port because {}", e.getMessage());
-                logger.error(e.toString());
-                logger.error("----------------------------------------------------------");
-            } else {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
@@ -471,11 +464,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 server = Optional.of(_server);
             }
 
-            if (configuredObject instanceof LifeCycle lc) {
-                if (!lc.isRunning()) {
-                    logger.info("[Starting jetty component : {}]", lc.getClass().getName());
-                    lc.start();
-                }
+            if (configuredObject instanceof LifeCycle lc && !lc.isRunning()) {
+                logger.info("[Starting jetty component : {}]", lc.getClass().getName());
+                lc.start();
             }
         }
 
@@ -648,6 +639,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     @Override
     public void lifeCycleFailure(final LifeCycle lifeCycle, final Throwable throwable) {
+        // no-op
     }
 
     @Override
