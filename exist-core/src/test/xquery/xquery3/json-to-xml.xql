@@ -58,7 +58,6 @@ function jsonxml:json-to-xml-error-1() {
 
 
 declare
-    %test:pending("not implemented yet")
     %test:assertError("err:FOJS0005")
 function jsonxml:json-to-xml-error-2() {
     json-to-xml('{"x": "\\", "y": "\u0025"}', map{'escape': 'invalid-value'})
