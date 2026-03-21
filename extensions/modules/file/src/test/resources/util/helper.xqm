@@ -23,11 +23,9 @@ xquery version "3.1";
 
 module namespace helper="http://exist-db.org/xquery/test/util/helper";
 import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "fixtures.xqm";
-import module namespace exfile="http://expath.org/ns/file";
+import module namespace file="http://exist-db.org/xquery/file";
 import module namespace xmldb="http://exist-db.org/xquery/xmldb";
 import module namespace util="http://exist-db.org/xquery/util";
-
-declare namespace utilns="http://exist-db.org/xquery/util";
 
 declare variable $helper:error := xs:QName("helper:assert-sync-error");
 
@@ -70,23 +68,18 @@ declare function helper:modify-db-resource($collection as xs:string, $resource a
 };
 
 declare function helper:clear-suite-fs ($suite as xs:string) as empty-sequence() {
-    let $dir :=
+    let $_ :=
         helper:glue-path((
             util:system-property("java.io.tmpdir"),
             $suite
         ))
-    return
-        if (exfile:exists($dir)) then
-            let $_ := exfile:delete($dir, true())
-            return ()
-        else ()
+        => file:delete()
+    return ()
 };
 
 declare function helper:clear-fs ($directory as xs:string) as empty-sequence() {
-    if (exfile:exists($directory)) then
-        let $_ := exfile:delete($directory, true())
-        return ()
-    else ()
+    let $_ := file:delete($directory)
+    return ()
 };
 
 declare function helper:get-test-directory ($suite as xs:string) as xs:string {
@@ -106,47 +99,42 @@ declare function helper:glue-path ($parts as xs:string+) as xs:string {
  : @returns given directory to allow use in pipeline (chain of arrow operators)
  :)
 declare function helper:setup-fs-extra ($directory as xs:string) as xs:string {
-    let $_ := exfile:create-dir($directory)
-    let $_ := exfile:create-dir(helper:glue-path(($directory, "test")))
-    let $_ := (
-        exfile:write-binary(
-            helper:glue-path(($directory, ".env")),
-            util:string-to-binary("SERVER_SECRET=123!")),
-        exfile:write-binary(
-            helper:glue-path(($directory, "test", "three.s")),
-            util:string-to-binary("..."))
+    let $action1 := file:mkdirs($directory)
+    let $action2 := file:mkdirs(helper:glue-path(($directory, "test")))
+    let $action3 := (
+        (: cannot use fixtures here because this will lead to consumed input streams! :)
+        file:serialize-binary(
+            util:string-to-binary("SERVER_SECRET=123!"),
+            helper:glue-path(($directory, ".env"))),
+        file:serialize-binary(
+            util:string-to-binary("..."),
+            helper:glue-path(($directory, "test", "three.s")))
     )
     return $directory
 };
 
-declare function helper:get-deleted-from-sync-result ($result as element(utilns:sync)) as xs:string* {
-    $result//utilns:delete/@name/string()
+declare function helper:get-deleted-from-sync-result ($result as element(file:sync)) as xs:string* {
+    $result//file:delete/@name/string()
 };
 
-declare function helper:get-dir-from-sync-result ($result as element(utilns:sync)) as xs:string* {
-    $result/@utilns:dir/string()
+declare function helper:get-dir-from-sync-result ($result as element(file:sync)) as xs:string* {
+    $result/@file:dir/string()
 };
 
-declare function helper:get-updated-from-sync-result ($result as element(utilns:sync)) as xs:string* {
-    $result//utilns:update/@name/string()
+declare function helper:get-updated-from-sync-result ($result as element(file:sync)) as xs:string* {
+    $result//file:update/@name/string()
 };
 
 declare function helper:list-files-and-directories ($directory as xs:string) as xs:string* {
-    (: EXPath exfile:list returns relative path strings, directories end with separator :)
-    for $entry in exfile:list($directory)
-    return
-        (: strip trailing separator from directory names :)
-        if (ends-with($entry, exfile:dir-separator()))
-        then substring($entry, 1, string-length($entry) - string-length(exfile:dir-separator()))
-        else $entry
+    file:list($directory)//(file:file|file:directory)/@name/string()
 };
 
-declare function helper:sync-with-options ($directory as xs:string, $options as item()?) as element(utilns:sync) {
-    util:file-sync($fixtures:collection, $directory, $options)/*
+declare function helper:sync-with-options ($directory as xs:string, $options as item()?) as element(file:sync) {
+    file:sync($fixtures:collection, $directory, $options)/*
 };
 
 declare function helper:assert-sync-result (
-    $result as document-node(element(utilns:sync)),
+    $result as document-node(element(file:sync)),
     $expected as map(xs:string, xs:string*)
 ) as xs:boolean {
     helper:assert-permutation-of(
@@ -214,7 +202,7 @@ declare function helper:maybe-remove-item-at-index($sequence as xs:anyAtomicType
 
 declare function helper:assert-file-contents($expected as xs:string, $path-parts as xs:string+) as xs:boolean {
     let $path := helper:glue-path($path-parts)
-    let $actual := exfile:read-text($path)
+    let $actual := file:read($path)
 
     return
         if (

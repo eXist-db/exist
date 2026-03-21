@@ -747,7 +747,7 @@
             <module uri="http://exist-db.org/xquery/image" class="org.exist.xquery.modules.image.ImageModule"/>
 
             <!-- needed for Image Module tests -->
-            <module uri="http://expath.org/ns/file" class="org.expath.exist.file.ExpathFileModule"/>
+            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
 
 
             <!-- Needed for XQSuite! -->

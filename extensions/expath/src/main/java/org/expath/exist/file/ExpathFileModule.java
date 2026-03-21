@@ -35,7 +35,7 @@ import org.exist.xquery.FunctionDef;
 public class ExpathFileModule extends AbstractInternalModule {
 
     public static final String NAMESPACE_URI = "http://expath.org/ns/file";
-    public static final String PREFIX = "file";
+    public static final String PREFIX = "exfile";
     public static final String INCLUSION_DATE = "2025-05-01";
     public static final String RELEASED_IN_VERSION = "7.0.0";
 

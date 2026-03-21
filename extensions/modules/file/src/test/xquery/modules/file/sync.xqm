@@ -21,10 +21,9 @@
  :)
 xquery version "3.1";
 
-module namespace sync="http://exist-db.org/xquery/test/util/sync";
+module namespace sync="http://exist-db.org/xquery/test/file/sync";
 
-import module namespace util="http://exist-db.org/xquery/util";
-import module namespace exfile="http://expath.org/ns/file";
+
 import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
 import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "resource:util/fixtures.xqm";
 
@@ -48,7 +47,7 @@ function sync:tear-down() {
 declare
     %test:assertTrue
 function sync:simple() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         ()
@@ -63,7 +62,7 @@ function sync:simple() {
 declare
     %test:assertTrue
 function sync:empty-options-map() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         map{}
@@ -78,7 +77,7 @@ function sync:empty-options-map() {
 declare
     %test:assertError
 function sync:deprecated-options() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         $fixtures:mod-date
@@ -93,7 +92,7 @@ function sync:deprecated-options() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-1() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         xs:date("2012-12-21")
@@ -103,7 +102,7 @@ function sync:bad-options-1() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-2() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         "2012-12-21T10:12:21"
@@ -113,7 +112,7 @@ function sync:bad-options-2() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-3() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         "lizard"
@@ -123,7 +122,7 @@ function sync:bad-options-3() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-4() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         ""
@@ -137,7 +136,7 @@ function sync:bad-options-4() {
 declare
     %test:assertError
 function sync:bad-options-5() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         (1, map{}, "")
@@ -147,7 +146,7 @@ function sync:bad-options-5() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-6() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         map{ "prune": "true" }
@@ -157,7 +156,7 @@ function sync:bad-options-6() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-7() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         map{ "prune": "no" }
@@ -167,7 +166,7 @@ function sync:bad-options-7() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-8() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         map{ "after": 1234325 }
@@ -177,7 +176,7 @@ function sync:bad-options-8() {
 declare
     %test:assertError("err:XPTY0004")
 function sync:bad-options-9() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($sync:suite),
         map{ "excludes": [] }
@@ -191,7 +190,7 @@ function sync:do-not-prune() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": false() }
@@ -210,7 +209,7 @@ function sync:prune() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true() }
@@ -229,7 +228,7 @@ function sync:prune-with-excludes-matching-none() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true(), "excludes": "*.txt" }
@@ -248,7 +247,7 @@ function sync:after() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "after": $fixtures:mod-date }
@@ -267,7 +266,7 @@ function sync:after-mod-date-2() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "after": $fixtures:mod-date-2 }
@@ -286,7 +285,7 @@ function sync:after-with-excludes() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "after": $fixtures:mod-date, "excludes": ".env" }
@@ -304,22 +303,22 @@ function sync:prune-with-after-and-excludes() {
     let $directory := helper:get-test-directory($sync:suite)
     let $_ := helper:setup-fs-extra($directory)
     let $_ := (
-        exfile:write-binary(
-            $directory || "/excluded.xq",
-            util:string-to-binary("1")
+        file:serialize-binary(
+            util:string-to-binary("1"),
+            $directory || "/excluded.xq"
         ),
-        exfile:write-binary(
-            $directory || "/pruned.xql",
-            util:string-to-binary("1")
+        file:serialize-binary(
+            util:string-to-binary("1"),
+            $directory || "/pruned.xql"
         ),
-        exfile:write-binary(
-            $directory || "/readme.md",
-            util:string-to-binary("oh oh")
+        file:serialize-binary(
+            util:string-to-binary("oh oh"),
+            $directory || "/readme.md"
         )
     )
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{
@@ -342,7 +341,7 @@ function sync:prunes-a-directory() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true(), "excludes": ".*" }
@@ -361,7 +360,7 @@ function sync:prunes-a-file() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true(), "excludes": "test" || $helper:path-separator || "*" }
@@ -380,7 +379,7 @@ function sync:prunes-with-multiple-excludes() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{
@@ -404,14 +403,14 @@ function sync:twice() {
      : syncing to disk, see https://bugs.java.com/bugdatabase/view_bug.do?bug_id=8177809
      :)
     let $_ := util:wait(1000)
-    let $_ := util:file-sync(
+    let $_ := file:sync(
         $fixtures:collection,
         $directory,
         ()
     )
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             ()

@@ -52,6 +52,7 @@
         <module>cqlparser</module>
         <module>example</module>
         <module>exi</module>
+        <module>file</module>
         <module>expathrepo</module>
         <module>expathrepo/expathrepo-trigger-test</module>
         <module>image</module>

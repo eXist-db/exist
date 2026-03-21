@@ -21,10 +21,9 @@
  :)
 xquery version "3.1";
 
-module namespace syncmod="http://exist-db.org/xquery/test/util/syncmod";
+module namespace syncmod="http://exist-db.org/xquery/test/file/syncmod";
 
-import module namespace util="http://exist-db.org/xquery/util";
-import module namespace exfile="http://expath.org/ns/file";
+
 import module namespace helper="http://exist-db.org/xquery/test/util/helper" at "resource:util/helper.xqm";
 import module namespace fixtures="http://exist-db.org/xquery/test/util/fixtures" at "resource:util/fixtures.xqm";
 
@@ -54,7 +53,7 @@ function syncmod:tearDown() {
 declare
     %test:assertTrue
 function syncmod:simple() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($syncmod:suite),
         ()
@@ -69,7 +68,7 @@ function syncmod:simple() {
 declare
     %test:assertTrue
 function syncmod:empty-options() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($syncmod:suite),
         map{}
@@ -84,7 +83,7 @@ function syncmod:empty-options() {
 declare
     %test:assertError
 function syncmod:deprecated-options() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($syncmod:suite),
         $fixtures:mod-date
@@ -103,7 +102,7 @@ function syncmod:do-not-prune() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": false() }
@@ -122,7 +121,7 @@ function syncmod:prune() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true() }
@@ -141,7 +140,7 @@ function syncmod:prune-with-excludes-matching-none() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true(), "excludes": "*.txt" }
@@ -160,7 +159,7 @@ function syncmod:after() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "after": $fixtures:mod-date }
@@ -176,7 +175,7 @@ function syncmod:after() {
 declare
     %test:assertTrue
 function syncmod:after-mod-date-2() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($syncmod:suite),
         map{ "after": $fixtures:mod-date-2 }
@@ -192,7 +191,7 @@ declare
     %test:pending("this would only work if exclude patterns would exclude DB resources from syncing")
     %test:assertTrue
 function syncmod:exclude-changed-files() {
-    util:file-sync(
+    file:sync(
         $fixtures:collection,
         helper:get-test-directory($syncmod:suite),
         map{ "excludes":("*.txt", "data/*"), "after": $fixtures:mod-date }
@@ -211,7 +210,7 @@ function syncmod:prune-with-after-and-excludes-matching-none() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{
@@ -234,7 +233,7 @@ function syncmod:prune-with-after-and-excludes-matching-all() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{
@@ -257,7 +256,7 @@ function syncmod:prunes-a-directory-with-after() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{ "prune": true(), "excludes": ".*", "after": $fixtures:mod-date }
@@ -277,7 +276,7 @@ function syncmod:prunes-a-file-with-after() {
     let $_ := helper:setup-fs-extra($directory)
 
     return
-        util:file-sync(
+        file:sync(
             $fixtures:collection,
             $directory,
             map{
