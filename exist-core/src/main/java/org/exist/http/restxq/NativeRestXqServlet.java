@@ -118,8 +118,12 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
             return; // Authentication challenge sent
         }
 
+        // Wrap request to cache body for potential forward dispatch
+        final HttpServletRequest wrappedRequest =
+                hasBody(request) ? new CachingHttpServletRequest(request) : request;
+
         // Handle /.init — cache invalidation endpoint
-        final String pathInfo = getRestXqPath(request);
+        final String pathInfo = getRestXqPath(wrappedRequest);
         if ("/.init".equals(pathInfo)) {
             registry.invalidate();
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -134,19 +138,19 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
             registry.ensureInitialized(broker);
 
             // Find matching route
-            final String method = request.getMethod().toUpperCase(Locale.ROOT);
+            final String method = wrappedRequest.getMethod().toUpperCase(Locale.ROOT);
             Route route = registry.findRoute(
                     method, pathInfo,
-                    request.getContentType(),
-                    request.getHeader("Accept"));
+                    wrappedRequest.getContentType(),
+                    wrappedRequest.getHeader("Accept"));
 
             boolean headFromGet = false;
 
             // Auto-handle HEAD: if no explicit HEAD route, try GET
             if (route == null && "HEAD".equals(method)) {
                 route = registry.findRoute("GET", pathInfo,
-                        request.getContentType(),
-                        request.getHeader("Accept"));
+                        wrappedRequest.getContentType(),
+                        wrappedRequest.getHeader("Accept"));
                 if (route != null) {
                     headFromGet = true;
                 }
@@ -177,7 +181,7 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
                 }
                 // Check if path matches with different method → 405
                 final Set<String> allowed = registry.allowedMethods(pathInfo,
-                        request.getContentType(), request.getHeader("Accept"));
+                        wrappedRequest.getContentType(), wrappedRequest.getHeader("Accept"));
                 if (!allowed.isEmpty()) {
                     response.setHeader("Allow", String.join(", ", allowed));
                     response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -188,9 +192,9 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
             }
 
             if (headFromGet) {
-                executeRoute(broker, route, request, response, true);
+                executeRoute(broker, route, wrappedRequest, response, true);
             } else {
-                executeRoute(broker, route, request, response, false);
+                executeRoute(broker, route, wrappedRequest, response, false);
             }
 
             // Add Server-Timing header
@@ -509,5 +513,13 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
      */
     public RouteRegistry getRouteRegistry() {
         return registry;
+    }
+
+    /**
+     * Returns true if the request method typically carries a body.
+     */
+    private static boolean hasBody(final HttpServletRequest request) {
+        final String method = request.getMethod().toUpperCase(Locale.ROOT);
+        return "POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method);
     }
 }
