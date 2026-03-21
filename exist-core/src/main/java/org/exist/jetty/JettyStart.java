@@ -375,6 +375,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                                         serverContainer.addEndpoint(
                                                 org.exist.xquery.functions.websocket.WebSocketEndpoint.class);
                                         logger.info("[WebSocket endpoint registered: /ws]");
+                                        serverContainer.addEndpoint(
+                                                org.exist.http.ws.EvalWebSocketEndpoint.class);
+                                        logger.info("[WebSocket endpoint registered: /ws/eval]");
                                     });
                             org.exist.xquery.functions.websocket.WebSocketEndpoint.initialize();
                             return; // only need to configure once
