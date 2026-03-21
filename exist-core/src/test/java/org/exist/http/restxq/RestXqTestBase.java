@@ -28,6 +28,7 @@ import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.exist.TestUtils;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.test.ExistWebServer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -66,6 +67,14 @@ public abstract class RestXqTestBase {
 
     private static final String TEST_COLLECTION = "/db/restxq-test";
 
+    private static final String COLLECTION_CONFIG =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
+            "    <triggers>\n" +
+            "        <trigger class=\"org.exist.extensions.exquery.restxq.impl.RestXqTrigger\"/>\n" +
+            "    </triggers>\n" +
+            "</collection>";
+
     private static final ContentType XQUERY_CONTENT_TYPE =
             ContentType.create("application/xquery", UTF_8);
 
@@ -101,6 +110,18 @@ public abstract class RestXqTestBase {
 
     protected static String getRestXqUri() {
         return getServerUri() + "/restxq";
+    }
+
+    private static void enableRestXqTrigger() throws IOException {
+        final HttpResponse response = executor.execute(Request
+                .Put(getRestUri() + "/db/system/config" + TEST_COLLECTION + "/"
+                        + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+                .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
+        ).returnResponse();
+        final int status = response.getStatusLine().getStatusCode();
+        if (status != HttpStatus.SC_CREATED && status != HttpStatus.SC_OK) {
+            throw new IOException("Failed to enable RestXqTrigger, status: " + status);
+        }
     }
 
     /**
