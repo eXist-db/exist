@@ -68,7 +68,7 @@ public class ResourceSetTest {
 		service.removeCollection(TEST_COLLECTION);
 	}
 
-	@Ignore
+	@Ignore("ResourceSet intersection returns wrong count, see #6157")
     @Test
 	public void intersection1() throws XMLDBException {
 		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*";

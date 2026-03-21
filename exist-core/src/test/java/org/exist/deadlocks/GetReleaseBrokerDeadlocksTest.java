@@ -49,7 +49,7 @@ public class GetReleaseBrokerDeadlocksTest {
 	private static Random rd = new Random();
 
 	@Test
-	@Ignore
+	@Ignore("Deadlock test — hangs indefinitely")
 	public void exterServiceMode() {
 		try { 
 	        Configuration config = new Configuration();
@@ -98,7 +98,7 @@ public class GetReleaseBrokerDeadlocksTest {
 	}
 
 	@Test
-	@Ignore
+	@Ignore("Deadlock test — hangs indefinitely")
 	public void testingGetReleaseCycle() {
 		boolean debug = false;
 		try { 
