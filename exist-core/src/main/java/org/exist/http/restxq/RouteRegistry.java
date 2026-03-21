@@ -21,6 +21,8 @@
  */
 package org.exist.http.restxq;
 
+import net.jcip.annotations.GuardedBy;
+import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -39,8 +41,6 @@ import org.exist.xquery.XQueryContext;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -52,10 +52,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * {@code RestXqServiceRegistryPersistence} from the old EXQuery-based
  * implementation.</p>
  *
- * <p>Thread safety is provided by a read/write lock: multiple HTTP
- * request threads can read the route table concurrently, while scans
- * acquire a write lock.</p>
+ * <h3>Concurrency model</h3>
+ * <p>All mutable state is protected by a {@link ReentrantReadWriteLock}.
+ * Write operations ({@link #fullScan}, {@link #invalidate}) acquire
+ * the write lock and rebuild immutable snapshots that are published via
+ * volatile references. Read operations ({@link #findRoute},
+ * {@link #findErrorHandler}, {@link #allowedMethods}) read the volatile
+ * snapshots without locking for maximum throughput on the HTTP request
+ * path. Status accessors also read volatile snapshots.</p>
  */
+@ThreadSafe
 public class RouteRegistry {
 
     private static final Logger LOG = LogManager.getLogger(RouteRegistry.class);
@@ -71,26 +77,40 @@ public class RouteRegistry {
     private final BrokerPool brokerPool;
     private final XmldbURI scanRoot;
 
-    /** Module URI → last-modified timestamp at time of last parse. */
-    private final Map<String, Long> moduleTimestamps = new ConcurrentHashMap<>();
-
-    /** All currently registered routes, sorted by specificity. */
-    private volatile List<Route> routes = Collections.emptyList();
-
-    /** All currently registered error handlers. */
-    private volatile List<ErrorRoute> errorRoutes = Collections.emptyList();
-
-    /** Protects route table mutations. */
+    /** Protects all mutable state below. */
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
-    /** Per-module route list, for efficient partial updates. */
-    private final Map<String, List<Route>> routesByModule = new ConcurrentHashMap<>();
+    // --- Mutable state, guarded by lock.writeLock() ---
+
+    /** Module URI to last-modified timestamp at time of last parse. */
+    @GuardedBy("lock")
+    private final Map<String, Long> moduleTimestamps = new HashMap<>();
+
+    /** Per-module route list, for efficient partial updates during scan. */
+    @GuardedBy("lock")
+    private final Map<String, List<Route>> routesByModule = new HashMap<>();
 
     /** Per-module error route list. */
-    private final Map<String, List<ErrorRoute>> errorRoutesByModule = new ConcurrentHashMap<>();
+    @GuardedBy("lock")
+    private final Map<String, List<ErrorRoute>> errorRoutesByModule = new HashMap<>();
 
-    /** Modules that failed compilation. */
-    private final Map<String, String> failedModules = new ConcurrentHashMap<>();
+    /** Modules that failed compilation or annotation validation. */
+    @GuardedBy("lock")
+    private final Map<String, String> failedModules = new HashMap<>();
+
+    // --- Volatile snapshots, rebuilt under write lock, read without lock ---
+
+    /** All currently registered routes, sorted by specificity. Immutable. */
+    private volatile List<Route> routes = Collections.emptyList();
+
+    /** All currently registered error handlers. Immutable. */
+    private volatile List<ErrorRoute> errorRoutes = Collections.emptyList();
+
+    /** Immutable snapshot of failed modules for status reporting. */
+    private volatile Map<String, String> failedModulesSnapshot = Collections.emptyMap();
+
+    /** Count of modules with routes (snapshot for lock-free reads). */
+    private volatile int moduleCount = 0;
 
     /** When we last completed a full scan (epoch millis). */
     private volatile long lastScanTime = 0;
@@ -105,6 +125,8 @@ public class RouteRegistry {
         this.brokerPool = brokerPool;
         this.scanRoot = XmldbURI.create(scanRoot);
     }
+
+    // --- Read path: lock-free, reads volatile immutable snapshots ---
 
     /**
      * Finds the best matching route for the given HTTP method and path.
@@ -142,7 +164,8 @@ public class RouteRegistry {
     public Set<String> allowedMethods(final String path, final String contentType,
                                       final String acceptHeader) {
         final Set<String> methods = new LinkedHashSet<>();
-        for (final Route route : routes) {
+        final List<Route> snapshot = routes;
+        for (final Route route : snapshot) {
             if (route.getPathMatcher().matches(path)
                     && route.matchesConsumes(contentType)
                     && route.matchesProduces(acceptHeader)) {
@@ -153,18 +176,40 @@ public class RouteRegistry {
     }
 
     /**
+     * Finds the best matching error handler for the given error QName.
+     * Returns null if no handler matches.
+     */
+    public ErrorRoute findErrorHandler(final org.exist.dom.QName errorQName) {
+        ErrorRoute bestHandler = null;
+        ErrorRoute.ErrorCode bestCode = null;
+
+        final List<ErrorRoute> snapshot = errorRoutes;
+        for (final ErrorRoute handler : snapshot) {
+            final ErrorRoute.ErrorCode match = handler.bestMatch(errorQName);
+            if (match != null) {
+                if (bestCode == null || match.getMatchType().priority < bestCode.getMatchType().priority) {
+                    bestHandler = handler;
+                    bestCode = match;
+                }
+            }
+        }
+        return bestHandler;
+    }
+
+    // --- Write path: acquires write lock, rebuilds snapshots ---
+
+    /**
      * Invalidates the entire route cache, forcing a full rescan
      * on the next call to {@link #ensureInitialized(DBBroker)}.
      */
     public void invalidate() {
         lock.writeLock().lock();
         try {
-            routes = Collections.emptyList();
-            errorRoutes = Collections.emptyList();
             routesByModule.clear();
             errorRoutesByModule.clear();
             moduleTimestamps.clear();
             failedModules.clear();
+            publishSnapshots();
             initialized = false;
             LOG.info("RESTXQ route registry invalidated; will rescan on next request");
         } finally {
@@ -202,7 +247,7 @@ public class RouteRegistry {
             moduleTimestamps.keySet().retainAll(scannedModules);
             failedModules.keySet().retainAll(scannedModules);
 
-            rebuildRouteList();
+            publishSnapshots();
 
             lastScanTime = System.currentTimeMillis();
             lastScanDurationMs = lastScanTime - start;
@@ -215,6 +260,37 @@ public class RouteRegistry {
         }
     }
 
+    /**
+     * Rebuilds all volatile immutable snapshots from the guarded mutable state.
+     * Must be called under write lock.
+     */
+    @GuardedBy("lock")
+    private void publishSnapshots() {
+        // Routes snapshot — sorted by specificity
+        final List<Route> allRoutes = new ArrayList<>();
+        for (final List<Route> moduleRoutes : routesByModule.values()) {
+            allRoutes.addAll(moduleRoutes);
+        }
+        Collections.sort(allRoutes);
+        this.routes = Collections.unmodifiableList(allRoutes);
+
+        // Error routes snapshot
+        final List<ErrorRoute> allErrorRoutes = new ArrayList<>();
+        for (final List<ErrorRoute> moduleErrorRoutes : errorRoutesByModule.values()) {
+            allErrorRoutes.addAll(moduleErrorRoutes);
+        }
+        this.errorRoutes = Collections.unmodifiableList(allErrorRoutes);
+
+        // Failed modules snapshot
+        this.failedModulesSnapshot = Map.copyOf(failedModules);
+
+        // Module count snapshot
+        this.moduleCount = routesByModule.size();
+    }
+
+    // --- Scanning internals (called under write lock) ---
+
+    @GuardedBy("lock")
     private void scanCollection(final DBBroker broker, final XmldbURI collectionUri,
                                final Set<String> scannedModules) {
         try (final Collection collection = broker.openCollection(collectionUri, LockMode.READ_LOCK)) {
@@ -233,7 +309,6 @@ public class RouteRegistry {
             }
 
             // Recurse into child collections
-            // We need to collect child URIs while holding the lock, then recurse
             final List<XmldbURI> childUris = new ArrayList<>();
             for (final Iterator<XmldbURI> it = collection.collectionIterator(broker); it.hasNext(); ) {
                 childUris.add(collectionUri.append(it.next()));
@@ -252,6 +327,7 @@ public class RouteRegistry {
         }
     }
 
+    @GuardedBy("lock")
     private void scanDocument(final DBBroker broker, final DocumentImpl doc) {
         final String moduleUri = doc.getURI().toString();
         final long lastModified = doc.getLastModified();
@@ -268,35 +344,35 @@ public class RouteRegistry {
                 return;
             }
 
-            {
-                final DBSource source = new DBSource(brokerPool, binDoc, true);
-                final XQuery xqueryService = brokerPool.getXQueryService();
-                final XQueryContext context = new XQueryContext(brokerPool);
+            final DBSource source = new DBSource(brokerPool, binDoc, true);
+            final XQuery xqueryService = brokerPool.getXQueryService();
+            final XQueryContext context = new XQueryContext(brokerPool);
 
-                // Set module load path so relative imports resolve correctly
-                context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + doc.getURI().removeLastSegment().toString());
+            // Set module load path so relative imports resolve correctly
+            context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX
+                    + doc.getURI().removeLastSegment().toString());
 
-                final CompiledXQuery compiled = xqueryService.compile(context, source);
-                final AnnotationParser.ParseResult result =
-                        AnnotationParser.parseModuleFull(compiled, moduleUri);
+            final CompiledXQuery compiled = xqueryService.compile(context, source);
+            final AnnotationParser.ParseResult result =
+                    AnnotationParser.parseModuleFull(compiled, moduleUri);
 
-                if (!result.routes.isEmpty()) {
-                    routesByModule.put(moduleUri, result.routes);
-                    LOG.debug("Found {} RESTXQ routes in {}", result.routes.size(), moduleUri);
-                } else {
-                    routesByModule.remove(moduleUri);
-                }
-
-                if (!result.errorRoutes.isEmpty()) {
-                    errorRoutesByModule.put(moduleUri, result.errorRoutes);
-                    LOG.debug("Found {} RESTXQ error handlers in {}", result.errorRoutes.size(), moduleUri);
-                } else {
-                    errorRoutesByModule.remove(moduleUri);
-                }
-
-                moduleTimestamps.put(moduleUri, lastModified);
-                failedModules.remove(moduleUri);
+            if (!result.routes.isEmpty()) {
+                routesByModule.put(moduleUri, result.routes);
+                LOG.debug("Found {} RESTXQ routes in {}", result.routes.size(), moduleUri);
+            } else {
+                routesByModule.remove(moduleUri);
             }
+
+            if (!result.errorRoutes.isEmpty()) {
+                errorRoutesByModule.put(moduleUri, result.errorRoutes);
+                LOG.debug("Found {} RESTXQ error handlers in {}", result.errorRoutes.size(), moduleUri);
+            } else {
+                errorRoutesByModule.remove(moduleUri);
+            }
+
+            moduleTimestamps.put(moduleUri, lastModified);
+            failedModules.remove(moduleUri);
+
         } catch (final RestXqAnnotationException e) {
             LOG.warn("RESTXQ annotation error in {}: {}", moduleUri, e.getMessage());
             failedModules.put(moduleUri, e.getMessage());
@@ -318,26 +394,7 @@ public class RouteRegistry {
         }
     }
 
-    /**
-     * Rebuilds the flat, sorted route list from per-module route maps.
-     * Must be called under write lock.
-     */
-    private void rebuildRouteList() {
-        final List<Route> allRoutes = new ArrayList<>();
-        for (final List<Route> moduleRoutes : routesByModule.values()) {
-            allRoutes.addAll(moduleRoutes);
-        }
-        Collections.sort(allRoutes);
-        this.routes = Collections.unmodifiableList(allRoutes);
-
-        final List<ErrorRoute> allErrorRoutes = new ArrayList<>();
-        for (final List<ErrorRoute> moduleErrorRoutes : errorRoutesByModule.values()) {
-            allErrorRoutes.addAll(moduleErrorRoutes);
-        }
-        this.errorRoutes = Collections.unmodifiableList(allErrorRoutes);
-    }
-
-    private boolean isXQueryDocument(final DocumentImpl doc) {
+    private static boolean isXQueryDocument(final DocumentImpl doc) {
         if (doc instanceof BinaryDocument) {
             final String mimeType = doc.getMimeType();
             if (mimeType != null && XQUERY_MIME_TYPES.contains(mimeType)) {
@@ -354,34 +411,14 @@ public class RouteRegistry {
         return false;
     }
 
-    /**
-     * Finds the best matching error handler for the given error QName.
-     * Returns null if no handler matches.
-     */
-    public ErrorRoute findErrorHandler(final org.exist.dom.QName errorQName) {
-        ErrorRoute bestHandler = null;
-        ErrorRoute.ErrorCode bestCode = null;
-
-        for (final ErrorRoute handler : errorRoutes) {
-            final ErrorRoute.ErrorCode match = handler.bestMatch(errorQName);
-            if (match != null) {
-                if (bestCode == null || match.getMatchType().priority < bestCode.getMatchType().priority) {
-                    bestHandler = handler;
-                    bestCode = match;
-                }
-            }
-        }
-        return bestHandler;
-    }
-
-    // --- Status accessors ---
+    // --- Status accessors: read volatile snapshots, no lock needed ---
 
     public int getRouteCount() {
         return routes.size();
     }
 
     public int getModuleCount() {
-        return routesByModule.size();
+        return moduleCount;
     }
 
     public long getLastScanTime() {
@@ -393,7 +430,7 @@ public class RouteRegistry {
     }
 
     public Map<String, String> getFailedModules() {
-        return Collections.unmodifiableMap(failedModules);
+        return failedModulesSnapshot;
     }
 
     public List<Route> getAllRoutes() {
