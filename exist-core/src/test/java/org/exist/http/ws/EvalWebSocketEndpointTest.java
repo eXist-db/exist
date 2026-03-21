@@ -1,0 +1,667 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.http.ws;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import org.exist.test.ExistWebServer;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import jakarta.websocket.*;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.junit.Assert.*;
+
+/**
+ * Integration tests for the /ws/eval WebSocket endpoint.
+ */
+public class EvalWebSocketEndpointTest {
+
+    private static final JsonFactory JSON_FACTORY = new JsonFactory();
+
+    @ClassRule
+    public static final ExistWebServer existWebServer =
+            new ExistWebServer(true, false, true, true);
+
+    private URI getWsUri() throws Exception {
+        return new URI("ws://localhost:" + existWebServer.getPort() + "/ws/eval");
+    }
+
+    private ClientEndpointConfig createAuthConfig(final String username, final String password) {
+        return ClientEndpointConfig.Builder.create()
+                .configurator(new ClientEndpointConfig.Configurator() {
+                    @Override
+                    public void beforeRequest(final Map<String, List<String>> headers) {
+                        final String credentials = username + ":" + password;
+                        final String encoded = Base64.getEncoder().encodeToString(
+                                credentials.getBytes(StandardCharsets.UTF_8));
+                        headers.put("Authorization",
+                                Collections.singletonList("Basic " + encoded));
+                    }
+                })
+                .build();
+    }
+
+    private ClientEndpointConfig createAdminConfig() {
+        return createAuthConfig("admin", "");
+    }
+
+    /**
+     * Helper to parse a JSON message and extract a field value.
+     */
+    private static Map<String, Object> parseJson(final String json) throws IOException {
+        final Map<String, Object> result = new HashMap<>();
+        try (final JsonParser parser = JSON_FACTORY.createParser(json)) {
+            if (parser.nextToken() != JsonToken.START_OBJECT) {
+                return result;
+            }
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                final String field = parser.currentName();
+                parser.nextToken();
+                switch (parser.currentToken()) {
+                    case VALUE_STRING:
+                        result.put(field, parser.getValueAsString());
+                        break;
+                    case VALUE_NUMBER_INT:
+                        result.put(field, parser.getValueAsLong());
+                        break;
+                    case VALUE_NUMBER_FLOAT:
+                        result.put(field, parser.getValueAsDouble());
+                        break;
+                    case VALUE_TRUE:
+                    case VALUE_FALSE:
+                        result.put(field, parser.getValueAsBoolean());
+                        break;
+                    case START_OBJECT:
+                        // nested object - skip for simplicity, just mark as present
+                        result.put(field, "OBJECT");
+                        parser.skipChildren();
+                        break;
+                    case START_ARRAY:
+                        result.put(field, "ARRAY");
+                        parser.skipChildren();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Test
+    public void simpleEval() throws Exception {
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        final AtomicReference<String> resultData = new AtomicReference<>();
+        final List<String> allMessages = new CopyOnWriteArrayList<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        allMessages.add(message);
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("result".equals(parsed.get("type"))
+                                    && Boolean.FALSE.equals(parsed.get("more"))) {
+                                resultData.set((String) parsed.get("data"));
+                                resultLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-1\",\"query\":\"1 + 1\"}");
+
+            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
+            assertEquals("2", resultData.get());
+
+            // Should have received at least one progress message and one result
+            assertTrue("Should have multiple messages", allMessages.size() >= 2);
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void evalWithVariables() throws Exception {
+        final CountDownLatch doneLatch = new CountDownLatch(1);
+        final AtomicReference<String> resultData = new AtomicReference<>();
+        final AtomicReference<String> errorData = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("result".equals(parsed.get("type"))
+                                    && Boolean.FALSE.equals(parsed.get("more"))) {
+                                resultData.set((String) parsed.get("data"));
+                                doneLatch.countDown();
+                            } else if ("error".equals(parsed.get("type"))) {
+                                errorData.set(message);
+                                doneLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-2\"," +
+                    "\"query\":\"declare variable $x external; xs:integer($x) * 2\"," +
+                    "\"variables\":{\"x\":\"21\"}}");
+
+            assertTrue("Should receive response within 5s", doneLatch.await(5, TimeUnit.SECONDS));
+            assertNull("Should not have error: " + errorData.get(), errorData.get());
+            assertEquals("42", resultData.get());
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void compileError() throws Exception {
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> errorMsg = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("error".equals(parsed.get("type"))) {
+                                errorMsg.set(parsed);
+                                errorLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-3\",\"query\":\"let $x := retrun\"}");
+
+            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+            final Map<String, Object> error = errorMsg.get();
+            assertNotNull(error.get("message"));
+            assertEquals("q-3", error.get("id"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void compileAction() throws Exception {
+        final CountDownLatch compileLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> compileMsg = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("compile".equals(parsed.get("type"))) {
+                                compileMsg.set(parsed);
+                                compileLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            // Valid query
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"compile\",\"id\":\"c-1\",\"query\":\"1 + 1\"}");
+
+            assertTrue("Should receive compile result within 5s",
+                    compileLatch.await(5, TimeUnit.SECONDS));
+            assertEquals(true, compileMsg.get().get("success"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void compileActionWithError() throws Exception {
+        final CountDownLatch compileLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> compileMsg = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("compile".equals(parsed.get("type"))) {
+                                compileMsg.set(parsed);
+                                compileLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"compile\",\"id\":\"c-2\",\"query\":\"let $x := retrun\"}");
+
+            assertTrue("Should receive compile result within 5s",
+                    compileLatch.await(5, TimeUnit.SECONDS));
+            assertEquals(false, compileMsg.get().get("success"));
+            assertEquals("c-2", compileMsg.get().get("id"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void streamingResults() throws Exception {
+        final List<Map<String, Object>> resultChunks = new CopyOnWriteArrayList<>();
+        final CountDownLatch finalLatch = new CountDownLatch(1);
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("result".equals(parsed.get("type"))) {
+                                resultChunks.add(parsed);
+                                if (Boolean.FALSE.equals(parsed.get("more"))) {
+                                    finalLatch.countDown();
+                                }
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            // Generate 500 items with chunk-size 100 → expect 5 chunks
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-5\"," +
+                    "\"query\":\"1 to 500\"," +
+                    "\"chunk-size\":100,\"streaming\":true}");
+
+            assertTrue("Should receive all chunks within 10s",
+                    finalLatch.await(10, TimeUnit.SECONDS));
+
+            assertEquals("Should have 5 result chunks", 5, resultChunks.size());
+
+            // First 4 chunks should have more=true
+            for (int i = 0; i < 4; i++) {
+                assertEquals("Chunk " + i + " should have more=true",
+                        true, resultChunks.get(i).get("more"));
+            }
+            // Last chunk should have more=false
+            assertEquals(false, resultChunks.get(4).get("more"));
+
+            // Last chunk should have timing
+            assertNotNull("Last chunk should have timing",
+                    resultChunks.get(4).get("timing"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void cancellation() throws Exception {
+        final CountDownLatch cancelledLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> cancelledMsg = new AtomicReference<>();
+        final CountDownLatch progressLatch = new CountDownLatch(1);
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("progress".equals(parsed.get("type"))
+                                    && "evaluating".equals(parsed.get("phase"))) {
+                                progressLatch.countDown();
+                            } else if ("cancelled".equals(parsed.get("type"))) {
+                                cancelledMsg.set(parsed);
+                                cancelledLatch.countDown();
+                            } else if ("error".equals(parsed.get("type"))) {
+                                // Timeout or termination also acceptable
+                                cancelledMsg.set(parsed);
+                                cancelledLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            // Start a long-running query
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-cancel\"," +
+                    "\"query\":\"for $i in 1 to 999999999 return $i\"," +
+                    "\"max-execution-time\":5000}");
+
+            // Wait a bit then cancel
+            Thread.sleep(200);
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
+
+            assertTrue("Should receive cancelled/error within 10s",
+                    cancelledLatch.await(10, TimeUnit.SECONDS));
+            assertEquals("q-cancel", cancelledMsg.get().get("id"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void timing() throws Exception {
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> resultMsg = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("result".equals(parsed.get("type"))
+                                    && Boolean.FALSE.equals(parsed.get("more"))) {
+                                resultMsg.set(parsed);
+                                resultLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-timing\",\"query\":\"1 to 100\"}");
+
+            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
+            assertNotNull("Should have timing object", resultMsg.get().get("timing"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void progressReporting() throws Exception {
+        final List<Map<String, Object>> progressMessages = new CopyOnWriteArrayList<>();
+        final CountDownLatch doneLatch = new CountDownLatch(1);
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("progress".equals(parsed.get("type"))) {
+                                progressMessages.add(parsed);
+                            } else if ("result".equals(parsed.get("type"))
+                                    && Boolean.FALSE.equals(parsed.get("more"))) {
+                                doneLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-prog\",\"query\":\"1 to 100\"}");
+
+            assertTrue("Should complete within 5s", doneLatch.await(5, TimeUnit.SECONDS));
+            assertFalse("Should have at least one progress message",
+                    progressMessages.isEmpty());
+
+            // Should have parsing and/or evaluating phases
+            assertTrue("Should have phase field",
+                    progressMessages.stream().allMatch(m -> m.containsKey("phase")));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void serializationOptions() throws Exception {
+        final CountDownLatch resultLatch = new CountDownLatch(1);
+        final AtomicReference<String> resultData = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("result".equals(parsed.get("type"))
+                                    && Boolean.FALSE.equals(parsed.get("more"))) {
+                                resultData.set((String) parsed.get("data"));
+                                resultLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-ser\"," +
+                    "\"query\":\"<root><item>1</item></root>\"," +
+                    "\"serialization\":{\"method\":\"adaptive\"}}");
+
+            assertTrue("Should receive result within 5s", resultLatch.await(5, TimeUnit.SECONDS));
+            assertNotNull("Should have result data", resultData.get());
+            // Adaptive serialization wraps elements in their XML representation
+            assertTrue("Result should contain XML", resultData.get().contains("<root>"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void maxExecutionTime() throws Exception {
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+        final AtomicReference<Map<String, Object>> errorMsg = new AtomicReference<>();
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("error".equals(parsed.get("type"))
+                                    || "cancelled".equals(parsed.get("type"))) {
+                                errorMsg.set(parsed);
+                                errorLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            // Query that should take longer than 100ms timeout
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-timeout\"," +
+                    "\"query\":\"for $i in 1 to 999999999 return $i\"," +
+                    "\"max-execution-time\":100}");
+
+            assertTrue("Should receive timeout error within 5s",
+                    errorLatch.await(5, TimeUnit.SECONDS));
+            assertEquals("q-timeout", errorMsg.get().get("id"));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void invalidMessage() throws Exception {
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("error".equals(parsed.get("type"))) {
+                                errorLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText("not valid json{{{");
+
+            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+        } finally {
+            session.close();
+        }
+    }
+
+    @Test
+    public void missingQuery() throws Exception {
+        final CountDownLatch errorLatch = new CountDownLatch(1);
+
+        final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        final Session session = container.connectToServer(new Endpoint() {
+            @Override
+            public void onOpen(final Session session, final EndpointConfig config) {
+                session.addMessageHandler(new MessageHandler.Whole<String>() {
+                    @Override
+                    public void onMessage(final String message) {
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("error".equals(parsed.get("type"))) {
+                                errorLatch.countDown();
+                            }
+                        } catch (final IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            }
+        }, createAdminConfig(), getWsUri());
+
+        try {
+            session.getBasicRemote().sendText(
+                    "{\"action\":\"eval\",\"id\":\"q-noquery\"}");
+
+            assertTrue("Should receive error within 5s", errorLatch.await(5, TimeUnit.SECONDS));
+        } finally {
+            session.close();
+        }
+    }
+}
