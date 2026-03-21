@@ -22,7 +22,6 @@
 package org.exist.storage;
 
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 
 import org.exist.EXistException;
 import static org.junit.Assert.assertEquals;
@@ -30,72 +29,49 @@ import static org.junit.Assert.assertTrue;
 
 import org.exist.storage.btree.Value;
 import org.exist.xquery.value.DecimalValue;
-import org.junit.Ignore;
+import org.exist.xquery.value.DoubleValue;
 import org.junit.Test;
 
 
 public class ValueIndexFactoryTest {
 
-    @Ignore
     @Test
-    public void negativeNumbersComparison() {
+    public void negativeNumbersComparison() throws EXistException {
 
         // -8.6...
-        final ByteBuffer data1 = encode(-8.612328);
+        final byte[] data1 = encodeDouble(-8.612328);
 
         // 1.0
-        final ByteBuffer data2 = encode(1.0);
-
-//        // print data
-//        print(data1);
-//        print(data2);
+        final byte[] data2 = encodeDouble(1.0);
 
         // -8.6 < 1.0
-        assertTrue(data1.compareTo(data2) <= -1);
-
-        // -8.6 < 1.0
-        assertEquals("v1 < v2", -1, new Value(data1.array()).compareTo(new Value(data2.array())));
+        assertTrue("v1 < v2", new Value(data1).compareTo(new Value(data2)) < 0);
     }
 
     @Test
-    public void numbersComparison() {
+    public void numbersComparison() throws EXistException {
 
-        // -8.6...
-        final ByteBuffer data1 = encode(8.612328);
+        // 8.6...
+        final byte[] data1 = encodeDouble(8.612328);
 
         // 1.0
-        final ByteBuffer data2 = encode(1.0);
+        final byte[] data2 = encodeDouble(1.0);
 
-//        // print data
-//        print(data1);
-//        print(data2);
-
-        // -8.6 < 1.0
-        assertTrue(data1.compareTo(data2) >= 1);
-
-        // -8.6 < 1.0
-        assertEquals("v1 < v2", 1, new Value(data1.array()).compareTo(new Value(data2.array())));
+        // 8.6 > 1.0
+        assertTrue("v1 > v2", new Value(data1).compareTo(new Value(data2)) > 0);
     }
 
-    @Ignore
     @Test
-    public void negativeNumbersComparison2() {
+    public void negativeNumbersComparison2() throws EXistException {
 
-        // -8.6...
-        final ByteBuffer data1 = encode(8.612328);
+        // 8.6...
+        final byte[] data1 = encodeDouble(8.612328);
 
-        // 1.0
-        final ByteBuffer data2 = encode(-1.0);
+        // -1.0
+        final byte[] data2 = encodeDouble(-1.0);
 
-//        // print data
-//        print(data1);
-//        print(data2);
-
-        // -8.6 < 1.0
-        assertTrue(data1.compareTo(data2) >= 1);
-
-        // -8.6 < 1.0
-        assertEquals("v1 < v2", 1, new Value(data1.array()).compareTo(new Value(data2.array())));
+        // 8.6 > -1.0
+        assertTrue("v1 > v2", new Value(data1).compareTo(new Value(data2)) > 0);
     }
 
     @Test
@@ -109,11 +85,34 @@ public class ValueIndexFactoryTest {
 
         assertEquals(dec, ((DecimalValue)value).getValue());
     }
-	
-    private ByteBuffer encode(final double number) {
-        final ByteBuffer buf = ByteBuffer.allocate(8);
-        buf.putDouble(number);
-        buf.flip();
-        return buf;
+
+    @Test
+    public void roundTripDouble() throws EXistException {
+        final double[] values = {-8.612328, -1.0, 0.0, 1.0, 8.612328};
+        for (final double d : values) {
+            final byte[] data = ValueIndexFactory.serialize(new DoubleValue(d), 0);
+            final Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
+            assertTrue(value instanceof DoubleValue);
+            assertEquals(d, ((DoubleValue) value).getValue(), 0.0);
+        }
+    }
+
+    @Test
+    public void doubleOrderingComprehensive() throws EXistException {
+        final double[] ordered = {-8.612328, -1.0, 0.0, 1.0, 8.612328};
+        final byte[][] encoded = new byte[ordered.length][];
+        for (int i = 0; i < ordered.length; i++) {
+            encoded[i] = encodeDouble(ordered[i]);
+        }
+        for (int i = 0; i < ordered.length; i++) {
+            for (int j = i + 1; j < ordered.length; j++) {
+                assertTrue(ordered[i] + " < " + ordered[j],
+                        new Value(encoded[i]).compareTo(new Value(encoded[j])) < 0);
+            }
+        }
+    }
+
+    private byte[] encodeDouble(final double number) throws EXistException {
+        return ValueIndexFactory.serialize(new DoubleValue(number), 0);
     }
 }
