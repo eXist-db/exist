@@ -131,7 +131,17 @@ public class XHTML5Writer extends XHTMLWriter {
         // Per W3C serialization spec: only emit DOCTYPE when the root element
         // is <html>. Fragments (e.g., <p>, <div>, <li>) must not get a DOCTYPE.
         if ("html".equalsIgnoreCase(rootElement)) {
-            documentType("html", null, null);
+            // If doctype-public or doctype-system are explicitly set, use the
+            // standard DOCTYPE format with PUBLIC/SYSTEM identifiers
+            final String publicId = outputProperties != null
+                    ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC) : null;
+            final String systemId = outputProperties != null
+                    ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM) : null;
+            if (publicId != null || systemId != null) {
+                documentType("html", publicId, systemId);
+            } else {
+                documentType("html", null, null);
+            }
         }
         doctypeWritten = true;
     }

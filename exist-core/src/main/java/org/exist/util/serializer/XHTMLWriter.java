@@ -36,6 +36,28 @@ import org.exist.dom.QName;
  */
 public class XHTMLWriter extends IndentingXMLWriter {
 
+    /**
+     * HTML boolean attributes per HTML 4.01 and HTML5 spec.
+     * When method="html" and the attribute value equals the attribute name
+     * (case-insensitive), the attribute is minimized to just the name.
+     */
+    protected static final ObjectSet<String> BOOLEAN_ATTRIBUTES = new ObjectOpenHashSet<>(31);
+    static {
+        BOOLEAN_ATTRIBUTES.add("checked");
+        BOOLEAN_ATTRIBUTES.add("compact");
+        BOOLEAN_ATTRIBUTES.add("declare");
+        BOOLEAN_ATTRIBUTES.add("defer");
+        BOOLEAN_ATTRIBUTES.add("disabled");
+        BOOLEAN_ATTRIBUTES.add("ismap");
+        BOOLEAN_ATTRIBUTES.add("multiple");
+        BOOLEAN_ATTRIBUTES.add("nohref");
+        BOOLEAN_ATTRIBUTES.add("noresize");
+        BOOLEAN_ATTRIBUTES.add("noshade");
+        BOOLEAN_ATTRIBUTES.add("nowrap");
+        BOOLEAN_ATTRIBUTES.add("readonly");
+        BOOLEAN_ATTRIBUTES.add("selected");
+    }
+
     protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
@@ -203,7 +225,13 @@ public class XHTMLWriter extends IndentingXMLWriter {
             if (tagIsOpen) {
                 if (isEmpty) {
                     if (isEmptyTag(currentTag)) {
-                        getWriter().write(" />");
+                        // For method="html", use HTML-style void tags (<br>)
+                        // For method="xhtml", use XHTML-style (<br />)
+                        if (isHtmlMethod()) {
+                            getWriter().write(">");
+                        } else {
+                            getWriter().write(" />");
+                        }
                     } else {
                         getWriter().write('>');
                         getWriter().write("</");
@@ -219,7 +247,64 @@ public class XHTMLWriter extends IndentingXMLWriter {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
+
+    /**
+     * Returns true if the output method is "html" (not "xhtml").
+     * HTML uses void element syntax (<br>) while XHTML uses self-closing (<br />).
+     */
+    private boolean isHtmlMethod() {
+        if (outputProperties != null) {
+            final String method = outputProperties.getProperty(javax.xml.transform.OutputKeys.METHOD);
+            return "html".equalsIgnoreCase(method);
+        }
+        return false;
+    }
     
+    @Override
+    public void attribute(final QName qname, final CharSequence value) throws TransformerException {
+        // For method="html", minimize boolean attributes when value matches name
+        if (isHtmlMethod() && isBooleanAttribute(qname.getLocalPart(), value)) {
+            try {
+                if (!tagIsOpen) {
+                    characters(value);
+                    return;
+                }
+                final Writer w = getWriter();
+                w.write(' ');
+                w.write(qname.getLocalPart());
+                // Don't write ="value" — minimized form
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
+            return;
+        }
+        super.attribute(qname, value);
+    }
+
+    @Override
+    public void attribute(final String qname, final CharSequence value) throws TransformerException {
+        if (isHtmlMethod() && isBooleanAttribute(qname, value)) {
+            try {
+                if (!tagIsOpen) {
+                    characters(value);
+                    return;
+                }
+                final Writer w = getWriter();
+                w.write(' ');
+                w.write(qname);
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
+            return;
+        }
+        super.attribute(qname, value);
+    }
+
+    private boolean isBooleanAttribute(final String attrName, final CharSequence value) {
+        return BOOLEAN_ATTRIBUTES.contains(attrName.toLowerCase(java.util.Locale.ROOT))
+                && attrName.equalsIgnoreCase(value.toString());
+    }
+
     @Override
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
