@@ -79,8 +79,10 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
     /** Init parameter for the scan root collection path. */
     private static final String PARAM_SCAN_ROOT = "scan-root";
 
+    /** Init parameter to scan at startup (default true). */
+    private static final String PARAM_SCAN_ON_STARTUP = "scan-on-startup";
+
     private RouteRegistry registry;
-    private String servletPrefix;
 
     @Override
     public Logger getLog() {
@@ -96,15 +98,20 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
 
         registry = new RouteRegistry(getPool(), scanRoot);
 
-        // Determine the servlet prefix from the mapping (e.g., "/apps" from "/apps/*")
-        // We'll strip this prefix from incoming request paths to get the RESTXQ path
-        final String mapping = config.getServletContext().getServletRegistration(
-                config.getServletName()) != null
-                ? null  // Can't reliably get mapping from ServletRegistration at init time
-                : null;
-        servletPrefix = "";  // Will be determined at request time
+        final boolean scanOnStartup = !"false".equalsIgnoreCase(
+                config.getInitParameter(PARAM_SCAN_ON_STARTUP));
 
-        LOG.info("NativeRestXqServlet initialized; scan-root={}", scanRoot);
+        if (scanOnStartup) {
+            try (final DBBroker broker = getPool().get(Optional.empty())) {
+                LOG.info("NativeRestXqServlet: pre-scanning RESTXQ modules at startup");
+                registry.fullScan(broker);
+            } catch (final EXistException e) {
+                LOG.warn("Failed to pre-scan RESTXQ modules at startup: {}", e.getMessage());
+            }
+        }
+
+        LOG.info("NativeRestXqServlet initialized; scan-root={}, scan-on-startup={}",
+                scanRoot, scanOnStartup);
     }
 
     @Override
@@ -239,6 +246,14 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
                     + moduleUri.removeLastSegment().toString());
 
             xquery = xqueryService.compile(context, source);
+
+            // Check eXist security annotations (%auth:*) before execution
+            final String authDenial = SecurityAnnotationHandler.checkAccess(
+                    broker.getCurrentSubject(), route, xquery);
+            if (authDenial != null) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, authDenial);
+                return;
+            }
 
             // Resolve the function
             final UserDefinedFunction fn = context.resolveFunction(
