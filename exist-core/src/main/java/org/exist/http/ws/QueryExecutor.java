@@ -69,10 +69,13 @@ public final class QueryExecutor {
                         final EvalProtocol.ClientMessage msg) {
         final EvalProtocol.Timing timing = new EvalProtocol.Timing();
         final long startTime = System.currentTimeMillis();
+        final String user = evalSession.getSubject().getName();
 
         try (final DBBroker broker = pool.get(Optional.of(evalSession.getSubject()))) {
             // Parse phase
             sendProgress(wsSession, msg.id, EvalProtocol.PHASE_PARSING, 0, 0);
+            QueryMonitorBroadcaster.broadcastEvent("started", msg.id, user, msg.query,
+                    EvalProtocol.PHASE_PARSING, 0, 0);
             final long parseStart = System.currentTimeMillis();
 
             final XQueryContext context = new XQueryContext(pool);
@@ -88,10 +91,14 @@ public final class QueryExecutor {
                 timing.parse = System.currentTimeMillis() - parseStart;
                 timing.total = System.currentTimeMillis() - startTime;
                 sendError(wsSession, msg.id, e, timing);
+                QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                        null, 0, timing.total);
                 return;
             } catch (final IOException e) {
                 timing.total = System.currentTimeMillis() - startTime;
                 sendError(wsSession, msg.id, null, e.getMessage(), 0, 0, timing);
+                QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                        null, 0, timing.total);
                 return;
             }
 
@@ -113,6 +120,8 @@ public final class QueryExecutor {
                 // Evaluate phase
                 sendProgress(wsSession, msg.id, EvalProtocol.PHASE_EVALUATING, 0,
                         System.currentTimeMillis() - startTime);
+                QueryMonitorBroadcaster.broadcastEvent("progress", msg.id, user, msg.query,
+                        EvalProtocol.PHASE_EVALUATING, 0, System.currentTimeMillis() - startTime);
                 final long evalStart = System.currentTimeMillis();
 
                 final Sequence result;
@@ -123,9 +132,13 @@ public final class QueryExecutor {
                     timing.total = System.currentTimeMillis() - startTime;
                     if (watchDog.isTerminating()) {
                         sendCancelled(wsSession, msg.id, 0, timing);
+                        QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id, user, msg.query,
+                                null, 0, timing.total);
                     } else {
                         sendError(wsSession, msg.id, null, e.getMessage(),
                                 e.getLine(), e.getColumn(), timing);
+                        QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                                null, 0, timing.total);
                     }
                     return;
                 } catch (final XPathException e) {
@@ -133,8 +146,12 @@ public final class QueryExecutor {
                     timing.total = System.currentTimeMillis() - startTime;
                     if (watchDog.isTerminating()) {
                         sendCancelled(wsSession, msg.id, 0, timing);
+                        QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id, user, msg.query,
+                                null, 0, timing.total);
                     } else {
                         sendError(wsSession, msg.id, e, timing);
+                        QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                                null, 0, timing.total);
                     }
                     return;
                 }
@@ -161,10 +178,14 @@ public final class QueryExecutor {
 
                         sendResult(wsSession, msg.id, 1, serialized, false, timing, itemCount);
                     }
+                    QueryMonitorBroadcaster.broadcastEvent("completed", msg.id, user, msg.query,
+                            null, itemCount, System.currentTimeMillis() - startTime);
                 } catch (final SAXException | XPathException e) {
                     timing.serialize = System.currentTimeMillis() - serStart;
                     timing.total = System.currentTimeMillis() - startTime;
                     sendError(wsSession, msg.id, null, e.getMessage(), 0, 0, timing);
+                    QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                            null, 0, timing.total);
                 }
             } finally {
                 evalSession.unregisterQuery(msg.id);
@@ -174,6 +195,8 @@ public final class QueryExecutor {
         } catch (final EXistException | PermissionDeniedException e) {
             timing.total = System.currentTimeMillis() - startTime;
             sendError(wsSession, msg.id, null, e.getMessage(), 0, 0, timing);
+            QueryMonitorBroadcaster.broadcastEvent("error", msg.id, user, msg.query,
+                    null, 0, timing.total);
         }
     }
 
@@ -301,6 +324,9 @@ public final class QueryExecutor {
         } catch (final IOException e) {
             LOG.debug("Failed to send progress: {}", e.getMessage());
         }
+        // Also broadcast to monitor channel (user/query not available here,
+        // but the snapshot fills in full details)
+        QueryMonitorBroadcaster.broadcastEvent("progress", id, "", null, phase, items, elapsed);
     }
 
     private void sendResult(final Session session, final String id, final int chunk,

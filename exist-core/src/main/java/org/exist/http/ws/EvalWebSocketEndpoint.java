@@ -29,6 +29,7 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.ProcessMonitor;
 
 import jakarta.websocket.*;
 import jakarta.websocket.server.HandshakeRequest;
@@ -178,6 +179,9 @@ public class EvalWebSocketEndpoint {
             case EvalProtocol.ACTION_COMPILE:
                 handleCompile(session, evalSession, msg);
                 break;
+            case EvalProtocol.ACTION_ADMIN_CANCEL:
+                handleAdminCancel(session, evalSession, msg);
+                break;
             default:
                 try {
                     session.getBasicRemote().sendText(
@@ -244,6 +248,45 @@ public class EvalWebSocketEndpoint {
         final boolean cancelled = evalSession.cancelQuery(msg.id);
         if (!cancelled) {
             LOG.debug("Cancel requested for unknown query: {}", msg.id);
+        }
+    }
+
+    /**
+     * Admin cancel: kill any running query by its context identity hash code.
+     * Requires DBA role. Uses the ProcessMonitor (same as system:kill-running-xquery).
+     */
+    private void handleAdminCancel(final Session session, final EvalSession evalSession,
+                                    final EvalProtocol.ClientMessage msg) {
+        if (!evalSession.getSubject().hasDbaRole()) {
+            try {
+                session.getBasicRemote().sendText(
+                        EvalProtocol.errorMessage(msg.id, null,
+                                "Permission denied: admin-cancel requires DBA role", 0, 0, null));
+            } catch (final IOException e) {
+                LOG.debug("Failed to send permission error: {}", e.getMessage());
+            }
+            return;
+        }
+
+        try {
+            final BrokerPool pool = BrokerPool.getInstance();
+            final ProcessMonitor monitor = pool.getProcessMonitor();
+            final int targetId = Integer.parseInt(msg.id);
+
+            boolean found = false;
+            for (final org.exist.xquery.XQueryWatchDog wd : monitor.getRunningXQueries()) {
+                if (System.identityHashCode(wd.getContext()) == targetId) {
+                    wd.kill(0);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                LOG.debug("Admin cancel: query {} not found", msg.id);
+            }
+        } catch (final Exception e) {
+            LOG.warn("Admin cancel failed: {}", e.getMessage());
         }
     }
 

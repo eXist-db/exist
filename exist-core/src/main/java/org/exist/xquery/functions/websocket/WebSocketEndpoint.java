@@ -27,6 +27,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.http.ws.QueryMonitorBroadcaster;
+import org.exist.storage.BrokerPool;
 import org.exist.util.ThreadUtils;
 
 import jakarta.websocket.*;
@@ -79,6 +81,18 @@ public class WebSocketEndpoint {
             final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
                     runnable -> ThreadUtils.newGlobalThread("ws-heartbeat", runnable));
             service.scheduleAtFixedRate(WebSocketEndpoint::pingAll, 500, 500, TimeUnit.MILLISECONDS);
+
+            // Schedule periodic snapshot of all running queries for admin monitors
+            final ScheduledExecutorService monitorService = Executors.newSingleThreadScheduledExecutor(
+                    runnable -> ThreadUtils.newGlobalThread("ws-monitor-snapshot", runnable));
+            monitorService.scheduleAtFixedRate(() -> {
+                try {
+                    final BrokerPool pool = BrokerPool.getInstance();
+                    QueryMonitorBroadcaster.broadcastSnapshot(pool);
+                } catch (final Exception e) {
+                    LOG.debug("Monitor snapshot failed: {}", e.getMessage());
+                }
+            }, 1, 1, TimeUnit.SECONDS);
 
             initialized = true;
         }
@@ -162,7 +176,7 @@ public class WebSocketEndpoint {
      * @param toChannel the channel, or null to send to all clients
      * @param message the message text
      */
-    static void sendAll(final String toChannel, final String message) {
+    public static void sendAll(final String toChannel, final String message) {
         final Iterator<Map.Entry<Session, String>> iterator = sessions.entrySet().iterator();
         while (iterator.hasNext()) {
             try {
