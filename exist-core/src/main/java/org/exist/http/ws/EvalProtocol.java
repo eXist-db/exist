@@ -50,6 +50,7 @@ public final class EvalProtocol {
     public static final String ACTION_EVAL = "eval";
     public static final String ACTION_CANCEL = "cancel";
     public static final String ACTION_COMPILE = "compile";
+    public static final String ACTION_ADMIN_CANCEL = "admin-cancel";
 
     // Server message types
     public static final String TYPE_PROGRESS = "progress";
