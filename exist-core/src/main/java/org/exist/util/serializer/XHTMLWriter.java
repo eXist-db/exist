@@ -23,6 +23,7 @@ package org.exist.util.serializer;
 
 import java.io.IOException;
 import java.io.Writer;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -111,6 +112,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
     
     protected String currentTag;
+    protected boolean inHead = false;
+    protected boolean contentTypeMetaWritten = false;
 
     protected final ObjectSet<String> emptyTags;
     protected final ObjectSet<String> inlineTags;
@@ -151,19 +154,26 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void startElement(final QName qname) throws TransformerException {
-        
+
         final QName xhtmlQName = removeXhtmlPrefix(qname);
-        
+
         super.startElement(xhtmlQName);
         currentTag = xhtmlQName.getStringValue();
+        if ("head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
+            inHead = true;
+            writeContentTypeMeta();
+        }
     }
     
     @Override
     public void endElement(final QName qname) throws TransformerException {
         final QName xhtmlQName = removeXhtmlPrefix(qname);
-        
+        if (inHead && "head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
+            inHead = false;
+        }
+
         super.endElement(xhtmlQName);
-        
+
         haveCollapsedXhtmlPrefix = false;
     }
     
@@ -180,20 +190,27 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
-        
+
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
-        
+
         super.startElement(namespaceURI, localName, xhtmlQName);
         currentTag = xhtmlQName;
+        if ("head".equalsIgnoreCase(localName)) {
+            inHead = true;
+            writeContentTypeMeta();
+        }
     }
     
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
-        
+        if (inHead && "head".equalsIgnoreCase(localName)) {
+            inHead = false;
+        }
+
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
-        
+
         super.endElement(namespaceURI, localName, xhtmlQName);
-        
+
         haveCollapsedXhtmlPrefix = false;
     }
     
@@ -309,5 +326,33 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
     			&& inlineTags.contains(localName);
+    }
+
+    /**
+     * Write a meta content-type tag as the first child of head when
+     * include-content-type is enabled (the default per W3C Serialization 3.1).
+     */
+    protected void writeContentTypeMeta() throws TransformerException {
+        if (contentTypeMetaWritten || outputProperties == null) {
+            return;
+        }
+        final String includeContentType = outputProperties.getProperty("include-content-type", "yes");
+        if (!"yes".equals(includeContentType)) {
+            return;
+        }
+        contentTypeMetaWritten = true;
+        try {
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+            final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+            closeStartTag(false);
+            final Writer writer = getWriter();
+            writer.write("<meta http-equiv=\"Content-Type\" content=\"");
+            writer.write(mediaType);
+            writer.write("; charset=");
+            writer.write(encoding);
+            writer.write("\">");
+        } catch (IOException e) {
+            throw new TransformerException(e.getMessage(), e);
+        }
     }
 }

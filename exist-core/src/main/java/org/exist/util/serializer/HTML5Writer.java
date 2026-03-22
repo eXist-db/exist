@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.dom.QName;
 
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.Writer;
@@ -144,9 +143,6 @@ public class HTML5Writer extends XHTML5Writer {
         RAW_TEXT_ELEMENTS.add("style");
     }
 
-    private boolean inHead = false;
-    private boolean contentTypeMetaWritten = false;
-
     public HTML5Writer() {
         super(EMPTY_TAGS, INLINE_TAGS);
     }
@@ -156,27 +152,7 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
-    public void startElement(QName qname) throws TransformerException {
-        super.startElement(qname);
-        if ("head".equalsIgnoreCase(qname.getLocalPart())) {
-            inHead = true;
-        }
-    }
-
-    @Override
-    public void startElement(String namespaceURI, String localName, String qname) throws TransformerException {
-        super.startElement(namespaceURI, localName, qname);
-        if ("head".equalsIgnoreCase(localName)) {
-            inHead = true;
-        }
-    }
-
-    @Override
     public void endElement(QName qname) throws TransformerException {
-        if (inHead && "head".equalsIgnoreCase(qname.getLocalPart())) {
-            writeContentTypeMeta();
-            inHead = false;
-        }
         if (!isEmptyTag(qname.getLocalPart())) {
             super.endElement(qname);
         } else {
@@ -187,10 +163,6 @@ public class HTML5Writer extends XHTML5Writer {
 
     @Override
     public void endElement(String namespaceURI, String localName, String qname) throws TransformerException {
-        if (inHead && "head".equalsIgnoreCase(localName)) {
-            writeContentTypeMeta();
-            inHead = false;
-        }
         if (!isEmptyTag(localName)) {
             super.endElement(namespaceURI, localName, qname);
         } else {
@@ -299,27 +271,4 @@ public class HTML5Writer extends XHTML5Writer {
         return super.needsEscape(ch);
     }
 
-    private void writeContentTypeMeta() throws TransformerException {
-        if (contentTypeMetaWritten || outputProperties == null) {
-            return;
-        }
-        final String includeContentType = outputProperties.getProperty("include-content-type", "yes");
-        if (!"yes".equals(includeContentType)) {
-            return;
-        }
-        contentTypeMetaWritten = true;
-        try {
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-            closeStartTag(false);
-            final Writer writer = getWriter();
-            writer.write("<meta http-equiv=\"Content-Type\" content=\"");
-            writer.write(mediaType);
-            writer.write("; charset=");
-            writer.write(encoding);
-            writer.write("\">");
-        } catch (IOException e) {
-            throw new TransformerException(e.getMessage(), e);
-        }
-    }
 }
