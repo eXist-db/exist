@@ -717,6 +717,117 @@ public class Type {
     }
 
     /**
+     * Check if a cast from sourceType to targetType is allowed per XPath F&amp;O 3.1
+     * Section 19 (Casting), Table 6. This implements the casting table that determines
+     * whether a cast between two primitive types is possible (may succeed for some values)
+     * or impossible (will never succeed for any value).
+     *
+     * <p>If the cast is impossible, the caller should raise XPTY0004 rather than
+     * attempting the cast (which would incorrectly raise FORG0001).</p>
+     *
+     * @param sourceType the type constant of the source type
+     * @param targetType the type constant of the target type
+     *
+     * @return true if the cast may succeed (for some values), false if the cast can never succeed
+     */
+    public static boolean isCastable(final int sourceType, final int targetType) {
+        // Casting to/from ITEM, ANY_ATOMIC_TYPE, or same type is always allowed
+        if (sourceType == targetType || targetType == ITEM || targetType == ANY_ATOMIC_TYPE) {
+            return true;
+        }
+
+        // xs:untypedAtomic and xs:string can be cast to any atomic type
+        if (sourceType == UNTYPED_ATOMIC || sourceType == STRING || subTypeOf(sourceType, STRING)) {
+            return true;
+        }
+
+        // Any atomic type can be cast to xs:untypedAtomic or xs:string
+        if (targetType == UNTYPED_ATOMIC || targetType == STRING || subTypeOf(targetType, STRING)) {
+            return true;
+        }
+
+        // Get primitive types for the casting table lookup
+        final int srcPrimitive;
+        final int tgtPrimitive;
+        try {
+            srcPrimitive = primitiveTypeOf(sourceType);
+            tgtPrimitive = primitiveTypeOf(targetType);
+        } catch (final IllegalArgumentException e) {
+            // Unknown type — allow the cast to proceed and let convertTo() handle errors
+            return true;
+        }
+
+        // Same primitive type is always castable
+        if (srcPrimitive == tgtPrimitive) {
+            return true;
+        }
+
+        // XPath F&O 3.1, Section 19, Table 6 — Casting table by primitive type pairs.
+        // 'M' (may) or 'Y' (yes) entries return true; 'N' (no) entries return false.
+        return switch (srcPrimitive) {
+            case FLOAT, DOUBLE, DECIMAL ->
+                    // Numerics can cast to: other numerics, boolean, duration subtypes
+                    tgtPrimitive == FLOAT || tgtPrimitive == DOUBLE || tgtPrimitive == DECIMAL
+                            || tgtPrimitive == BOOLEAN;
+
+            case BOOLEAN ->
+                    // Boolean can cast to: numerics
+                    tgtPrimitive == FLOAT || tgtPrimitive == DOUBLE || tgtPrimitive == DECIMAL;
+
+            case DURATION ->
+                    // Duration can cast to: duration subtypes (yearMonthDuration, dayTimeDuration)
+                    // duration subtypes share the same primitive: DURATION
+                    // So this is already handled by srcPrimitive == tgtPrimitive above
+                    false;
+
+            case DATE_TIME ->
+                    // dateTime can cast to: date, time, gYearMonth, gYear, gMonthDay, gDay, gMonth
+                    tgtPrimitive == DATE || tgtPrimitive == TIME
+                            || tgtPrimitive == G_YEAR_MONTH || tgtPrimitive == G_YEAR
+                            || tgtPrimitive == G_MONTH_DAY || tgtPrimitive == G_DAY
+                            || tgtPrimitive == G_MONTH;
+
+            case DATE ->
+                    // date can cast to: dateTime, gYearMonth, gYear, gMonthDay, gDay, gMonth
+                    tgtPrimitive == DATE_TIME
+                            || tgtPrimitive == G_YEAR_MONTH || tgtPrimitive == G_YEAR
+                            || tgtPrimitive == G_MONTH_DAY || tgtPrimitive == G_DAY
+                            || tgtPrimitive == G_MONTH;
+
+            case TIME ->
+                    // time CANNOT cast to anything except string/untypedAtomic (handled above)
+                    false;
+
+            case G_YEAR_MONTH, G_YEAR, G_MONTH_DAY, G_DAY, G_MONTH ->
+                    // Gregorian types can only cast to: dateTime (if enough info), but spec says N
+                    // except string/untypedAtomic (handled above)
+                    false;
+
+            case HEX_BINARY ->
+                    // hexBinary can cast to: base64Binary
+                    tgtPrimitive == BASE64_BINARY;
+
+            case BASE64_BINARY ->
+                    // base64Binary can cast to: hexBinary
+                    tgtPrimitive == HEX_BINARY;
+
+            case ANY_URI ->
+                    // anyURI cannot cast to anything except string/untypedAtomic (handled above)
+                    false;
+
+            case QNAME ->
+                    // QName cannot cast to anything except string/untypedAtomic (handled above)
+                    // (and NOTATION, but that's rarely used)
+                    tgtPrimitive == NOTATION;
+
+            case NOTATION ->
+                    tgtPrimitive == QNAME;
+
+            default -> true;  // Unknown — allow and let convertTo() decide
+        };
+    }
+
+    /**
      * Get the XDM equivalent type of a DOM Node type (i.e. {@link Node#getNodeType()}).
      *
      * @param domNodeType the DOM node type as defined in {@link Node}.

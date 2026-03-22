@@ -118,6 +118,13 @@ public class CastExpression extends AbstractExpression {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
                 }
             } else {
+                // Per XPath F&O 3.1, Section 19: if the source and target types
+                // have no valid casting relationship, raise XPTY0004 (not FORG0001).
+                if (!Type.isCastable(item.getType(), requiredType)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Cannot cast " + Type.getTypeName(item.getType()) +
+                            " to " + Type.getTypeName(requiredType));
+                }
                 result = item.convertTo(requiredType);
             }
         }
