@@ -195,27 +195,21 @@ public class DoubleValue extends NumericValue {
 
     public DecimalValue toDecimalValue() throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
-                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
-                    + "') to " + Type.getTypeName(Type.DECIMAL));
+            throw conversionError(ErrorCodes.FOCA0002, Type.DECIMAL);
         }
         return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
     }
 
     public IntegerValue toIntegerValue() throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
-                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
-                    + "') to " + Type.getTypeName(Type.INTEGER));
+            throw conversionError(ErrorCodes.FOCA0002, Type.INTEGER);
         }
         return new IntegerValue(getExpression(), (long) value);
     }
 
     public IntegerValue toIntegerSubType(final int subType) throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
-                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
-                    + "') to " + Type.getTypeName(subType));
+            throw conversionError(ErrorCodes.FOCA0002, subType);
         }
         if (subType != Type.INTEGER && value > Integer.MAX_VALUE) {
             throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
@@ -225,7 +219,11 @@ public class DoubleValue extends NumericValue {
     }
 
     private XPathException conversionError(final int type) {
-        return new XPathException(getExpression(), ErrorCodes.FORG0001, "Cannot convert "
+        return conversionError(ErrorCodes.FORG0001, type);
+    }
+
+    private XPathException conversionError(final ErrorCodes.ErrorCode errorCode, final int type) {
+        return new XPathException(getExpression(), errorCode, "Cannot convert "
                 + Type.getTypeName(getType()) + "('" + getStringValue() + "') to "
                 + Type.getTypeName(type));
     }
