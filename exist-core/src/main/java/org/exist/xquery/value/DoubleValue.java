@@ -196,21 +196,27 @@ public class DoubleValue extends NumericValue {
 
     public DecimalValue toDecimalValue() throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw conversionError(Type.DECIMAL);
+            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
+                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
+                    + "') to " + Type.getTypeName(Type.DECIMAL));
         }
         return new DecimalValue(getExpression(), BigDecimal.valueOf(value));
     }
 
     public IntegerValue toIntegerValue() throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw conversionError(Type.INTEGER);
+            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
+                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
+                    + "') to " + Type.getTypeName(Type.INTEGER));
         }
         return new IntegerValue(getExpression(), (long) value);
     }
 
     public IntegerValue toIntegerSubType(final int subType) throws XPathException {
         if (isNaN() || isInfinite()) {
-            throw conversionError(subType);
+            throw new XPathException(getExpression(), ErrorCodes.FOCA0002,
+                    "Cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue()
+                    + "') to " + Type.getTypeName(subType));
         }
         if (subType != Type.INTEGER && value > Integer.MAX_VALUE) {
             throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
