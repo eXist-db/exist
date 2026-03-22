@@ -44,6 +44,12 @@ public final class RestXqNamespaces {
     /** The HTTP client namespace prefix. */
     public static final String HTTP_PREFIX = "http";
 
+    /** The input processing namespace for %input:* annotations. */
+    public static final String INPUT_NS = "http://exquery.org/ns/restxq/input";
+
+    /** The input namespace prefix. */
+    public static final String INPUT_PREFIX = "input";
+
     /** The eXist-db auth annotation namespace. */
     public static final String AUTH_NS = "http://exist-db.org/ns/auth";
 

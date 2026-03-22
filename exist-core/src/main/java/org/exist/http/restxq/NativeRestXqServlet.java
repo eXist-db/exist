@@ -480,7 +480,7 @@ public class NativeRestXqServlet extends AbstractExistHttpServlet {
                     errorHandler.getFunctionName(), errorHandler.getArity(),
                     PathMatcher.parse("/"), Set.of("GET"), new java.util.Properties(),
                     List.of(), List.of(),
-                    Map.of(), Map.of(), Map.of(), Map.of(), null);
+                    Map.of(), Map.of(), Map.of(), Map.of(), null, new java.util.Properties());
             ResponseWriter.write(broker, dummyRoute, result, response);
         }
     }

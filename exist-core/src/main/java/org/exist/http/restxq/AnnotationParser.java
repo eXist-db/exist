@@ -139,15 +139,18 @@ public class AnnotationParser {
         // Check if this function has any RESTXQ annotations at all
         boolean hasRestAnnotation = false;
         boolean hasOutputAnnotation = false;
+        boolean hasInputAnnotation = false;
         for (final Annotation a : annotations) {
-            if (RestXqNamespaces.REST_NS.equals(a.getName().getNamespaceURI())) {
+            final String ns = a.getName().getNamespaceURI();
+            if (RestXqNamespaces.REST_NS.equals(ns)) {
                 hasRestAnnotation = true;
-            }
-            if (RestXqNamespaces.OUTPUT_NS.equals(a.getName().getNamespaceURI())) {
+            } else if (RestXqNamespaces.OUTPUT_NS.equals(ns)) {
                 hasOutputAnnotation = true;
+            } else if (RestXqNamespaces.INPUT_NS.equals(ns)) {
+                hasInputAnnotation = true;
             }
         }
-        if (!hasRestAnnotation && !hasOutputAnnotation) {
+        if (!hasRestAnnotation && !hasOutputAnnotation && !hasInputAnnotation) {
             return null;
         }
 
@@ -164,6 +167,7 @@ public class AnnotationParser {
         final Map<String, Route.ParamBinding> headerParams = new LinkedHashMap<>();
         final Map<String, Route.ParamBinding> cookieParams = new LinkedHashMap<>();
         String bodyVariable = null;
+        final Properties inputOptions = new Properties();
         final String funcName = function.getSignature().getName().getLocalPart();
 
         for (final Annotation annotation : annotations) {
@@ -255,6 +259,15 @@ public class AnnotationParser {
                             "Unknown serialization parameter %output:" + local + " on function " + funcName);
                 }
                 outputProperties.setProperty(local, getLiteralString(values, 0));
+            } else if (RestXqNamespaces.INPUT_NS.equals(ns)) {
+                // %input:json('lax=no'), %input:csv('header=yes'), %input:html('nons=true')
+                // Parse key=value pairs from annotation values and store as input.type.key=value
+                for (final LiteralValue v : values) {
+                    final String optStr = literalToString(v);
+                    if (optStr != null) {
+                        parseInputOptions(local, optStr, inputOptions);
+                    }
+                }
             }
         }
 
@@ -373,7 +386,8 @@ public class AnnotationParser {
                 Collections.unmodifiableMap(formParams),
                 Collections.unmodifiableMap(headerParams),
                 Collections.unmodifiableMap(cookieParams),
-                bodyVariable
+                bodyVariable,
+                inputOptions
         );
     }
 
@@ -452,6 +466,25 @@ public class AnnotationParser {
             return null;
         }
         return literalToString(values[index]);
+    }
+
+    /**
+     * Parses input option strings like "lax=no" or "header=yes" from
+     * %input:json, %input:csv, %input:html annotations.
+     * Stores as "input.{type}.{key}={value}" in the options Properties.
+     */
+    private static void parseInputOptions(final String type, final String optStr,
+                                          final Properties options) {
+        // Option format: "key=value" or "key=value,key2=value2"
+        for (final String part : optStr.split(",")) {
+            final String trimmed = part.trim();
+            final int eqIdx = trimmed.indexOf('=');
+            if (eqIdx > 0) {
+                final String key = trimmed.substring(0, eqIdx).trim();
+                final String value = trimmed.substring(eqIdx + 1).trim();
+                options.setProperty("input." + type + "." + key, value);
+            }
+        }
     }
 
     private static String literalToString(final LiteralValue value) {

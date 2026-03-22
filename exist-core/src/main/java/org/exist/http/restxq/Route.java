@@ -76,6 +76,9 @@ public class Route implements Comparable<Route> {
     /** The variable name for POST/PUT body binding, or null. */
     private final String bodyVariable;
 
+    /** Input processing options from %input:json, %input:csv, %input:html annotations. */
+    private final Properties inputOptions;
+
     Route(final String moduleUri, final QName functionName, final int arity,
           final PathMatcher pathMatcher, final Set<String> methods,
           final Properties outputProperties,
@@ -84,7 +87,8 @@ public class Route implements Comparable<Route> {
           final Map<String, ParamBinding> formParams,
           final Map<String, ParamBinding> headerParams,
           final Map<String, ParamBinding> cookieParams,
-          final String bodyVariable) {
+          final String bodyVariable,
+          final Properties inputOptions) {
         this.moduleUri = moduleUri;
         this.functionName = functionName;
         this.arity = arity;
@@ -98,6 +102,7 @@ public class Route implements Comparable<Route> {
         this.headerParams = headerParams;
         this.cookieParams = cookieParams;
         this.bodyVariable = bodyVariable;
+        this.inputOptions = inputOptions;
     }
 
     public String getModuleUri() {
@@ -150,6 +155,10 @@ public class Route implements Comparable<Route> {
 
     public String getBodyVariable() {
         return bodyVariable;
+    }
+
+    public Properties getInputOptions() {
+        return inputOptions;
     }
 
     /**

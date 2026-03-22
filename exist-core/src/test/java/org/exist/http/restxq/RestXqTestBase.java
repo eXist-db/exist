@@ -245,7 +245,7 @@ public abstract class RestXqTestBase {
                 .Post(getRestXqUri() + "/" + path)
                 .bodyString(body, ContentType.parse(contentType))
         ).returnResponse();
-        return asString(response.getEntity().getContent());
+        return response.getEntity() != null ? asString(response.getEntity().getContent()) : "";
     }
 
     protected static int doPostStatus(final String path, final String body, final String contentType) throws IOException {
