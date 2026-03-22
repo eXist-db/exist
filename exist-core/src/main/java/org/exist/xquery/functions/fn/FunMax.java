@@ -170,7 +170,9 @@ public class FunMax extends CollatingFunction {
                     {max = value;}
                 
                 else {
-                	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE) {
+                	if (Type.getCommonSuperType(max.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE
+                			&& !(Type.subTypeOfUnion(max.getType(), Type.NUMERIC)
+                					&& Type.subTypeOfUnion(value.getType(), Type.NUMERIC))) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
                 				" and " + Type.getTypeName(value.getType()), max);
                 	}
