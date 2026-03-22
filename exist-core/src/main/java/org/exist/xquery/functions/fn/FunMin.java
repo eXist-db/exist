@@ -170,7 +170,9 @@ public class FunMin extends CollatingFunction {
         		if (min == null)
                     {min = value;}
                 else {                	
-                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE) {
+                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE
+                			&& !(Type.subTypeOfUnion(min.getType(), Type.NUMERIC)
+                					&& Type.subTypeOfUnion(value.getType(), Type.NUMERIC))) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
                 				" and " + Type.getTypeName(value.getType()), value);
                 	}
