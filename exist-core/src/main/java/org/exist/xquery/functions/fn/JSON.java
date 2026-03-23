@@ -22,6 +22,7 @@
 package org.exist.xquery.functions.fn;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import org.exist.Namespaces;
@@ -38,6 +39,8 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -212,6 +215,17 @@ public class JSON extends BasicFunction {
         }
         try {
             String url = href.getStringValue();
+            // Resolve relative URIs against the static base URI
+            if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
+                final String baseURI = context.getBaseURI().getStringValue();
+                if (baseURI != null && !baseURI.isEmpty()) {
+                    try {
+                        url = new URI(baseURI).resolve(url).toString();
+                    } catch (final URISyntaxException e) {
+                        // fall through to default handling
+                    }
+                }
+            }
             if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
                 url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
             }
@@ -225,6 +239,8 @@ public class JSON extends BasicFunction {
                 final Item result = readValue(context, parser, handleDuplicates);
                 return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
             }
+        } catch (final JsonParseException e) {
+            throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
