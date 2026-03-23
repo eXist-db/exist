@@ -76,7 +76,7 @@ public class ActiveDirectoryRealmTest {
 	/**
 	 * Test method for {@link org.exist.security.realm.activedirectory.ActiveDirectoryRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
-	@Ignore
+	@Ignore("Requires external Active Directory server")
 	@Test
 	public void testAuthenticate() {
 		Subject currentUser = null;

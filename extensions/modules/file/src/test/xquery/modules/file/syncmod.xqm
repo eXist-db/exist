@@ -269,7 +269,6 @@ function syncmod:prunes-a-directory-with-after() {
 };
 
 declare
-    %test:pending
     %test:assertTrue
 function syncmod:prunes-a-file-with-after() {
     let $directory := helper:get-test-directory($syncmod:suite)

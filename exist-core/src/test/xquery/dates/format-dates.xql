@@ -456,7 +456,6 @@ function fd:format-dateTime-ZN-negative-single-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+00:00")
     %test:assertEquals("GMT")
 function fd:format-dateTime-ZN-zero($date as xs:dateTime) {
@@ -488,7 +487,6 @@ function fd:format-dateTime-ZN-NY-negative-double-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000-05:00")
     %test:assertEquals("12:00 EST")
 function fd:format-dateTime-ZN-NY-negative-single-digit($date as xs:dateTime) {

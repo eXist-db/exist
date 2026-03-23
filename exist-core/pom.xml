@@ -1202,10 +1202,14 @@ The BaseX Team. The original license statement is also included below.]]></pream
 
                     <excludes>
 
-                        <!-- NOTE: these can still exhibit deadlocks 
-                                 see https://github.com/eXist-db/exist/issues/4140 
+                        <!-- NOTE: these can still exhibit deadlocks
+                                 see https://github.com/eXist-db/exist/issues/4140
                                  see https://github.com/eXist-db/exist/issues/3685 -->
                         <exclude>org.exist.collections.ConcurrencyTest</exclude>
+
+                        <!-- Passes locally (~54s) but hangs on CI during BrokerPool shutdown,
+                                 causing the entire unit test step to time out.
+                                 see https://github.com/eXist-db/exist/pull/6153 -->
                         <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
                     </excludes>
                 </configuration>

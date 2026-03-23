@@ -1659,7 +1659,7 @@ public class XQueryTest {
         assertEquals(1, result.getSize());
     }
 
-    @Ignore
+    @Ignore("Adjacent text nodes not merged after XUpdate append, see #6160")
     @Test
     public void xupdateWithAdjacentTextNodes() throws XMLDBException {
         String query = "let $name := xmldb:store('/db' , 'xupdateTest.xml', <test>aaa</test>)" +

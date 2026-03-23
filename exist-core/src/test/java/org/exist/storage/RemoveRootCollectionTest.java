@@ -64,7 +64,7 @@ public class RemoveRootCollectionTest {
         assertEquals(0, root.getDocumentCount(broker));
     }
 
-    @Ignore
+    @Ignore("Document count not zero after removing root collection, see #6158")
     @Test
     public void removeRootCollectionWithDocument() throws Exception {
         addDocumentToRoot();

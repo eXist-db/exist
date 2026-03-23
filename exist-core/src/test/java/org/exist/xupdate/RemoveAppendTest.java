@@ -67,7 +67,7 @@ public class RemoveAppendTest {
     @Rule
     public final ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    @Ignore
+    @Ignore("Test setup broken — ITEM_COUNT is zero")
     @Test
     public void testRemoveAppend() throws Exception {
         XUpdateQueryService service = testCol.getService(XUpdateQueryService.class);
