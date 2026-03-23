@@ -31,7 +31,7 @@ import org.exist.xquery.Cardinality;
  */
 public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
 
-    private String attributeName = null;
+    private String attributeName;
 
     /**
      * @param attributeName The name of the parameter in the <strong>FunctionSignature</strong>.
