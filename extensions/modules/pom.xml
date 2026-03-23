@@ -63,7 +63,7 @@
         <module>scheduler</module>
         <module>simpleql</module>
         <module>sql</module>
-        <!-- module>sql-oracle</module -->  <!-- Requires registration with Oracle! -->
+        <module>sql-oracle</module>
         <module>xmldiff</module>
         <module>xslfo</module>
     </modules>
