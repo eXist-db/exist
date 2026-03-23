@@ -186,7 +186,17 @@ public class IndentingXMLWriter extends XMLWriter {
             suppressIndentation = new HashSet<>();
             for (final String name : suppressProp.split("\\s+")) {
                 if (!name.isEmpty()) {
-                    suppressIndentation.add(name);
+                    // Handle URI-qualified names: Q{ns}local or {ns}local → extract local part
+                    if (name.startsWith("Q{") || name.startsWith("{")) {
+                        final int closeBrace = name.indexOf('}');
+                        if (closeBrace > 0 && closeBrace < name.length() - 1) {
+                            suppressIndentation.add(name.substring(closeBrace + 1));
+                        } else {
+                            suppressIndentation.add(name);
+                        }
+                    } else {
+                        suppressIndentation.add(name);
+                    }
                 }
             }
         } else {

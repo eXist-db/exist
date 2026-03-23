@@ -123,6 +123,52 @@ public class HTML5FragmentTest {
     }
 
     @Test
+    public void htmlSuppressIndentation() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
+            final XQuery xqueryService = pool.getXQueryService();
+            final String xquery = "<html><body><ul><li><p>One</p></li></ul></body></html>";
+            final Sequence result = xqueryService.execute(broker, xquery, null);
+
+            final Properties props = new Properties();
+            props.setProperty(OutputKeys.METHOD, "html");
+            props.setProperty(OutputKeys.INDENT, "yes");
+            props.setProperty(OutputKeys.VERSION, "5.0");
+            props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            props.setProperty("suppress-indentation", "li td");
+            props.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+
+            final StringWriter writer = new StringWriter();
+            final XQuerySerializer serializer = new XQuerySerializer(broker, props, writer);
+            serializer.serialize(result);
+            final String output = writer.toString();
+
+            // li should NOT have indentation inside it
+            assertTrue("li content should not be indented: " + output,
+                    output.contains("<li><p>One</p></li>"));
+        }
+    }
+
+    @Test
+    public void htmlSuppressIndentationViaFnSerialize() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
+            final XQuery xqueryService = pool.getXQueryService();
+            // Use fn:serialize with suppress-indentation — pass QNames, not string
+            final String xquery =
+                    "serialize(<html><body><ul><li><p>One</p></li></ul></body></html>, " +
+                    "map { 'method': 'html', 'indent': true(), 'version': '5.0', " +
+                    "'suppress-indentation': (xs:QName('li'), xs:QName('td')) })";
+            final Sequence result = xqueryService.execute(broker, xquery, null);
+            final String output = result.getStringValue();
+
+            // li should NOT have indentation inside it
+            assertTrue("li content should not be indented via fn:serialize: " + output,
+                    output.contains("<li><p>One</p></li>"));
+        }
+    }
+
+    @Test
     public void html40NoDoctypeWithoutPublicSystem() throws Exception {
         // HTML 4.0 without doctype-public/doctype-system should not emit DOCTYPE
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "4.0");
