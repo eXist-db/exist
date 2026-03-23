@@ -53,6 +53,30 @@ public final class XQueryParser {
     /** The PathExpr that accumulates prolog declarations and the body. */
     private PathExpr rootExpr;
 
+    /** Track whether we're inside a function body (declared or inline) for XPDY0002 */
+    private boolean inFunctionBody = false;
+
+    /** True if the query is a library module (starts with 'module namespace'). */
+    private boolean isLibraryModule = false;
+
+    /** Track declared decimal format names for XQST0097 duplicate detection */
+    private final java.util.Set<String> declaredDecimalFormats = new java.util.HashSet<>();
+    private boolean defaultDecimalFormatDeclared = false;
+
+    public boolean isLibraryModule() { return isLibraryModule; }
+
+    /** Returns true if the query declares xquery version "4.0". */
+    private boolean isXQ4() {
+        return context.getXQueryVersion() >= 40;
+    }
+
+    /** Throws a helpful error when XQ4 syntax is used in a 3.1 query. */
+    private XPathException xq4Required(final String feature) {
+        return new XPathException(previous.line, previous.column, ErrorCodes.XPST0003,
+                feature + " requires xquery version \"4.0\". " +
+                "Add 'xquery version \"4.0\";' to enable XQuery 4.0 features.");
+    }
+
     public XQueryParser(final XQueryContext context, final String source) {
         this.context = context;
         this.lexer = new XQueryLexer(source);
@@ -139,9 +163,10 @@ public final class XQueryParser {
      * Parses: module namespace prefix = "uri";
      */
     private void parseModuleDecl() throws XPathException {
+        isLibraryModule = true;
         matchKeyword(Keywords.MODULE);
         expectKeyword(Keywords.NAMESPACE);
-        final String prefix = expectNCName("module prefix");
+        final String prefix = expectName("module prefix");
         expect(Token.EQ, "'='");
         if (!check(Token.STRING_LITERAL)) throw error("Expected module namespace URI");
         final String uri = current.value;
@@ -149,6 +174,10 @@ public final class XQueryParser {
         expect(Token.SEMICOLON, "';'");
 
         try {
+            // Set the module namespace on the context (critical for library modules)
+            if (context instanceof ModuleContext) {
+                ((ModuleContext) context).setModuleNamespace(prefix, uri);
+            }
             context.declareNamespace(prefix, uri);
         } catch (final XPathException e) {
             throw error("Error declaring module namespace: " + e.getMessage());
@@ -249,7 +278,18 @@ public final class XQueryParser {
         } else if (checkKeyword(Keywords.COPY_NAMESPACES)) {
             // declare copy-namespaces preserve|no-preserve, inherit|no-inherit;
             advance();
-            skipToSemicolon();
+            if (matchKeyword(Keywords.PRESERVE)) {
+                context.setPreserveNamespaces(true);
+            } else if (matchKeyword("no-preserve")) {
+                context.setPreserveNamespaces(false);
+            }
+            expect(Token.COMMA, "','");
+            if (matchKeyword(Keywords.INHERIT)) {
+                context.setInheritNamespaces(true);
+            } else if (matchKeyword("no-inherit")) {
+                context.setInheritNamespaces(false);
+            }
+            expect(Token.SEMICOLON, "';'");
         } else if (checkKeyword(Keywords.BASE_URI)) {
             // declare base-uri "uri";
             advance();
@@ -258,9 +298,16 @@ public final class XQueryParser {
                 advance();
             }
             expect(Token.SEMICOLON, "';'");
+        } else if (checkKeyword("revalidation")) {
+            // XQUF: declare revalidation strict|lax|skip;
+            advance(); // consume 'revalidation'
+            matchKeyword("strict");
+            matchKeyword("lax");
+            matchKeyword("skip");
+            expect(Token.SEMICOLON, "';'");
         } else {
-            // Unknown declaration — skip to semicolon to recover
-            skipToSemicolon();
+            final String keyword = check(Token.NCNAME) ? current.value : "???";
+            throw error("Unknown prolog declaration: declare " + keyword);
         }
     }
 
@@ -376,7 +423,7 @@ public final class XQueryParser {
             // context.setDefaultStaticDecimalFormat(df); // TODO: requires v2/declare-decimal-format
             expect(Token.SEMICOLON, "';'");
         } else {
-            throw error("Expected 'element', 'function', 'collation', or 'order' after 'default'");
+            throw error("Expected 'element', 'function', 'collation', 'order', or 'decimal-format' after 'default'");
         }
     }
 
@@ -514,11 +561,17 @@ public final class XQueryParser {
         } else {
             expect(Token.LBRACE, "'{'");
             final PathExpr body = new PathExpr(context);
-            if (!check(Token.RBRACE)) {
-                body.add(parseExpr());
+            final boolean savedInFunctionBody = inFunctionBody;
+            inFunctionBody = true;
+            try {
+                if (!check(Token.RBRACE)) {
+                    body.add(parseExpr());
+                }
+                expect(Token.RBRACE, "'}'");
+                func.setFunctionBody(body);
+            } finally {
+                inFunctionBody = savedInFunctionBody;
             }
-            expect(Token.RBRACE, "'}'");
-            func.setFunctionBody(body);
         }
 
         expect(Token.SEMICOLON, "';'");
@@ -529,7 +582,7 @@ public final class XQueryParser {
 
     private void parseFunctionParam(final List<FunctionParameterSequenceType> params) throws XPathException {
         expect(Token.DOLLAR, "'$'");
-        final String paramName = expectNCName("parameter name");
+        final String paramName = expectName("parameter name");
 
         int type = Type.ITEM;
         Cardinality card = Cardinality.ZERO_OR_MORE;
@@ -570,27 +623,55 @@ parseExprSingle(); // parse but discard
 
         // Value or external
         Expression valueExpr = null;
+        boolean isExternal = false;
         if (match(Token.COLON_EQ)) {
             valueExpr = parseExprSingle();
         } else if (matchKeyword(Keywords.EXTERNAL)) {
-            // External variable
+            isExternal = true;
+            // Optional default value for external: external := expr
+            if (match(Token.COLON_EQ)) {
+                valueExpr = parseExprSingle();
+            }
         } else {
             throw error("Expected ':=' or 'external' in variable declaration");
         }
 
         expect(Token.SEMICOLON, "';'");
 
-        final PathExpr enclosed = new PathExpr(context);
-        if (valueExpr != null) {
+        if (isExternal) {
+            // Try to resolve the variable from the static context (pre-declared externals)
+            Variable external = null;
+            try {
+                external = context.resolveVariable(qname);
+                if (external != null && type != null) {
+                    external.setSequenceType(type);
+                }
+            } catch (final XPathException ignored) {
+            }
+            // Only add VariableDeclaration if the variable wasn't pre-declared
+            if (external == null) {
+                // Pass null for no default value, PathExpr for default value
+                final Expression defaultVal;
+                if (valueExpr != null) {
+                    final PathExpr enclosed = new PathExpr(context);
+                    enclosed.add(valueExpr);
+                    defaultVal = enclosed;
+                } else {
+                    defaultVal = null;
+                }
+                final VariableDeclaration decl = new VariableDeclaration(context, qname, defaultVal);
+                decl.setLocation(line, col);
+                if (type != null) decl.setSequenceType(type);
+                rootExpr.add(decl);
+            }
+        } else {
+            final PathExpr enclosed = new PathExpr(context);
             enclosed.add(valueExpr);
+            final VariableDeclaration decl = new VariableDeclaration(context, qname, enclosed);
+            decl.setLocation(line, col);
+            if (type != null) decl.setSequenceType(type);
+            rootExpr.add(decl);
         }
-
-        final VariableDeclaration decl = new VariableDeclaration(context, qname, enclosed);
-        decl.setLocation(line, col);
-        if (type != null) {
-            decl.setSequenceType(type);
-        }
-        rootExpr.add(decl);
     }
 
     private void parseOptionDecl() throws XPathException {
@@ -625,7 +706,7 @@ parseExprSingle(); // parse but discard
 
     private void parseModuleImport() throws XPathException {
         expectKeyword(Keywords.NAMESPACE);
-        final String prefix = expectNCName("module prefix");
+        final String prefix = expectName("module prefix");
         expect(Token.EQ, "'='");
 
         if (!check(Token.STRING_LITERAL)) throw error("Expected module namespace URI");
@@ -682,10 +763,10 @@ parseExprSingle(); // parse but discard
         if (checkKeyword(Keywords.IF)) {
             return parseIfExpr();
         }
-        if (checkKeyword(Keywords.SOME)) {
+        if (checkKeyword(Keywords.SOME) && peekIs(Token.DOLLAR)) {
             return parseQuantified(QuantifiedExpression.SOME);
         }
-        if (checkKeyword(Keywords.EVERY)) {
+        if (checkKeyword(Keywords.EVERY) && peekIs(Token.DOLLAR)) {
             return parseQuantified(QuantifiedExpression.EVERY);
         }
         if (checkKeyword(Keywords.SWITCH)) {
@@ -701,16 +782,18 @@ parseExprSingle(); // parse but discard
         if (checkKeyword(Keywords.COPY)) {
             return parseTransformExpr();
         }
-        if (checkKeyword(Keywords.INSERT)) {
+        // XQUF keywords — only treat as update expressions when NOT followed by (
+        // (insert/delete/replace/rename are also valid function names)
+        if (checkKeyword(Keywords.INSERT) && !peekIs(Token.LPAREN)) {
             return parseInsertExpr();
         }
-        if (checkKeyword(Keywords.DELETE)) {
+        if (checkKeyword(Keywords.DELETE) && !peekIs(Token.LPAREN)) {
             return parseDeleteExpr();
         }
-        if (checkKeyword(Keywords.REPLACE)) {
+        if (checkKeyword(Keywords.REPLACE) && !peekIs(Token.LPAREN)) {
             return parseReplaceExpr();
         }
-        if (checkKeyword(Keywords.RENAME)) {
+        if (checkKeyword(Keywords.RENAME) && !peekIs(Token.LPAREN)) {
             return parseRenameExpr();
         }
         // eXist legacy update syntax: update insert/replace/delete/rename/value
@@ -743,14 +826,16 @@ parseExprSingle(); // parse but discard
                     nextClause = parseFLWORInitialClause();
                 } else if (matchKeyword(Keywords.WHERE)) {
                     nextClause = parseWhereClause();
-                } else if (checkKeyword(Keywords.ORDER)) {
+                } else if (checkKeyword(Keywords.ORDER) || checkKeyword("stable")) {
                     nextClause = parseOrderByClause();
                 } else if (matchKeyword(Keywords.GROUP)) {
                     expectKeyword(Keywords.BY);
                     nextClause = parseGroupByClause();
                 } else if (matchKeyword(Keywords.COUNT)) {
                     nextClause = parseCountClause();
-                } else if (matchKeyword(Keywords.WHILE)) {
+                } else if (checkKeyword(Keywords.WHILE)) {
+                    // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
+                    advance();
                     nextClause = parseWhileClause();
                 } else {
                     throw error("Expected FLWOR clause or 'return'");
@@ -762,7 +847,11 @@ parseExprSingle(); // parse but discard
                 lastClause = findLastInChain(nextClause);
             }
 
-            // 'return'
+            // 'return' — uses parseExprSingle (not parseExpr!) because the
+            // FLWOR return clause must not consume commas that belong to the
+            // enclosing expression (e.g., function argument separators):
+            //   string-join(for $r in $result return string($r), ' ')
+            //                                                   ^ this comma is NOT part of return
             expectKeyword(Keywords.RETURN);
             final Expression returnExpr = parseExprSingle();
             lastClause.setReturnExpression(new DebuggableExpression(returnExpr));
@@ -776,8 +865,12 @@ parseExprSingle(); // parse but discard
     private FLWORClause parseFLWORInitialClause() throws XPathException {
         FLWORClause first;
         if (matchKeyword(Keywords.FOR)) {
-            if (matchKeyword(Keywords.MEMBER)) {
+            if (checkKeyword(Keywords.MEMBER)) {
+                // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
+                advance();
                 first = parseForMemberBinding();
+            } else if (checkKeyword(Keywords.TUMBLING) || checkKeyword(Keywords.SLIDING)) {
+                first = parseWindowClause();
             } else {
                 first = parseForBinding();
             }
@@ -804,20 +897,40 @@ parseExprSingle(); // parse but discard
         final int startCol = previous.column;
 
         expect(Token.DOLLAR, "'$'");
-        final String varName = expectNCName("variable name");
+        final String varName = expectName("variable name");
         final QName qname = resolveQName(varName, null);
+
+        // Optional type annotation: as SequenceType
+        SequenceType forType = null;
+        if (matchKeyword(Keywords.AS)) {
+            forType = parseSequenceType();
+        }
+
+        // Optional allowing empty (XQ 3.0)
+        boolean allowingEmpty = false;
+        if (matchKeyword(Keywords.ALLOWING)) {
+            matchKeyword(Keywords.EMPTY);
+            allowingEmpty = true;
+        }
 
         // Optional positional variable: at $pos
         QName posVar = null;
         if (matchKeyword(Keywords.AT)) {
             expect(Token.DOLLAR, "'$'");
-            posVar = resolveQName(expectNCName("positional variable name"), null);
+            posVar = resolveQName(expectName("positional variable name"), null);
+        }
+
+        // Optional FT score variable: score $s
+        QName scoreVar = null;
+        if (matchKeyword("score")) {
+            expect(Token.DOLLAR, "'$'");
+            scoreVar = resolveQName(expectName("score variable name"), null);
         }
 
         expectKeyword(Keywords.IN);
         final Expression inputSeq = parseExprSingle();
 
-        final ForExpr forExpr = new ForExpr(context, false);
+        final ForExpr forExpr = new ForExpr(context, allowingEmpty);
         forExpr.setLocation(startLine, startCol);
         forExpr.setVariable(qname);
         forExpr.setInputSequence(inputSeq);
@@ -847,12 +960,101 @@ parseExprSingle(); // parse but discard
         return forExpr;
     }
 
+    /**
+     * Parses a tumbling/sliding window clause:
+     * for tumbling/sliding window $w in EXPR start ... end ... return EXPR
+     */
+    private FLWORClause parseWindowClause() throws XPathException {
+        final int line = previous.line, col = previous.column;
+        final boolean tumbling = matchKeyword(Keywords.TUMBLING);
+        if (!tumbling) matchKeyword(Keywords.SLIDING);
+        expectKeyword(Keywords.WINDOW);
+
+        expect(Token.DOLLAR, "'$'");
+        final String varName = expectName("window variable");
+        final QName qname = resolveQName(varName, null);
+
+        // Optional type
+        if (matchKeyword(Keywords.AS)) {
+            parseSequenceType(); // consume type but not used for WindowExpr construction
+        }
+
+        expectKeyword(Keywords.IN);
+        final Expression inputSeq = parseExprSingle();
+
+        // Parse window conditions: start when/end when with variables
+        // Start condition: required in XQ3.1, optional in XQ4 (defaults to always-true)
+        final WindowCondition startCond;
+        if (checkKeyword(Keywords.START)) {
+            startCond = parseWindowCondition(Keywords.START);
+        } else {
+            // XQ4: implicit start — matches at every position
+            startCond = new WindowCondition(context, false, null, null, null, null,
+                    new LiteralValue(context, BooleanValue.TRUE));
+        }
+        final WindowCondition endCond = checkKeyword(Keywords.END) || checkKeyword(Keywords.ONLY) ?
+                parseWindowCondition(Keywords.END) : null;
+
+        final WindowExpr window = new WindowExpr(context,
+                tumbling ? WindowExpr.WindowType.TUMBLING_WINDOW : WindowExpr.WindowType.SLIDING_WINDOW,
+                startCond, endCond);
+        window.setLocation(line, col);
+        window.setVariable(qname);
+        window.setInputSequence(inputSeq);
+
+        final LocalVariable var = window.createVariable(qname);
+        context.declareVariableBinding(var);
+
+        return window;
+    }
+
+    private WindowCondition parseWindowCondition(final String keyword) throws XPathException {
+        boolean only = false;
+        if (matchKeyword(Keywords.ONLY)) {
+            only = true;
+        }
+        matchKeyword(keyword); // start or end
+
+        // Optional variable bindings: $var at $pos previous $prev next $next
+        QName condVar = null;
+        QName posVar = null;
+        QName prevVar = null;
+        QName nextVar = null;
+
+        if (check(Token.DOLLAR)) {
+            advance();
+            condVar = resolveQName(expectName("window condition variable"), null);
+        }
+        if (matchKeyword(Keywords.AT)) {
+            expect(Token.DOLLAR, "'$'");
+            posVar = resolveQName(expectName("position variable"), null);
+        }
+        if (matchKeyword(Keywords.PREVIOUS)) {
+            expect(Token.DOLLAR, "'$'");
+            prevVar = resolveQName(expectName("previous variable"), null);
+        }
+        if (matchKeyword(Keywords.NEXT)) {
+            expect(Token.DOLLAR, "'$'");
+            nextVar = resolveQName(expectName("next variable"), null);
+        }
+
+        // XQ4: when clause is optional — defaults to true() (always matches)
+        final Expression whenExpr;
+        if (matchKeyword(Keywords.WHEN)) {
+            whenExpr = parseExprSingle();
+        } else {
+            whenExpr = new LiteralValue(context, BooleanValue.TRUE);
+        }
+
+        return new WindowCondition(context, only, condVar, posVar, prevVar, nextVar, whenExpr);
+    }
+
     private FLWORClause parseForMemberBinding() throws XPathException {
         final int startLine = previous.line;
         final int startCol = previous.column;
 
         expect(Token.DOLLAR, "'$'");
-        final String varName = expectNCName("variable name");
+        final String varName = expectName("variable name");
         final QName qname = resolveQName(varName, null);
 
         expectKeyword(Keywords.IN);
@@ -873,13 +1075,16 @@ parseExprSingle(); // parse but discard
         final int startLine = previous.line;
         final int startCol = previous.column;
 
+        // XQFT 3.0: let score $s := expr
+        final boolean isScore = matchKeyword("score");
+
         expect(Token.DOLLAR, "'$'");
-        final String varName = expectNCName("variable name");
+        final String varName = expectName("variable name");
         final QName qname = resolveQName(varName, null);
 
-        // Optional type annotation: as SequenceType
+        // Optional type annotation: as SequenceType (not for score bindings)
         SequenceType seqType = null;
-        if (matchKeyword(Keywords.AS)) {
+        if (!isScore && matchKeyword(Keywords.AS)) {
             seqType = parseSequenceType();
         }
 
@@ -923,6 +1128,7 @@ parseExprSingle(); // parse but discard
     private OrderByClause parseOrderByClause() throws XPathException {
         final int line = current.line;
         final int col = current.column;
+        matchKeyword("stable"); // optional 'stable' before 'order by'
         matchKeyword(Keywords.ORDER);
         expectKeyword(Keywords.BY);
 
@@ -967,7 +1173,7 @@ parseExprSingle(); // parse but discard
         final List<GroupSpec> specs = new ArrayList<>();
         do {
             expect(Token.DOLLAR, "'$'");
-            final String varName = expectNCName("grouping variable");
+            final String varName = expectName("grouping variable");
             final QName qname = resolveQName(varName, null);
 
             Expression groupExpr = null;
@@ -988,7 +1194,7 @@ parseExprSingle(); // parse but discard
         final int line = previous.line;
         final int col = previous.column;
         expect(Token.DOLLAR, "'$'");
-        final String varName = expectNCName("count variable");
+        final String varName = expectName("count variable");
         final QName qname = resolveQName(varName, null);
         final CountClause clause = new CountClause(context, qname);
         clause.setLocation(line, col);
@@ -998,9 +1204,11 @@ parseExprSingle(); // parse but discard
     private WhileClause parseWhileClause() throws XPathException {
         final int line = previous.line;
         final int col = previous.column;
-        expect(Token.LPAREN, "'('");
-        final Expression condition = parseExpr();
-        expect(Token.RPAREN, "')'");
+        // XQ4 spec: WhileClause ::= "while" ExprSingle (no parens required)
+        // But accept optional parens for backwards compatibility
+        final boolean hasParens = match(Token.LPAREN);
+        final Expression condition = parseExprSingle();
+        if (hasParens) expect(Token.RPAREN, "')'");
         final WhileClause clause = new WhileClause(context, new DebuggableExpression(condition));
         clause.setLocation(line, col);
         return clause;
@@ -1029,7 +1237,7 @@ parseExprSingle(); // parse but discard
         final Expression condition = parseExpr();
         expect(Token.RPAREN, "')'");
 
-        // XQ4 braced if: if (cond) { expr } — no else clause
+        // Braced if: if (cond) { expr } — no else clause (XQ4, accepted in all versions)
         if (check(Token.LBRACE) && !checkKeyword(Keywords.THEN)) {
             match(Token.LBRACE);
             final Expression thenExpr = parseExpr();
@@ -1064,8 +1272,13 @@ parseExprSingle(); // parse but discard
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             expect(Token.DOLLAR, "'$'");
-            final String varName = expectNCName("variable name");
+            final String varName = expectName("variable name");
             final QName qname = resolveQName(varName, null);
+
+            // Optional type annotation: as SequenceType
+            if (matchKeyword(Keywords.AS)) {
+                parseSequenceType(); // consume type but not used
+            }
 
             expectKeyword(Keywords.IN);
             final Expression inputSeq = parseExprSingle();
@@ -1196,7 +1409,7 @@ parseExprSingle(); // parse but discard
         QName defaultVar = null;
         if (check(Token.DOLLAR)) {
             match(Token.DOLLAR);
-            defaultVar = resolveQName(expectNCName("default variable"), null);
+            defaultVar = resolveQName(expectName("default variable"), null);
         }
 
         expectKeyword(Keywords.RETURN);
@@ -1230,14 +1443,15 @@ parseExprSingle(); // parse but discard
             // Error code list: * or QName (| QName)*
             final List<QName> errorCodes = new ArrayList<>();
             if (match(Token.STAR)) {
-                // Catch all errors
                 errorCodes.add(QName.WildcardQName.getInstance());
             } else {
-                final String errorName = expectName("error code");
-                errorCodes.add(resolveQName(errorName, Namespaces.XPATH_FUNCTIONS_NS));
+                errorCodes.add(parseErrorCodeQName());
                 while (match(Token.PIPE)) {
-                    final String nextError = expectName("error code");
-                    errorCodes.add(resolveQName(nextError, Namespaces.XPATH_FUNCTIONS_NS));
+                    if (match(Token.STAR)) {
+                        errorCodes.add(QName.WildcardQName.getInstance());
+                    } else {
+                        errorCodes.add(parseErrorCodeQName());
+                    }
                 }
             }
 
@@ -1269,8 +1483,10 @@ parseExprSingle(); // parse but discard
             }
         }
 
-        // Optional finally clause (XQ4)
-        if (matchKeyword(Keywords.FINALLY)) {
+        // Optional finally clause (XQ4 only)
+        if (checkKeyword(Keywords.FINALLY)) {
+            // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
+            advance();
             expect(Token.LBRACE, "'{'");
             final PathExpr finallyExpr = new PathExpr(context);
             finallyExpr.add(parseExpr());
@@ -1324,6 +1540,8 @@ parseExprSingle(); // parse but discard
         // Function body
         expect(Token.LBRACE, "'{'");
         final LocalVariable mark = context.markLocalVariables(false);
+        final boolean savedInFunctionBody = inFunctionBody;
+        inFunctionBody = true;
         try {
             // Declare parameter variables in scope
             for (final FunctionParameterSequenceType param : params) {
@@ -1339,6 +1557,7 @@ parseExprSingle(); // parse but discard
 
             func.setFunctionBody(body);
         } finally {
+            inFunctionBody = savedInFunctionBody;
             context.popLocalVariables(mark);
         }
 
@@ -1351,6 +1570,17 @@ parseExprSingle(); // parse but discard
      * Parses a named function reference: name#arity
      * e.g., fn:count#1, local:greet#1
      */
+    /** Parses an error code QName — handles NCName, QName, and EQName (Q{uri}local). */
+    private QName parseErrorCodeQName() throws XPathException {
+        if (check(Token.BRACED_URI_LITERAL)) {
+            final String eqname = parseEQName();
+            final int braceEnd = eqname.indexOf('}');
+            return new QName(eqname.substring(braceEnd + 1), eqname.substring(2, braceEnd));
+        }
+        final String errorName = expectName("error code");
+        return resolveQName(errorName, Namespaces.XPATH_FUNCTIONS_NS);
+    }
+
     Expression parseNamedFunctionRef(final String name) throws XPathException {
         final int line = previous.line, col = previous.column;
         // # already consumed, expect integer arity
@@ -1358,7 +1588,16 @@ parseExprSingle(); // parse but discard
         final int arity = Integer.parseInt(current.value);
         advance();
 
-        final QName qname = resolveQName(name, context.getDefaultFunctionNamespace());
+        final QName qname;
+        if (name.startsWith("Q{")) {
+            // EQName: Q{uri}local
+            final int braceEnd = name.indexOf('}');
+            final String uri = name.substring(2, braceEnd);
+            final String local = name.substring(braceEnd + 1);
+            qname = new QName(local, uri);
+        } else {
+            qname = resolveQName(name, context.getDefaultFunctionNamespace());
+        }
         final NamedFunctionReference ref = new NamedFunctionReference(context, qname, arity);
         ref.setLocation(line, col);
         return ref;
@@ -1376,14 +1615,14 @@ parseExprSingle(); // parse but discard
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             // Parse copy bindings: $var := expr (, $var := expr)*
-            final List<XQUFExpressions.CopyBinding> bindings = new ArrayList<>();
+            final List<org.exist.xquery.xquf.XQUFTransformExpr.CopyBinding> bindings = new ArrayList<>();
             do {
                 expect(Token.DOLLAR, "'$'");
-                final String varName = expectNCName("copy variable name");
+                final String varName = expectName("copy variable name");
                 final QName qname = resolveQName(varName, null);
                 expect(Token.COLON_EQ, "':='");
                 final Expression sourceExpr = parseExprSingle();
-                bindings.add(new XQUFExpressions.CopyBinding(qname, sourceExpr));
+                bindings.add(new org.exist.xquery.xquf.XQUFTransformExpr.CopyBinding(qname, sourceExpr));
 
                 final LocalVariable var = new LocalVariable(qname);
                 context.declareVariableBinding(var);
@@ -1397,8 +1636,8 @@ parseExprSingle(); // parse but discard
             expectKeyword(Keywords.RETURN);
             final Expression returnExpr = parseExprSingle();
 
-            final XQUFExpressions.TransformExpr transform =
-                    new XQUFExpressions.TransformExpr(context, bindings, modifyExpr, returnExpr);
+            final org.exist.xquery.xquf.XQUFTransformExpr transform =
+                    new org.exist.xquery.xquf.XQUFTransformExpr(context, bindings, modifyExpr, returnExpr);
             transform.setLocation(line, col);
             return transform;
         } finally {
@@ -1420,27 +1659,27 @@ parseExprSingle(); // parse but discard
         // Position: into, as first into, as last into, before, after
         int mode;
         if (matchKeyword(Keywords.INTO)) {
-            mode = XQUFExpressions.InsertExpr.INSERT_INTO;
+            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO;
         } else if (matchKeyword(Keywords.AS)) {
             if (matchKeyword(Keywords.FIRST)) {
                 expectKeyword(Keywords.INTO);
-                mode = XQUFExpressions.InsertExpr.INSERT_INTO_AS_FIRST;
+                mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO_AS_FIRST;
             } else if (matchKeyword(Keywords.LAST)) {
                 expectKeyword(Keywords.INTO);
-                mode = XQUFExpressions.InsertExpr.INSERT_INTO_AS_LAST;
+                mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO_AS_LAST;
             } else {
                 throw error("Expected 'first' or 'last' after 'as'");
             }
         } else if (matchKeyword(Keywords.BEFORE)) {
-            mode = XQUFExpressions.InsertExpr.INSERT_BEFORE;
+            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_BEFORE;
         } else if (matchKeyword(Keywords.AFTER)) {
-            mode = XQUFExpressions.InsertExpr.INSERT_AFTER;
+            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_AFTER;
         } else {
             throw error("Expected 'into', 'before', 'after', or 'as first/last into'");
         }
 
         final Expression target = parseExprSingle();
-        final XQUFExpressions.InsertExpr insert = new XQUFExpressions.InsertExpr(context, source, target, mode);
+        final org.exist.xquery.xquf.XQUFInsertExpr insert = new org.exist.xquery.xquf.XQUFInsertExpr(context, source, target, mode);
         insert.setLocation(line, col);
         return insert;
     }
@@ -1454,7 +1693,7 @@ parseExprSingle(); // parse but discard
         }
 
         final Expression target = parseExprSingle();
-        final XQUFExpressions.DeleteExpr delete = new XQUFExpressions.DeleteExpr(context, target);
+        final org.exist.xquery.xquf.XQUFDeleteExpr delete = new org.exist.xquery.xquf.XQUFDeleteExpr(context, target);
         delete.setLocation(line, col);
         return delete;
     }
@@ -1470,8 +1709,8 @@ parseExprSingle(); // parse but discard
             final Expression target = parseExprSingle();
             expectKeyword(Keywords.WITH);
             final Expression value = parseExprSingle();
-            final XQUFExpressions.ReplaceValueExpr replace =
-                    new XQUFExpressions.ReplaceValueExpr(context, target, value);
+            final org.exist.xquery.xquf.XQUFReplaceValueExpr replace =
+                    new org.exist.xquery.xquf.XQUFReplaceValueExpr(context, target, value);
             replace.setLocation(line, col);
             return replace;
         } else {
@@ -1479,8 +1718,8 @@ parseExprSingle(); // parse but discard
             final Expression target = parseExprSingle();
             expectKeyword(Keywords.WITH);
             final Expression replacement = parseExprSingle();
-            final XQUFExpressions.ReplaceNodeExpr replace =
-                    new XQUFExpressions.ReplaceNodeExpr(context, target, replacement);
+            final org.exist.xquery.xquf.XQUFReplaceNodeExpr replace =
+                    new org.exist.xquery.xquf.XQUFReplaceNodeExpr(context, target, replacement);
             replace.setLocation(line, col);
             return replace;
         }
@@ -1495,7 +1734,7 @@ parseExprSingle(); // parse but discard
         expectKeyword(Keywords.AS);
         final Expression newName = parseExprSingle();
 
-        final XQUFExpressions.RenameExpr rename = new XQUFExpressions.RenameExpr(context, target, newName);
+        final org.exist.xquery.xquf.XQUFRenameExpr rename = new org.exist.xquery.xquf.XQUFRenameExpr(context, target, newName);
         rename.setLocation(line, col);
         return rename;
     }
@@ -1534,9 +1773,15 @@ parseExprSingle(); // parse but discard
             }
         }
 
-        // Second expression (not for delete)
+        // Separator keyword and second expression (not for delete)
         Expression p2 = null;
         if (type != 3) {
+            // replace/value use 'with', rename uses 'as', insert has no separator (position keyword already consumed)
+            if (type == 0 || type == 1) {
+                matchKeyword(Keywords.WITH); // consume 'with' between expressions
+            } else if (type == 4) {
+                matchKeyword(Keywords.AS); // consume 'as' between expressions
+            }
             p2 = parseExprSingle();
         }
 
@@ -1564,40 +1809,16 @@ parseExprSingle(); // parse but discard
     Expression parseFTContainsExpr(final Expression source) throws XPathException {
         final int line = previous.line, col = previous.column;
 
-        final FTExpressions.ContainsExpr ftContains = new FTExpressions.ContainsExpr(context);
+        final org.exist.xquery.ft.FTContainsExpr ftContains = new org.exist.xquery.ft.FTContainsExpr(context);
         ftContains.setLocation(line, col);
         ftContains.setSearchSource(source);
 
         // Parse FT selection: ftOr with optional positional filters
-        final FTExpressions.Selection ftSel = new FTExpressions.Selection(context);
+        final org.exist.xquery.ft.FTSelection ftSel = new org.exist.xquery.ft.FTSelection(context);
         ftSel.setFTOr(parseFTOr());
 
-        // Positional filters: ordered, window N words, distance, at start/end, entire content, occurs
-        while (checkKeyword(Keywords.ORDERED) || checkKeyword(Keywords.WINDOW)
-                || checkKeyword(Keywords.DISTANCE) || checkKeyword(Keywords.AT)
-                || checkKeyword(Keywords.ENTIRE) || checkKeyword(Keywords.OCCURS)
-                || checkKeyword(Keywords.SAME) || checkKeyword(Keywords.DIFFERENT)) {
-            // Skip the positional filter (stub — absorb tokens to avoid parse error)
-            while (!check(Token.RBRACKET) && !check(Token.RPAREN) && !check(Token.EOF)
-                    && !checkKeyword(Keywords.RETURN) && !checkKeyword(Keywords.ORDERED)
-                    && !checkKeyword(Keywords.WINDOW) && !checkKeyword(Keywords.DISTANCE)
-                    && !checkKeyword(Keywords.AT) && !checkKeyword(Keywords.ENTIRE)
-                    && !checkKeyword(Keywords.OCCURS) && !checkKeyword(Keywords.SAME)
-                    && !checkKeyword(Keywords.DIFFERENT) && !checkKeyword(Keywords.USING)
-                    && !checkKeyword(Keywords.AND) && !checkKeyword(Keywords.OR)) {
-                advance();
-            }
-        }
-
-        // Match options can also appear after positional filters
-        if (checkKeyword(Keywords.USING)) {
-            // Already handled in parseFTPrimaryWithOptions, but can appear at selection level too
-            while (matchKeyword(Keywords.USING)) {
-                // Skip the match option tokens
-                advance(); // option keyword
-                if (check(Token.STRING_LITERAL)) advance(); // optional value
-            }
-        }
+        // Positional filters: ordered, window, distance, at start/end, entire content, occurs, scope
+        parseFTPositionalFilters(ftSel);
 
         ftContains.setFTSelection(ftSel);
         return ftContains;
@@ -1606,7 +1827,7 @@ parseExprSingle(); // parse but discard
     private Expression parseFTOr() throws XPathException {
         Expression left = parseFTAnd();
         while (matchKeyword(Keywords.FTOR)) {
-            final FTExpressions.Or or = new FTExpressions.Or(context);
+            final org.exist.xquery.ft.FTOr or = new org.exist.xquery.ft.FTOr(context);
             or.addOperand(left);
             or.addOperand(parseFTAnd());
             left = or;
@@ -1617,7 +1838,7 @@ parseExprSingle(); // parse but discard
     private Expression parseFTAnd() throws XPathException {
         Expression left = parseFTMildNot();
         while (matchKeyword(Keywords.FTAND)) {
-            final FTExpressions.And and = new FTExpressions.And(context);
+            final org.exist.xquery.ft.FTAnd and = new org.exist.xquery.ft.FTAnd(context);
             and.addOperand(left);
             and.addOperand(parseFTMildNot());
             left = and;
@@ -1648,7 +1869,7 @@ parseExprSingle(); // parse but discard
     }
 
     private Expression parseFTPrimaryWithOptions() throws XPathException {
-        final FTExpressions.PrimaryWithOptions pwo = new FTExpressions.PrimaryWithOptions(context);
+        final org.exist.xquery.ft.FTPrimaryWithOptions pwo = new org.exist.xquery.ft.FTPrimaryWithOptions(context);
 
         // FT primary: string literal, {expr}, or parenthesized FT expression
         if (check(Token.STRING_LITERAL) || check(Token.LBRACE)) {
@@ -1665,18 +1886,27 @@ parseExprSingle(); // parse but discard
             // Optional any/all/phrase mode
             if (matchKeyword(Keywords.ANY)) {
                 if (matchKeyword(Keywords.WORD)) {
-                    words.setMode(FTExpressions.Words.AnyallMode.ANY_WORD);
+                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ANY_WORD);
                 } else {
-                    words.setMode(FTExpressions.Words.AnyallMode.ANY);
+                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ANY);
                 }
             } else if (matchKeyword(Keywords.ALL)) {
                 if (matchKeyword(Keywords.WORDS)) {
-                    words.setMode(FTExpressions.Words.AnyallMode.ALL_WORDS);
+                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ALL_WORDS);
                 } else {
-                    words.setMode(FTExpressions.Words.AnyallMode.ALL);
+                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ALL);
                 }
             } else if (matchKeyword(Keywords.PHRASE)) {
-                words.setMode(FTExpressions.Words.AnyallMode.PHRASE);
+                words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.PHRASE);
+            }
+
+            // Optional FTTimes: "occurs" FTRange "times"
+            if (checkKeyword("occurs")) {
+                advance(); // consume "occurs"
+                final org.exist.xquery.ft.FTTimes ftTimes = new org.exist.xquery.ft.FTTimes(context);
+                ftTimes.setRange(parseFTRange());
+                matchKeyword("times");
+                words.setFTTimes(ftTimes);
             }
 
             // Optional FTTimes: "occurs" FTRange "times"
@@ -1693,12 +1923,12 @@ parseExprSingle(); // parse but discard
             pwo.setPrimary(parseFTOr());
             expect(Token.RPAREN, "')'");
         } else {
-            throw error("Expected string literal or '(' in full-text expression");
+            throw error("Expected string literal, '{', or '(' in full-text expression");
         }
 
         // Match options: using stemming, using language "en", using wildcards, etc.
         if (checkKeyword(Keywords.USING)) {
-            final FTExpressions.MatchOptions opts = new FTExpressions.MatchOptions();
+            final org.exist.xquery.ft.FTMatchOptions opts = new org.exist.xquery.ft.FTMatchOptions();
             while (matchKeyword(Keywords.USING)) {
                 if (matchKeyword(Keywords.STEMMING)) {
                     opts.setStemming(true);
@@ -1768,12 +1998,15 @@ parseExprSingle(); // parse but discard
 
         // Parse body with context item in scope
         final LocalVariable mark = context.markLocalVariables(false);
+        final boolean savedInFunctionBody = inFunctionBody;
+        inFunctionBody = true;
         try {
             final PathExpr body = new PathExpr(context);
             body.add(parseExpr());
             expect(Token.RBRACE, "'}'");
             func.setFunctionBody(body);
         } finally {
+            inFunctionBody = savedInFunctionBody;
             context.popLocalVariables(mark);
         }
 
@@ -1888,6 +2121,28 @@ parseExprSingle(); // parse but discard
         if (valueOp != null) {
             final Expression right = parseFTContainsOrInstanceOf();
             final ValueComparison cmp = new ValueComparison(context, left, right, valueOp);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+
+        // Node comparison: is, << (node before), >> (node after)
+        if (matchKeyword("is")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.IS);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (check(Token.LT) && peekIs(Token.LT)) {
+            advance(); advance(); // consume <<
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.BEFORE);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (check(Token.GT) && peekIs(Token.GT)) {
+            advance(); advance(); // consume >>
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.AFTER);
             cmp.setLocation(left.getLine(), left.getColumn());
             return cmp;
         }
@@ -2039,10 +2294,16 @@ parseExprSingle(); // parse but discard
             throw error("Expected type name");
         }
         final QName qname = resolveQName(typeName, context.getDefaultFunctionNamespace());
-        final int type = Type.getType(qname);
-        if (type == Type.ITEM) {
+        final int type;
+        try {
+            type = Type.getType(qname);
+        } catch (final XPathException e) {
             throw new XPathException(previous.line, previous.column, ErrorCodes.XPST0051,
-                    "Unknown atomic type: " + typeName);
+                    "Unknown simple type " + typeName);
+        }
+        if (type == Type.ITEM || !Type.subTypeOf(type, Type.ANY_ATOMIC_TYPE)) {
+            throw new XPathException(previous.line, previous.column, ErrorCodes.XPST0051,
+                    "Unknown simple type " + typeName);
         }
         return type;
     }
@@ -2073,9 +2334,41 @@ parseExprSingle(); // parse but discard
     }
 
     /**
-     * Parses an ItemType: AtomicType | KindTest | 'item()'
+     * Parses an ItemType: AtomicType | KindTest | 'item()' | 'function(...)' | 'map(...)' | 'array(...)'
+     * Also handles parenthesized types: (function(...) as type)
      */
     private int parseItemType() throws XPathException {
+        // ChoiceItemType: (ItemType | ItemType | ...)
+        // or parenthesized type: (ItemType)
+        if (check(Token.LPAREN)) {
+            advance(); // consume (
+            final int innerType = parseItemType();
+            // Handle | for choice types (XQ4)
+            while (match(Token.PIPE)) {
+                parseItemType(); // consume additional types (use first type as approximation)
+            }
+            // Skip any nested content until closing )
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (check(Token.LPAREN)) depth++;
+                if (check(Token.RPAREN)) depth--;
+                if (depth > 0) advance();
+            }
+            if (check(Token.RPAREN)) advance();
+            return innerType;
+        }
+
+        // EnumerationType: enum('val1', 'val2', ...)
+        if (checkKeyword("enum") && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'enum' '('
+            // Parse string literal list
+            while (!check(Token.RPAREN) && !check(Token.EOF)) {
+                advance(); // consume each literal/comma
+            }
+            expect(Token.RPAREN, "')'");
+            return Type.STRING; // enum values are strings
+        }
+
         // item()
         if (checkKeyword(Keywords.ITEM) && peekIs(Token.LPAREN)) {
             advance(); advance();
@@ -2083,24 +2376,57 @@ parseExprSingle(); // parse but discard
             return Type.ITEM;
         }
 
+        // function(*) or function(type, type) as returnType
+        if (checkKeyword(Keywords.FUNCTION) && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'function' '('
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (match(Token.LPAREN)) depth++;
+                else if (match(Token.RPAREN)) depth--;
+                else advance();
+            }
+            if (matchKeyword(Keywords.AS)) {
+                parseSequenceType();
+            }
+            return Type.FUNCTION;
+        }
+
+        // map(KeyType, ValueType) or map(*)
+        if (checkKeyword(Keywords.MAP) && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'map' '('
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (check(Token.LPAREN)) depth++;
+                if (check(Token.RPAREN)) { depth--; if (depth == 0) break; }
+                advance();
+            }
+            expect(Token.RPAREN, "')'");
+            return Type.MAP_ITEM;
+        }
+
+        // array(MemberType) or array(*)
+        if (checkKeyword(Keywords.ARRAY) && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'array' '('
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (check(Token.LPAREN)) depth++;
+                if (check(Token.RPAREN)) { depth--; if (depth == 0) break; }
+                advance();
+            }
+            expect(Token.RPAREN, "')'");
+            return Type.ARRAY_ITEM;
+        }
+
         // node(), element(), attribute(), text(), comment(), etc.
         if (check(Token.NCNAME) && isKindTest(current.value) && peekIs(Token.LPAREN)) {
             final String kind = current.value;
-            advance(); // kind name
-            advance(); // (
-            // For now, skip content of kind test
-            if (!check(Token.RPAREN)) {
-                // Skip type name inside, e.g. element(name)
-                if (check(Token.NCNAME) || check(Token.QNAME) || check(Token.STAR)) {
-                    advance();
-                }
-                // Skip optional second arg, e.g. element(name, type)
-                if (match(Token.COMMA)) {
-                    if (check(Token.NCNAME) || check(Token.QNAME)) {
-                        advance();
-                    }
-                    if (match(Token.QUESTION)) { /* nillable */ }
-                }
+            advance(); advance(); // kind name + (
+            // Skip content with depth tracking (handles nested parens)
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (check(Token.LPAREN)) depth++;
+                if (check(Token.RPAREN)) { depth--; if (depth == 0) break; }
+                advance();
             }
             expect(Token.RPAREN, "')'");
             return kindNameToType(kind);
@@ -2119,6 +2445,9 @@ parseExprSingle(); // parse but discard
             case Keywords.COMMENT: return Type.COMMENT;
             case Keywords.DOCUMENT_NODE: return Type.DOCUMENT;
             case Keywords.PROCESSING_INSTRUCTION: return Type.PROCESSING_INSTRUCTION;
+            case "namespace-node": return Type.NAMESPACE;
+            case "schema-element": return Type.ELEMENT;
+            case "schema-attribute": return Type.ATTRIBUTE;
             default: return Type.ITEM;
         }
     }
@@ -2129,7 +2458,11 @@ parseExprSingle(); // parse but discard
 
     Expression parseOtherwiseExpr() throws XPathException {
         Expression left = parseStringConcatExpr();
-        while (matchKeyword(Keywords.OTHERWISE)) {
+        while (checkKeyword(Keywords.OTHERWISE)) {
+            if (!isXQ4()) {
+                throw xq4Required("'otherwise' operator");
+            }
+            advance();
             final Expression right = parseStringConcatExpr();
             left = new OtherwiseExpression(context, left, right);
             ((AbstractExpression) left).setLocation(previous.line, previous.column);
@@ -2221,7 +2554,11 @@ parseExprSingle(); // parse but discard
         Expression left = parsePipelineExpr();
         while (match(Token.BANG)) {
             final PathExpr leftPath = wrapInPathExpr(left);
+            // Simple map creates a new context — allow absolute paths on RHS
+            final boolean savedInFunctionBody = inFunctionBody;
+            inFunctionBody = false;
             final PathExpr rightPath = wrapInPathExpr(parsePipelineExpr());
+            inFunctionBody = savedInFunctionBody;
             left = new OpSimpleMap(context, leftPath, rightPath);
             ((AbstractExpression) left).setLocation(previous.line, previous.column);
         }
@@ -2230,9 +2567,11 @@ parseExprSingle(); // parse but discard
 
     Expression parsePipelineExpr() throws XPathException {
         Expression left = parseArrowExpr();
-        while (match(Token.PIPELINE)) {
-            // Pipeline: LHS becomes first argument to RHS function call
-            // Using ArrowOperator which prepends LHS as first arg
+        while (check(Token.PIPELINE)) {
+            if (!isXQ4()) {
+                throw xq4Required("'->' pipeline operator");
+            }
+            advance();
             left = parseArrowCall(left, false);
         }
         return left;
@@ -2244,7 +2583,9 @@ parseExprSingle(); // parse but discard
         while (check(Token.ARROW) || check(Token.MAPPING_ARROW)) {
             if (match(Token.ARROW)) {
                 left = parseArrowCall(left, false);
-            } else if (match(Token.MAPPING_ARROW)) {
+            } else if (check(Token.MAPPING_ARROW)) {
+                // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
+                advance();
                 left = parseArrowCall(left, true);
             }
         }
@@ -2264,10 +2605,23 @@ parseExprSingle(); // parse but discard
         if (check(Token.NCNAME) || check(Token.QNAME)) {
             funcName = current.value;
             advance();
+        } else if (check(Token.BRACED_URI_LITERAL)) {
+            funcName = parseEQName();
         } else if (match(Token.DOLLAR)) {
             // Variable reference as function
             funcExpr = new PathExpr(context);
             funcExpr.add(parseVariableRef());
+        } else if (check(Token.LPAREN)) {
+            // Parenthesized expression as function: => (function($s){...})()
+            funcExpr = new PathExpr(context);
+            funcExpr.add(parsePrimaryExpr());
+            // The parenthesized expr might be followed by () for invocation
+            // which gets consumed below as the argument list
+        } else if (checkKeyword(Keywords.FUNCTION) && peekIs(Token.LPAREN)) {
+            // Inline function: => function($x) { ... }()
+            funcExpr = new PathExpr(context);
+            advance(); // consume 'function'
+            funcExpr.add(parseInlineFunction());
         } else {
             throw error("Expected function name after arrow operator");
         }
@@ -2282,6 +2636,17 @@ parseExprSingle(); // parse but discard
             }
         }
         expect(Token.RPAREN, "')'");
+
+        // For EQName, declare the namespace prefix so QName.parse works
+        if (funcName != null && funcName.startsWith("Q{")) {
+            final int braceEnd = funcName.indexOf('}');
+            final String uri = funcName.substring(2, braceEnd);
+            final String local = funcName.substring(braceEnd + 1);
+            // Use a synthetic prefix for arrow calls with EQNames
+            final String prefix = "__arrow" + System.identityHashCode(funcName);
+            try { context.declareNamespace(prefix, uri); } catch (final XPathException ignored) { }
+            funcName = prefix + ":" + local;
+        }
 
         if (mapping) {
             final MappingArrowOperator op = new MappingArrowOperator(context, leftExpr);
@@ -2328,6 +2693,33 @@ parseExprSingle(); // parse but discard
                 expr = parseLookup(expr);
             } else if (check(Token.LPAREN) && isDynamicCallContext(expr)) {
                 expr = parseDynamicFunctionCall(expr);
+            } else if (match(Token.METHOD_CALL)) {
+                // Method call: expr =?> methodName(args)
+                final String methodName = expectName("method name");
+                expect(Token.LPAREN, "'('");
+                final List<Expression> args = new ArrayList<>();
+                if (!check(Token.RPAREN)) {
+                    final PathExpr argExpr = new PathExpr(context);
+                    argExpr.add(parseExprSingle());
+                    args.add(argExpr.simplify());
+                    while (match(Token.COMMA)) {
+                        final PathExpr nextArg = new PathExpr(context);
+                        nextArg.add(parseExprSingle());
+                        args.add(nextArg.simplify());
+                    }
+                }
+                expect(Token.RPAREN, "')'");
+                final MethodCallOperator op = new MethodCallOperator(context, expr);
+                op.setLocation(previous.line, previous.column);
+                op.setMethod(methodName, args);
+                expr = op;
+            } else if (check(Token.SLASH) || check(Token.DSLASH)) {
+                // Path continuation after postfix: $f()/path, $arr[1]/child, etc.
+                final PathExpr path = new PathExpr(context);
+                path.setLocation(expr.getLine(), expr.getColumn());
+                path.add(expr);
+                parseRelativePathSteps(path);
+                expr = path;
             } else {
                 break;
             }
@@ -2346,7 +2738,10 @@ parseExprSingle(); // parse but discard
                 || expr instanceof FilteredExpression
                 || expr instanceof FunctionCall
                 || expr instanceof InternalFunctionCall
-                || expr instanceof Lookup;
+                || expr instanceof Lookup
+                || expr instanceof ContextItemExpression  // .(args) — context item as function
+                || expr instanceof org.exist.xquery.functions.array.ArrayConstructor
+                || expr instanceof PathExpr;  // parenthesized expressions, sequences
     }
 
     /**
@@ -2391,6 +2786,10 @@ parseExprSingle(); // parse but discard
 
     Expression parsePathExpr() throws XPathException {
         if (match(Token.SLASH)) {
+            if (inFunctionBody) {
+                throw new XPathException(previous.line, previous.column, ErrorCodes.XPDY0002,
+                        "Leading '/' selects nothing, ContextItem is absent in function body");
+            }
             final PathExpr path = new PathExpr(context);
             path.setLocation(previous.line, previous.column);
             path.add(new RootNode(context));
@@ -2401,6 +2800,10 @@ parseExprSingle(); // parse but discard
             return path;
         }
         if (match(Token.DSLASH)) {
+            if (inFunctionBody) {
+                throw new XPathException(previous.line, previous.column, ErrorCodes.XPDY0002,
+                        "Leading '//' selects nothing, ContextItem is absent in function body");
+            }
             final PathExpr path = new PathExpr(context);
             path.setLocation(previous.line, previous.column);
             path.add(new RootNode(context));
@@ -2469,18 +2872,59 @@ parseExprSingle(); // parse but discard
             return ctx;
         }
 
-        // * (wildcard child step)
+        // * (wildcard child step) or *:local
         if (check(Token.STAR) && !isBinaryOperatorContext()) {
             match(Token.STAR);
-            final LocationStep step = new LocationStep(context, Constants.CHILD_AXIS, new TypeTest(Type.ELEMENT));
+            NodeTest wildTest;
+            if (check(Token.COLON) && peekIsNameStart()) {
+                // *:local wildcard
+                advance(); // consume :
+                final String local = current.value;
+                advance();
+                wildTest = new NameTest(Type.ELEMENT, new QName.WildcardNamespaceURIQName(local));
+            } else {
+                wildTest = new TypeTest(Type.ELEMENT);
+            }
+            final LocationStep step = new LocationStep(context, Constants.CHILD_AXIS, wildTest);
             step.setLocation(previous.line, previous.column);
             while (check(Token.LBRACKET)) parsePredicate(step);
             return step;
         }
 
+        // Direct XML comment constructor: <!-- content -->
+        if (check(Token.XML_COMMENT)) {
+            String content = current.value;
+            // Strip <!-- and --> delimiters — CommentConstructor expects just the content
+            if (content.startsWith("<!--")) content = content.substring(4);
+            if (content.endsWith("-->")) content = content.substring(0, content.length() - 3);
+            advance();
+            final CommentConstructor comment = new CommentConstructor(context, content);
+            comment.setLocation(previous.line, previous.column);
+            return comment;
+        }
+
+        // Direct processing instruction: <?target content?>
+        if (check(Token.XML_PI)) {
+            String piData = current.value;
+            // Strip <? and ?> delimiters — PIConstructor expects "target content"
+            if (piData.startsWith("<?")) piData = piData.substring(2);
+            if (piData.endsWith("?>")) piData = piData.substring(0, piData.length() - 2);
+            piData = piData.trim();
+            final int piLine = current.line, piCol = current.column;
+            advance();
+            final PIConstructor pi = new PIConstructor(context, piData);
+            pi.setLocation(piLine, piCol);
+            return pi;
+        }
+
         // Direct element constructor: <elem ...>
         if (check(Token.LT) && peekIsNameStart()) {
             return parseDirectElementConstructor();
+        }
+
+        // EQName: Q{uri}local — dispatch to parsePrimaryExpr for function call/reference
+        if (check(Token.BRACED_URI_LITERAL)) {
+            return parsePrimaryExpr();
         }
 
         // NCName or QName — could be name test, function call, keyword, or computed constructor
@@ -2511,6 +2955,43 @@ parseExprSingle(); // parse but discard
             }
             if (checkKeyword(Keywords.PROCESSING_INSTRUCTION) && peekIsConstructorStart()) {
                 return parseComputedPIConstructor();
+            }
+            if (checkKeyword(Keywords.NAMESPACE) && peekIsConstructorStart()) {
+                return parseComputedNamespaceConstructor();
+            }
+
+            // ordered { expr } — evaluation order hint
+            if (checkKeyword(Keywords.ORDERED) && peekIs(Token.LBRACE)) {
+                advance(); // consume 'ordered'
+                expect(Token.LBRACE, "'{'");
+                final Expression inner = parseExpr();
+                expect(Token.RBRACE, "'}'");
+                return inner; // pass through — eXist doesn't differentiate ordered/unordered
+            }
+            // unordered { expr } — evaluation order hint
+            if (checkKeyword(Keywords.UNORDERED) && peekIs(Token.LBRACE)) {
+                advance(); // consume 'unordered'
+                expect(Token.LBRACE, "'{'");
+                final Expression inner = parseExpr();
+                expect(Token.RBRACE, "'}'");
+                return inner; // pass through
+            }
+
+            // validate expression — eXist is not schema-aware, so parse and pass through
+            // validate strict { expr }, validate lax { expr }, validate type QName { expr }
+            if (checkKeyword(Keywords.VALIDATE)) {
+                advance(); // consume 'validate'
+                matchKeyword("strict");
+                matchKeyword("lax");
+                if (matchKeyword("type")) {
+                    // consume the type name
+                    if (check(Token.NCNAME) || check(Token.QNAME)) advance();
+                    else if (check(Token.BRACED_URI_LITERAL)) parseEQName();
+                }
+                expect(Token.LBRACE, "'{'");
+                final Expression inner = parseExpr();
+                expect(Token.RBRACE, "'}'");
+                return inner; // pass through — no validation wrapper
             }
 
             // Kind test: text(), node(), element(), attribute(), comment(), etc.
@@ -2543,12 +3024,23 @@ parseExprSingle(); // parse but discard
                 return parsePrimaryExpr();
             }
 
-            // Name test (abbreviated child::name)
+            // Name test (abbreviated child::name) — handle prefix:* wildcards
             final Token nameToken = current;
             advance();
-            final QName nameQN = resolveElementName(nameToken.value);
-            final NameTest test = new NameTest(Type.ELEMENT, nameQN);
-            final LocationStep step = new LocationStep(context, Constants.CHILD_AXIS, test);
+
+            NodeTest nameTest;
+            if (check(Token.COLON) && peekIs(Token.STAR)) {
+                // prefix:* wildcard
+                advance(); // consume :
+                advance(); // consume *
+                final String nsURI = context.getURIForPrefix(nameToken.value);
+                nameTest = new NameTest(Type.ELEMENT,
+                        new QName.WildcardLocalPartQName(nsURI != null ? nsURI : "", nameToken.value));
+            } else {
+                nameTest = new NameTest(Type.ELEMENT, resolveElementName(nameToken.value));
+            }
+
+            final LocationStep step = new LocationStep(context, Constants.CHILD_AXIS, nameTest);
             step.setLocation(nameToken.line, nameToken.column);
             while (check(Token.LBRACKET)) parsePredicate(step);
             return step;
@@ -2568,11 +3060,13 @@ parseExprSingle(); // parse but discard
         final ElementConstructor elem = new ElementConstructor(context);
         elem.setLocation(line, col);
 
-        // Name: QName or { expr }
+        // Name: QName, EQName (Q{uri}local), or { expr }
         final PathExpr nameExpr = new PathExpr(context);
         if (match(Token.LBRACE)) {
             nameExpr.add(parseExpr());
             expect(Token.RBRACE, "'}'");
+        } else if (check(Token.BRACED_URI_LITERAL)) {
+            nameExpr.add(new LiteralValue(context, new StringValue(parseEQName())));
         } else {
             final String name = expectName("element name");
             nameExpr.add(new LiteralValue(context, new StringValue(name)));
@@ -2610,12 +3104,14 @@ parseExprSingle(); // parse but discard
         final DynamicAttributeConstructor attr = new DynamicAttributeConstructor(context);
         attr.setLocation(line, col);
 
-        // Name: QName or { expr }
+        // Name: QName, EQName (Q{uri}local), or { expr }
         if (match(Token.LBRACE)) {
             final PathExpr nameExpr = new PathExpr(context);
             nameExpr.add(parseExpr());
             expect(Token.RBRACE, "'}'");
             attr.setNameExpr(nameExpr);
+        } else if (check(Token.BRACED_URI_LITERAL)) {
+            attr.setNameExpr(new LiteralValue(context, new StringValue(parseEQName())));
         } else {
             final String name = expectName("attribute name");
             attr.setNameExpr(new LiteralValue(context, new StringValue(name)));
@@ -2623,11 +3119,11 @@ parseExprSingle(); // parse but discard
 
         // Content: { expr }
         expect(Token.LBRACE, "'{'");
+        final PathExpr contentExpr = new PathExpr(context);
         if (!check(Token.RBRACE)) {
-            final PathExpr contentExpr = new PathExpr(context);
             contentExpr.add(parseExpr());
-            attr.setContentExpr(contentExpr);
         }
+        attr.setContentExpr(contentExpr);
         expect(Token.RBRACE, "'}'");
 
         return attr;
@@ -2645,6 +3141,36 @@ parseExprSingle(); // parse but discard
         final DynamicTextConstructor text = new DynamicTextConstructor(context, contentExpr);
         text.setLocation(line, col);
         return text;
+    }
+
+        Expression parseComputedNamespaceConstructor() throws XPathException {
+        final int line = current.line, col = current.column;
+        advance(); // consume 'namespace'
+
+        final NamespaceConstructor ns = new NamespaceConstructor(context);
+        ns.setLocation(line, col);
+
+        // Namespace prefix: static name or { expr }
+        if (match(Token.LBRACE)) {
+            final PathExpr nameExpr = new PathExpr(context);
+            nameExpr.add(parseExpr());
+            expect(Token.RBRACE, "'}'");
+            ns.setNameExpr(nameExpr);
+        } else {
+            final String prefix = expectName("namespace prefix");
+            ns.setNameExpr(new LiteralValue(context, new StringValue(prefix)));
+        }
+
+        // URI: { expr }
+        expect(Token.LBRACE, "'{'");
+        final PathExpr uriExpr = new PathExpr(context);
+        if (!check(Token.RBRACE)) {
+            uriExpr.add(parseExpr());
+        }
+        expect(Token.RBRACE, "'}'");
+        ns.setContentExpr(uriExpr);
+
+        return ns;
     }
 
     Expression parseComputedCommentConstructor() throws XPathException {
@@ -2679,20 +3205,29 @@ parseExprSingle(); // parse but discard
         final int line = current.line, col = current.column;
         advance(); // consume 'processing-instruction'
 
-        // PI target name
-        final String target = expectName("PI target");
+        final DynamicPIConstructor pi = new DynamicPIConstructor(context);
+        pi.setLocation(line, col);
 
+        // PI target: static name or { expr }
+        if (match(Token.LBRACE)) {
+            final PathExpr nameExpr = new PathExpr(context);
+            nameExpr.add(parseExpr());
+            expect(Token.RBRACE, "'}'");
+            pi.setNameExpr(nameExpr);
+        } else {
+            final String target = expectName("PI target");
+            pi.setNameExpr(new LiteralValue(context, new StringValue(target)));
+        }
+
+        // Content: { expr }
         expect(Token.LBRACE, "'{'");
         final PathExpr contentExpr = new PathExpr(context);
         if (!check(Token.RBRACE)) {
             contentExpr.add(parseExpr());
         }
         expect(Token.RBRACE, "'}'");
-
-        final DynamicPIConstructor pi = new DynamicPIConstructor(context);
-        pi.setLocation(line, col);
-        pi.setNameExpr(new LiteralValue(context, new StringValue(target)));
         pi.setContentExpr(contentExpr);
+
         return pi;
     }
 
@@ -2776,10 +3311,14 @@ parseExprSingle(); // parse but discard
                 scanAttribute(elem);
             }
 
-            // Scan element content
-            final PathExpr content = new PathExpr(context);
-            scanElementContent(content, elemName);
-            elem.setContent(content);
+            // Scan element content — wrapped in EnclosedExpr > SequenceConstructor
+            // to match ANTLR 2 behavior. EnclosedExpr handles document context,
+            // atomic value spacing, node copying.
+            final SequenceConstructor construct = new SequenceConstructor(context);
+            scanElementContent(construct, elemName);
+            final EnclosedExpr enclosed = new EnclosedExpr(context);
+            enclosed.addPath(construct);
+            elem.setContent(enclosed);
 
             return elem;
         } finally {
@@ -2860,34 +3399,55 @@ parseExprSingle(); // parse but discard
                                         + ">' but found '</" + closeName + ">'");
                     return;
                 } else if (xpeek(1) == '!' && xpeek(2) == '-' && xpeek(3) == '-') {
-                    // <!-- comment -->
+                    // <!-- comment --> — create CommentConstructor
+                    flushText(content, text);
+                    final int cmtLine = xln, cmtCol = xcl;
                     xp += 4; xcl += 4;
+                    final StringBuilder cmtData = new StringBuilder();
                     while (xp + 2 < lexer.getLength()
                             && !(xchar() == '-' && xpeek(1) == '-' && xpeek(2) == '>')) {
+                        cmtData.appendCodePoint(xchar());
                         if (xchar() == '\n') { xln++; xcl = 1; } else { xcl++; }
                         xp++;
                     }
                     if (xp + 2 < lexer.getLength()) { xp += 3; xcl += 3; }
+                    final CommentConstructor cmt = new CommentConstructor(context, cmtData.toString());
+                    cmt.setLocation(cmtLine, cmtCol);
+                    content.add(cmt);
                 } else if (xp + 8 < lexer.getLength()
                         && lexer.substring(xp + 1, xp + 9).equals("![CDATA[")) {
-                    // <![CDATA[...]]>
+                    // <![CDATA[...]]> — use CDATAConstructor, not TextConstructor
+                    // CDATA content must NOT go through StringValue.expand()
+                    flushText(content, text);
+                    final int cdataLine = xln, cdataCol = xcl;
                     xp += 9; xcl += 9;
+                    final StringBuilder cdataText = new StringBuilder();
                     while (xp + 2 < lexer.getLength()
                             && !(xchar() == ']' && xpeek(1) == ']' && xpeek(2) == '>')) {
-                        text.appendCodePoint(xchar());
+                        cdataText.appendCodePoint(xchar());
                         if (xchar() == '\n') { xln++; xcl = 1; } else { xcl++; }
                         xp++;
                     }
                     if (xp + 2 < lexer.getLength()) { xp += 3; xcl += 3; }
+                    final CDATAConstructor cdata = new CDATAConstructor(context, cdataText.toString());
+                    cdata.setLocation(cdataLine, cdataCol);
+                    content.add(cdata);
                 } else if (xpeek(1) == '?') {
-                    // <?PI?>
+                    // <?target content?> — create PIConstructor
+                    flushText(content, text);
+                    final int piLine = xln, piCol = xcl;
                     xp += 2; xcl += 2;
+                    final StringBuilder piData = new StringBuilder();
                     while (xp + 1 < lexer.getLength()
                             && !(xchar() == '?' && xpeek(1) == '>')) {
+                        piData.appendCodePoint(xchar());
                         if (xchar() == '\n') { xln++; xcl = 1; } else { xcl++; }
                         xp++;
                     }
                     if (xp + 1 < lexer.getLength()) { xp += 2; xcl += 2; }
+                    final PIConstructor pi = new PIConstructor(context, piData.toString());
+                    pi.setLocation(piLine, piCol);
+                    content.add(pi);
                 } else if (XQueryLexer.isNameStartChar(xpeek(1))) {
                     // Nested element — fully recursive, stays in character mode
                     xp++; xcl++; // skip '<'
@@ -2911,7 +3471,11 @@ parseExprSingle(); // parse but discard
                             "Unexpected '}' in element content");
                 }
             } else if (ch == '&') {
-                text.append(scanXMLReference());
+                // Keep entity reference in raw form for proper boundary-space detection.
+                // TextConstructor.StringValue.expand() handles expansion at runtime.
+                // If we pre-expand, &#32; → ' ' would be wrongly classified as
+                // strippable whitespace by TextConstructor.isWhitespaceOnly.
+                text.append(scanXMLReferenceRaw());
             } else {
                 text.appendCodePoint(ch);
                 if (ch == '\n') { xln++; xcl = 1; } else { xcl++; }
@@ -2973,6 +3537,18 @@ parseExprSingle(); // parse but discard
      * Scans an XML entity/character reference at position xp (which is at '&').
      * Updates xp/xcl past the reference.
      */
+    /**
+     * Scans an XML reference (&amp;...;) and returns the RAW text including &amp; and ;
+     * Used in element content where TextConstructor.StringValue.expand() handles expansion.
+     */
+    private String scanXMLReferenceRaw() throws XPathException {
+        final int start = xp;
+        // Validate the reference (advances xp past it)
+        scanXMLReference();
+        // Return the raw text from '&' to ';' inclusive
+        return lexer.substring(start, xp);
+    }
+
     private String scanXMLReference() throws XPathException {
         final int refStart = xp;
         xp++; xcl++; // skip &
@@ -3077,6 +3653,91 @@ parseExprSingle(); // parse but discard
     /**
      * Map constructor: map { "key": value, "key2": value2 }
      */
+    /**
+     * Checks if the current '{' starts a bare map constructor (XQ4).
+     * Uses lookahead: { RBRACE (empty map) or { expr COLON (key:value map).
+     * Saves and restores parser state for backtracking.
+     */
+    private boolean isBareMapConstructorStart() {
+        if (!check(Token.LBRACE)) return false;
+
+        // { } is an empty map
+        if (peekIs(Token.RBRACE)) return true;
+
+        // Save state for backtracking
+        final Token savedCurrent = current;
+        final Token savedPrevious = previous;
+        final Token savedBuffered = bufferedNext;
+        final int savedLexerPos = lexer.getPosition();
+
+        try {
+            advance(); // consume {
+
+            // Check for patterns that indicate map entries:
+            // { "string" : ... } or { number : ... } or { $var : ... } or { name : ... }
+            // Skip the first "key" expression — simple cases only
+            if (check(Token.STRING_LITERAL) || check(Token.INTEGER_LITERAL)
+                    || check(Token.DECIMAL_LITERAL) || check(Token.DOUBLE_LITERAL)) {
+                advance(); // consume literal
+                return check(Token.COLON);
+            }
+            if (check(Token.DOLLAR)) {
+                advance(); // $
+                if (check(Token.NCNAME) || check(Token.QNAME)) {
+                    advance(); // var name
+                    return check(Token.COLON);
+                }
+            }
+            if (check(Token.NCNAME) || check(Token.QNAME)) {
+                final String name = current.value;
+                advance(); // consume name
+                // name followed by : (but not :: which is an axis)
+                if (check(Token.COLON) && !peekIs(Token.COLON)) return true;
+                // name(...) : — function call as key
+                if (check(Token.LPAREN)) {
+                    // Skip balanced parens
+                    int depth = 0;
+                    while (!check(Token.EOF)) {
+                        if (match(Token.LPAREN)) depth++;
+                        else if (match(Token.RPAREN)) { depth--; if (depth <= 0) break; }
+                        else advance();
+                    }
+                    return check(Token.COLON);
+                }
+            }
+            // Can't determine — not a bare map
+            return false;
+        } finally {
+            // Restore parser state
+            current = savedCurrent;
+            previous = savedPrevious;
+            bufferedNext = savedBuffered;
+            lexer.setPosition(savedLexerPos);
+        }
+    }
+
+    /**
+     * Parses a bare map constructor: { key: value, ... }
+     * Called when isBareMapConstructorStart() returns true.
+     */
+    Expression parseBareMapConstructor() throws XPathException {
+        final int line = current.line, col = current.column;
+        expect(Token.LBRACE, "'{'");
+
+        final org.exist.xquery.functions.map.MapExpr mapExpr =
+                new org.exist.xquery.functions.map.MapExpr(context);
+        mapExpr.setLocation(line, col);
+
+        if (!check(Token.RBRACE)) {
+            parseMapEntry(mapExpr);
+            while (match(Token.COMMA)) {
+                parseMapEntry(mapExpr);
+            }
+        }
+        expect(Token.RBRACE, "'}'");
+        return mapExpr;
+    }
+
     Expression parseMapConstructor() throws XPathException {
         final int line = current.line, col = current.column;
         matchKeyword(Keywords.MAP);
@@ -3168,6 +3829,12 @@ parseExprSingle(); // parse but discard
         // Map constructor: map { "key": value }
         if (checkKeyword(Keywords.MAP) && peekIs(Token.LBRACE)) return parseMapConstructor();
 
+        // XQ4 bare map constructor: { "key": value } (without 'map' keyword)
+        // Disambiguated from enclosed expression by lookahead: { expr : indicates map
+        if (check(Token.LBRACE) && isBareMapConstructorStart()) {
+            return parseBareMapConstructor();
+        }
+
         // Curly array constructor: array { expr }
         if (checkKeyword(Keywords.ARRAY) && peekIs(Token.LBRACE)) return parseCurlyArrayConstructor();
 
@@ -3188,19 +3855,40 @@ parseExprSingle(); // parse but discard
             return parseInlineFunction();
         }
 
-        // Focus function: fn { expr }
+        // Focus function: fn { expr } — XQ4 only
         if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
+            // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
             return parseFocusFunction();
         }
 
-        // QName literal: #prefix:local
+        // QName literal: #prefix:local — XQ4 only
         if (check(Token.HASH) && peekIsNameStart()) {
+            // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
             return parseQNameLiteral();
         }
 
-        // String constructor: ``[content `{expr}` more]``
+        // Pragma / extension expression: (# name content #) { expr }
+        if (check(Token.PRAGMA_START)) {
+            return parsePragmaExpr();
+        }
+
+        // String constructor: ``[content `{expr}` more]`` — XQuery 3.1 (W3C §3.11.4)
         if (check(Token.STRING_CONSTRUCTOR_START)) {
             return parseStringConstructor();
+        }
+
+        // EQName: Q{uri}local — function call, function reference, or variable
+        if (check(Token.BRACED_URI_LITERAL)) {
+            final String eqname = parseEQName();
+            if (match(Token.HASH)) {
+                // Q{uri}name#arity — named function reference
+                return parseNamedFunctionRef(eqname);
+            }
+            if (match(Token.LPAREN)) {
+                // Q{uri}name(args) — function call
+                return parseEQNameFunctionCall(eqname);
+            }
+            throw error("Expected '(' or '#' after EQName '" + eqname + "'");
         }
 
         // Function call or function reference: name(args) or name#arity
@@ -3287,6 +3975,72 @@ parseExprSingle(); // parse but discard
         return expr;
     }
 
+    /**
+     * Parses a Q{uri}local EQName — returns the combined string for QName resolution.
+     * Consumes BRACED_URI_LITERAL + NCNAME tokens.
+     */
+    private String parseEQName() throws XPathException {
+        final String bracedUri = current.value; // Q{...}
+        advance(); // consume BRACED_URI_LITERAL
+        if (!check(Token.NCNAME)) throw error("Expected local name after braced URI");
+        final String local = current.value;
+        advance(); // consume local name
+        // Return in a format QName.parse can handle
+        return bracedUri + local;
+    }
+
+    /**
+     * Parses a function call with an EQName (Q{uri}local(args)).
+     * LPAREN already consumed.
+     */
+    private Expression parseEQNameFunctionCall(final String eqname) throws XPathException {
+        final Token nameToken = previous; // the local name token
+        final List<Expression> args = new ArrayList<>();
+        if (!check(Token.RPAREN)) {
+            args.add(parseFunctionArg());
+            while (match(Token.COMMA)) {
+                args.add(parseFunctionArg());
+            }
+        }
+        expect(Token.RPAREN, "')'");
+
+        final XQueryAST ast = new XQueryAST(0, eqname);
+        ast.setLine(nameToken.line);
+        ast.setColumn(nameToken.column);
+
+        // Parse Q{uri}local into namespace URI + local name
+        final int braceEnd = eqname.indexOf('}');
+        final String uri = eqname.substring(2, braceEnd); // skip Q{
+        final String local = eqname.substring(braceEnd + 1);
+        final QName qname = new QName(local, uri);
+        final PathExpr parent = new PathExpr(context);
+        Expression fn = FunctionFactory.createFunction(context, qname, ast, parent, args);
+        if (fn instanceof AbstractExpression) {
+            ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
+        }
+
+        // Check for partial application
+        boolean isPartial = false;
+        for (final Expression arg : args) {
+            if (arg instanceof Function.Placeholder) {
+                isPartial = true;
+                break;
+            }
+        }
+        if (isPartial) {
+            if (!(fn instanceof FunctionCall)) {
+                if (fn instanceof CastExpression) {
+                    fn = ((CastExpression) fn).toFunction();
+                }
+                fn = FunctionFactory.wrap(context, (Function) fn);
+            }
+            fn = new PartialFunctionApplication(context, (FunctionCall) fn);
+            ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
+        }
+
+        return fn;
+    }
+
     Expression parseFunctionCall() throws XPathException {
         final Token nameToken = current;
         advance();
@@ -3307,10 +4061,29 @@ parseExprSingle(); // parse but discard
 
         final QName qname = resolveQName(nameToken.value, context.getDefaultFunctionNamespace());
         final PathExpr parent = new PathExpr(context);
-        final Expression fn = FunctionFactory.createFunction(context, qname, ast, parent, args);
+        Expression fn = FunctionFactory.createFunction(context, qname, ast, parent, args);
         if (fn instanceof AbstractExpression) {
             ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
         }
+        // Check for partial application — if any argument is a placeholder
+        boolean isPartial = false;
+        for (final Expression arg : args) {
+            if (arg instanceof Function.Placeholder) {
+                isPartial = true;
+                break;
+            }
+        }
+        if (isPartial) {
+            if (!(fn instanceof FunctionCall)) {
+                if (fn instanceof CastExpression) {
+                    fn = ((CastExpression) fn).toFunction();
+                }
+                fn = FunctionFactory.wrap(context, (Function) fn);
+            }
+            fn = new PartialFunctionApplication(context, (FunctionCall) fn);
+            ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
+        }
+
         return fn;
     }
 
@@ -3318,7 +4091,19 @@ parseExprSingle(); // parse but discard
      * Parses a function argument — either a regular expression or a keyword argument (name := value).
      */
     private Expression parseFunctionArg() throws XPathException {
-        // Check for keyword argument: name := value
+        // Placeholder argument: ? for partial function application
+        if (check(Token.QUESTION) && !peekIs(Token.QUESTION)) {
+            // Check if this is a placeholder (followed by comma or rparen)
+            // vs a lookup on context item (followed by key)
+            if (peekIs(Token.COMMA) || peekIs(Token.RPAREN)) {
+                advance(); // consume ?
+                return new Function.Placeholder(context);
+            }
+        }
+
+        // Keyword argument: name := value
+        // Accepted regardless of version — no valid XQ3.1 syntax starts with name :=
+        // in a function argument position, and the ANTLR 2 parser accepts them too.
         if (check(Token.NCNAME) && peekIs(Token.COLON_EQ)) {
             final String keyName = current.value;
             advance(); // consume name
@@ -3337,9 +4122,68 @@ parseExprSingle(); // parse but discard
     // Node tests and axes
     // ========================================================================
 
+    /** Saves parser + lexer state for backtracking. */
+    private int[] saveParserState() {
+        return new int[]{ lexer.getPosition() };
+    }
+
+    /** Restores parser + lexer state for backtracking. */
+    private void restoreParserState(final Token savedCurrent, final Token savedPrevious,
+                                     final Token savedBuffered, final int[] lexerState) {
+        current = savedCurrent;
+        previous = savedPrevious;
+        bufferedNext = savedBuffered;
+        lexer.setPosition(lexerState[0]);
+    }
+
     private int matchAxis() {
         if (current.type != Token.NCNAME) return -1;
-        final int axis = axisFromName(current.value);
+
+        final String name = current.value;
+
+        // Handle hyphenated axis names: following-sibling, preceding-sibling,
+        // descendant-or-self, ancestor-or-self
+        if (("following".equals(name) || "preceding".equals(name) || "descendant".equals(name)
+                || "ancestor".equals(name)) && peekIs(Token.MINUS)) {
+            // Save full state for backtrack
+            final Token savedCurrent = current;
+            final Token savedPrevious = previous;
+            final Token savedBuffered = bufferedNext;
+            final int[] lexerState = saveParserState();
+
+            advance(); // consume axis-start (e.g., "following")
+            advance(); // consume MINUS
+
+            if (current.type == Token.NCNAME) {
+                final String suffix = current.value;
+                if ("sibling".equals(suffix)) {
+                    // following-sibling or preceding-sibling
+                    final String compound = name + "-sibling";
+                    if (peekIs(Token.COLONCOLON)) {
+                        advance(); // consume "sibling"
+                        return axisFromName(compound);
+                    }
+                } else if ("or".equals(suffix)) {
+                    // descendant-or-self or ancestor-or-self
+                    advance(); // consume "or"
+                    if (current.type == Token.MINUS) {
+                        advance(); // consume "-"
+                        if (current.type == Token.NCNAME && "self".equals(current.value)) {
+                            final String compound = name + "-or-self";
+                            if (peekIs(Token.COLONCOLON)) {
+                                advance(); // consume "self"
+                                return axisFromName(compound);
+                            }
+                        }
+                    }
+                }
+            }
+            // Backtrack — not a valid axis
+            restoreParserState(savedCurrent, savedPrevious, savedBuffered, lexerState);
+            return -1;
+        }
+
+        final int axis = axisFromName(name);
         if (axis < 0) return -1;
         if (peekIs(Token.COLONCOLON)) {
             advance();
@@ -3408,6 +4252,14 @@ parseExprSingle(); // parse but discard
             advance();
             return new NameTest(nodeType, resolveQName(nameToken.value,
                     axis == Constants.ATTRIBUTE_AXIS ? null : context.getURIForPrefix("")));
+        }
+        // EQName: Q{uri}local as node test
+        if (check(Token.BRACED_URI_LITERAL)) {
+            final String eqname = parseEQName();
+            final int braceEnd = eqname.indexOf('}');
+            final String uri = eqname.substring(2, braceEnd);
+            final String local = eqname.substring(braceEnd + 1);
+            return new NameTest(nodeType, new QName(local, uri));
         }
         throw error("Expected node test");
     }
@@ -3579,6 +4431,7 @@ parseExprSingle(); // parse but discard
             case Keywords.NODE: case Keywords.TEXT: case Keywords.ELEMENT:
             case Keywords.ATTRIBUTE: case Keywords.COMMENT:
             case Keywords.DOCUMENT_NODE: case Keywords.PROCESSING_INSTRUCTION:
+            case "namespace-node": case "schema-element": case "schema-attribute":
                 return true;
             default: return false;
         }
@@ -3613,6 +4466,13 @@ parseExprSingle(); // parse but discard
                     else { final Token n = current; advance(); test = new NameTest(Type.ATTRIBUTE, resolveQName(n.value, null)); }
                 } else { test = new TypeTest(Type.ATTRIBUTE); }
                 break;
+            case "namespace-node": test = new TypeTest(Type.NAMESPACE); break;
+            case "schema-element":
+                if (check(Token.NCNAME) || check(Token.QNAME)) { advance(); }
+                test = new TypeTest(Type.ELEMENT); break;
+            case "schema-attribute":
+                if (check(Token.NCNAME) || check(Token.QNAME)) { advance(); }
+                test = new TypeTest(Type.ATTRIBUTE); break;
             default: throw error("Unknown kind test: " + kind);
         }
         expect(Token.RPAREN, "')'");

@@ -758,6 +758,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				context.declareVariable(entry.getKey(), entry.getValue());
 			}
 			// TODO(pkaminsk2): why replicate XQuery.compile here?
+			// TODO(rd-parser): Route through rd parser when XQuery.useRdParser() is true.
+			// This parses XPath expressions from XUpdate <xu:*> select attributes.
+			// May need an XPath-only parsing mode in the rd parser (no prolog, no FLWOR).
 			final XQueryLexer lexer = new XQueryLexer(context, new StringReader(select));
 			final XQueryParser parser = new XQueryParser(lexer);
 			final XQueryTreeParser treeParser = new XQueryTreeParser(context);
