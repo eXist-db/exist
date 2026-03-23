@@ -85,14 +85,14 @@ public class FunParseIetfDate extends BasicFunction {
         private final char[] WS = {0x000A, 0x0009, 0x000D, 0x0020};
         private final String WS_STR = new String(WS);
 
-        private final String[] dayNames = {
-                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
-                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+        private final String[] lowerDayNames = {
+                "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+                "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
         };
 
-        private final String[] monthNames = {
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        private final String[] lowerMonthNames = {
+                "jan", "feb", "mar", "apr", "may", "jun",
+                "jul", "aug", "sep", "oct", "nov", "dec"
         };
 
         private final String[] tzNames = {
@@ -163,6 +163,17 @@ public class FunParseIetfDate extends BasicFunction {
             if (vidx != vlen) {
                 throw new IllegalArgumentException(value);
             }
+            // Handle 24:00:00 as midnight at the end of the day (= 00:00:00 next day)
+            if (hour == 24 && minute == 0 && second == 0
+                    && (fractionalSecond == null || fractionalSecond.signum() == 0)) {
+                hour = 0;
+                final XMLGregorianCalendar cal = TimeUtils
+                        .getInstance()
+                        .getFactory()
+                        .newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
+                cal.add(TimeUtils.getInstance().getFactory().newDuration(true, 0, 0, 1, 0, 0, 0));
+                return cal;
+            }
             return TimeUtils
                     .getInstance()
                     .getFactory()
@@ -170,9 +181,11 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void dayName() {
-            if (StringUtils.startsWithAny(value, dayNames)) {
-                skipTo(WS_STR);
-                vidx++;
+            if (StringUtils.startsWithAny(value.substring(vidx).toLowerCase(), lowerDayNames)) {
+                skipTo(WS_STR + ",");
+                if (vidx < vlen && (isWS(peek()) || peek() == ',')) {
+                    vidx++;
+                }
             }
         }
 
@@ -180,11 +193,21 @@ public class FunParseIetfDate extends BasicFunction {
             if (isWS(peek())) {
                 skipWS();
             }
-            if (StringUtils.startsWithAny(value.substring(vidx), monthNames)) {
+            if (startsWithMonthName(value.substring(vidx))) {
                 asctime();
             } else {
                 rfcDate();
             }
+        }
+
+        private boolean startsWithMonthName(final String s) {
+            final String lower = s.toLowerCase();
+            for (final String mn : lowerMonthNames) {
+                if (lower.startsWith(mn)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void rfcDate() throws IllegalArgumentException {
@@ -232,8 +255,8 @@ public class FunParseIetfDate extends BasicFunction {
             if (vidx >= vlen) {
                 throw new IllegalArgumentException(value);
             }
-            final String monthName = value.substring(vstart, vidx);
-            final int idx = Arrays.asList(monthNames).indexOf(monthName);
+            final String monthName = value.substring(vstart, vidx).toLowerCase();
+            final int idx = Arrays.asList(lowerMonthNames).indexOf(monthName);
             if (idx < 0) {
                 throw new IllegalArgumentException(value);
             }
@@ -248,12 +271,18 @@ public class FunParseIetfDate extends BasicFunction {
             hours();
             minutes();
             seconds();
-            skipWS();
-            timezone();
+            // Whitespace before timezone is optional per the IETF date grammar
+            if (isWS(peek())) {
+                skipWS();
+            }
+            // Timezone is optional in the grammar: (S? timezone)?
+            if (vidx < vlen) {
+                timezone();
+            }
         }
 
         private void hours() throws IllegalArgumentException {
-            hour = parseInt(2, 2);
+            hour = parseInt(1, 2);
         }
 
         private void minutes() throws IllegalArgumentException {
@@ -263,12 +292,13 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void seconds() throws IllegalArgumentException {
-            if (isWS(peek())) {
+            if (peek() != ':') {
+                // No colon means no seconds component
                 second = 0;
                 return;
             }
             skip(':');
-            second = parseInt(2, 2);
+            second = parseInt(1, 2);
             fractionalSecond = parseBigDecimal();
         }
 
