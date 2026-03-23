@@ -146,6 +146,13 @@ public class XHTMLWriter extends IndentingXMLWriter {
         this.inlineTags = inlineTags;
     }
 
+    @Override
+    protected void resetObjectState() {
+        super.resetObjectState();
+        inHead = false;
+        contentTypeMetaWritten = false;
+    }
+
     protected boolean isEmptyTag(final String tag) {
         return emptyTags.contains(tag);
     }
