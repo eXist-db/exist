@@ -28,7 +28,7 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * eXist Oracle Module Extension
- * 
+ * <p>
  * An extension module for the eXist Native XML Database that allows execution of
  * PL/SQL Stored Procedures within an Oracle RDBMS, returning an XML representation
  * of the result set. In particular, this module gives access to a <code>ResultSet</code>
@@ -41,7 +41,7 @@ import org.exist.xquery.FunctionDef;
  * @serial 2010-03-23
  * @version 1.0
  * 
- * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
+ * @see org.exist.xquery.AbstractInternalModule(org.exist.xquery.FunctionDef[])
  */
 public class OracleModule extends AbstractInternalModule{
 	

@@ -66,14 +66,14 @@ import org.w3c.dom.NodeList;
 
 /**
  * eXist Oracle Module Extension ExecuteFunction
- * 
+ * <p>
  * Execute a PL/SQL stored procedure within an Oracle RDBMS.
  * 
  * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @serial 2009-03-23
  * @version 1.0
  * 
- * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext,
+ * @see org.exist.xquery.BasicFunction(org.exist.xquery.XQueryContext,
  *      org.exist.xquery.FunctionSignature)
  */
 public class ExecuteFunction extends BasicFunction {
@@ -131,6 +131,8 @@ public class ExecuteFunction extends BasicFunction {
      *
      * @param context
      *            The Context of the calling XQuery
+	 * @param  signature
+	 * 			  Function signature.
      */
     public ExecuteFunction( XQueryContext context, FunctionSignature signature ) {
         super( context, signature );
@@ -239,7 +241,7 @@ public class ExecuteFunction extends BasicFunction {
 								{
 									// use column names as the XML node
 
-									/**
+									/*
 									 * Spaces in column names are replaced with
 									 * underscore's
 									 */
@@ -373,9 +375,9 @@ public class ExecuteFunction extends BasicFunction {
 	
 	/**
 	 * Release DB resources
-	 * @param connection
-	 * @param statement
-	 * @param rs
+	 * @param connection Database connection.
+	 * @param statement Statement
+	 * @param rs Result set.
 	 */
 	protected void release(Connection connection, Statement statement, ResultSet rs) {
 		if (rs != null) {
