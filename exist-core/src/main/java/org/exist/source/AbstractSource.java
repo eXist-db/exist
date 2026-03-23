@@ -89,6 +89,9 @@ public abstract class AbstractSource implements Source {
      * @param is the input stream
      * @return The guessed encoding.
      */
+    // TODO(rd-parser): DeclScanner is a lightweight ANTLR 2 pre-scanner that extracts
+    // version/encoding declarations without full parsing. The rd parser may need an
+    // equivalent lightweight method (e.g., XQueryParser.scanVersionDecl).
     protected static String guessXQueryEncoding(final InputStream is) {
         final XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
         final DeclScanner scanner = new DeclScanner(lexer);

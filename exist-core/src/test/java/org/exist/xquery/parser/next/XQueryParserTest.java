@@ -810,15 +810,15 @@ public class XQueryParserTest {
 
     @Test
     public void pipelineCount() throws Exception {
-        assertEval("5", "(1, 2, 3, 4, 5) -> count()");
+        assertModuleEval("5", "xquery version '4.0';\n(1, 2, 3, 4, 5) -> count()");
     }
 
     @Test
     public void pipelineChain() throws Exception {
-        assertEval("3", "(1, 2, 3, 4, 5) -> subsequence(1, 3) -> count()");
+        assertModuleEval("3", "xquery version '4.0';\n(1, 2, 3, 4, 5) -> subsequence(1, 3) -> count()");
     }
 
-    // ---- Arrow operator ----
+    // ---- Arrow operator (XQ 3.1 — not gated) ----
 
     @Test
     public void arrowOperator() throws Exception {
@@ -829,27 +829,27 @@ public class XQueryParserTest {
 
     @Test
     public void mappingArrowStringJoin() throws Exception {
-        assertEval("1, 2, 3", "(1, 2, 3) =!> string() => string-join(\", \")");
+        assertModuleEval("1, 2, 3", "xquery version '4.0';\n(1, 2, 3) =!> string() => string-join(\", \")");
     }
 
     // ---- Otherwise ----
 
     @Test
     public void otherwiseWithEmpty() throws Exception {
-        assertEval("default", "() otherwise 'default'");
+        assertModuleEval("default", "xquery version '4.0';\n() otherwise 'default'");
     }
 
     @Test
     public void otherwiseWithValue() throws Exception {
-        assertEval("42", "42 otherwise 'default'");
+        assertModuleEval("42", "xquery version '4.0';\n42 otherwise 'default'");
     }
 
     @Test
     public void otherwiseChain() throws Exception {
-        assertEval("fallback", "() otherwise () otherwise 'fallback'");
+        assertModuleEval("fallback", "xquery version '4.0';\n() otherwise () otherwise 'fallback'");
     }
 
-    // ---- Simple map ----
+    // ---- Simple map (XQ 3.1 — not gated) ----
 
     @Test
     public void simpleMapOperator() throws Exception {
@@ -861,7 +861,7 @@ public class XQueryParserTest {
         assertEval("HELLO WORLD", "('hello', 'world') ! upper-case(.)");
     }
 
-    // ---- Annotations ----
+    // ---- Annotations (XQ 3.0+ — not gated) ----
 
     @Test
     public void annotationPrivate() throws Exception {
@@ -874,13 +874,12 @@ public class XQueryParserTest {
 
     @Test
     public void focusFunctionBasic() throws Exception {
-        assertEval("true", "let $f := fn { . > 0 } return $f(42)");
+        assertModuleEval("true", "xquery version '4.0';\nlet $f := fn { . > 0 } return $f(42)");
     }
 
     @Test
     public void focusFunctionWithFilter() throws Exception {
-        assertEval("30",
-                "(1 to 10) -> filter(fn { . mod 2 = 0 }) -> sum()");
+        assertModuleEval("30", "xquery version '4.0';\n(1 to 10) -> filter(fn { . mod 2 = 0 }) -> sum()");
     }
 
     // ---- Default parameter values ----
@@ -888,6 +887,7 @@ public class XQueryParserTest {
     @Test
     public void defaultParamValue() throws Exception {
         assertModuleEval("Hello, World",
+                "xquery version '4.0';\n" +
                 "declare function local:greet($name := 'World') { 'Hello, ' || $name };\n" +
                 "local:greet()");
     }
@@ -895,6 +895,7 @@ public class XQueryParserTest {
     @Test
     public void defaultParamValueOverridden() throws Exception {
         assertModuleEval("Hello, eXist",
+                "xquery version '4.0';\n" +
                 "declare function local:greet($name := 'World') { 'Hello, ' || $name };\n" +
                 "local:greet('eXist')");
     }
@@ -903,14 +904,14 @@ public class XQueryParserTest {
 
     @Test
     public void keywordArgument() throws Exception {
-        assertEval("world", "fn:substring('hello world', start := 7)");
+        assertModuleEval("world", "xquery version '4.0';\nfn:substring('hello world', start := 7)");
     }
 
     // ---- QName literal ----
 
     @Test
     public void qnameLiteral() throws Exception {
-        assertEval("true", "function-lookup(#math:pi, 0)() > 3.14");
+        assertModuleEval("true", "xquery version '4.0';\nfunction-lookup( #math:pi, 0)() > 3.14");
     }
 
     @Test
@@ -929,26 +930,65 @@ public class XQueryParserTest {
                 "``[`{1 + 1}` plus `{2 + 2}` equals `{(1+1) + (2+2)}`]``");
     }
 
+    @Test
+    public void stringConstructorWithXmlPi() throws Exception {
+        // Regression test for eXist-db/exist#4104: <? inside string constructor
+        // must be treated as literal text, not as PI start
+        assertEval("<?xml version=\"1.0\"?>", "``[<?xml version=\"1.0\"?>]``");
+    }
+
+    @Test
+    public void stringConstructorWithXmlComment() throws Exception {
+        // <!-- inside string constructor must be literal text, not comment
+        assertEval("<!-- not a comment -->", "``[<!-- not a comment -->]``");
+    }
+
+    @Test
+    public void stringConstructorWithCdata() throws Exception {
+        // <![CDATA[ inside string constructor must be literal text
+        assertEval("<![CDATA[data]]>", "``[<![CDATA[data]]>]``");
+    }
+
+    @Test
+    public void elementWithEnclosedExprOnly() throws Exception {
+        assertModuleEval("42", "let $i := 41 return <price>{$i + 1}</price>");
+    }
+
+    @Test
+    public void simpleElementLiteral() throws Exception {
+        assertModuleEval("hello", "<a>hello</a>");
+    }
+
+    @Test
+    public void simpleElementWithVar() throws Exception {
+        assertModuleEval("42", "let $x := 42 return <a>{$x}</a>");
+    }
+
+    @Test
+    public void elementWithEnclosedExprAndText() throws Exception {
+        assertModuleEval("Hello 42 World", "let $i := 42 return <msg>Hello {$i} World</msg>");
+    }
+
     // ---- Test gate queries ----
 
     @Test
     public void testGatePipeline() throws Exception {
-        assertEval("5", "(1, 2, 3, 4, 5) -> count()");
+        assertModuleEval("5", "xquery version '4.0';\n(1, 2, 3, 4, 5) -> count()");
     }
 
     @Test
     public void testGateMappingArrow() throws Exception {
-        assertEval("1, 2, 3", "(1, 2, 3) =!> string() => string-join(\", \")");
+        assertModuleEval("1, 2, 3", "xquery version '4.0';\n(1, 2, 3) =!> string() => string-join(\", \")");
     }
 
     @Test
     public void testGateOtherwise() throws Exception {
-        assertEval("default", "() otherwise 'default'");
+        assertModuleEval("default", "xquery version '4.0';\n() otherwise 'default'");
     }
 
     @Test
     public void testGateFocusPipeline() throws Exception {
-        assertEval("30", "(1 to 10) -> filter(fn { . mod 2 = 0 }) -> sum()");
+        assertModuleEval("30", "xquery version '4.0';\n(1 to 10) -> filter(fn { . mod 2 = 0 }) -> sum()");
     }
 
     @Test
@@ -961,6 +1001,7 @@ public class XQueryParserTest {
     @Test
     public void testGateDefaultParam() throws Exception {
         assertModuleEval("Hello, World",
+                "xquery version '4.0';\n" +
                 "declare function local:greet($name := 'World') { 'Hello, ' || $name };\n" +
                 "local:greet()");
     }
@@ -1132,7 +1173,7 @@ public class XQueryParserTest {
 
     @Test
     public void testGateFTNot() throws Exception {
-        parseExpr("'open source' contains text 'open' ftnot 'closed'");
+        parseExpr("'open source' contains text ftnot 'closed'");
     }
 
     @Test
@@ -1750,8 +1791,7 @@ public class XQueryParserTest {
             "count(local:primes(20))");
     }
 
-    // =================================================================
-
+    // ==========================================================
     @Test
     public void functxPatternDocumentOrder() throws Exception {
         // Document ordering after path steps — tests node identity and dedup

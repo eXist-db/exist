@@ -138,8 +138,7 @@ public final class XQueryLexer {
         switch (ch) {
             case '(':
                 advance();
-                // Pragma: (# — but NOT if followed by a name char (QName literal in function args)
-                if (at('#') && !isNameStartChar(ahead(1))) {
+                if (at('#')) {
                     advance();
                     return token(Token.PRAGMA_START, "(#");
                 }

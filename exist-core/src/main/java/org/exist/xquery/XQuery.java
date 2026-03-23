@@ -202,7 +202,7 @@ public class XQuery {
      */
     public static final String PROPERTY_PARSER = "exist.parser";
 
-    private static boolean useNativeParser() {
+    public static boolean useRdParser() {
         return "rd".equalsIgnoreCase(System.getProperty(PROPERTY_PARSER, "antlr2"));
     }
 
@@ -214,8 +214,8 @@ public class XQuery {
         }
 
         // Feature flag: use hand-written recursive descent parser if enabled
-        if (useNativeParser() && !xpointer) {
-            return compileWithNativeParser(context, reader);
+        if (useRdParser() && !xpointer) {
+            return compileWithRdParser(context, reader);
         }
         
         
@@ -332,33 +332,45 @@ public class XQuery {
      *
      * @return true if this is a library module, false otherwise
      */
-    private CompiledXQuery compileWithNativeParser(final XQueryContext context, final Reader reader)
+    private CompiledXQuery compileWithRdParser(final XQueryContext context, final Reader reader)
             throws XPathException {
         final long start = System.currentTimeMillis();
         try {
             final String source = readFully(reader);
-            final org.exist.xquery.parser.next.XQueryParser nativeParser =
+            final org.exist.xquery.parser.next.XQueryParser rdParser =
                     new org.exist.xquery.parser.next.XQueryParser(context, source);
 
-            final Expression rootExpr = nativeParser.parse();
+            final Expression rootExpr = rdParser.parse();
 
+            // Set root expression on context — required for resetState() during concurrent execution
+            context.setRootExpression(rootExpr);
             context.getRootContext().resolveForwardReferences();
 
-            if (rootExpr instanceof PathExpr) {
-                context.analyzeAndOptimizeIfModulesChanged((PathExpr) rootExpr);
+            // For library modules, return LibraryModuleRoot so execute() can
+            // dispatch function calls by name (triggers, fn:load-xquery-module)
+            final PathExpr result;
+            if (rdParser.isLibraryModule()) {
+                result = new LibraryModuleRoot(context);
+                if (rootExpr instanceof PathExpr) {
+                    for (int i = 0; i < ((PathExpr) rootExpr).getLength(); i++) {
+                        result.add(((PathExpr) rootExpr).getExpression(i));
+                    }
+                }
+            } else if (rootExpr instanceof PathExpr) {
+                result = (PathExpr) rootExpr;
+            } else {
+                result = new PathExpr(context);
+                result.add(rootExpr);
             }
+
+            context.analyzeAndOptimizeIfModulesChanged(result);
 
             if (LOG.isDebugEnabled()) {
                 final NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.debug("Recursive descent parser compilation took {} ms", nf.format(System.currentTimeMillis() - start));
             }
 
-            if (rootExpr instanceof PathExpr) {
-                return (PathExpr) rootExpr;
-            }
-            final PathExpr wrapper = new PathExpr(context);
-            wrapper.add(rootExpr);
-            return wrapper;
+            return result;
         } catch (final IOException e) {
             throw new XPathException(context.getRootExpression(), "Error reading query source: " + e.getMessage(), e);
         }
