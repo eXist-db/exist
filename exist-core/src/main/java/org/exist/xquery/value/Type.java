@@ -731,18 +731,9 @@ public class Type {
      * @return true if the cast may succeed (for some values), false if the cast can never succeed
      */
     public static boolean isCastable(final int sourceType, final int targetType) {
-        // Casting to/from ITEM, ANY_ATOMIC_TYPE, or same type is always allowed
-        if (sourceType == targetType || targetType == ITEM || targetType == ANY_ATOMIC_TYPE) {
-            return true;
-        }
-
-        // xs:untypedAtomic and xs:string can be cast to any atomic type
-        if (sourceType == UNTYPED_ATOMIC || sourceType == STRING || subTypeOf(sourceType, STRING)) {
-            return true;
-        }
-
-        // Any atomic type can be cast to xs:untypedAtomic or xs:string
-        if (targetType == UNTYPED_ATOMIC || targetType == STRING || subTypeOf(targetType, STRING)) {
+        // Casting to/from ITEM, ANY_ATOMIC_TYPE, same type, or string-family types is always allowed
+        if (sourceType == targetType || targetType == ITEM || targetType == ANY_ATOMIC_TYPE
+                || isStringOrUntypedAtomic(sourceType) || isStringOrUntypedAtomic(targetType)) {
             return true;
         }
 
@@ -757,74 +748,75 @@ public class Type {
             return true;
         }
 
-        // Same primitive type is always castable
-        if (srcPrimitive == tgtPrimitive) {
-            return true;
-        }
+        // Same primitive type is always castable; otherwise consult the casting table
+        return srcPrimitive == tgtPrimitive || isPrimitiveCastable(srcPrimitive, tgtPrimitive);
+    }
 
-        // XPath F&O 3.1, Section 19, Table 6 — Casting table by primitive type pairs.
-        // 'M' (may) or 'Y' (yes) entries return true; 'N' (no) entries return false.
+    private static boolean isStringOrUntypedAtomic(final int type) {
+        return type == UNTYPED_ATOMIC || type == STRING || subTypeOf(type, STRING);
+    }
+
+    /**
+     * Check the XPath F&amp;O 3.1 Section 19, Table 6 casting rules for two
+     * primitive types. Returns true for 'M' (may) or 'Y' (yes) entries,
+     * false for 'N' (no) entries.
+     *
+     * <p>This method assumes the caller has already handled: same-type casts,
+     * string/untypedAtomic sources and targets, and same-primitive-type casts.</p>
+     *
+     * @param srcPrimitive the primitive type of the source
+     * @param tgtPrimitive the primitive type of the target
+     *
+     * @return true if the cast is allowed per the casting table
+     */
+    private static boolean isPrimitiveCastable(final int srcPrimitive, final int tgtPrimitive) {
         return switch (srcPrimitive) {
             case FLOAT, DOUBLE, DECIMAL ->
-                    // Numerics can cast to: other numerics, boolean, duration subtypes
-                    tgtPrimitive == FLOAT || tgtPrimitive == DOUBLE || tgtPrimitive == DECIMAL
-                            || tgtPrimitive == BOOLEAN;
+                    isNumericTarget(tgtPrimitive) || tgtPrimitive == BOOLEAN;
 
             case BOOLEAN ->
-                    // Boolean can cast to: numerics
-                    tgtPrimitive == FLOAT || tgtPrimitive == DOUBLE || tgtPrimitive == DECIMAL;
+                    isNumericTarget(tgtPrimitive);
 
             case DURATION ->
-                    // Duration can cast to: duration subtypes (yearMonthDuration, dayTimeDuration)
-                    // duration subtypes share the same primitive: DURATION
-                    // So this is already handled by srcPrimitive == tgtPrimitive above
                     false;
 
             case DATE_TIME ->
-                    // dateTime can cast to: date, time, gYearMonth, gYear, gMonthDay, gDay, gMonth
-                    tgtPrimitive == DATE || tgtPrimitive == TIME
-                            || tgtPrimitive == G_YEAR_MONTH || tgtPrimitive == G_YEAR
-                            || tgtPrimitive == G_MONTH_DAY || tgtPrimitive == G_DAY
-                            || tgtPrimitive == G_MONTH;
+                    isDateTimeTarget(tgtPrimitive);
 
             case DATE ->
-                    // date can cast to: dateTime, gYearMonth, gYear, gMonthDay, gDay, gMonth
-                    tgtPrimitive == DATE_TIME
-                            || tgtPrimitive == G_YEAR_MONTH || tgtPrimitive == G_YEAR
-                            || tgtPrimitive == G_MONTH_DAY || tgtPrimitive == G_DAY
-                            || tgtPrimitive == G_MONTH;
+                    tgtPrimitive == DATE_TIME || isGregorianTarget(tgtPrimitive);
 
-            case TIME ->
-                    // time CANNOT cast to anything except string/untypedAtomic (handled above)
-                    false;
-
-            case G_YEAR_MONTH, G_YEAR, G_MONTH_DAY, G_DAY, G_MONTH ->
-                    // Gregorian types can only cast to: dateTime (if enough info), but spec says N
-                    // except string/untypedAtomic (handled above)
+            case TIME, G_YEAR_MONTH, G_YEAR, G_MONTH_DAY, G_DAY, G_MONTH, ANY_URI ->
                     false;
 
             case HEX_BINARY ->
-                    // hexBinary can cast to: base64Binary
                     tgtPrimitive == BASE64_BINARY;
 
             case BASE64_BINARY ->
-                    // base64Binary can cast to: hexBinary
                     tgtPrimitive == HEX_BINARY;
 
-            case ANY_URI ->
-                    // anyURI cannot cast to anything except string/untypedAtomic (handled above)
-                    false;
-
             case QNAME ->
-                    // QName cannot cast to anything except string/untypedAtomic (handled above)
-                    // (and NOTATION, but that's rarely used)
                     tgtPrimitive == NOTATION;
 
             case NOTATION ->
                     tgtPrimitive == QNAME;
 
-            default -> true;  // Unknown — allow and let convertTo() decide
+            default -> true;
         };
+    }
+
+    private static boolean isNumericTarget(final int tgtPrimitive) {
+        return tgtPrimitive == FLOAT || tgtPrimitive == DOUBLE || tgtPrimitive == DECIMAL;
+    }
+
+    private static boolean isDateTimeTarget(final int tgtPrimitive) {
+        return tgtPrimitive == DATE || tgtPrimitive == TIME || isGregorianTarget(tgtPrimitive);
+    }
+
+    private static boolean isGregorianTarget(final int tgtPrimitive) {
+        return tgtPrimitive == G_YEAR_MONTH || tgtPrimitive == G_YEAR
+                || tgtPrimitive == G_MONTH_DAY || tgtPrimitive == G_DAY
+                || tgtPrimitive == G_MONTH;
     }
 
     /**
