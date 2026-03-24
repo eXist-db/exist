@@ -71,8 +71,6 @@ import java.util.Date;
  * @author <a href="mailto:robert.walpole@metoffice.gov.uk">Robert Walpole</a>
  * @version 1.0
  * @serial 2009-03-23
- * @see org.exist.xquery.BasicFunction(org.exist.xquery.XQueryContext,
- * org.exist.xquery.FunctionSignature)
  */
 public class ExecuteFunction extends BasicFunction {
 
