@@ -283,6 +283,24 @@ public class XHTMLWriter extends IndentingXMLWriter {
         }
         return false;
     }
+
+    /**
+     * Returns true if the HTML version is 5.0 or higher.
+     */
+    private boolean isHtml5Version() {
+        if (outputProperties == null) {
+            return true; // default to HTML5
+        }
+        final String version = outputProperties.getProperty(OutputKeys.VERSION);
+        if (version != null) {
+            try {
+                return Double.parseDouble(version) >= 5.0;
+            } catch (final NumberFormatException e) {
+                // ignore
+            }
+        }
+        return true; // default to HTML5
+    }
     
     @Override
     public void attribute(final QName qname, final CharSequence value) throws TransformerException {
@@ -378,14 +396,23 @@ public class XHTMLWriter extends IndentingXMLWriter {
         contentTypeMetaWritten = true;
         try {
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
             closeStartTag(false);
             final Writer writer = getWriter();
-            writer.write("<meta http-equiv=\"Content-Type\" content=\"");
-            writer.write(mediaType);
-            writer.write("; charset=");
-            writer.write(encoding);
-            writer.write("\">");
+
+            // HTML5 uses <meta charset="UTF-8">
+            // HTML4/XHTML uses <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            if (isHtml5Version()) {
+                writer.write("<meta charset=\"");
+                writer.write(encoding);
+                writer.write("\">");
+            } else {
+                final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                writer.write("<meta http-equiv=\"Content-Type\" content=\"");
+                writer.write(mediaType);
+                writer.write("; charset=");
+                writer.write(encoding);
+                writer.write("\">");
+            }
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
