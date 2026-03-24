@@ -83,12 +83,15 @@ options {
 	protected Deque<Deque<String>> globalStack = new ArrayDeque<>();
 	protected Deque<String> elementStack = new ArrayDeque<>();
 	protected XQueryLexer lexer;
+	protected boolean xq4Enabled = false;
 
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
 		this.lexer = lexer;
 		setASTNodeClass("org.exist.xquery.parser.XQueryAST");
 	}
+
+	public boolean isXQ4() { return xq4Enabled; }
 
 	public boolean foundErrors() {
 		return foundError;
@@ -314,7 +317,12 @@ importDecl throws XPathException
 versionDecl throws XPathException
 :
 	"xquery" "version" v:STRING_LITERAL ( "encoding"! enc:STRING_LITERAL )?
-        { #versionDecl = #(#[VERSION_DECL, v.getText()], enc); }
+        {
+            #versionDecl = #(#[VERSION_DECL, v.getText()], enc);
+            if ("4.0".equals(v.getText())) {
+                xq4Enabled = true;
+            }
+        }
 	;
 
 setter
@@ -584,7 +592,7 @@ param throws XPathException
 { String varName= null; }
 :
 	DOLLAR! varName=eqName ( t:typeDeclaration )?
-	( ( COLON EQ ) => COLON! EQ! pd:exprSingle!
+	( ( { xq4Enabled }? COLON EQ ) => COLON! EQ! pd:exprSingle!
 	  { #pd = #(#[PARAM_DEFAULT, "param-default"], #pd); }
 	)?
 	{ #param= #(#[VARIABLE_BINDING, varName], #t, #pd); }
@@ -910,8 +918,8 @@ tryCatchExpr throws XPathException
 :
 	"try"^ LCURLY! tryTargetExpr RCURLY!
 	(
-		(catchClause)+ (finallyClause)?
-		| finallyClause
+		(catchClause)+ ( { xq4Enabled }? finallyClause )?
+		| { xq4Enabled }? finallyClause
 	)
 	;
 
@@ -987,7 +995,7 @@ whereClause throws XPathException
 
 whileClause throws XPathException
 :
-	"while"^ exprSingle
+	{ xq4Enabled }? "while"^ exprSingle
 	;
 
 countClause throws XPathException
@@ -1004,9 +1012,9 @@ forClause throws XPathException
 
 forBinding throws XPathException
 :
-	( "member" ) => memberVarBinding
-	| ( "key" ) => keyVarBinding
-	| ( "value" ) => valueVarBinding
+	( { xq4Enabled }? "member" ) => memberVarBinding
+	| ( { xq4Enabled }? "key" ) => keyVarBinding
+	| ( { xq4Enabled }? "value" ) => valueVarBinding
 	| inVarBinding
 	;
 
@@ -1383,7 +1391,7 @@ orExpr throws XPathException
 :
 	andExpr ( "or"^ andExpr )*
 	(
-		DOUBLE_QUESTION! exprSingle DOUBLE_BANG! exprSingle
+		{ xq4Enabled }? DOUBLE_QUESTION! exprSingle DOUBLE_BANG! exprSingle
 		{
 			#orExpr = #(#[TERNARY, "ternary"], #orExpr);
 		}
@@ -1417,7 +1425,7 @@ castExpr throws XPathException
 
 pipelineExpr throws XPathException
 :
-	arrowExpr ( PIPELINE_OP^ arrowExpr )*
+	arrowExpr ( { xq4Enabled }? PIPELINE_OP^ arrowExpr )*
 	;
 
 comparisonExpr throws XPathException
@@ -1436,7 +1444,7 @@ comparisonExpr throws XPathException
 
 otherwiseExpr throws XPathException
 :
-	stringConcatExpr ( "otherwise"^ stringConcatExpr )*
+	stringConcatExpr ( { xq4Enabled }? "otherwise"^ stringConcatExpr )*
 	;
 
 stringConcatExpr throws XPathException
@@ -1701,9 +1709,11 @@ postfixExpr throws XPathException
 arrowExpr throws XPathException
 :
     unaryExpr (
-        ( ARROW_OP^ | MAPPING_ARROW_OP^ ) arrowFunctionSpecifier argumentList
+        ARROW_OP^ arrowFunctionSpecifier argumentList
         |
-        METHOD_CALL_OP^ NCNAME argumentList
+        { xq4Enabled }? MAPPING_ARROW_OP^ arrowFunctionSpecifier argumentList
+        |
+        { xq4Enabled }? METHOD_CALL_OP^ NCNAME argumentList
     )*
     ;
 
@@ -1866,10 +1876,10 @@ primaryExpr throws XPathException
 	|
 	directConstructor
 	|
-	( ( "fn" | "function" ) LCURLY ) => focusFunctionExpr
+	( { xq4Enabled }? ( "fn" | "function" ) LCURLY ) => focusFunctionExpr
 	|
 	// XQ4: QName literal (#local, #prefix:local, #Q{uri}local)
-	( HASH ) => qnameLiteral
+	( { xq4Enabled }? HASH ) => qnameLiteral
 	|
 	( MOD | ( "fn" | "function" ) LPAREN | eqName HASH ) => functionItemExpr
 	|
@@ -1879,7 +1889,7 @@ primaryExpr throws XPathException
 	|
 	( STRING_CONSTRUCTOR_START ) => stringConstructor
 	|
-	( STRING_TEMPLATE_START ) => stringTemplate
+	( { xq4Enabled }? STRING_TEMPLATE_START ) => stringTemplate
 	|
 	contextItemExpr
 	|
@@ -2098,7 +2108,7 @@ argument throws XPathException
 :
 	(QUESTION ( ncnameOrKeyword | INTEGER_LITERAL | DECIMAL_LITERAL | DOUBLE_LITERAL | STRING_LITERAL | LPAREN | DOLLAR | SELF | HASH | STAR )) => unaryLookup
 	| argumentPlaceholder
-	| ( ncnameOrKeyword COLON ( EQ | ncnameOrKeyword COLON EQ ) ) => keywordArgument
+	| ( { xq4Enabled }? ncnameOrKeyword COLON ( EQ | ncnameOrKeyword COLON EQ ) ) => keywordArgument
 	| exprSingle
 	;
 

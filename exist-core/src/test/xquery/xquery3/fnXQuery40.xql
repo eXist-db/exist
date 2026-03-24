@@ -19,7 +19,7 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
-xquery version "3.1";
+xquery version "4.0";
 
 (:~
  : Tests for XQuery 4.0 functions implemented in eXist-db.
@@ -2538,4 +2538,24 @@ declare
 function t:qname-literal-as-argument() {
     let $f := function($q as xs:QName) { string-length(local-name-from-QName($q)) }
     return $f(#abc)
+};
+
+(: ==================== Version gating ==================== :)
+
+declare
+    %test:assertError("XPST0003")
+function t:version-gate-ternary-in-31() {
+    util:eval('xquery version "3.1"; 1 = 1 ?? "yes" !! "no"')
+};
+
+declare
+    %test:assertError("XPST0003")
+function t:version-gate-otherwise-in-31() {
+    util:eval('xquery version "3.1"; () otherwise "fallback"')
+};
+
+declare
+    %test:assertError("XPST0003")
+function t:version-gate-pipeline-in-31() {
+    util:eval('xquery version "3.1"; (1, 2, 3) -> count()')
 };
