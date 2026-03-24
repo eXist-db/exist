@@ -13,7 +13,7 @@
 [![Java 21](https://img.shields.io/badge/java-21-blue.svg)](https://adoptopenjdk.net/)
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 [![Download](https://img.shields.io/github/v/release/eXist-db/exist.svg)](https://github.com/eXist-db/exist/releases/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.exist-db/exist/badge.svg)](https://search.maven.org/search?q=g:org.exist-db)
+[![Sonatype Central](https://img.shields.io/badge/Sonatype%20Central-org.exist--db-blue?logo=sonatype)](https://central.sonatype.com/search?q=g:org.exist-db&smo=true)
 [![javadoc](https://javadoc.io/badge2/org.exist-db/exist-core/javadoc.svg)](https://javadoc.io/doc/org.exist-db/exist-core)
 [![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
 [![OpenCollective](https://opencollective.com/existdb/backers/badge.svg)](https://opencollective.com/existdb#backer)
