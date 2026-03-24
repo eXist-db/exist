@@ -937,7 +937,8 @@
                                 <!-- Option to cause org.exist.launcher.Launcher to wait for JDWP on port 5006 -->
                                 <!-- option>-Dexist.debug.launcher=true</option -->
 
-                                <!-- FIXME: Add jdk.incubator.vector module for optimal Lucene 10 SIMD -->
+                                <!-- FIXME: Add jdk.incubator.vector for optimal Lucene 10 SIMD and
+                                     enable-native-access=ALL-UNNAMED for JDK 24+ restricted native access -->
                                 <option>-Xms128m</option>
                                 <option>-Dfile.encoding=UTF-8</option>
                                 <option>-Dlog4j.configurationFile=$APP_ROOT/Contents/Resources/etc/log4j2.xml</option>
