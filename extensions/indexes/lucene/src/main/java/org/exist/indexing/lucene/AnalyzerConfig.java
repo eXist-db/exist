@@ -195,12 +195,16 @@ public class AnalyzerConfig {
             } else {
                 LOG.error(message, e);
             }
-        } catch (final Throwable e) {
-            if (e instanceof InterruptedException) {
-                // NOTE: must set interrupted flag
-                Thread.currentThread().interrupt();
+        } catch (final InterruptedException e) {
+            // NOTE: must set interrupted flag
+            Thread.currentThread().interrupt();
+            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
+            if (warnOnError) {
+                LOG.warn("{}. Will retry...", message);
+            } else {
+                LOG.error(message, e);
             }
-
+        } catch (final Throwable e) {
             final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
             if (warnOnError) {
                 LOG.warn("{}. Will retry...", message);
@@ -271,7 +275,6 @@ public class AnalyzerConfig {
                     // Retrieve value from Field
                     final Class<?> fieldClazz = Class.forName(clazzName);
                     final Field field = fieldClazz.getField(fieldName);
-                    field.setAccessible(true);
                     final Object fValue = field.get(fieldClazz.getDeclaredConstructor().newInstance());
                     yield new KeyTypedValue<>(name, fValue, Object.class);
 

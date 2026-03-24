@@ -56,7 +56,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
     @Override
     public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
         try {
-            this.vectorStore = new VectorStoreImpl(pool, dataDir, pool.getConfiguration());
+            this.vectorStore = new VectorStoreImpl(pool, dataDir);
         } catch (final DBException e) {
             throw new BrokerPoolServiceException(e);
         }

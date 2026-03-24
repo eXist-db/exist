@@ -80,7 +80,7 @@ public class XMLDBXPathTask extends AbstractXMLDBTask {
             throw new BuildException("you have to specify a query");
         }
 
-        log("XPath is: " + query, org.apache.tools.ant.Project.MSG_DEBUG);
+        log("XPath is: " + query, Project.MSG_DEBUG);
 
         registerDatabase();
 

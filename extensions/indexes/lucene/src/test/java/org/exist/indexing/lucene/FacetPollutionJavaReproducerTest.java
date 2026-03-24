@@ -26,17 +26,12 @@ import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.facet.taxonomy.FacetLabel;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationManager;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
@@ -65,12 +60,6 @@ public class FacetPollutionJavaReproducerTest {
 
     private static final Logger LOG = LogManager.getLogger(FacetPollutionJavaReproducerTest.class);
 
-    private static final String POLLUTER_COLL = "lucene-test-analyzers-index";
-    private static final XmldbURI POLLUTER_COLL_URI = XmldbURI.create("/db/" + POLLUTER_COLL);
-
-    private static final String FACETS_COLL = "lucene-test-facets";
-    private static final XmldbURI FACETS_COLL_URI = XmldbURI.create("/db/" + FACETS_COLL);
-
     // Lucene facets delimiter is U+001F
     private static final char FACET_DELIM = (char) 0x1F;
 
@@ -80,63 +69,6 @@ public class FacetPollutionJavaReproducerTest {
     private static final String EXPECT_LOCATION = "location" + FACET_DELIM + "Germany" + FACET_DELIM + "Berlin";
     // ft-facets.xqm uses 2019-03-14 for the first letter
     private static final String EXPECT_DATE = "date" + FACET_DELIM + "2019" + FACET_DELIM + "03" + FACET_DELIM + "14";
-
-    private static final String POLLUTER_CONFIG =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-            + "<index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-            + "  <lucene>"
-            + "    <analyzer class=\"org.apache.lucene.analysis.standard.StandardAnalyzer\"/>"
-            + "    <analyzer id=\"ws\" class=\"org.apache.lucene.analysis.core.WhitespaceAnalyzer\"/>"
-            + "    <text qname=\"p\" analyzer=\"ws\"/>"
-            + "  </lucene>"
-            + "</index>"
-            + "</collection>";
-
-    private static final String POLLUTER_XML =
-        "<text><body>"
-            + "<p>Hello world from polluter</p>"
-            + "<p>Another line for analyzers</p>"
-            + "</body></text>";
-
-    private static final String FACETS_CONFIG =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-            + "<index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-            + "  <lucene>"
-            + "    <analyzer id=\"std\" class=\"org.apache.lucene.analysis.standard.StandardAnalyzer\"/>"
-            + "    <text qname=\"letter\" analyzer=\"std\">"
-            + "      <facet dimension=\"location\" hierarchical=\"yes\" expression=\""
-            + "        if (string(place)='Berlin') then ('Germany','Berlin')"
-            + "        else if (string(place)='Wrocław') then ('Poland','Wrocław')"
-            + "        else ()\"/>"
-            + "      <facet dimension=\"subject\" hierarchical=\"yes\" expression=\""
-            + "        if (string(subject)='history') then ('humanities','history')"
-            + "        else if (string(subject)='art') then ('humanities','art')"
-            + "        else if (string(subject)='math') then ('science','math')"
-            + "        else ()\"/>"
-            + "      <facet dimension=\"date\" hierarchical=\"yes\" expression=\"tokenize(string(date), '-')\"/>"
-            + "      <facet dimension=\"from\" expression=\"from\"/>"
-            + "    </text>"
-            + "  </lucene>"
-            + "</index>"
-            + "</collection>";
-
-    private static final String FACETS_LETTERS_XML =
-        "<letters>"
-            + "<letter>"
-            + "  <from>Susi</from>"
-            + "  <to>Hans</to>"
-            + "  <place>Berlin</place>"
-            + "  <date>2019-03-08</date>"
-            + "  <subject>history</subject>"
-            + "</letter>"
-            + "<letter>"
-            + "  <from>Heinz</from>"
-            + "  <to>Babsi</to>"
-            + "  <place>Wrocław</place>"
-            + "  <date>2017-06-22</date>"
-            + "  <subject>art</subject>"
-            + "</letter>"
-            + "</letters>";
 
     @Test
     public void hierarchicalFacetTermsMissingAfterPolluterRemoval() throws Exception {
@@ -226,7 +158,7 @@ public class FacetPollutionJavaReproducerTest {
                         "return string-join(idx:subject-hierarchy($l/subject/string()), '|')"));
 
                 // Inspect Lucene $facets terms after facet indexing.
-                final FacetsIndexTerms terms = readFacetsTerms(broker, EXPECT_SUBJECT, EXPECT_LOCATION, EXPECT_DATE);
+                final FacetsIndexTerms terms = readFacetsTerms(broker);
 
                 LOG.info("facet terms present? subject={} location={} date={}",
                     terms.subjectExists, terms.locationExists, terms.dateExists);
@@ -318,7 +250,7 @@ public class FacetPollutionJavaReproducerTest {
                         "let $l := doc('/db/lucene-test-facets/test.xml')//letter[1]" +
                         "return string-join(idx:subject-hierarchy($l/subject/string()), '|')"));
 
-                final FacetsIndexTerms terms = readFacetsTerms(broker, EXPECT_SUBJECT, EXPECT_LOCATION, EXPECT_DATE);
+                final FacetsIndexTerms terms = readFacetsTerms(broker);
 
                 LOG.info("baseline facet terms present? subject={} location={} date={}",
                     terms.subjectExists, terms.locationExists, terms.dateExists);
@@ -401,52 +333,7 @@ public class FacetPollutionJavaReproducerTest {
             ": tried [" + candidate1 + "] and [" + candidate2 + "]");
     }
 
-    private static void createAndReindexCollection(
-        final DBBroker broker,
-        final TransactionManager transact,
-        final XmldbURI collUri,
-        final String configXml,
-        final String docName,
-        final String docXml
-    ) throws Exception {
-        final CollectionConfigurationManager mgr = broker.getBrokerPool().getConfigurationManager();
-        final XmldbURI relativeDocUri = XmldbURI.create(docName);
-
-        try (Txn transaction = transact.beginTransaction()) {
-            final Collection coll = broker.getOrCreateCollection(transaction, collUri);
-            broker.saveCollection(transaction, coll);
-
-            mgr.addConfiguration(transaction, broker, coll, configXml);
-
-            broker.storeDocument(transaction, relativeDocUri, new StringInputSource(docXml), MimeType.XML_TYPE, coll);
-            transaction.commit();
-        }
-
-        try (Txn transaction = transact.beginTransaction()) {
-            broker.reindexCollection(transaction, collUri);
-            transaction.commit();
-        }
-    }
-
-    private static void removeCollectionAndConfig(final DBBroker broker, final TransactionManager transact, final XmldbURI collUri)
-        throws Exception {
-        final String collName = collUri.lastSegment().toString();
-
-        try (Txn transaction = transact.beginTransaction()) {
-            // remove data collection
-            final Collection data = broker.getOrCreateCollection(transaction, collUri);
-            broker.removeCollection(transaction, data);
-
-            // remove configuration collection (where <collectionName>/collection.xconf lives)
-            final XmldbURI configUri = XmldbURI.create(XmldbURI.CONFIG_COLLECTION + "/db/" + collName);
-            final Collection config = broker.getOrCreateCollection(transaction, configUri);
-            broker.removeCollection(transaction, config);
-
-            transaction.commit();
-        }
-    }
-
-    private static FacetsIndexTerms readFacetsTerms(final DBBroker broker, final String... termsToCheck) throws IOException {
+    private static FacetsIndexTerms readFacetsTerms(final DBBroker broker) throws IOException {
         final LuceneIndexWorker indexWorker = (LuceneIndexWorker) broker.getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         assertNotNull("Lucene index worker not available", indexWorker);
 

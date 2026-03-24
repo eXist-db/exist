@@ -34,5 +34,6 @@ public abstract class ByteTermAttributeImpl extends AttributeImpl {
      */
     @Deprecated
     public void fillBytesRef() {
+        // No-op compatibility shim retained during Lucene 10 migration.
     }
 }

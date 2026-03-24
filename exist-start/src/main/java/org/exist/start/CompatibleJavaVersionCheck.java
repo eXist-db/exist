@@ -54,7 +54,7 @@ public class CompatibleJavaVersionCheck {
             create(12),
             create(13),
             create(14),
-            IncompatibleJavaVersion.create(15, 0, 2),
+            create(15, 0, 2),
     };
 
     private static final String INCOMPATIBLE_JAVA_VERSION_NOTICE =
@@ -102,19 +102,13 @@ public class CompatibleJavaVersionCheck {
 
                 // major version might be incompatible
 
-                if (incompatibleJavaVersion.lessThanMinor != null && minorJavaVersion != null) {
-                    // compare minor version
-                    if (minorJavaVersion >= incompatibleJavaVersion.lessThanMinor) {
-                        // minor version is compatible
-
-                        if (incompatibleJavaVersion.lessThanPatch != null && patchJavaVersion != null) {
-                            // compare patch version
-                            if (patchJavaVersion >= incompatibleJavaVersion.lessThanPatch) {
-                                // patch version is compatible
-                                continue;
-                            }
-                        }
-                    }
+                if (incompatibleJavaVersion.lessThanMinor != null
+                        && minorJavaVersion != null
+                        && minorJavaVersion >= incompatibleJavaVersion.lessThanMinor
+                        && incompatibleJavaVersion.lessThanPatch != null
+                        && patchJavaVersion != null
+                        && patchJavaVersion >= incompatibleJavaVersion.lessThanPatch) {
+                    continue;
                 }
 
                 // version is NOT compatible!

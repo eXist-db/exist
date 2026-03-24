@@ -328,7 +328,9 @@ public class Main {
             }
 
         } catch (final InvalidPathException e) {
-            // ignore
+            if (inDebugMode) {
+                System.err.println("Invalid temporary directory path: " + e.getMessage());
+            }
         }
 
         if (inDebugMode) {
