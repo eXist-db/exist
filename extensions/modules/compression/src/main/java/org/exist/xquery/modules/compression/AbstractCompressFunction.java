@@ -75,7 +75,6 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Compresses a sequence of resources and/or collections
@@ -93,6 +92,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
     protected final static SequenceType STRIP_PREFIX_PARAM = new FunctionParameterSequenceType("strip-prefix", Type.STRING, Cardinality.EXACTLY_ONE, "This prefix is stripped from the Entrys name");
     protected final static SequenceType ENCODING_PARAM = new FunctionParameterSequenceType("encoding", Type.STRING, Cardinality.EXACTLY_ONE, "This encoding to be used for filenames inside the compressed file");
     private final static Logger logger = LogManager.getLogger(AbstractCompressFunction.class);
+    public static final String METHOD_STORE = "store";
 
 
     public AbstractCompressFunction(final XQueryContext context, final FunctionSignature signature) {
@@ -153,8 +153,8 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 
                 os.flush();
 
-                if (os instanceof DeflaterOutputStream) {
-                    ((DeflaterOutputStream) os).finish();
+                if (os instanceof final DeflaterOutputStream dos) {
+                    dos.finish();
                 }
 
                 return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), UnsynchronizedByteArrayInputStream.builder().setByteArray(baos.toByteArray()).get(), this);
@@ -247,12 +247,11 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 
             // close the entry
             final CRC32 chksum = new CRC32();
-            if (entry instanceof ZipEntry &&
-                    "store".equals(method)) {
-                ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+            if (entry instanceof final ZipEntry zipEntry && METHOD_STORE.equals(method)) {
+                zipEntry.setMethod(ZipEntry.STORED);
                 chksum.update(value);
-                ((ZipEntry) entry).setCrc(chksum.getValue());
-                ((ZipEntry) entry).setSize(value.length);
+                zipEntry.setCrc(chksum.getValue());
+                zipEntry.setSize(value.length);
             }
 
             putEntry(os, entry);
@@ -345,12 +344,11 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                     }
                 }
 
-                if (entry instanceof ZipEntry &&
-                        "store".equals(element.getAttribute("method"))) {
-                    ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+                if (entry instanceof final ZipEntry zipEntry && METHOD_STORE.equals(element.getAttribute("method"))) {
+                    zipEntry.setMethod(ZipEntry.STORED);
                     chksum.update(value);
-                    ((ZipEntry) entry).setCrc(chksum.getValue());
-                    ((ZipEntry) entry).setSize(value.length);
+                    zipEntry.setCrc(chksum.getValue());
+                    zipEntry.setSize(value.length);
                 }
                 putEntry(os, entry);
 
@@ -429,12 +427,11 @@ public abstract class AbstractCompressFunction extends BasicFunction {
 
         // close the entry
         final CRC32 chksum = new CRC32();
-        if (entry instanceof ZipEntry &&
-                "store".equals(method)) {
-            ((ZipEntry) entry).setMethod(ZipOutputStream.STORED);
+        if (entry instanceof final ZipEntry zipEntry && METHOD_STORE.equals(method)) {
+            zipEntry.setMethod(ZipEntry.STORED);
             chksum.update(value);
-            ((ZipEntry) entry).setCrc(chksum.getValue());
-            ((ZipEntry) entry).setSize(value.length);
+            zipEntry.setCrc(chksum.getValue());
+            zipEntry.setSize(value.length);
         }
 
         putEntry(os, entry);

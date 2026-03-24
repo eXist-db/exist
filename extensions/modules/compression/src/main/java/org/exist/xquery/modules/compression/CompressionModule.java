@@ -43,13 +43,13 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  */
 public class CompressionModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 
-    public final static String PREFIX = "compression";
-    public final static String INCLUSION_DATE = "2007-07-10";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String PREFIX = "compression";
+    public static final String INCLUSION_DATE = "2007-07-10";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
     static final ErrorCodes.ErrorCode ARCHIVE_EXIT_ATTACK = new CompressionModuleErrorCode("archive-exit-attack", "The archive likely contains an exit attack, whereby a file extraction tries to escape the destination path.");
-    private final static FunctionDef[] functions = functionDefs(
+    private static final FunctionDef[] functions = functionDefs(
             functionDefs(ZipFunction.class,
                     ZipFunction.signatures[0],
                     ZipFunction.signatures[1],

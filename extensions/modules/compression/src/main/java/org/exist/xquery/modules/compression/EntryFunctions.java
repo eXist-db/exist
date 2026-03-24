@@ -214,8 +214,8 @@ public class EntryFunctions extends BasicFunction {
     }
 
     private enum DataType {
-        resource,
-        directory
+        RESOURCE,
+        DIRECTORY
     }
 
     private static class StoreFsFunction3 extends StoreFsFunction {
@@ -260,7 +260,7 @@ public class EntryFunctions extends BasicFunction {
 
             switch (dataType) {
 
-                case resource:
+                case RESOURCE:
                     mkdirs(destPath.getParent());
                     if (data.isPresent()) {
                         // store the resource
@@ -272,7 +272,7 @@ public class EntryFunctions extends BasicFunction {
                     }
                     break;
 
-                case directory:
+                case DIRECTORY:
                     mkdirs(destPath);
                     break;
             }
@@ -312,7 +312,7 @@ public class EntryFunctions extends BasicFunction {
 
             switch (dataType) {
 
-                case resource:
+                case RESOURCE:
                     mkcols(destPath.removeLastSegment());
                     if (data.isPresent()) {
                         // store the resource
@@ -331,7 +331,7 @@ public class EntryFunctions extends BasicFunction {
                     }
                     break;
 
-                case directory:
+                case DIRECTORY:
                     mkcols(destPath);
                     break;
             }

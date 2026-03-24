@@ -71,7 +71,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
     private FunctionReference entryDataFunction = null;
     private Sequence contextSequence;
 
-    public AbstractExtractFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected AbstractExtractFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -79,26 +79,32 @@ public abstract class AbstractExtractFunction extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         this.contextSequence = contextSequence;
 
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
         //get the entry-filter function and check its types
-        if (!(args[1].itemAt(0) instanceof FunctionReference))
+        if (!(args[1].itemAt(0) instanceof FunctionReference)) {
             throw new XPathException(this, "No entry-filter function provided.");
+        }
         entryFilterFunction = (FunctionReference) args[1].itemAt(0);
         final FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
-        if (entryFilterFunctionSig.getArgumentCount() < 3)
+        if (entryFilterFunctionSig.getArgumentCount() < 3) {
             throw new XPathException(this, "entry-filter function must take at least 3 arguments.");
+        }
 
         filterParam = args[2];
 
         //get the entry-data function and check its types
-        if (!(args[3].itemAt(0) instanceof FunctionReference))
+        if (!(args[3].itemAt(0) instanceof FunctionReference)) {
             throw new XPathException(this, "No entry-data function provided.");
+        }
+
         entryDataFunction = (FunctionReference) args[3].itemAt(0);
         final FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
-        if (entryDataFunctionSig.getArgumentCount() < 3)
+        if (entryDataFunctionSig.getArgumentCount() < 3) {
             throw new XPathException(this, "entry-data function must take at least 3 arguments");
+        }
 
         storeParam = args[4];
 
@@ -116,6 +122,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
 
         } catch (final UnsupportedCharsetException | XMLDBException e) {
             throw new XPathException(this, e.getMessage(), e);
+
         } finally {
             entryDataFunction.close();
             entryFilterFunction.close();
@@ -154,6 +161,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
         filterParams[0] = new StringValue(this, name);
         filterParams[1] = new StringValue(this, dataType);
         filterParams[2] = filterParam;
+
         final Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
 
         if (BooleanValue.FALSE == entryFilterFunctionResult.itemAt(0)) {
@@ -162,7 +170,8 @@ public abstract class AbstractExtractFunction extends BasicFunction {
             final Sequence entryDataFunctionResult;
             Sequence uncompressedData = Sequence.EMPTY_SEQUENCE;
 
-            if (entryDataFunction.getSignature().getReturnType().getPrimaryType() != Type.EMPTY_SEQUENCE && entryDataFunction.getSignature().getArgumentCount() == 3) {
+            if (entryDataFunction.getSignature().getReturnType().getPrimaryType() != Type.EMPTY_SEQUENCE
+                    && entryDataFunction.getSignature().getArgumentCount() == 3) {
 
                 final Sequence[] dataParams = new Sequence[3];
                 System.arraycopy(filterParams, 0, dataParams, 0, 2);
@@ -171,10 +180,9 @@ public abstract class AbstractExtractFunction extends BasicFunction {
 
                 String path = entryDataFunctionResult.itemAt(0).getStringValue();
 
-                try (Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI())) {
+                try (final Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI())) {
 
                     if (isDirectory) {
-
                         XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
                     } else {
@@ -182,7 +190,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
                         name = FileUtils.fileName(file);
                         path = file.getParent().toAbsolutePath().toString();
 
-                        try (Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path)) {
+                        try (final Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path)) {
 
                             final MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
 
@@ -195,13 +203,14 @@ public abstract class AbstractExtractFunction extends BasicFunction {
 
                             try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                                 final NodeValue content = ModuleUtils.streamToXML(context, bis, this);
-                                try (final Resource resource = target.createResource(name, XMLResource.class)) {
-                                    final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                                try (final XMLResource resource = target.createResource(name, XMLResource.class)) {
+                                    final ContentHandler handler = resource.setContentAsSAX();
                                     handler.startDocument();
                                     content.toSAX(context.getBroker(), handler, null);
                                     handler.endDocument();
                                     storeResource(target, mime, resource);
                                 }
+
                             } catch (final SAXException e) {
                                 try (final Resource resource = target.createResource(name, BinaryResource.class)) {
                                     resource.setContent(entryData);
@@ -224,6 +233,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
                 //try and parse as xml, fall back to binary
                 try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                     uncompressedData = ModuleUtils.streamToXML(context, bis, this);
+
                 } catch (final SAXException saxe) {
                     if (entryData.length > 0) {
                         try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
