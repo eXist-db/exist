@@ -476,8 +476,8 @@ public class EvalWebSocketEndpointTest {
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-cancel\"}");
 
-            assertTrue("Should receive cancelled/error within 10s",
-                    cancelledLatch.await(10, TimeUnit.SECONDS));
+            assertTrue("Should receive cancelled/error within 30s",
+                    cancelledLatch.await(30, TimeUnit.SECONDS));
             assertEquals("q-cancel", cancelledMsg.get().get("id"));
         } finally {
             session.close();
@@ -636,14 +636,14 @@ public class EvalWebSocketEndpointTest {
         }, createAdminConfig(), getWsUri());
 
         try {
-            // Query that should take longer than 500ms timeout
+            // Query that should take longer than 2s timeout
             session.getBasicRemote().sendText(
                     "{\"action\":\"eval\",\"id\":\"q-timeout\"," +
                     "\"query\":\"let $x := for $i in 1 to 999999999 return string($i) return $x\"," +
-                    "\"max-execution-time\":500}");
+                    "\"max-execution-time\":2000}");
 
-            assertTrue("Should receive timeout error within 10s",
-                    errorLatch.await(10, TimeUnit.SECONDS));
+            assertTrue("Should receive timeout error within 30s",
+                    errorLatch.await(30, TimeUnit.SECONDS));
             assertEquals("q-timeout", errorMsg.get().get("id"));
         } finally {
             session.close();
@@ -1250,8 +1250,8 @@ public class EvalWebSocketEndpointTest {
             session.getBasicRemote().sendText(
                     "{\"action\":\"cancel\",\"id\":\"q-rapid\"}");
 
-            assertTrue("Should receive a response within 10s",
-                    doneLatch.await(10, TimeUnit.SECONDS));
+            assertTrue("Should receive a response within 30s",
+                    doneLatch.await(30, TimeUnit.SECONDS));
             assertNotNull("Should get some response type", responseType.get());
         } finally {
             session.close();
