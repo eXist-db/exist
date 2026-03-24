@@ -73,12 +73,11 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
                 parser = constructor.apply(safeField, analyzer);
             }
 
+        } catch (final InterruptedException e) {
+            // NOTE: must set interrupted flag
+            Thread.currentThread().interrupt();
+            LOG.warn("Failed to instantiate lucene query parser class: {}: {}", className, e.getMessage(), e);
         } catch (final Throwable e) {
-            if (e instanceof InterruptedException) {
-                // NOTE: must set interrupted flag
-                Thread.currentThread().interrupt();
-            }
-
             LOG.warn("Failed to instantiate lucene query parser class: {}: {}", className, e.getMessage(), e);
         }
         if (parser == null) {

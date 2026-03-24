@@ -48,7 +48,9 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -98,26 +100,9 @@ public class Issue4074IndexKeysServletContextTest {
     @BeforeClass
     public static void setUp() throws EXistException, PermissionDeniedException, LockException, TriggerException, SAXException, CollectionConfigurationException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final TransactionManager transact = pool.getTransactionManager();
-
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-             final Txn transaction = transact.beginTransaction()) {
-
-            collectionUri = XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION_NAME);
-            final Collection col = broker.getOrCreateCollection(transaction, collectionUri);
-            broker.saveCollection(transaction, col);
-
-            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
-            mgr.addConfiguration(transaction, broker, col, COLLECTION_CONFIG);
-
-            broker.storeDocument(transaction, XmldbURI.create("test.xml"),
-                    new StringInputSource(DATA1), MimeType.XML_TYPE, col);
-            broker.storeDocument(transaction, XmldbURI.create("test2.xml"),
-                    new StringInputSource(DATA2), MimeType.XML_TYPE, col);
-
-            broker.reindexCollection(transaction, col.getURI());
-
-            transact.commit(transaction);
+        collectionUri = XmldbURI.ROOT_COLLECTION_URI.append(COLLECTION_NAME);
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            createFixtureCollection(pool, broker, collectionUri, COLLECTION_CONFIG, DATA1, DATA2);
         }
     }
 
@@ -141,27 +126,57 @@ public class Issue4074IndexKeysServletContextTest {
     @Test
     public void indexKeysForFieldWithEmptyStaticDocsReturnsKeys() throws EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final Sequence result = executeWithEmptyStaticDocs(pool, broker, INDEX_KEYS_QUERY);
+            assertKeys(result, Set.of("a", "b", "c", "y"), 4,
+                "With empty static docs, range:index-keys-for-field should fall back to all docs and return 4 keys");
+        }
+    }
+
+    private static void createFixtureCollection(final BrokerPool pool, final DBBroker broker, final XmldbURI targetCollectionUri,
+                                                final String collectionConfig, final String doc1, final String doc2)
+            throws LockException, TriggerException, PermissionDeniedException, IOException, EXistException, CollectionConfigurationException, SAXException {
+        final TransactionManager transact = pool.getTransactionManager();
+        try (final Txn transaction = transact.beginTransaction()) {
+            final Collection col = broker.getOrCreateCollection(transaction, targetCollectionUri);
+            broker.saveCollection(transaction, col);
+
+            final CollectionConfigurationManager mgr = pool.getConfigurationManager();
+            mgr.addConfiguration(transaction, broker, col, collectionConfig);
+
+            broker.storeDocument(transaction, XmldbURI.create("test.xml"),
+                new StringInputSource(doc1), MimeType.XML_TYPE, col);
+            broker.storeDocument(transaction, XmldbURI.create("test2.xml"),
+                new StringInputSource(doc2), MimeType.XML_TYPE, col);
+
+            broker.reindexCollection(transaction, col.getURI());
+            transact.commit(transaction);
+        }
+    }
+
+    private static Sequence executeWithEmptyStaticDocs(final BrokerPool pool, final DBBroker broker, final String queryText)
+            throws XPathException, PermissionDeniedException {
         final XQuery xquery = pool.getXQueryService();
         assertNotNull(xquery);
 
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            final org.exist.xquery.XQueryContext context = new org.exist.xquery.XQueryContext(pool);
-            context.setBaseURI(new org.exist.xquery.value.AnyURIValue("/db"));
-            final CompiledXQuery compiled = xquery.compile(context, INDEX_KEYS_QUERY);
+        final org.exist.xquery.XQueryContext context = new org.exist.xquery.XQueryContext(pool);
+        context.setBaseURI(new org.exist.xquery.value.AnyURIValue("/db"));
+        final CompiledXQuery compiled = xquery.compile(context, queryText);
 
-            // Simulate XQueryServlet/REST: statically known documents is empty
-            compiled.getContext().setStaticallyKnownDocuments(new XmldbURI[0]);
+        // Simulate XQueryServlet/REST: statically known documents is empty.
+        compiled.getContext().setStaticallyKnownDocuments(new XmldbURI[0]);
+        return xquery.execute(broker, compiled, null);
+    }
 
-            final Sequence result = xquery.execute(broker, compiled, null);
-            assertNotNull(result);
-            assertEquals("With empty static docs, range:index-keys-for-field should fall back to all docs and return 4 keys",
-                    4, result.getItemCount());
+    private static void assertKeys(final Sequence result, final Set<String> expectedKeys, final int expectedCount, final String message)
+            throws XPathException {
+        assertNotNull(result);
+        assertEquals(message, expectedCount, result.getItemCount());
 
-            final java.util.Set<String> keys = new java.util.HashSet<>();
-            for (int i = 0; i < result.getItemCount(); i++) {
-                keys.add(result.itemAt(i).getStringValue());
-            }
-            assertEquals(java.util.Set.of("a", "b", "c", "y"), keys);
+        final Set<String> keys = new HashSet<>();
+        for (int i = 0; i < result.getItemCount(); i++) {
+            keys.add(result.itemAt(i).getStringValue());
         }
+        assertEquals(expectedKeys, keys);
     }
 }

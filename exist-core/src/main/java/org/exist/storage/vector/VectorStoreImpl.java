@@ -30,7 +30,6 @@ import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
 import org.exist.storage.index.BFile;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.FixedByteArray;
 
@@ -52,7 +51,7 @@ public class VectorStoreImpl implements VectorStore {
 
     private final BFile bfile;
 
-    public VectorStoreImpl(final BrokerPool pool, final Path dataDir, final Configuration config) throws DBException {
+    public VectorStoreImpl(final BrokerPool pool, final Path dataDir) throws DBException {
         final Path file = dataDir.resolve(FILE_NAME);
         this.bfile = new BFile(pool, VECTOR_DBX_ID, FILE_FORMAT_VERSION_ID, true, file,
                 pool.getCacheManager(), 1.25, 0.03);

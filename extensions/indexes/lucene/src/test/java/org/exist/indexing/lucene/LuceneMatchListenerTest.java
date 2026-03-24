@@ -70,6 +70,9 @@ import java.util.Properties;
 
 public class LuceneMatchListenerTest {
 
+    @ClassRule
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+
     private static String XML =
             "<root>" +
             "   <para>some paragraph with <hi>mixed</hi> content.</para>" +
@@ -259,7 +262,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineNodes_whenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    public void inlineNodesWhenNotIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF4, XML1);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -308,7 +311,7 @@ public class LuceneMatchListenerTest {
      * to verify expectations. Does not assert.
      */
     @Test
-    public void issue4835_diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    public void issue4835Diagnostic() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -363,6 +366,7 @@ public class LuceneMatchListenerTest {
             // Diagnostic output when assertions fail; run with -Dtest=LuceneMatchListenerTest#issue4835_diagnostic
             if (totalExpand != 5 || batchCount != 5) {
                 System.err.println("[#4835 diagnostic] let binding: " + hitsLet.getItemCount() + " hits, " + withMatchesLet + " with matches");
+                System.err.println("[#4835 diagnostic] for loop: " + hitsFor.getItemCount() + " hits, " + withMatchesFor + " with matches");
                 System.err.println("[#4835 diagnostic] for-loop per-item expand counts: [" + sb + "] sum=" + totalExpand + " (expected 5)");
                 System.err.println("[#4835 diagnostic] batch util:expand($hits)//exist:match count=" + batchCount + " (expected 5)");
             }
@@ -374,7 +378,7 @@ public class LuceneMatchListenerTest {
      * nodes or multiple matches in parent. Fixed by stopping scan at root boundary in LuceneMatchListener.
      */
     @Test
-    public void issue4835_multipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    public void issue4835MultipleMatchesExpand() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         final String xml = "<root><div><p>Letter</p><p>LETTER</p></div><div><p>letter</p><p>leTTer</p><div><p>LeTtEr</p></div></div></root>";
         final String conf = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\"><index><lucene><text qname=\"p\"/></lucene></index></collection>";
         configureAndStore(conf, xml);
@@ -430,7 +434,7 @@ public class LuceneMatchListenerTest {
 
     @Test
     @Ignore("FIXME: context is missing for node in predicate; //tei:p[.//tei:w[ft:query(.,...)]] ! util:expand(.) — LuceneHitCollector returnAncestor copies null context from storedNode onto parentNode")
-    public void inlineMatchNodes_whenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
+    public void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
@@ -473,9 +477,6 @@ public class LuceneMatchListenerTest {
             XMLAssert.assertEquals(expected, result);
         }
     }
-
-    @ClassRule
-    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @BeforeClass
     public static void startDB() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException {

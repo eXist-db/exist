@@ -41,6 +41,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -102,14 +103,8 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     public void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 3)])");
-        assertEquals(3, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        setupDefaultCollection();
+        assertCount(queryVectorCount(COLLECTION, "Hello world", 3), 3);
     }
 
     @Test
@@ -136,7 +131,7 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     public void diagnosticsReportsModel() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
+        setupDefaultCollection();
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
@@ -147,36 +142,24 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     public void queryFieldVectorReturnsHits() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-field-vector(\"embedding\", $v, 2)])");
-        assertEquals(2, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        setupDefaultCollection();
+        assertCount(queryFieldVectorCount(COLLECTION, "Hello world", 2), 2);
     }
 
     @Test
     public void kParameterLimitsResults() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 1)])");
-        assertEquals(1, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        setupDefaultCollection();
+        assertCount(queryVectorCount(COLLECTION, "Hello world", 1), 1);
     }
 
     @Test
     public void closerTextRanksHigher() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
+        setupDefaultCollection();
         final Sequence result = executeQuery(
             "xquery version \"3.1\";\n"
             + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
             + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
+            + "let $v := " + embedExpr("Hello world") + "\n"
             + "let $hits := collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 3)]\n"
             + "return ($hits[1]/title/string(), ft:score($hits[1]) >= ft:score($hits[2]))");
         assertEquals("Hello world", result.itemAt(0).getStringValue());
@@ -190,7 +173,7 @@ public class VectorSearchEmbeddingIT {
                 "xquery version \"3.1\";\n"
                 + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
                 + "vector:embed(\"\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
-            assertTrue("Expected XPathException for empty text", false);
+            fail("Expected XPathException for empty text");
         } catch (XPathException e) {
             assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
         }
@@ -203,7 +186,7 @@ public class VectorSearchEmbeddingIT {
                 "xquery version \"3.1\";\n"
                 + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
                 + "vector:embed(\"   \", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
-            assertTrue("Expected XPathException for blank text", false);
+            fail("Expected XPathException for blank text");
         } catch (XPathException e) {
             assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
         }
@@ -232,14 +215,8 @@ public class VectorSearchEmbeddingIT {
 
     @Test
     public void queryVectorWithKZeroDefaultsToTen() throws XPathException, PermissionDeniedException, EXistException {
-        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
-        final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $v := vector:embed(\"Hello world\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $v, 0)])");
-        assertEquals("k=0 should default to 10, returning all 3 docs", 3, result.itemAt(0).toJavaObject(Integer.class).intValue());
+        setupDefaultCollection();
+        assertCount("k=0 should default to 10, returning all 3 docs", queryVectorCount(COLLECTION, "Hello world", 0), 3);
     }
 
     @Test
@@ -249,13 +226,7 @@ public class VectorSearchEmbeddingIT {
         final String inlineConfCol = "/db/system/config/db/" + inlineColName;
         setupCollection(inlineCol, inlineColName, inlineConfCol, INLINE_XCONF, INLINE_DATA);
         try {
-            final Sequence result = executeQuery(
-                "xquery version \"3.1\";\n"
-                + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-                + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-                + "let $v := vector:embed(\"cute cat\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")\n"
-                + "return count(collection(\"" + inlineCol + "\")//article[ft:query-vector(., $v, 1)])");
-            assertEquals(1, result.itemAt(0).toJavaObject(Integer.class).intValue());
+            assertCount(queryVectorCount(inlineCol, "cute cat", 1), 1);
         } finally {
             cleanupCollection(inlineCol, inlineConfCol);
         }
@@ -294,6 +265,40 @@ public class VectorSearchEmbeddingIT {
             + "xmldb:store(\"" + col + "\", \"test.xml\", parse-xml('" + dataEsc + "')),\n"
             + "xmldb:store(\"" + confCol + "\", \"collection.xconf\", parse-xml('" + xconfEsc + "')),\n"
             + "xmldb:reindex(\"" + col + "\")");
+    }
+
+    private void setupDefaultCollection() throws EXistException, PermissionDeniedException, XPathException {
+        setupCollection(COLLECTION, COLLECTION_NAME, CONFIG_COLLECTION, XCONF, DATA);
+    }
+
+    private String embedExpr(final String text) {
+        return "vector:embed(\"" + text + "\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")";
+    }
+
+    private String queryVectorCount(final String collection, final String text, final int k) {
+        return "xquery version \"3.1\";\n"
+            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
+            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+            + "let $v := " + embedExpr(text) + "\n"
+            + "return count(collection(\"" + collection + "\")//article[ft:query-vector(., $v, " + k + ")])";
+    }
+
+    private String queryFieldVectorCount(final String collection, final String text, final int k) {
+        return "xquery version \"3.1\";\n"
+            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
+            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
+            + "let $v := " + embedExpr(text) + "\n"
+            + "return count(collection(\"" + collection + "\")//article[ft:query-field-vector(\"embedding\", $v, " + k + ")])";
+    }
+
+    private void assertCount(final String query, final int expected) throws EXistException, PermissionDeniedException, XPathException {
+        final Sequence result = executeQuery(query);
+        assertEquals(expected, result.itemAt(0).toJavaObject(Integer.class).intValue());
+    }
+
+    private void assertCount(final String message, final String query, final int expected) throws EXistException, PermissionDeniedException, XPathException {
+        final Sequence result = executeQuery(query);
+        assertEquals(message, expected, result.itemAt(0).toJavaObject(Integer.class).intValue());
     }
 
     private Sequence executeQuery(final String query) throws EXistException, PermissionDeniedException, XPathException {

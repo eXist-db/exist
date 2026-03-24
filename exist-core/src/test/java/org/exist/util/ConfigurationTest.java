@@ -68,43 +68,43 @@ class ConfigurationTest {
 
     // parseBooleanAttribute — #6001: unified boolean config attribute parsing
     @Test
-    void parseBooleanAttribute_yes() throws Exception {
+    void parseBooleanAttributeYes() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("case", "yes"), "case", false)).isTrue();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "yes"), "case", true)).isTrue();
     }
 
     @Test
-    void parseBooleanAttribute_true() throws Exception {
+    void parseBooleanAttributeTrue() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("store", "true"), "store", false)).isTrue();
         assertThat(Configuration.parseBooleanAttribute(elem("store", "TRUE"), "store", false)).isTrue();
     }
 
     @Test
-    void parseBooleanAttribute_no() throws Exception {
+    void parseBooleanAttributeNo() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("case", "no"), "case", true)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "no"), "case", false)).isFalse();
     }
 
     @Test
-    void parseBooleanAttribute_false() throws Exception {
+    void parseBooleanAttributeFalse() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("binary", "false"), "binary", true)).isFalse();
     }
 
     @Test
-    void parseBooleanAttribute_emptyUsesDefault() throws Exception {
+    void parseBooleanAttributeEmptyUsesDefault() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("case", ""), "case", true)).isTrue();
         assertThat(Configuration.parseBooleanAttribute(elem("case", ""), "case", false)).isFalse();
     }
 
     @Test
-    void parseBooleanAttribute_missingUsesDefault() throws Exception {
+    void parseBooleanAttributeMissingUsesDefault() throws Exception {
         final Element e = elem("other", "x");
         assertThat(Configuration.parseBooleanAttribute(e, "case", true)).isTrue();
         assertThat(Configuration.parseBooleanAttribute(e, "case", false)).isFalse();
     }
 
     @Test
-    void parseBooleanAttribute_invalidTreatsAsFalse() throws Exception {
+    void parseBooleanAttributeInvalidTreatsAsFalse() throws Exception {
         assertThat(Configuration.parseBooleanAttribute(elem("case", "n"), "case", true)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "y"), "case", true)).isFalse();
         assertThat(Configuration.parseBooleanAttribute(elem("case", "1"), "case", false)).isFalse();

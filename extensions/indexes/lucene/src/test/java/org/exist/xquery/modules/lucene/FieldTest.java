@@ -35,17 +35,17 @@ import static org.junit.Assert.*;
 public class FieldTest {
 
     @Test
-    public void parseBoolean_true() throws XPathException {
+    public void parseBooleanTrue() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("true").getValue());
     }
 
     @Test
-    public void parseBoolean_false() throws XPathException {
+    public void parseBooleanFalse() throws XPathException {
         assertFalse(FieldValueParser.parseBoolean("false").getValue());
     }
 
     @Test
-    public void parseBoolean_caseInsensitive() throws XPathException {
+    public void parseBooleanCaseInsensitive() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("True").getValue());
         assertTrue(FieldValueParser.parseBoolean("TRUE").getValue());
         assertFalse(FieldValueParser.parseBoolean("False").getValue());
@@ -53,24 +53,24 @@ public class FieldTest {
     }
 
     @Test
-    public void parseBoolean_oneAndZero() throws XPathException {
+    public void parseBooleanOneAndZero() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("1").getValue());
         assertFalse(FieldValueParser.parseBoolean("0").getValue());
     }
 
     @Test
-    public void parseBoolean_trimmed() throws XPathException {
+    public void parseBooleanTrimmed() throws XPathException {
         assertTrue(FieldValueParser.parseBoolean("  true  ").getValue());
         assertFalse(FieldValueParser.parseBoolean("  false  ").getValue());
     }
 
     @Test(expected = XPathException.class)
-    public void parseBoolean_invalidThrows() throws XPathException {
+    public void parseBooleanInvalidThrows() throws XPathException {
         FieldValueParser.parseBoolean("yes");
     }
 
     @Test(expected = XPathException.class)
-    public void parseBoolean_emptyThrows() throws XPathException {
+    public void parseBooleanEmptyThrows() throws XPathException {
         FieldValueParser.parseBoolean("");
     }
 }
