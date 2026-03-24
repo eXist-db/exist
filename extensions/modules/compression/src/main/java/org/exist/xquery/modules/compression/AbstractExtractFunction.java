@@ -113,6 +113,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
             final BinaryValue compressedData = ((BinaryValue) args[0].itemAt(0));
 
             return processCompressedData(compressedData, encoding);
+
         } catch (final UnsupportedCharsetException | XMLDBException e) {
             throw new XPathException(this, e.getMessage(), e);
         } finally {
@@ -170,41 +171,43 @@ public abstract class AbstractExtractFunction extends BasicFunction {
 
                 String path = entryDataFunctionResult.itemAt(0).getStringValue();
 
-                final Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI());
+                try (Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI())) {
 
-                if (isDirectory) {
+                    if (isDirectory) {
 
-                    XMLDBAbstractCollectionManipulator.createCollection(root, path);
+                        XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
-                } else {
-                    final Path file = Paths.get(path).normalize();
-                    name = FileUtils.fileName(file);
-                    path = file.getParent().toAbsolutePath().toString();
+                    } else {
+                        final Path file = Paths.get(path).normalize();
+                        name = FileUtils.fileName(file);
+                        path = file.getParent().toAbsolutePath().toString();
 
-                    final Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
+                        try (Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path)) {
 
-                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
+                            final MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
 
-                    //copy the input data
-                    final byte[] entryData;
-                    try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
-                        baos.write(is);
-                        entryData = baos.toByteArray();
-                    }
+                            //copy the input data
+                            final byte[] entryData;
+                            try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+                                baos.write(is);
+                                entryData = baos.toByteArray();
+                            }
 
-                    try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
-                        final NodeValue content = ModuleUtils.streamToXML(context, bis, this);
-                        try (final Resource resource = target.createResource(name, XMLResource.class)) {
-                            final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
-                            handler.startDocument();
-                            content.toSAX(context.getBroker(), handler, null);
-                            handler.endDocument();
-                            storeResource(target, mime, resource);
-                        }
-                    } catch (final SAXException e) {
-                        try (final Resource resource = target.createResource(name, BinaryResource.class)) {
-                            resource.setContent(entryData);
-                            storeResource(target, mime, resource);
+                            try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
+                                final NodeValue content = ModuleUtils.streamToXML(context, bis, this);
+                                try (final Resource resource = target.createResource(name, XMLResource.class)) {
+                                    final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                                    handler.startDocument();
+                                    content.toSAX(context.getBroker(), handler, null);
+                                    handler.endDocument();
+                                    storeResource(target, mime, resource);
+                                }
+                            } catch (final SAXException e) {
+                                try (final Resource resource = target.createResource(name, BinaryResource.class)) {
+                                    resource.setContent(entryData);
+                                    storeResource(target, mime, resource);
+                                }
+                            }
                         }
                     }
                 }
