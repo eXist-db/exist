@@ -53,7 +53,8 @@ ARG JVM_JDWP_SUSPEND
 ENV EXIST_HOME=/exist
 ENV CLASSPATH=/exist/lib/${exist.uber.jar.filename}
 
-# FIXME: For vector search SIMD acceleration, add --add-modules jdk.incubator.vector to JAVA_TOOL_OPTIONS.
+# FIXME: For vector search SIMD acceleration, add --add-modules jdk.incubator.vector
+#        and --enable-native-access=ALL-UNNAMED to JAVA_TOOL_OPTIONS.
 # Omitted by default because it can cause "Unrecognized option" in some environments; build a custom image or pass at run time if needed.
 ENV JAVA_TOOL_OPTIONS="\
   -Dfile.encoding=UTF8 \

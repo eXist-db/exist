@@ -310,4 +310,4 @@ As always when using the latest and greatest, YMMV.
 Feedback about real world experiences with these features in connection with eXist-db is very much welcome.
 
 **Vector search (SIMD)**  
-Neither the default image nor the debug image set `--add-modules jdk.incubator.vector` in `JAVA_TOOL_OPTIONS` (see FIXME in `Dockerfile-DEBUG`). To use vector search with SIMD acceleration, build a custom image that adds that option to a JDK 16+ base, or pass it when running the container (e.g. `docker run -e JAVA_TOOL_OPTIONS="--add-modules jdk.incubator.vector ..." existdb/existdb:debug`).
+Neither the default image nor the debug image set `--add-modules jdk.incubator.vector` in `JAVA_TOOL_OPTIONS` (see FIXME in `Dockerfile-DEBUG`). On JDK 24+, also enable native access to avoid restricted-method warnings from vectorized Lucene paths. To use vector search with SIMD acceleration, build a custom image that adds both options to a JDK 16+ base, or pass them when running the container (e.g. `docker run -e JAVA_TOOL_OPTIONS="--add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED ..." existdb/existdb:debug`).

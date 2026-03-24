@@ -48,6 +48,7 @@ goto :eof
 
 :gotExistHome
 REM FIXME: Add --add-modules jdk.incubator.vector for optimal Lucene 10 SIMD
+REM        and --enable-native-access=ALL-UNNAMED for JDK 24+ restricted native access warnings.
 set JAVA_OPTS=-Xms128m -Xmx512m -Dfile.encoding=UTF-8 
 
 "%JAVA_HOME%\bin\java" %JAVA_OPTS% -Dexist.home="%EXIST_BACKREST_HOME%" -cp "%EXIST_BACKREST_HOME%\lib\exist-backrest.jar" org.exist.backup.Main %CMD_LINE_ARGS%
