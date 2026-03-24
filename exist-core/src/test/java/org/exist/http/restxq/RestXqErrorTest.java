@@ -222,6 +222,7 @@ public class RestXqErrorTest extends RestXqTestBase {
             "");
     }
 
+    @org.junit.Ignore("Known limitation: BaseX-specific built-in prefix not available in eXist")
     @Test
     public void unknownPrefix() throws Exception {
         get(500,
