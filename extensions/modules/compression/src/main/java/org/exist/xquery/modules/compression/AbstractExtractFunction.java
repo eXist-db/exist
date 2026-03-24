@@ -21,19 +21,11 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xquery.BasicFunction;
@@ -42,8 +34,16 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.xmldb.XMLDBAbstractCollectionManipulator;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.*;
-
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromInputStream;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -52,47 +52,52 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
-public abstract class AbstractExtractFunction extends BasicFunction
-{
-    private FunctionReference entryFilterFunction = null;
+public abstract class AbstractExtractFunction extends BasicFunction {
     protected Sequence filterParam = null;
-    private FunctionReference entryDataFunction = null;
     protected Sequence storeParam = null;
+    private FunctionReference entryFilterFunction = null;
+    private FunctionReference entryDataFunction = null;
     private Sequence contextSequence;
-    
-    public AbstractExtractFunction(XQueryContext context, FunctionSignature signature)
-    {
+
+    public AbstractExtractFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         this.contextSequence = contextSequence;
 
-        if(args[0].isEmpty())
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
         //get the entry-filter function and check its types
-        if(!(args[1].itemAt(0) instanceof FunctionReference))
+        if (!(args[1].itemAt(0) instanceof FunctionReference))
             throw new XPathException(this, "No entry-filter function provided.");
-        entryFilterFunction = (FunctionReference)args[1].itemAt(0);
-        FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
-        if(entryFilterFunctionSig.getArgumentCount() < 3)
+        entryFilterFunction = (FunctionReference) args[1].itemAt(0);
+        final FunctionSignature entryFilterFunctionSig = entryFilterFunction.getSignature();
+        if (entryFilterFunctionSig.getArgumentCount() < 3)
             throw new XPathException(this, "entry-filter function must take at least 3 arguments.");
 
         filterParam = args[2];
 
         //get the entry-data function and check its types
-        if(!(args[3].itemAt(0) instanceof FunctionReference))
+        if (!(args[3].itemAt(0) instanceof FunctionReference))
             throw new XPathException(this, "No entry-data function provided.");
-        entryDataFunction = (FunctionReference)args[3].itemAt(0);
-        FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
-        if(entryDataFunctionSig.getArgumentCount() < 3)
+        entryDataFunction = (FunctionReference) args[3].itemAt(0);
+        final FunctionSignature entryDataFunctionSig = entryDataFunction.getSignature();
+        if (entryDataFunctionSig.getArgumentCount() < 3)
             throw new XPathException(this, "entry-data function must take at least 3 arguments");
 
         storeParam = args[4];
@@ -105,12 +110,12 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 encoding = StandardCharsets.UTF_8;
             }
 
-            BinaryValue compressedData = ((BinaryValue) args[0].itemAt(0));
+            final BinaryValue compressedData = ((BinaryValue) args[0].itemAt(0));
 
             return processCompressedData(compressedData, encoding);
-        } catch(final UnsupportedCharsetException | XMLDBException e) {
+        } catch (final UnsupportedCharsetException | XMLDBException e) {
             throw new XPathException(this, e.getMessage(), e);
-		} finally {
+        } finally {
             entryDataFunction.close();
             entryFilterFunction.close();
         }
@@ -120,9 +125,8 @@ public abstract class AbstractExtractFunction extends BasicFunction
      * Processes a compressed archive
      *
      * @param compressedData the compressed data to extract
-     * @param encoding the encoding
+     * @param encoding       the encoding
      * @return Sequence of results
-     *
      * @throws XPathException if a query error occurs
      * @throws XMLDBException if a database error occurs
      */
@@ -131,60 +135,55 @@ public abstract class AbstractExtractFunction extends BasicFunction
     /**
      * Processes a compressed entry from an archive
      *
-     * @param name The name of the entry
+     * @param name        The name of the entry
      * @param isDirectory true if the entry is a directory, false otherwise
-     * @param is an InputStream for reading the uncompressed data of the entry
-     * @param filterParam is an additional param for entry filtering function  
-     * @param storeParam is an additional param for entry storing function
-     *
+     * @param is          an InputStream for reading the uncompressed data of the entry
+     * @param filterParam is an additional param for entry filtering function
+     * @param storeParam  is an additional param for entry storing function
      * @return the result of processing the compressed entry.
-     *
      * @throws XPathException if a query error occurs
      * @throws XMLDBException if a database error occurs
-     * @throws IOException if an I/O error occurs
+     * @throws IOException    if an I/O error occurs
      */
-    protected Sequence processCompressedEntry(String name, boolean isDirectory, InputStream is, Sequence filterParam, Sequence storeParam) throws IOException, XPathException, XMLDBException
-    {
-        String dataType = isDirectory ? "folder" : "resource";
+    protected Sequence processCompressedEntry(String name, final boolean isDirectory, final InputStream is, final Sequence filterParam, final Sequence storeParam) throws IOException, XPathException, XMLDBException {
+        final String dataType = isDirectory ? "folder" : "resource";
 
         //call the entry-filter function
-        Sequence filterParams[] = new Sequence[3];
+        final Sequence[] filterParams = new Sequence[3];
         filterParams[0] = new StringValue(this, name);
         filterParams[1] = new StringValue(this, dataType);
         filterParams[2] = filterParam;
-        Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
+        final Sequence entryFilterFunctionResult = entryFilterFunction.evalFunction(contextSequence, null, filterParams);
 
-        if(BooleanValue.FALSE == entryFilterFunctionResult.itemAt(0))
-        {
+        if (BooleanValue.FALSE == entryFilterFunctionResult.itemAt(0)) {
             return Sequence.EMPTY_SEQUENCE;
-        }
-        else {
-            Sequence entryDataFunctionResult;
+        } else {
+            final Sequence entryDataFunctionResult;
             Sequence uncompressedData = Sequence.EMPTY_SEQUENCE;
 
             if (entryDataFunction.getSignature().getReturnType().getPrimaryType() != Type.EMPTY_SEQUENCE && entryDataFunction.getSignature().getArgumentCount() == 3) {
 
-                Sequence dataParams[] = new Sequence[3];
+                final Sequence[] dataParams = new Sequence[3];
                 System.arraycopy(filterParams, 0, dataParams, 0, 2);
                 dataParams[2] = storeParam;
                 entryDataFunctionResult = entryDataFunction.evalFunction(contextSequence, null, dataParams);
 
                 String path = entryDataFunctionResult.itemAt(0).getStringValue();
 
-                Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI());
+                final Collection root = new LocalCollection(context.getSubject(), context.getBroker().getBrokerPool(), new AnyURIValue(this, "/db").toXmldbURI());
 
                 if (isDirectory) {
 
                     XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
                 } else {
-                    Path file = Paths.get(path).normalize();
+                    final Path file = Paths.get(path).normalize();
                     name = FileUtils.fileName(file);
                     path = file.getParent().toAbsolutePath().toString();
 
-                    Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
+                    final Collection target = (path == null) ? root : XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
-                    MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
+                    final MimeType mime = MimeTable.getInstance().getContentTypeFor(name);
 
                     //copy the input data
                     final byte[] entryData;
@@ -194,16 +193,16 @@ public abstract class AbstractExtractFunction extends BasicFunction
                     }
 
                     try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
-                        NodeValue content = ModuleUtils.streamToXML(context, bis, this);
-                        try (Resource  resource = target.createResource(name, XMLResource.class)) {
-                            ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
+                        final NodeValue content = ModuleUtils.streamToXML(context, bis, this);
+                        try (final Resource resource = target.createResource(name, XMLResource.class)) {
+                            final ContentHandler handler = ((XMLResource) resource).setContentAsSAX();
                             handler.startDocument();
                             content.toSAX(context.getBroker(), handler, null);
                             handler.endDocument();
                             storeResource(target, mime, resource);
                         }
-                    } catch (SAXException e) {
-                        try (Resource  resource = target.createResource(name, BinaryResource.class)) {
+                    } catch (final SAXException e) {
+                        try (final Resource resource = target.createResource(name, BinaryResource.class)) {
                             resource.setContent(entryData);
                             storeResource(target, mime, resource);
                         }
@@ -222,7 +221,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 //try and parse as xml, fall back to binary
                 try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                     uncompressedData = ModuleUtils.streamToXML(context, bis, this);
-                } catch (SAXException saxe) {
+                } catch (final SAXException saxe) {
                     if (entryData.length > 0) {
                         try (final InputStream bis = UnsynchronizedByteArrayInputStream.builder().setByteArray(entryData).get()) {
                             uncompressedData = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), bis, this);
@@ -231,7 +230,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
                 }
 
                 //call the entry-data function
-                Sequence dataParams[] = new Sequence[4];
+                final Sequence[] dataParams = new Sequence[4];
                 System.arraycopy(filterParams, 0, dataParams, 0, 2);
                 dataParams[2] = uncompressedData;
                 dataParams[3] = storeParam;
@@ -243,7 +242,7 @@ public abstract class AbstractExtractFunction extends BasicFunction
         }
     }
 
-    private void storeResource(Collection target, MimeType mime, Resource resource) throws XMLDBException {
+    private void storeResource(final Collection target, final MimeType mime, final Resource resource) throws XMLDBException {
         if (mime != null) {
             ((EXistResource) resource).setMimeType(mime.getName());
         }
