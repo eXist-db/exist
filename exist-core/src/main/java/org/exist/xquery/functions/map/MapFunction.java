@@ -22,227 +22,254 @@
 package org.exist.xquery.functions.map;
 
 import io.lacuna.bifurcan.IEntry;
-import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.ArrayListValueSequence;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-import static org.exist.xquery.FunctionDSL.*;
-import static org.exist.xquery.functions.map.MapModule.functionSignatures;
+import static org.exist.xquery.FunctionDSL.funParam;
+import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.params;
+import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.functions.map.MapModule.functionSignature;
 
 /**
- * Implements all functions of the map module.
+ * Implement the functions that operate on maps as described in
+ * <a href="https://www.w3.org/TR/xpath-functions-31/#map-functions">XQuery Functions and Operators 3.1 §17.1</a>
+ * <p>
+ * 17.1.2 map:merge
+ * 17.1.3 map:size
+ * 17.1.4 map:keys
+ * 17.1.5 map:contains
+ * 17.1.6 map:get
+ * 17.1.7 map:find
+ * 17.1.8 map:put
+ * 17.1.9 map:entry
+ * 17.1.10 map:remove
+ * 17.1.11 map:for-each
  */
 public class MapFunction extends BasicFunction {
+    private static final FunctionParameterSequenceType PARAM_INPUT_MAP = param("map", Type.MAP_ITEM, "The input map");
+    private static final FunctionReturnSequenceType RETURN_MAP = returns(Type.MAP_ITEM, Cardinality.EXACTLY_ONE);
+    private static final FunctionReturnSequenceType RETURN_OPT_MANY_ITEM = returns(Type.ITEM, Cardinality.ZERO_OR_MORE);
+    private static final FunctionParameterSequenceType PARAM_VALUE = param("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value");
+    private static final FunctionParameterSequenceType PARAM_MERGE_MAPS = optManyParam("maps", Type.MAP_ITEM, "Existing maps to merge to create a new map.");
+    private static final FunctionReturnSequenceType PARAM_MERGE_RETURN = returns(Type.MAP_ITEM, "A new map which is the result of merging the maps");
+    private static final FunctionParameterSequenceType PARAM_KEY = param("key", Type.ANY_ATOMIC_TYPE, "The key");
 
-    private static final QName QN_SIZE = new QName("size", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_ENTRY = new QName("entry", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_GET = new QName("get", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_PUT = new QName("put", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_CONTAINS = new QName("contains", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_KEYS = new QName("keys", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_REMOVE = new QName("remove", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_FOR_EACH = new QName("for-each", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_FIND = new QName("find", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_EMPTY = new QName("empty", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_ITEMS = new QName("items", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_ENTRIES = new QName("entries", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_KEYS_WHERE = new QName("keys-where", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_FILTER = new QName("filter", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-    private static final QName QN_BUILD = new QName("build", MapModule.NAMESPACE_URI, MapModule.PREFIX);
-
-    private static final FunctionParameterSequenceType FS_PARAM_MAPS = optManyParam("maps", Type.MAP_ITEM, "Existing maps to merge to create a new map.");
-
-    private static final String FS_MERGE_NAME = "merge";
-    public static final FunctionSignature[] FS_MERGE = functionSignatures(
-        FS_MERGE_NAME,
-        "Returns a map that combines the entries from a number of existing maps.",
-        returns(Type.MAP_ITEM, "A new map which is the result of merging the maps"),
-        arities(
-                arity(
-                        FS_PARAM_MAPS
-                ),
-                arity(
-                        FS_PARAM_MAPS,
-                        optParam("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
-                )
-        )
+    public static final FunctionSignature MERGE_1 = functionSignature(
+            Fn.MERGE.fname,
+            "Returns a map that combines the entries from a number of existing maps.",
+            PARAM_MERGE_RETURN,
+            PARAM_MERGE_MAPS
     );
-
-    public static final FunctionSignature FS_FIND = functionSignature(
-            QN_FIND,
+    public static final FunctionSignature MERGE_2 = functionSignature(
+            Fn.MERGE.fname,
+            "Returns a map that combines the entries from a number of existing maps.",
+            PARAM_MERGE_RETURN,
+            PARAM_MERGE_MAPS,
+            param("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
+    );
+    public static final FunctionSignature SIZE = functionSignature(
+            Fn.SIZE.fname,
+            "Returns the number of entries in the supplied map.",
+            returns(Type.INTEGER, "The number of key value pairs in the map"),
+            PARAM_INPUT_MAP
+    );
+    public static final FunctionSignature KEYS = functionSignature(
+            Fn.KEYS.fname,
+            "Returns a sequence containing all the key values present in a map.",
+            returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
+            PARAM_INPUT_MAP
+    );
+    public static final FunctionSignature CONTAINS = functionSignature(
+            Fn.CONTAINS.fname,
+            "Tests whether a supplied map contains an entry for a given key.",
+            returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+            PARAM_INPUT_MAP,
+            PARAM_KEY
+    );
+    public static final FunctionSignature GET = functionSignature(
+            Fn.GET.fname,
+            "Returns the value associated with a supplied key in a given map.",
+            RETURN_OPT_MANY_ITEM,
+            PARAM_INPUT_MAP,
+            PARAM_KEY
+    );
+    public static final FunctionSignature FIND = functionSignature(
+            Fn.FIND.fname,
             "Searches the supplied input sequence and any contained maps and arrays for a map entry with the supplied key, " +
                     "and returns the corresponding values.",
             returns(Type.ARRAY_ITEM, "An array containing the found values with the input key"),
             optManyParam("input", Type.ITEM, "The sequence of maps to search"),
-            param("key", Type.ANY_ATOMIC_TYPE, "The key to match")
+            PARAM_KEY
+    );
+    public static final FunctionSignature PUT = functionSignature(
+            Fn.PUT.fname,
+            "Returns a map containing all the contents of the supplied map, but with an additional entry, which replaces any existing entry for the same key.",
+            RETURN_MAP,
+            PARAM_INPUT_MAP,
+            PARAM_KEY,
+            PARAM_VALUE
+    );
+    public static final FunctionSignature ENTRY = functionSignature(
+            Fn.ENTRY.fname,
+            "Creates a map that contains a single entry (a key-value pair).",
+            RETURN_MAP,
+            PARAM_KEY,
+            PARAM_VALUE
+    );
+    public static final FunctionSignature REMOVE = functionSignature(
+            Fn.REMOVE.fname,
+            "Constructs a new map by removing an entry from an existing map.",
+            returns(Type.MAP_ITEM, Cardinality.EXACTLY_ONE),
+            PARAM_INPUT_MAP,
+            param("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The keys to remove")
+    );
+    public static final FunctionSignature FOR_EACH = functionSignature(
+            Fn.FOR_EACH.fname,
+            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; " +
+                    "the result is the sequence obtained by concatenating the results of these function calls. " +
+                    "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, " +
+                    "and the associated value as the second argument.",
+            RETURN_OPT_MANY_ITEM,
+            PARAM_INPUT_MAP,
+            funParam(
+                    "action",
+                    params(
+                            param("key", Type.ANY_ATOMIC_TYPE, "the next key"),
+                            optManyParam("value", Type.ITEM, "the next value")
+                    ),
+                    returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                    "The function to be called for each entry"
+            )
     );
 
-    public final static FunctionSignature FNS_SIZE = new FunctionSignature(
-        QN_SIZE,
-        "Returns the number of entries in the supplied map.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Any map to determine the size of.")
-        },
-        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+    // --- XQuery 4.0 map functions ---
+    public static final FunctionSignature FNS_EMPTY = functionSignature(
+            Fn.EMPTY.fname,
+            "Returns true if the supplied map contains no entries.",
+            returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+            PARAM_INPUT_MAP
     );
-
-    public final static FunctionSignature FNS_KEYS = new FunctionSignature(
-        QN_KEYS,
-        "Returns a sequence containing all the key values present in a map.",
-        new SequenceType[]{
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map")
-        },
-        new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE)
+    public static final FunctionSignature FNS_ITEMS = functionSignature(
+            Fn.ITEMS.fname,
+            "Returns a sequence containing all the values present in a map, in entry order.",
+            RETURN_OPT_MANY_ITEM,
+            PARAM_INPUT_MAP
     );
-
-    public final static FunctionSignature FNS_CONTAINS = new FunctionSignature(
-        QN_CONTAINS,
-        "Tests whether a supplied map contains an entry for a given key.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The key to look up")
-        },
-        new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+    public static final FunctionSignature FNS_ENTRIES = functionSignature(
+            Fn.ENTRIES.fname,
+            "Returns the entries of a map as a sequence of singleton maps.",
+            returns(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE, "A sequence of singleton maps"),
+            PARAM_INPUT_MAP
     );
-
-    public final static FunctionSignature FNS_GET = new FunctionSignature(
-        QN_GET,
-        "Returns the value associated with a supplied key in a given map.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The key to look up")
-        },
-        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+    public static final FunctionSignature FNS_KEYS_WHERE = functionSignature(
+            Fn.KEYS_WHERE.fname,
+            "Returns the keys in a map for which the supplied predicate function returns true.",
+            returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
+            PARAM_INPUT_MAP,
+            funParam(
+                    "predicate",
+                    params(
+                            param("key", Type.ANY_ATOMIC_TYPE, "the key"),
+                            optManyParam("value", Type.ITEM, "the value")
+                    ),
+                    returns(Type.BOOLEAN),
+                    "The predicate function"
+            )
     );
-
-    public final static FunctionSignature FNS_PUT = new FunctionSignature(
-        QN_PUT,
-        "Returns a map containing all the contents of the supplied map, but with an additional entry, which replaces any existing entry for the same key.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The key for the entry to insert"),
-            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value for the entry to insert")
-        },
-        new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE)
+    public static final FunctionSignature FNS_FILTER = functionSignature(
+            Fn.FILTER.fname,
+            "Returns a map containing those entries from the input map for which the supplied predicate returns true.",
+            RETURN_MAP,
+            PARAM_INPUT_MAP,
+            funParam(
+                    "predicate",
+                    params(
+                            param("key", Type.ANY_ATOMIC_TYPE, "the key"),
+                            optManyParam("value", Type.ITEM, "the value")
+                    ),
+                    returns(Type.BOOLEAN),
+                    "The predicate function"
+            )
     );
-
-    public final static FunctionSignature FNS_ENTRY = new FunctionSignature(
-        QN_ENTRY,
-        "Creates a map that contains a single entry (a key-value pair).",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE, "The key"),
-            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_MORE, "The associated value")
-        },
-        new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE)
-    );
-
-    public final static FunctionSignature FNS_REMOVE = new FunctionSignature(
-        QN_REMOVE,
-        "Constructs a new map by removing an entry from an existing map.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType(MapModule.PREFIX, Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The key to remove")
-        },
-        new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE)
-    );
-
-    public final static FunctionSignature FNS_FOR_EACH = new FunctionSignature(
-        QN_FOR_EACH,
-        "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; the result is the sequence obtained by concatenating the results of these function calls. " +
-        "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, and the associated value as the second argument.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("input", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterFunctionSequenceType("action", Type.FUNCTION,
-                    new SequenceType[] {
-                            new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE),
-                            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-                    },
-                    Cardinality.EXACTLY_ONE, "The function to be called for each entry")
-        },
-        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-    );
-
-    public final static FunctionSignature FNS_EMPTY = new FunctionSignature(
-        QN_EMPTY,
-        "Returns true if the supplied map contains no entries.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map")
-        },
-        new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-    );
-
-    public final static FunctionSignature FNS_ITEMS = new FunctionSignature(
-        QN_ITEMS,
-        "Returns a sequence containing all the values present in a map, in entry order.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map")
-        },
-        new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
-    );
-
-    public final static FunctionSignature FNS_ENTRIES = new FunctionSignature(
-        QN_ENTRIES,
-        "Returns a sequence containing all the key-value pairs present in a map, each represented as a single-entry map, in entry order.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map")
-        },
-        new SequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE)
-    );
-
-    public final static FunctionSignature FNS_KEYS_WHERE = new FunctionSignature(
-        QN_KEYS_WHERE,
-        "Returns a sequence containing selected keys present in a map, where the predicate returns true for the key and value.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("predicate", Type.FUNCTION, Cardinality.EXACTLY_ONE, "A function that takes a key and value and returns a boolean")
-        },
-        new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE)
-    );
-
-    public final static FunctionSignature FNS_FILTER = new FunctionSignature(
-        QN_FILTER,
-        "Selects entries from a map based on a predicate, returning a new map containing those entries for which the predicate returns true.",
-        new SequenceType[] {
-            new FunctionParameterSequenceType("map", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "The map"),
-            new FunctionParameterSequenceType("predicate", Type.FUNCTION, Cardinality.EXACTLY_ONE, "A function that takes a key, value, and position and returns a boolean")
-        },
-        new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE)
-    );
-
-    private static final String FS_BUILD_NAME = "build";
-    private static final FunctionParameterSequenceType FS_PARAM_BUILD_INPUT = optManyParam("input", Type.ITEM, "The input sequence");
-    public static final FunctionSignature[] FS_BUILD = functionSignatures(
-        FS_BUILD_NAME,
-        "Returns a map built from items in a supplied input sequence. Each item produces an entry whose key is computed by the $key function and whose value is computed by the $value function.",
-        returns(Type.MAP_ITEM, "A new map built from the input sequence"),
-        arities(
-                arity(
-                        FS_PARAM_BUILD_INPUT
-                ),
-                arity(
-                        FS_PARAM_BUILD_INPUT,
-                        optParam("key", Type.FUNCTION, "Function to compute the key for each item")
-                ),
-                arity(
-                        FS_PARAM_BUILD_INPUT,
-                        optParam("key", Type.FUNCTION, "Function to compute the key for each item"),
-                        optParam("value", Type.FUNCTION, "Function to compute the value for each item")
-                ),
-                arity(
-                        FS_PARAM_BUILD_INPUT,
-                        optParam("key", Type.FUNCTION, "Function to compute the key for each item"),
-                        optParam("value", Type.FUNCTION, "Function to compute the value for each item"),
-                        optParam("options", Type.MAP_ITEM, "Options map controlling duplicate handling")
-                )
-        )
-    );
+    public static final FunctionSignature[] FS_BUILD = {
+            functionSignature(
+                    Fn.BUILD.fname,
+                    "Constructs a map from a sequence by applying key and value functions.",
+                    RETURN_MAP,
+                    optManyParam("input", Type.ITEM, "The input sequence")
+            ),
+            functionSignature(
+                    Fn.BUILD.fname,
+                    "Constructs a map from a sequence by applying key and value functions.",
+                    RETURN_MAP,
+                    optManyParam("input", Type.ITEM, "The input sequence"),
+                    funParam("key",
+                            params(optManyParam("item", Type.ITEM, "the current item")),
+                            returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
+                            "The key function"
+                    )
+            ),
+            functionSignature(
+                    Fn.BUILD.fname,
+                    "Constructs a map from a sequence by applying key and value functions.",
+                    RETURN_MAP,
+                    optManyParam("input", Type.ITEM, "The input sequence"),
+                    funParam("key",
+                            params(optManyParam("item", Type.ITEM, "the current item")),
+                            returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
+                            "The key function"
+                    ),
+                    funParam("value",
+                            params(optManyParam("item", Type.ITEM, "the current item")),
+                            RETURN_OPT_MANY_ITEM,
+                            "The value function"
+                    )
+            ),
+            functionSignature(
+                    Fn.BUILD.fname,
+                    "Constructs a map from a sequence by applying key and value functions.",
+                    RETURN_MAP,
+                    optManyParam("input", Type.ITEM, "The input sequence"),
+                    funParam("key",
+                            params(optManyParam("item", Type.ITEM, "the current item")),
+                            returns(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE),
+                            "The key function"
+                    ),
+                    funParam("value",
+                            params(optManyParam("item", Type.ITEM, "the current item")),
+                            RETURN_OPT_MANY_ITEM,
+                            "The value function"
+                    ),
+                    param("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Options map with duplicates handling")
+            )
+    };
 
     private AnalyzeContextInfo cachedContextInfo;
 
@@ -250,197 +277,14 @@ public class MapFunction extends BasicFunction {
         super(context, signature);
     }
 
-    @Override
-    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
-        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
-        super.analyze(contextInfo);
-    }
-
-    @Override
-    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (isCalledAs(FS_MERGE_NAME)) {
-            return merge(args);
-        } else if (isCalledAs(QN_SIZE.getLocalPart())) {
-            return size(args);
-        } else if (isCalledAs(QN_KEYS.getLocalPart())) {
-            return keys(args);
-        } else if (isCalledAs(QN_CONTAINS.getLocalPart())) {
-            return contains(args);
-        } else if (isCalledAs(QN_GET.getLocalPart())) {
-            return get(args);
-        } else if (isCalledAs(QN_PUT.getLocalPart())) {
-            return put(args);
-        } else if (isCalledAs(QN_ENTRY.getLocalPart())) {
-            return entry(args);
-        } else if (isCalledAs(QN_REMOVE.getLocalPart())) {
-            return remove(args);
-        } else if (isCalledAs(QN_FOR_EACH.getLocalPart())) {
-            return forEach(args);
-        } else if (isCalledAs(QN_FIND.getLocalPart())) {
-            return find(args);
-        } else if (isCalledAs(QN_EMPTY.getLocalPart())) {
-            return empty(args);
-        } else if (isCalledAs(QN_ITEMS.getLocalPart())) {
-            return items(args);
-        } else if (isCalledAs(QN_ENTRIES.getLocalPart())) {
-            return entries(args);
-        } else if (isCalledAs(QN_KEYS_WHERE.getLocalPart())) {
-            return keysWhere(args);
-        } else if (isCalledAs(QN_FILTER.getLocalPart())) {
-            return filter(args);
-        } else if (isCalledAs(FS_BUILD_NAME)) {
-            return build(args);
-        }
-        throw new XPathException(this, "No function: " + getName() + "#" + getSignature().getArgumentCount());
-    }
-
-    private Sequence remove(final Sequence[] args) throws XPathException {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-
-        final int length = args[1].getItemCount();
-        final AtomicValue[] keys = new AtomicValue[length];
-
-        for (int i = 0; i < length; i++) {
-            keys[i] = (AtomicValue) args[1].itemAt(i);
-        }
-        return map.remove(keys);
-    }
-
-    private Sequence keys(final Sequence[] args) {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return map.keys();
-    }
-
-    private Sequence contains(final Sequence[] args) {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return BooleanValue.valueOf(map.contains((AtomicValue) args[1].itemAt(0)));
-    }
-
-    private Sequence get(final Sequence[] args) {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        final Sequence value = map.get((AtomicValue) args[1].itemAt(0));
-        return Objects.requireNonNullElse(value, Sequence.EMPTY_SEQUENCE);
-    }
-
-    private Sequence put(final Sequence[] args) throws XPathException {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return map.put((AtomicValue) args[1].itemAt(0), args[2]);
-    }
-
-    private Sequence entry(final Sequence[] args) throws XPathException {
-        final AtomicValue key = (AtomicValue) args[0].itemAt(0);
-        return new SingleKeyMapType(this, this.context, null, key, args[1]);
-    }
-
-    private Sequence size(final Sequence[] args) throws XPathException {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        return new IntegerValue(this, map.size(), Type.INTEGER);
-    }
-
-    private Sequence merge(final Sequence[] args) throws XPathException {
-        if (args[0].getItemCount() == 0) {
-            // map:merge(())
-            return new MapType(this, this.context);
-        }
-
-        final MergeDuplicates mergeDuplicates;
-        if (args.length == 2 && !args[1].isEmpty()) {
-            final MapType map = (MapType) args[1];
-            final StringValue key = new StringValue(this, "duplicates");
-            if (map.contains(key)) {
-                final Sequence mapValue = map.get(key);
-                mergeDuplicates = MergeDuplicates.fromDuplicatesValue(mapValue.getStringValue());
-                if (mergeDuplicates == null) {
-                    throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
-                }
-            } else {
-                mergeDuplicates = MergeDuplicates.USE_FIRST;
-            }
-        } else {
-            mergeDuplicates = MergeDuplicates.USE_FIRST;
-        }
-
-        final Sequence maps = args[0];
-        final int totalMaps = maps.getItemCount();
-        final AbstractMapType head;
-        final List<AbstractMapType> tail = new ArrayList<>(totalMaps - 1);
-
-        // XDM 4.0: maps are ordered, so always iterate in forward (left-to-right) order
-        // to preserve insertion order. For USE_FIRST, we use a merge function that
-        // keeps the existing (first) value on duplicate keys.
-        head = (AbstractMapType) maps.itemAt(0);
-        for (int i = 1; i < totalMaps; i++) {
-            final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
-            tail.add(other);
-        }
-
-        if (mergeDuplicates == MergeDuplicates.COMBINE) {
-            // Provide a callback function for merging items which share a key
-            // Call merge variant
-            final List<XPathException> mergeExceptions = new ArrayList<>();
-            final AbstractMapType merged
-                    = head.merge(tail, (first, second) -> {
-                try {
-                    final ValueSequence sequence = new ValueSequence(first);
-                    sequence.addAll(second);
-                    return sequence;
-                } catch (final XPathException e) {
-                    //We cannot throw out of the MapType - pass exceptions here.
-                    mergeExceptions.add(e);
-                }
-                return Sequence.EMPTY_SEQUENCE;
-            });
-            if (!mergeExceptions.isEmpty()) {
-                throw mergeExceptions.getFirst();
-            }
-            return merged;
-        }
-
-        final AbstractMapType result;
-        if (mergeDuplicates == MergeDuplicates.USE_FIRST) {
-            // Keep existing (first) value on duplicate keys
-            result = head.merge(tail, (existing, newVal) -> existing);
-        } else {
-            // USE_LAST: last value wins (default union behavior)
-            result = head.merge(tail);
-        }
-
-        if (mergeDuplicates == MergeDuplicates.REJECT) {
-
-            int inputItemsSize = head.size();
-            for (final AbstractMapType other : tail) {
-                inputItemsSize += other.size();
-            }
-            if (inputItemsSize > result.size()) {
-                // no duplicates, so we don't need to consider the duplicates
-                throw new XPathException(this, ErrorCodes.FOJS0003, "map { \"duplicates\": \"reject\" } maps had duplicate entry");
-            }
-        }
-
-        return result;
-    }
-
-    private Sequence forEach(final Sequence[] args) throws XPathException {
-        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
-        try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
-            ref.analyze(cachedContextInfo);
-            final ArrayListValueSequence result = new ArrayListValueSequence(map.size());
-            for (final IEntry<AtomicValue, Sequence> entry : map) {
-                final Sequence s = ref.evalFunction(null, null, new Sequence[]{ entry.key(), entry.value() });
-                result.addAll(s);
-            }
-            return result;
-        }
-    }
-
     /**
      * Recursive helper for find
-     *
+     * <p>
      * Recursively find map members in a sequence
      * By searching each of the individual items in the sequence
      *
-     * @param result add found values to this
-     * @param key the key to match
+     * @param result   add found values to this
+     * @param key      the key to match
      * @param sequence the sequence to search within
      */
     private static void findRec(final ArrayType result, final AtomicValue key, final Sequence sequence) {
@@ -451,13 +295,13 @@ public class MapFunction extends BasicFunction {
 
     /**
      * Recursive helper for find
-     *
+     * <p>
      * Recursively find map members in items, which can only be maps or arrays
      * (They may be other types, but these are not containers)
      *
      * @param result add found values to this
-     * @param key the key to match
-     * @param item the item to search within
+     * @param key    the key to match
+     * @param item   the item to search within
      */
     private static void findRec(final ArrayType result, final AtomicValue key, final Item item) {
         if (Type.subTypeOf(item.getType(), Type.ARRAY_ITEM)) {
@@ -476,13 +320,142 @@ public class MapFunction extends BasicFunction {
         }
     }
 
-    private ArrayType find(final Sequence[] args) {
+    @Override
+    public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+        cachedContextInfo = new AnalyzeContextInfo(contextInfo);
+        super.analyze(contextInfo);
+    }
 
+
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final MapFunction.Fn called = MapFunction.Fn.get(getSignature().getName().getLocalPart());
+        return switch (called) {
+            case MERGE -> merge(args);
+            case SIZE -> size(args);
+            case KEYS -> keys(args);
+            case CONTAINS -> contains(args);
+            case GET -> get(args);
+            case FIND -> find(args);
+            case PUT -> put(args);
+            case ENTRY -> entry(args);
+            case REMOVE -> remove(args);
+            case FOR_EACH -> forEach(args);
+            case EMPTY -> empty(args);
+            case ITEMS -> items(args);
+            case ENTRIES -> entries(args);
+            case KEYS_WHERE -> keysWhere(args);
+            case FILTER -> filter(args);
+            case BUILD -> build(args);
+        };
+    }
+
+    private Sequence merge(final Sequence[] args) throws XPathException {
+        if (args[0].getItemCount() == 0) {
+            // map:merge(())
+            return new MapType(this, this.context);
+        }
+
+        final DuplicateMergeStrategy mergeDuplicates = getMergeStrategy(args);
+        final Sequence maps = args[0];
+
+
+        final int totalMaps = maps.getItemCount();
+        final AbstractMapType head;
+        final List<AbstractMapType> tail = new ArrayList<>(totalMaps - 1);
+
+        // USE_LAST will pick the item from the last map containing a duplicate item
+        // COMBINE will combine duplicate items in head-first order
+        if (mergeDuplicates == DuplicateMergeStrategy.USE_LAST || mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
+            // head is the first map
+            head = (AbstractMapType) maps.itemAt(0);
+            for (int i = 1; i < totalMaps; i++) {
+                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+                tail.add(other);
+            }
+        } else {
+            // head is the last map
+            // USE_FIRST will pick the item from the first map containing a duplicate item
+            head = (AbstractMapType) maps.itemAt(totalMaps - 1);
+            for (int i = totalMaps - 2; i >= 0; i--) {
+                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
+                tail.add(other);
+            }
+        }
+        if (mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
+            return combineDuplicates(head, tail);
+        }
+        if (mergeDuplicates == DuplicateMergeStrategy.REJECT) {
+            return rejectDuplicates(head, tail);
+        }
+
+        return head.merge(tail);
+    }
+
+    private Sequence size(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return new IntegerValue(this, map.size(), Type.INTEGER);
+    }
+
+    private Sequence keys(final Sequence[] args) {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return map.keys();
+    }
+
+    private Sequence contains(final Sequence[] args) {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return BooleanValue.valueOf(map.contains((AtomicValue) args[1].itemAt(0)));
+    }
+
+    private Sequence get(final Sequence[] args) {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final Sequence value = map.get((AtomicValue) args[1].itemAt(0));
+        return Objects.requireNonNullElse(value, Sequence.EMPTY_SEQUENCE);
+    }
+
+    private ArrayType find(final Sequence[] args) {
         final AtomicValue key = (AtomicValue) args[1].itemAt(0);
         final ArrayType result = new ArrayType(this, context, Collections.emptyList());
         MapFunction.findRec(result, key, args[0]);
         return result;
     }
+
+    private Sequence put(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        return map.put((AtomicValue) args[1].itemAt(0), args[2]);
+    }
+
+    private Sequence entry(final Sequence[] args) {
+        final AtomicValue key = (AtomicValue) args[0].itemAt(0);
+        return new SingleKeyMapType(this, this.context, null, key, args[1]);
+    }
+
+    private Sequence remove(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+
+        final int length = args[1].getItemCount();
+        final AtomicValue[] keys = new AtomicValue[length];
+
+        for (int i = 0; i < length; i++) {
+            keys[i] = (AtomicValue) args[1].itemAt(i);
+        }
+        return map.remove(keys);
+    }
+
+    private Sequence forEach(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            final ArrayListValueSequence result = new ArrayListValueSequence(map.size());
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                final Sequence s = ref.evalFunction(null, null, new Sequence[]{entry.key(), entry.value()});
+                result.addAll(s);
+            }
+            return result;
+        }
+    }
+
+    // --- XQuery 4.0 map function implementations ---
 
     private Sequence empty(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
@@ -552,15 +525,15 @@ public class MapFunction extends BasicFunction {
     private Sequence build(final Sequence[] args) throws XPathException {
         final Sequence input = args[0];
 
-        // $key function — defaults to identity
+        // $key function -- defaults to identity
         final FunctionReference keyFn = (args.length >= 2 && !args[1].isEmpty())
                 ? (FunctionReference) args[1].itemAt(0) : null;
-        // $value function — defaults to identity
+        // $value function -- defaults to identity
         final FunctionReference valueFn = (args.length >= 3 && !args[2].isEmpty())
                 ? (FunctionReference) args[2].itemAt(0) : null;
 
         // Parse options
-        MergeDuplicates mergeDuplicates = MergeDuplicates.COMBINE;
+        DuplicateMergeStrategy mergeDuplicates = DuplicateMergeStrategy.COMBINE;
         FunctionReference duplicatesFn = null;
         if (args.length >= 4 && !args[3].isEmpty()) {
             final AbstractMapType options = (AbstractMapType) args[3].itemAt(0);
@@ -573,7 +546,7 @@ public class MapFunction extends BasicFunction {
                     mergeDuplicates = null; // use custom function
                 } else {
                     final String dupStr = dupValue.getStringValue();
-                    mergeDuplicates = MergeDuplicates.fromDuplicatesValue(dupStr);
+                    mergeDuplicates = DuplicateMergeStrategy.get(dupStr);
                     if (mergeDuplicates == null) {
                         throw new XPathException(this, ErrorCodes.FOJS0005,
                                 "value for duplicates key was not recognised: " + dupStr);
@@ -629,17 +602,17 @@ public class MapFunction extends BasicFunction {
                         if (duplicatesFn != null) {
                             mergedValue = duplicatesFn.evalFunction(null, null,
                                     new Sequence[]{ existingValue, valueResult });
-                        } else if (mergeDuplicates == MergeDuplicates.COMBINE) {
+                        } else if (mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
                             final ValueSequence combined = new ValueSequence(existingValue);
                             combined.addAll(valueResult);
                             mergedValue = combined;
-                        } else if (mergeDuplicates == MergeDuplicates.USE_FIRST) {
+                        } else if (mergeDuplicates == DuplicateMergeStrategy.USE_FIRST) {
                             mergedValue = existingValue;
-                        } else if (mergeDuplicates == MergeDuplicates.USE_LAST) {
+                        } else if (mergeDuplicates == DuplicateMergeStrategy.USE_LAST) {
                             mergedValue = valueResult;
-                        } else if (mergeDuplicates == MergeDuplicates.USE_ANY) {
+                        } else if (mergeDuplicates == DuplicateMergeStrategy.USE_ANY) {
                             mergedValue = existingValue;
-                        } else if (mergeDuplicates == MergeDuplicates.REJECT) {
+                        } else if (mergeDuplicates == DuplicateMergeStrategy.REJECT) {
                             throw new XPathException(this, ErrorCodes.FOJS0003,
                                     "Duplicate key in map:build: " + key.getStringValue());
                         } else {
@@ -667,21 +640,126 @@ public class MapFunction extends BasicFunction {
         }
     }
 
-    private enum MergeDuplicates {
-        REJECT,
-        USE_FIRST,
-        USE_LAST,
-        USE_ANY,
-        COMBINE;
+    /*
+     * Reject duplicate items
+     */
+    private AbstractMapType rejectDuplicates(final AbstractMapType head, final List<AbstractMapType> tail) throws XPathException {
+        // Provide a callback function for merging items which share a key
+        // Call merge variant
+        final List<Sequence> mergeExceptions = new ArrayList<>();
+        final AbstractMapType merged = head.merge(tail, (first, second) -> {
+            mergeExceptions.add(first);
+            return Sequence.EMPTY_SEQUENCE;
+        });
 
-        public static @Nullable MergeDuplicates fromDuplicatesValue(final String duplicatesValue) {
-            for (final MergeDuplicates mergeDuplicates : values()) {
-                if (mergeDuplicates.name().toLowerCase().replace('_', '-').equals(duplicatesValue)) {
-                    return mergeDuplicates;
-                }
+        if (!mergeExceptions.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOJS0003, "At least one duplicate key encountered with merge strategy being \"reject\".");
+        }
+        return merged;
+    }
+
+    /*
+     * Combine duplicate items in head-first order
+     */
+    private AbstractMapType combineDuplicates(final AbstractMapType head, final List<AbstractMapType> tail) throws XPathException {
+        // Provide a callback function for merging items which share a key
+        // Call merge variant
+        final List<XPathException> mergeExceptions = new ArrayList<>();
+        final AbstractMapType merged = head.merge(tail, (first, second) -> {
+            try {
+                final ValueSequence sequence = new ValueSequence(first);
+                sequence.addAll(second);
+                return sequence;
+            } catch (final XPathException e) {
+                //We cannot throw out of the MapType - pass exceptions here.
+                mergeExceptions.add(e);
             }
+            return Sequence.EMPTY_SEQUENCE;
+        });
 
-            return null;
+        if (!mergeExceptions.isEmpty()) {
+            throw mergeExceptions.getFirst();
+        }
+        return merged;
+    }
+
+    private DuplicateMergeStrategy getMergeStrategy(Sequence[] args) throws XPathException {
+        if (args.length == 1) {
+            return DuplicateMergeStrategy.USE_FIRST;
+        }
+        final MapType map = (MapType) args[1];
+        final StringValue key = new StringValue(this, "duplicates");
+        final Sequence mapValue = map.get(key);
+        if (mapValue.isEmpty()) {
+            return DuplicateMergeStrategy.USE_FIRST;
+        }
+
+        final DuplicateMergeStrategy mergeDuplicates = DuplicateMergeStrategy.get(mapValue.getStringValue());
+        if (mergeDuplicates == null) {
+            throw new XPathException(this, ErrorCodes.FOJS0005, "value for duplicates key was not recognised: " + mapValue.getStringValue());
+        }
+        return mergeDuplicates;
+    }
+
+    private enum DuplicateMergeStrategy {
+        REJECT("reject"),
+        USE_FIRST("use-first"),
+        USE_LAST("use-last"),
+        USE_ANY("use-any"),
+        COMBINE("combine");
+        final static Map<String, MapFunction.DuplicateMergeStrategy> dmsMap = new HashMap<>();
+
+        static {
+            for (MapFunction.DuplicateMergeStrategy dms : MapFunction.DuplicateMergeStrategy.values()) {
+                dmsMap.put(dms.key, dms);
+            }
+        }
+
+        private final String key;
+
+        DuplicateMergeStrategy(String key) {
+            this.key = key;
+        }
+
+        static MapFunction.DuplicateMergeStrategy get(String key) {
+            return dmsMap.get(key);
+        }
+    }
+
+    private enum Fn {
+        SIZE("size"),
+        ENTRY("entry"),
+        GET("get"),
+        MERGE("merge"),
+        PUT("put"),
+        CONTAINS("contains"),
+        KEYS("keys"),
+        REMOVE("remove"),
+        FOR_EACH("for-each"),
+        FIND("find"),
+        EMPTY("empty"),
+        ITEMS("items"),
+        ENTRIES("entries"),
+        KEYS_WHERE("keys-where"),
+        FILTER("filter"),
+        BUILD("build");
+
+        final static Map<String, MapFunction.Fn> fnMap = new HashMap<>();
+
+        static {
+            for (MapFunction.Fn fn : MapFunction.Fn.values()) {
+                fnMap.put(fn.fname, fn);
+            }
+        }
+
+        private final String fname;
+
+        Fn(String name) {
+            this.fname = name;
+        }
+
+        static MapFunction.Fn get(String name) {
+            return fnMap.get(name);
         }
     }
 }

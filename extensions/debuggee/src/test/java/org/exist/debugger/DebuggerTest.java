@@ -50,7 +50,7 @@ import org.junit.*;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-@Ignore
+@Ignore("Requires running debugger infrastructure")
 public class DebuggerTest implements ResponseListener {
 
 	private static final String script = "xquery version '1.0';\n" +

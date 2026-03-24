@@ -39,11 +39,19 @@ import org.exist.xquery.TypeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.Base64BinaryValueType;
+import org.exist.xquery.value.BinaryValueFromFile;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.model.Result;
 import org.xml.sax.SAXException;
+
+import static org.expath.httpclient.HttpClientError.HC001;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -78,7 +86,7 @@ public class EXistResult implements Result {
                 builder.append(cbuf, 0, read);
             }
         } catch(final IOException ioe) {
-            throw new HttpClientException("Unable to add string value to result: " + ioe.getMessage(), ioe);
+            throw new HttpClientException(HC001, "Unable to add string value to result: " + ioe.getMessage(), ioe);
         } finally {
             try {
                 reader.close();
@@ -101,7 +109,7 @@ public class EXistResult implements Result {
 
             result.add(BinaryValueFromFile.getInstance(context, new Base64BinaryValueType(), tempFile, (isClosed, file) -> temporaryFileManager.returnTemporaryFile(file), null));
         } catch(final XPathException | IOException xpe) {
-            throw new HttpClientException("Unable to add binary value to result:" + xpe.getMessage(), xpe);
+            throw new HttpClientException(HC001, "Unable to add binary value to result:" + xpe.getMessage(), xpe);
         } finally {
             try {
                 is.close();
@@ -117,7 +125,7 @@ public class EXistResult implements Result {
             final NodeValue nodeValue = ModuleUtils.sourceToXML(context, src, null);
             result.add(nodeValue);
         } catch(final SAXException | IOException saxe) {
-            throw new HttpClientException("Unable to add Source to result:" + saxe.getMessage(), saxe);
+            throw new HttpClientException(HC001, "Unable to add Source to result:" + saxe.getMessage(), saxe);
         }
     }
 
@@ -141,7 +149,7 @@ public class EXistResult implements Result {
                 result = newResult;
             }
         } catch (final XPathException xpe) {
-            throw new HttpClientException("Unable to add HttpResponse to result:" + xpe.getMessage(), xpe);
+            throw new HttpClientException(HC001, "Unable to add HttpResponse to result:" + xpe.getMessage(), xpe);
         }
     }
     

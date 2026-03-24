@@ -195,7 +195,7 @@ public class SequenceType {
      * @throws XPathException if check fails for one item in the sequence
      * @return true, if all items of the sequence have the same type as or a subtype of primaryType
      */
-    public boolean checkType(Sequence seq) throws XPathException {
+    public boolean checkType(final Sequence seq) throws XPathException {
         if (isChoiceType()) {
             Item next;
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
@@ -226,7 +226,7 @@ public class SequenceType {
      * @param item the item to check
      * @return true, if item is a subtype of primaryType
      */
-    public boolean checkType(Item item) {
+    public boolean checkType(final Item item) {
         if (isChoiceType()) {
             for (final SequenceType alt : choiceAlternatives) {
                 if (alt.checkType(item)) {
@@ -475,12 +475,12 @@ public class SequenceType {
             str = "document-node(" + nodeName.getStringValue() + ")";
         } else if (primaryType == Type.ELEMENT && nodeName != null) {
             str = "element(" + nodeName.getStringValue() + ")";
-//        } else if (primaryType == Type.MAP) {
-//            str = "map(" + + ")";
-//        } else if (primaryType == Type.ARRAY) {
-//            str = "array(" + + ")";
-//        } else if (primaryType == Type.FUNCTION_REFERENCE) {
-//            str = "function(" + + ")";
+        } else if (primaryType == Type.MAP_ITEM) {
+            str = "map(*)";
+        } else if (primaryType == Type.ARRAY_ITEM) {
+            str = "array(*)";
+        } else if (primaryType == Type.FUNCTION) {
+            str = "function(*)";
         } else {
             str = Type.getTypeName(primaryType);
         }

@@ -58,6 +58,12 @@ public class ThreadUtils {
         return new Thread(threadGroup, runnable, nameInstanceThread(instanceId, threadName));
     }
 
+    public static Thread newInstanceDaemonThread(final Database database, final String threadName, final Runnable runnable) {
+        final Thread thread = new Thread(database.getThreadGroup(), runnable, nameInstanceThread(database, threadName));
+        thread.setDaemon(true);
+        return thread;
+    }
+
     public static String nameGlobalThread(final String threadName) {
         return "global." + threadName;
     }

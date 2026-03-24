@@ -26,6 +26,9 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.FunctionSignature;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  * This class is used to specify the name and description of an XQuery function parameter of type function.
  */
@@ -33,9 +36,34 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
 
     private final int arity;
     private final SequenceType[] parameters;
-    private SequenceType returnType = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+    private final SequenceType returnType;
 
     /**
+     * shorthand for single, non-optional function parameters
+     * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
+     * @param parameterTypes    The <strong>Types</strong> of parameters the function needs to accept.
+     * @param description       A description of the parameter in the <strong>FunctionSignature</strong>.
+     * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
+     */
+    public FunctionParameterFunctionSequenceType(final String attributeName, final FunctionParameterSequenceType[] parameterTypes, final FunctionReturnSequenceType returnType, final String description) {
+        this(attributeName, parameterTypes, returnType, Cardinality.EXACTLY_ONE, description);
+    }
+
+    /**
+     * shorthand for functions
+     * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
+     * @param parameterTypes    The <strong>Types</strong> of parameters the function needs to accept.
+     * @param cardinality       The <strong>Cardinality</strong> of the parameter.
+     * @param description       A description of the parameter in the <strong>FunctionSignature</strong>.
+     * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
+     */
+    public FunctionParameterFunctionSequenceType(final String attributeName, final FunctionParameterSequenceType[] parameterTypes, final FunctionReturnSequenceType returnType, final Cardinality cardinality, final String description) {
+        this(attributeName, Type.FUNCTION, parameterTypes, returnType, cardinality, description);
+    }
+
+    /**
+     * Constructor can be used for Type.MAP_TYPE and Type.ARRAY_TYPE as well
+     *
      * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
      * @param primaryType       The <strong>Type</strong> of the parameter.
      * @param parameterTypes    The <strong>parameters</strong> the function(s) must accept.
@@ -44,8 +72,7 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
      * @param description       A description of the parameter in the <strong>FunctionSignature</strong>.
      * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
      */
-    public FunctionParameterFunctionSequenceType(final String attributeName, final int primaryType, final SequenceType[] parameterTypes, final SequenceType returnType, final Cardinality cardinality, final String description) {
-        // use for Type.MAP_TYPE and Type.ARRAY_TYPE as well
+    public FunctionParameterFunctionSequenceType(final String attributeName, final int primaryType, final FunctionParameterSequenceType[] parameterTypes, final SequenceType returnType, final Cardinality cardinality, final String description) {
         super(attributeName, primaryType, cardinality, description);
         this.parameters = parameterTypes;
         this.arity = parameterTypes.length;
@@ -53,7 +80,26 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
     }
 
     /**
-     * shorthand if return type is unspecified
+     * Legacy constructor accepting SequenceType[] for backward compatibility with old-style signatures.
+     *
+     * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
+     * @param primaryType       The <strong>Type</strong> of the parameter.
+     * @param parameterTypes    The <strong>Types</strong> of parameters the function needs to accept.
+     * @param returnType        The <strong>Type</strong> the function(s) needs to return.
+     * @param cardinality       The <strong>Cardinality</strong> of the parameter.
+     * @param description       A description of the parameter in the <strong>FunctionSignature</strong>.
+     * @see org.exist.xquery.FunctionSignature @see Type @see org.exist.xquery.Cardinality
+     */
+    public FunctionParameterFunctionSequenceType(final String attributeName, final int primaryType, final SequenceType[] parameterTypes, final SequenceType returnType, final Cardinality cardinality, final String description) {
+        super(attributeName, primaryType, cardinality, description);
+        this.parameters = parameterTypes;
+        this.arity = parameterTypes.length;
+        this.returnType = returnType;
+    }
+
+    /**
+     * Legacy shorthand if return type is unspecified.
+     *
      * @param attributeName     The name of the parameter in the <strong>FunctionSignature</strong>.
      * @param primaryType       The <strong>Type</strong> of the parameter.
      * @param parameterTypes    The <strong>Types</strong> of parameters the function needs to accept.
@@ -65,6 +111,7 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
         super(attributeName, primaryType, cardinality, description);
         this.parameters = parameterTypes;
         this.arity = parameterTypes.length;
+        this.returnType = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
     }
 
     @Override
@@ -154,5 +201,15 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
                                 + "; got: " + Type.getTypeName(argumentType));
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        final int T = getPrimaryType();
+        return  Type.getTypeName(T) + "(" +
+                    Arrays.stream(parameters)
+                            .map(SequenceType::toString)
+                            .collect(Collectors.joining(",")) +
+                ")" + (T == Type.FUNCTION ?  " as " + returnType.toString() : "");
     }
 }

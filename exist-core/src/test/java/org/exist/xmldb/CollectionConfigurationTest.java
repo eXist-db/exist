@@ -722,7 +722,7 @@ public class CollectionConfigurationTest {
         assertEquals(0, result.getSize());
     }
 
-   @Test @Ignore
+   @Test
    public void rangeIndex1() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        
@@ -836,7 +836,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
   }   
 
-   @Test @Ignore
+   @Test @Ignore("Range index query with dateTime cast / where clause")
     public void rangeIndex2() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
@@ -950,7 +950,7 @@ public class CollectionConfigurationTest {
        assertEquals(1, result.getSize());
   }
 
-   @Test @Ignore
+   @Test @Ignore("Range index query with dateTime cast / where clause")
     public void rangeIndex3() throws XMLDBException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
         
@@ -1033,7 +1033,7 @@ public class CollectionConfigurationTest {
         assertTrue(exceptionCaught);
     }
 
-   @Test @Ignore
+   @Test
    public void rangeIndexOverAttributes() throws XMLDBException {
        Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
        

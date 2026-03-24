@@ -99,7 +99,7 @@ public class MapExpr extends AbstractExpression {
             }
         }
 
-        return new MapType(this, context, map.forked(), prevType, keyOrder);
+        return new MapType(this, context, map.forked(), prevType);
     }
 
     @Override

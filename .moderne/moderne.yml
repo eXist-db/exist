@@ -1,0 +1,1 @@
+mavenArgs: "-DskipTests -Ddependency-check.skip=true -Ddocker=false"
