@@ -64,7 +64,9 @@ public class JSONSerializer {
             if ("yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"))) {
                 generator.useDefaultPrettyPrinter();
             }
-            if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "yes"))) {
+            // allow-duplicate-names=no (default per W3C) → enable strict detection
+            // allow-duplicate-names=yes → disable strict detection (allow duplicates)
+            if ("no".equals(outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "no"))) {
                 generator.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
             } else {
                 generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
