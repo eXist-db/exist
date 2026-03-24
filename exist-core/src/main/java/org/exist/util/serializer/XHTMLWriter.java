@@ -329,6 +329,18 @@ public class XHTMLWriter extends IndentingXMLWriter {
                 && attrName.equalsIgnoreCase(value.toString());
     }
 
+    /**
+     * For HTML serialization, cdata-section-elements is ignored per the
+     * W3C serialization spec — CDATA sections are not valid in HTML.
+     */
+    @Override
+    protected boolean shouldUseCdataSections() {
+        if (isHtmlMethod()) {
+            return false;
+        }
+        return super.shouldUseCdataSections();
+    }
+
     @Override
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))

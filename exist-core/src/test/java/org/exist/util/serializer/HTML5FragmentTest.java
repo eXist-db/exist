@@ -169,6 +169,36 @@ public class HTML5FragmentTest {
     }
 
     @Test
+    public void htmlCdataSectionElementsSuppressed() throws Exception {
+        // For HTML method, cdata-section-elements should be IGNORED
+        // Text should not be wrapped in CDATA markers
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
+            final XQuery xqueryService = pool.getXQueryService();
+            final String xquery = "<html><body><p><b>No CDATA</b></p></body></html>";
+            final Sequence result = xqueryService.execute(broker, xquery, null);
+
+            final Properties props = new Properties();
+            props.setProperty(OutputKeys.METHOD, "html");
+            props.setProperty(OutputKeys.INDENT, "no");
+            props.setProperty(OutputKeys.VERSION, "5.0");
+            props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            props.setProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "b");
+            props.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "yes");
+
+            final StringWriter writer = new StringWriter();
+            final XQuerySerializer serializer = new XQuerySerializer(broker, props, writer);
+            serializer.serialize(result);
+            final String output = writer.toString();
+
+            assertFalse("HTML output should not contain CDATA: " + output,
+                    output.contains("<![CDATA["));
+            assertTrue("Text should be preserved: " + output,
+                    output.contains("<b>No CDATA</b>"));
+        }
+    }
+
+    @Test
     public void html40NoDoctypeWithoutPublicSystem() throws Exception {
         // HTML 4.0 without doctype-public/doctype-system should not emit DOCTYPE
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "4.0");

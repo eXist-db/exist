@@ -88,6 +88,24 @@ public class XMLWriter implements SerializerWriter {
     private boolean xdmSerialization = false;
 
     private final Deque<QName> elementName = new ArrayDeque<>();
+
+    /**
+     * Returns true if cdata-section-elements should be applied.
+     * Subclasses (e.g., XHTMLWriter for HTML method) can override
+     * to suppress CDATA sections.
+     */
+    protected boolean shouldUseCdataSections() {
+        return xdmSerialization;
+    }
+
+    /**
+     * Returns the namespace URI of the current (innermost) element,
+     * or null if no element is on the stack.
+     */
+    protected String currentElementNamespaceURI() {
+        final QName top = elementName.peek();
+        return top != null ? top.getNamespaceURI() : null;
+    }
     private LazyVal<Set<QName>> cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
     private boolean cdataSetionElement = false;
 
@@ -375,7 +393,7 @@ public class XMLWriter implements SerializerWriter {
             }
             // When xdmSerialization is active and current element is in cdata-section-elements,
             // wrap text content in CDATA instead of escaping it (per W3C Serialization 3.1)
-            if (xdmSerialization && !elementName.isEmpty()
+            if (shouldUseCdataSections() && !elementName.isEmpty()
                     && cdataSectionElements.get().contains(elementName.peek())) {
                 writeCdataContent(chars);
             } else {
