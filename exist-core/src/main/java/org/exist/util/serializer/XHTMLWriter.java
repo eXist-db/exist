@@ -329,6 +329,22 @@ public class XHTMLWriter extends IndentingXMLWriter {
                 && attrName.equalsIgnoreCase(value.toString());
     }
 
+    private static final ObjectSet<String> RAW_TEXT_ELEMENTS_HTML = new ObjectOpenHashSet<>(4);
+    static {
+        RAW_TEXT_ELEMENTS_HTML.add("script");
+        RAW_TEXT_ELEMENTS_HTML.add("style");
+    }
+
+    @Override
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        // For HTML method, script and style content should not be escaped
+        if (!inAttribute && isHtmlMethod()
+                && currentTag != null && RAW_TEXT_ELEMENTS_HTML.contains(currentTag.toLowerCase(java.util.Locale.ROOT))) {
+            return false;
+        }
+        return super.needsEscape(ch, inAttribute);
+    }
+
     /**
      * For HTML serialization, cdata-section-elements is ignored per the
      * W3C serialization spec — CDATA sections are not valid in HTML.

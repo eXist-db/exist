@@ -632,6 +632,17 @@ public class XMLWriter implements SerializerWriter {
     protected boolean needsEscape(final char ch) {
     	return true;
     }
+
+    /**
+     * Whether the given character needs escaping. Subclasses can override
+     * to suppress escaping for specific contexts (e.g., HTML raw text elements).
+     *
+     * @param ch the character to check
+     * @param inAttribute true if we're writing an attribute value
+     */
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        return needsEscape(ch);
+    }
     
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
@@ -661,7 +672,7 @@ public class XMLWriter implements SerializerWriter {
                 return;
             }
             
-            if(needsEscape(ch)) {
+            if(needsEscape(ch, inAttribute)) {
                 switch(ch) {
                     case '<':
                         writer.write("&lt;");

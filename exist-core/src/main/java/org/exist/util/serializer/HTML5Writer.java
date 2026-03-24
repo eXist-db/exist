@@ -271,4 +271,19 @@ public class HTML5Writer extends XHTML5Writer {
         return super.needsEscape(ch);
     }
 
+    @Override
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        // In raw text elements (script, style), suppress escaping for TEXT content only.
+        // Attribute values must always be escaped, even on raw text elements.
+        if (!inAttribute && RAW_TEXT_ELEMENTS.contains(currentTag)) {
+            return false;
+        }
+        // For attributes, always return true (bypass the 1-arg override
+        // which returns false for all script/style content)
+        if (inAttribute) {
+            return true;
+        }
+        return super.needsEscape(ch, inAttribute);
+    }
+
 }

@@ -199,6 +199,18 @@ public class HTML5FragmentTest {
     }
 
     @Test
+    public void htmlScriptAttributeEscaped() throws Exception {
+        // In HTML5, attributes on script elements MUST be escaped
+        // but text content inside script elements must NOT be escaped
+        final String result = serialize("<html><head><script language='Jack&amp;Jill'>go &amp;&amp; run();</script></head><body/></html>",
+                "html", "5.0");
+        assertTrue("Script attribute & should be escaped: " + result,
+                result.contains("language=\"Jack&amp;Jill\""));
+        assertTrue("Script body && should NOT be escaped: " + result,
+                result.contains("go && run()"));
+    }
+
+    @Test
     public void html40NoDoctypeWithoutPublicSystem() throws Exception {
         // HTML 4.0 without doctype-public/doctype-system should not emit DOCTYPE
         final String result = serialize("<html><body><p>hello</p></body></html>", "html", "4.0");
