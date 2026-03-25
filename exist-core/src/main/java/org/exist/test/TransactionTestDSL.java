@@ -515,8 +515,7 @@ public interface TransactionTestDSL {
                     }
                 });
 
-                //TODO(AR) rather than working with exceptions, it would be better to encapsulate them in a similar way to working on an empty sequence, e.g. could use Either<L,R>???
-
+                //TODO(AR) rather than working with exceptions from Future.get(), it would be better to encapsulate them in a similar way to working on an empty sequence, e.g. could use Either<L,R>???
                 U1 u1 = null;
                 U2 u2 = null;
                 while (true) {
