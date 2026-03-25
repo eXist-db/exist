@@ -38,6 +38,7 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
@@ -180,7 +181,9 @@ public class FunHigherOrderFun extends BasicFunction {
             ref.analyze(cachedContextInfo);
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
+                final Sequence[] fargs = new Sequence[]{item.toSequence()};
+                checkFunctionParameterTypes(ref, fargs);
+                final Sequence r = ref.evalFunction(null, null, fargs);
                 result.addAll(r);
             }
         }
@@ -195,7 +198,9 @@ public class FunHigherOrderFun extends BasicFunction {
             final Sequence seq = args[0];
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
+                final Sequence[] fargs = new Sequence[]{item.toSequence()};
+                checkFunctionParameterTypes(ref, fargs);
+                final Sequence r = ref.evalFunction(null, null, fargs);
 
                 if (r.getItemType() != Type.BOOLEAN) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
@@ -225,6 +230,7 @@ public class FunHigherOrderFun extends BasicFunction {
             final Sequence[] refArgs = new Sequence[2];
             refArgs[0] = accum;
             refArgs[1] = seq.nextItem().toSequence();
+            checkFunctionParameterTypes(ref, refArgs);
             accum = ref.evalFunction(null, null, refArgs);
         }
         return accum;
@@ -253,7 +259,9 @@ public class FunHigherOrderFun extends BasicFunction {
         }
         final Sequence head = seq.itemAt(0).toSequence();
         final Sequence tailResult = foldRight(ref, zero, seq.tail());
-        return ref.evalFunction(null, null, new Sequence[]{head, tailResult});
+        final Sequence[] refArgs = new Sequence[]{head, tailResult};
+        checkFunctionParameterTypes(ref, refArgs);
+        return ref.evalFunction(null, null, refArgs);
     }
 
     /**
@@ -267,6 +275,7 @@ public class FunHigherOrderFun extends BasicFunction {
         while (seq.hasNext()) {
             refArgs[0] = seq.nextItem().toSequence();
             refArgs[1] = accum;
+            checkFunctionParameterTypes(ref, refArgs);
             accum = ref.evalFunction(null, null, refArgs);
         }
         return accum;
@@ -279,8 +288,9 @@ public class FunHigherOrderFun extends BasicFunction {
             final SequenceIterator i1 = args[0].iterate();
             final SequenceIterator i2 = args[1].iterate();
             while (i1.hasNext() && i2.hasNext()) {
-                final Sequence r = ref.evalFunction(null, null,
-                        new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
+                final Sequence[] fargs = new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()};
+                checkFunctionParameterTypes(ref, fargs);
+                final Sequence r = ref.evalFunction(null, null, fargs);
                 result.addAll(r);
             }
         }
@@ -297,6 +307,7 @@ public class FunHigherOrderFun extends BasicFunction {
                                 ref.getSignature().getArgumentCount() + ", got: " + array.getSize());
             }
             final Sequence[] fargs = array.toArray();
+            checkFunctionParameterTypes(ref, fargs);
             return ref.evalFunction(null, null, fargs);
         }
     }
@@ -304,6 +315,40 @@ public class FunHigherOrderFun extends BasicFunction {
     private boolean arityMatches(final FunctionReference ref, final int n) {
         return (ref.getSignature().isVariadic() ||
                 ref.getSignature().getArgumentCount() == n);
+    }
+
+    /**
+     * Validates that each argument is compatible with the declared parameter type
+     * of the function reference. This enforces type checking for higher-order
+     * function callbacks, which was previously missing (issue #3754).
+     *
+     * @param ref  the function reference whose parameter types to check against
+     * @param args the actual arguments to validate
+     * @throws XPathException with XPTY0004 if a type mismatch is detected
+     */
+    private void checkFunctionParameterTypes(final FunctionReference ref, final Sequence[] args) throws XPathException {
+        final SequenceType[] paramTypes = ref.getSignature().getArgumentTypes();
+        if (paramTypes == null) {
+            return;
+        }
+        for (int i = 0; i < args.length && i < paramTypes.length; i++) {
+            final SequenceType expected = paramTypes[i];
+            final int expectedType = expected.getPrimaryType();
+            // Skip check if the declared type is item() — accepts anything
+            if (expectedType == Type.ITEM) {
+                continue;
+            }
+            final Sequence arg = args[i];
+            if (arg.isEmpty()) {
+                continue;
+            }
+            if (!expected.checkType(arg)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Invalid type for parameter " + (i + 1) + " of higher-order function call. " +
+                                "Expected " + Type.getTypeName(expectedType) +
+                                ", got " + Type.getTypeName(arg.getItemType()));
+            }
+        }
     }
 
     private enum Fn {
