@@ -962,6 +962,17 @@
 
     <profiles>
         <profile>
+            <id>onnx-model</id>
+            <dependencies>
+                <dependency>
+                    <groupId>${project.groupId}</groupId>
+                    <artifactId>exist-vector</artifactId>
+                    <version>${project.version}</version>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
             <id>skip-build-dist-archives</id>
             <build>
                 <plugins>
