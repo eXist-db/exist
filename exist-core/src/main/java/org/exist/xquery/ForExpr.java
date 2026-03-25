@@ -60,6 +60,16 @@ public class ForExpr extends BindingExpression {
         positionalVariable = variable;
     }
 
+    /**
+     * XQFT 3.0: Set the score variable for full-text relevance scoring.
+     * The actual scoring is handled by the full-text evaluator when
+     * the XQFT branch merges. This stub ensures the parser accepts
+     * the syntax without breaking.
+     */
+    public void setScoreVariable(final QName variable) {
+        // Score variable binding — actual implementation in XQFT branch
+    }
+
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */

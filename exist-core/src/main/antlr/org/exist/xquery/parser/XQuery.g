@@ -217,6 +217,7 @@ imaginaryTokenDefinitions
 	DESTRUCTURE_VAR_TYPE
 	RECORD_TEST
 	RECORD_FIELD
+	FT_SCORE_VAR
 	;
 
 // === XPointer ===
@@ -863,7 +864,7 @@ expr throws XPathException
 
 exprSingle throws XPathException
 :
-	( ( "for" | "let" ) ("tumbling" | "sliding" | "member" | "key" | "value" | DOLLAR) ) => flworExpr
+	( ( "for" | "let" ) ("tumbling" | "sliding" | "member" | "key" | "value" | "score" | DOLLAR) ) => flworExpr
 	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr
@@ -1082,7 +1083,8 @@ valueVarBinding throws XPathException
 
 letClause throws XPathException
 :
-	"let"^ letVarBinding ( COMMA! letVarBinding )*
+	"let"^ ( ( "score" ) => ftScoreVarBinding | letVarBinding )
+		( COMMA! ( ( "score" ) => ftScoreVarBinding | letVarBinding ) )*
 	;
 
 windowClause throws XPathException
@@ -1095,6 +1097,7 @@ inVarBinding throws XPathException
 :
 	DOLLAR! varName=v:varName! ( typeDeclaration )? ( allowingEmpty )?
 	( positionalVar )?
+	( ftScoreVar )?
 	"in"! exprSingle
 	{
 		#inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding);
@@ -1107,6 +1110,25 @@ positionalVar
 :
 	"at" DOLLAR! varName=varName
 	{ #positionalVar= #[POSITIONAL_VAR, varName]; }
+	;
+
+// XQFT 3.0: FTScoreVar in for binding - "score" "$" VarName
+ftScoreVar
+{ String varName; }
+:
+	"score" DOLLAR! varName=varName
+	{ #ftScoreVar= #[FT_SCORE_VAR, varName]; }
+	;
+
+// XQFT 3.0: FTScoreVar as let clause - "score" "$" VarName ":=" ExprSingle
+ftScoreVarBinding throws XPathException
+{ String varName; }
+:
+	"score"! DOLLAR! varName=v:varName! COLON! EQ! exprSingle
+	{
+		#ftScoreVarBinding= #(#[VARIABLE_BINDING, varName], #[FT_SCORE_VAR, "score"], #ftScoreVarBinding);
+		#ftScoreVarBinding.copyLexInfo(#v);
+	}
 	;
 
 allowingEmpty
@@ -2871,6 +2893,8 @@ coreReservedKeywords returns [String name]
 	"next" { name = "next"; }
 	|
 	"when" { name = "when"; }
+	|
+	"score" { name = "score"; }
 	;
 
 // ---- XQuery 4.0 keywords (feature/xquery-4.0-parser) ----

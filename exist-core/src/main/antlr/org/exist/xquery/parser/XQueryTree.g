@@ -141,6 +141,9 @@ options {
         boolean allowEmpty = false;
         QName valueVarName = null;
         SequenceType valueSequenceType = null;
+        // XQFT score variable
+        QName scoreVar = null;
+        boolean isScoreBinding = false;
         // XQ4 destructuring
         List<QName> destructureVarNames = null;
         List<SequenceType> destructureVarTypes = null;
@@ -2123,6 +2126,16 @@ throws PermissionDeniedException, EXistException, XPathException
                                 }
                             }
                         )?
+                        (
+                            scoreVar:FT_SCORE_VAR
+                            {
+                                try {
+                                    clause.scoreVar = distinctVariableNames.check(ErrorCodes.XQST0089, scoreVar, QName.parse(staticContext, scoreVar.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(scoreVar.getLine(), scoreVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + scoreVar.getText());
+                                }
+                            }
+                        )?
                         step=expr [inputSequence]
                         {
                             try {
@@ -2336,6 +2349,12 @@ throws PermissionDeniedException, EXistException, XPathException
                             PathExpr inputSequence= new PathExpr(context);
                             inputSequence.setASTNode(exprFlowControl_AST_in);
                         }
+                        (
+                            letScoreVar:FT_SCORE_VAR
+                            {
+                                clause.isScoreBinding = true;
+                            }
+                        )?
                         (
                             #(
                                 "as"
@@ -2987,7 +3006,14 @@ throws PermissionDeniedException, EXistException, XPathException
             bind.setInputSequence(clause.inputSequence);
             if (clause.type == FLWORClause.ClauseType.FOR) {
                  ((ForExpr) bind).setPositionalVariable(clause.posVar);
-            } else if (clause.type == FLWORClause.ClauseType.FOR_MEMBER) {
+                 if (clause.scoreVar != null) {
+                     ((ForExpr) bind).setScoreVariable(clause.scoreVar);
+                 }
+            }
+            if (clause.type == FLWORClause.ClauseType.LET && clause.isScoreBinding) {
+                ((LetExpr) bind).setScoreBinding(true);
+            }
+            if (clause.type == FLWORClause.ClauseType.FOR_MEMBER) {
                  ((ForMemberExpr) bind).setPositionalVariable(clause.posVar);
             } else if (clause.type == FLWORClause.ClauseType.FOR_KEY
                  || clause.type == FLWORClause.ClauseType.FOR_VALUE

@@ -41,6 +41,16 @@ public class LetExpr extends BindingExpression {
         super(context);
     }
 
+    /**
+     * XQFT 3.0: Mark this let binding as a score variable binding.
+     * The actual scoring is handled by the full-text evaluator when
+     * the XQFT branch merges. This stub ensures the parser accepts
+     * the syntax without breaking.
+     */
+    public void setScoreBinding(final boolean scoreBinding) {
+        // Score binding — actual implementation in XQFT branch
+    }
+
     @Override
     public ClauseType getType() {
         return ClauseType.LET;
