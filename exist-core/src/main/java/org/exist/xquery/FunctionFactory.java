@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.exist.Namespaces;
@@ -396,6 +397,30 @@ public class FunctionFactory {
         if (func == null) {
             // check if the module has been compiled already
             if (module.isReady()) {
+                // Check if function exists at other arities to give a better error message
+                final List<FunctionSignature> otherArities = new ArrayList<>();
+                final Iterator<FunctionSignature> sigs = module.getSignaturesForFunction(qname);
+                while (sigs.hasNext()) {
+                    otherArities.add(sigs.next());
+                }
+
+                if (!otherArities.isEmpty()) {
+                    final StringBuilder msg = new StringBuilder();
+                    msg.append("Unexpectedly received ").append(params.size())
+                       .append(" parameter(s) in call to function '")
+                       .append(qname.getStringValue()).append("()'. ");
+                    msg.append("Defined function signatures are:\r\n");
+                    for (final FunctionSignature sig : otherArities) {
+                        msg.append(sig.toString()).append("\r\n");
+                    }
+                    if (throwOnNotFound) {
+                        throw new XPathException(ast.getLine(), ast.getColumn(),
+                                ErrorCodes.XPST0017, msg.toString());
+                    } else {
+                        return null;
+                    }
+                }
+
                 final StringBuilder msg = new StringBuilder("Function ")
                         .append(qname.getStringValue()).append('#').append(params.size())
                         .append(" is not defined in namespace '").append(qname.getNamespaceURI()).append('\'');
