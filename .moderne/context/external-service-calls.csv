@@ -1,0 +1,2 @@
+Entity ID,Source path,Client class,Target service,Client type,Protocol,Base URL
+external:org.exist.xmlrpc.MoveResourceTest$CheckThread,exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java,org.exist.xmlrpc.MoveResourceTest$CheckThread,Move Resource Test$ Check Thread Service,Apache HttpClient,,

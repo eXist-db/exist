@@ -19,7 +19,7 @@
  : License along with this library; if not, write to the Free Software
  : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  :)
-xquery version "3.0";
+xquery version "3.1";
 
 module namespace flwor="http://exist-db.org/xquery/test/flwor";
 
@@ -184,4 +184,57 @@ function flwor:no-allow-empty($n as xs:integer) {
         else
             for $x at $y in $sequence
             return $x || ":" || $y
+};
+
+(:~
+ : Type declaration in for-binding should constrain the iteration variable,
+ : not the return type. See https://github.com/eXist-db/exist/issues/3553
+ :)
+declare
+    %test:assertEquals("<p>a</p>", "<p>b</p>", "<p>c</p>")
+function flwor:for-as-string-return-element() {
+    for $i as xs:string in ("a", "b", "c")
+    return <p>{$i}</p>
+};
+
+(:~
+ : Type declaration with function type in for-binding.
+ : Adapted from XQTS hof-046.
+ :)
+declare
+    %test:assertTrue
+function flwor:for-as-function() {
+    for $f as function(*) in (string-join#1)
+    return true()
+};
+
+(:~
+ : Type declaration should still raise XPTY0004 when the binding
+ : sequence items do not match the declared type.
+ :)
+declare
+    %test:assertError
+function flwor:for-as-type-mismatch() {
+    for $i as xs:integer in ("a", "b", "c")
+    return $i
+};
+
+(:~
+ : Subtype promotion: xs:integer items should match xs:decimal declaration.
+ :)
+declare
+    %test:assertEquals(1, 2, 3)
+function flwor:for-as-decimal-with-integers() {
+    for $n as xs:decimal in (xs:integer(1), xs:integer(2), xs:integer(3))
+    return $n
+};
+
+(:~
+ : Type declaration with xs:string should pass when binding string values.
+ :)
+declare
+    %test:assertTrue
+function flwor:for-as-string-binding() {
+    for $x as xs:string in "foo"
+    return true()
 };

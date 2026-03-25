@@ -99,7 +99,9 @@ public class MapExpr extends AbstractExpression {
             }
         }
 
-        return new MapType(this, context, map.forked(), prevType, keyOrder);
+        final MapType result = new MapType(this, context, map.forked(), prevType);
+        result.setInsertionOrder(keyOrder);
+        return result;
     }
 
     @Override

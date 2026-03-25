@@ -178,7 +178,6 @@ public class AdditionalJingXsdRngTest {
     }
 
     @Test
-    @Ignore("Looks good, but memory issue")
     public void repeatTests() throws XMLDBException, XPathException {
         for (int i = 0; i < 1000; i++) {
             testValidateRNGwithJing();

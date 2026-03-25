@@ -74,7 +74,7 @@ public class LDAPRealmTest {
 	/**
 	 * Test method for {@link org.exist.security.realm.ldap.LDAPRealm#authenticate(java.lang.String, java.lang.Object)}.
 	 */
-	@Ignore
+	@Ignore("Requires external LDAP server")
 	@Test
 	public void testAuthenticate() {
 		Account account = null;

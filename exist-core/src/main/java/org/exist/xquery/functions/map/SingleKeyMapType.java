@@ -105,7 +105,7 @@ public class SingleKeyMapType extends AbstractMapType {
             keyType = MIXED_KEY_TYPES;
         }
 
-        return new MapType(getExpression(), context, map.forked(), keyType, keyOrder);
+        return new MapType(getExpression(), context, map.forked(), keyType);
     }
 
     @Override

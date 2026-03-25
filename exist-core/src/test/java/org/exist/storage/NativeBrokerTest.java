@@ -242,7 +242,7 @@ public class NativeBrokerTest {
      * and we have execute+write access on /db/test
      * we should be allowed to copy the Collection.
      */
-    @Ignore
+    @Ignore("Mock API changed — iteratorNoLock() vs iterator()")
     @Test
     public void copyCollection_oneSubDoc_oneSubColl_toNonExistingDest_canWriteDest() throws LockException, PermissionDeniedException {
         final XmldbURI src = XmldbURI.create("/db/test/source");

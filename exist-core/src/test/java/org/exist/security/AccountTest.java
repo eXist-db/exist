@@ -38,7 +38,7 @@ import org.junit.Test;
  */
 public class AccountTest {
 
-    @Ignore
+    @Ignore("Mock API changed — EasyMock constructor mismatch")
     @Test
     public void testGroupFallback() throws NoSuchMethodException, PermissionDeniedException {
 

@@ -21,64 +21,98 @@
  */
 package org.exist.xquery.functions.array;
 
+import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
 
 import java.util.List;
 import java.util.Map;
 
+import static org.exist.xquery.FunctionDSL.functionDefs;
+
 /**
- * Module implementing functions that operate on arrays.
+ * Module registering functions that operate on arrays.
  */
 public class ArrayModule extends AbstractInternalModule {
 
     public static final String NAMESPACE_URI = "http://www.w3.org/2005/xpath-functions/array";
     public static final String PREFIX = "array";
 
-    private static final FunctionDef[] functions = {
-            new FunctionDef(ArrayFunction.signatures[0], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[1], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[2], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[3], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[4], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[5], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[6], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[7], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[8], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[9], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[10], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[11], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[12], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[13], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[14], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[15], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[16], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[17], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[18], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[19], ArrayFunction.class),
-            new FunctionDef(ArrayFunction.signatures[20], ArrayFunction.class),
-            // XQuery 4.0 array functions
-            new FunctionDef(ArraySlice.signatures[0], ArraySlice.class),
-            new FunctionDef(ArraySlice.signatures[1], ArraySlice.class),
-            new FunctionDef(ArraySlice.signatures[2], ArraySlice.class),
-            new FunctionDef(ArraySlice.signatures[3], ArraySlice.class),
-            new FunctionDef(ArrayIndexWhere.signatures[0], ArrayIndexWhere.class),
-            new FunctionDef(ArraySortWith.signatures[0], ArraySortWith.class),
-            new FunctionDef(ArraySortBy.signatures[0], ArraySortBy.class),
-            new FunctionDef(ArrayFunction.signatures[21], ArrayFunction.class),  // empty
-            new FunctionDef(ArrayFunction.signatures[22], ArrayFunction.class),  // foot
-            new FunctionDef(ArrayFunction.signatures[23], ArrayFunction.class),  // trunk
-            new FunctionDef(ArrayFunction.signatures[24], ArrayFunction.class),  // items
-            new FunctionDef(ArrayFunction.signatures[25], ArrayFunction.class),  // members
-            new FunctionDef(ArrayBuild.signatures[0], ArrayBuild.class),
-            new FunctionDef(ArrayBuild.signatures[1], ArrayBuild.class),
-            new FunctionDef(ArrayIndexOf.signatures[0], ArrayIndexOf.class),
-            new FunctionDef(ArrayOfMembers.signatures[0], ArrayOfMembers.class),
-            new FunctionDef(ArraySplit.signatures[0], ArraySplit.class)
-    };
+    private static final FunctionDef[] functions = functionDefs(
+            functionDefs(
+                    ArrayFunction.class,
+                    ArrayFunction.SIZE,
+                    ArrayFunction.GET,
+                    ArrayFunction.PUT,
+                    ArrayFunction.APPEND,
+                    ArrayFunction.SUBARRAY_1,
+                    ArrayFunction.SUBARRAY_2,
+                    ArrayFunction.REMOVE,
+                    ArrayFunction.INSERT_BEFORE,
+                    ArrayFunction.HEAD,
+                    ArrayFunction.TAIL,
+                    ArrayFunction.REVERSE,
+                    ArrayFunction.JOIN,
+                    ArrayFunction.FOR_EACH,
+                    ArrayFunction.FILTER,
+                    ArrayFunction.FOLD_LEFT,
+                    ArrayFunction.FOLD_RIGHT,
+                    ArrayFunction.FOR_EACH_PAIR,
+                    ArrayFunction.SORT_1,
+                    ArrayFunction.SORT_2,
+                    ArrayFunction.SORT_3,
+                    ArrayFunction.FLATTEN,
+                    // XQuery 4.0 array functions
+                    ArrayFunction.EMPTY,
+                    ArrayFunction.FOOT,
+                    ArrayFunction.TRUNK,
+                    ArrayFunction.ITEMS,
+                    ArrayFunction.MEMBERS
+            ),
+            functionDefs(
+                    ArraySlice.class,
+                    ArraySlice.signatures
+            ),
+            functionDefs(
+                    ArrayIndexWhere.class,
+                    ArrayIndexWhere.signatures
+            ),
+            functionDefs(
+                    ArraySortWith.class,
+                    ArraySortWith.signatures
+            ),
+            functionDefs(
+                    ArraySortBy.class,
+                    ArraySortBy.signatures
+            ),
+            functionDefs(
+                    ArrayBuild.class,
+                    ArrayBuild.signatures
+            ),
+            functionDefs(
+                    ArrayIndexOf.class,
+                    ArrayIndexOf.signatures
+            ),
+            functionDefs(
+                    ArrayOfMembers.class,
+                    ArrayOfMembers.signatures
+            ),
+            functionDefs(
+                    ArraySplit.class,
+                    ArraySplit.signatures
+            )
+    );
 
     public ArrayModule(Map<String, List<?>> parameters) {
         super(functions, parameters, false);
+    }
+
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
     }
 
     @Override

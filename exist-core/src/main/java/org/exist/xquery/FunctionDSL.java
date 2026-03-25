@@ -23,9 +23,7 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -33,7 +31,7 @@ import java.util.stream.Stream;
 /**
  * A small DSL which makes defining Functions in Java code
  * much simpler and more readable.
- *
+ * <p>
  * It allows you to define functions signatures by using a DSL like:
  *
  * <pre>
@@ -127,7 +125,7 @@ public class FunctionDSL {
     }
 
     /**
-     * Convenience DSL method for merging arrays of functions definitions using Varags syntax
+     * Convenience DSL method for merging arrays of functions definitions using varargs syntax
      *
      * @param functionDefss The arrays of function definitions
      *
@@ -180,27 +178,9 @@ public class FunctionDSL {
         );
     }
 
-//    /**
-//     * Deprecates a function signature
-//     *
-//     * @param fsDeprecates The new functionSignature which deprecates <code>functionSignature</code>
-//     * @param functionSignature The functionSignature to deprecate
-//     *
-//     * @return The function signature object
-//     */
-//    public static FunctionSignature deprecated(final FunctionSignature fsDeprecates, final FunctionSignature functionSignature) {
-//        return new FunctionSignature(
-//                functionSignature.getName(),
-//                functionSignature.getDescription(),
-//                functionSignature.getArgumentTypes(),
-//                functionSignature.getReturnType(),
-//                fsDeprecates
-//        );
-//    }
-
     /**
      * Creates multiple Function signatures for functions that have multiple arity definitions
-     *
+     * <p>
      * The {@code name}, {@code description} and {@code returnType} parameters remain the same for each function arity
      * however the {@code variableParamType} allows you to specify different arguments for each arity definition
      *
@@ -220,7 +200,7 @@ public class FunctionDSL {
 
     /**
      * Wraps the parameter types for a specific function arity
-     *
+     * <p>
      * A DSL convenience method to be used to supply multiple {@link #arity(FunctionParameterSequenceType...)} results
      * to {@link #functionSignatures(QName, String, FunctionReturnSequenceType, FunctionParameterSequenceType[][])}
      *
@@ -234,7 +214,7 @@ public class FunctionDSL {
 
     /**
      * Specifies the specific parameter types for an arity of a function signature.
-     *
+     * <p>
      * A DSL convenience method to be used inside {@link #arities(FunctionParameterSequenceType[][])}.
      *
      * @param paramTypes A convenience Varargs for the parameter types for a function arity
@@ -341,6 +321,63 @@ public class FunctionDSL {
     public static FunctionParameterSequenceType param(final String name, final int type, final int cardinality,
             final String description) {
         return new FunctionParameterSequenceType(name, type, cardinality, description);
+    }
+
+    /**
+     * Creates a required function parameter, that is a function
+     *
+     * @param name The name of the function parameter
+     * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
+     * @param description A description of function parameter
+     *
+     * @return The function parameter object
+     */
+    public static FunctionParameterFunctionSequenceType funParam(
+            final String name,
+            final FunctionParameterSequenceType[] parameters,
+            final FunctionReturnSequenceType returnType,
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, description);
+    }
+
+    /**
+     * Creates an optional function parameter, that is a function
+     *
+     * @param name The name of the function parameter
+     * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
+     * @param description A description of function parameter
+     *
+     * @return The function parameter object
+     */
+    public static FunctionParameterFunctionSequenceType optFunParam(
+            final String name,
+            final FunctionParameterSequenceType[] parameters,
+            final FunctionReturnSequenceType returnType,
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, Cardinality.ZERO_OR_ONE, description);
+    }
+
+    /**
+     * Creates an optional function parameter of sequences of functions
+     *
+     * @param name The name of the function parameter
+     * @param parameters the parameters the function has to accept
+     * @param returnType the return type of the function parameter
+     * @param description A description of function parameter
+     *
+     * @return The function parameter object
+     */
+    public static FunctionParameterFunctionSequenceType optManyFunParam(
+            final String name,
+            final FunctionParameterSequenceType[] parameters,
+            final FunctionReturnSequenceType returnType,
+            final String description
+    ) {
+        return new FunctionParameterFunctionSequenceType(name, parameters, returnType, Cardinality.ZERO_OR_MORE, description);
     }
 
     /**
