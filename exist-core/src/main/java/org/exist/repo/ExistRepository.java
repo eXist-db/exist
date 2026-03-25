@@ -337,6 +337,48 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         return modules;
     }
 
+    public List<URI> getXQueryModules() {
+        final List<URI> modules = new ArrayList<>();
+        for (final Packages pp : myParent.listPackages()) {
+            final Package pkg = pp.latest();
+            // 1. XQuery modules declared in exist.xml
+            final ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
+            if (info != null) {
+                modules.addAll(info.getXQueryModules());
+            }
+            // 2. XQuery modules declared in expath-pkg.xml (standard EXPath components)
+            final FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
+            final Path pkgDescriptor = resolver.resolveResourceAsFile("expath-pkg.xml");
+            if (pkgDescriptor != null && Files.exists(pkgDescriptor)) {
+                try {
+                    final javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+                    dbf.setNamespaceAware(true);
+                    final Document doc = dbf.newDocumentBuilder().parse(pkgDescriptor.toFile());
+                    final org.w3c.dom.NodeList xqueryElements = doc.getElementsByTagNameNS(
+                            "http://expath.org/ns/pkg", "xquery");
+                    for (int i = 0; i < xqueryElements.getLength(); i++) {
+                        final org.w3c.dom.Element xquery = (org.w3c.dom.Element) xqueryElements.item(i);
+                        final org.w3c.dom.NodeList nsElements = xquery.getElementsByTagNameNS(
+                                "http://expath.org/ns/pkg", "namespace");
+                        for (int j = 0; j < nsElements.getLength(); j++) {
+                            final String ns = nsElements.item(j).getTextContent().trim();
+                            if (!ns.isEmpty()) {
+                                try {
+                                    modules.add(new URI(ns));
+                                } catch (final URISyntaxException e) {
+                                    LOG.debug("Invalid namespace URI in expath-pkg.xml: {}", ns);
+                                }
+                            }
+                        }
+                    }
+                } catch (final Exception e) {
+                    LOG.debug("Error parsing expath-pkg.xml for package {}: {}", pkg.getName(), e.getMessage());
+                }
+            }
+        }
+        return modules;
+    }
+
     public static Path getRepositoryDir(final Configuration config) throws IOException {
         final Path dataDir = Optional.ofNullable((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
                         .orElse(Path.of(NativeBroker.DEFAULT_DATA_DIR));
