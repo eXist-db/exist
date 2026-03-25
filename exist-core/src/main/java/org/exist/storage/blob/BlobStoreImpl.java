@@ -327,12 +327,14 @@ public class BlobStoreImpl implements BlobStore {
                 this::abnormalPersistentWriterShutdown);
         this.persistentWriterThread = new Thread(blobStoreThreadGroup, persistentWriter,
                 nameInstanceThread(database, "blob-store.persistent-writer"));
+        persistentWriterThread.setDaemon(true);
         persistentWriterThread.start();
 
         // startup the blob vacuum thread
         this.blobVacuum = new BlobVacuum(vacuumQueue);
         this.blobVacuumThread = new Thread(blobStoreThreadGroup, blobVacuum,
                 nameInstanceThread(database, "blob-store.vacuum"));
+        blobVacuumThread.setDaemon(true);
         blobVacuumThread.start();
 
         // we are now open!
