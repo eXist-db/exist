@@ -535,16 +535,13 @@ public interface TransactionTestDSL {
                     Thread.sleep(50);
                 }
             } catch (final ExecutionException | InterruptedException e) {
-                // if we get to here then t1Result or t2Result has thrown an exception
-
-                // force shutdown of transaction threads
-
-                t2ExecutorService.shutdownNow();
-                t1ExecutorService.shutdownNow();
-
                 //TODO(AR) rather than working with exceptions, it would be better to encapsulate them in a similar way to working on an empty sequence, e.g. could use Either<L,R>???
 
                 throw e;
+            } finally {
+                // always shutdown executor services to prevent thread leaks
+                t1ExecutorService.shutdownNow();
+                t2ExecutorService.shutdownNow();
             }
         }
     }
