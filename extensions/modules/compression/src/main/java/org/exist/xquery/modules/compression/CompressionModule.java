@@ -21,30 +21,35 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.dom.QName;
-import org.exist.xquery.*;
+import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.FunctionDSL;
+import org.exist.xquery.FunctionDef;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
 /**
  * XQuery Extension module for compression and de-compression functions
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @author ljo
  */
 public class CompressionModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/compression";
 
-    public final static String PREFIX = "compression";
-    public final static String INCLUSION_DATE = "2007-07-10";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
-
-    private final static FunctionDef[] functions = functionDefs(
+    public static final String PREFIX = "compression";
+    public static final String INCLUSION_DATE = "2007-07-10";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
+    static final ErrorCodes.ErrorCode ARCHIVE_EXIT_ATTACK = new CompressionModuleErrorCode("archive-exit-attack", "The archive likely contains an exit attack, whereby a file extraction tries to escape the destination path.");
+    private static final FunctionDef[] functions = functionDefs(
             functionDefs(ZipFunction.class,
                     ZipFunction.signatures[0],
                     ZipFunction.signatures[1],
@@ -93,6 +98,14 @@ public class CompressionModule extends AbstractInternalModule {
         super(functions, parameters);
     }
 
+    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
+        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
+    }
+
+    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
+        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
+    }
+
     @Override
     public String getNamespaceURI() {
         return NAMESPACE_URI;
@@ -111,19 +124,9 @@ public class CompressionModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
-    static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
-        return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
-    }
-
-    static FunctionSignature[] functionSignatures(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType[][] variableParamTypes) {
-        return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
-    }
-
     static class CompressionModuleErrorCode extends ErrorCodes.ErrorCode {
         private CompressionModuleErrorCode(final String code, final String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
         }
     }
-
-    static final ErrorCodes.ErrorCode ARCHIVE_EXIT_ATTACK = new CompressionModuleErrorCode("archive-exit-attack", "The archive likely contains an exit attack, whereby a file extraction tries to escape the destination path.");
 }

@@ -21,93 +21,86 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-
-import org.exist.dom.QName;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+
 /**
  * Compresses a sequence of resources and/or collections into a Tar file
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.0
  */
-public class TarFunction extends AbstractCompressFunction
-{
+public class TarFunction extends AbstractCompressFunction {
     private final static QName TAR_FUNCTION_NAME = new QName("tar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
     private final static String TAR_FUNCTION_DESCRIPTION = "Tars nodes, resources and collections.";
 
 
-    public final static FunctionSignature signatures[] = {
+    public final static FunctionSignature[] signatures = {
 
-        new FunctionSignature(
-            TAR_FUNCTION_NAME,
-            TAR_FUNCTION_DESCRIPTION,
-            new SequenceType[] {
-               SOURCES_PARAM,
-               COLLECTION_HIERARCHY_PARAM,
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)
-        ),
+            new FunctionSignature(
+                    TAR_FUNCTION_NAME,
+                    TAR_FUNCTION_DESCRIPTION,
+                    new SequenceType[]{
+                            SOURCES_PARAM,
+                            COLLECTION_HIERARCHY_PARAM,
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)
+            ),
 
-        new FunctionSignature(
-            TAR_FUNCTION_NAME,
-            TAR_FUNCTION_DESCRIPTION,
-            new SequenceType[] {
-                SOURCES_PARAM,
-                COLLECTION_HIERARCHY_PARAM,
-                STRIP_PREFIX_PARAM
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
+            new FunctionSignature(
+                    TAR_FUNCTION_NAME,
+                    TAR_FUNCTION_DESCRIPTION,
+                    new SequenceType[]{
+                            SOURCES_PARAM,
+                            COLLECTION_HIERARCHY_PARAM,
+                            STRIP_PREFIX_PARAM
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE)),
 
-        new FunctionSignature(
-            TAR_FUNCTION_NAME,
-            TAR_FUNCTION_DESCRIPTION,
-            new SequenceType[] {
-                SOURCES_PARAM,
-                COLLECTION_HIERARCHY_PARAM,
-                STRIP_PREFIX_PARAM,
-				ENCODING_PARAM
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
+            new FunctionSignature(
+                    TAR_FUNCTION_NAME,
+                    TAR_FUNCTION_DESCRIPTION,
+                    new SequenceType[]{
+                            SOURCES_PARAM,
+                            COLLECTION_HIERARCHY_PARAM,
+                            STRIP_PREFIX_PARAM,
+                            ENCODING_PARAM
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_MORE))
     };
 
-    public TarFunction(XQueryContext context, FunctionSignature signature)
-    {
+    public TarFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
     @Override
-    protected void closeEntry(Object os) throws IOException
-    {
-		((TarArchiveOutputStream) os).closeArchiveEntry();
+    protected void closeEntry(final Object os) throws IOException {
+        ((TarArchiveOutputStream) os).closeArchiveEntry();
     }
 
     @Override
-    protected Object newEntry(String name)
-    {
-            return new TarArchiveEntry(name);
+    protected Object newEntry(final String name) {
+        return new TarArchiveEntry(name);
     }
 
     @Override
-    protected void putEntry(Object os, Object entry) throws IOException
-    {
-		((TarArchiveOutputStream) os).putArchiveEntry((TarArchiveEntry) entry);
+    protected void putEntry(final Object os, final Object entry) throws IOException {
+        ((TarArchiveOutputStream) os).putArchiveEntry((TarArchiveEntry) entry);
     }
 
     @Override
-    protected OutputStream stream(final UnsynchronizedByteArrayOutputStream baos, final Charset encoding)
-    {
+    protected OutputStream stream(final UnsynchronizedByteArrayOutputStream baos, final Charset encoding) {
         return new TarArchiveOutputStream(baos, encoding.name());
-    }	
+    }
 }

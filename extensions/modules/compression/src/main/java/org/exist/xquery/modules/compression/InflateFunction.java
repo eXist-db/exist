@@ -21,12 +21,8 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.IOException;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
-
-import org.exist.dom.QName;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -40,59 +36,60 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.io.IOException;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
+
 
 /**
  * Inflate uncompression
- * 
+ *
  * @author <a href="mailto:olaf@existsolutions.com">Olaf Schreck</a>
  * @version 1.0
  */
-public class InflateFunction extends BasicFunction
-{
+public class InflateFunction extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-            "Inflate data (RFC 1950)",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress.")
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
-        ),
-        new FunctionSignature(
-            new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-            "Inflate data (RFC 1951)",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress."),
-                new FunctionParameterSequenceType("raw", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If true, expect raw deflate data that is not wrapped inside zlib header and checksum.")
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
-        )
+    public final static FunctionSignature[] signatures = {
+            new FunctionSignature(
+                    new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+                    "Inflate data (RFC 1950)",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress.")
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+            ),
+            new FunctionSignature(
+                    new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+                    "Inflate data (RFC 1951)",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("inflate-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The inflate data to uncompress."),
+                            new FunctionParameterSequenceType("raw", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If true, expect raw deflate data that is not wrapped inside zlib header and checksum.")
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+            )
     };
 
-    public InflateFunction(XQueryContext context, FunctionSignature signature)
-    {
-            super(context, signature);
+    public InflateFunction(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // is there some data to inflate?
-        if(args[0].isEmpty())
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
-	boolean rawflag = false;
-        if(args.length > 1 && !args[1].isEmpty())
-	    rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+        boolean rawflag = false;
+        if (args.length > 1 && !args[1].isEmpty())
+            rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
 
-	Inflater infl = new Inflater(rawflag);
+        final Inflater infl = new Inflater(rawflag);
 
         // uncompress the data
-        try(final InflaterInputStream iis = new InflaterInputStream(bin.getInputStream(), infl);
-                final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+        try (final InflaterInputStream iis = new InflaterInputStream(bin.getInputStream(), infl);
+             final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             int read = -1;
             final byte[] b = new byte[4096];
             while ((read = iis.read(b)) != -1) {
@@ -100,7 +97,7 @@ public class InflateFunction extends BasicFunction
             }
 
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }
