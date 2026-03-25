@@ -493,29 +493,29 @@ public interface TransactionTestDSL {
 
             final ThreadGroup transactionsThreadGroup = newInstanceSubThreadGroup(brokerPool, "transactionTestDSL");
 
-            // submit t1
-            final ExecutorService t1ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-1-schedule")));
-            final Future<U1> t1Result = t1ExecutorService.submit(() -> {
-                try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-                     final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
-                    final U1 result = lastOperation.t1_state.apply(broker, txn, executionListener, null);
-                    txn.commit();
-                    return result;
-                }
-            });
+            // submit t1 and t2 — use try-with-resources to ensure executor shutdown (Java 19+)
+            try (final ExecutorService t1ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-1-schedule")));
+                 final ExecutorService t2ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-2-schedule")))) {
 
-            // submit t2
-            final ExecutorService t2ExecutorService = Executors.newSingleThreadExecutor(r -> new Thread(transactionsThreadGroup, r, nameInstanceThread(brokerPool, "transaction-test-dsl.transaction-2-schedule")));
-            final Future<U2> t2Result = t2ExecutorService.submit(() -> {
-                try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-                     final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
-                    final U2 result = lastOperation.t2_state.apply(broker, txn, executionListener, null);
-                    txn.commit();
-                    return result;
-                }
-            });
+                final Future<U1> t1Result = t1ExecutorService.submit(() -> {
+                    try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+                         final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
+                        final U1 result = lastOperation.t1_state.apply(broker, txn, executionListener, null);
+                        txn.commit();
+                        return result;
+                    }
+                });
 
-            try {
+                final Future<U2> t2Result = t2ExecutorService.submit(() -> {
+                    try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+                         final Txn txn = brokerPool.getTransactionManager().beginTransaction()) {
+                        final U2 result = lastOperation.t2_state.apply(broker, txn, executionListener, null);
+                        txn.commit();
+                        return result;
+                    }
+                });
+
+                //TODO(AR) rather than working with exceptions, it would be better to encapsulate them in a similar way to working on an empty sequence, e.g. could use Either<L,R>???
 
                 U1 u1 = null;
                 U2 u2 = null;
@@ -534,14 +534,6 @@ public interface TransactionTestDSL {
 
                     Thread.sleep(50);
                 }
-            } catch (final ExecutionException | InterruptedException e) {
-                //TODO(AR) rather than working with exceptions, it would be better to encapsulate them in a similar way to working on an empty sequence, e.g. could use Either<L,R>???
-
-                throw e;
-            } finally {
-                // always shutdown executor services to prevent thread leaks
-                t1ExecutorService.shutdownNow();
-                t2ExecutorService.shutdownNow();
             }
         }
     }
