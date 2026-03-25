@@ -37,12 +37,15 @@ import com.ibm.icu.text.Collator;
 import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
 import io.lacuna.bifurcan.LinearMap;
+import io.lacuna.bifurcan.Maps;
 import io.lacuna.bifurcan.Map;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.ToLongFunction;
@@ -59,6 +62,10 @@ public class MapType extends AbstractMapType {
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
+
+    // XQ4: insertion-order tracking for ordered maps
+    @Nullable
+    private List<AtomicValue> insertionOrder;
 
     /**
      * The type of the keys in the map,
@@ -206,7 +213,22 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(getExpression(), context, newMap.forked(), prevType);
+        final MapType result = new MapType(getExpression(), context, newMap.forked(), prevType);
+        // Propagate insertion order from this map + others
+        if (insertionOrder != null) {
+            final List<AtomicValue> newOrder = new ArrayList<>(insertionOrder);
+            for (final AbstractMapType other : others) {
+                if (other instanceof MapType otherMap && otherMap.insertionOrder != null) {
+                    for (final AtomicValue key : otherMap.insertionOrder) {
+                        if (!newOrder.contains(key)) {
+                            newOrder.add(key);
+                        }
+                    }
+                }
+            }
+            result.setInsertionOrder(newOrder);
+        }
+        return result;
     }
 
     @Override
@@ -263,7 +285,15 @@ public class MapType extends AbstractMapType {
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
         final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
-        return new MapType(getExpression(), this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
+        final MapType result = new MapType(getExpression(), this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
+        if (insertionOrder != null) {
+            final List<AtomicValue> newOrder = new ArrayList<>(insertionOrder);
+            if (!map.contains(key)) {
+                newOrder.add(key);
+            }
+            result.setInsertionOrder(newOrder);
+        }
+        return result;
     }
 
     @Override
@@ -298,11 +328,25 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Sequence keys() {
+        if (insertionOrder != null) {
+            final ArrayListValueSequence seq = new ArrayListValueSequence(insertionOrder.size());
+            for (final AtomicValue key : insertionOrder) {
+                seq.add(key);
+            }
+            return seq;
+        }
         final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
         for (final AtomicValue key: map.keys()) {
             seq.add(key);
         }
         return seq;
+    }
+
+    /**
+     * Set insertion order tracking for XQ4 ordered maps.
+     */
+    public void setInsertionOrder(@Nullable final List<AtomicValue> order) {
+        this.insertionOrder = order;
     }
 
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) {
@@ -315,7 +359,15 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(getExpression(), context, newMap.forked(), keyType);
+        final MapType result = new MapType(getExpression(), context, newMap.forked(), keyType);
+        if (insertionOrder != null) {
+            final List<AtomicValue> newOrder = new ArrayList<>(insertionOrder);
+            for (final AtomicValue key : keysAtomicValues) {
+                newOrder.remove(key);
+            }
+            result.setInsertionOrder(newOrder);
+        }
+        return result;
     }
 
     @Override
@@ -325,6 +377,11 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
+        if (insertionOrder != null) {
+            return insertionOrder.stream()
+                    .map(key -> (IEntry<AtomicValue, Sequence>) new Maps.Entry<>(key, map.get(key, Sequence.EMPTY_SEQUENCE)))
+                    .iterator();
+        }
         return map.iterator();
     }
 
