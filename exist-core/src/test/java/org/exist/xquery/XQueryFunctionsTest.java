@@ -393,7 +393,6 @@ public class XQueryFunctionsTest {
         assertEquals("<root/>", r);
     }
 
-    @Ignore("Context item not propagated into util:eval(), see #6159")
     @Test
     public void utilEval1() throws XMLDBException {
         String query = "<a><b/></a>/util:eval('*')";

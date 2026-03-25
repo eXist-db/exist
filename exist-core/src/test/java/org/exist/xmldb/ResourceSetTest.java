@@ -23,7 +23,10 @@ package org.exist.xmldb;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 
@@ -68,13 +71,12 @@ public class ResourceSetTest {
 		service.removeCollection(TEST_COLLECTION);
 	}
 
-	@Ignore("ResourceSet intersection returns wrong count, see #6157")
     @Test
 	public void intersection1() throws XMLDBException {
 		final String xpathPrefix = "doc('/db/" + TEST_COLLECTION + "/shakes.xsl')/*/*";
 		final String query1 = xpathPrefix + "[position() >= 5 ]";
 		final String query2 = xpathPrefix + "[position() <= 10]";
-		final int expected = 87;
+		final int expected = 6;
 
         final XPathQueryService service = testCollection.getService(XPathQueryService.class);
 
