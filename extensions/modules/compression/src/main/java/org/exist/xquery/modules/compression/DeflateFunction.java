@@ -89,7 +89,7 @@ public class DeflateFunction extends BasicFunction {
         if (args.length > 1 && !args[1].isEmpty())
             rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
 
-        final Deflater defl = new Deflater(java.util.zip.Deflater.DEFAULT_COMPRESSION, rawflag);
+        final Deflater defl = new Deflater(Deflater.DEFAULT_COMPRESSION, rawflag);
 
         // deflate the data
         try (final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get();
