@@ -95,7 +95,7 @@ jobs:
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Maven Integration Tests
         if: matrix.test-type == 'integration'
-        timeout-minutes: 45
+        timeout-minutes: 30
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -DskipUnitTests=true -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (ubuntu unit only)
         if: matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'

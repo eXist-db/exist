@@ -842,6 +842,10 @@
                               However it can make it hard to diagnose problems if tests leak state; If you experience
                               such a problem you may want to set it to `false` whilst debugging -->
                         <reuseForks>true</reuseForks>
+                        <!-- Kill forked JVMs that hang (e.g. DeadlockIT, MoveResourceTest).
+                             10 minutes is generous; clean runs complete in ~3.5 minutes. -->
+                        <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+                        <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
                         <argLine>@{jacocoArgLine} --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding}</argLine>
                         <systemPropertyVariables>
                             <user.country>UK</user.country>
@@ -863,6 +867,10 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>3.5.5</version>
+                    <configuration>
+                        <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+                        <forkedProcessExitTimeoutInSeconds>60</forkedProcessExitTimeoutInSeconds>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
