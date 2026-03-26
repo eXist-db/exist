@@ -447,13 +447,21 @@ public class BlobStoreImpl implements BlobStore {
             if (persistentWriter != null) {
                 persistQueue.put(PersistentWriter.POISON_PILL);
             }
-            persistentWriterThread.join();
+            persistentWriterThread.join(30_000);
+            if (persistentWriterThread.isAlive()) {
+                LOG.warn("BlobStore PersistentWriter did not terminate within 30s, interrupting");
+                persistentWriterThread.interrupt();
+                persistentWriterThread.join(5_000);
+            }
 
             // shutdown the vacuum
             if (blobVacuum != null) {
                 blobVacuumThread.interrupt();
             }
-            blobVacuumThread.join();
+            blobVacuumThread.join(30_000);
+            if (blobVacuumThread.isAlive()) {
+                LOG.warn("BlobStore BlobVacuum did not terminate within 30s");
+            }
         } catch (final InterruptedException e) {
             // Restore the interrupted status
             Thread.currentThread().interrupt();
@@ -523,7 +531,10 @@ public class BlobStoreImpl implements BlobStore {
             if (blobVacuum != null) {
                 blobVacuumThread.interrupt();
             }
-            blobVacuumThread.join();
+            blobVacuumThread.join(30_000);
+            if (blobVacuumThread.isAlive()) {
+                LOG.warn("BlobStore BlobVacuum did not terminate within 30s during abnormal shutdown");
+            }
 
         } catch (final InterruptedException e) {
             // Restore the interrupted status
