@@ -399,9 +399,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
             closeStartTag(false);
             final Writer writer = getWriter();
 
-            // HTML5 uses <meta charset="UTF-8">
-            // HTML4/XHTML uses <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            if (isHtml5Version()) {
+            // HTML5 method uses <meta charset="UTF-8">
+            // XHTML and HTML4 use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            if (isHtmlMethod() && isHtml5Version()) {
                 writer.write("<meta charset=\"");
                 writer.write(encoding);
                 writer.write("\">");
