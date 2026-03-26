@@ -222,6 +222,27 @@ public class JSON extends BasicFunction {
         }
         try {
             String url = href.getStringValue();
+
+            // Check dynamically available text resources first (XQTS runner registers these)
+            try (final java.io.Reader dynReader = context.getDynamicallyAvailableTextResource(
+                    url, java.nio.charset.StandardCharsets.UTF_8)) {
+                if (dynReader != null) {
+                    final StringBuilder sb = new StringBuilder();
+                    final char[] buf = new char[4096];
+                    int read;
+                    while ((read = dynReader.read(buf)) > 0) {
+                        sb.append(buf, 0, read);
+                    }
+                    try (final JsonParser parser = factory.createParser(sb.toString())) {
+                        final Item result = readValue(context, parser, handleDuplicates);
+                        return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+                    } catch (final java.io.IOException jsonErr) {
+                        throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
+                    }
+                }
+            } catch (final java.io.IOException e) {
+                // Not a dynamic resource, fall through to URL resolution
+            }
             boolean resolvedFromBaseUri = false;
             if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
                 // Relative URI: resolve against static base URI
