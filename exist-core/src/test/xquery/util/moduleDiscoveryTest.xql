@@ -26,61 +26,70 @@ declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 (: Built-in Java modules should be in registered-modules :)
 declare
-    %test:assertTrue
+    %test:assertEquals("true")
 function mdt:util-is-registered() {
     "http://exist-db.org/xquery/util" = util:registered-modules()
 };
 
-(: Mapped XQuery modules should now also be in registered-modules :)
+(: Every mapped XQuery module should also appear in registered-modules :)
 declare
     %test:assertTrue
 function mdt:mapped-modules-in-registered() {
     every $uri in util:mapped-modules() satisfies $uri = util:registered-modules()
 };
 
-(: registered-modules should contain no duplicates :)
+(: registered-modules should contain no duplicates.
+ : Returns the number of duplicate entries (0 = pass). :)
 declare
-    %test:assertTrue
+    %test:assertEquals(0)
 function mdt:no-duplicates() {
     let $modules := util:registered-modules()
-    return count($modules) eq count(distinct-values($modules))
+    return count($modules) - count(distinct-values($modules))
 };
 
-(: registered-modules-info returns maps with required keys :)
+(: Every module info map must have uri, prefix, and source keys.
+ : Returns any maps that are missing required keys. :)
 declare
-    %test:assertTrue
-function mdt:info-has-required-keys() {
+    %test:assertEmpty
+function mdt:info-missing-keys() {
     let $info := util:registered-modules-info()
-    return every $m in $info satisfies
-        map:contains($m, "uri") and map:contains($m, "prefix") and map:contains($m, "source")
+    return $info[not(map:contains(., "uri") and map:contains(., "prefix") and map:contains(., "source"))]
 };
 
-(: registered-modules-info sources are valid :)
+(: Every module info source must be "built-in", "package", or "mapped".
+ : Returns any maps with invalid source values. :)
 declare
-    %test:assertTrue
-function mdt:info-valid-sources() {
+    %test:assertEmpty
+function mdt:info-invalid-sources() {
     let $info := util:registered-modules-info()
-    return every $m in $info satisfies
-        $m?source = ("built-in", "package", "mapped")
+    return $info[not(map:get(., "source") = ("built-in", "package", "mapped"))]
 };
 
-(: registered-modules-info URIs should match registered-modules :)
+(: Every URI in registered-modules should appear in registered-modules-info.
+ : Returns any registered URIs missing from info. :)
 declare
-    %test:assertTrue
-function mdt:info-uris-match-registered() {
+    %test:assertEmpty
+function mdt:registered-not-in-info() {
     let $registered := util:registered-modules()
-    let $info-uris := util:registered-modules-info() ! ?uri
-    return
-        (every $uri in $registered satisfies $uri = $info-uris)
-        and
-        (every $uri in $info-uris satisfies $uri = $registered)
+    let $info-uris := for $m in util:registered-modules-info() return map:get($m, "uri")
+    return $registered[not(. = $info-uris)]
 };
 
-(: Built-in modules should have source "built-in" :)
+(: Every URI in registered-modules-info should appear in registered-modules.
+ : Returns any info URIs missing from registered. :)
 declare
-    %test:assertTrue
+    %test:assertEmpty
+function mdt:info-not-in-registered() {
+    let $registered := util:registered-modules()
+    let $info-uris := for $m in util:registered-modules-info() return map:get($m, "uri")
+    return $info-uris[not(. = $registered)]
+};
+
+(: The util module should have source "built-in" :)
+declare
+    %test:assertEquals("built-in")
 function mdt:util-is-built-in() {
     let $info := util:registered-modules-info()
-    let $util := $info[?uri = "http://exist-db.org/xquery/util"]
-    return $util?source = "built-in"
+    let $util := $info[map:get(., "uri") = "http://exist-db.org/xquery/util"]
+    return map:get($util, "source")
 };
