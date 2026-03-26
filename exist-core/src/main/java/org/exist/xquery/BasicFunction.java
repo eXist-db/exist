@@ -21,8 +21,11 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 import org.exist.xquery.util.ExpressionDumper;
 
 /**
@@ -91,4 +94,39 @@ public abstract class BasicFunction extends Function {
      * @return The result of the XPath function
      */
     public abstract Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException;
+
+    /**
+     * Validates that each argument is compatible with the declared parameter type
+     * of a function reference. Useful for any built-in function that accepts
+     * callback functions (higher-order functions).
+     *
+     * @param caller the calling expression (for error reporting)
+     * @param ref    the function reference whose parameter types to check against
+     * @param args   the actual arguments to validate
+     * @throws XPathException with XPTY0004 if a type mismatch is detected
+     */
+    protected static void checkFunctionParameterTypes(final Expression caller, final FunctionReference ref, final Sequence[] args) throws XPathException {
+        final SequenceType[] paramTypes = ref.getSignature().getArgumentTypes();
+        if (paramTypes == null) {
+            return;
+        }
+        for (int i = 0; i < args.length && i < paramTypes.length; i++) {
+            final SequenceType expected = paramTypes[i];
+            final int expectedType = expected.getPrimaryType();
+            // Skip check if the declared type is item() — accepts anything
+            if (expectedType == Type.ITEM) {
+                continue;
+            }
+            final Sequence arg = args[i];
+            if (arg.isEmpty()) {
+                continue;
+            }
+            if (!expected.checkType(arg)) {
+                throw new XPathException(caller, ErrorCodes.XPTY0004,
+                        "Invalid type for parameter " + (i + 1) + " of higher-order function call. " +
+                                "Expected " + Type.getTypeName(expectedType) +
+                                ", got " + Type.getTypeName(arg.getItemType()));
+            }
+        }
+    }
 }
