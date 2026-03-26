@@ -88,7 +88,7 @@ public class GetDataTest extends RESTTest {
         testRequest(post, wrapInElement("").getBytes());
     }
     
-    @Ignore("Jetty 12 HTTP/0.9 rejection leaves connection in bad state for subsequent tests")
+    @Ignore("Jetty 12 rejects HTTP/0.9 but corrupts the Apache HttpClient connection pool, causing NoHttpResponseException in subsequent tests")
     @Test
     public void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
@@ -101,7 +101,7 @@ public class GetDataTest extends RESTTest {
         assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
     }
 
-    @Ignore("Jetty 12 does not support HTTP/1.0 requests")
+    @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
     @Test
     public void retrieveBinaryHttp10() throws IOException {
         final String testData = "12345";
@@ -137,7 +137,7 @@ public class GetDataTest extends RESTTest {
         }
     }
 
-    @Ignore("Jetty 12 HTTP/0.9 rejection leaves connection in bad state for subsequent tests")
+    @Ignore("Jetty 12 rejects HTTP/0.9 but corrupts the Apache HttpClient connection pool, causing NoHttpResponseException in subsequent tests")
     @Test
     public void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
@@ -150,7 +150,7 @@ public class GetDataTest extends RESTTest {
         assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
     }
 
-    @Ignore("Jetty 12 does not support HTTP/1.0 requests")
+    @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
     @Test
     public void retrieveXmlHttp10() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
