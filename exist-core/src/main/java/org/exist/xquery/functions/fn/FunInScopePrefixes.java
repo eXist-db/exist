@@ -79,6 +79,10 @@ public class FunInScopePrefixes extends BasicFunction {
         final ValueSequence result = new ValueSequence();
 
         for (final String prefix : prefixes.keySet()) {
+            // Per XQuery spec §14.2: "xmlns" must not be included in the result
+            if ("xmlns".equals(prefix)) {
+                continue;
+            }
             //The predefined namespaces (e.g. "exist" for temporary nodes) could have been removed from the static context
             if (!(context.getURIForPrefix(prefix) == null &&
                     ("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
