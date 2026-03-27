@@ -634,6 +634,14 @@ public class XMLWriter implements SerializerWriter {
     }
 
     /**
+     * Whether &amp; before { should be escaped. HTML output returns false
+     * per W3C HTML serialization spec. XML output returns true (always escape &amp;).
+     */
+    protected boolean escapeAmpersandBeforeBrace() {
+        return true;
+    }
+
+    /**
      * Whether the given character needs escaping. Subclasses can override
      * to suppress escaping for specific contexts (e.g., HTML raw text elements).
      *
@@ -681,7 +689,12 @@ public class XMLWriter implements SerializerWriter {
                         writer.write("&gt;");
                         break;
                     case '&':
-                        writer.write("&amp;");
+                        // HTML spec: & before { in attribute values should not be escaped
+                        if (inAttribute && i + 1 < len && s.charAt(i + 1) == '{' && !escapeAmpersandBeforeBrace()) {
+                            writer.write('&');
+                        } else {
+                            writer.write("&amp;");
+                        }
                         break;
                     case '\r':
                         writer.write("&#xD;");

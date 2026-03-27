@@ -376,6 +376,12 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     @Override
+    protected boolean escapeAmpersandBeforeBrace() {
+        // HTML spec: & before { in attribute values should not be escaped
+        return false;
+    }
+
+    @Override
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
     	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
     			&& inlineTags.contains(localName);
