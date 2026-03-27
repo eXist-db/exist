@@ -426,11 +426,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        throw new XPathException(getExpression(), "multiplication is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "multiplication is not supported for type " + Type.getTypeName(getType()));
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
-        throw new XPathException(getExpression(), "division is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "division is not supported for type " + Type.getTypeName(getType()));
     }
 
     public int conversionPreference(Class<?> javaClass) {
