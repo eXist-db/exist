@@ -413,13 +413,21 @@ public class SerializerUtils {
                     qnamesValue.append(' ');
                 }
 
-                final String[] prefixAndLocal = qnameStr.split(":");
-                if (prefixAndLocal.length == 1) {
-                    qnamesValue.append("{}").append(prefixAndLocal[0]);
-                } else if (prefixAndLocal.length == 2) {
-                    final String prefix = prefixAndLocal[0];
-                    final String ns = prefixToNs.apply(prefix);
-                    qnamesValue.append('{').append(ns).append('}').append(prefixAndLocal[1]);
+                // Handle Q{ns}local (URIQualifiedName) — pass through as {ns}local
+                if (qnameStr.startsWith("Q{") && qnameStr.contains("}")) {
+                    final int closeBrace = qnameStr.indexOf('}');
+                    final String ns = qnameStr.substring(2, closeBrace);
+                    final String local = qnameStr.substring(closeBrace + 1);
+                    qnamesValue.append('{').append(ns).append('}').append(local);
+                } else {
+                    final String[] prefixAndLocal = qnameStr.split(":");
+                    if (prefixAndLocal.length == 1) {
+                        qnamesValue.append("{}").append(prefixAndLocal[0]);
+                    } else if (prefixAndLocal.length == 2) {
+                        final String prefix = prefixAndLocal[0];
+                        final String ns = prefixToNs.apply(prefix);
+                        qnamesValue.append('{').append(ns).append('}').append(prefixAndLocal[1]);
+                    }
                 }
             }
 

@@ -669,6 +669,9 @@ public class XMLWriter implements SerializerWriter {
                     }
                 } else if(!charSet.inCharacterSet(ch)) {
                     break;
+                } else if(ch >= 0x7F && ch <= 0x9F) {
+                    // Control chars 0x7F-0x9F must be serialized as character references
+                    break;
                 } else {
                     i++;
                 }
