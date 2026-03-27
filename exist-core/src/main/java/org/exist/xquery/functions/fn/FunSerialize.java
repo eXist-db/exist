@@ -35,6 +35,8 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -79,6 +81,9 @@ public class FunSerialize extends BasicFunction {
         } else {
             outputProperties = new Properties();
         }
+
+        // SEPM0009: validate parameter consistency before serializing
+        validateSerializationParams(outputProperties);
 
         try(final StringWriter writer = new StringWriter()) {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
@@ -127,6 +132,30 @@ public class FunSerialize extends BasicFunction {
                     && "serialization-parameters".equals(element.getLocalName());
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Validate serialization parameter consistency per W3C Serialization 3.1.
+     * Throws SEPM0009 if omit-xml-declaration=yes conflicts with standalone or
+     * version+doctype-system.
+     */
+    private void validateSerializationParams(final Properties props) throws XPathException {
+        final String omitXmlDecl = props.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        if ("yes".equals(omitXmlDecl)) {
+            // SEPM0009: standalone must be omit (absent) when omit-xml-declaration=yes
+            final String standalone = props.getProperty(OutputKeys.STANDALONE);
+            if (standalone != null) {
+                throw new XPathException(this, ErrorCodes.SEPM0009,
+                        "omit-xml-declaration is yes but standalone is set to '" + standalone + "'");
+            }
+            // SEPM0009: version != 1.0 with doctype-system when omit-xml-declaration=yes
+            final String version = props.getProperty(OutputKeys.VERSION);
+            final String doctypeSystem = props.getProperty(OutputKeys.DOCTYPE_SYSTEM);
+            if (version != null && !"1.0".equals(version) && doctypeSystem != null) {
+                throw new XPathException(this, ErrorCodes.SEPM0009,
+                        "omit-xml-declaration is yes with version '" + version + "' and doctype-system set");
+            }
         }
     }
 

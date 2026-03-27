@@ -128,7 +128,12 @@ public class XHTML5Writer extends XHTMLWriter {
             return;
         }
 
-        documentType("html", null, null);
+        // Pass through doctype-public and doctype-system if set
+        final String publicId = outputProperties != null
+                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC) : null;
+        final String systemId = outputProperties != null
+                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM) : null;
+        documentType("html", publicId, systemId);
         doctypeWritten = true;
     }
 }
