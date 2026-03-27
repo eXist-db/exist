@@ -114,7 +114,7 @@ public class XMLWriter implements SerializerWriter {
         Arrays.fill(textSpecialChars, false);
         textSpecialChars['<'] = true;
         textSpecialChars['>'] = true;
-        // textSpecialChars['\r'] = true;
+                textSpecialChars['\r'] = true;
         textSpecialChars['&'] = true;
 
         attrSpecialChars = new boolean[128];
@@ -671,6 +671,9 @@ public class XMLWriter implements SerializerWriter {
                     break;
                 } else if(ch >= 0x7F && ch <= 0x9F) {
                     // Control chars 0x7F-0x9F must be serialized as character references
+                    break;
+                } else if(ch == 0x2028) {
+                    // LINE SEPARATOR must be serialized as character reference
                     break;
                 } else {
                     i++;
