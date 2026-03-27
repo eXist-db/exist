@@ -134,40 +134,27 @@ public class StringValue extends AtomicValue {
         if (in.isEmpty()) {
             return in.toString();
         }
-        int i = 0;
-        // this method is performance critical, so first test if we need to collapse at all
-        for (; i < in.length(); i++) {
-            final char c = in.charAt(i);
-            if (XMLChar.isSpace(c)) {
-                if (i + 1 < in.length() && XMLChar.isSpace(in.charAt(i + 1))) {
-                    break;
-                }
-            }
-        }
-        if (i == in.length()) {
-            // no whitespace to collapse, just return
-            return in.toString();
-        }
-
-        // start to collapse whitespace
+        // XML Schema "collapse" facet:
+        // 1. Replace #x9, #xA, #xD with #x20
+        // 2. Collapse consecutive #x20 to single #x20
+        // 3. Strip leading and trailing #x20
         final StringBuilder sb = new StringBuilder(in.length());
-        sb.append(in.subSequence(0, i + 1));
-        boolean inWhitespace = true;
-        for (; i < in.length(); i++) {
+        boolean lastWasSpace = true; // treat start as space to strip leading
+        for (int i = 0; i < in.length(); i++) {
             final char c = in.charAt(i);
             if (XMLChar.isSpace(c)) {
-                if (inWhitespace) {
-                    // remove the whitespace
-                } else {
+                if (!lastWasSpace) {
                     sb.append(' ');
-                    inWhitespace = true;
+                    lastWasSpace = true;
                 }
+                // else: skip consecutive whitespace
             } else {
                 sb.append(c);
-                inWhitespace = false;
+                lastWasSpace = false;
             }
         }
-        if (sb.charAt(sb.length() - 1) == ' ') {
+        // Strip trailing space
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
