@@ -88,11 +88,21 @@ public class JSONSerializer {
     }
 
     private void serializeSequence(Sequence sequence, JsonGenerator generator) throws IOException, XPathException, SAXException {
+        serializeSequence(sequence, generator, false);
+    }
+
+    private void serializeSequence(Sequence sequence, JsonGenerator generator, boolean allowMultiItem) throws IOException, XPathException, SAXException {
         if (sequence.isEmpty()) {
             generator.writeNull();
         } else if (sequence.hasOne() && "no".equals(outputProperties.getProperty(EXistOutputKeys.JSON_ARRAY_OUTPUT, "no"))) {
             serializeItem(sequence.itemAt(0), generator);
+        } else if (!allowMultiItem) {
+            // SERE0023: JSON output method cannot serialize a sequence of more than one item
+            // at the top level or as a map entry value
+            throw new SAXException("err:SERE0023 Sequence of " + sequence.getItemCount()
+                    + " items cannot be serialized using the JSON output method");
         } else {
+            // Inside arrays, multi-item sequences become JSON arrays
             generator.writeStartArray();
             for (SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
                 serializeItem(i.nextItem(), generator);
@@ -161,7 +171,8 @@ public class JSONSerializer {
         generator.writeStartArray();
         for (int i = 0; i < array.getSize(); i++) {
             final Sequence member = array.get(i);
-            serializeSequence(member, generator);
+            // Array members can be multi-item sequences — each becomes a nested JSON array
+            serializeSequence(member, generator, true);
         }
         generator.writeEndArray();
     }
@@ -175,7 +186,7 @@ public class JSONSerializer {
                 throw new SAXException("err:SERE0022 Duplicate key '" + key + "' in map and allow-duplicate-names is 'no'");
             }
             generator.writeFieldName(key);
-            serializeSequence(entry.value(), generator);
+            serializeSequence(entry.value(), generator, false);
         }
         generator.writeEndObject();
     }
