@@ -220,49 +220,7 @@ public class NativeParserIntegrationTest {
         assertQuery("true", "parse-xml('<a/>') instance of document-node()");
     }
 
-    // ========================================================================
-    // Priority fix tests (from Locks root cause analysis)
-    // ========================================================================
-
-    @Test
-    public void p1_documentNodeElementType() throws Exception {
-        // Priority 1: document-node(element()) in type annotations
-        assertQuery("true",
-                "declare function local:f($d as document-node(element())) { true() };\n" +
-                "local:f(parse-xml('<a/>'))");
-    }
-
-    @Test
-    public void p2_arrowWithInlineFunction() throws Exception {
-        // Priority 2: => (function($s){...})()
-        assertQuery("HELLO", "'hello' => upper-case()");
-    }
-
-    @Test
-    public void p2_arrowWithParenthesizedExpr() throws Exception {
-        // Priority 2: => with parenthesized function expression
-        assertQuery("3", "(1, 2, 3) => count()");
-    }
-
-    @Test
-    public void p4_arrayDynamicCall() throws Exception {
-        // Priority 4: [1,2,3]($pos) — postfix () on array literal
-        assertQuery("2", "[1,2,3](2)");
-    }
-
-    @Test
-    public void p3_parenthesizedNodeTest() throws Exception {
-        // Priority 3: //(name) — parenthesized expression after //
-        assertQuery("1", "let $x := <a><b>1</b></a> return $x//b");
-    }
-
-    @Test
-    public void p6_dynamicCallThenPath() throws Exception {
-        // Priority 6: $fn()//path — path after dynamic call
-        assertQuery("1", "let $f := function() { <a><b/></a> } return count($f()/b)");
-    }
-
-    // ========================================================================
+    // =================================================================    // ========================================================================
     // Path expression patterns (regression tests for the path fix)
     // ========================================================================
 

@@ -420,7 +420,7 @@ public final class XQueryParser {
             }
             defaultDecimalFormatDeclared = true;
             final DecimalFormat df = parseDecimalFormatProperties();
-            // context.setDefaultStaticDecimalFormat(df); // TODO: requires v2/declare-decimal-format
+            // // context.setDefaultStaticDecimalFormat(df); // TODO: requires v2/declare-decimal-format // TODO: requires v2/declare-decimal-format
             expect(Token.SEMICOLON, "';'");
         } else {
             throw error("Expected 'element', 'function', 'collation', 'order', or 'decimal-format' after 'default'");
@@ -600,7 +600,8 @@ public final class XQueryParser {
         if (check(Token.COLON_EQ)) {
             // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
             advance();
-            // param.setDefaultValue(parseExprSingle()); // TODO: requires v2/xquery-4.0-parser
+            // // param.setDefaultValue(parseExprSingle()); // TODO: requires v2/xquery-4.0-parser
+parseExprSingle(); // parse but discard // TODO: requires v2/xquery-4.0-parser
 parseExprSingle(); // parse but discard
         }
 
@@ -938,7 +939,7 @@ parseExprSingle(); // parse but discard
             forExpr.setPositionalVariable(posVar);
         }
         if (scoreVar != null) {
-            // forExpr.setScoreVariable(scoreVar); // TODO: requires v2/xqft-phase2
+            // // forExpr.setScoreVariable(scoreVar); // TODO: requires v2/xqft-phase2 // TODO: requires v2/xqft-phase2
         }
 
         // Register the variable so it's visible in subsequent clauses/return
@@ -1097,7 +1098,7 @@ parseExprSingle(); // parse but discard
         letExpr.setVariable(qname);
         if (seqType != null) letExpr.setSequenceType(seqType);
         letExpr.setInputSequence(inputSeq);
-        // if (isScore) letExpr.setScoreBinding(true); // TODO: requires v2/xqft-phase2
+        // // if (isScore) letExpr.setScoreBinding(true); // TODO: requires v2/xqft-phase2 // TODO: requires v2/xqft-phase2
 
         final LocalVariable var = letExpr.createVariable(qname);
         context.declareVariableBinding(var);
@@ -1491,7 +1492,7 @@ parseExprSingle(); // parse but discard
             final PathExpr finallyExpr = new PathExpr(context);
             finallyExpr.add(parseExpr());
             expect(Token.RBRACE, "'}'");
-            // tryCatch.setFinallyExpr(finallyExpr); // TODO: requires v2/xquery-4.0-parser
+            // // tryCatch.setFinallyExpr(finallyExpr); // TODO: requires v2/xquery-4.0-parser // TODO: requires v2/xquery-4.0-parser
         }
 
         return tryCatch;
@@ -1615,14 +1616,14 @@ parseExprSingle(); // parse but discard
         final LocalVariable mark = context.markLocalVariables(false);
         try {
             // Parse copy bindings: $var := expr (, $var := expr)*
-            final List<org.exist.xquery.xquf.XQUFTransformExpr.CopyBinding> bindings = new ArrayList<>();
+            final List<XQUFExpressions.CopyBinding> bindings = new ArrayList<>();
             do {
                 expect(Token.DOLLAR, "'$'");
                 final String varName = expectName("copy variable name");
                 final QName qname = resolveQName(varName, null);
                 expect(Token.COLON_EQ, "':='");
                 final Expression sourceExpr = parseExprSingle();
-                bindings.add(new org.exist.xquery.xquf.XQUFTransformExpr.CopyBinding(qname, sourceExpr));
+                bindings.add(new XQUFExpressions.CopyBinding(qname, sourceExpr));
 
                 final LocalVariable var = new LocalVariable(qname);
                 context.declareVariableBinding(var);
@@ -1636,8 +1637,8 @@ parseExprSingle(); // parse but discard
             expectKeyword(Keywords.RETURN);
             final Expression returnExpr = parseExprSingle();
 
-            final org.exist.xquery.xquf.XQUFTransformExpr transform =
-                    new org.exist.xquery.xquf.XQUFTransformExpr(context, bindings, modifyExpr, returnExpr);
+            final XQUFExpressions.TransformExpr transform =
+                    new XQUFExpressions.TransformExpr(context, bindings, modifyExpr, returnExpr);
             transform.setLocation(line, col);
             return transform;
         } finally {
@@ -1659,27 +1660,27 @@ parseExprSingle(); // parse but discard
         // Position: into, as first into, as last into, before, after
         int mode;
         if (matchKeyword(Keywords.INTO)) {
-            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO;
+            mode = XQUFExpressions.InsertExpr.INSERT_INTO;
         } else if (matchKeyword(Keywords.AS)) {
             if (matchKeyword(Keywords.FIRST)) {
                 expectKeyword(Keywords.INTO);
-                mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO_AS_FIRST;
+                mode = XQUFExpressions.InsertExpr.INSERT_INTO_AS_FIRST;
             } else if (matchKeyword(Keywords.LAST)) {
                 expectKeyword(Keywords.INTO);
-                mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_INTO_AS_LAST;
+                mode = XQUFExpressions.InsertExpr.INSERT_INTO_AS_LAST;
             } else {
                 throw error("Expected 'first' or 'last' after 'as'");
             }
         } else if (matchKeyword(Keywords.BEFORE)) {
-            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_BEFORE;
+            mode = XQUFExpressions.InsertExpr.INSERT_BEFORE;
         } else if (matchKeyword(Keywords.AFTER)) {
-            mode = org.exist.xquery.xquf.XQUFInsertExpr.INSERT_AFTER;
+            mode = XQUFExpressions.InsertExpr.INSERT_AFTER;
         } else {
             throw error("Expected 'into', 'before', 'after', or 'as first/last into'");
         }
 
         final Expression target = parseExprSingle();
-        final org.exist.xquery.xquf.XQUFInsertExpr insert = new org.exist.xquery.xquf.XQUFInsertExpr(context, source, target, mode);
+        final XQUFExpressions.InsertExpr insert = new XQUFExpressions.InsertExpr(context, source, target, mode);
         insert.setLocation(line, col);
         return insert;
     }
@@ -1693,7 +1694,7 @@ parseExprSingle(); // parse but discard
         }
 
         final Expression target = parseExprSingle();
-        final org.exist.xquery.xquf.XQUFDeleteExpr delete = new org.exist.xquery.xquf.XQUFDeleteExpr(context, target);
+        final XQUFExpressions.DeleteExpr delete = new XQUFExpressions.DeleteExpr(context, target);
         delete.setLocation(line, col);
         return delete;
     }
@@ -1709,8 +1710,8 @@ parseExprSingle(); // parse but discard
             final Expression target = parseExprSingle();
             expectKeyword(Keywords.WITH);
             final Expression value = parseExprSingle();
-            final org.exist.xquery.xquf.XQUFReplaceValueExpr replace =
-                    new org.exist.xquery.xquf.XQUFReplaceValueExpr(context, target, value);
+            final XQUFExpressions.ReplaceValueExpr replace =
+                    new XQUFExpressions.ReplaceValueExpr(context, target, value);
             replace.setLocation(line, col);
             return replace;
         } else {
@@ -1718,8 +1719,8 @@ parseExprSingle(); // parse but discard
             final Expression target = parseExprSingle();
             expectKeyword(Keywords.WITH);
             final Expression replacement = parseExprSingle();
-            final org.exist.xquery.xquf.XQUFReplaceNodeExpr replace =
-                    new org.exist.xquery.xquf.XQUFReplaceNodeExpr(context, target, replacement);
+            final XQUFExpressions.ReplaceNodeExpr replace =
+                    new XQUFExpressions.ReplaceNodeExpr(context, target, replacement);
             replace.setLocation(line, col);
             return replace;
         }
@@ -1734,7 +1735,7 @@ parseExprSingle(); // parse but discard
         expectKeyword(Keywords.AS);
         final Expression newName = parseExprSingle();
 
-        final org.exist.xquery.xquf.XQUFRenameExpr rename = new org.exist.xquery.xquf.XQUFRenameExpr(context, target, newName);
+        final XQUFExpressions.RenameExpr rename = new XQUFExpressions.RenameExpr(context, target, newName);
         rename.setLocation(line, col);
         return rename;
     }
@@ -1809,12 +1810,12 @@ parseExprSingle(); // parse but discard
     Expression parseFTContainsExpr(final Expression source) throws XPathException {
         final int line = previous.line, col = previous.column;
 
-        final org.exist.xquery.ft.FTContainsExpr ftContains = new org.exist.xquery.ft.FTContainsExpr(context);
+        final FTExpressions.ContainsExpr ftContains = new FTExpressions.ContainsExpr(context);
         ftContains.setLocation(line, col);
         ftContains.setSearchSource(source);
 
         // Parse FT selection: ftOr with optional positional filters
-        final org.exist.xquery.ft.FTSelection ftSel = new org.exist.xquery.ft.FTSelection(context);
+        final FTExpressions.Selection ftSel = new FTExpressions.Selection(context);
         ftSel.setFTOr(parseFTOr());
 
         // Positional filters: ordered, window, distance, at start/end, entire content, occurs, scope
@@ -1827,7 +1828,7 @@ parseExprSingle(); // parse but discard
     private Expression parseFTOr() throws XPathException {
         Expression left = parseFTAnd();
         while (matchKeyword(Keywords.FTOR)) {
-            final org.exist.xquery.ft.FTOr or = new org.exist.xquery.ft.FTOr(context);
+            final FTExpressions.Or or = new FTExpressions.Or(context);
             or.addOperand(left);
             or.addOperand(parseFTAnd());
             left = or;
@@ -1838,7 +1839,7 @@ parseExprSingle(); // parse but discard
     private Expression parseFTAnd() throws XPathException {
         Expression left = parseFTMildNot();
         while (matchKeyword(Keywords.FTAND)) {
-            final org.exist.xquery.ft.FTAnd and = new org.exist.xquery.ft.FTAnd(context);
+            final FTExpressions.And and = new FTExpressions.And(context);
             and.addOperand(left);
             and.addOperand(parseFTMildNot());
             left = and;
@@ -1869,7 +1870,7 @@ parseExprSingle(); // parse but discard
     }
 
     private Expression parseFTPrimaryWithOptions() throws XPathException {
-        final org.exist.xquery.ft.FTPrimaryWithOptions pwo = new org.exist.xquery.ft.FTPrimaryWithOptions(context);
+        final FTExpressions.PrimaryWithOptions pwo = new FTExpressions.PrimaryWithOptions(context);
 
         // FT primary: string literal, {expr}, or parenthesized FT expression
         if (check(Token.STRING_LITERAL) || check(Token.LBRACE)) {
@@ -1886,24 +1887,24 @@ parseExprSingle(); // parse but discard
             // Optional any/all/phrase mode
             if (matchKeyword(Keywords.ANY)) {
                 if (matchKeyword(Keywords.WORD)) {
-                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ANY_WORD);
+                    words.setMode(FTExpressions.Words.AnyallMode.ANY_WORD);
                 } else {
-                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ANY);
+                    words.setMode(FTExpressions.Words.AnyallMode.ANY);
                 }
             } else if (matchKeyword(Keywords.ALL)) {
                 if (matchKeyword(Keywords.WORDS)) {
-                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ALL_WORDS);
+                    words.setMode(FTExpressions.Words.AnyallMode.ALL_WORDS);
                 } else {
-                    words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.ALL);
+                    words.setMode(FTExpressions.Words.AnyallMode.ALL);
                 }
             } else if (matchKeyword(Keywords.PHRASE)) {
-                words.setMode(org.exist.xquery.ft.FTWords.AnyallMode.PHRASE);
+                words.setMode(FTExpressions.Words.AnyallMode.PHRASE);
             }
 
             // Optional FTTimes: "occurs" FTRange "times"
             if (checkKeyword("occurs")) {
                 advance(); // consume "occurs"
-                final org.exist.xquery.ft.FTTimes ftTimes = new org.exist.xquery.ft.FTTimes(context);
+                final FTExpressions.Times ftTimes = new FTExpressions.Times(context);
                 ftTimes.setRange(parseFTRange());
                 matchKeyword("times");
                 words.setFTTimes(ftTimes);
@@ -1928,7 +1929,7 @@ parseExprSingle(); // parse but discard
 
         // Match options: using stemming, using language "en", using wildcards, etc.
         if (checkKeyword(Keywords.USING)) {
-            final org.exist.xquery.ft.FTMatchOptions opts = new org.exist.xquery.ft.FTMatchOptions();
+            final FTExpressions.MatchOptions opts = new FTExpressions.MatchOptions();
             while (matchKeyword(Keywords.USING)) {
                 if (matchKeyword(Keywords.STEMMING)) {
                     opts.setStemming(true);
@@ -4414,7 +4415,7 @@ parseExprSingle(); // parse but discard
             }
         }
         expect(Token.SEMICOLON, "';'");
-        // context.setDefaultFTMatchOptions(opts); // TODO: requires v2/xqft-phase2
+        // // context.setDefaultFTMatchOptions(opts); // TODO: requires v2/xqft-phase2 // TODO: requires v2/xqft-phase2
     }
 
     private boolean isFTPositionalKeyword(final String name) {
