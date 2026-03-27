@@ -528,7 +528,8 @@ public class SerializerUtils {
             final SequenceIterator iterator = sequence.iterate();
             while (iterator.hasNext()) {
                 final Item item = iterator.nextItem();
-                if (parameterConvention.getType() != item.getType()) {
+                // Use subtype check: xs:integer is a valid xs:decimal, xs:string subtypes are valid xs:string, etc.
+                if (!Type.subTypeOf(item.getType(), parameterConvention.getType())) {
                     return false;
                 }
             }
