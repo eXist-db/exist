@@ -164,7 +164,8 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(FunExplain.signatures[0], FunExplain.class),
             new FunctionDef(FunExplain.signatures[1], FunExplain.class),
             new FunctionDef(FunProfile.signatures[0], FunProfile.class),
-            new FunctionDef(FunProfile.signatures[1], FunProfile.class)
+            new FunctionDef(FunProfile.signatures[1], FunProfile.class),
+            new FunctionDef(FunIndexReport.signatures[0], FunIndexReport.class)
             // --- End Query Profiling Functions ---
     };
 

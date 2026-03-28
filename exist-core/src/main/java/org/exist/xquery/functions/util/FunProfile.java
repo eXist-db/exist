@@ -197,8 +197,14 @@ public class FunProfile extends BasicFunction {
         }
     }
 
+    /**
+     * Serialize the per-query profiler's performance stats as XML.
+     * Uses the profiled query's own Profiler instance (not the global
+     * BrokerPool stats) to ensure per-query isolation under concurrent load.
+     */
     private Sequence serializeProfilerStats(final XQueryContext pContext) throws XPathException {
-        final PerformanceStats stats = pContext.getBroker().getBrokerPool().getPerformanceStats();
+        // Read from the per-query profiler's stats, not the global BrokerPool stats
+        final PerformanceStats stats = pContext.getProfiler().getPerformanceStats();
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();

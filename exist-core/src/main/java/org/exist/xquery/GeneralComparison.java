@@ -240,6 +240,17 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
             }
         }
+
+        // Log optimization decisions
+        if (LOG.isDebugEnabled()) {
+            if (optimizeSelf || optimizeChild) {
+                LOG.debug("Optimizer: {} can use index optimization on {} (self={}, child={}, qname={})",
+                        ExpressionDumper.dump(this), contextQName, optimizeSelf, optimizeChild, contextQName);
+            } else if (!steps.isEmpty()) {
+                LOG.debug("Optimizer: {} skipped index optimization — no suitable index path found",
+                        ExpressionDumper.dump(this));
+            }
+        }
     }
 
     @Override

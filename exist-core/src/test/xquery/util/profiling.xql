@@ -229,3 +229,19 @@ function prof:profile-stats-is-element() {
     let $result := util:profile('1 + 1')
     return $result?stats instance of element()
 };
+
+(: === util:index-report tests === :)
+
+declare
+    %test:assertTrue
+function prof:index-report-returns-element() {
+    let $result := util:index-report('1 + 1')
+    return $result instance of element()
+};
+
+declare
+    %test:assertTrue
+function prof:index-report-with-path() {
+    let $result := util:index-report('//title')
+    return $result instance of element()
+};
